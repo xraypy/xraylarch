@@ -305,7 +305,7 @@ class XASNormPanel(wx.Panel):
                           show_legend=True, with_extras=False,
                           delay_draw=(last_id!=checked))
                 newplot=False
-
+        self.controller.get_display(stacked=False).panel.canvas.draw()
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.controller.larch.symtable._sys.xas_viewer
@@ -542,7 +542,7 @@ class XASNormPanel(wx.Panel):
             plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
-        popts['delay_draw'] = popts.get('delay_draw', False)
+        popts['delay_draw'] = True
         if hasattr(dgroup, 'custom_plotopts'):
             popts.update(dgroup.custom_plotopts)
 
@@ -552,8 +552,8 @@ class XASNormPanel(wx.Panel):
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
-            popts['delay_draw'] = popts.get('delay_draw', False) or (i != narr)
-            # print(" plot with delay_draw = ", popts['delay_draw'])
+
+            popts['delay_draw'] = (i != narr)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = oplot
 
@@ -573,5 +573,6 @@ class XASNormPanel(wx.Panel):
                              'color': '#888888'}
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
+
         if not popts['delay_draw']:
             ppanel.canvas.draw()
