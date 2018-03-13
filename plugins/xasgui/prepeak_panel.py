@@ -329,8 +329,15 @@ class FitResultFrame(wx.Frame):
         wids['nvarys'].SetLabel("%d" % result.nvarys)
         wids['nfree'].SetLabel("%d" % result.nfree)
         wids['nfev'].SetLabel("%d" % result.nfev)
-        wids['redchi'].SetLabel("%f" % result.redchi)
-        wids['chisqr'].SetLabel("%f" % result.chisqr)
+
+        if abs(result.redchi) < 1.e-3:
+            wids['redchi'].SetLabel("%.5g" % result.redchi)
+        else:
+            wids['redchi'].SetLabel("%f" % result.redchi)
+        if abs(result.chisqr) < 1.e-3:
+            wids['chisqr'].SetLabel("%.5g" % result.chisqr)
+        else:
+            wids['chisqr'].SetLabel("%f" % result.chisqr)
         wids['aic'].SetLabel("%f" % result.aic)
         wids['bic'].SetLabel("%f" % result.bic)
         wids['hist_info'].SetLabel("%d" % len(fit_history))
