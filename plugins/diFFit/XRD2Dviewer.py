@@ -1374,12 +1374,9 @@ class XRDImg(Group):
             self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
         else:
             self.h5xrd = self.h5file['xrmmap/xrd2D/counts']
-            try:
-                self.calfile = self.h5file['xrmmap/xrd1D'].attrs['calfile']
-                if not os.path.exists(self.calfile):
-                    self.calfile = None
-            except:
-                pass
+            self.calfile = bytes2str(self.h5file['xrmmap/xrd1D'].attrs.get('calfile',''))
+            if not os.path.exists(self.calfile):
+                self.calfile = None
 
             ## making an assumption that h5 map file always has multiple rows and cols
             self.jframes,self.iframes,self.xpix,self.ypix = self.h5xrd.shape

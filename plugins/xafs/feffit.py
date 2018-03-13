@@ -11,7 +11,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy import constants
 from scipy.optimize import leastsq as scipy_leastsq
 
-from lmfit import Parameters, Parameter, Minimizer, asteval, fit_report
+from lmfit import Parameters, Parameter, Minimizer, fit_report
 
 from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
 
