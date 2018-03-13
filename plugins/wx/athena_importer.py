@@ -110,6 +110,10 @@ class AthenaImporter(wx.Frame) :
         """column selections changed calc xdat and ydat"""
         gname = event.GetString()
         grp = getattr(self.all, gname)
+        glist = list(self.grouplist.GetCheckedStrings())
+        if gname not in glist:
+            glist.append(gname)
+        self.grouplist.SetCheckedStrings(glist)
         if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
             self.plotpanel.plot(grp.energy, grp.mu,
                                 xlabel='Energy', ylabel='mu',title=gname)

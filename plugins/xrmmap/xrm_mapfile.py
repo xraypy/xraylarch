@@ -93,8 +93,8 @@ def getFileStatus(filename, root=None, folder=None):
         if not valid:
             return None, None
         status = GSEXRM_FileStatus.hasdata
-        vers = group.attrs['Version']
-        fullpath = group.attrs['Map_Folder']
+        vers = group.attrs.get('Version','')
+        fullpath = group.attrs.get('Map_Folder','')
         _parent, _folder = os.path.split(fullpath)
 
         if folder is not None and folder != _folder:
@@ -195,20 +195,68 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     h5root.flush()
 
 def ensure_subgroup(subgroup,group):
-    try:
-        return group[subgroup]
-    except:
+    
+    if subgroup not in group.keys():
         return group.create_group(subgroup)
+    else:
+        return group[subgroup]
 
-def get_detectors(group):
+# def ensure_subgroup(subgroup,group,overwrite=False):
+#     
+#     if subgroup not in group.keys():
+#         grp = group.create_group(subgroup)
+#     elif overwrite:
+#         del group[subgroup]
+#         grp = group.create_group(subgroup)
+#     else:
+#         grp = group[subgroup]
+#         
+#     return grp    
 
-    detlist = []
+
+
+
+def build_datapath_list(xrmmap):
+
+    det_list = build_detector_list(xrmmap)
+    data_list = []
+
+    def find_detector(group):
+
+        sub_list = []
+        if 'counts' in group.keys():
+            sub_list += [group['counts'].name]
+        elif 'scal' in group.name:
+            for key,val in dict(group).iteritems():
+                sub_list += [group[key].name]
+        return sub_list
+
+    for det in det_list:
+        for idet in find_detector(xrmmap[det]):
+            data_list += [idet]
+
+    return data_list
+
+
+def build_detector_list(group):
+
+    det_list = []
     for key in group.keys():
-        if 'type' in group[key].attrs.keys():
-            if 'detector' in group[key].attrs['type'] and key not in detlist:
-                detlist += [key]
+        try:
+            is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
+            if not is_det:
+               is_det = bytes2str(group[key].attrs.get('type', '')).find('mca') > -1
+        except:
+            is_det = False
+        if is_det and key not in det_list:
+            det_list += [key]
+    det_list = sorted(det_list)
+            
+    for i,det in enumerate(det_list):
+        if 'sum' in det.lower():
+            det_list = [det_list[i]] + det_list[:i] + det_list[i+1:]
 
-    return detlist
+    return det_list
 
 class GSEXRM_Exception(Exception):
     '''GSEXRM Exception: General Errors'''
@@ -503,7 +551,7 @@ class GSEMCA_Detector(object):
     '''
     def __init__(self, xrmmap, index=None):
         self.xrmmap = xrmmap
-        self.__ndet =  xrmmap.attrs['N_Detectors']
+        self.__ndet =  xrmmap.attrs.get('N_Detectors',0)
         self.det = None
         self.rois = []
         detname = 'det1'
@@ -816,8 +864,8 @@ class GSEXRM_MapFile(object):
             self.h5root = h5py.File(self.filename)
         self.xrmmap = self.h5root[root]
         if self.folder is None:
-            self.folder = self.xrmmap.attrs['Map_Folder']
-        self.last_row = int(self.xrmmap.attrs['Last_Row'])
+            self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
+        self.last_row = int(bytes2str(self.xrmmap.attrs.get('Last_Row','')))
 
         try:
             self.dimension = self.xrmmap['config/scan/dimension'].value
@@ -827,6 +875,9 @@ class GSEXRM_MapFile(object):
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
+            
+        if self.ndet is None:
+            self.ndet = self.xrmmap.attrs.get('N_Detectors', None)
 
     def close(self):
         if self.check_hostid():
@@ -849,7 +900,7 @@ class GSEXRM_MapFile(object):
             self.xrdcalfile = xrdcalfile
         if os.path.exists(str(self.xrdcalfile)):
             print('Calibration file loaded: %s' % self.xrdcalfile)
-            xrd1Dgrp.attrs['calfile'] = '%s' % (self.xrdcalfile)
+            xrd1Dgrp.attrs['calfile'] = str(self.xrdcalfile)
             
 
         self.flip = flip if flip is not None else self.flip
@@ -1046,10 +1097,7 @@ class GSEXRM_MapFile(object):
         '''
 
         if self.xrdcalfile is None:
-            try:
-                self.xrdcalfile = self.xrmmap['xrd1D'].attrs['calfile']
-            except:
-                pass
+            self.xrdcalfile = bytes2str(self.xrmmap['xrd1D'].attrs.get('calfile',''))
 
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
@@ -1131,7 +1179,7 @@ class GSEXRM_MapFile(object):
             map_items = sorted(self.xrmmap.keys())
             for gname in map_items:
                 g = self.xrmmap[gname]
-                if g.attrs.get('type', None) == 'scalar detectors':
+                if bytes2str(g.attrs.get('type', None)) == 'scalar detectors':
                     first_det = list(g.keys())[0]
                     nrows, npts =  g[first_det].shape
 
@@ -1155,7 +1203,7 @@ class GSEXRM_MapFile(object):
 
                 for gname in map_items:
                     g = self.xrmmap[gname]
-                    if g.attrs.get('type', None) == 'mca detector':
+                    if bytes2str(g.attrs.get('type', None)) == 'mca detector':
                         mca_dets.append(gname)
                         nrows, npts, nchan =  g['counts'].shape
 
@@ -1199,7 +1247,7 @@ class GSEXRM_MapFile(object):
                 map_items = sorted(self.xrmmap.keys())
                 for gname in map_items:
                     g = self.xrmmap[gname]
-                    if g.attrs.get('type', None) == 'mca detector':
+                    if bytes2str(g.attrs.get('type', None)) == 'mca detector':
                         xrm_dets.append(g)
                         nrows, npts, nchan =  g['counts'].shape
 
@@ -1588,15 +1636,14 @@ class GSEXRM_MapFile(object):
     def add_1DXRD(self, qstps=None):
         
         xrd1Dgrp = ensure_subgroup('xrd1D',self.xrmmap)
-        if os.path.exists(xrd1Dgrp.attrs['calfile']):
-
-            xrdcalfile = xrd1Dgrp.attrs['calfile']
+        xrdcalfile = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
+        if os.path.exists(xrdcalfile):
             print('Using calibration file : %s' % xrdcalfile)
             try:
                 nrows, npts , xpixx, xpixy = self.xrmmap['xrd2D/counts'].shape
             except:
-                if version_ge(self.version, '2.0.0'):
-                    print('Only compatible with newest hdf5 mapfile version.')
+                #if version_ge(self.version, '2.0.0'):
+                #    print('Only compatible with newest hdf5 mapfile version.')
                 return
 
             if qstps is not None: self.qstps = qstps
@@ -1642,71 +1689,71 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
-    def build_detector_dictionary(self,refine=False):
+    def get_datapath_list(self,remove='raw'):
     
-        xrmmap = self.xrmmap
-        data_detectors = []
+        det_list = build_datapath_list(self.xrmmap)
         
-        for det in xrmmap.keys():
-            title    = None
-            raw_path = None
-            cor_path = None
-            dtf_path = None
+        ## remove instances of detector with 'raw' in title
+        if isinstance(remove,str):
+            return [det for det in det_list if remove not in det]
+        else:
+            return det_list
 
-            if bytes2str(xrmmap[det].attrs.get('type', '')).find('det') > -1:
-                    
-                if det == 'scalars':
-                    for chan in xrmmap[det].keys():
-                        if 'raw' not in chan:
-                            title=chan
-                            raw_path = '%s/%s_raw' % (det,chan)
-                            cor_path = '%s/%s' % (det,chan)
-                else:
-                    title = det
-                    raw_path = '%s/counts' % det
-                    data = xrmmap[raw_path]
-                    try:
-                        xrmmap[det]['dtfactor']
-                        dtf_path = '%s/dtfactor' % det
-                    except:
-                        pass
-            
-                data_detectors += [DetectorDictionary(title    = title,
-                                                      raw_path = raw_path,
-                                                      cor_path = cor_path,
-                                                      dtf_path = dtf_path)]
+
+    def get_roi_list(self,detname):
+        """get a list of rois from detector
+        """ 
+
+        detname = self._det_name(detname)
+        roigrp = ensure_subgroup('roimap',self.xrmmap)
         
-        return data_detectors
+        def sort_roi_limits(roidetgrp):
+            roi_name, roi_limits = [],[]            
+            for name in roidetgrp.keys():
+                roi_name   += [name]
+                roi_limits += [list(roidetgrp[name]['limits'][:])]
+            return [x for (y,x) in sorted(zip(roi_limits,roi_name))]
+        
+        rois = ['1']
 
-    def get_detchoices(self):
+        if version_ge(self.version, '2.0.0'):
+            if detname in roigrp.keys():
+                rois = sort_roi_limits(roigrp[detname])
+
+            elif detname.lower().startswith('scal'):
+                rois = rois+list(self.xrmmap[detname].keys())
+                
+        else:
+            if detname in self.xrmmap.keys():
+                rois += list(roigrp['sum_name'])
+            try:
+                rois += sort_roi_limits(roigrp[detname])
+            except:
+                pass
+                
+        return rois
+        
+
+    def get_detector_list(self):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
         """
         xrmmap = self.xrmmap
         det_list = []
         if version_ge(self.version, '2.0.0'):
-            for grp in xrmmap['roimap'].keys():
-                if bytes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
-                    det_list += [grp]
+            det_list = build_detector_list(xrmmap['roimap'])
             if 'scalars' in xrmmap:
                 det_list += ['scalars']
         else:
-            for grp in xrmmap.keys():
-                if grp.startswith('det'):
+            det_list = build_detector_list(xrmmap)
+            for det in ('scalars','xrd1D','xrd2D'):
+                 try:
+                     det_list.pop(det_list.index(det))
+                 except:
+                     pass
+            for det in build_detector_list(xrmmap['roimap']):
+                if det not in det_list:
                     det_list += [grp]
-            ## allows for adding roi in new format to old files
-            for grp in xrmmap['roimap'].keys():
-                try:
-                    if bystes2str(xrmmap[grp].attrs.get('type', '')).find('det') > -1:
-                        if grp not in det_list:
-                            det_list += [grp]
-                except:
-                    pass
-
-        for sumname in ('detsum','mcasum'):
-           if sumname in det_list:
-               det_list.remove(sumname)
-               det_list.insert(0, sumname)
 
         if len(det_list) < 1:
             det_list = ['']
@@ -1719,15 +1766,16 @@ class GSEXRM_MapFile(object):
         mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
 
-        detlist = get_detectors(self.xrmmap)
+        detlist = build_detector_list(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
-            
-            if 'mca' in detgrp.attrs['type'].lower():
+                        
+            dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
+            if 'mca' in dettype:
                 self.flag_xrf   = self.check_flag(detgrp)
-            elif 'xrd2d' in detgrp.attrs['type'].lower():
+            elif 'xrd2d' in dettype:
                 self.flag_xrd2d = self.check_flag(detgrp)
-            elif 'xrd1d' in detgrp.attrs['type'].lower():
+            elif 'xrd1d' in dettype:
                 self.flag_xrd1d = self.check_flag(detgrp)
             elif det == 'xrd': ## compatible with old version
                 try:
@@ -1769,25 +1817,27 @@ class GSEXRM_MapFile(object):
             g.resize((nrow, npts, nx))
 
             for g in self.xrmmap.values():
-                if g.attrs.get('type', '').startswith('scalar det'):
-                    for aname in g.keys():
-                        oldnrow, npts = g[aname].shape
-                        g[aname].resize((nrow, npts))
-                elif g.attrs.get('type', '').startswith('mca det'):
-                    oldnrow, npts, nchan = g['counts'].shape
-                    g['counts'].resize((nrow, npts, nchan))
-                    for aname in ('livetime', 'realtime',
-                                  'inpcounts', 'outcounts', 'dtfactor'):
-                        g[aname].resize((nrow, npts))
-                elif g.attrs.get('type', '').startswith('virtual mca det'):
-                    oldnrow, npts, nchan = g['counts'].shape
-                    g['counts'].resize((nrow, npts, nchan))
-                elif g.attrs.get('type', '').startswith('xrd2D detector'):
-                    oldnrow, npts, xpixx, xpixy = g['counts'].shape
-                    g['counts'].resize((nrow, npts, xpixx, xpixy))
-                elif g.attrs.get('type', '').startswith('xrd1D detector'):
-                    oldnrow, npts, qstps = g['counts'].shape
-                    g['counts'].resize((nrow, npts, qstps))
+                type_attr = bytes2str(g.attrs.get('type', ''))
+                if type_attr.find('det') > -1:
+                    if type_attr.startswith('scalar'):
+                        for aname in g.keys():
+                            oldnrow, npts = g[aname].shape
+                            g[aname].resize((nrow, npts))
+                    elif type_attr.startswith('mca'):
+                        oldnrow, npts, nchan = g['counts'].shape
+                        g['counts'].resize((nrow, npts, nchan))
+                        for aname in ('livetime', 'realtime',
+                                      'inpcounts', 'outcounts', 'dtfactor'):
+                            g[aname].resize((nrow, npts))
+                    elif type_attr.startswith('virtual mca'):
+                        oldnrow, npts, nchan = g['counts'].shape
+                        g['counts'].resize((nrow, npts, nchan))
+                    elif type_attr.startswith('xrd2D'):
+                        oldnrow, npts, xpixx, xpixy = g['counts'].shape
+                        g['counts'].resize((nrow, npts, xpixx, xpixy))
+                    elif type_attr.startswith('xrd1D'):
+                        oldnrow, npts, qstps = g['counts'].shape
+                        g['counts'].resize((nrow, npts, qstps))
 
             if self.azwdgs > 1:
                 for g in self.xrmmap['work/xrdwedge'].values():
@@ -1805,16 +1855,18 @@ class GSEXRM_MapFile(object):
             virtmca_groups = []
             for g in self.xrmmap.values():
                 # include both real and virtual mca detectors!
-                if g.attrs.get('type', '').startswith('mca det'):
-                    realmca_groups.append(g)
-                elif g.attrs.get('type', '').startswith('virtual mca'):
-                    virtmca_groups.append(g)
-                elif g.attrs.get('type', '').startswith('xrd2D detector'):
-                    oldnrow, npts, xpixx, xpixy = g['counts'].shape
-                    g['counts'].resize((nrow, npts, xpixx, xpixy))
-                elif g.attrs.get('type', '').startswith('xrd1D detector'):
-                    oldnrow, npts, qstps = g['counts'].shape
-                    g['counts'].resize((nrow, npts, qstps))
+                type_attr = bytes2str(g.attrs.get('type', ''))
+                if type_attr.find('det') > -1 or type_attr.find('mca') > -1:
+                    if type_attr.startswith('mca'):
+                        realmca_groups.append(g)
+                    elif type_attr.startswith('virtual mca'):
+                        virtmca_groups.append(g)
+                    elif type_attr.startswith('xrd2D'):
+                        oldnrow, npts, xpixx, xpixy = g['counts'].shape
+                        g['counts'].resize((nrow, npts, xpixx, xpixy))
+                    elif type_attr.startswith('xrd1D'):
+                        oldnrow, npts, qstps = g['counts'].shape
+                        g['counts'].resize((nrow, npts, qstps))
 
             if self.azwdgs > 1:
                 for g in self.xrmmap['work/xrdwedge'].values():
@@ -1937,18 +1989,18 @@ class GSEXRM_MapFile(object):
             outname = '%s_%s' % (aname, othername)
             self.add_area(amask, name=outname, desc=outname, tomo=tomo)
 
-    def get_area(self, name=None, desc=None, tomo=False):
+    def get_area(self, name=None, desc=None):
         '''
         get area group by name or description
         '''
-        base_grp = self.xrmmap
-        area_grp = ensure_subgroup('areas',base_grp)
+
+        area_grp = ensure_subgroup('areas',self.xrmmap)
 
         if name is not None and name in area_grp:
             return area_grp[name]
         if desc is not None:
             for name in area_grp:
-                if desc == area_grp[name].attrs['description']:
+                if desc == bytes2str(area_grp[name].attrs.get('description','')):
                     return area_grp[name]
         return None
 
@@ -1966,7 +2018,7 @@ class GSEXRM_MapFile(object):
             return None
 
         if 'roistats' in area.attrs:
-            return json.loads(area.attrs['roistats'])
+            return json.loads(area.attrs.get('roistats',''))
 
         amask = area.value
 
@@ -1975,7 +2027,7 @@ class GSEXRM_MapFile(object):
         d_names = [d for d in self.xrmmap['roimap/det_name']]
         # count times
         ctime = [1.e-6*self.xrmmap['roimap/det_raw'][:,:,0][amask]]
-        for i in range(self.xrmmap.attrs['N_Detectors']):
+        for i in range(self.xrmmap.attrs.get('N_Detectors',0)):
             tname = 'det%i/realtime' % (i+1)
             ctime.append(1.e-6*self.xrmmap[tname].value[amask])
 
@@ -2033,12 +2085,13 @@ class GSEXRM_MapFile(object):
 
     def get_tomography_center(self):
 
+        tomogrp = ensure_subgroup('tomo',self.xrmmap)
         try:
-            return self.xrmmap['tomo/center'].value
+            return tomogrp['center'].value
         except:
             self.set_tomography_center()
 
-        return self.xrmmap['tomo/center'].value
+        return tomogrp['center'].value
 
     def set_tomography_center(self,center=None):
         if center is None:
@@ -2097,75 +2150,94 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, detname, overwrite=True, tomo_alg=[], dtfactor=False, **kws):
+    def save_tomograph(self, datapath, tomo_alg=[], dtcorrect=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
        
-        detlist = get_detectors(self.xrmmap)
-        if detname not in detlist:
-            print("Detector '%s' not found in data." % detname)
+        ## check to make sure the selected detector exists for reconstructions
+        detlist = self.get_datapath_list(remove=None)
+        if datapath not in detlist:
+            print("Detector '%s' not found in data." % datapath)
             print('Known detectors: %s' % detlist)
             return
+        datagroup = self.xrmmap[datapath]
 
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
-        try:
-            detgrp = tomogrp[detname]
-            if overwrite:
-                del tomogrp[detname]
-                self.h5root.flush()
-            else:
-                print('%s already exists in xrmmap/tomo. Need to force overwrite.' % detname)
-                return
-        except:
-            pass
-        detgrp = ensure_subgroup(detname,tomogrp)
-
+        ## check to make sure there is data to perform tomographic reconstruction
+        center = self.get_tomography_center()
         omega,x = self.get_rotation_axis(),self.get_translation_axis()
-        center = self.get_tomography_center(),
-        
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
+        
+        ## define detector path
+        detgroup  = datagroup
+        while isinstance(detgroup,h5py.Dataset):
+            detgroup = detgroup.parent
+            detpath = detgroup.name
 
-#         print ('this path will not work for xrd1D or mcasum; right?')
-#         if dtfactor
-# 
-#             if 'sum' in detname:
-# 
-#                 sino = 
-#         
-#         
-#         if dtfactor:
-#             raw_sino = self.xrmmap[detname]['counts']
-#             dtf_sino = self.xrmmap[detname]['dtfactor']
-#             
-#             sino = raw_sino * dtf_sino
-#                 
-#         else:
-#             sino = self.xrmmap[detname]['counts']            
-# 
-#         sino,order = reshape_sinogram(sino,x,omega)
-# 
-#         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-#                                           sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
-# 
-#         detgrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
-#         detgrp.attrs['center'] = '%0.2f pixels' % (center)
-#         
-#         detgrp.create_dataset('counts', data=np.swapaxes(tomo,0,2))
-#         for data_tag in ('energy','q'):
-#             try:
-#                 detgrp.create_dataset(data_tag, data=self.xrmmap[detname][data_tag])
-#             except:
-#                 pass
-#         for attr_tag in self.xrmmap[detname].attrs.keys():
-#             try:
-#                 detgrp.attrs[attr_tag] = self.xrmmap[detname].attrs[attr_tag]
-#             except:
-#                 pass
-# 
-#         self.h5root.flush()
+        ## create path for saving data
+        tpath = datapath.replace('/xrmmap','/tomo')
+        tpath = tpath.replace('/scalars','')
+        if tpath.endswith('raw'):
+            tpath = tpath.replace('_raw','')
+            dtcorrect = False
+        elif tpath.endswith('counts'):
+            tpath = os.path.split(tpath)[0]
+ 
+        ## build path for saving data in tomo-group
+        grp = self.xrmmap
+        for kpath in tpath.split('/'):
+            if len(kpath) > 0:
+                grp = ensure_subgroup(kpath,grp)
+        tomogrp = grp
+        
+        ## define sino group from datapath
+        if 'scalars' in datapath or 'xrd' in datapath:
+            sino = datagroup.value
+        elif dtcorrect:
+            if 'sum' in datapath:
+                sino = np.zeros(np.shape(np.einsum('jki->ijk', datagroup.value)))
+                for i in range(4):
+                ##for i in range(self.ndet):
+                    idatapath = datapath.replace('sum',str(i+1))
+                    idatagroup = self.xrmmap[idatapath]
+                    idetpath  = detpath.replace('sum',str(i+1))
+                    idetgroup = self.xrmmap[idetpath]
+                    sino += np.einsum('jki->ijk', idatagroup.value) * idetgroup['dtfactor'].value
+                
+            else:
+                sino = np.einsum('jki->ijk', datagroup.value) * detgroup['dtfactor'].value
+        else:
+            sino = datagroup.value
+
+        sino,order = reshape_sinogram(sino,x,omega)
+
+        center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
+                                          sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
+
+        tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
+        tomogrp.attrs['center'] = '%0.2f pixels' % (center)
+        
+        try:
+            tomogrp.create_dataset('counts', data=np.swapaxes(tomo,0,2), **self.compress_args)
+        except:
+            del tomogrp['counts']
+            tomogrp.create_dataset('counts', data=np.swapaxes(tomo,0,2), **self.compress_args)
+        
+        for data_tag in ('energy','q'):
+            if data_tag in detgroup.keys():
+                try:
+                    tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
+                    del tomogrp[data_tag]
+                except:
+                    del tomogrp[data_tag]
+                    tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
+
+        for key,val in dict(detgroup.attrs).iteritems():
+            tomogrp.attrs[key] = val
+
+        self.h5root.flush()
 
     def claim_hostid(self):
         "claim ownership of file"
@@ -2309,10 +2381,19 @@ class GSEXRM_MapFile(object):
 
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         dgroup = '%ssum' % mcastr
-        if self.ndet is None:
-            self.ndet =  self.xrmmap.attrs['N_Detectors']
-        if det in range(1, self.ndet+1):
-            dgroup = '%s%i' % (mcastr,det)
+
+        try: ## python 2
+            is_str = (isinstance(det,str) or isinstance(det, unicode))   
+        except: ## python 3
+            is_str = isinstance(det,str)
+        if is_str:
+            for d in build_detector_list(self.xrmmap):
+                if det.lower() == d.lower():
+                    dgroup = d
+        elif isinstance(det,int):
+            if det in range(1, self.ndet+1):
+                dgroup = '%s%i' % (mcastr,det)
+
         return dgroup
 
     def _det_group(self, det=None):
@@ -2350,32 +2431,36 @@ class GSEXRM_MapFile(object):
         '''
 
         try:
-            area = self.get_area(areaname, tomo=tomo).value
+            area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
         if tomo:
-            ## checks detector names
-            if det is not None:
-                if (type(det) is str and det.isdigit()) or type(det) is int:
-                    det = int(det)
-                    detname = 'det%i' % det
-                else:
-                    detname = det
-            else:
-                detname = 'detsum'
-            if version_ge(self.version, '2.0.0'):
-                if detname is not None:
-                    detname = detname.replace('det','mca')
+            tomogrp = ensure_subgroup('tomo',self.xrmmap)
+            detlist = build_detector_list(tomogrp)
+            if len(detlist) < 1:
+                return
 
-            ## builds detector list
-            detlist = get_detectors(self.xrmmap['tomo'])
-    
-            if detname in detlist:
-                dgroup = 'tomo/%s' % detname
+            if det in detlist:
+                detname = det
+            elif det is None:
+                detname = detlist[0]
+            elif (type(det) is str and det.isdigit()) or type(det) is int:
+                det = int(det)
+                detname = 'det%i' % det
+                if version_ge(self.version, '2.0.0'):
+                    detname = detname.replace('det','mca')
             else:
                 return
-            mapdat = self.xrmmap[dgroup]
+                
+            dgroup = 'tomo/%s' % detname
+
+            try:
+                mapdat = self.xrmmap[dgroup]
+                dtcorrect = False
+            except:
+                return
+
         else:
             dgroup = self._det_name(det)
             mapdat = self._det_group(det)
@@ -2398,7 +2483,7 @@ class GSEXRM_MapFile(object):
                     callback(1, 1, nx*ny)
                 counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
                                            mapdat=mapdat, area=area,
-                                           dtcorrect=dtcorrect, tomo=tomo)
+                                           dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
@@ -2412,7 +2497,7 @@ class GSEXRM_MapFile(object):
                         callback(i, step, (x2-x1)*ny)
                     counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
                                                 det=det, area=area,
-                                                dtcorrect=dtcorrect, tomo=tomo)
+                                                dtcorrect=dtcorrect)
             else:
                 for i in range(step+1):
                     y1 = ymin + int(i*ny/step)
@@ -2422,7 +2507,7 @@ class GSEXRM_MapFile(object):
                         callback(i, step, nx*(y2-y1))
                     counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
                                                 det=det, area=area,
-                                                dtcorrect=dtcorrect, tomo=tomo)
+                                                dtcorrect=dtcorrect)
 
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
@@ -2460,7 +2545,7 @@ class GSEXRM_MapFile(object):
                             real_time=rtime, live_time=ltime)
 
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                     area=None, dtcorrect=True, tomo=False):
+                        area=None, dtcorrect=True, tomo=False):
         '''return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2486,11 +2571,12 @@ class GSEXRM_MapFile(object):
         
         if mapdat is None:
             mapdat = self._det_group(det)
+        det = os.path.split(mapdat.name)[-1]
 
-        ## needs to be improved - but skips deadtime correction for xrd data
-        ## mkak 2018.01.29
-        if mapdat.attrs['type'].startswith('xrd'):
-            tomo = True
+        if bytes2str(mapdat.attrs.get('type', '')).startswith('xrd'):
+            dtcorrect = False
+        elif tomo:
+            dtcorrect = False
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2508,43 +2594,33 @@ class GSEXRM_MapFile(object):
             counts = counts.reshape(ny, nx, pixx, pixy)
         else:
             counts = counts.reshape(ny, nx, nchan)
-        
-        if not tomo:
+
+        if mapdat is None or 'sum' in det:
+            counts = np.zeros(counts.shape)
             if dtcorrect:
-                if det in range(1, self.ndet+1):
-                    cell   = mapdat['dtfactor'].regionref[sy, sx]
-                    dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-                    dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts = counts * dtfact
-                elif det is None: # indicating sum of deadtime-corrected spectra
-                    _md    = self._det_group(self.ndet)
+                for _idet in range(1, self.ndet):
+                    _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     cell   = _md['dtfactor'].regionref[sy, sx]
                     dtfact = _md['dtfactor'][cell].reshape(ny, nx)
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts = _cts * dtfact
-                    for _idet in range(1, self.ndet):
-                        _md    = self._det_group(_idet)
-                        cell   = _md['counts'].regionref[sy, sx, :]
-                        _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                        cell   = _md['dtfactor'].regionref[sy, sx]
-                        dtfact = _md['dtfactor'][cell].reshape(ny, nx)
-                        dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                        counts += _cts * dtfact
-
-            elif det is None: # indicating sum un-deadtime-corrected spectra
-                _md    = self._det_group(self.ndet)
-                cell   = _md['counts'].regionref[sy, sx, :]
-                counts = _md['counts'][cell].reshape(ny, nx, nchan)
+                    counts += _cts * dtfact
+            else:
                 for _idet in range(1, self.ndet):
                     _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     counts += _cts
-        else:
+        elif mapdat is not None:
             if dtcorrect:
-                print ('not yet using deadtime correction for this type of data')
+                cell   = mapdat['dtfactor'].regionref[sy, sx]
+                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
+            #else:
+            #    cell   = mapdat['counts'].regionref[sy, sx, :]
+            #    counts = mapdat['counts'][cell].reshape(ny, nx)
 
         if area is not None:
             counts = counts[area[sy, sx]]
@@ -2581,7 +2657,7 @@ class GSEXRM_MapFile(object):
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        if det is None:
+        if det is None or 'sum' in str(det):
             livetime = np.zeros((ny, nx))
             realtime = np.zeros((ny, nx))
             for d in range(1, self.ndet+1):
@@ -2668,7 +2744,7 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def get_xrd_area(self, areaname, xrd='2D', callback=None):
+    def get_xrd_area(self, areaname, xrd='2D', callback=None, **kws):
         '''return 1D or 2D XRD pattern for a pre-defined area
 
         Parameters
@@ -2695,7 +2771,7 @@ class GSEXRM_MapFile(object):
         xrddir   = 'xrd1D' if '1' in xrd else 'xrd2D'
         mapdat   = self.xrmmap[xrddir]
         xrdshape = mapdat['counts'].shape
-        mapname  = mapdat.name        
+        mapname  = mapdat.name 
 
         try:
             qdat = mapdat['q']
@@ -2740,17 +2816,17 @@ class GSEXRM_MapFile(object):
         if qdat is not None:
             counts = np.array([qdat,counts])
 
-        return self._getXRD(mapname, counts, areaname, xrddir)
+        return self._getXRD(mapname, counts, areaname, xrddir, **kws)
 
-    def _getXRD(self, mapname, data, areaname, xrddir):
+    def _getXRD(self, mapname, data, areaname, xrddir, **kws):
 
         name = '%s : %s' % (xrddir,areaname)
         
         if xrddir == 'xrd1D':
-            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name)
+            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name, **kws)
         else: #elif  xrddir == 'xrd2D':
             xpix,ypix = data.shape
-            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name)
+            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name, **kws)
 
         _xrd.areaname = _xrd.title = name
         path, fname = os.path.split(self.filename)
@@ -2798,7 +2874,7 @@ class GSEXRM_MapFile(object):
 
         roigroup = ensure_subgroup('roimap',self.xrmmap)
         for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
-            if grp.attrs.get('type', '').startswith(xrdtype):
+            if bytes2str(grp.attrs.get('type', '')).startswith(xrdtype):
                 detname = det
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = xrdtype
@@ -2935,13 +3011,11 @@ class GSEXRM_MapFile(object):
 
         roigroup = ensure_subgroup('roimap',self.xrmmap)
         for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
-            if grp.attrs.get('type', '').startswith('mca det'):
-                #for s in det.split(): det = 'mca%i' % int(s) if s.isdigit() else det
+            if bytes2str(grp.attrs.get('type', '')).startswith('mca det'):
                 det_list   += [det]
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'mca detector'
-            if grp.attrs.get('type', '').startswith('virtual mca'):
-                #det = 'mcasum'
+            if bytes2str(grp.attrs.get('type', '')).startswith('virtual mca'):
                 sumdet = det
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'virtual mca detector'
@@ -3224,30 +3298,29 @@ class GSEXRM_MapFile(object):
         roi_names = [i in self.xrmmap['config/rois/name']]
         roi_names.pop(iroi)
 
-
-def update_xrmmap_file(xrmmap):
-    '''update dataset names, version, etc. in xrmmap file'''
-
-    try:
-        xrmmap.attrs['Version']
-    except:
-        xrmmap.attrs['Version'] = '0.0.0'
-
-    if version_ge('2.0.0', xrmmap.attrs['Version']):
-
-        xrmmap['mca1'] = xrmmap['det1']
-        del xrmmap['det1']
-        xrmmap['mca2'] = xrmmap['det2']
-        del xrmmap['det2']
-        xrmmap['mca3'] = xrmmap['det3']
-        del xrmmap['det3']
-        xrmmap['mca4'] = xrmmap['det4']
-        del xrmmap['det4']
-
-        xrmmap['mcasum'] = xrmmap['detsum']
-        del xrmmap['detsum']
-
-        xrmmap.attrs['Version'] = '2.0.0'
+# 
+# def update_xrmmap_file(xrmmap):
+#     '''update dataset names, version, etc. in xrmmap file'''
+# 
+#     version = bytes2str(xrmmap.attrs.get('Version','0.0.0'))
+# 
+#     if version_ge('2.0.0', version):
+# 
+#         xrmmap['mca1'] = xrmmap['det1']
+#         del xrmmap['det1']
+#         xrmmap['mca2'] = xrmmap['det2']
+#         del xrmmap['det2']
+#         xrmmap['mca3'] = xrmmap['det3']
+#         del xrmmap['det3']
+#         xrmmap['mca4'] = xrmmap['det4']
+#         del xrmmap['det4']
+# 
+#         xrmmap['mcasum'] = xrmmap['detsum']
+#         del xrmmap['detsum']
+# 
+#         xrmmap.attrs['Version'] = '2.0.0'
+#     else:
+#         xrmmap.attrs['Version'] = '1.0.0'    
 
 
 def read_xrfmap(filename, root=None):
@@ -3259,30 +3332,6 @@ def read_xrfmap(filename, root=None):
     return GSEXRM_MapFile(**kws)
 
 read_xrmmap = read_xrfmap
-
-
-class DetectorDictionary(object):
-
-    def __init__(self, title=None, raw_path=None, cor_path=None, dtf_path=None,
-             _larch=None, **kws):
-
-        self.title    = title
-        self.raw_path = raw_path
-        self.cor_path = cor_path
-        self.dtf_path = dtf_path
-
-#         if HAS_larch:
-#             Group.__init__(self)
-
-    def __repr__(self):
-        
-        form = 'NAME %s' % self.title
-        for path in (self.raw_path,self.cor_path,self.dtf_path):
-           if path is not None:
-               form = '%s\n     %s' % (form,path)
-        return form 
-
-
 
 def read_fake1(filename, root=None):
     raise GSEXRM_Exception("GSEXMAP Error: %s" % filename)

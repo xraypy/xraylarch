@@ -40,6 +40,7 @@ required_modules = {'numpy': 'numpy',
                     'psutil': 'psutil',
                     'peakutils': 'peakutils',
                     'PIL' : 'pillow',
+                    'asteval': 'asteval',
                     'lmfit': 'lmfit',
                     'termcolor': 'termcolor'}
 

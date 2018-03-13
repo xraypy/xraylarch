@@ -14,7 +14,7 @@ if six.PY3:
 
 from six.moves import input
 
-from lmfit import asteval
+import asteval
 
 from .helper import Helper
 from . import inputText
