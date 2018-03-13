@@ -1773,13 +1773,21 @@ class GSEXRM_MapFile(object):
         detlist = build_detector_list(self.xrmmap)
         for det in detlist:
             detgrp = self.xrmmap[det]
-            
-            if 'mca' in detgrp.attrs['type'].lower():
+                        
+            dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
+            if 'mca' in dettype:
                 self.flag_xrf   = self.check_flag(detgrp)
-            elif 'xrd2d' in detgrp.attrs['type'].lower():
+            elif 'xrd2d' in dettype:
                 self.flag_xrd2d = self.check_flag(detgrp)
-            elif 'xrd1d' in detgrp.attrs['type'].lower():
+            elif 'xrd1d' in dettype:
                 self.flag_xrd1d = self.check_flag(detgrp)
+
+#             if 'mca' in detgrp.attrs['type'].lower():
+#                 self.flag_xrf   = self.check_flag(detgrp)
+#             elif 'xrd2d' in detgrp.attrs['type'].lower():
+#                 self.flag_xrd2d = self.check_flag(detgrp)
+#             elif 'xrd1d' in detgrp.attrs['type'].lower():
+#                 self.flag_xrd1d = self.check_flag(detgrp)
             elif det == 'xrd': ## compatible with old version
                 try:
                     detgrp['data1D']
@@ -2385,7 +2393,11 @@ class GSEXRM_MapFile(object):
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         dgroup = '%ssum' % mcastr
 
-        if isinstance(det,str) or isinstance(det, unicode):
+        try: ## python 2
+            is_str = (isinstance(det,str) or isinstance(det, unicode))   
+        except: ## python 3
+            is_str = isinstance(det,str)
+        if is_str:
             for d in build_detector_list(self.xrmmap):
                 if det.lower() == d.lower():
                     dgroup = d
@@ -2572,7 +2584,7 @@ class GSEXRM_MapFile(object):
             mapdat = self._det_group(det)
         det = os.path.split(mapdat.name)[-1]
 
-        if mapdat.attrs['type'].startswith('xrd'):
+        if bytes2str(mapdat.attrs.get('type', '')).startswith('xrd'):
             dtcorrect = False
         elif tomo:
             dtcorrect = False

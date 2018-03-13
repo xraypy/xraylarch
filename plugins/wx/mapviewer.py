@@ -1867,6 +1867,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.owner.current_file.import_areas(fname)
             self.owner.message('Imported Areas from %s' % fname)
             self.set_area_choices(self.owner.current_file.xrmmap)
+            self.onSelect()
 
     def onSelect(self, event=None):
         try:
@@ -2555,7 +2556,10 @@ class MapViewerFrame(wx.Frame):
                       (DBCONN['dbname'], DBCONN['host']))
             except:
                 etype, emsg, tb = sys.exc_info()
-                print('Could not connect to ScanDB: %s' % (emsg.message))
+                try: ## python 2
+                    print('Could not connect to ScanDB: %s' % (emsg.message))
+                except: ## python 3
+                    print('Could not connect to ScanDB: %s' % (emsg))
                 self.use_scandb = False
 
     def ShowFile(self, evt=None, filename=None,  **kws):
@@ -2736,12 +2740,12 @@ class MapViewerFrame(wx.Frame):
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
             if read:
-                try:
+                if 1==1: #try:
                     xrmfile = GSEXRM_MapFile(filename=str(path))
                     self.add_xrmfile(xrmfile)
-                except:
-                    print('Error reading path: %s' % str(path))
-                    pass
+#                 except:
+#                     print('Error reading path: %s' % str(path))
+#                     pass
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
