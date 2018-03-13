@@ -130,10 +130,10 @@ PLOT_OPERS = ('/', '*', '-', '+')
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
 
-def suppress_hotcols(hotcols_wid, xrmfile):
+def suppress_hotcols(hotcols, xrmfile):
     """returns whether to suppress hot columns"""
     scanversion = getattr(xrmfile, 'scan_version', 1.00)
-    return hotcols_wid.IsChecked() and scanversion < 1.36
+    return (hotcols or scanversion < 1.36)
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -459,10 +459,6 @@ class TomographyPanel(GridPanel):
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-        self.chk_dftcor  = wx.CheckBox(self, label='Correct Deadtime?')
-        self.chk_hotcols = wx.CheckBox(self, label='Ignore First/Last Columns?')
-        self.chk_hotcols.SetValue(False)
-
         self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
         self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
@@ -505,10 +501,8 @@ class TomographyPanel(GridPanel):
         self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
                                                                style=LEFT,  newrow=True)
-        self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
                                                                style=LEFT,  newrow=True)
-        self.Add(self.chk_hotcols,                     dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
@@ -546,8 +540,7 @@ class TomographyPanel(GridPanel):
         for chc in all_choices:
             chc.Disable()
 
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.refine_center):
-            chk.Disable()
+        self.refine_center.Disable()
 
         for btn in (self.tomo_show+[self.tomo_save]):
             btn.Disable()
@@ -570,8 +563,6 @@ class TomographyPanel(GridPanel):
 
         for chc in self.alg_choice: chc.Enable()
 
-        for chk in (self.chk_dftcor,self.chk_hotcols): chk.Enable()
-
         if self.tomo_pkg[0] != '':
             for btn in (self.tomo_show+[self.tomo_save]):
                 btn.Enable()
@@ -586,11 +577,6 @@ class TomographyPanel(GridPanel):
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-        scan_version = getattr(self.cfile, 'scan_version', 2.00)
-        hotcol = True if scan_version < 1.36 else False
-
-        self.chk_hotcols.SetValue(hotcol)
-        self.chk_dftcor.SetValue(True)
 
         if self.cfile.get_rotation_axis() is None:
             self.center_value.SetValue(0)
@@ -721,11 +707,12 @@ class TomographyPanel(GridPanel):
         else:
             flagxrd = True if det_name[0].startswith('xrd') else False
 
-        args={'trim_sino'  : flagxrd,
-              'no_hotcols' : self.chk_hotcols.GetValue(),
-              'dtcorrect'  : self.chk_dftcor.GetValue()}
-
         if xrmfile is None: xrmfile = self.owner.current_file
+
+        args={'trim_sino'  : flagxrd,
+              'no_hotcols' : suppress_hotcols(self.owner.hotcols, xrmfile),
+              'dtcorrect'  : self.owner.dtcor}
+
         x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
         
         if omega is None:
@@ -781,14 +768,10 @@ class TomographyPanel(GridPanel):
 
     def onSaveTomograph(self, event=None):
     
-        detpath = self.sino_data.GetStringSelection()
-        #tomo_center = self.center_value.GetValue()
-        
-        ## sets center (if not already in file)
+        detpath     = self.sino_data.GetStringSelection()
         tomo_center = self.center_value.GetValue()
 
-        dtcorrect = self.chk_dftcor.GetValue()
-        if not dtcorrect and 'scalars' in detpath:
+        if not self.owner.dtcor and 'scalars' in detpath:
             detpath = '%s_raw' % detpath
 
         tomo_alg = [self.alg_choice[0].GetStringSelection(),
@@ -798,7 +781,7 @@ class TomographyPanel(GridPanel):
         print('\nSaving tomographic reconstruction for %s ...' % detpath)
         self.owner.current_file.save_tomograph(detpath, tomo_alg=tomo_alg, 
                                                center=tomo_center,
-                                               dtcorrect=dtcorrect)
+                                               dtcorrect=self.owner.dtcor)
         print(' Saved.')
 
 
@@ -925,10 +908,6 @@ class MapPanel(GridPanel):
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-        self.chk_dftcor  = Check(self, label='Correct Deadtime?')
-        self.chk_hotcols = Check(self, label='Ignore First/Last Columns?')
-        self.chk_hotcols.SetValue(False)
-
         self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
 
         fopts = dict(minval=-20000, precision=0, size=(70, -1))
@@ -966,10 +945,8 @@ class MapPanel(GridPanel):
         self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
         self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
                                                                style=LEFT,  newrow=True)
-        self.Add(self.chk_dftcor,                      dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
                                                                style=LEFT,  newrow=True)
-        self.Add(self.chk_hotcols,  dcol=2, style=RIGHT)
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
         #################################################################################
         self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
@@ -998,7 +975,7 @@ class MapPanel(GridPanel):
 
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+[self.oper]
         for chc in all_choices: chc.Disable()
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Disable()
+        self.limrange.Disable()
         for btn in self.map_show: btn.Disable()
 
     def enable_options(self):
@@ -1012,7 +989,7 @@ class MapPanel(GridPanel):
 
         self.oper.Enable()
 
-        for chk in (self.chk_dftcor,self.chk_hotcols,self.limrange): chk.Enable()
+        self.limrange.Enable()
         for btn in self.map_show: btn.Enable()
 
     def update_xrmmap(self, xrmfile=None):
@@ -1021,11 +998,6 @@ class MapPanel(GridPanel):
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-        scan_version = getattr(self.cfile, 'scan_version', 2.00)
-        hotcol = True if scan_version < 1.36 else False
-
-        self.chk_hotcols.SetValue(hotcol)
-        self.chk_dftcor.SetValue(True)
 
         self.enable_options()
         self.set_det_choices()
@@ -1107,8 +1079,8 @@ class MapPanel(GridPanel):
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
 
-        args={'no_hotcols': self.chk_hotcols.GetValue(),
-              'dtcorrect' : self.chk_dftcor.GetValue()}
+        args={'no_hotcols': suppress_hotcols(self.owner.hotcols, xrmfile),
+              'dtcorrect' : self.owner.dtcor}
 
         if xrmfile is None: xrmfile = self.owner.current_file
 
@@ -1199,9 +1171,9 @@ class MapPanel(GridPanel):
 
 
     def ShowCorrel(self, xrmfile=None, new=True):
-
-        args={'no_hotcols': self.chk_hotcols.GetValue(),
-              'dtcorrect' : self.chk_dftcor.GetValue()}
+        
+        args={'no_hotcols': suppress_hotcols(self.owner.hotcols, xrmfile),
+              'dtcorrect' : self.owner.dtcor}
 
         if xrmfile is None: xrmfile = self.owner.current_file
 
@@ -1523,7 +1495,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                                 action=partial(self.onXRF, as_mca2=True))
         self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
-        self.cor = Check(pane, label='Correct Deadtime?')
+#         self.cor = Check(pane, label='Correct Deadtime?')
         legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
 
         ######################################
@@ -1560,7 +1532,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         sizer.Add(self.xrf,                 ( 7, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                ( 7, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.cor,                 ( 7, 4), (1, 2), ALL_LEFT, 2)
+#         sizer.Add(self.cor,                 ( 7, 4), (1, 2), ALL_LEFT, 2)
 
         sizer.Add(self.onreport,            ( 8, 0), (1, 2), ALL_LEFT, 2)
 
@@ -1970,11 +1942,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         tomo_area = area.attrs.get('tomograph',False)
         label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
-        dtcorrect = self.cor.IsChecked()
+
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         mca_thread = Thread(target=self._getmca_area, args=(aname,),
-                            kwargs={'dtcorrect': dtcorrect, 'tomo': tomo_area})
+                            kwargs={'dtcorrect': self.owner.dtcor, 'tomo': tomo_area})
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
@@ -2115,7 +2087,10 @@ class MapViewerFrame(wx.Frame):
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
         self.files_in_progress = []
-        self.no_hotcols = True
+
+        self.hotcols = False
+        self.dtcor   = True
+
         self.SetTitle('GSE XRM MapViewer')
 
         self.createMainPanel()
@@ -2439,7 +2414,7 @@ class MapViewerFrame(wx.Frame):
         save_callback = self.onSavePixel if _savecallback else None
 
         if x is not None:
-            if self.no_hotcols and map.shape[1] != x.shape[0]:
+            if self.hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
 
         while not displayed:
@@ -2591,9 +2566,28 @@ class MapViewerFrame(wx.Frame):
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
-        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W',  'Watch HDF5 Files', kind=wx.ITEM_CHECK)
-        fmenu.Check(mid, False)
+        fmenu.Append(mid,  'Correct Deadtime', 
+                     'Correct Deadtime',
+                     kind=wx.ITEM_CHECK)
+        fmenu.Check(mid, self.dtcor) ## True
+        self.Bind(wx.EVT_MENU, self.onCorrectDeadtime, id=mid)
+        
+        mid = wx.NewId()
+        fmenu.Append(mid,  'Ignore First/Last Columns',
+                     'Ignore First/Last Columns',
+                     kind=wx.ITEM_CHECK)
+        fmenu.Check(mid, self.hotcols) ## False
+        self.Bind(wx.EVT_MENU, self.onHotColumns, id=mid)
+
+        mid = wx.NewId()
+        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W', 
+                     'Watch HDF5 Files',
+                     kind=wx.ITEM_CHECK)
+        fmenu.Check(mid, self.watch_files) ## False
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
+
+        fmenu.AppendSeparator()
+        
 
         MenuItem(self, fmenu, '&Quit\tCtrl+Q',
                   'Quit program', self.onClose)
@@ -2804,19 +2798,20 @@ class MapViewerFrame(wx.Frame):
         mkak 2016.07.21
         """
 
-        myDlg = OpenPoniFile()
-        read = False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = myDlg.XRDInfo[1].GetValue()
-            flip = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
-        myDlg.Destroy()
+        if len(self.filemap) > 0:
+            myDlg = OpenPoniFile()
+            read = False
+            if myDlg.ShowModal() == wx.ID_OK:
+                read = True
+                path = myDlg.XRDInfo[1].GetValue()
+                flip = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
+            myDlg.Destroy()
 
-        if read:
-            self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
-            for p in self.nbpanels:
-                if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(xrmfile=self.current_file)
+            if read:
+                self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
+                for p in self.nbpanels:
+                    if hasattr(p, 'update_xrmmap'):
+                        p.update_xrmmap(xrmfile=self.current_file)
 
     def defineROI(self, event=None):
 
@@ -2824,57 +2819,83 @@ class MapViewerFrame(wx.Frame):
             print( 'cannot open file while processing a map folder')
             return
 
-        myDlg = ROIPopUp(self)
+        if len(self.filemap) > 0:
+            myDlg = ROIPopUp(self)
 
-        path, read = None, False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read        = True
-        myDlg.Destroy()
+            path, read = None, False
+            if myDlg.ShowModal() == wx.ID_OK:
+                read        = True
+            myDlg.Destroy()
 
-        if read:
-            for p in self.nbpanels:
-                if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(xrmfile=self.current_file)
+            if read:
+                for p in self.nbpanels:
+                    if hasattr(p, 'update_xrmmap'):
+                        p.update_xrmmap(xrmfile=self.current_file)
 
     def add1DXRDFile(self, event=None):
 
-        read = False
-        wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Select 1D-XRD ROI file',
-                           defaultDir=os.getcwd(),
-                           wildcard=wildcards,
-                           style=wx.FD_OPEN)
+        if len(self.filemap) > 0:
+            read = False
+            wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
+            dlg = wx.FileDialog(self, message='Select 1D-XRD ROI file',
+                               defaultDir=os.getcwd(),
+                               wildcard=wildcards,
+                               style=wx.FD_OPEN)
 
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
+            if dlg.ShowModal() == wx.ID_OK:
+                read = True
+                path = dlg.GetPath().replace('\\', '/')
+            dlg.Destroy()
 
-        if read and os.path.exists(path):
-            time.sleep(1) ## will hopefully allow time for dialog window to close
-            self.current_file.read_xrd1D_ROIFile(path)
+            if read and os.path.exists(path):
+                time.sleep(1) ## will hopefully allow time for dialog window to close
+                self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
         
-        xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
-        poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
-        
-        if not os.path.exists(poni_path):
-            self.openPONI()
+        if len(self.filemap) > 0:
+            xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
+        
+            if not os.path.exists(poni_path):
+                self.openPONI()
+                poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
 
-        if os.path.exists(poni_path):
-            self.current_file.add_1DXRD()
+            if os.path.exists(poni_path):
+                self.current_file.add_1DXRD()
+
+
+    def onCorrectDeadtime(self, event=None):
+        
+        self.dtcor = event.IsChecked()
+        if self.dtcor:
+            msg = 'Using deadtime corrected data...'
+        else:
+            msg = 'Using raw data...'
+        self.message(msg)
+        ##print(msg)
+
+    def onHotColumns(self, event=None):
+        
+        self.hotcols = event.IsChecked()
+        if self.hotcols:
+            msg = 'Ignoring first/last data columns.'
+        else:
+            msg = 'Using all data columns'
+        self.message(msg)
+        ##print(msg)
 
     def onWatchFiles(self, event=None):
+
         self.watch_files = event.IsChecked()
         if not self.watch_files:
             self.file_timer.Stop()
-            self.message('Watching Files/Folders for Changes: Off')
+            msg = 'Watching Files/Folders for Changes: Off'
         else:
             self.file_timer.Start(5000)
-            self.message('Watching Files/Folders for Changes: On')
-
+            msg = 'Watching Files/Folders for Changes: On'
+        self.message(msg)
+        ##print(msg)
 
     def onFileWatchTimer(self, event=None):
         for filename in self.filemap:
