@@ -15,6 +15,7 @@ try:
 except:
     PyDeadObjectError = Exception
 import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.scrolledpanel as scrolled
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -692,53 +693,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def Build_ConfigPanel(self):
         '''config panel for left-hand-side of frame: RGB Maps'''
-
-# #         FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-# # 
-# #         bsizer = wx.BoxSizer(wx.VERTICAL)
-# #         nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
-# #         
-# #         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-# # 
-# #         icol = 0
-# #         if self.config_mode == 'rgb':
-# #             for iframe in self.tomo_frame:
-# #                 csizer = wx.BoxSizer(wx.VERTICAL)
-# #                 for i,col in enumerate(RGB_COLORS):
-# #                     self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                             iframe.panel,
-# #                                                             title='%s - %s: ' % (iframe.label,col.title()),
-# #                                                             color=i,
-# #                                                             default=col,
-# #                                                             colormap_list=None)
-# # 
-# #                     csizer.Add(self.cmap_panels[icol], 0, lsty, 2)
-# #                     csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
-# #                                             style=wx.LI_HORIZONTAL), 0, lsty, 2)
-# #                     icol += 1
-# # #                 nb.AddPage(csizer, iframe.label)
-# # 
-# # 
-# #         else:
-# #             for iframe in self.tomo_frame:
-# #                 csizer = wx.BoxSizer(wx.VERTICAL)
-# #                 self.cmap_panels[icol] =  ColorMapPanel(self.config_panel,
-# #                                                         iframe.panel,
-# #                                                         title='%s: ' % iframe.label,
-# #                                                         default='gray',
-# #                                                         colormap_list=ColorMap_List)
-# # 
-# #                 csizer.Add(self.cmap_panels[icol],  0, lsty, 1)
-# #                 csizer.Add(wx.StaticLine(self.config_panel, size=(100, 2),
-# #                                         style=wx.LI_HORIZONTAL), 0, lsty, 2)
-# #                 icol += 1
-# # #                 nb.AddPage(csizer, iframe.label)
-# # 
-# #         bsizer.Add(nb, 0, lsty, 1)
-# #         cust = self.CustomConfig(self.config_panel, None, 0)
-# #         if cust is not None:
-# #             bsizer.Add(cust, 0, lsty, 1)
-# #         pack(self.config_panel, bsizer)
         
         csizer = wx.BoxSizer(wx.VERTICAL)
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
@@ -789,7 +743,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             iframe.panel.redraw()
 
 
-    def add_highlight_area(self, mask, label=None, col=0):
+    def add_highlight_area(self, mask0, label=None, col=0):
         """add a highlighted area -- outline an arbitrarily shape --
         as if drawn from a Lasso event.
 
@@ -798,14 +752,15 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         """
         
         panel = None
-        swmask = np.swapaxes(mask,0,1)
+
         for iframe in self.tomo_frame:
             imap_size = iframe.map.shape[:2]
-            if imap_size == mask.shape or imap_size == swmask.shape:
-                panel = iframe.panel
+            for imask in (mask0,np.swapaxes(mask0,0,1)):
+               if imap_size == imask.shape:
+                  panel = iframe.panel
+                  mask = imask
 
         if panel is not None:
-            mask = swmask # np.swapaxes(mask,0,1)
             patch = mask * np.ones(mask.shape) * 0.9
             cmap = panel.conf.cmap[col]
             area = panel.axes.contour(patch, cmap=cmap, levels=[0, 1])
@@ -825,7 +780,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     l.set_color(col)
 
             panel.canvas.draw()
-
 
     def CustomConfig(self, panel, sizer=None, irow=0):
         '''
