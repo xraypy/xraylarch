@@ -641,7 +641,7 @@ class TomographyPanel(GridPanel):
             try:
                 roi = self.cfile.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
-                units = roi['limits'].attrs['units']
+                units = bytes2str(roi['limits'].attrs.get('units',''))
                 if units == '1/A':
                     roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
                 else:
@@ -1052,7 +1052,7 @@ class MapPanel(GridPanel):
             try:
                 roi = self.cfile.xrmmap['roimap'][detname][roiname]
                 limits = roi['limits'][:]
-                units = roi['limits'].attrs['units']
+                units =  bytes2str(roi['limits'].attrs.get('units',''))
                 roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
             except:
                 roistr = ''
@@ -1323,25 +1323,22 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             diff =  d2 - d1 if d2 > d1 else d1 - d2
             return diff.days,diff.seconds
 
-        try:
-            time_str = xrmmap['config/notes'].attrs['h5_create_time']
-        except:
-            time_str = ''
+        config_grp = ensure_subgroup('config',xrmmap)
+        notes_grp =  ensure_subgroup('notes',config_grp)
+        time_str =  bytes2str(notes_grp.attrs.get('h5_create_time',''))
 
         self.wids['H5 Map Created'].SetLabel(time_str)
 
         try:
-            d,s = time_between(xrmmap['config/notes'].attrs['scan_start_time'],
-                               xrmmap['config/notes'].attrs['scan_end_time'])
+            d,s = time_between(bytes2str(notes_grp.attrs.get('scan_start_time','')),
+                               bytes2str(notes_grp.attrs.get('scan_end_time','')))
             time_str =  str(datetime.timedelta(days=d,seconds=s))
         except:
-            time_str = bytes2str(xrmmap.attrs['Start_Time'])
-        self.wids['Scan Time'].SetLabel( time_str )
+            time_str = bytes2str(xrmmap.attrs.get('Start_Time',''))
 
-        try:
-            self.wids['File Compression'].SetLabel( bytes2str(xrmmap.attrs['Compression']))
-        except:
-            self.wids['File Compression'].SetLabel('')
+        self.wids['Scan Time'].SetLabel( time_str )
+        self.wids['File Compression'].SetLabel(bytes2str(xrmmap.attrs.get('Compression','')))
+
 
         comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
         for i, comm in enumerate(comments):
@@ -1427,35 +1424,36 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
         self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
 
-        folderpath = bytes2str(xrmmap.attrs['Map_Folder'])
+        folderpath = bytes2str(xrmmap.attrs.get('Map_Folder',''))
         if len(folderpath) > 35:
-            folderpath = '...'+bytes2str(xrmmap.attrs['Map_Folder'][-35:])
-        self.wids['Original data path'].SetLabel('%s' % folderpath)
+            folderpath = '...'+folderpath[-35:]
+        self.wids['Original data path'].SetLabel(folderpath)
 
         self.wids['XRD Calibration'].SetLabel('')
-        try:
-            xrd_calibration = xrmmap['xrd1D'].attrs['calfile']
-            if os.path.exists(xrd_calibration):
-                self.wids['XRD Calibration'].SetLabel('%s' % os.path.split(xrd_calibration)[-1])
-        except:
-            pass
+        xrd_calibration = bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))
+        if not os.path.exists(xrd_calibration):
+            xrd_calibration = ''
+        self.wids['XRD Calibration'].SetLabel(os.path.split(xrd_calibration)[-1])
 
-        try:
-            notegrp = xrmmap['config/notes']
-        except:
-            notegrp = None
+        notes = {}
+        config_grp = ensure_subgroup('config',xrmmap)
+        notes_grp =  ensure_subgroup('notes',config_grp)
+        for key,val in dict(notes_grp.attrs).iteritems():
+            notes[key] = bytes2str(val)
 
-        if notegrp is not None:
-            self.wids['Facility'].SetLabel('%s @ %s' % (notegrp.attrs['beamline'],
-                                                        notegrp.attrs['facility']))
-            self.wids['Run Cycle'].SetLabel(notegrp.attrs['run'])
-            self.wids['Proposal Number'].SetLabel(notegrp.attrs['proposal'])
-            self.wids['User group'].SetLabel(notegrp.attrs['user'])
-        else:
-            self.wids['Facility'].SetLabel('')
-            self.wids['Run Cycle'].SetLabel('')
-            self.wids['Proposal Number'].SetLabel('')
-            self.wids['User group'].SetLabel('')
+        note_title = ['Facility','Run Cycle','Proposal Number','User group']
+        note_str = ['','','','']
+        if 'beamline' in notes and 'facility' in notes:
+            note_str[0] = '%s @ %s' % (notes['beamline'],notes['facility'])
+        if 'run' in notes:
+            note_str[1] = notes['run']
+        if 'proposal' in notes:
+            note_str[2] = notes['proposal']
+        if 'user' in notes:
+            note_str[3] = notes['user']
+    
+        for title,note in zip(note_title,note_str):
+            self.wids[title].SetLabel(note)
 
         xrmfile.reset_flags()
         if xrmfile.flag_xrf:
@@ -1517,7 +1515,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ######################################
         ## SPECIFIC TO XRF MAP AREAS
-        self.onstats  = Button(pane, 'Calculate Stats', size=(135, -1),
+        self.onstats  = Button(pane, 'Calculate XRF Stats', size=(135, -1),
                                                 action=self.onShowStats)
         self.xrf      = Button(pane, 'Show XRF (Fore)', size=(135, -1),
                                                 action=self.onXRF)
@@ -1661,7 +1659,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 
         if 'roistats' in area.attrs:
-           for dat in json.loads(area.attrs['roistats']):
+           for dat in json.loads(area.attrs.get('roistats','')):
                dat = tuple(dat)
                self.report_data.append(dat)
                self.report.AppendItem(dat)
@@ -1670,29 +1668,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         version = xrmmap.attrs.get('Version','1.0.0')
 
+
         if version_ge(version, '2.0.0'):
-
-            d_dets = [d for d in xrmmap['roimap'] if 'sum' not in d and 'xrd' not in d]
-
-            det0 = xrmmap['roimap'][d_dets[0]]
-
-            d_rois = [d for d in det0]
-            d_lims = [det0[roi]['limits'][0] for roi in d_rois]
-
-            d_rois =  [roi for lim,roi in sorted(zip(d_lims,d_rois))]
-            d_lims =  [lim for lim,roi in sorted(zip(d_lims,d_rois))]
-
             d_scas = [d for d in xrmmap['scalars']]
+            d_dets = [d for d in xrmmap['roimap'] if 'sum' not in d and 'xrd' not in d]
+            d_rois = xrmfile.get_roi_list(d_dets[0])
             ndet = 'mca'
-
         else:
-
             d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
             d_names = [d for d in xrmmap['roimap/det_name']]
             ndet = 'det'
 
-
-        for i in range(xrmmap.attrs['N_Detectors']):
+        for i in range(xrmmap.attrs.get('N_Detectors',0)):
             tname = '%s%i/realtime' % (ndet,i+1)
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
@@ -1752,11 +1739,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ## checks for calibration file if calibration file provided
         if xrmfile.flag_xrd2d and not flag1dxrd:
-            try:
-                if os.path.exists(xrmmap['xrd1D'].attrs['calfile']):
-                    flag1dxrd = True
-            except:
-                pass
+            if os.path.exists(bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))):
+                flag1dxrd = True
 
         ## sets saving/plotting buttons in accordance with available data
         if xrmfile.flag_xrd2d:
@@ -2026,11 +2010,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
-        try:
-            ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs['calfile'])
-            ponifile = ponifile if os.path.exists(ponifile) else None
-        except:
-            ponifile = None
+        ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))
+        ponifile = ponifile if os.path.exists(ponifile) else None
 
         if show:
             self.owner.message('Plotting XRD pattern for \'%s\'...' % title)
@@ -2492,12 +2473,10 @@ class MapViewerFrame(wx.Frame):
         displays 2D XRD pattern in diFFit viewer
         '''
         flptyp = 'vertical' if flip is True else False
-        poni = ''
-        try:
-            poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs['calfile'])
-        except:
-            pass
-        if not os.path.exists(poni): poni = None
+
+        poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs.get('calfile',''))
+        if not os.path.exists(poni):
+            poni = None
 
         if self.xrddisplay2D is None:
             self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
@@ -2876,13 +2855,15 @@ class MapViewerFrame(wx.Frame):
             self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
-        try:
-            xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
-            path = xrd1Dgrp.attrs['calfile']
-        except:
+        
+        xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
+        poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
+        
+        if not os.path.exists(poni_path):
             self.openPONI()
+            poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
 
-        if os.path.exists(xrd1Dgrp.attrs['calfile']):
+        if os.path.exists(poni_path):
             self.current_file.add_1DXRD()
 
     def onWatchFiles(self, event=None):
@@ -3156,7 +3137,7 @@ class ROIPopUp(wx.Dialog):
 
         roi = self.cfile.xrmmap['roimap'][detname][roiname]
         limits = roi['limits'][:]
-        units = roi['limits'].attrs['units']
+        units = bytes2str(roi['limits'].attrs.get('units',''))
 
         if units == '1/A':
             roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
