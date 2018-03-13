@@ -681,6 +681,7 @@ class diFFit2DFrame(wx.Frame):
             myDlg.Destroy()
         else:
             print('Data and calibration files must be available for this function.')
+            return
 
         if read:
             if save:
@@ -719,12 +720,12 @@ class diFFit2DFrame(wx.Frame):
                 if self.xrddisplay1D is None:
                     self.xrddisplay1D = diFFit1DFrame()
 
-                attrs = {}
+                kwargs = {}
                 wvlngth = read_lambda(self.calfile)
-                attrs.update({'wavelength':wvlngth,'energy':E_from_lambda(wvlngth)})
-                attrs.update({'label':self.open_image[self.ch_img.GetSelection()].label})
-                data1dxrd = xrd1d(**attrs)
-                data1dxrd.xrd_from_2d(data1D,'q')
+                kwargs.update({'wavelength':wvlngth,'energy':E_from_lambda(wvlngth)})
+                kwargs.update({'label':self.open_image[self.ch_img.GetSelection()].label})
+                data1dxrd = xrd1d(**kwargs)
+                data1dxrd.xrd_from_2d(data1D,attrs['unit'])
 
                 try:
                     self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
@@ -736,8 +737,8 @@ class diFFit2DFrame(wx.Frame):
                     for lmts,q,cnts in zip(lmts_wdg,xrdq_wdg,xrd1d_wdg):
                         label = '%s (%i to %i deg)' % (self.open_image[self.ch_img.GetSelection()].label,
                                                         (lmts[0]+180), (lmts[1]+180))
-                        attrs.update({'label':label})
-                        data1dxrd = xrd1d(**attrs)
+                        kwargs.update({'label':label})
+                        data1dxrd = xrd1d(**kwargs)
                         data1dxrd.xrd_from_2d([q,cnts],'q')
                         self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
                 self.xrddisplay1D.Show()

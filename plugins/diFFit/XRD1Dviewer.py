@@ -2170,7 +2170,7 @@ class Viewer1DXRD(wx.Panel):
         self.xy_scale.append(np.max(self.xy_data[-1].I))
 
         self.xy_plot.append(self.xy_data[-1].all_data())
-
+        
         ## Plot data (x,y)
         xi = self.ch_xaxis.GetSelection()
         datarg = {'xlabel':self.xlabel,'ylabel':self.ylabel,'label':datalabel,'marker':'',
