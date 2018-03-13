@@ -150,7 +150,7 @@ def reshape_sinogram(A,x=[],omega=[]):
              A = np.einsum('kij->ijk', A)
         if len(x) == A.shape[1]:
              A = np.einsum('ikj->ijk', A)
-        sinogram_order = len(omega) == A.shape[1]     
+    sinogram_order = len(omega) == A.shape[1]     
     
     return A,sinogram_order
 
@@ -228,7 +228,6 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
         args.update({'center':center,
                      'algorithm':tomo_alg[1],
                      'sinogram_order':sinogram_order})
-
         tomo = tomopy.recon(sino, np.radians(omega),**args)
 
     return center,tomo

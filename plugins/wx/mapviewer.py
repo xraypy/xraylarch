@@ -140,7 +140,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
     label  = 'Map Math'
     def __init__(self, parent, owner, **kws):
-        self.map = None
+
+        self.map   = None
         self.cfile = None
 
         scrolled.ScrolledPanel.__init__(self, parent, -1,
@@ -202,7 +203,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                                           size=(200, -1))
             self.varrange[varname] = vrange = SimpleText(self, 'Range = [   :    ]',
                                                           size=(200, -1))
-            vcor.SetValue(1)
+            vcor.SetValue(self.owner.dtcor)
             vdet.SetSelection(0)
 
             ir += 1
@@ -710,7 +711,7 @@ class TomographyPanel(GridPanel):
         if xrmfile is None: xrmfile = self.owner.current_file
 
         args={'trim_sino'  : flagxrd,
-              'no_hotcols' : suppress_hotcols(self.owner.hotcols, xrmfile),
+              'no_hotcols' : self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
               'dtcorrect'  : self.owner.dtcor}
 
         x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
@@ -1079,7 +1080,7 @@ class MapPanel(GridPanel):
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
 
-        args={'no_hotcols': suppress_hotcols(self.owner.hotcols, xrmfile),
+        args={'no_hotcols': self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
               'dtcorrect' : self.owner.dtcor}
 
         if xrmfile is None: xrmfile = self.owner.current_file
@@ -1172,7 +1173,7 @@ class MapPanel(GridPanel):
 
     def ShowCorrel(self, xrmfile=None, new=True):
         
-        args={'no_hotcols': suppress_hotcols(self.owner.hotcols, xrmfile),
+        args={'no_hotcols': self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
               'dtcorrect' : self.owner.dtcor}
 
         if xrmfile is None: xrmfile = self.owner.current_file
@@ -1959,7 +1960,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
-    def onXRD(self, event=None, save=False, show=False, xrd1d=False, xrd2d=False):
+    def onXRD(self, event=None, save=False, show=False, xrd1d=False, xrd2d=False, verbose=True):
 
         try:
             aname = self._getarea()
@@ -1974,12 +1975,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 if 'mono.energy' in str(name).lower():
                     energy = float(val)/1000.
         except:
-            print('No map file and/or areas specified.')
+            if verbose:
+                print('No map file and/or areas specified.')
             return
 
         xrmfile.reset_flags()
         if not xrmfile.flag_xrd1d and not xrmfile.flag_xrd2d:
-            print('No XRD data in map file: %s' % self.owner.current_file.filename)
+            if verbose:
+                print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
         ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))
@@ -2090,6 +2093,7 @@ class MapViewerFrame(wx.Frame):
 
         self.hotcols = False
         self.dtcor   = True
+        self.showxrd = False
 
         self.SetTitle('GSE XRM MapViewer')
 
@@ -2231,32 +2235,11 @@ class MapViewerFrame(wx.Frame):
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
-
-
-#         print 'HERE IS WHERE I NEED TO ADD IN XRD DATA CALCULATION AND DISPLAY.'
-        ######
-#         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
-#         mca_thread = Thread(target=self.get_mca_area,
-#                             args=(mask,), kwargs=kwargs)
-#         mca_thread.start()
-#         self.show_XRFDisplay()
-#         mca_thread.join()
-# 
-#         ## this is new
-#         if hasattr(self, 'sel_xrd'):
-#             path, fname = os.path.split(xrmfile.filename)
-#             aname = self.sel_mca.areaname
-#             area  = xrmfile.xrmmap['areas/%s' % aname]
-#             npix  = len(area.value[np.where(area.value)])
-#             self.sel_mca.filename = fname
-#             self.sel_mca.title = aname
-#             self.sel_mca.npixels = npix
-#             self.xrfdisplay.plotmca(self.sel_mca)
-# 
-#             for p in self.nbpanels:
-#                 if hasattr(p, 'update_xrmmap'):
-#                     p.update_xrmmap(xrmfile=self.current_file)
-
+                    
+        if self.showxrd:
+            for p in self.nbpanels:
+                if hasattr(p, 'onXRD'):
+                    p.onXRD(show=True, xrd1d=True,verbose=False)
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
@@ -2586,6 +2569,13 @@ class MapViewerFrame(wx.Frame):
         fmenu.Check(mid, self.watch_files) ## False
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
 
+        mid = wx.NewId()
+        fmenu.Append(mid,  'Display 1DXRD for areas', 
+                     'Display 1DXRD for areas',
+                     kind=wx.ITEM_CHECK)
+        fmenu.Check(mid, self.showxrd) ## False
+        self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=mid)
+
         fmenu.AppendSeparator()
         
 
@@ -2864,7 +2854,16 @@ class MapViewerFrame(wx.Frame):
             if os.path.exists(poni_path):
                 self.current_file.add_1DXRD()
 
-
+    def onShow1DXRD(self, event=None):
+        
+        self.showxrd = event.IsChecked()
+        if self.showxrd:
+            msg = 'Show 1DXRD data for area'
+        else:
+            msg = 'Not displaying 1DXRD for area'
+        self.message(msg)
+        ##print(msg)
+   
     def onCorrectDeadtime(self, event=None):
         
         self.dtcor = event.IsChecked()
