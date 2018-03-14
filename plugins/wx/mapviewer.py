@@ -130,12 +130,6 @@ PLOT_OPERS = ('/', '*', '-', '+')
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
 
-def suppress_hotcols(hotcols, xrmfile):
-    """returns whether to suppress hot columns"""
-    scanversion = getattr(xrmfile, 'scan_version', 1.00)
-    return (hotcols or scanversion < 1.36)
-
-
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
     label  = 'Map Math'
@@ -710,11 +704,12 @@ class TomographyPanel(GridPanel):
 
         if xrmfile is None: xrmfile = self.owner.current_file
 
-        args={'trim_sino'  : flagxrd,
-              'no_hotcols' : self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
-              'dtcorrect'  : self.owner.dtcor}
+        args={'trim_sino' : flagxrd,
+              'hotcols'   : self.owner.hotcols,
+              'dtcorrect' : self.owner.dtcor}
 
-        x,omega = xrmfile.get_translation_axis(),xrmfile.get_rotation_axis()
+        x     = xrmfile.get_translation_axis(hotcols=args['hotcols'])
+        omega = xrmfile.get_rotation_axis(hotcols=args['hotcols'])
         
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
@@ -769,6 +764,7 @@ class TomographyPanel(GridPanel):
 
     def onSaveTomograph(self, event=None):
     
+        xrmfile = self.owner.current_file
         detpath     = self.sino_data.GetStringSelection()
         tomo_center = self.center_value.GetValue()
 
@@ -780,10 +776,11 @@ class TomographyPanel(GridPanel):
                     self.alg_choice[2].GetStringSelection()]
 
         print('\nSaving tomographic reconstruction for %s ...' % detpath)
-        self.owner.current_file.save_tomograph(detpath, tomo_alg=tomo_alg, 
-                                               center=tomo_center,
-                                               dtcorrect=self.owner.dtcor)
-        print(' Saved.')
+
+        xrmfile.save_tomograph(detpath, tomo_alg=tomo_alg, 
+                               center=tomo_center,dtcorrect=self.owner.dtcor,
+                               hotcols=self.owner.hotcols)
+        print('Saved.')
 
 
     def onShowTomograph(self, event=None, new=True):
@@ -798,14 +795,14 @@ class TomographyPanel(GridPanel):
         tomo_alg = [self.alg_choice[0].GetStringSelection(),
                     self.alg_choice[1].GetStringSelection(),
                     self.alg_choice[2].GetStringSelection()]
-        
+                
         args = {'refine_center'  : self.refine_center.GetValue(),
                 'center_range'   : self.center_range.GetValue(),
                 'center'         : tomo_center,
                 'tomo_alg'       : tomo_alg,
                 'sinogram_order' : sino_order,
-                'omega'          : ome
-               }
+                'omega'          : ome,
+                'hotcols'        : self.owner.hotcols}
 
         tomo = xrmfile.get_tomograph(sino, **args)
         
@@ -828,8 +825,6 @@ class TomographyPanel(GridPanel):
 
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
-
-
 
         self.owner.display_tomo(sino,tomo,title=title,det=det)                               
 
@@ -1079,11 +1074,11 @@ class MapPanel(GridPanel):
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
-
-        args={'no_hotcols': self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
-              'dtcorrect' : self.owner.dtcor}
-
+        
         if xrmfile is None: xrmfile = self.owner.current_file
+
+        args={'hotcols'   : self.owner.hotcols,
+              'dtcorrect' : self.owner.dtcor}
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -1172,11 +1167,11 @@ class MapPanel(GridPanel):
 
 
     def ShowCorrel(self, xrmfile=None, new=True):
-        
-        args={'no_hotcols': self.owner.hotcols, ##suppress_hotcols(self.owner.hotcols, xrmfile),
-              'dtcorrect' : self.owner.dtcor}
 
         if xrmfile is None: xrmfile = self.owner.current_file
+
+        args={'hotcols'   : self.owner.hotcols,
+              'dtcorrect' : self.owner.dtcor}
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -1712,7 +1707,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ## checks for calibration file if calibration file provided
         if xrmfile.flag_xrd2d and not flag1dxrd:
-            if os.path.exists(bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))):
+            if os.path.exists(bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))):
                 flag1dxrd = True
 
         ## sets saving/plotting buttons in accordance with available data

@@ -27,9 +27,9 @@ import matplotlib.pyplot as plt
 import larch
 from larch import Group
 from larch.larchlib import read_workdir, save_workdir
+from larch.utils.strutils import bytes2str
 
-from larch_plugins.io import tifffile
-from larch_plugins.io import nativepath
+from larch_plugins.io import tifffile, nativepath
 from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                                calc_cake,twth_from_q,twth_from_d,
@@ -43,8 +43,6 @@ from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
 VERSION = '1 (03-April-2017)'
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 PIXELS = 1024 #2048
-# CURSOR_MODES = ['zoom','lasso','prof']
-# CURSOR_LABEL = ['zoom','ROI select','click']
 
 QSTPS = 5000
 
@@ -87,16 +85,16 @@ class diFFit2DPanel(wx.Panel):
     def on_cursor(self,x=None, y=None, **kw):
 
         if self.ai is not None:
-            self.owner.twth = twth_from_xy(x,y,ai=self.ai)
+            if self.type == 'cake':
+                self.owner.twth = self.plot2D.xdata[int(x)]
+                
+                self.owner.xrd2Dcake.plot_line(x=x)
+                self.owner.xrd2Dviewer.plot_ring()
+            else:
+                self.owner.twth = twth_from_xy(x,y,ai=self.ai)
 
-            self.owner.xrd2Dviewer.plot_ring(x=x,y=y)
-            self.owner.xrd2Dcake.plot_line()
-
-        elif self.type == 'cake':
-            self.owner.twth = self.plot2D.xdata[int(x)]
-
-            self.owner.xrd2Dcake.plot_line(x=x)
-            self.owner.xrd2Dviewer.plot_ring()
+                self.owner.xrd2Dviewer.plot_ring(x=x,y=y)
+                self.owner.xrd2Dcake.plot_line()
         else:
             return
 
@@ -159,7 +157,6 @@ class diFFit1DPanel(wx.Panel):
         self.owner.xrd1Dviewer.plot_line(x=x)
         self.owner.xrd2Dviewer.plot_ring()
         self.owner.xrd2Dcake.plot_line()
-
 
     def plot_line(self,x=None):
 
@@ -300,7 +297,7 @@ class diFFit2DFrame(wx.Frame):
         dlg.Destroy()
 
         if read:
-            print('Reading XRD image file:\n\t%s' % path)
+            print('\nReading XRD image file: %s' % path)
 
             image,xrmfile = None,None
             try:
@@ -322,7 +319,7 @@ class diFFit2DFrame(wx.Frame):
 
         img_no = self.ch_img.GetSelection()
         try:
-            print('Closing XRD image file:\n\t%s' % self.open_image[img_no].path)
+            print('Closing XRD image file: %s' % self.open_image[img_no].path)
             try:
                 self.open_image[img_no].h5file.close()
             except:
@@ -344,13 +341,19 @@ class diFFit2DFrame(wx.Frame):
         self.write_message('Displaying image: %s' % iname, panel=0)
 
         try:
-            self.open_image.append(XRDImg(label=iname, path=path, image=image, h5file=h5file))
-            if self.open_image[-1].calfile is not None:
+            new_img = XRDImg(label=iname, path=path, image=image, h5file=h5file)
+        except:
+            fail_msg = 'Image failed to load.'
+            self.write_message(fail_msg, panel=0)
+            print (fail_msg)
+            return
+            
+        self.open_image.append(new_img)
+        
+        if self.open_image[-1].calfile is not None:
+            if os.path.exists(self.open_image[-1].calfile):
                 self.calfile = self.open_image[-1].calfile
                 self.xrd2Dviewer.on_calibration()
-        except:
-            self.write_message('Image failed to load.', panel=0)
-            return
 
 
         self.ch_img.Set([image.label for image in self.open_image])
@@ -460,20 +463,9 @@ class diFFit2DFrame(wx.Frame):
         if xi == 2: self.xrd1Dviewer.plot1D.axes.set_xlim(np.min(self.data1dxrd[xi]), 6)
         self.xrd1Dviewer.plot1D.draw()
 
-#         self.cake = calc_cake(self.plt_img, self.calfile, unit=XLABEL[xi], xsteps=QSTPS, ysteps=QSTPS)
-#         self.xrd2Dcake.plot2D.display(self.cake[0],x=self.cake[1],y=self.cake[2],
-#                                           xlabel=XLABEL[xi],ylabel='eta')
-# #         self.xrd2Dcake.plot2D.xlab = XLABEL[xi]
-# #         self.xrd2Dcake.plot2D.xdata = self.data1dxrd[xi]
-
 
 ##############################################
 #### IMAGE DISPLAY FUNCTIONS
-
-    def setCursorMode(self,event=None):
-
-        print('changing cursor mode for all figures')
-
 
     def calcIMAGE(self):
         if self.use_mask is True:
@@ -758,7 +750,6 @@ class diFFit2DFrame(wx.Frame):
                 self.panel2D.Layout()
                 self.Fit()
                 self.SetSize((1400,720))
-#                 self.SetSize((1400,760))
 
                 tools1dxrd = self.ToolBox_1DXRD(self.panel)
                 self.leftside.Add(tools1dxrd,flag=wx.ALL|wx.EXPAND,border=10)
@@ -767,7 +758,6 @@ class diFFit2DFrame(wx.Frame):
                 self.panel2D.Layout()
                 self.Fit()
                 self.SetSize((1400,720))
-#                 self.SetSize((1400,760))
 
             self.btn_integ.Enable()
 
@@ -1233,18 +1223,6 @@ class diFFit2DFrame(wx.Frame):
         vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM,                border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
-#
-#         ###########################
-#         ## Cursor
-#         hbox_csr = wx.BoxSizer(wx.HORIZONTAL)
-#         self.txt_csr = wx.StaticText(self.panel, label='CURSOR MODE')
-#         self.ch_csr = wx.Choice(self.panel,choices=CURSOR_LABEL)
-#
-#         self.ch_csr.Bind(wx.EVT_CHOICE,self.setCursorMode)
-#
-#         hbox_csr.Add(self.txt_csr, flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
-#         hbox_csr.Add(self.ch_csr,  flag=wx.RIGHT|wx.TOP|wx.BOTTOM, border=6)
-#         vbox.Add(hbox_csr,         flag=wx.ALL,   border=4)
 
         ###########################
         ## Set defaults
@@ -1374,7 +1352,12 @@ class XRDImg(Group):
 
             self.jframes,self.iframes,self.xpix,self.ypix = np.shape(self.image)
         else:
-            self.h5xrd = self.h5file['xrmmap/xrd2D/counts']
+            try:
+                self.h5xrd = self.h5file['xrmmap/xrd2D/counts']
+            except:
+                self.image = None
+                print('No 2DXRD data in %s' % os.path.split(self.h5file.filename)[-1])
+                return
             self.calfile = bytes2str(self.h5file['xrmmap/xrd1D'].attrs.get('calfile',''))
             if not os.path.exists(self.calfile):
                 self.calfile = None

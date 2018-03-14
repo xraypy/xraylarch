@@ -96,7 +96,6 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
     path, read = None, False
     if dlg.ShowModal() == wx.ID_OK:
         read = True
-        #path = dlg.GetPath().replace('\\', '/')
         paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
     dlg.Destroy()
     
@@ -107,11 +106,6 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
                 return data1dxrd
             else:
                 xrdviewer.add1Ddata(data1dxrd)
-        #data1dxrd = xrd1d(file=path)
-        #if xrdviewer is None:
-        #    return data1dxrd
-        #else:
-        #    xrdviewer.add1Ddata(data1dxrd)
 
 def plot_sticks(x,y):
 
@@ -354,7 +348,6 @@ class diFFit1DFrame(wx.Frame):
                     xrdf.clearMATCHES()
                     
                 xrdf.xrd1dgrp = seldat
-                #xrdf.xrd1dgrp.label = xrdf.xrd1dgrp.label
                 xrdf.plot1D.set_title(xrdf.xrd1dgrp.label)
                 xrdf.plt_data = xrdf.xrd1dgrp.all_data()
 
@@ -631,8 +624,7 @@ class Fitting1DXRD(BasePanel):
         self.min_dist  = 10
 
         # Background fitting defaults
-        ## old defaults: [20, 2, 4]
-        self.bkgd_kwargs = BKGD_DEFAULT.copy() ##{'exponent': 2,'compress': 5, 'width': 4}
+        self.bkgd_kwargs = BKGD_DEFAULT.copy() 
         
 
 ##############################################
@@ -1011,9 +1003,9 @@ class Fitting1DXRD(BasePanel):
 
         fit = False
         if myDlg.ShowModal() == wx.ID_OK:
-            self.bkgd_kwargs.update({'exponent': int(myDlg.val_exp.GetValue()),
-                                     'compress': int(myDlg.val_comp.GetValue()),
-                                     'width':    int(myDlg.val_wid.GetValue())  })
+            self.bkgd_kwargs.update({'exponent' : int(myDlg.val_exp.GetValue()),
+                                     'compress' : int(myDlg.val_comp.GetValue()),
+                                     'width'    : int(myDlg.val_wid.GetValue())})
             fit = True
         myDlg.Destroy()
 
@@ -1079,7 +1071,6 @@ class Fitting1DXRD(BasePanel):
         self.peaklist = []
         self.peaklistbox.Clear()
 
-        ##str = 'Peak (%6d cts @ %2.3f %s )'
         xi = self.rngpl.ch_xaxis.GetSelection()
         for i,ii in enumerate(self.xrd1dgrp.pki):
             
@@ -1573,72 +1564,6 @@ class BackgroundOptions(wx.Dialog):
 
         pack(self.panel, sizer)
 
-#         self.panel = wx.Panel(self)
-# 
-#         mainsizer = wx.BoxSizer(wx.VERTICAL)
-# 
-#         ## Exponent
-#         expsizer = wx.BoxSizer(wx.VERTICAL)
-# 
-#         ttl_exp = wx.StaticText(self.panel, label='EXPONENT')
-# 
-#         self.val_exp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-#         expsizer.Add(ttl_exp,  flag=wx.RIGHT, border=5)
-#         expsizer.Add(self.val_exp,  flag=wx.RIGHT, border=5)
-# 
-#         ## Compress
-#         compsizer = wx.BoxSizer(wx.VERTICAL)
-# 
-#         ttl_comp = wx.StaticText(self.panel, label='COMPRESS')
-# 
-#         self.val_comp = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-#         compsizer.Add(ttl_comp,  flag=wx.RIGHT, border=5)
-#         compsizer.Add(self.val_comp,  flag=wx.RIGHT, border=5)
-# 
-#         ## Width
-#         widsizer = wx.BoxSizer(wx.VERTICAL)
-# 
-#         ttl_wid = wx.StaticText(self.panel, label='WIDTH')
-# 
-#         self.val_wid = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
-#         widsizer.Add(ttl_wid,  flag=wx.RIGHT, border=5)
-#         widsizer.Add(self.val_wid,  flag=wx.RIGHT, border=5)
-#         
-#         ## Reset button
-#         btn_reset = wx.Button(self,label='reset')
-#         btn_reset.Bind(wx.EVT_BUTTON, self.PanelDefaults)
-# 
-#         #####
-#         ## OKAY!
-#         oksizer = wx.BoxSizer(wx.HORIZONTAL)
-# 
-#         hlpBtn     = wx.Button(self.panel, wx.ID_HELP   )
-#         self.okBtn = wx.Button(self.panel, wx.ID_OK     )
-#         canBtn     = wx.Button(self.panel, wx.ID_CANCEL )
-# 
-#         hlpBtn.Bind(wx.EVT_BUTTON, lambda evt: wx.TipWindow(
-#             self, 'These values are specific to the background fitting defined in:'
-#             ' Nucl. Instrum. Methods (1987) B22, 78-81.\n'
-#             ' EXPONENT : Specifies the power of polynomial which is used.\n'
-#             ' COMPRESS : Compression factor to apply before fitting the background.\n'
-#             ' WIDTH : Specifies the width of the polynomials which are concave downward.'))
-# 
-#         oksizer.Add(hlpBtn,     flag=wx.RIGHT,  border=8 )
-#         oksizer.Add(canBtn,     flag=wx.RIGHT,  border=8 )
-#         oksizer.Add(self.okBtn, flag=wx.RIGHT,  border=8 )
-# 
-#         mainsizer.Add(expsizer,  flag=wx.ALL, border=8)
-#         mainsizer.AddSpacer(15)
-#         mainsizer.Add(compsizer, flag=wx.ALL, border=5)
-#         mainsizer.AddSpacer(15)
-#         mainsizer.Add(widsizer,  flag=wx.ALL, border=8)
-#         mainsizer.AddSpacer(15)
-#         mainsizer.Add(btn_reset,  flag=wx.ALL, border=8)
-#         mainsizer.AddSpacer(15)
-#         mainsizer.Add(oksizer,   flag=wx.ALL|wx.ALIGN_RIGHT, border=10)
-# 
-# 
-#         self.panel.SetSizer(mainsizer)
 
 class PeakOptions(wx.Dialog):
     def __init__(self,parent,method='peakutils.indexes'):
@@ -2161,8 +2086,6 @@ class Viewer1DXRD(wx.Panel):
 
         if self.xy_data[-1].label is None:
             self.xy_data[-1].label = 'dataset %i' % len(self.xy_data)
-#         else:
-#             self.xy_data[-1].label = 'data: %s' % self.xy_data[-1].label
         datalabel = self.xy_data[-1].label
 
         self.data_name.append(datalabel)
@@ -3215,7 +3138,7 @@ class InstrPanel(wx.Panel):
 
 class ResultsPanel(wx.Panel):
     '''
-    Panel for housing background tools in fitting panel
+    Panel for ....
     '''
     label='Results'
     def __init__(self,parent,owner=None,_larch=None):
@@ -4075,7 +3998,6 @@ class diFFit1D(wx.App):
 
     def createApp(self):
         frame = diFFit1DFrame()
-        #frame = Viewer1DXRD()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -4091,9 +4013,7 @@ class DebugViewer(diFFit1D):
         diFFit1D.__init__(self, **kws)
 
     def OnInit(self):
-        #self.Init()
         self.createApp()
-        #self.ShowInspectionTool()
         return True
 
 if __name__ == '__main__':
