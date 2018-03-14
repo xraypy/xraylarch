@@ -110,7 +110,6 @@ def default_prepeaks_config():
 
 MIN_CORREL = 0.0010
 
-
 class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
 
@@ -638,7 +637,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
-        self.plot_choice.SetStringSelection('Data and Baseline')
+        self.plot_choice.SetStringSelection(PLOT_BASELINE)
         self.onPlot()
 
     def fill_model_params(self, prefix, params):
