@@ -137,7 +137,7 @@ def isGSEXRM_MapFolder(fname):
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.2',
+           'Version': '2.0.1',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
