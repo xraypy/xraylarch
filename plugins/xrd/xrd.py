@@ -20,6 +20,8 @@ from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
 
+from larch_plugins.xrmmap import read_xrd_netcdf
+
 HAS_larch = False
 try:
     from larch import Group
@@ -298,6 +300,24 @@ class xrd1d(grpobjt):
 #             a = None
         
 
+def read_xrd_data(filepath):
+
+    if not os.path.exists(filepath):
+        return
+
+    try:
+        data = np.array(read_xrd_netcdf(filepath))
+    except TypeError:
+        try:
+            data = np.array(tifffile.imread(filepath))
+        except:
+            try:
+                data = xrd1d(file=filepath).I
+            except:
+                return
+    return data
+                
+            
 
         
 class XRD(grpobjt):
@@ -318,8 +338,11 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0, 
-                 steps=5001, name='xrd', _larch=None, **kws):
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
+                       data1D=None, nwedge=0, title=None,
+                       steps=5001, name='xrd', filename=None,
+                       calfile=None, energy=None, wavelength=None,
+                       npixels=None, _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
@@ -330,14 +353,23 @@ class XRD(grpobjt):
         self.data1D  = data1D
         self.data2D  = data2D
         self.cake    = None
+
+        self.calfile    = calfile
         
-        self.energy     = None
-        self.wavelength = None
-        self.calfile    = None
+        if energy is None and wavelength is not None:
+            self.wavelegth = wavelength
+            self.energy = E_from_lambda(wavelength)
+        elif energy is not None and wavelength is None:
+            self.energy = energy
+            self.wavelength = lambda_from_E(self.energy)
+        else:
+            self.energy     = energy
+            self.wavelength = wavelength
+
         
-        self.filename = None
-        self.title    = None
-        self.npixels  = None
+        self.filename = filename
+        self.title    = title
+        self.npixels  = npixels
 
         if HAS_larch:
             Group.__init__(self)
@@ -417,8 +449,8 @@ def calculate_xvalues(x,xtype,wavelength):
     '''
 
     x = np.array(x).squeeze()
-    if xtype.startswith('q'):
 
+    if xtype.startswith('q'):
         q = x
         d = d_from_q(q)
         if wavelength is not None:
@@ -483,10 +515,7 @@ def create_xrd1d(file, _larch=None, **kws):
 
      Parameters:
      ------------
-      data2D:   2D diffraction patterns
-      data1D:   1D diffraction patterns
-      xpixels:  number of x pixels
-      ypixels:  number of y pixels
+
 
      Returns:
      ----------

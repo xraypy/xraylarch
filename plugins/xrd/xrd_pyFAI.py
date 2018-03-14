@@ -18,6 +18,8 @@ try:
 except ImportError:
     pass
 
+from larch_plugins.io import tifffile
+
 ##########################################################################
 # FUNCTIONS
 
@@ -92,6 +94,12 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=Non
         except:
             print('Provided calibration file could not be loaded.')
             return
+
+        if type(dark) is str:
+            try:
+                dark = np.array(tifffile.imread(xrd2dbkgd))
+            except:
+                dark = None
         
         dir = -1 if flip else 1
         attrs = {'mask':mask,'dark':dark}
@@ -137,28 +145,30 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='',  wedge_limits=
         except:
             print('Provided calibration file could not be loaded.')
             return
-        
-        attrs = {}
-        if unit.startswith('2th'):
-            attrs.update({'unit':'2th_deg'})
-        else:
-            attrs.update({'unit':'q_A^-1'})
-
-        if wedge_limits is not None:
-            attrs.update({'azimuth_range':wedge_limits})
-
-        if mask:
-            if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
-        if dark:
-            if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
-
-        if file is not '':
-            if verbose:
-                print('\nSaving %s data to file: %s' % (unit,file))
-            attrs.update({'filename':file})
-        return calcXRD1d(xrd2d,ai,steps,attrs)
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
+        return
+
+    attrs = {}
+    if unit.startswith('2th'):
+        attrs.update({'unit':'2th_deg'})
+    else:
+        attrs.update({'unit':'q_A^-1'})
+
+    if wedge_limits is not None:
+        attrs.update({'azimuth_range':wedge_limits})
+
+    if mask:
+        if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
+    if dark:
+        if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
+
+    if file is not '':
+        if verbose:
+            print('\nSaving %s data to file: %s' % (unit,file))
+        attrs.update({'filename':file})
+    return calcXRD1d(xrd2d,ai,steps,attrs)
+
 
 def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, 
               xsteps=2048, ysteps=2048, verbose=False):
@@ -169,23 +179,24 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
         except:
             print('Provided calibration file could not be loaded.')
             return
-        
-        attrs = {}
-        if unit.startswith('2th'):
-            attrs.update({'unit':'2th_deg'})
-        else:
-            attrs.update({'unit':'q_A^-1'})
-        if mask:
-            if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
-        if dark:
-            if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
-
-        return calcXRDcake(xrd2d,ai,xsteps,ysteps,attrs)
-        
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
+        
+    attrs = {}
+    if unit.startswith('2th'):
+        attrs.update({'unit':'2th_deg'})
+    else:
+        attrs.update({'unit':'q_A^-1'})
+    if mask:
+        if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
+    if dark:
+        if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
+
+    return calcXRDcake(xrd2d,ai,xsteps,ysteps,attrs)
+
 
 def calcXRD1d(xrd2d,ai,steps,attrs):
+
     return ai.integrate1d(xrd2d,steps,**attrs)
 
 def calcXRDcake(xrd2d,ai,xstp,ystp,attrs):
