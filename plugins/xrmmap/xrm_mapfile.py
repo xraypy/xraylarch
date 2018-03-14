@@ -865,7 +865,7 @@ class GSEXRM_MapFile(object):
         self.xrmmap = self.h5root[root]
         if self.folder is None:
             self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
-        self.last_row = int(bytes2str(self.xrmmap.attrs.get('Last_Row','')))
+        self.last_row = int(self.xrmmap.attrs.get('Last_Row',0))
 
         try:
             self.dimension = self.xrmmap['config/scan/dimension'].value
@@ -1725,9 +1725,9 @@ class GSEXRM_MapFile(object):
                 
         else:
             if detname in self.xrmmap.keys():
-                rois += list(roigrp['sum_name'])
+                rois = list(roigrp['sum_name']) + rois
             try:
-                rois += sort_roi_limits(roigrp[detname])
+                rois = sort_roi_limits(roigrp[detname]) + rois
             except:
                 pass
                 
