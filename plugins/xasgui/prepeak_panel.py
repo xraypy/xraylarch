@@ -90,7 +90,7 @@ Array_Choices = OrderedDict((('Raw Data', 'mu'),
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
-PLOT_RESID    = 'Data+Reidual'
+PLOT_RESID    = 'Data+Residual'
 PlotChoices = [PLOT_BASELINE, PLOT_FIT, PLOT_RESID]
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
