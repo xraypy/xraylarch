@@ -296,7 +296,6 @@ class FitResultFrame(wx.Frame):
             if not par.vary:
                 continue
             if hasattr(par, 'correl') and par.correl is not None:
-                # print(par, par.correl)
                 for name2 in parnames[i+1:]:
                     if (name != name2 and name2 in par.correl and
                             abs(par.correl[name2]) > cormin):
@@ -438,9 +437,9 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
         fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                             size=(100, -1))
+                             size=(100, 25))
         fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel,
-                              size=(100, -1))
+                              size=(100, 25))
         fitmodel_btn.Disable()
         self.fitmodel_btn = fitmodel_btn
 
@@ -461,28 +460,31 @@ class PrePeakPanel(wx.Panel):
                                   action=self.onPlot)
 
         self.message = SimpleText(pan,
-                                  'first fit baseline, then add peaks or other models and fit full model ')
+                                 'first fit baseline, then add peaks to fit model.')
+
+        self.msg_centroid = SimpleText(pan, '----')
 
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
+        self.show_centroid  = Check(pan, label='show?', **opts)
         self.show_peakrange = Check(pan, label='show?', **opts)
-        self.show_fitrange = Check(pan, label='show?', **opts)
-        self.show_e0 = Check(pan, label='show?', **opts)
+        self.show_fitrange  = Check(pan, label='show?', **opts)
+        self.show_e0        = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
 
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=7)
-        pan.Add(SimpleText(pan, ' Run Fit:'), style=RCEN)
+        pan.Add(SimpleText(pan, ' Run Fit:'), style=CEN)
 
         pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
-        pan.Add(self.array_choice, dcol=5)
-
+        pan.Add(self.array_choice, dcol=4)
 
         pan.Add(SimpleText(pan, 'E0: '), newrow=True)
         pan.Add(self.btns['ppeak_e0'])
         pan.Add(self.ppeak_e0)
-        pan.Add(self.show_e0, dcol=4)
+        pan.Add((10, 10), dcol=3)
+        pan.Add(self.show_e0)
 
         pan.Add(fitbline_btn)
 
@@ -507,6 +509,10 @@ class PrePeakPanel(wx.Panel):
         pan.Add(self.ppeak_ehi)
         pan.Add(self.show_peakrange, dcol=1)
 
+        pan.Add(SimpleText(pan, 'Peak Centroid: '), newrow=True)
+        pan.Add(self.msg_centroid, dcol=5)
+        pan.Add(self.show_centroid, dcol=1)
+
 
         #  plot buttons
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -524,7 +530,9 @@ class PrePeakPanel(wx.Panel):
         pan.Add(SimpleText(pan, 'Add Component: '), newrow=True)
         pan.Add(ts, dcol=7)
 
-        pan.Add(self.message, dcol=8, newrow=True)
+        pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
+        pan.Add(self.message, dcol=7)
+
 
         pan.pack()
 
@@ -569,6 +577,7 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_ehi.SetValue(data['ehi'])
         self.array_choice.SetStringSelection(data['array_desc'])
         self.show_e0.Enable(data['show_e0'])
+        self.show_centroind.Enable(data['show_centroid'])
         self.show_fitrange.Enable(data['show_fitrange'])
         self.show_peakrange.Enable(data['show_peakrange'])
         self.plot_sub_bline.Enable(data['plot_sub_bline'])
@@ -587,8 +596,8 @@ class PrePeakPanel(wx.Panel):
         form_opts['emax'] = self.ppeak_emax.GetValue()
         form_opts['elo'] = self.ppeak_elo.GetValue()
         form_opts['ehi'] = self.ppeak_ehi.GetValue()
-        form_opts['show_centroid'] = True
         form_opts['plot_sub_bline'] = self.plot_sub_bline.IsChecked()
+        form_opts['show_centroid'] = self.show_centroid.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
         form_opts['show_e0'] = self.show_e0.IsChecked()
@@ -611,7 +620,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
-        self.message.SetLabel("Centroid of Peaks = %s " % dgroup.centroid_msg)
+        self.msg_centroid.SetLabel(dgroup.centroid_msg)
 
         if 'loren_' not in self.fit_components:
             self.addModel(model='Lorentzian', prefix='loren_', isbkg=True)
@@ -701,7 +710,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                     'xlabel': 'Energy (eV)',
                     'ylabel': '%s $\mu$' % opts['array_desc'],
                     'label': '%s $\mu$' % opts['array_desc'],
-                    'delay_draw': True}
+                    'delay_draw': True,
+                    'show_legend': True}
 
         plot_extras = []
         if opts['show_fitrange']:
