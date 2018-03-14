@@ -297,7 +297,7 @@ class GSEXRM_MapRow:
         self.xrd1d     = None
         self.xrdq_wdg  = None
         self.xrd1d_wdg = None
-
+        
         if masterfile is not None:
             header, rows = readMasterFile(masterfile)
             for row in header:
@@ -2060,28 +2060,39 @@ class GSEXRM_MapFile(object):
 
         return roidata
 
-    def get_translation_axis(self):
+    def get_translation_axis(self,hotcols=False):
         posnames = [n.lower() for n in self.xrmmap['positions/name']]
         # print(" Get Translation axes ", posnames, 'x' in posnames)
         if 'x' in posnames:
-            return self.get_pos('x', mean=True)
+            x = self.get_pos('x', mean=True)
         elif 'fine x' in posnames:
-            return self.get_pos('fine x', mean=True)
+            x = self.get_pos('fine x', mean=True)
+        else:
+            x = self.get_pos(0, mean=True)
 
-        return self.get_pos(0, mean=True)
+        if hotcols and x is not None:
+           if len(x) == self.xrmmap[self._det_name()]['counts'].shape[1]:
+               x = x[1:-1]
 
-    def get_rotation_axis(self,axis=None):
+        return x
+
+    def get_rotation_axis(self,axis=None,hotcols=False):
+
         posnames = [n.lower() for n in self.xrmmap['positions/name']]
         if axis is not None:
             if axis in posnames or type(axis) == int:
-                return self.get_pos(axis, mean=True)
+                omega = self.get_pos(axis, mean=True)
         elif 'theta' in posnames:
-            return self.get_pos('theta', mean=True)
+            omega = self.get_pos('theta', mean=True)
         elif 'omega' in posnames:
-            return self.get_pos('omega', mean=True)
+            omega = self.get_pos('omega', mean=True)
+        else:
+            omega = None
 
-        #return self.get_pos(0, mean=True)
-        return
+        if hotcols and omega is not None:
+           if len(omega) == self.xrmmap[self._det_name()]['counts'].shape[1]:
+               omega = omega[1:-1]        
+        return omega
 
     def get_tomography_center(self):
 
@@ -2106,7 +2117,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def get_sinogram(self, roi_name, det=None, trim_sino=False, **kws):
+    def get_sinogram(self, roi_name, det=None, trim_sino=False, hotcols=False, **kws):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
@@ -2114,7 +2125,7 @@ class GSEXRM_MapFile(object):
         roiname    :  str                       ROI name
         det        :  str                       detector name
         dtcorrect  :  optional, bool [True]     dead-time correct data
-        no_hotcols :  optional, bool [False]    suprress hot columns
+        hotcols    :  optional, bool [False]    suppress hot columns
 
         Returns
         -------
@@ -2122,8 +2133,9 @@ class GSEXRM_MapFile(object):
         sinogram_order (needed for knowing shape of sinogram)
         '''
 
-        sino = self.get_roimap(roi_name, det=det, **kws)
-        x,omega = self.get_translation_axis(),self.get_rotation_axis()
+        sino  = self.get_roimap(roi_name, det=det, hotcols=hotcols, **kws)
+        x     = self.get_translation_axis(hotcols=hotcols)
+        omega = self.get_rotation_axis(hotcols=hotcols)
 
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
@@ -2133,14 +2145,16 @@ class GSEXRM_MapFile(object):
 
         return reshape_sinogram(sino,x,omega)
 
-    def get_tomograph(self, sino, omega=None, center=None, **kws):
+    def get_tomograph(self, sino, omega=None, center=None, hotcols=False, **kws):
         '''
         returns tomo_center, tomo
         '''
 
-        if omega is None: omega = self.get_rotation_axis()
-        if center is None: center = self.get_tomography_center()
-        
+        if center is None:
+            center = self.get_tomography_center()
+
+        if omega  is None:
+            omega = self.get_rotation_axis(hotcols=hotcols)
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
@@ -2150,7 +2164,7 @@ class GSEXRM_MapFile(object):
         
         return tomo
 
-    def save_tomograph(self, datapath, tomo_alg=[], dtcorrect=False, **kws):
+    def save_tomograph(self, datapath, tomo_alg=[], dtcorrect=False, hotcols=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
@@ -2165,7 +2179,10 @@ class GSEXRM_MapFile(object):
 
         ## check to make sure there is data to perform tomographic reconstruction
         center = self.get_tomography_center()
-        omega,x = self.get_rotation_axis(),self.get_translation_axis()
+        
+        x     = self.get_translation_axis(hotcols=hotcols)
+        omega = self.get_rotation_axis(hotcols=hotcols)
+        
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
@@ -2214,7 +2231,7 @@ class GSEXRM_MapFile(object):
         sino,order = reshape_sinogram(sino,x,omega)
 
         center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-                                          sinogram_order=order, tomo_alg=tomo_alg)#, **kws)
+                                          sinogram_order=order, tomo_alg=tomo_alg)
 
         tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
         tomogrp.attrs['center'] = '%0.2f pixels' % (center)
@@ -2337,6 +2354,7 @@ class GSEXRM_MapFile(object):
             pass
 
         self.notes['scan_end_time'] = isotime(self.stop_time)
+        self.notes['scan_version'] = self.scan_version
 
         if self.scan_version < 1.35 and (self.flag_xrd2d or self.flag_xrd1d):
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
@@ -2375,6 +2393,8 @@ class GSEXRM_MapFile(object):
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
+            
+        
 
     def _det_name(self, det=None):
         "return  XRMMAP group for a detector"
@@ -3135,7 +3155,7 @@ class GSEXRM_MapFile(object):
         return roiname, detname
 
 
-    def get_roimap(self, roiname, det=None, no_hotcols=False, dtcorrect=True):
+    def get_roimap(self, roiname, det=None, hotcols=False, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
@@ -3143,19 +3163,19 @@ class GSEXRM_MapFile(object):
         roiname    :  str                       ROI name
         det        :  str                       detector name
         dtcorrect  :  optional, bool [True]     dead-time correct data
-        no_hotcols :  optional, bool [False]    suprress hot columns
+        hotcols    :  optional, bool [False]    suppress hot columns
 
         Returns
         -------
         ndarray for ROI data
         '''
 
-        scan_version = getattr(self, 'scan_version', 1.00)
-        no_hotcols = no_hotcols and scan_version < 1.36
+        #scan_version = getattr(self, 'scan_version', 1.00)
+        #hotcols = hotcols or scan_version < 1.36
 
         if roiname == '1' or roiname == 1:
             map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
-            if no_hotcols:
+            if hotcols:
                 return map[:, 1:-1]
             else:
                 return map
@@ -3176,14 +3196,14 @@ class GSEXRM_MapFile(object):
                 all_roi = []
                 for iroi in roi:
                     iroi = '%s/%s'
-                    if no_hotcols:
+                    if hotcols:
                         all_roi += [self.xrmmap[det][roi_ext % iroi][:, 1:-1]]
                     else:
                         all_roi += [self.xrmmap[det][roi_ext % iroi][:, :]]
                 return np.array(all_roi)
 
             try:
-                if no_hotcols:
+                if hotcols:
                     return self.xrmmap[det][roi_ext % roi][:, 1:-1]
                 else:
                     return self.xrmmap[det][roi_ext % roi][:, :]
@@ -3194,7 +3214,7 @@ class GSEXRM_MapFile(object):
         else:
             detname = '%s%s' % (det,ext)
 
-            if no_hotcols:
+            if hotcols:
                 return self.xrmmap[detname][:, 1:-1, roi]
             else:
                 return self.xrmmap[detname][:, :, roi]
@@ -3209,7 +3229,7 @@ class GSEXRM_MapFile(object):
         pass
 
     def get_rgbmap(self, rroi, groi, broi, det=None, rdet=None, gdet=None, bdet=None,
-                   no_hotcols=True, dtcorrect=True, scale_each=True, scales=None):
+                   hotcols=True, dtcorrect=True, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
 
@@ -3220,7 +3240,7 @@ class GSEXRM_MapFile(object):
         broi :       str    name of ROI for blue channel
         det  :       optional, None or int [None]  index for detector
         dtcorrect :  optional, bool [True]         dead-time correct data
-        no_hotcols   optional, bool [True]         suprress hot columns
+        hotcols   :  optional, bool [True]         suppress hot columns
         scale_each : optional, bool [True]
                      scale each map separately to span the full color range.
         scales :     optional, None or 3 element tuple [None]
@@ -3235,9 +3255,9 @@ class GSEXRM_MapFile(object):
         '''
         if det is not None: rdet = gdet = bdet = det
 
-        rmap = self.get_roimap(rroi, det=rdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        gmap = self.get_roimap(groi, det=gdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
-        bmap = self.get_roimap(broi, det=bdet, no_hotcols=no_hotcols, dtcorrect=dtcorrect)
+        rmap = self.get_roimap(rroi, det=rdet, hotcols=hotcols, dtcorrect=dtcorrect)
+        gmap = self.get_roimap(groi, det=gdet, hotcols=hotcols, dtcorrect=dtcorrect)
+        bmap = self.get_roimap(broi, det=bdet, hotcols=hotcols, dtcorrect=dtcorrect)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())
@@ -3398,3 +3418,4 @@ def registerLarchPlugin():
                     'read_fake2': read_fake2,
                     'process_mapfolder': process_mapfolder,
                     'process_mapfolders': process_mapfolders})
+
