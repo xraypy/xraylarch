@@ -41,6 +41,9 @@ class AthenaImporter(wx.Frame) :
         sel_all  = Button(ltop, 'Select All', size=(100, 30), action=self.onSelAll)
         sel_imp  = Button(ltop, 'Import Selected Groups', size=(200, 30), action=self.onOK)
 
+        self.select_imported = sel_imp
+        self.select_imported.Disable()
+
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
         self.grouplist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
@@ -92,7 +95,8 @@ class AthenaImporter(wx.Frame) :
     def onOK(self, event=None):
         """generate script to import groups"""
         namelist = [str(n) for n in self.grouplist.GetCheckedStrings()]
-        if self.read_ok_cb is not None:
+
+        if self.read_ok_cb is not None and len(namelist) > 0:
             self.read_ok_cb(self.filename, namelist)
 
         self.Destroy()
@@ -102,12 +106,15 @@ class AthenaImporter(wx.Frame) :
 
     def onSelAll(self, event=None):
         self.grouplist.SetCheckedStrings(dir(self.all))
+        self.select_imported.Enable()
 
     def onSelNone(self, event=None):
         self.grouplist.SetCheckedStrings([])
+        self.select_imported.Disable()
 
     def onShowGroup(self, event=None):
         """column selections changed calc xdat and ydat"""
+        self.select_imported.Enable()
         gname = event.GetString()
         grp = getattr(self.all, gname)
         glist = list(self.grouplist.GetCheckedStrings())
