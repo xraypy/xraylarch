@@ -4,7 +4,7 @@ GUI for displaying maps from HDF5 files
 
 """
 
-VERSION = '10 (26-Februrary-2018)'
+VERSION = '10 (14-March-2018)'
 
 import os
 import sys

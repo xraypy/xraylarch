@@ -43,7 +43,7 @@ from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
 
-VERSION = '1 (03-April-2017)'
+VERSION = '2 (14-March-2018)'
 
 SLIDER_SCALE = 1000. ## sliders step in unit 1. this scales to 0.001
 CIFSCALE = 1000
