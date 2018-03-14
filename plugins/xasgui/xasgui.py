@@ -854,7 +854,7 @@ class XASFrame(wx.Frame):
     def onReadAthenaProject_OK(self, path, namelist):
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
-
+        dgroup = None
         s = """
         {group:s} = _prj.{group:s}
         {group:s}.datatype = 'xas'
@@ -868,7 +868,8 @@ class XASFrame(wx.Frame):
             self.larch.eval(s.format(group=gname))
             dgroup = self.install_group(gname, gname, with_plot=False)
             # self.nb_panels[0].fill_form(dgroup)
-        self.nb_panels[0].plot(dgroup)
+        if dgroup is not None:
+            self.nb_panels[0].plot(dgroup)
         self.larch.eval("del _prj")
 
 
