@@ -1406,8 +1406,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         notes = {}
         config_grp = ensure_subgroup('config',xrmmap)
         notes_grp =  ensure_subgroup('notes',config_grp)
-        for key,val in dict(notes_grp.attrs).iteritems():
-            notes[key] = bytes2str(val)
+        for key in notes_grp.attrs.keys():
+            notes[key] = bytes2str(notes_grp.attrs[key])
 
         note_title = ['Facility','Run Cycle','Proposal Number','User group']
         note_str = ['','','','']
