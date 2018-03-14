@@ -299,7 +299,6 @@ class XASNormPanel(wx.Panel):
             dgroup.plot_ylabel = ylabel
             if dgroup is not None:
                 dgroup.plot_extras = []
-                # print("Plot Sel ", checked, (last_id!=checked))
                 self.plot(dgroup, title='', new=newplot,
                           plot_yarrays=plot_yarrays,
                           show_legend=True, with_extras=False,
@@ -316,6 +315,7 @@ class XASNormPanel(wx.Panel):
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
+        conf.update(self.read_form())
         opts = {}
         name = str(name)
         def copy_attrs(*args):
@@ -389,7 +389,7 @@ class XASNormPanel(wx.Panel):
         if self.skip_process:
             return
         self.skip_process = True
-        # print(" == Process == ", dgroup, time.ctime())
+
         dgroup.custom_plotopts = {}
 
         form = self.read_form()
