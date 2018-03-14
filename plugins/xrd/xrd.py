@@ -449,8 +449,8 @@ def calculate_xvalues(x,xtype,wavelength):
     '''
 
     x = np.array(x).squeeze()
-    if xtype.startswith('q'):
 
+    if xtype.startswith('q'):
         q = x
         d = d_from_q(q)
         if wavelength is not None:
