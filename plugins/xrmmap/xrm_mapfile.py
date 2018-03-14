@@ -1725,9 +1725,9 @@ class GSEXRM_MapFile(object):
                 
         else:
             if detname in self.xrmmap.keys():
-                rois += list(roigrp['sum_name'])
+                rois = list(roigrp['sum_name']) + rois
             try:
-                rois += sort_roi_limits(roigrp[detname])
+                rois = sort_roi_limits(roigrp[detname]) + rois
             except:
                 pass
                 
