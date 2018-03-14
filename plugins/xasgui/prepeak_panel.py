@@ -435,12 +435,14 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
         self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
 
-        fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                             size=(100, 25))
-        fitmodel_btn = Button(pan, 'Fit Full Model', action=self.onFitModel,
-                              size=(100, 25))
-        fitmodel_btn.Disable()
-        self.fitmodel_btn = fitmodel_btn
+        self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
+                                    size=(150, 25))
+        self.fitmodel_btn = Button(pan, 'Fit Model',
+                                   action=self.onFitModel,  size=(150, 25))
+        self.fitsel_btn = Button(pan, 'Fit Selected Groups',
+                                 action=self.onFitSelected,  size=(150, 25))
+        self.fitmodel_btn.Disable()
+        self.fitsel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(125, -1),
                                    choices=list(Array_Choices.keys()))
@@ -474,18 +476,20 @@ class PrePeakPanel(wx.Panel):
 
         titleopts = dict(font=Font(11), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=7)
-        pan.Add(SimpleText(pan, ' Run Fit:'), style=CEN)
+        pan.Add(SimpleText(pan, ' Run Fit:'), style=LCEN)
 
         pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
         pan.Add(self.array_choice, dcol=4)
+        pan.Add((10, 10), dcol=2)
+        pan.Add(self.fitbline_btn)
 
         pan.Add(SimpleText(pan, 'E0: '), newrow=True)
         pan.Add(self.btns['ppeak_e0'])
         pan.Add(self.ppeak_e0)
         pan.Add((10, 10), dcol=3)
         pan.Add(self.show_e0)
+        pan.Add(self.fitmodel_btn)
 
-        pan.Add(fitbline_btn)
 
         pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
         pan.Add(self.btns['ppeak_emin'])
@@ -494,7 +498,8 @@ class PrePeakPanel(wx.Panel):
         pan.Add(self.btns['ppeak_emax'])
         pan.Add(self.ppeak_emax)
         pan.Add(self.show_fitrange, dcol=1)
-        pan.Add(fitmodel_btn)
+        pan.Add(self.fitsel_btn)
+
 
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
@@ -633,6 +638,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         self.fill_form_from_group(dgroup)
         self.fitmodel_btn.Enable()
+        # self.fitallmodel_btn.Enable()
 
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
@@ -700,6 +706,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         title = ' pre-edge fit'
         if plot_choice == PLOT_BASELINE:
             title = ' pre-edge baseline'
+            if opts['plot_sub_bline']:
+                title = ' pre-edge peaks'
 
         array_desc = self.array_choice.GetStringSelection()
 
@@ -748,9 +756,10 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         ppanel.plot(xdat, ydat, **plotopts)
         if plot_choice == PLOT_BASELINE:
-            ppanel.oplot(dgroup.prepeaks.energy,
-                         dgroup.prepeaks.baseline,
-                         label='baseline', **PLOTOPTS_2)
+            if not opts['plot_sub_bline']:
+                ppanel.oplot(dgroup.prepeaks.energy,
+                             dgroup.prepeaks.baseline,
+                             label='baseline', **PLOTOPTS_2)
 
         elif plot_choice in (PLOT_FIT, PLOT_RESID):
             ppanel.oplot(dgroup.energy, yfit,
@@ -1164,6 +1173,11 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             dgroup.ycomps = self.fit_model.eval_components(params=self.fit_params,
                                                            x=xsel)
         return dgroup
+
+    def onFitSelected(self, event=None):
+        dgroup = self.build_fitmodel()
+        opts = self.read_form()
+        print("fitting selected groups in progress")
 
     def onFitModel(self, event=None):
         dgroup = self.build_fitmodel()
