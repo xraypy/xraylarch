@@ -696,9 +696,15 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if plot_choice == PLOT_RESID:
             resid = ydat - yfit
 
-        jmin, jmax = max(0, i1-2), i2+3
-        pxmin, pxmax = dgroup.energy[jmin], dgroup.energy[jmax]
-        _ys = dgroup.ydat[jmin:jmax]
+        _xs = dgroup.energy[i1:i2]
+        xrange = max(_xs) - min(_xs)
+        pxmin = min(_xs) - 0.05 * xrange
+        pxmax = max(_xs) + 0.05 * xrange
+
+        jmin = index_of(dgroup.energy, pxmin)
+        jmax = index_of(dgroup.energy, pxmax) + 1
+
+        _ys = ydat[jmin:jmax]
         yrange = max(_ys) - min(_ys)
         pymin = min(_ys) - 0.05 * yrange
         pymax = max(_ys) + 0.05 * yrange
@@ -784,7 +790,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 plotopts['ymax'] = max(_ys) + 0.05 * yrange
                 plotopts['delay_draw'] = False
                 plotopts['ylabel'] = 'data-fit'
-                plotopts['label'] = '_nolegend_',
+                plotopts['label'] = '_nolegend_'
 
                 pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
                 pframe.Show()
