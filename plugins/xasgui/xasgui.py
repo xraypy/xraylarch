@@ -107,7 +107,6 @@ class XASController():
 
         self.filelist = None
         self.file_groups = {}
-        self.proc_opts = {}
         self.fit_opts = {}
         self.group = None
 
@@ -213,8 +212,9 @@ class XASController():
             master = grouplist[0]
         this = self.get_group(outgroup)
         master = self.get_group(master)
-        this.proc_opts.update(master.proc_opts)
-        this.proc_opts['group']  = outgroup
+        if not hasattr(this, 'xasnorm_config'):
+            this.xasnorm_config = {}
+        this.xasnorm_config.update(master.xasnorm_config)
         this.datatype = master.datatype
         this.xdat = 1.0*this.energy
         this.ydat = 1.0*getattr(this, yarray)
@@ -489,11 +489,13 @@ class XASFrame(wx.Frame):
                                   "Open Data File",  self.onReadDialog)
 
 
-        items['file2csv'] = MenuItem(self, fmenu, "Export Selected Groups to CSV",
-                                     "Export Selected Groups to CSV", self.onData2CSV)
-
         items['file2athena'] = MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
-                                        "Export Selected Groups to Athena Project", self.onData2Athena)
+                                        "Export Selected Groups to Athena Project",
+                                        self.onExportAthena)
+
+        items['file2csv'] = MenuItem(self, fmenu, "Export Selected Groups to CSV",
+                                     "Export Selected Groups to CSV",
+                                     self.onExportCSV)
 
         fmenu.AppendSeparator()
 
@@ -574,17 +576,19 @@ class XASFrame(wx.Frame):
         self.larch_buffer.Raise()
 
 
-    def onData2CSV(self, evt=None):
+    def onExportCSV(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
-        groups2save = []
+        savegroups = []
         groupnames = []
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            groups2save.append(dgroup)
+            savegroups.append(dgroup)
             groupnames.append(groupname)
-        if len(dgroup) < 1:
-            return
+        if len(savegroups) < 1:
+             Popup(self, "No files selected to export to CSV",
+                   "No files selected")
+             return
 
         deffile = "%s_%i.csv" % (groupname, len(groupnames))
         wcards  = 'CSV Files (*.csv)|*.cvs|All files (*.*)|*.*'
@@ -595,20 +599,23 @@ class XASFrame(wx.Frame):
         if outfile is None:
             return
 
-        groups2csv(groups2save, outfile, x='energy', y='norm', _larch=self.larch)
+        groups2csv(savegroups, outfile, x='energy', y='norm', _larch=self.larch)
 
 
-    def onData2Athena(self, evt=None):
+    def onExportAthena(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
-        groups2save = []
+        savegroups = []
         groupnames = []
+        dgroup = None
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            groups2save.append(dgroup)
+            savegroups.append(dgroup)
             groupnames.append(groupname)
-        if len(dgroup) < 1:
-            return
+        if len(savegroups) < 1:
+             Popup(self, "No files selected to export to Athena",
+                   "No files selected")
+             return
 
         deffile = "%s_%i.prj" % (groupname, len(groupnames))
         wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
@@ -620,7 +627,7 @@ class XASFrame(wx.Frame):
             return
 
         aprj = AthenaProject(filename=outfile, _larch=self.larch)
-        for label, grp in zip(groupnames, groups2save):
+        for label, grp in zip(groupnames, savegroups):
             aprj.add_group(grp, label=label)
         aprj.save(use_gzip=True)
 
