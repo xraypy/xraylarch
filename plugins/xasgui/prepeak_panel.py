@@ -114,7 +114,7 @@ class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
-                          style=FRAMESTYLE, size=(600, 675), **kws)
+                          style=FRAMESTYLE, size=(625, 750), **kws)
         self.parent = parent
         self.peakframe = peakframe
         self.datagroup = datagroup
@@ -145,8 +145,9 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['hist_info'],  (0, 4), (1, 2), LCEN)
 
         irow = 1
-        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12))
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 5), LCEN)
+        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
+                                        size=(550, 75), style=LCEN)
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
@@ -342,7 +343,15 @@ class FitResultFrame(wx.Frame):
 
         wids['data_title'].SetLabel(self.datagroup.filename)
 
-        wids['model_desc'].SetLabel(result.model_repr)
+        desc = result.model_repr
+        parts = []
+        tlen = 70
+        while len(desc) >= tlen:
+            i = desc[tlen-1:].find('+')
+            parts.append(desc[:tlen+i])
+            desc = desc[tlen+i:]
+        parts.append(desc)
+        wids['model_desc'].SetLabel('\n'.join(parts))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for i, param in enumerate(result.params.values()):
