@@ -18,7 +18,7 @@ import numpy as np
 from numpy.random import randint
 from larch import Group
 from larch import __version__ as larch_version
-from larch.utils.strutils import bytes2str, fix_varname
+from larch.utils.strutils import bytes2str, str2bytes, fix_varname
 
 if sys.version[0] == '2':
     from string import maketrans
@@ -255,7 +255,7 @@ class AthenaProject(object):
         if use_gzip:
             fopen = GzipFile
         fh = fopen(self.filename, 'w')
-        fh.write("\n".join(buff))
+        fh.write(str2bytes("\n".join([bytes2str(t) for t in buff])))
         fh.close()
 
 def create_athena(filename=None, _larch=None):
