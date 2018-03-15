@@ -119,7 +119,6 @@ class FitResultFrame(wx.Frame):
         self.peakframe = peakframe
         self.datagroup = datagroup
         self.build()
-        self.show()
 
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
@@ -138,16 +137,12 @@ class FitResultFrame(wx.Frame):
         wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
                                              colour=self.colors.title, style=LCEN)
 
-        wids['hist_tag'] = SimpleText(panel, 'Fit #1',  font=Font(12),
-                                      colour=self.colors.title, style=LCEN)
-
         wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
                                        colour=self.colors.title, style=LCEN)
 
         sizer.Add(title,              (0, 0), (1, 2), LCEN)
         sizer.Add(wids['data_title'], (0, 2), (1, 2), LCEN)
-        sizer.Add(wids['hist_tag'],   (0, 4), (1, 1), LCEN)
-        sizer.Add(wids['hist_info'],  (0, 5), (1, 1), LCEN)
+        sizer.Add(wids['hist_info'],  (0, 4), (1, 2), LCEN)
 
         irow = 1
         wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12))
@@ -313,14 +308,19 @@ class FitResultFrame(wx.Frame):
         fit_history = getattr(self.datagroup, 'fit_history', [])
         self.peakframe.update_start_values(fit_history[-1].params)
 
-    def show(self, datagroup=None):
+    def show_fitresult(self, datagroup=None, fit_number=None):
         if datagroup is not None:
             self.datagroup = datagroup
 
         fit_history = getattr(self.datagroup, 'fit_history', [])
+
         if len(fit_history) < 1:
             print("No fit reults to show for datagroup ", self.datagroup)
-        result = fit_history[-1]
+
+        if fit_number is None:
+            fit_number = len(fit_history)
+
+        result = fit_history[fit_number-1]
         wids = self.wids
         wids['method'].SetLabel(result.method)
         wids['ndata'].SetLabel("%d" % result.ndata)
@@ -338,8 +338,7 @@ class FitResultFrame(wx.Frame):
             wids['chisqr'].SetLabel("%f" % result.chisqr)
         wids['aic'].SetLabel("%f" % result.aic)
         wids['bic'].SetLabel("%f" % result.bic)
-        wids['hist_info'].SetLabel("%d" % len(fit_history))
-        wids['hist_tag'].SetLabel("Latest Fit") #
+        wids['hist_info'].SetLabel("Fit #%d of %d" % (fit_number, len(fit_history)))
 
         wids['data_title'].SetLabel(self.datagroup.filename)
 
@@ -581,7 +580,7 @@ class PrePeakPanel(wx.Panel):
         self.ppeak_ehi.SetValue(data['ehi'])
         self.array_choice.SetStringSelection(data['array_desc'])
         self.show_e0.Enable(data['show_e0'])
-        self.show_centroind.Enable(data['show_centroid'])
+        self.show_centroid.Enable(data['show_centroid'])
         self.show_fitrange.Enable(data['show_fitrange'])
         self.show_peakrange.Enable(data['show_peakrange'])
         self.plot_sub_bline.Enable(data['plot_sub_bline'])
@@ -605,7 +604,6 @@ class PrePeakPanel(wx.Panel):
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
         form_opts['show_e0'] = self.show_e0.IsChecked()
-
         return form_opts
 
 
@@ -1241,6 +1239,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.parent.show_subframe('result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
 
+        self.parent.subframes['result_frame'].show_fitresult()
         for m in self.parent.afterfit_menus:
             self.parent.menuitems[m].Enable(True)
 
