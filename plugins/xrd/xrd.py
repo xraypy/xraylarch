@@ -20,8 +20,6 @@ from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
 
-from larch_plugins.xrmmap import read_xrd_netcdf
-
 HAS_larch = False
 try:
     from larch import Group
@@ -29,16 +27,16 @@ try:
     HAS_larch = True
 except:
     grpobjt = object
-    
+
 ##########################################################################
 # CLASSES
 
 class xrd1d(grpobjt):
     '''
     1D XRD data class
-    
+
     --> all length units in m (unless otherwise noted)
-    
+
     Attributes:
     ------------
     * self.filename      = 'CeO2_Allende.xy'      # file containing x-y data
@@ -60,7 +58,7 @@ class xrd1d(grpobjt):
     * self.splinefile    = None                   # spline file for detector
     * self.polarization  = None                   # polarization of detector
     * self.normalization = 1.0                    # normalization factor for detector
-    
+
     # Data fitting parameters
     * self.uvw           = [0.313, -0.109, 0.019] # instrumental broadening parameters
     * self.D             = None                   # particle size broadening (units: A)
@@ -71,7 +69,7 @@ class xrd1d(grpobjt):
     * self.bkgd          = None                   # fit background for data
 
     * self.matches       = None                   # list of amcsd matches from database
-    
+
     * self.xrd2d         = None                   # 2D data
     * self.cake          = None                   # 2D cake
 
@@ -86,7 +84,7 @@ class xrd1d(grpobjt):
 
         self.energy     = energy
         self.wavelength = wavelength
-        
+
         if energy is None and wavelength is None:
             self.energy = 19.0
             self.wavelength = lambda_from_E(self.energy)
@@ -117,7 +115,7 @@ class xrd1d(grpobjt):
                 self.I    = None
                 self.bkgd = None
 
-        
+
         ## Analysis parameters - set defaults
         self.uvw = None
         self.D   = None
@@ -127,30 +125,30 @@ class xrd1d(grpobjt):
         self.imax = None
 
         self.matches = None
-    
+
         self.xrd2d   = None
-        self.cake    = None    
+        self.cake    = None
 
         if HAS_larch:
            Group.__init__(self)
 
-    
+
     def xrd_from_2d(self,xy,xtype,verbose=True):
         self.set_xy_data(xy,xtype)
 
     def xrd_from_file(self,filename,verbose=True):
-        
+
         try:
             from larch_plugins.xrmmap import read1DXRDFile
             head,dat = read1DXRDFile(filename)
             if verbose:
                 print('Opening xrd data file: %s' % os.path.split(filename)[-1])
-            if len(head) < 4: 
+            if len(head) < 4:
                 print('WARNING: Using default energy for data. None given in file.')
         except:
            print('incorrect xy file format: %s' % os.path.split(filename)[-1])
            return
-           
+
         if self.label is None: self.label = os.path.split(filename)[-1]
 
         ## header info
@@ -189,18 +187,18 @@ class xrd1d(grpobjt):
 
         ## data
         self.set_xy_data(dat,xtype)
-        
+
     def set_xy_data(self,xy,xtype):
-        
+
         if xy is not None:
             xy = np.array(xy)
             if xy.shape[0] > xy.shape[1]:
-                x,y = np.split(xy,2,axis=1)        
+                x,y = np.split(xy,2,axis=1)
             else:
                 x,y = np.split(xy,2,axis=0)
             self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
             self.I = np.array(y).squeeze()
-        
+
             self.imin,self.imax = 0,len(self.q)
             self.bkgd = np.zeros(np.shape(self.I))
 
@@ -218,12 +216,12 @@ class xrd1d(grpobjt):
                 self.d[self.imin:self.imax],
                 self.I[self.imin:self.imax],
                 self.bkgd]
-               
+
     def reset_bkgd(self):
          self.bkgd = np.zeros(np.shape(self.I))
 
     def slct_xaxis(self,xtype='',xi=None):
-    
+
         if xtype.startswith('q') or xi == 0:
             x = self.q
         elif xtype.startswith('2th') or xi == 1:
@@ -233,19 +231,19 @@ class xrd1d(grpobjt):
         else:
             print('The provided x-axis label (%s or &i) not correct.' % (xtype,xi))
             return
-        
+
         return x
-    
+
     def set_trim(self,xmin,xmax,xtype='',xi=None):
-    
+
         x = self.slct_xaxis(xtype=xtype,xi=xi)
-            
+
         self.imin,self.imax = 0,len(x)-1
         if xmin > np.min(x):
             self.imin = (np.abs(x-xmin)).argmin()
         if xmax < np.max(x):
             self.imax = (np.abs(x-xmax)).argmin()
-            
+
     def all_data(self,reset=False,bkgd=False):
 
         if reset: self.imin,self.imax = 0,len(self.I)
@@ -262,34 +260,34 @@ class xrd1d(grpobjt):
                 self.d[self.imin:self.imax],
                 self.I[self.imin:self.imax],
                 self.bkgd]
-            
+
     def fit_background(self,**kwargs):
-    
+
         x,y = self.q[self.imin:self.imax],self.I[self.imin:self.imax]
         self.bkgd = xrd_background(x,y,**kwargs)
-        
+
         while len(self.bkgd) < len(y):
             self.bkgd = np.append(self.bkgd,self.bkgd[-1])
 
     def find_peaks(self,bkgd=False,threshold=None,**kwargs):
-    
+
         all_data = np.array(self.all_data(bkgd=bkgd))
 
-        
+
         self.pki = peakfinder(all_data[3],**kwargs)
         if threshold is not None:
             self.pki = peakfilter(threshold,self.pki,all_data[3])
 
         pk_data = np.zeros((5,len(self.pki)))
         for i,pki in enumerate(self.pki): pk_data[:,i] = all_data[:,pki]
-        
+
 #     def refine_peaks(self,trim=False,bkgd=False):
-#     
+#
 #         q,twth,d,I = self.trim_all(trim,bkgd)
-#         
+#
 #         pktwth,pkfwhm,self.Ipks = peakfitter(self.pki,twth,I,fittype='double')
 #         #self.peaks = zip(pkfwhm,pkI)
-# 
+#
 #         self.qpks,self.twthpks,self.dpks = calculate_xvalues(pktwth,'2th',self.wavelength)
 
 #     def fit_pattern(self):
@@ -298,28 +296,10 @@ class xrd1d(grpobjt):
 #         fit = np.zeros(len(self.I))
 #         for i,j in enumerate(self.pki):
 #             a = None
-        
 
-def read_xrd_data(filepath):
 
-    if not os.path.exists(filepath):
-        return
 
-    try:
-        data = np.array(read_xrd_netcdf(filepath))
-    except TypeError:
-        try:
-            data = np.array(tifffile.imread(filepath))
-        except:
-            try:
-                data = xrd1d(file=filepath).I
-            except:
-                return
-    return data
-                
-            
 
-        
 class XRD(grpobjt):
     '''
     X-Ray Diffraction (XRD) class
@@ -338,11 +318,8 @@ class XRD(grpobjt):
     mkak 2016.08.20
     '''
 
-    def __init__(self, data2D=None, xpixels=2048, ypixels=2048,
-                       data1D=None, nwedge=0, title=None,
-                       steps=5001, name='xrd', filename=None,
-                       calfile=None, energy=None, wavelength=None,
-                       npixels=None, _larch=None, **kws):
+    def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0,
+                 steps=5001, name='xrd', _larch=None, **kws):
 
         self.name    = name
         self.xpix    = xpixels
@@ -354,22 +331,13 @@ class XRD(grpobjt):
         self.data2D  = data2D
         self.cake    = None
 
-        self.calfile    = calfile
-        
-        if energy is None and wavelength is not None:
-            self.wavelegth = wavelength
-            self.energy = E_from_lambda(wavelength)
-        elif energy is not None and wavelength is None:
-            self.energy = energy
-            self.wavelength = lambda_from_E(self.energy)
-        else:
-            self.energy     = energy
-            self.wavelength = wavelength
+        self.energy     = None
+        self.wavelength = None
+        self.calfile    = None
 
-        
-        self.filename = filename
-        self.title    = title
-        self.npixels  = npixels
+        self.filename = None
+        self.title    = None
+        self.npixels  = None
 
         if HAS_larch:
             Group.__init__(self)
@@ -383,22 +351,22 @@ class XRD(grpobjt):
             return form % (self.name, self.steps)
         else:
             form = "<no 1D or 2D XRD pattern given>"
-            return form       
+            return form
 
     def add_environ(self, desc='', val='', addr=''):
         '''add an Environment setting'''
         if len(desc) > 0 and len(val) > 0:
             self.environ.append(Environment(desc=desc, val=val, addr=addr))
-            
-            
+
+
     def calc_1D(self,save=False,calccake=True,calc1d=True,verbose=False):
-    
+
         kwargs = {'steps':self.steps}
-        
+
         if save:
             file = self.save_1D()
-            kwargs.update({'file':file}) 
-                    
+            kwargs.update({'file':file})
+
         if os.path.exists(self.calfile):
             if len(self.data2D) > 0:
                 self.data1D = integrate_xrd(self.data2D,self.calfile,
@@ -410,7 +378,7 @@ class XRD(grpobjt):
         else:
             if verbose:
                 print('Could not locate file %s' % self.calfile)
-    
+
     def save_1D(self,file=None):
 
         if file is None:
@@ -423,7 +391,7 @@ class XRD(grpobjt):
 
 
     def save_2D(self,file=None,verbose=False):
-    
+
         if file is None:
             counter = 1
             while os.path.exists('%s/%s_%03d.tiff' % (os.getcwd(),self.title,counter)):
@@ -440,24 +408,24 @@ class XRD(grpobjt):
 def calculate_xvalues(x,xtype,wavelength):
     '''
     projects given x-axis onto q-, 2theta-, and d-axes
-    
+
     x            :   list or array (expected units: 1/A, deg, or A)
     xtype        :   options 'q', '2th', or 'd'
     wavelength   :   incident x-ray wavelength (units: A)
-    
+
     q, twth, d   :   returned with same dimensions as x (units: 1/A, deg, A)
     '''
 
     x = np.array(x).squeeze()
-
     if xtype.startswith('q'):
+
         q = x
         d = d_from_q(q)
         if wavelength is not None:
             twth = twth_from_q(q,wavelength)
         else:
-            twth = np.zeros(len(q))        
-    
+            twth = np.zeros(len(q))
+
     elif xtype.startswith('2th'):
 
         twth = x
@@ -467,7 +435,7 @@ def calculate_xvalues(x,xtype,wavelength):
         else:
             q = np.zeros(len(twth))
             d = np.zeros(len(twth))
-    
+
     elif xtype.startswith('d'):
 
         d = x
@@ -476,17 +444,17 @@ def calculate_xvalues(x,xtype,wavelength):
             twth = twth_from_d(d,wavelength)
         else:
             twth = np.zeros(len(d))
-    
+
     else:
         print('The provided x-axis label (%s) not correct. Check data.' % xtype)
         return None,None,None
-        
-    
+
+
     return q,twth,d
 
 
 def create_xrd(data2D=None, xpixels=2048, ypixels=2048,
-               data1D=None, nwedge=0, steps=5001, 
+               data1D=None, nwedge=0, steps=5001,
                name='xrd', _larch=None, **kws):
 
     '''
@@ -515,7 +483,10 @@ def create_xrd1d(file, _larch=None, **kws):
 
      Parameters:
      ------------
-
+      data2D:   2D diffraction patterns
+      data1D:   1D diffraction patterns
+      xpixels:  number of x pixels
+      ypixels:  number of y pixels
 
      Returns:
      ----------
@@ -524,7 +495,7 @@ def create_xrd1d(file, _larch=None, **kws):
     '''
     return xrd1d(file=file, **kws)
 
-   
+
 
 def registerLarchPlugin():
     return ('_xrd', {'create_xrd': create_xrd, 'create_xrd1d': create_xrd1d})
