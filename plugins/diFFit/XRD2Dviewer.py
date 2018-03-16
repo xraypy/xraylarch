@@ -1063,9 +1063,9 @@ class diFFit2DFrame(wx.Frame):
         self.ch_img.Bind(wx.EVT_CHOICE, self.selectIMAGE)
         vbox.Add(self.ch_img, flag=wx.EXPAND|wx.ALL, border=8)
 
-        self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=1, size=(120,-1),
+        self.hrz_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=100, size=(120,-1),
                                  style = wx.SL_HORIZONTAL|wx.SL_LABELS)
-        self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=1, size=(-1,120),
+        self.vrt_frm_sldr = wx.Slider(self.panel, minValue=0, maxValue=100, size=(-1,120),
                                  style = wx.SL_VERTICAL|wx.SL_LABELS|wx.SL_INVERSE)
 
         self.vrt_frm_btn = [ wx.Button(self.panel,label=u'\u2191', size=(40, -1)),
@@ -1215,7 +1215,7 @@ class diFFit2DFrame(wx.Frame):
         ## Background
         hbox_bkgd1 = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_bkgd = wx.Button(panel,label='BACKGROUND')
-        self.sldr_bkgd = wx.Slider(self.panel,style=wx.SL_VALUE_LABEL)
+        self.sldr_bkgd = wx.Slider(self.panel,style=wx.SL_VALUE_LABEL, maxValue=1e3)
 
         self.sldr_bkgd.Bind(wx.EVT_SLIDER,self.onBkgdScale)
         self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
