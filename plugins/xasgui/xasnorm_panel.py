@@ -576,4 +576,4 @@ class XASNormPanel(wx.Panel):
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
         if not popts['delay_draw']:
-            ppanel.canvas.draw()'
+            ppanel.canvas.draw()
