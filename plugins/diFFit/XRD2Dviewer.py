@@ -1147,7 +1147,9 @@ class diFFit2DFrame(wx.Frame):
 
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_VALUE_LABEL,   size=(275,-1))
+        self.sldr_cntrst = wx.Slider(self.panel, style=wx.SL_LABELS,
+                                     size=(275,-1), maxValue=5e6)
+
         self.entr_min = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(50,-1))
         self.entr_max = wx.TextCtrl(self.panel,  style=wx.TE_PROCESS_ENTER, size=(80,-1))
 
