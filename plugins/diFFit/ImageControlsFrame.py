@@ -70,7 +70,7 @@ class ImageToolboxFrame(wx.Frame):
     
         hbox_ct2 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_min = wx.StaticText(self.panel, label='min')
-        self.sldr_min = wx.Slider(self.panel)
+        self.sldr_min = wx.Slider(self.panel, style=wx.SL_LABELS, maxValue=5e6)
         self.entr_min = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
         self.sldr_min.Bind(wx.EVT_SLIDER,self.onSlider)
@@ -82,7 +82,7 @@ class ImageToolboxFrame(wx.Frame):
     
         hbox_ct3 = wx.BoxSizer(wx.HORIZONTAL)
         self.ttl_max = wx.StaticText(self.panel, label='max')
-        self.sldr_max = wx.Slider(self.panel)
+        self.sldr_max = wx.Slider(self.panel, style=wx.SL_LABELS, maxValue=5e6)
         self.entr_max = wx.TextCtrl(self.panel,wx.TE_PROCESS_ENTER)
 
         self.sldr_max.Bind(wx.EVT_SLIDER,self.onSlider) 
