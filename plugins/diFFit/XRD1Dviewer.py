@@ -36,7 +36,6 @@ from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                lambda_from_E, E_from_lambda,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,
                                xrd1d,peakfinder_methods,SPACEGROUPS,create_cif,save1D)
-from larch_plugins.xrmmap import read1DXRDFile
 
 ###################################
 
