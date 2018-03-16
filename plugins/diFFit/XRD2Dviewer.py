@@ -30,7 +30,6 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
 
 from larch_plugins.io import tifffile, nativepath
-from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
 from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                                calc_cake,twth_from_q,twth_from_d,
                                return_ai,twth_from_xy,q_from_xy,eta_from_xy)
@@ -87,7 +86,7 @@ class diFFit2DPanel(wx.Panel):
         if self.ai is not None:
             if self.type == 'cake':
                 self.owner.twth = self.plot2D.xdata[int(x)]
-                
+
                 self.owner.xrd2Dcake.plot_line(x=x)
                 self.owner.xrd2Dviewer.plot_ring()
             else:
@@ -304,6 +303,7 @@ class diFFit2DFrame(wx.Frame):
                 xrmfile = h5py.File(path, 'r')
             except IOError:
                 try:
+                    from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
                     image = read_xrd_netcdf(path)
                 except TypeError:
                     try:
@@ -327,14 +327,14 @@ class diFFit2DFrame(wx.Frame):
             del self.open_image[img_no]
         except:
             pass
-        
+
         self.ch_img.Set([image.label for image in self.open_image])
         if len(self.open_image) > 0:
             self.ch_img.SetSelection(0)
             self.selectIMAGE()
         else:
             self.clearIMAGE()
-            
+
 
     def plot2Dxrd(self,iname,image,path='',h5file=None):
 
@@ -347,9 +347,9 @@ class diFFit2DFrame(wx.Frame):
             self.write_message(fail_msg, panel=0)
             print (fail_msg)
             return
-            
+
         self.open_image.append(new_img)
-        
+
         if self.open_image[-1].calfile is not None:
             if os.path.exists(self.open_image[-1].calfile):
                 self.calfile = self.open_image[-1].calfile
@@ -393,7 +393,7 @@ class diFFit2DFrame(wx.Frame):
             if i < 0: i = self.open_image[img_no].iframes + i
             if j < 0: j = self.open_image[img_no].jframes + j
             if i > self.open_image[img_no].iframes: i = i - self.open_image[img_no].iframes
-            if j > self.open_image[img_no].jframes: j = j - self.open_image[img_no].jframes            
+            if j > self.open_image[img_no].jframes: j = j - self.open_image[img_no].jframes
 
             self.raw_img =  self.open_image[img_no].get_image(i=i,j=j)
 
@@ -402,13 +402,13 @@ class diFFit2DFrame(wx.Frame):
             self.displayIMAGE(auto_contrast=False,unzoom=False)#unzoom=True)
 
     def clearIMAGE(self):
-    
+
         try:
             self.xrd2Dviewer.plot2D.clear()
             self.xrd2Dviewer.plot2D.redraw()
         except:
             pass
-    
+
     def displayIMAGE(self,auto_contrast=True,unzoom=False):
 
         self.flipIMAGE()
@@ -972,7 +972,7 @@ class diFFit2DFrame(wx.Frame):
         MenuItem(self, ProcessMenu, 'Remove current back&ground image', '', self.clearBkgd)
         ProcessMenu.AppendSeparator()
         MenuItem(self, ProcessMenu, 'Close current image', '', self.close2Dxrd)
-        
+
         menubar.Append(ProcessMenu, '&Process')
 
         ###########################
