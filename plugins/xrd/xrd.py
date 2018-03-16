@@ -12,6 +12,7 @@ Authors/Modifications:
 
 import os
 import numpy as np
+import larch
 
 from larch_plugins.xrd.xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
                                          q_from_d,q_from_twth,E_from_lambda,lambda_from_E)
@@ -20,18 +21,10 @@ from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch_plugins.io import tifffile
 
-HAS_larch = False
-try:
-    from larch import Group
-    grpobjt = Group
-    HAS_larch = True
-except:
-    grpobjt = object
-
 ##########################################################################
 # CLASSES
 
-class xrd1d(grpobjt):
+class xrd1d(larch.Group):
     '''
     1D XRD data class
 
@@ -129,8 +122,7 @@ class xrd1d(grpobjt):
         self.xrd2d   = None
         self.cake    = None
 
-        if HAS_larch:
-           Group.__init__(self)
+        larch.Group.__init__(self)
 
 
     def xrd_from_2d(self,xy,xtype,verbose=True):
@@ -299,8 +291,25 @@ class xrd1d(grpobjt):
 
 
 
+def read_xrd_data(filepath):
 
-class XRD(grpobjt):
+    if not os.path.exists(filepath):
+        return
+
+    try:
+        data = np.array(read_xrd_netcdf(filepath))
+    except TypeError:
+        try:
+            data = np.array(tifffile.imread(filepath))
+        except:
+            try:
+                data = xrd1d(file=filepath).I
+            except:
+                return
+    return data
+
+
+class XRD(larch.Group):
     '''
     X-Ray Diffraction (XRD) class
 
@@ -339,8 +348,7 @@ class XRD(grpobjt):
         self.title    = None
         self.npixels  = None
 
-        if HAS_larch:
-            Group.__init__(self)
+        larch.Group.__init__(self)
 
     def __repr__(self):
         if self.data2D is not None:
