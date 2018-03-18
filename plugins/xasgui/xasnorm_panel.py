@@ -292,6 +292,7 @@ class XASNormPanel(wx.Panel):
         yarray_name  = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
         ylabel = PlotLabels[yarray_name]
 
+        # print("Plot Sel:: ", group_ids)
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
@@ -299,6 +300,7 @@ class XASNormPanel(wx.Panel):
             dgroup.plot_ylabel = ylabel
             if dgroup is not None:
                 dgroup.plot_extras = []
+                # print(" PlotSel -> plot ", checked, (last_id!=checked) )
                 self.plot(dgroup, title='', new=newplot,
                           plot_yarrays=plot_yarrays,
                           show_legend=True, with_extras=False,
@@ -489,17 +491,15 @@ class XASNormPanel(wx.Panel):
             ie0 = index_of(dgroup.energy, dgroup.e0)
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
-    def plot(self, dgroup, title=None, plot_yarrays=None,
+    def plot(self, dgroup, title=None, plot_yarrays=None, delay_draw=False,
              new=True, zoom_out=True, with_extras=True, **kws):
 
         self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
-        newplot = ppanel.plot
-        oplot   = ppanel.oplot
-        plotcmd = oplot
         viewlims = ppanel.get_viewlimits()
+        plotcmd = ppanel.oplot
         if new:
-            plotcmd = newplot
+            plotcmd = ppanel.plot
 
         groupname = dgroup.groupname
 
@@ -542,7 +542,7 @@ class XASNormPanel(wx.Panel):
             plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
-        popts['delay_draw'] = True
+        popts['delay_draw'] = delay_draw
         if hasattr(dgroup, 'custom_plotopts'):
             popts.update(dgroup.custom_plotopts)
 
@@ -553,26 +553,27 @@ class XASNormPanel(wx.Panel):
             if yalabel is not None:
                 popts['label'] = yalabel
 
-            popts['delay_draw'] = (i != narr)
+            popts['delay_draw'] = delay_draw or (i != narr)
+            # print("plot:: ", i, popts['delay_draw'], plotcmd)
+            # print(popts)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
-            plotcmd = oplot
+            plotcmd = ppanel.oplot
 
         if with_extras and plot_extras is not None:
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
                     xpopts = {'marker': 'o', 'markersize': 4,
-                             'label': '_nolegend_',
-                             'markerfacecolor': 'red',
-                             'markeredgecolor': '#884444'}
+                              'label': '_nolegend_',
+                              'markerfacecolor': 'red',
+                              'markeredgecolor': '#884444'}
                     xpopts.update(opts)
                     axes.plot([x], [y], **xpopts)
                 elif etype == 'vline':
                     xpopts = {'ymin': 0, 'ymax': 1.0,
-                             'label': '_nolegend_',
-                             'color': '#888888'}
+                              'label': '_nolegend_',
+                              'color': '#888888'}
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
-
         if not popts['delay_draw']:
             ppanel.canvas.draw()

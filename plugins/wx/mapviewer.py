@@ -989,7 +989,6 @@ class MapPanel(GridPanel):
         for btn in self.map_show: btn.Enable()
 
     def update_xrmmap(self, xrmfile=None):
-        
         if xrmfile is None: xrmfile = self.owner.current_file
 
         self.cfile  = xrmfile
@@ -1214,9 +1213,8 @@ class MapPanel(GridPanel):
             self.ShowMap(new=new)
 
     def set_det_choices(self):
-
         det_list = self.cfile.get_detector_list()
-
+        # print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
@@ -2504,7 +2502,6 @@ class MapViewerFrame(wx.Frame):
             self.filemap[filename].folder_has_newdata()):
             self.process_file(filename)
 
-
         self.current_file = self.filemap[filename]
         ny, nx = self.filemap[filename].get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
@@ -2520,6 +2517,7 @@ class MapViewerFrame(wx.Frame):
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
+
         MenuItem(self, fmenu, '&Open XRM Map File\tCtrl+O',
                  'Read XRM Map File',  self.onReadFile)
         MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F',
@@ -2698,12 +2696,9 @@ class MapViewerFrame(wx.Frame):
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
             if read:
-                if 1==1: #try:
-                    xrmfile = GSEXRM_MapFile(filename=str(path))
-                    self.add_xrmfile(xrmfile)
-#                 except:
-#                     print('Error reading path: %s' % str(path))
-#                     pass
+                xrmfile = GSEXRM_MapFile(filename=str(path))
+                self.add_xrmfile(xrmfile)
+
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
@@ -2923,7 +2918,6 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_thread.start()
 
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
-
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
