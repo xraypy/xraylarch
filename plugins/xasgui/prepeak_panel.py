@@ -56,7 +56,6 @@ ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                           'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
                 }
 
-
 # map of lmfit function name to Model Class
 ModelFuncs = {'constant': 'ConstantModel',
               'linear': 'LinearModel',
@@ -1164,16 +1163,31 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         fullmodel = None
         params = Parameters()
         self.summary = {'components': [], 'options': {}}
+        peaks = []
         for comp in self.fit_components.values():
+            _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     params.add(parwids.param)
+                    #print(" add param ", parwids.param)
+                    if parwids.param.name.endswith('_center'):
+                        _cen = parwids.param.name
+                    elif parwids.param.name.endswith('_amplitude'):
+                        _amp = parwids.param.name
+
                 self.summary['components'].append((comp.mclass.__name__, comp.mclass_kws))
                 thismodel = comp.mclass(**comp.mclass_kws)
                 if fullmodel is None:
                    fullmodel = thismodel
                 else:
                     fullmodel += thismodel
+                if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
+                    peaks.append((_amp, _cen))
+
+        if len(peaks) > 0:
+            denom = '+'.join([p[0] for p in peaks])
+            numer = '+'.join(["%s*%s "% p for p in peaks])
+            params.add('fit_centroid', expr="(%s)/(%s)" %(numer, denom))
 
         self.fit_model = fullmodel
         self.fit_params = params
