@@ -6,8 +6,9 @@ import os
 import time
 import string
 import six
-from  dateutil.parser import parse as dateparse
 import numpy as np
+from dateutil.parser import parse as dateparse
+from math import log10
 from larch import ValidateLarchPlugin, Group
 from larch.utils import fixName
 from larch.symboltable import isgroup
@@ -59,6 +60,50 @@ def iso8601_time(ts):
     tzone = '-%2.2i:00' % (time.timezone/3600)
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
+
+
+def lformat(val, length=12):
+    """Format a number with fixed-length format, somewhat like '%g' except that
+
+        a) the length of the output string will be the requested length.
+        b) positive numbers will have a leading blank.
+        b) the precision will be as high as possible.
+        c) trailing zeros will not be trimmed.
+
+    The precision will typically be length-7, but may be better than
+    that for values with absolute value between 1.e-5 and 1.e8.
+
+    Arguments
+    ---------
+    val       value to be formatted
+    length    length of output string
+
+    Returns
+    -------
+    string of specified length.
+
+    Notes
+    ------
+     Positive values will have leading blank.
+
+    """
+    try:
+        expon = int(log10(abs(val)))
+    except (OverflowError, ValueError):
+        expon = 0
+    length = max(length, 7)
+    form = 'e'
+    prec = length - 7
+    if abs(expon) > 99:
+        prec -= 1
+    elif ((expon > 0 and expon < (prec+4)) or
+          (expon <= 0 and -expon < (prec-1))):
+        form = 'f'
+        prec += 4
+        if expon > 0:
+            prec -= expon
+    fmt = '{0: %i.%i%s}' % (length, prec, form)
+    return fmt.format(val)
 
 def read_ascii(filename, labels=None, simple_labels=False,
                sort=False, sort_column=0, delimeter=None, _larch=None):
@@ -262,7 +307,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # generating array `tlabels` for test labelsaZA
     #
     # generate simple column labels, used as backup
-    clabels = ['col%i' % (i+1) for i in range(ncols)]
+    clabels = ['col%i          ' % (i+1) for i in range(ncols)]
 
     # allow labels to really be 'labelline
     if isinstance(labels, six.string_types) and labelline is None:
@@ -293,7 +338,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # 2.a: check for not enough and too many labels
     if len(tlabels) < ncols:
         for i in range(len(tlabels), ncols):
-            tlabels.append("col%i" % (i+1))
+            tlabels.append("col%i          " % (i+1))
     elif len(tlabels) > ncols:
         tlabels = tlabels[:ncols]
 
@@ -360,7 +405,6 @@ def write_ascii(filename, *args, **kws):
         else:
             header.append(repr(arg))
 
-
     buff = []
     if header is None:
         buff = ['%s Output from Larch %s' % (com, time.ctime())]
@@ -368,12 +412,12 @@ def write_ascii(filename, *args, **kws):
         buff.append('%s %s' % (com, s))
     buff.append('%s---------------------------------'% com)
     if label is None:
-        label = '  '.join(['col%i' % (i+1) for i in range(len(arrays))])
+        label = (' '*13).join(['col%i' % (i+1) for i in range(len(arrays))])
     buff.append('#  %s' % label)
 
     arrays = np.array(arrays)
     for i in range(arraylen):
-        w = [' % f' % val[i] for val in arrays]
+        w = [" %s" % lformat(val[i], length=14) for val in arrays]
         buff.append('  '.join(w))
 
     try:
