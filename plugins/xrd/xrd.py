@@ -297,10 +297,11 @@ def read_xrd_data(filepath):
         return
 
     try:
-        data = np.array(read_xrd_netcdf(filepath))
-    except TypeError:
+        data = np.array(tifffile.imread(filepath))
+    except: # TypeError:
         try:
-            data = np.array(tifffile.imread(filepath))
+            from larch_plugins.xrmmap import read_xrd_netcdf
+            data = np.array(read_xrd_netcdf(filepath))
         except:
             try:
                 data = xrd1d(file=filepath).I
@@ -333,9 +334,6 @@ class XRD(larch.Group):
                        calfile=None, energy=None, wavelength=None,
                        npixels=None, _larch=None, **kws):
 
-# #     def __init__(self, data2D=None, xpixels=2048, ypixels=2048, data1D=None, nwedge=0,
-# #                  steps=5001, name='xrd', _larch=None, **kws):
-
         self.name    = name
         self.xpix    = xpixels
         self.ypix    = ypixels
@@ -345,14 +343,6 @@ class XRD(larch.Group):
         self.data1D  = data1D
         self.data2D  = data2D
         self.cake    = None
-
-#         self.energy     = None
-#         self.wavelength = None
-#         self.calfile    = None
-
-#         self.filename = None
-#         self.title    = None
-#         self.npixels  = None
         
         self.calfile    = calfile
         
