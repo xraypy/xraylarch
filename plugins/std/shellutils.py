@@ -12,6 +12,7 @@ import sys
 from copy import copy, deepcopy
 from glob import glob
 import six
+from six.moves import input
 from larch import ValidateLarchPlugin
 
 MODNAME = '_builtin'
@@ -116,7 +117,7 @@ def show_more(text, filename=None, writer=None,
         i = i + 1
         if i % pagelength == 0:
             try:
-                x = raw_input(ps %  (100.*i/len(txt)))
+                x = input(ps %  (100.*i/len(txt)))
                 if x in ('q','Q'): return
             except KeyboardInterrupt:
                 writer.write("\n")
