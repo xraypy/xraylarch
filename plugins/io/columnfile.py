@@ -307,7 +307,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # generating array `tlabels` for test labelsaZA
     #
     # generate simple column labels, used as backup
-    clabels = ['col%i          ' % (i+1) for i in range(ncols)]
+    clabels = ['col%i' % (i+1) for i in range(ncols)]
 
     # allow labels to really be 'labelline
     if isinstance(labels, six.string_types) and labelline is None:
@@ -338,7 +338,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     # 2.a: check for not enough and too many labels
     if len(tlabels) < ncols:
         for i in range(len(tlabels), ncols):
-            tlabels.append("col%i          " % (i+1))
+            tlabels.append("col%i" % (i+1))
     elif len(tlabels) > ncols:
         tlabels = tlabels[:ncols]
 
