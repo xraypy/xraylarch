@@ -317,7 +317,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmfile=None):
-        
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         self.cfile = xrmfile
@@ -476,12 +476,12 @@ class TomographyPanel(GridPanel):
         self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
 
         self.refine_center.SetValue(False)
-        
+
         self.sino_data   = Choice(self, size=(250, -1))
         self.tomo_save   = Button(self, 'Save reconstruction',     size=(150, -1),
                                action=self.onSaveTomograph)
-        
-        
+
+
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
                                                                style=LEFT,  newrow=True)
@@ -542,7 +542,7 @@ class TomographyPanel(GridPanel):
 
         self.center_value.Disable()
         self.center_range.Disable()
-        
+
 
     def enable_options(self):
 
@@ -567,7 +567,7 @@ class TomographyPanel(GridPanel):
             self.center_range.SetRange(1,20)
 
     def update_xrmmap(self, xrmfile=None):
-        
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         self.cfile  = xrmfile
@@ -590,7 +590,7 @@ class TomographyPanel(GridPanel):
             center = self.cfile.get_tomography_center()
             self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
             self.center_value.SetValue(center)
-            
+
         self.plotSELECT()
 
     def refineCHOICE(self,event=None):
@@ -710,7 +710,7 @@ class TomographyPanel(GridPanel):
 
         x     = xrmfile.get_translation_axis(hotcols=args['hotcols'])
         omega = xrmfile.get_rotation_axis(hotcols=args['hotcols'])
-        
+
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
@@ -763,7 +763,7 @@ class TomographyPanel(GridPanel):
         return title,subtitles,info,x,omega,sino_order,sino
 
     def onSaveTomograph(self, event=None):
-    
+
         xrmfile = self.owner.current_file
         detpath     = self.sino_data.GetStringSelection()
         tomo_center = self.center_value.GetValue()
@@ -777,7 +777,7 @@ class TomographyPanel(GridPanel):
 
         print('\nSaving tomographic reconstruction for %s ...' % detpath)
 
-        xrmfile.save_tomograph(detpath, tomo_alg=tomo_alg, 
+        xrmfile.save_tomograph(detpath, tomo_alg=tomo_alg,
                                center=tomo_center,dtcorrect=self.owner.dtcor,
                                hotcols=self.owner.hotcols)
         print('Saved.')
@@ -788,14 +788,14 @@ class TomographyPanel(GridPanel):
         xrmfile = self.owner.current_file
         tomo_center = self.center_value.GetValue()
         det = None
-        
+
         ## returns sino in order: slice, x, 2theta
         title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
 
         tomo_alg = [self.alg_choice[0].GetStringSelection(),
                     self.alg_choice[1].GetStringSelection(),
                     self.alg_choice[2].GetStringSelection()]
-                
+
         args = {'refine_center'  : self.refine_center.GetValue(),
                 'center_range'   : self.center_range.GetValue(),
                 'center'         : tomo_center,
@@ -805,8 +805,8 @@ class TomographyPanel(GridPanel):
                 'hotcols'        : self.owner.hotcols}
 
         tomo = xrmfile.get_tomograph(sino, **args)
-        
-        if args['refine_center']: 
+
+        if args['refine_center']:
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
             self.refine_center.SetValue(False)
 
@@ -826,7 +826,7 @@ class TomographyPanel(GridPanel):
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
 
-        self.owner.display_tomo(sino,tomo,title=title,det=det)                               
+        self.owner.display_tomo(sino,tomo,title=title,det=det)
 
     def set_center(self,cen):
 
@@ -867,8 +867,8 @@ class TomographyPanel(GridPanel):
     def update_roi(self, detname):
 
         return self.cfile.get_roi_list(detname)
-        
-        
+
+
 ##################################
 class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
@@ -1073,7 +1073,7 @@ class MapPanel(GridPanel):
         subtitles = None
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
-        
+
         if xrmfile is None: xrmfile = self.owner.current_file
 
         args={'hotcols'   : self.owner.hotcols,
@@ -1242,7 +1242,7 @@ class MapPanel(GridPanel):
     def update_roi(self, detname):
 
         return self.cfile.get_roi_list(detname)
-        
+
 class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
     label  = 'Map Info'
@@ -1279,10 +1279,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmfile=None):
-        
+
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
-        
+
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
@@ -1396,7 +1396,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['Original data path'].SetLabel(folderpath)
 
         self.wids['XRD Calibration'].SetLabel('')
-        xrd_calibration = bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))
+        xrd_calibration = ''
+        if 'xrd1D' in xrmmap:
+            xrd_calibration = bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))
         if not os.path.exists(xrd_calibration):
             xrd_calibration = ''
         self.wids['XRD Calibration'].SetLabel(os.path.split(xrd_calibration)[-1])
@@ -1417,7 +1419,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             note_str[2] = notes['proposal']
         if 'user' in notes:
             note_str[3] = notes['user']
-    
+
         for title,note in zip(note_title,note_str):
             self.wids[title].SetLabel(note)
 
@@ -1588,7 +1590,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
             except ValueError:
                 hmean, gmean, skew, kurtosis = 0, 0, 0, 0
-                
+
             smode = '--'
             fmt = '{:,.1f}'.format # use thousands commas, 1 decimal place
             mode = stats.mode(d)
@@ -1608,7 +1610,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         area = xrmfile.get_area(name=areaname)
         amask = area.value
-        
+
         ## do not calculate yet for tomography areas
         ## will need to calculate each ROI, as well
         ## mkak 2018.03.07
@@ -1650,7 +1652,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
-            
+
         if version_ge(version, '2.0.0'):
             for scalar in d_scas:
                 d = xrmmap['scalars'][scalar].value
@@ -1685,8 +1687,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 
     def update_xrmmap(self, xrmfile=None):
-        
-        if xrmfile is None: xrmfile = self.owner.current_file        
+
+        if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
 
         self.set_area_choices(xrmmap, show_last=True)
@@ -1695,7 +1697,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.report.DeleteAllItems()
         self.report_data = []
         self.onSelect()
-        
+
     def set_enabled_btns(self, xrmfile=None):
 
         if xrmfile is None: xrmfile = self.owner.current_file
@@ -1724,7 +1726,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 
     def clear_area_choices(self):
-    
+
         self.info1.SetLabel('')
         self.info2.SetLabel('')
         self.info3.SetLabel('')
@@ -1736,7 +1738,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.clear_area_choices()
 
         areas = xrmmap['areas']
-        
+
         c = self.choice
         c.Clear()
         self.choices = {}
@@ -2176,7 +2178,7 @@ class MapViewerFrame(wx.Frame):
         #     self.larch_panel.update()
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
-        
+
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask, tomo=tomo)
@@ -2184,12 +2186,12 @@ class MapViewerFrame(wx.Frame):
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
                      tomo=False, **kws):
-        
+
         if xrmfile is None:
             xrmfile = self.current_file
 
         ny, nx = xrmfile.get_shape()
-        
+
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             if mask.shape == (nx, ny): ## sinogram
                 mask = np.swapaxes(mask,0,1)
@@ -2211,7 +2213,7 @@ class MapViewerFrame(wx.Frame):
 
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
-            
+
             try:
                 aname = self.sel_mca.areaname
             except:
@@ -2228,7 +2230,7 @@ class MapViewerFrame(wx.Frame):
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
-                    
+
         if self.showxrd:
             for p in self.nbpanels:
                 if hasattr(p, 'onXRD'):
@@ -2338,7 +2340,7 @@ class MapViewerFrame(wx.Frame):
     def display_tomo(self, sino, tomo, title='', info='', x=None, y=None, xoff=0, yoff=0,
                     det=None, subtitles=None, xrmfile=None,
                     _lassocallback=True):
-        
+
         displayed = False
         if _lassocallback:
              lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
@@ -2542,12 +2544,12 @@ class MapViewerFrame(wx.Frame):
         fmenu.AppendSeparator()
 
         mid = wx.NewId()
-        fmenu.Append(mid,  'Correct Deadtime', 
+        fmenu.Append(mid,  'Correct Deadtime',
                      'Correct Deadtime',
                      kind=wx.ITEM_CHECK)
         fmenu.Check(mid, self.dtcor) ## True
         self.Bind(wx.EVT_MENU, self.onCorrectDeadtime, id=mid)
-        
+
         mid = wx.NewId()
         fmenu.Append(mid,  'Ignore First/Last Columns',
                      'Ignore First/Last Columns',
@@ -2556,21 +2558,21 @@ class MapViewerFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onHotColumns, id=mid)
 
         mid = wx.NewId()
-        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W', 
+        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W',
                      'Watch HDF5 Files',
                      kind=wx.ITEM_CHECK)
         fmenu.Check(mid, self.watch_files) ## False
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
 
         mid = wx.NewId()
-        fmenu.Append(mid,  'Display 1DXRD for areas', 
+        fmenu.Append(mid,  'Display 1DXRD for areas',
                      'Display 1DXRD for areas',
                      kind=wx.ITEM_CHECK)
         fmenu.Check(mid, self.showxrd) ## False
         self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=mid)
 
         fmenu.AppendSeparator()
-        
+
 
         MenuItem(self, fmenu, '&Quit\tCtrl+Q',
                   'Quit program', self.onClose)
@@ -2832,11 +2834,11 @@ class MapViewerFrame(wx.Frame):
                 self.current_file.read_xrd1D_ROIFile(path)
 
     def add1DXRD(self, event=None):
-        
+
         if len(self.filemap) > 0:
             xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
             poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
-        
+
             if not os.path.exists(poni_path):
                 self.openPONI()
                 poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
@@ -2845,7 +2847,7 @@ class MapViewerFrame(wx.Frame):
                 self.current_file.add_1DXRD()
 
     def onShow1DXRD(self, event=None):
-        
+
         self.showxrd = event.IsChecked()
         if self.showxrd:
             msg = 'Show 1DXRD data for area'
@@ -2853,9 +2855,9 @@ class MapViewerFrame(wx.Frame):
             msg = 'Not displaying 1DXRD for area'
         self.message(msg)
         ##print(msg)
-   
+
     def onCorrectDeadtime(self, event=None):
-        
+
         self.dtcor = event.IsChecked()
         if self.dtcor:
             msg = 'Using deadtime corrected data...'
@@ -2865,7 +2867,7 @@ class MapViewerFrame(wx.Frame):
         ##print(msg)
 
     def onHotColumns(self, event=None):
-        
+
         self.hotcols = event.IsChecked()
         if self.hotcols:
             msg = 'Ignoring first/last data columns.'
@@ -3292,14 +3294,14 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i+1].Bind(wx.EVT_BUTTON,  partial(self.onBROWSEfile,i=i))
 
         xrdsizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         xrdsizer1.Add(self.XRDInfo[3], flag=wx.RIGHT, border=5)
         xrdsizer1.Add(self.XRDInfo[4], flag=wx.RIGHT, border=5)
         xrdsizer1.Add(self.XRDInfo[5], flag=wx.RIGHT, border=5)
         xrdsizer1.Add(self.XRDInfo[6], flag=wx.RIGHT, border=5)
 
         xrdsizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         xrdsizer2.Add(self.XRDInfo[9], flag=wx.RIGHT, border=30)
         xrdsizer2.Add(self.XRDInfo[10], flag=wx.RIGHT, border=5)
         xrdsizer2.Add(self.XRDInfo[11], flag=wx.RIGHT, border=5)
@@ -3417,14 +3419,14 @@ class OpenMapFolder(wx.Dialog):
             self.H5cmprInfo[1].SetChoices([''])
 
     def onBROWSEfile(self,event=None,i=1):
-    
+
         if i == 8:
             wldcd = '2D XRD background file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         if i == 13:
             wldcd = '1D XRD background file (*.xy)|*.xy|All files (*.*)|*.*'
         else: ## elif i == 1:
             wldcd = 'XRD calibration file (*.poni)|*.poni|All files (*.*)|*.*'
-        
+
         if os.path.exists(self.XRDInfo[i].GetValue()):
            dfltDIR = self.XRDInfo[i].GetValue()
         else:
