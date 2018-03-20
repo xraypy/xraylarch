@@ -48,10 +48,23 @@ plotlabels = group(k       = r'$k \rm\,(\AA^{-1})$',
                    e0color = '#B2B282',
                    chirlab = chirlab)
 
+def _get_title(dgroup, title=None):
+    """get best title for group"""
+    if title is not None:
+        return title
+    #endif
+    for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
+        t = getattr(dgroup, attr, None)
+        if t is not None:
+            return t
+        #endif
+    #endfor
+    return repr(dgroup)
+#enddef
 
 def plot_mu(dgroup, show_norm=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
-            emin=None, emax=None, label='mu', new=True, win=1):
+            emin=None, emax=None, label='mu', new=True, title=None, win=1):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
              show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
@@ -71,13 +84,14 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
      emin       min energy to show, relative to E0 [None, start of data]
      emax       max energy to show, relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
+     title      string for plot titlel [None, may use filename if available]
      new        bool whether to start a new plot [True]
      win        integer plot window to use [1]
 
     Notes
     -----
      1. The input data group must have the following attributes:
-         energy, mu, norm, e0, pre_edge, edge_step, filename
+         energy, mu, norm, e0, pre_edge, edge_step
     """
     if hasattr(dgroup, 'mu'):
         mu = dgroup.mu
@@ -105,8 +119,10 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
     if emin is not None: xmin = dgroup.e0 + emin
     if emax is not None: xmax = dgroup.e0 + emax
 
+    title = _get_title(dgroup, title=title)
+
     opts = dict(win=win, show_legend=True, linewidth=3,
-                title=dgroup.filename, xmin=xmin, xmax=xmax)
+                title=title, xmin=xmin, xmax=xmax)
 
     plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
          label=label, zorder=20, new=new, **opts)
@@ -142,7 +158,8 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
     #endif
 #enddef
 
-def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
+def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
+             label=None, title=None, new=True, win=1):
     """
     plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
 
@@ -156,6 +173,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None,
      emax     max energy to show, relative to E0 [None, end of data]
      show_e0  bool whether to show E0 [False]
      label    string for label [``None``: 'mu']
+     title    string for plot titlel [None, may use filename if available]
      new      bool whether to start a new plot [True]
      win      integer plot window to use [1]
 
@@ -186,10 +204,12 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None,
         ylabel = "%s (norm)" % ylabel
         label = "%s (norm)" % label
     #endif
+    title = _get_title(dgroup, title=title)
+
     opts = dict(win=win, show_legend=True, linewidth=3)
     plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
-         title='%s' % dgroup.filename,
-         label=label, zorder=20, new=new, xmin=xmin, xmax=xmax, **opts)
+         title=title, label=label, zorder=20, new=new, xmin=xmin, xmax=xmax,
+         **opts)
     plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
     if show_e0:
         plot_axvline(dgroup.e0, zorder=2, size=3,
@@ -200,7 +220,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None,
 
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
-              label=None, new=True, win=1):
+              label=None, title=None, new=True, win=1):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
               new=True, win=1)
@@ -214,6 +234,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      kmax         max k to show [None, end of data]
      show_window  bool whether to also plot k-window [True]
      label        string for label [``None`` to use 'chi']
+     title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -232,8 +253,9 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     if label is None:
         label = 'chi'
     #endif
+    title = _get_title(dgroup, title=title)
     plot(dgroup.k, chi, xlabel=plotlabels.k,
-         ylabel=plotlabels.chikw.format(kweight), title=dgroup.filename,
+         ylabel=plotlabels.chikw.format(kweight), title=title,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
@@ -243,7 +265,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 
 
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, label=None, new=True, win=1):
+              rmax=None, label=None, title=None, new=True, win=1):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, label=None, new=True, win=1)
@@ -257,6 +279,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
      label        string for label [``None`` to use 'chir']
+     title        string for plot titlel [None, may use filename if available]
      rmax         max R to show [None, end of data]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
@@ -268,8 +291,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     """
 
     kweight = dgroup.xftf_details.call_args['kweight']
+    title = _get_title(dgroup, title=title)
     opts = dict(win=win, show_legend=True, linewidth=3,
-                title=dgroup.filename, zorder=20, xmax=rmax,
+                title=title, zorder=20, xmax=rmax,
                 xlabel=plotlabels.r, new=new)
 
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
@@ -293,8 +317,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
-                title=None,
-                new=True, win=1):
+                title=None, new=True, win=1):
     """
     plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
@@ -312,7 +335,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
      show_mag     bool whether to plot |chidr(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
-     title        string for plot title [None]
+     title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
 
@@ -325,7 +348,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     data_chik  = dataset.data.chi * dataset.data.k**kweight
     model_chik = dataset.model.chi * dataset.model.k**kweight
 
-    if title is None: title = dataset.data.filename
+    title = _get_title(dataset, title=title)
     opts=dict(labelfontsize=10, legendfontsize=10, linewidth=3,
               show_legend=True, win=win, title=title)
 
@@ -444,7 +467,8 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     #endif
 #enddef
 
-def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
+def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None,
+                 title=None, new=True, win=1, **kws):
     """
     plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
 
@@ -457,6 +481,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for paths for plot [-1]
      new          bool whether to start a new plot [True]
+     title        string for plot titlel [None, may use filename if available]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
     """
@@ -466,7 +491,8 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
 
     model_chi_kw = model.chi * model.k**kweight
 
-    plot(model.k, model_chi_kw, title=dataset.dataset.filename,
+    title = _get_title(dataset, title=title)
+    plot(model.k, model_chi_kw, title=title,
          xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
          label='sum', new=new, xmin=xmin, xmax=kmax, win=win, **kws)
 
@@ -477,7 +503,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):
 #enddef
 
 def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False,
-                 show_imag=False, new=True, win=1, **kws):
+                 show_imag=False, title=None, new=True, win=1, **kws):
     """
     plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False,
                  show_imag=False, new=True, win=1, **kws):
@@ -492,6 +518,7 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
      show_mag     bool whether to plot |chi(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
+     title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
      win          integer plot window to use [1]
      kws          additional keyword arguments are passed to plot()
@@ -500,9 +527,9 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False
     model = dataset.model
 
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag, show_real=show_real, show_imag=show_imag)
-
+    title = _get_title(dataset, title=title)
     opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
-                 'xmax': rmax, 'new': new})
+                 'xmax': rmax, 'new': new, 'title': title})
     opts.update(kws)
     if show_mag:
         plot(path.r,  model.chir_mag, label=label, **opts)
