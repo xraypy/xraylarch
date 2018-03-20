@@ -22,7 +22,7 @@ def read_xrd_netcdf(fname,verbose=False):
         print(' reading %s' % fname)
     
     ## Reads an XRD netCDF file with the netCDF plugin buffers
-    xrd_data = read_netcdf(fname,only_key='array_data')
+    xrd_data = read_netcdf(fname, keyword='array_data')
     xrd_data = xrd_data.astype('uint16')
 
     ## Forces data into 3D shape
@@ -38,17 +38,17 @@ def read_xrd_netcdf_exptime(fname,verbose=False):
     '''
     returns header information for provided xrd netcdf file
     '''
-    return read_netcdf(fname,only_key='Attr_FrameTime')
+    return read_netcdf(fname,keyword='Attr_FrameTime')
 
-def read_netcdf(fname,verbose=False,only_key=None):
+def read_netcdf(fname,verbose=False,keyword=None):
     '''
     returns dictionary of all information in provided xrd netcdf file
     unless data from only one key is specified
     '''
    
     with netcdf_open(fname, mmap=False) as file_netcdf:
-        if only_key is not None and only_key in file_netcdf.variables.keys():
-            return file_netcdf.variables[only_key].data
+        if keyword is not None and keyword in file_netcdf.variables.keys():
+            return file_netcdf.variables[keyword].data
         else:
             netcdf_dict = {}
             for key,val in dict(file_netcdf.variables).iteritems():
