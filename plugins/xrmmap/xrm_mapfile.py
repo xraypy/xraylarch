@@ -408,16 +408,20 @@ class GSEXRM_MapRow:
 
             ############################################################################
             ## subtracts background and applies mask, row by row
-            ## mkak 2018.02.01
-            mask2d = np.ones(self.xrd2d[0].shape)
-            dir = -1 if flip else 1
+            ## mkak 2018.02.01 
+            ## major speed up if no background or mask specified
+            ## updated mkak 2018.03.30
+            
             if xrd2dmask is not None:
+                dir = -1 if flip else 1
+                mask2d = np.ones(self.xrd2d[0].shape)
                 mask2d = mask2d - xrd2dmask[::dir]
-                
-            if xrd2dbkgd is not None:
-                self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
-            else:
-                self.xrd2d = mask2d*(self.xrd2d)
+                if xrd2dbkgd is not None:
+                    self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
+                else:
+                    self.xrd2d = mask2d*(self.xrd2d)
+            elif xrd2dbkgd is not None:
+                self.xrd2d = self.xrd2d-xrd2dbkgd
             
             ## limits all values to positive
             self.xrd2d[self.xrd2d < 0] = 0
@@ -1034,6 +1038,7 @@ class GSEXRM_MapFile(object):
     def process_row(self, irow, flush=False, callback=None):
 
         row = self.read_rowdata(irow)
+
         if irow == 0:
             self.build_schema(row,verbose=True)
 
@@ -1048,7 +1053,7 @@ class GSEXRM_MapFile(object):
 
             if hasattr(callback, '__call__'):
                 callback(filename=self.filename, status='complete')
-
+        
     def process(self, maxrow=None, force=False, callback=None):
         "look for more data from raw folder, process if needed"
 
@@ -1313,7 +1318,8 @@ class GSEXRM_MapFile(object):
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
         if self.flag_xrd1d:
-            if thisrow == 0: self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
+            if thisrow == 0:
+                self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
             if self.bkgd_xrd1d is not None:
                 self.xrmmap['xrd1D/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
             else:
@@ -1330,6 +1336,7 @@ class GSEXRM_MapFile(object):
                     ## mkak 2018.02.26
                     wdggrp['counts'][thisrow,] = row.xrd1d_wdg[:,:,iwdg]
 
+        
         if self.flag_xrd2d and row.xrd2d is not None:
             self.xrmmap['xrd2D/counts'][thisrow,] = row.xrd2d
 
@@ -2930,15 +2937,11 @@ class GSEXRM_MapFile(object):
     def read_xrd1D_ROIFile(self,filename,verbose=False):
 
         roidat = readROIFile(filename,xrd=True)
-        print('Reading 1D-XRD ROI file: %s' % filename)
+        print('\nReading 1D-XRD ROI file: %s' % filename)
         for iroi, label, xunit, xrange in roidat:
-            if verbose:
-                t0 = time.time()
-            print('Adding ROI: %s' % label)
+            print(' Adding ROI: %s' % label)
             self.add_xrd1Droi(xrange,label,unit=xunit)
-            if verbose:
-                print('    %0.2f s' % (time.time()-t0))
-        print(' Finished.\n')
+        print('Finished.\n')
 
     def add_xrd1Droi(self, xrange, roiname, unit='q'):
 
