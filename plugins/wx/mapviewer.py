@@ -2292,6 +2292,9 @@ class MapViewerFrame(wx.Frame):
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 
+        # show position on map
+        self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
+
         # next, save file into database
         if self.use_scandb and self.instdb is not None:
             pvn  = pv_fullname
