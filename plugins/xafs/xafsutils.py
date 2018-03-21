@@ -66,6 +66,7 @@ def initializeLarchPlugin(_larch=None):
     mod = getattr(_larch.symtable, '_xafs')
     mod.__doc__ = MODDOC
 
+    import_xafs_plot_module = """
     _larch("import xafs_plots")
     xplots = getattr(_larch.symtable, 'xafs_plots', None)
     if xplots is None:
@@ -80,7 +81,7 @@ def initializeLarchPlugin(_larch=None):
             setattr(_larch.symtable._xafs, name, item)
         delattr(xplots, name)
     delattr(_larch.symtable, 'xafs_plots')
-
+    """
 
 def registerLarchPlugin():
     return ('_xafs', {'etok': etok, 'ktoe': ktoe})
