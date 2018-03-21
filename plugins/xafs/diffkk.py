@@ -154,7 +154,7 @@ def kkmclf(e, finp):
     ei2    = e**2
     ioff   = np.mod(np.arange(npts), 2) - 1
 
-    nptsk  = npts/2
+    nptsk  = int(npts/2)
     k      = np.arange(nptsk)
 
     for i in range(npts):
@@ -188,7 +188,7 @@ def kkmclr(e, finp):
     ei2    = e**2
     ioff   = np.mod(np.arange(npts), 2) - 1
 
-    nptsk  = npts/2
+    nptsk  = int(npts/2)
     k      = np.arange(nptsk)
 
     for i in range(npts):

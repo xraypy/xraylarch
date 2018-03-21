@@ -61,10 +61,10 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 
     xstep = (x[-1] - x[0]) / (len(x)-1)
     xeps  = 1.e-4 * xstep
-    x1 = max(min(x), xmin - dx1 / 2.0)
-    x2 = xmin + dx1 / 2.0  + xeps
-    x3 = xmax - dx2 / 2.0  - xeps
-    x4 = min(max(x), xmax + dx2 / 2.0)
+    x1 = max(min(x), xmin - dx1/2.0)
+    x2 = xmin + dx1/2.0  + xeps
+    x3 = xmax - dx2/2.0  - xeps
+    x4 = min(max(x), xmax + dx2/2.0)
 
     if nam == 'fha':
         if dx1 < 0: dx1 = 0
@@ -257,7 +257,7 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     out = xftf_fast(cchi*win, kstep=kstep, nfft=nfft)
     rstep = pi/(kstep*nfft)
 
-    irmax = min(nfft/2, int(1.01 + rmax_out/rstep))
+    irmax = int(min(nfft/2, 1.01 + rmax_out/rstep))
 
     group = set_xafsGroup(group, _larch=_larch)
     r   = rstep * arange(irmax)

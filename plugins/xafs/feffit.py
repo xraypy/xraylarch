@@ -118,7 +118,7 @@ class TransformGroup(Group):
 
         out = self.fftf(chi)
 
-        irmax = min(self.nfft/2, int(1.01 + rmax_out/self.rstep))
+        irmax = int(min(self.nfft/2, 1.01 + rmax_out/self.rstep))
 
         group = set_xafsGroup(group, _larch=self._larch)
         r   = self.rstep * arange(irmax)
@@ -173,10 +173,10 @@ class TransformGroup(Group):
             if self.wavelet_mask is not None:
                 self._cauchymask = self.wavelet_mask
             else:
-                ikmin = max(0, int(0.01 + self.kmin/self.kstep))
-                ikmax = min(self.nfft/2,  int(0.01 + self.kmax/self.kstep))
-                irmin = max(0, int(0.01 + self.rmin/self.rstep))
-                irmax = min(self.nfft/2,  int(0.01 + self.rmax/self.rstep))
+                ikmin = int(max(0, 0.01 + self.kmin/self.kstep))
+                ikmax = int(min(self.nfft/2,  0.01 + self.kmax/self.kstep))
+                irmin = int(max(0, 0.01 + self.rmin/self.rstep))
+                irmax = int(min(self.nfft/2,  0.01 + self.rmax/self.rstep))
                 cm = np.zeros(nrpts*nkpts, dtype='int').reshape(nrpts, nkpts)
                 cm[irmin:irmax, ikmin:ikmax] = 1
                 self._cauchymask = cm
@@ -201,9 +201,9 @@ class TransformGroup(Group):
         if rmax is not None:
             self.rmax = rmax
 
-        chix   = np.zeros(self.nfft/2) * self.kstep
+        chix   = np.zeros(int(self.nfft/2)) * self.kstep
         chix[:nkpts] = chi
-        chix   = chix[:self.nfft/2]
+        chix   = chix[:int(self.nfft/2)]
         _ffchi = np.fft.fft(chix, n=2*self.nfft)[:self.nfft]
 
         nrpts = int(np.round(self.rmax/self.rstep))
@@ -313,7 +313,7 @@ class FeffitDataSet(Group):
         else:
             chir = [trans.fftf(chi)]
         irmin = int(0.01 + rmin/trans.rstep)
-        irmax = min(trans.nfft/2,  int(1.01 + rmax/trans.rstep))
+        irmax = int(min(trans.nfft/2, 1.01 + rmax/trans.rstep))
         highr = [realimag(chir_[irmin:irmax]) for chir_ in chir]
         # get average of window function value, we will scale eps_r scale by this
         kwin_ave = trans.kwin.sum()*trans.kstep/(trans.kmax-trans.kmin)
@@ -391,8 +391,8 @@ class FeffitDataSet(Group):
 
         all_kweights = isinstance(trans.kweight, Iterable)
         if trans.fitspace == 'k':
-            iqmin = max(0, int(0.01 + trans.kmin/trans.kstep))
-            iqmax = min(trans.nfft/2,  int(0.01 + trans.kmax/trans.kstep))
+            iqmin = int(max(0, 0.01 + trans.kmin/trans.kstep))
+            iqmax = int(min(trans.nfft/2,  0.01 + trans.kmax/trans.kstep))
             if all_kweights:
                 out = []
                 for i, kw in enumerate(trans.kweight):
@@ -419,15 +419,15 @@ class FeffitDataSet(Group):
                 chir = [trans.fftf(diff)]
                 eps_r = [self.epsilon_r]
             if trans.fitspace == 'r':
-                irmin = max(0, int(0.01 + trans.rmin/trans.rstep))
-                irmax = min(trans.nfft/2,  int(0.01 + trans.rmax/trans.rstep))
+                irmin = int(max(0, 0.01 + trans.rmin/trans.rstep))
+                irmax = int(min(trans.nfft/2,  0.01 + trans.rmax/trans.rstep))
                 for i, chir_ in enumerate(chir):
                     chir_ = chir_ / (eps_r[i])
                     out.append(realimag(chir_[irmin:irmax]))
             else:
                 chiq = [trans.fftr(c)/eps for c, eps in zip(chir, eps_r)]
-                iqmin = max(0, int(0.01 + trans.kmin/trans.kstep))
-                iqmax = min(trans.nfft/2,  int(0.01 + trans.kmax/trans.kstep))
+                iqmin = int(max(0, 0.01 + trans.kmin/trans.kstep))
+                iqmax = int(min(trans.nfft/2,  0.01 + trans.kmax/trans.kstep))
                 for chiq_ in chiq:
                     out.append( realimag(chiq_[iqmin:iqmax])[::2])
             return np.concatenate(out)
