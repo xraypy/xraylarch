@@ -12,7 +12,7 @@ import pybtex.style.names.lastfirst
 import pybtex.backends.plaintext
 
 import collections
-import latex_codec
+# import latex_codec
 import os
 import re
 
@@ -97,7 +97,7 @@ except:
     pass
 
 
-latex_codec.register()
+# latex_codec.register()
 
 DEFAULT_CONF = {
   'file':           '',
@@ -140,8 +140,8 @@ def parse_keys(rawtext):
   #
   # TODO: This isn't the best implementation and this should also
   #       handle errors
-  pre = u''
-  post = u''
+  pre = ''
+  post = ''
   keys = []
   for k in rawtext.split(','):
     k = k.strip() # Remove leading and trailing whitespace
@@ -162,7 +162,7 @@ def parse_keys(rawtext):
             post += c
       if bc == bo and bc == 1:
         post = pre
-        pre = u''
+        pre = ''
     else:
       k = k[0]
     keys.append(k)
@@ -220,9 +220,9 @@ class CitationTransform(object):
     elif len(authors) == 1:
       author = authors[0].last()[0]
     elif len(authors) > 2 and not all_authors:
-      author = u'%s et al.' % authors[0].last()[0]
+      author = '%s et al.' % authors[0].last()[0]
     else:
-      author = u"%s and %s" % (u', '.join([a.last()[0] for a in authors[:-1]]),
+      author = "%s and %s" % (', '.join([a.last()[0] for a in authors[:-1]]),
                                           authors[-1].last()[0])
     author = author.replace('{', '')
     author = author.replace('}', '')
@@ -236,7 +236,7 @@ class CitationTransform(object):
     if global_keys is not None:
         self.global_keys = global_keys
     bo, bc = self.config['brackets']
-    sep = u'%s ' % self.config['separator']
+    sep = '%s ' % self.config['separator']
     style = self.config['style']
     all_auths = (cmd.endswith('s'))
     alt = (cmd.startswith('alt') or \
@@ -249,12 +249,12 @@ class CitationTransform(object):
       node = nodes.inline('', '', classes=['citation'])
 
     if self.pre:
-      pre = u"%s " % self.pre.decode('latex')
+      pre = "%s " % self.pre # .decode('latex')
       node += nodes.inline(pre, pre, classes=['pre'])
 
     for i, ref in enumerate(self.refs):
       authors = ref.persons.get('author', [])
-      author_text = self.get_author(authors, all_auths).decode('latex')
+      author_text = self.get_author(authors, all_auths) # .decode('latex')
       lrefuri = refuri + '#citation-' + nodes.make_id(ref.key)
 
       if i > 0 and i < len(self.refs):
@@ -306,7 +306,7 @@ class CitationTransform(object):
           node += nodes.inline(bc, bc)
 
     if self.post:
-      post = u", %s" % self.post.decode('latex')
+      post = ", %s" % self.post #.decode('latex')
       node += nodes.inline(post, post, classes=['post'])
 
     if (cmd.startswith('p') or cmd == 'yearpar') and style != 'super':
@@ -319,7 +319,7 @@ def sort_references(refs, citations):
   def sortkey(key):
     # sort by author last names, but if no author, sort by title
     citation = citations.get(key)
-    authorsort = u''.join(map(unicode, citation.persons.get('author', '')))
+    authorsort = ''.join(map(str, citation.persons.get('author', '')))
     if len(authorsort) > 0:
         authorsort = authorsort.replace('{', '')
         authorsort = authorsort.replace('}', '')
@@ -411,7 +411,8 @@ class CitationConfDirective(Directive):
     return []
 
 def fromlatex(x):
-  return x.decode('latex').replace('{', '').replace('}', '')
+  return x.replace('{', '').replace('}', '')
+# return x.decode('latex').replace('{', '').replace('}', '')
 
 class CitationReferencesDirective(Directive):
   """
@@ -462,7 +463,7 @@ class CitationReferencesDirective(Directive):
     # @phdthesis
     if ref.type == 'phdthesis':
         school = ref.fields.get('school')
-        school = school.decode('latex')
+        # school = school.decode('latex')
         text = 'PhD Thesis, %s, ' % school
         node += nodes.inline(text, text)
 
@@ -483,7 +484,7 @@ class CitationReferencesDirective(Directive):
 
     if pub is None:
       howpub = ref.fields.get('howpublished')
-      if howpub is not None and howpub.startswith('\url{'):
+      if howpub is not None and howpub.startswith(r'\url{'):
         url = howpub[5:-1]
         refnode = nodes.reference('', '', internal=False, refuri=url)
         refnode += nodes.Text(url, url)
