@@ -8,8 +8,8 @@ XAFS: Computing anomalous scattering factors from XAFS data
 
 An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom
-anomalous scattering factors of :cite:ts:`Cromer_Liberman`,
-:cite:ts:`Chantler`, and others near the absorption edge.
+anomalous scattering factors of :cite::`Cromer_Liberman`,
+:cite::`Chantler`, and others near the absorption edge.
 
 Since XAFS is sensitive to the atomic environment of the resonant atom
 (through the variations of the absorption coefficient), the scattering
@@ -26,18 +26,18 @@ Overview of the diffKK implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This performs the same algorithm as the venerable DIFFKK program
-described in :cite:ts:`diffkk`.  This uses the MacLaurin series
+described in :cite::`diffkk`.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
 data and the tabulated :math:`f''(E)`) Kramers-Kronig transform.  This
-algorithm is described in :cite:ts:`Ohta:88`.  This implementation
+algorithm is described in :cite::`Ohta:88`.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast -- not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.
 
 The input :math:`\mu(E)` data are first matched to the tabulated
-:math:`f''(E)` using the MBACK algorithm of :cite:ts:`Weng` with an
-option of using the modification proposed by :cite:ts:`lee-xiang`.
+:math:`f''(E)` using the MBACK algorithm of :cite::`Weng` with an
+option of using the modification proposed by :cite::`lee-xiang`.
 This scales the measured :math:`\mu(E)` to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
@@ -200,3 +200,8 @@ Another possibility is measurement of data over much longer data
 ranges so that the matching algorithm can be made to do a good job far
 away from the absorption edges.  Or perhaps a non-differential
 algorithm would be more appropriate for L edge data.
+
+.. rubric:: References
+
+.. bibliography::  xafs.bib
+   :cited:

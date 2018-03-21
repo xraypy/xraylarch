@@ -1,8 +1,8 @@
-:orphan:
+==============================================
+Bibliography
+==============================================
 
-.. only:: html
 
-    Bibliography
-    ============
-
-.. cite:refs::
+.. bibliography:: larch_full.bib
+   :style: unsrt
+   :cited:

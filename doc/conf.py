@@ -34,6 +34,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.intersphinx',
               'sphinxcontrib.napoleon',
+              'sphinxcontrib.bibtex',
               'sphinxcontrib.argdoc',
               'numpydoc']
 
@@ -50,7 +51,9 @@ extensions = ['sphinx.ext.autodoc',
 
 # from sphinxtr
 extensions.extend(['fix_equation_ref', 'subfig', 'numsec',
-                   'natbib', 'figtable', 'singlehtml_toc', 'singletext'])
+                   'figtable', 'singlehtml_toc', 'singletext',
+                   # 'natbib',
+                   ])
 
 intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
@@ -70,13 +73,13 @@ number_figures = True
 
 # configures bibliography
 # see http://wnielson.bitbucket.org/projects/sphinx-natbib/
-natbib = {
-    'file': 'larch.bib',
-    'brackets': '[]',
-    'separator': ',',
-    'style': 'authors',
-    'sort': False,
-}
+# natbib = {
+#     'file': 'larch.bib',
+#     'brackets': '[]',
+#     'separator': ',',
+#     'style': 'authors',
+#     'sort': False,
+# }
 
 # List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
@@ -92,9 +95,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'larch'
-author = u'Matthew Newville'
-copyright = u'Matthew Newville, The University of Chicago, 2012'
+project = 'larch'
+author = 'Matthew Newville'
+copyright = 'Matthew Newville, The University of Chicago, 2012'
 
 numfig = True
 numfig_secnum_depth = 2

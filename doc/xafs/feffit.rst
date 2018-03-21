@@ -16,7 +16,7 @@ The Feffit Strategy for Modeling EXAFS Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The basic approach to modeling EXAFS data in Larch (see
-:cite:ts:`feffit`) is to create a model EXAFS :math:`\chi(k)` as a
+:cite:`feffit`) is to create a model EXAFS :math:`\chi(k)` as a
 sum of scattering paths that will be compared to experimentally derived
 :math:`\chi(k)`. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
@@ -63,7 +63,7 @@ Nyquist as
     N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  :cite:authors:`Stern93`
+range of the usable data under consideration.  :cite:`Stern93`
 argues convincingly that the '+1' here should be '+2', but we'll remain
 conservative and keep the '+1', and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -143,7 +143,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 :math:`R`: white noise.  The function :func:`estimate_noise` does this
-:cite:authors:`NewvilleBoyanov`, and the estimate derived from this method is
+:cite:`NewvilleBoyanov`, and the estimate derived from this method is
 used unless you specify a value for ``epsilon_k`` the noise level in
 :math:`\chi(k)`.  Though usually :math:`\epsilon` is taken to be a scalar
 value, it can be specfied as an array (of the same length as

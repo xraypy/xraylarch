@@ -105,3 +105,4 @@ development, and has support from the U. S. National Science Foundation.
    xray/index.rst
    xrf/index.rst
    devel/index.rst
+   biblio.rst
