@@ -404,6 +404,32 @@ def imread(filename, *args, **kwargs):
     images = tif.asarray()
     tif.close()
     return images
+    
+def tiff_exposure_time(filename):
+    return return_tiff_tag(filename,'FrameTime')
+
+def tiff_frames(filename):
+    return return_tiff_tag(filename,'NFrames')
+    
+def return_tiff_tag(filename,key):
+
+    tif = TIFFfile(filename)
+    tagvalue = None
+    for page in tif:
+        for tag in page.tags.values():
+            if key in tag.name:
+                tagvalue = tag.value
+            elif key in str(tag.value):
+                tagvalue = tag.value.split(':',1)[-1]
+    try:
+        tagvalue = float(tagvalue)
+    except:
+        pass
+
+    tif.close()
+    return tagvalue
+
+
 
 class lazyattr(object):
     """Lazy object attribute whose value is computed on first access."""
