@@ -352,7 +352,7 @@ this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.
 
 The example here is borrowed from Bruce Ravel's data and tutorials, and
-based on the work published by :cite:ts:`Lengke2006`, The goal here is not
+based on the work published by :cite:`Lengke2006`, The goal here is not
 to repeat the whole of that analysis, but to present the mechanics of the
 fitting approach.  Essentially, we're asserting that a particular measured
 spectrum is made of a linear combination of 2 or more other spectra.  We
@@ -385,7 +385,7 @@ important component.
     :align: center
 
     Linear Combination Fit of gold XANES in cyanobacteria, after
-    :cite:ts:`Lengke2006`.  Components used for linear combinations.
+    :cite:`Lengke2006`.  Components used for linear combinations.
 
 .. _fig-fit5b:
 
@@ -395,7 +395,7 @@ important component.
     :align: center
 
     Linear Combination Fit of gold XANES in cyanobacteria, after
-    :cite:ts:`Lengke2006`.  Fit and residual with components *s1* and *s2*.
+    :cite:`Lengke2006`.  Fit and residual with components *s1* and *s2*.
 
 .. subfigend::
     :width: 0.45
@@ -677,7 +677,7 @@ implies that component *s3* is important even if at a very small fraction,
 and that either component *s5* or *s6* (which aren't that different
 spectroscopically or chemically (see :numref:`fig-fit5`) is present.
 Of course, the analysis here is not meant to be definitive, and there are
-many more checks that could be done.  To be clear, :cite:ts:`Lengke2006`
+many more checks that could be done.  To be clear, :cite:`Lengke2006`
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
 components, with concentrations of the components very similar to the ones

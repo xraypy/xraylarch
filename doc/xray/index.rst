@@ -14,28 +14,30 @@ properties, which can be broken into two general categories:  X-ray
 properties of elements, and properties of materials and compounds by
 chemical formula.
 
-The first category includes basic atomic properties like atomic number and mass, and
-consists of tabulated values of characteristic energies and transition
-probabilites for core electron levels, absorption cross-sections, elastic
-scattering terms, and anomalous scattering factors.  The second category
-allows these elemental properties to be applied to common compounds by name
-or by chemical formula.
+The first category includes basic atomic properties like atomic number and
+mass, and consists of tabulated values of characteristic energies and
+transition probabilites for core electron levels, absorption
+cross-sections, elastic scattering terms, and anomalous scattering factors.
+The second category allows these elemental properties to be applied to
+common compounds by name or by chemical formula.
 
-Much of the X-ray spectroscopic data comes from the compilation of
-:cite:ts:`elamtables`.  The core-hole widths for excited electronic levels
-comes from :cite:ts:`Keski_Krause` and :cite:ts:`Krause_Oliver`, while
-elastic X-ray scattering data, :math:`f_0(q)`,is derived from
-:cite:ts:`Waasmaier_Kirfel`.  Anomalous cross-sections are available as
-based on the work of :cite:ts:`Cromer_Liberman`, using the implementation
-of :cite:ts:`Brennan_Cowan`.  In addition, values for absorption
-cross-sections and anomalous X-ray scattering factors from
-:cite:ts:`Chantler` (as from http://www.nist.gov/pml/data/ffast/index.cfm)
-are available.  Except for the anomalous cross-section data from Cromer and
-Liberman (which is implemented using the Fortran routine by Brennan and
-Cowan with slight modifications), the data is accessed through a portable
-SQLite3 database file.  This implementation was originally done by Darren
-Dale from CHESS (see https://github.com/praxes/elam_physical_reference),
-with some additions and alterations made for Larch.
+Much of the X-ray spectroscopic data comes from the compilation of Elam *et
+al* :cite:`Elam_etal`.  The core-hole widths for excited electronic levels
+comes from Keski-Rahkonen and Krause :cite:`Keski_Krause` and Krause and
+Oliver :cite:`Krause_Oliver`, while elastic X-ray scattering data,
+:math:`f_0(q)`,is derived from Waasmaier and Kirfel
+:cite:`Waasmaier_Kirfel`.  Anomalous cross-sections are available as based
+on the work of Cromer and Liberman :cite:`Cromer_Liberman`, using the
+implementation of Brennan and Cowan :cite:`Brennan_Cowan`.  In addition,
+values for absorption cross-sections and anomalous X-ray scattering factors
+from Chantler :cite:`Chantler` (as from
+http://www.nist.gov/pml/data/ffast/index.cfm) are available.  Except for
+the anomalous cross-section data from Cromer and Liberman (which is
+implemented using the Fortran routine by Brennan and Cowan with slight
+modifications), the data is accessed through a portable SQLite3 database
+file.  This implementation was originally done by Darren Dale from CHESS
+(see https://github.com/praxes/elam_physical_reference), with some
+additions and alterations made for Larch.
 
 X-ray Properties of the Elements
 ---------------------------------
@@ -454,3 +456,8 @@ and so on are then given.
 
 .. math::
     n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
+
+.. rubric:: References
+
+.. bibliography::  xray.bib
+   :cited:
