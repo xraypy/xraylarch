@@ -323,7 +323,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     if labelline is not None:
         if delim is None:
             for dtest in ('\t', ',', '|', '&'):
-                if  labelline.count(dtest) > int(ncols/2.0):
+                if  labelline.count(dtest) > int(ncols/2.0)-1:
                     delim = dtest
                     break
         tlabels = [colname(l) for l in labelline.split(delim)]
