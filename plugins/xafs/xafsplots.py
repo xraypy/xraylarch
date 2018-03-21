@@ -16,7 +16,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-from numpy import gradient
+from numpy import gradient, ndarray
 from larch import Group, ValidateLarchPlugin
 from larch.utils import (index_of, index_nearest)
 
@@ -63,12 +63,21 @@ def _get_title(dgroup, title=None):
     if title is not None:
         return title
     #endif
+    data_group = getattr(dgroup, 'data', None)
+
     for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
         t = getattr(dgroup, attr, None)
         if t is not None:
             return t
         #endif
+        if data_group is not None:
+            t = getattr(data_group, attr, None)
+            if t is not None:
+                return t
+            #endif
+        #endif
     #endfor
+
     return repr(dgroup)
 #enddef
 
