@@ -574,6 +574,13 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
     #endfor
 #enddef
 
+
+def initializeLarchPlugin(_larch=None):
+    """initialize _xafs"""
+    if _larch is None:
+        return
+    _larch.symtable._xafs.plotlabels  = plotlabels
+
 def registerLarchPlugin():
     return ('_xafs', {'plot_mu':plot_mu,
                       'plot_bkg':plot_bkg,
