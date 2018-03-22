@@ -17,20 +17,17 @@ from six.moves import StringIO
 def nullfunction(*args, **kwargs):
     pass
 
+
 class LarchSession(object):
     def __init__(self):
         self._larch = Interpreter()
         self.input  = self._larch.input
         #  InputText(prompt='test>', _larch=self._larch)
         self.symtable = self._larch.symtable
-        self.symtable.set_symbol('testdir',  os.getcwd())
-        self.symtable.set_symbol('_plotter.newplot',  nullfunction)
-        self.symtable.set_symbol('_plotter.plot',     nullfunction)
-        self.symtable.set_symbol('_plotter.oplot',    nullfunction)
-        self.symtable.set_symbol('_plotter.imshow',   nullfunction)
-        self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
-        self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
-        self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
+        setsym = self.symtable.set_symbol
+        setsym('testdir',  os.getcwd())
+        setsym('_plotter.no_plotting', True)
+        setsym('_plotter.get_display',  nullfunction)
         self.set_stdout()
 
     def set_stdout(self, fname='_stdout_'):
@@ -68,9 +65,8 @@ class TestCase(unittest.TestCase):
         origdir = os.path.abspath(os.getcwd())
         dirname = os.path.abspath(dirname)
         os.chdir(dirname)
-        fh = open(fname, 'r')
-        text = fh.read()
-        fh.close()
+        with open(fname, 'r') as fh:
+            text = fh.read()
         self.session.run(text)
         os.chdir(origdir)
 
