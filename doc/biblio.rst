@@ -3,6 +3,8 @@ Bibliography
 ==============================================
 
 
-.. bibliography:: larch_full.bib
+
+.. bibliography:: larch.bib
    :style: unsrt
    :cited:
+   :labelprefix: Larch_

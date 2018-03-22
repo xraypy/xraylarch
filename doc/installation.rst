@@ -298,4 +298,5 @@ the BSD License:
 
 .. bibliography:: larch.bib
    :style: unsrt
-   :cited:
+   :labelprefix: Install_
+   :filter: docname in docnames
