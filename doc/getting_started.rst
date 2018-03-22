@@ -19,7 +19,7 @@ If you are familiar with Python and want to use Larch as a library, see the
 :ref:`Downloading and Installation <install-chapter>` chapter.
 
 
-Second, use GSEMapViewer, XYFit, or Larch_GUI
+Second, use GSEMapViewer, XAS_Viewer, or Larch_GUI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are a user of the GSECARS microprobe, you'll want to start using the
@@ -33,8 +33,8 @@ If you are mostly interested in using Larch as a backend for the Athena and
 Artemis programs for XAFS Analysis, just install Larch and the latest
 version of Demeter, and Demeter should find and use Larch for EXAFS
 Analysis, replacing the older Ifeffit library and its many limitations.
-You may also be interested in the (still in development) XYFit application
-for XANES visualization and peak fitting.
+You may also be interested in the XAS_Viewer program for XANES
+visualization and peak fitting, and aiming for more XANES analysis tools.
 
 If you are a general-purpose user or ready for more control over data
 analysis for many types of data, the Larch GUI can help you browse through
