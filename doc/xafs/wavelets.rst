@@ -123,5 +123,7 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
 
 .. rubric:: References
 
-.. bibliography::  xafs.bib
-   :cited:
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Wavelets_
+   :filter: docname in docnames

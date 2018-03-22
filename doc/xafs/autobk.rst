@@ -409,3 +409,11 @@ As an example:
 
 
 .. literalinclude:: ../../examples/xafs/doc_autobk4.lar
+
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Autobk_
+   :filter: docname in docnames

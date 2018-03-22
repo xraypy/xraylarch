@@ -682,3 +682,10 @@ looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
 components, with concentrations of the components very similar to the ones
 found here.
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: FitExamples_
+   :filter: docname in docnames

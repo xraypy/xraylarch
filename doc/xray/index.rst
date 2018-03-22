@@ -457,7 +457,10 @@ and so on are then given.
 .. math::
     n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
 
+
 .. rubric:: References
 
-.. bibliography::  xray.bib
-   :cited:
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Xray_
+   :filter: docname in docnames

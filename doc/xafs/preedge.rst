@@ -543,5 +543,7 @@ with results shown below:
 
 .. rubric:: References
 
-.. bibliography::  xafs.bib
-   :cited:
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Preedge_
+   :filter: docname in docnames

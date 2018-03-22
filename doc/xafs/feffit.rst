@@ -1108,3 +1108,10 @@ single well-isolated coordination shell.  The phase-correction method will
 larger errors for a highly-disordered system.  But, for simple,
 well-characterized systems, the ability to do such analysis can be very
 powerful, and give increased confidence in the refined structure.
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Feffit_
+   :filter: docname in docnames

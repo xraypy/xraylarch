@@ -625,7 +625,10 @@ use of parameters makes this somewhat more general.  As we will see in the
 next section, the use of parameters also allows us to easily refine their
 values in a fit of XAFS data to such a sum of paths.
 
+
 .. rubric:: References
 
-.. bibliography::  xafs.bib
-   :cited:
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: FeffPaths_
+   :filter: docname in docnames
