@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.35
+version: 0.9.36
 
 channels:
     - http://repo.continuum.io/pkgs/main
@@ -39,8 +39,12 @@ specs:
     - lmfit
     - asteval
     - pycifrw
+    - peakutils
+    - psycopg2
+    - psutil
     - scikit-image
     - xraylarch
+
 
 
 post_install: post_install_linux.sh # [linux64]

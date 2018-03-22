@@ -2,7 +2,7 @@
 
 echo "post_install script for Mac OSX, installing to $PREFIX"
 
-$PREFIX/bin/pip install --upgrade --use-wheel fabio pyFAI
+$PREFIX/bin/pip install --upgrade --use-wheel fabio pyFAI tifffile
 
 #  fix what seems to be a broken python.app install
 mv $PREFIX/python.app  $PREFIX/orig_python_app
