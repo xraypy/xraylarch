@@ -2897,7 +2897,8 @@ class MapViewerFrame(wx.Frame):
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
                 thispanel = self.nbpanels[self.nb.GetSelection()]
-                thispanel.onROIMap(event=None, new=False)
+                if hasattr(thispanel, 'onROIMap'):
+                    thispanel.onROIMap(event=None, new=False)
 
     def process_file(self, filename):
         """Request processing of map file.
