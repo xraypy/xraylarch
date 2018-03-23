@@ -719,14 +719,16 @@ class XASFrame(wx.Frame):
         outgroup = unique_name('merge', self.controller.file_groups)
         dlg = MergeDialog(self, groups, outgroup=outgroup)
         res = dlg.GetResponse()
+        fname = res.group
+        gname = fix_varname(res.group.lower())
         dlg.Destroy()
 
         if res.ok:
             yname = 'norm' if res.ynorm else 'mu'
             self.controller.merge_groups(groups, master=res.master,
-                                         yarray=yname, outgroup=res.group)
-            self.install_group(res.group, res.group, overwrite=False)
-            self.controller.filelist.SetStringSelection(res.group)
+                                         yarray=yname, outgroup=gname)
+            self.install_group(gname, fname, overwrite=False)
+            self.controller.filelist.SetStringSelection(fname)
 
 
     def onDeglitchData(self, event=None):
