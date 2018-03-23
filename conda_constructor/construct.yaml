@@ -36,6 +36,7 @@ specs:
     - psutil
     - fabio=0.5.0
     - pyfai=0.14.2  # [win64 or linux64 or osx]
+    - tomopy  # [linux64 or osx]
     - tifffile=0.14.0
     - wxpython=4.0.1
     - wxmplot=0.9.30
