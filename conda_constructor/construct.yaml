@@ -20,31 +20,30 @@ specs:
     - h5py
     - matplotlib
     - six
-    - nose
     - sqlalchemy
+    - pillow
     - psycopg2
     - termcolor
     - fontconfig # [osx or linux64]
     - pango # [linux64]
+    - pywin32 # [win64 or win32]
     - pcre
     - yaml
-    - pillow
     - requests
     - scikit-image
-    - pywin32 # [win64 or win32]
-    - wxpython
-    - wxmplot
-    - wxutils
-    - pyepics
-    - lmfit
-    - asteval
     - pycifrw
     - peakutils
-    - psycopg2
     - psutil
-    - scikit-image
+    - fabio=0.5.0
+    - pyfai=0.14.2  # [win64 or linux64 or osx]
+    - tifffile=0.14.0
+    - wxpython=4.0.1
+    - wxmplot=0.9.30
+    - pyepics=3.3.1
+    - lmfit=0.9.9
+    - asteval=0.9.12
+    - wxutils=0.1.3
     - xraylarch
-
 
 
 post_install: post_install_linux.sh # [linux64]
