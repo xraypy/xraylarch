@@ -455,13 +455,20 @@ class XASFrame(wx.Frame):
 
     def ShowFile(self, evt=None, groupname=None, with_plot=True, **kws):
         filename = None
-        if evt is not None:
+        if evt is not None: #
             filename = str(evt.GetString())
+            # could have clicking on filename add to "Selected":
+            #  checked = list(self.controller.filelist.GetCheckedStrings())
+            #  if filename not in checked:
+            #      checked.append(filename)
+            #  self.controller.filelist.SetCheckedStrings(checked)
         if groupname is None and filename is not None:
             groupname = self.controller.file_groups[filename]
 
         if not hasattr(self.larch.symtable, groupname):
             return
+
+
 
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
@@ -503,8 +510,8 @@ class XASFrame(wx.Frame):
                                          'Show Larch Programming Buffer',
                                          self.onShowLarchBuffer)
 
-        items['filex'] = MenuItem(self, fmenu, "&Inspect \tCtrl+I",
-                                  "e",  self.showInspectionTool)
+        # items['filex'] = MenuItem(self, fmenu, "&Inspect \tCtrl+I",
+        #                           "e",  self.showInspectionTool)
         items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
