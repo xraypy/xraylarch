@@ -65,7 +65,7 @@ all_modules = (('basic analysis', required_modules),
            ('xrd modules', xrd_modules),
            ('tomography modules', tomo_modules),
            ('connecting to the EPICS control system', epics_modules),
-           ('scanning with EpicsScan', scan_modules),
+            # ('scanning with EpicsScan', scan_modules),
            ('testing tools',  testing_modules))
 
 
