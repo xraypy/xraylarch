@@ -182,7 +182,17 @@ components area" in the lower part of the form.  Note that the baseline
 will consist of a Lorenztian and linear model component, so that there will
 be at least 3 tabs for the 3 or more components of the pre-edge peak model.
 This is shown in :numref:`fig_xasviewer_4a`, which shows the form for 1
-Gaussian peak, and the baseline.
+Gaussian peak, and the baseline.  You can include multiple peaks by
+repeatedly selecting the peak type from the drop-down menu.
+
+After selecting a peak type, click on the "Pick Values from Data" button,
+and then pick two points on the plot to help give initial ranges for that
+peak.  The points you pick do not have to be very accurate, and the initial
+values selected for the `amplitude`, `center`, and `sigma` parameters can
+be modified.  Note that you can place bounds on any of these parameters --
+it is probably a good idea to enforce the `amplitude` and `sigma` to be
+positive.  If using multiple peaks, it is often helpful to give realistic
+energy bounds for the `center` of each peak, so that they do not overlap.
 
 .. subfigstart::
 
