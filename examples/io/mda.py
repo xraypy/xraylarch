@@ -886,7 +886,7 @@ def mdaAscii_2D(d,row=None):
             d = readMDA("2idd_0004.mda")
             fn = mdaAscii_2D(d)
     """
-#       print d[0].keys()
+#       print( d[0].keys())
     path,fname = os.path.split(d[0]['filename'])
     froot = string.split(fname,'.mda')
     if os.path.exists('ASCII') == 0 :
@@ -903,14 +903,14 @@ def mdaAscii_2D(d,row=None):
     nx = d[2].curr_pt
     ny = d[1].npts
     for i in range(np):
-        print i, d[2].p[i].name,d[2].p[i].desc,d[2].p[i].unit
+        print(i, d[2].p[i].name,d[2].p[i].desc,d[2].p[i].unit)
 #               print type(d[2].p[i].data)
     py = d[1].p[0].data
     px = d[2].p[0].data
     px = px[0]
     for i in range(nd):
         imfile = ofname+d[2].d[i].fieldName+'.txt'
-        print imfile
+        print( imfile)
         fo = open(imfile,"w")
         fo.write('# Image from: '+d[0]['filename'] +'\n')
         fo.write('# Detector: '+d[2].d[i].fieldName +', '+
@@ -999,12 +999,12 @@ def mdaAscii_1D(d):
         columns = columns + cw + 1
 
     path,fname = os.path.split(d[0]['filename'])
-    froot = string.split(fname,'.mda')
+    froot = fname.split('.mda')
     if os.path.exists('ASCII') == 0 :
         os.mkdir('ASCII')
     dir = os.getcwd()
     ofname = dir +os.sep+'ASCII'+ os.sep + froot[0]+'.1d.txt'
-    print ofname
+    print( ofname)
 
     cr = '\n'
     fo = open(ofname,'w')
@@ -1117,7 +1117,7 @@ def mdaAscii_2D1D(d,start=None,stop=None):
             os.mkdir('ASCII')
         dir = os.getcwd()
         ofname = dir +os.sep+'ASCII'+ os.sep + froot[0]+'.1d_'+str(k+1)+'.txt'
-        print ofname
+        print( ofname)
 
         cr = '\n'
         fo = open(ofname,'w')
