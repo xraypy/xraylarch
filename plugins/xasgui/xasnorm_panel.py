@@ -53,6 +53,15 @@ PlotLabels = {'mu': r'$\mu(E)',
               'deconv': r'deconvolved $\mu(E)$',
               'dmude': r'$d\mu/dE$'}
 
+
+PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
+                                      ('Derivative', 'dmude'),
+                                      ('Data + Derivative', 'norm+deriv')))
+
+PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
+                                      ('Derivative', 'dmude')))
+
+
 def default_xasnorm_config():
     return dict(e0=0, edge_step=None, pre1=-200, pre2=-25, nnorm=2, norm1=25,
                 norm2=-10, nvict=1, auto_step=True, auto_e0=True,
@@ -237,21 +246,41 @@ class XASNormPanel(wx.Panel):
         opts = self.get_config(dgroup)
         self.skip_process = True
 
-        self.plotone_op.SetStringSelection(opts['plotone_op'])
-        self.plotsel_op.SetStringSelection(opts['plotsel_op'])
-        self.xas_e0.SetValue(opts['e0'])
-        self.xas_step.SetValue(opts['edge_step'])
-        self.xas_pre1.SetValue(opts['pre1'])
-        self.xas_pre2.SetValue(opts['pre2'])
-        self.xas_nor1.SetValue(opts['norm1'])
-        self.xas_nor2.SetValue(opts['norm2'])
-        self.xas_vict.SetSelection(opts['nvict'])
-        self.xas_nnor.SetSelection(opts['nnorm'])
-        self.xas_showe0.SetValue(opts['show_e0'])
-        self.xas_autoe0.SetValue(opts['auto_e0'])
-        self.xas_autostep.SetValue(opts['auto_step'])
-        self.deconv_form.SetStringSelection(opts['deconv_form'])
-        self.deconv_ewid.SetValue(opts['deconv_ewid'])
+        widlist = (self.xas_e0, self.xas_step, self.xas_pre1,
+                   self.xas_pre2, self.xas_nor1, self.xas_nor2,
+                   self.xas_vict, self.xas_nnor, self.xas_showe0,
+                   self.xas_autoe0, self.xas_autostep,
+                   self.deconv_form, self.deconv_ewid)
+
+        if dgroup.datatype == 'xas':
+            for k in widlist:
+                k.Enable()
+
+            self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
+            self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
+
+            self.plotone_op.SetStringSelection(opts['plotone_op'])
+            self.plotsel_op.SetStringSelection(opts['plotsel_op'])
+            self.xas_e0.SetValue(opts['e0'])
+            self.xas_step.SetValue(opts['edge_step'])
+            self.xas_pre1.SetValue(opts['pre1'])
+            self.xas_pre2.SetValue(opts['pre2'])
+            self.xas_nor1.SetValue(opts['norm1'])
+            self.xas_nor2.SetValue(opts['norm2'])
+            self.xas_vict.SetSelection(opts['nvict'])
+            self.xas_nnor.SetSelection(opts['nnorm'])
+            self.xas_showe0.SetValue(opts['show_e0'])
+            self.xas_autoe0.SetValue(opts['auto_e0'])
+            self.xas_autostep.SetValue(opts['auto_step'])
+            self.deconv_form.SetStringSelection(opts['deconv_form'])
+            self.deconv_ewid.SetValue(opts['deconv_ewid'])
+        else:
+            self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
+            self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
+            self.plotone_op.SetStringSelection('Raw Data')
+            self.plotsel_op.SetStringSelection('Raw Data')
+            for k in widlist:
+                k.Disable()
 
         self.skip_process = False
         self.process(dgroup)
@@ -397,6 +426,7 @@ class XASNormPanel(wx.Panel):
 
         if dgroup.datatype != 'xas':
             self.skip_process = False
+            dgroup.mu = dgroup.ydat * 1.0
             return
 
         form = self.read_form()
@@ -447,21 +477,31 @@ class XASNormPanel(wx.Panel):
 
         self.skip_process = False
 
-
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
-        if dgroup.datatype != 'xas':
-            dgroup.plot_xlabel = 'y'
-            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
-            return
 
         lab = PlotLabels['norm']
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
-        pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
+        if dgroup.datatype != 'xas':
+            pchoice  = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
+            dgroup.plot_xlabel = 'x'
+            dgroup.plot_ylabel = 'y'
+            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
+            dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
+            if pchoice  == 'dmude':
+                dgroup.plot_ylabel = 'dy/dx'
+                dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
+            elif pchoice == 'norm+deriv':
+                lab = PlotLabels['norm']
+                dgroup.plot_y2label = 'dy/dx'
+                dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
+                                       ('dmude', PLOTOPTS_D, 'dy/dx')]
+            return
 
+        pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
             lab = PlotLabels[pchoice]
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
