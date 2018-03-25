@@ -55,7 +55,6 @@ fitting pre-edge peaks, which is under the "Pre-edge Peak Fit" tab as shown
 below, but we will be adding more functionality soon.
 
 
-
 .. subfigstart::
 
 .. _fig_xasviewer_1a:
@@ -80,9 +79,6 @@ below, but we will be adding more functionality soon.
     :width: 0.48
     :alt: main xasviewer
     :label: fig_xasviewer_1
-
-    XANES data normalization with XAS Viewer.
-
 
 Data groups can be read from plain ASCII data files using a GUI form to
 help build :math:`\mu(E)`, or from Athena Project files, as shown in
@@ -115,9 +111,6 @@ exported to Athena Project files, or to CSV files.
     :width: 0.48
     :alt: data importers
     :label: fig_xasviewer_2
-
-    Data importers for XAS Viewer.
-
 
 The "Pre-edge Peak Fit" tab (show in :numref:`fig_xasviewer_3a`) provides a
 form for fitting pre-edge peaks to lineshapes such as Gaussian, Lorentzian,
@@ -172,9 +165,6 @@ peaks and fit range and may require some adjustment.
     :alt: pre-edge peak baseline
     :label: fig_xasviewer_3
 
-    Pre-edge Peak baseline removal.
-
-
 Once the pre-edge baseline is satisfactory, you can add functions to model
 the pre-edge peaks themselves.  Select one of the "Peak Models" (typically
 Gaussian, Lorentzian, or Voigt), which will show a new tab in the "model
@@ -193,6 +183,7 @@ be modified.  Note that you can place bounds on any of these parameters --
 it is probably a good idea to enforce the `amplitude` and `sigma` to be
 positive.  If using multiple peaks, it is often helpful to give realistic
 energy bounds for the `center` of each peak, so that they do not overlap.
+
 
 .. subfigstart::
 
@@ -222,17 +213,52 @@ energy bounds for the `center` of each peak, so that they do not overlap.
     :alt: pre-edge peak fit
     :label: fig_xasviewer_4
 
-    Pre-edge Peak fit.
-
-Upon doing a fit, the fit results are shown in a separate window, with an
-example shown in :numref:`fig_xasviewer_5`.
+Upon doing a fit, the plot is updated to show the data, best-fit, and each
+of the components used in the fit (:numref:`fig_xasviewer_4b`). Fit
+statistics and best-fit parameter values, their uncertainites, and
+correlations are shown as a report in a separate window, with an example
+shown in :numref:`fig_xasviewer_5a`.  Note that for peaks such as Gaussian,
+Lorentzian, and Voigt, not only are `amplitude` (that is, area under the
+peak), `sigma`, and `center` shown but so are `fwhm` (full width of peak at
+half the maximum height) and `height` (the maximum height of the peak).
 
 
 .. _fig_xasviewer_5:
 
+
+.. subfigstart::
+
+.. _fig_xasviewer_5a:
+
 .. figure:: ../_images/XAS_Viewer_prepeak_fitresult.png
     :target: ../_images/XAS_Viewer_prepeak_fitresult.png
-    :width: 45%
+    :width: 75%
     :align: left
 
     Fit result frame for Pre-edge peak fit.
+
+
+.. _fig_xasviewer_5b:
+
+.. figure:: ../_images/XAS_Viewer_plot_1residual.png
+    :target: ../_images/XAS_Viewer_plot_1residual.png
+    :width: 60%
+    :align: center
+
+    Pre-edge Peak fit with residual.
+
+.. subfigend::
+    :width: 0.49
+    :alt: pre-edge peak results
+    :label: fig_xasviewer_5
+
+Though the plot of the fit in :numref:`fig_xasviewer_4b` looks good,
+plotting the fit along with the residual (by selecting "Data+Residual" in
+the drop-down menu of "Plot:" choices) as shown in
+:numref:`fig_xasviewer_5b` reveals a systemeatic mis-fit.  That is, the
+`data-fit` for this model clearly shows some spectral structure beyond just
+the noise in the data.  Adding a second Gaussian (and maybe even a third)
+will greatly help this fit.  To do that, add another Gaussian peak
+component to the fit model using the drop-down menu of "Add component:",
+select initial values for that Gaussian, and re-fit the model.  We'll leave
+that as an execsize for the reader.
