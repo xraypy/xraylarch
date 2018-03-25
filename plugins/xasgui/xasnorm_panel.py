@@ -393,6 +393,11 @@ class XASNormPanel(wx.Panel):
         self.skip_process = True
 
         dgroup.custom_plotopts = {}
+        # print("XAS norm process ", dgroup.datatype)
+
+        if dgroup.datatype != 'xas':
+            self.skip_process = False
+            return
 
         form = self.read_form()
         e0 = form['e0']
@@ -445,6 +450,11 @@ class XASNormPanel(wx.Panel):
 
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
+        if dgroup.datatype != 'xas':
+            dgroup.plot_xlabel = 'y'
+            dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
+            return
+
         lab = PlotLabels['norm']
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
