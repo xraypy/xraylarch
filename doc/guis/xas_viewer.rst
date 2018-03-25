@@ -20,9 +20,6 @@ March, 2018, Larch version 0.9.36) include:
 
 .. _lmfit:    http://lmfit.github.io/lmfit-py
 
-
-
-
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
 normalization, and de-convolution of XAFS spectra.
 :numref:`fig_xasviewer_1a` shows the main window for the XAS Viewer
@@ -113,11 +110,10 @@ exported to Athena Project files, or to CSV files.
     :label: fig_xasviewer_2
 
 The "Pre-edge Peak Fit" tab (show in :numref:`fig_xasviewer_3a`) provides a
-form for fitting pre-edge peaks to lineshapes such as Gaussian, Lorentzian,
+form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around `lmfit`_
 and the :func:`minimize` function for curve-fitting with the ability to
 constrain fitting Parameters.
-
 
 To do fitting of pre-edge peaks with the interface, one begins by fitting a
 "baseline" to account for the main absorption edge.  This baseline is
@@ -144,7 +140,7 @@ peaks and fit range and may require some adjustment.
     :align: center
 
     Pre-edge peak Window of XAS_Viewer, showing how select regions of
-    pre-edge peaks for fiting a baseline.
+    pre-edge peaks for fitting a baseline.
 
 
 .. _fig_xasviewer_3b:
@@ -169,7 +165,7 @@ Once the pre-edge baseline is satisfactory, you can add functions to model
 the pre-edge peaks themselves.  Select one of the "Peak Models" (typically
 Gaussian, Lorentzian, or Voigt), which will show a new tab in the "model
 components area" in the lower part of the form.  Note that the baseline
-will consist of a Lorenztian and linear model component, so that there will
+will consist of a Lorentzian and linear model component, so that there will
 be at least 3 tabs for the 3 or more components of the pre-edge peak model.
 This is shown in :numref:`fig_xasviewer_4a`, which shows the form for 1
 Gaussian peak, and the baseline.  You can include multiple peaks by
@@ -184,7 +180,6 @@ it is probably a good idea to enforce the `amplitude` and `sigma` to be
 positive.  If using multiple peaks, it is often helpful to give realistic
 energy bounds for the `center` of each peak, so that they do not overlap.
 
-
 .. subfigstart::
 
 .. _fig_xasviewer_4a:
@@ -195,7 +190,7 @@ energy bounds for the `center` of each peak, so that they do not overlap.
     :align: center
 
     Pre-edge peak Window of XAS_Viewer, showing how select regions of
-    pre-edge peaks for fiting a baseline.
+    pre-edge peaks for fitting a baseline.
 
 
 .. _fig_xasviewer_4b:
@@ -206,7 +201,7 @@ energy bounds for the `center` of each peak, so that they do not overlap.
     :align: center
 
     Pre-edge peak Window of XAS_Viewer, showing how select regions of
-    pre-edge peaks for fiting a baseline.
+    pre-edge peaks for fitting a baseline.
 
 .. subfigend::
     :width: 0.49
@@ -215,7 +210,7 @@ energy bounds for the `center` of each peak, so that they do not overlap.
 
 Upon doing a fit, the plot is updated to show the data, best-fit, and each
 of the components used in the fit (:numref:`fig_xasviewer_4b`). Fit
-statistics and best-fit parameter values, their uncertainites, and
+statistics and best-fit parameter values, their uncertainties, and
 correlations are shown as a report in a separate window, with an example
 shown in :numref:`fig_xasviewer_5a`.  Note that for peaks such as Gaussian,
 Lorentzian, and Voigt, not only are `amplitude` (that is, area under the
@@ -255,10 +250,18 @@ half the maximum height) and `height` (the maximum height of the peak).
 Though the plot of the fit in :numref:`fig_xasviewer_4b` looks good,
 plotting the fit along with the residual (by selecting "Data+Residual" in
 the drop-down menu of "Plot:" choices) as shown in
-:numref:`fig_xasviewer_5b` reveals a systemeatic mis-fit.  That is, the
+:numref:`fig_xasviewer_5b` reveals a systematic mis-fit.  That is, the
 `data-fit` for this model clearly shows some spectral structure beyond just
 the noise in the data.  Adding a second Gaussian (and maybe even a third)
 will greatly help this fit.  To do that, add another Gaussian peak
 component to the fit model using the drop-down menu of "Add component:",
 select initial values for that Gaussian, and re-fit the model.  We'll leave
-that as an execsize for the reader.
+that as an exercise for the reader.
+
+Fit results can be saved in two different ways, using the "PreEdge Peaks"
+menu.  First, the model to set up the fit can be saved to a `.modl` file
+and then re-read later and used for other fits. This model file can also be
+read in and used with the `lmfit`_ python module for complete scripting
+control.  Secondly, a fit can be *exported* to an ASCII file that will
+include the text of the fit report and columns including data, best-fit,
+and each of the components of the model.
