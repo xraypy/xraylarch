@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>8.1. Fitting Overview &#8212; larch 0.9.35 documentation</title>
+    <title>8.1. Fitting Overview &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="index.html" title="8. Fitting and Modeling Data"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
@@ -92,12 +82,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -118,16 +110,16 @@ least-squares analysis, in which a parameterized model is adjusted until it
 matches experimental data in the sense that the sum of squares of the
 difference between data and model is as small as possible.  Mathematically,
 this is expressed as</p>
-<div class="math">
+<div class="math notranslate">
 \[S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2\]</div>
-<p>where the experimental data is expressed as <span class="math">\(y(x)\)</span> that is discretely
-sampled at <span class="math">\(N\)</span> points, <span class="math">\(f(x, \vec\beta)\)</span> is a model function of
-some dependent data <span class="math">\(x\)</span> and <span class="math">\(\vec\beta\)</span>, a set of parameters in
+<p>where the experimental data is expressed as <span class="math notranslate">\(y(x)\)</span> that is discretely
+sampled at <span class="math notranslate">\(N\)</span> points, <span class="math notranslate">\(f(x, \vec\beta)\)</span> is a model function of
+some dependent data <span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(\vec\beta\)</span>, a set of parameters in
 the model.  As a simple example, a linear model of data would be written as
-<span class="math">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
+<span class="math notranslate">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
-minimal values of <span class="math">\(S\)</span>.  These justifcations are not without criticism
+minimal values of <span class="math notranslate">\(S\)</span>.  These justifcations are not without criticism
 or caveats, but we’ll leave those topics aside for now.</p>
 <p>It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
@@ -135,28 +127,28 @@ points) might be given more or less weight.  Again, there are several
 approaches to this, with one of the most common approaches to weight by the
 inverse of the estimated uncertainty in the data value.  This then what is
 generally called the chi-square goodness-of-fit parameter</p>
-<div class="math">
+<div class="math notranslate">
 \[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
-<p>Here, <span class="math">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math">\(y_i\)</span>.
-As mentioned, the model describing <span class="math">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
+<p>Here, <span class="math notranslate">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math notranslate">\(y_i\)</span>.
+As mentioned, the model describing <span class="math notranslate">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
 <p>There is an extensive literature for the case in which the model function
-<span class="math">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
-<span class="math">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
-– a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
+<span class="math notranslate">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
+<span class="math notranslate">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
+– a quadratic function <span class="math notranslate">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
 in this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ‘’non-linear
 least-squares optimization’’ in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
-<p>It is convenient to define the <strong>residual array</strong> <span class="math">\(r\)</span> with <span class="math">\(N\)</span>
+<p>It is convenient to define the <strong>residual array</strong> <span class="math notranslate">\(r\)</span> with <span class="math notranslate">\(N\)</span>
 elements:</p>
-<div class="math">
+<div class="math notranslate">
 \[r_i = \frac{y_i - f(x_i, \vec\beta)}{\epsilon_i}\]</div>
-<p>so that the sum to be minimized is a simple sum of this function, <span class="math">\(s
+<p>so that the sum to be minimized is a simple sum of this function, <span class="math notranslate">\(s
 = \sum_i^{N} r_i^2\)</span>.  The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are</p>
 <blockquote>
-<div><p>1. A set of Parameters, <span class="math">\({\vec{\beta}}\)</span>, that are used in the
+<div><p>1. A set of Parameters, <span class="math notranslate">\({\vec{\beta}}\)</span>, that are used in the
 model, and are to be adjusted to find the least-square value of the sum
 of squares of the residual.  These must be <strong>parameters</strong> (discussed
 below) that are held in a single <strong>parameter group</strong>.  This can either be
@@ -166,7 +158,7 @@ non-parameter values as well as parameters.</p>
 <p>2. An <strong>objective function</strong> to calculate the residual array.  This
 will be a Larch function that takes the <strong>parameter group</strong> described
 above as its first argument, and an unlimited set of optional arguments.
-This function should return the residual array, <span class="math">\(r\)</span> that will be
+This function should return the residual array, <span class="math notranslate">\(r\)</span> that will be
 minimized in the least-squares sense.   The arrays for the data can
 be passed into this function either by the optional arguments or by
 putting these  data in the <strong>parameter group</strong>.</p>
@@ -181,7 +173,7 @@ containing all the Parameters in the model.  Furthermore, the return value
 of the objective function must be the fit residual array to be minimized in
 the least-squares sense.</p>
 <p>We’ll jump in with a simple example fit to a line, with this script:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># create mock data for a line</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># create mock data for a line</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
@@ -205,7 +197,7 @@ the least-squares sense.</p>
 <p>Here <cite>params</cite> is the parameter group, with both <cite>params.off</cite> and
 <cite>params.slope</cite> as Parameters that will be adjusted in the fit.  <cite>fitresid</cite>
 is the objective function that calculates and returns the residual array
-(data - model) from the values of the Parameters.  The <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>
+(data - model) from the values of the Parameters.  The <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>
 function does the actual fit, and will call the objective function many
 times with different (and generally improving) values for the parameters.
 Of course, there are faster and more statistically sound methods for
@@ -232,20 +224,19 @@ of data.</p>
         <li class="right" >
           <a href="index.html" title="8. Fitting and Modeling Data"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" >8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

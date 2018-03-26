@@ -5,13 +5,13 @@ XAFS Analysis
 =======================
 
 One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit (:cite:ts:`ifeffit`),
+was originally conceived to be version 2 of Ifeffit :cite:`ifeffit`,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
 functionality of Ifeffit is available in Larch.  There may still be a few
 minor features of Ifeffit that are not yet available, and some
-functionality to port from Athena (:cite:ts:`athena`) back to the core
+functionality to port from Athena :cite:`athena` back to the core
 library.  In addition, there are some minor differences in implementation
 details, so that slightly different numerical results may be obtained.
 Importantly, several features are available with Larch that were not
@@ -48,4 +48,9 @@ is in the default search path.
    feffit
    diffkk
 
+.. rubric:: References
 
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: XAFS_
+   :filter: docname in docnames

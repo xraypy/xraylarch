@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; larch 0.9.35 documentation</title>
+    <title>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">9. XAFS Analysis</a> &#187;</li> 
       </ul>
@@ -80,14 +70,14 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
-<li><a class="reference internal" href="#the-pre-edge-function">9.2.1. The <code class="docutils literal"><span class="pre">pre_edge()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-pre-edge-function">9.2.1. The <code class="docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
 <li><a class="reference internal" href="#pre-edge-subtraction-example">9.2.2. Pre-Edge Subtraction Example</a></li>
 <li><a class="reference internal" href="#the-mback-algorithm">9.2.3. The MBACK algorithm</a></li>
 <li><a class="reference internal" href="#over-absorption-corrections">9.2.4. Over-absorption Corrections</a></li>
 <li><a class="reference internal" href="#spectral-deconvolution">9.2.5. Spectral deconvolution</a><ul>
-<li><a class="reference internal" href="#xas-convolve">9.2.5.1. <code class="docutils literal"><span class="pre">xas_convolve()</span></code></a></li>
-<li><a class="reference internal" href="#xas-deconvolve">9.2.5.2. <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code></a></li>
-<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">9.2.5.3. Examples using <code class="docutils literal"><span class="pre">xas_deconvolve()</span></code> and <code class="docutils literal"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-convolve">9.2.5.1. <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-deconvolve">9.2.5.2. <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
+<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">9.2.5.3. Examples using <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -109,12 +99,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -127,17 +119,17 @@
             
   <div class="section" id="xafs-pre-edge-subtraction-normalization-and-data-treatment">
 <h1>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this headline">¶</a></h1>
-<p>After reading in data and constructing <span class="math">\(\mu(E)\)</span>, the principle
+<p>After reading in data and constructing <span class="math notranslate">\(\mu(E)\)</span>, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
-normalization.  Reading data and constructing <span class="math">\(\mu(E)\)</span> are handled by
-internal larch functions, especially <code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code>.  The main
+normalization.  Reading data and constructing <span class="math notranslate">\(\mu(E)\)</span> are handled by
+internal larch functions, especially <code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code>.  The main
 XAFS-specific function for pre-edge subtraction and normalization is
-<a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</p>
+<a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p>
 <p>This chapter also describes methods for the treatment of XAFS and XANES
 data including corrections for over-absorption (sometimes confusingly
 called <em>self-absorption</em>) and for spectral convolution and de-convolution.</p>
 <div class="section" id="the-pre-edge-function">
-<h2>9.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.1. The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pre_edge">
 <code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
@@ -145,10 +137,10 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <div><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
-<li>determine <span class="math">\(E_0\)</span> (if not supplied) from max of deriv(mu)</li>
+<li>determine <span class="math notranslate">\(E_0\)</span> (if not supplied) from max of deriv(mu)</li>
 <li>fit a line of polynomial to the region below the edge</li>
 <li>fit a polynomial to the region above the edge</li>
-<li>extrapolate the two curves to <span class="math">\(E_0\)</span> to determine the edge jump</li>
+<li>extrapolate the two curves to <span class="math notranslate">\(E_0\)</span> to determine the edge jump</li>
 </ol>
 </dd>
 </dl>
@@ -158,11 +150,11 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">param energy:</th><td class="field-body">1-d array of x-ray energies, in eV</td>
 </tr>
-<tr class="field-even field"><th class="field-name">param mu:</th><td class="field-body">1-d array of <span class="math">\(\mu(E)\)</span></td>
+<tr class="field-even field"><th class="field-name">param mu:</th><td class="field-body">1-d array of <span class="math notranslate">\(\mu(E)\)</span></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">param group:</th><td class="field-body">output group</td>
 </tr>
-<tr class="field-even field"><th class="field-name">param e0:</th><td class="field-body">edge energy, <span class="math">\(E_0\)</span> in eV.  If None, it will be determined here.</td>
+<tr class="field-even field"><th class="field-name">param e0:</th><td class="field-body">edge energy, <span class="math notranslate">\(E_0\)</span> in eV.  If None, it will be determined here.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">param step:</th><td class="field-body">edge jump.  If None, it will be determined here.</td>
 </tr>
@@ -183,7 +175,7 @@ post-edge, normalization curve. Default=3 (quadratic)</td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -243,16 +235,16 @@ The following data is put into the output group:</p>
 <dl class="docutils">
 <dt>Notes:</dt>
 <dd>nvict gives an exponent to the energy term for the pre-edge fit.
-That is, a line <span class="math">\((m E + b)\)</span> is fit to
-<span class="math">\(\mu(E) E^{nvict}\)</span>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
+That is, a line <span class="math notranslate">\((m E + b)\)</span> is fit to
+<span class="math notranslate">\(\mu(E) E^{nvict}\)</span>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="find_e0">
 <code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine <span class="math">\(E_0\)</span>, the energy threshold of the absorption edge,
-from the arrays energy and mu for <span class="math">\(\mu(E)\)</span>.</p>
+<dd><p>Determine <span class="math notranslate">\(E_0\)</span>, the energy threshold of the absorption edge,
+from the arrays energy and mu for <span class="math notranslate">\(\mu(E)\)</span>.</p>
 <p>This finds the point with maximum derivative with some
 checks to avoid spurious glitches.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -261,22 +253,22 @@ checks to avoid spurious glitches.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>energy</strong> – array of x-ray energies, in eV</li>
-<li><strong>mu</strong> – array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – array of <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>group</strong> – output group</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
-The value of <code class="docutils literal"><span class="pre">e0</span></code> will be written to the output group.</p>
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
+The value of <code class="docutils literal notranslate"><span class="pre">e0</span></code> will be written to the output group.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="pre-edge-subtraction-example">
 <h2>9.2.2. Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
@@ -296,7 +288,7 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 </pre></div>
 </div>
 <p>gives the following results:</p>
-<div class="figure align-center" id="id1">
+<div class="figure align-center" id="id5">
 <span id="xafs-fig1"></span><a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.2.1 </span><span class="caption-text">XAFS Pre-edge subtraction.</span></p>
 </div>
@@ -304,52 +296,52 @@ The value of <code class="docutils literal"><span class="pre">e0</span></code> w
 <div class="section" id="the-mback-algorithm">
 <h2>9.2.3. The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span> with an option of using the modification proposed by
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-lee-xiang">Lee, Xiang, Ravel, Kortright and Flanagan</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lee-xiang">8</a><span>]</span></span>.  In MBACK, the data are matched to the tabulated
+Weng <a class="reference internal" href="#weng" id="id1">[Preedge_1]</a> with an option of using the modification proposed by
+Lee <em>et al</em> <a class="reference internal" href="#lee-xiang" id="id2">[Preedge_2]</a>.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
-Thompson scattering factor, <span class="math">\(f''(E)\)</span>.  To account for any
+Thompson scattering factor, <span class="math notranslate">\(f''(E)\)</span>.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
-data, <span class="math">\(\mu_{data}(E)\)</span>, a Legendre polynomial of order <span class="math">\(m\)</span>
+data, <span class="math notranslate">\(\mu_{data}(E)\)</span>, a Legendre polynomial of order <span class="math notranslate">\(m\)</span>
 centered around the absorption edge is subtracted from the data.  To
 account for the sort of highly non-linear pre-edge which often results
 from Compton scattering in the measurement window of an
 energy-discriminating detector, a complementary error function is
 added to the Legendre polynomial.</p>
 <p>The form of the normalization function, then, is</p>
-<div class="math">
+<div class="math notranslate">
 \[\mu_{back}(E) = \left[\sum_0^m C_i(E-E_0)^i\right] + A\cdot\operatorname{erfc}\left((E-E_{em}\right)/\xi)\]</div>
-<p>where <span class="math">\(A\)</span>, <span class="math">\(E_{em}\)</span>, and <span class="math">\(\xi\)</span> are the amplitude,
-centroid, and width of the complementary error function and <span class="math">\(s\)</span>
-is a scaling factor for the measured data.  <span class="math">\(E_{em}\)</span> is
+<p>where <span class="math notranslate">\(A\)</span>, <span class="math notranslate">\(E_{em}\)</span>, and <span class="math notranslate">\(\xi\)</span> are the amplitude,
+centroid, and width of the complementary error function and <span class="math notranslate">\(s\)</span>
+is a scaling factor for the measured data.  <span class="math notranslate">\(E_{em}\)</span> is
 typically the centroid of the emission line for the measured edge.
-This results in a function of <span class="math">\(3+m\)</span> variables (a tabulated value
-of <span class="math">\(E_{em}\)</span> is used).  The function to be minimized, then is</p>
-<div class="math">
+This results in a function of <span class="math notranslate">\(3+m\)</span> variables (a tabulated value
+of <span class="math notranslate">\(E_{em}\)</span> is used).  The function to be minimized, then is</p>
+<div class="math notranslate">
 \[\frac{1}{n_1} \sum_{1}^{n_1} \left[\mu_{tab}(E) + \mu_{back}(E) + s\cdot\mu_{data}(E)\right]^2 +
 \frac{1}{n_2} \sum_{n_1+1}^{N} \left[\mu_{tab}(E) + \mu_{back}(E) + s\cdot\mu_{data}(E)\right]^2\]</div>
 <p>To give weight in the fit to the pre-edge region, which typically has
 fewer measured points than the post-edge region, the weight is
 adjusted by breaking the minimization function into two regions: the
-<span class="math">\(n_1\)</span> data points below the absorption edge and the <span class="math">\(n_2\)</span>
-data points above the absorption edge.  <span class="math">\(n_1+n_2=N\)</span>, where N is
+<span class="math notranslate">\(n_1\)</span> data points below the absorption edge and the <span class="math notranslate">\(n_2\)</span>
+data points above the absorption edge.  <span class="math notranslate">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
 <p>If this is used in publication, a citation should be given to
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span>.</p>
+Weng <a class="reference internal" href="#weng" id="id3">[Preedge_1]</a>.</p>
 <dl class="function">
 <dt id="mback">
 <code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Match measured <span class="math">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
+<dd><p>Match measured <span class="math notranslate">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> – 1-d array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – 1-d array of <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>group</strong> – output group</li>
 <li><strong>z</strong> – the Z number of the absorber</li>
 <li><strong>edge</strong> – the absorption edge, usually ‘K’ or ‘L3’</li>
-<li><strong>e0</strong> – edge energy, <span class="math">\(E_0\)</span> in eV.  If None, the tabulated value is used.</li>
+<li><strong>e0</strong> – edge energy, <span class="math notranslate">\(E_0\)</span> in eV.  If None, the tabulated value is used.</li>
 <li><strong>emin</strong> – the minimum energy to include in the fit.  If None, use first energy point</li>
 <li><strong>emax</strong> – the maximum energy to include in the fit.  If None, use last energy point</li>
 <li><strong>whiteline</strong> – a margin around the edge to exclude from the fit.  If not None, must be a positive integer</li>
@@ -357,7 +349,7 @@ the total number of data points.</p>
 <li><strong>tables</strong> – ‘CL’ (Cromer-Liberman) or ‘Chantler’, [‘CL’]</li>
 <li><strong>fit_erfc</strong> – if True, fit the amplitude and width of the complementary error function [False]</li>
 <li><strong>return_f1</strong> – if True, put f1 in the output group [False]</li>
-<li><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -366,7 +358,7 @@ the total number of data points.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -381,13 +373,13 @@ The following data is put into the output group:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>fpp</td>
-<td>matched <span class="math">\(\mu(E)\)</span> data</td>
+<td>matched <span class="math notranslate">\(\mu(E)\)</span> data</td>
 </tr>
 <tr class="row-odd"><td>f2</td>
-<td>tabulated <span class="math">\(f''(E)\)</span> data</td>
+<td>tabulated <span class="math notranslate">\(f''(E)\)</span> data</td>
 </tr>
 <tr class="row-even"><td>f1</td>
-<td>tabulated <span class="math">\(f'(E)\)</span> data (if <code class="docutils literal"><span class="pre">return_f1</span></code> is True)</td>
+<td>tabulated <span class="math notranslate">\(f'(E)\)</span> data (if <code class="docutils literal notranslate"><span class="pre">return_f1</span></code> is True)</td>
 </tr>
 <tr class="row-odd"><td>mback_params</td>
 <td>params group for the MBACK minimization function</td>
@@ -400,30 +392,30 @@ The following data is put into the output group:</p>
 <p>Notes:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is used to exclude the region around the
+<li>The <code class="docutils literal notranslate"><span class="pre">whiteline</span></code> parameter is used to exclude the region around the
 white line in the data from the fit.  The large spectral weight under
 the white line can skew the fit result, particularly in data
 measured over a short data range.  The value is eV units.</li>
-<li>The <code class="docutils literal"><span class="pre">order</span></code> parameter is the order of the Legendre polynomial.
+<li>The <code class="docutils literal notranslate"><span class="pre">order</span></code> parameter is the order of the Legendre polynomial.
 Data measured over a very short data range are likely best processed
-with <code class="docutils literal"><span class="pre">order=2</span></code>.  Extended XAS data are often better processed with
+with <code class="docutils literal notranslate"><span class="pre">order=2</span></code>.  Extended XAS data are often better processed with
 a value of 3 or 4.  The order is enforced to be an integer between 1
 and 6.</li>
-<li>A call to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a> is made if <code class="docutils literal"><span class="pre">e0</span></code> is not supplied.</li>
-<li>The option to return <span class="math">\(f'(E)\)</span> is used by <code class="xref py py-func docutils literal"><span class="pre">diffkk()</span></code>.</li>
+<li>A call to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> is made if <code class="docutils literal notranslate"><span class="pre">e0</span></code> is not supplied.</li>
+<li>The option to return <span class="math notranslate">\(f'(E)\)</span> is used by <code class="xref py py-func docutils literal notranslate"><span class="pre">diffkk()</span></code>.</li>
 </ul>
 </div></blockquote>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
 result shown in <a class="reference internal" href="#fig-mback-copper"><span class="std std-numref">Figure 9.2.2</span></a>.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
         <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Copper foil&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id6">
 <span id="fig-mback-copper"></span><a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.2.2 </span><span class="caption-text">Using MBACK to match Cu K edge data measured on a copper foil.</span></p>
 </div>
@@ -432,16 +424,16 @@ short data range.  This example is the magnesium silicate mineral
 talc, Mg<sub>3</sub>Si<sub>4</sub>O<sub>10</sub>(OH)<sub>2</sub>,
 measured at the Si K edge, with the result shown in
 <a class="reference internal" href="#fig-mback-talc"><span class="std std-numref">Figure 9.2.3</span></a>.  Note that the order of the Legendre polynomial
-is set to 2 and that the <code class="docutils literal"><span class="pre">whiteline</span></code> parameter is set to avoid the
+is set to 2 and that the <code class="docutils literal notranslate"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
 <span class="n">mback</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiteline</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">fit_erfc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">f2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;matched absorption&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$f_2$&#39;</span><span class="p">,</span>
         <span class="n">legend_loc</span><span class="o">=</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">fpp</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Talc ($\mathrm</span><span class="si">{Mg}</span><span class="s1">_3\mathrm</span><span class="si">{Si}</span><span class="s1">_4\mathrm</span><span class="si">{O}</span><span class="s1">_</span><span class="si">{10}</span><span class="s1">\mathrm{(OH)}_2$)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id3">
+<div class="figure align-center" id="id7">
 <span id="fig-mback-talc"></span><a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.2.3 </span><span class="caption-text">Using MBACK to match Si K edge data measured on talc.</span></p>
 </div>
@@ -464,12 +456,12 @@ coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
-(<span class="citation"><a class="reference internal" href="../biblio.html#citation-fluo">Haskel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-fluo">6</a><span>]</span></span>) can be used.  The algorithm is contained in the
-<a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal"><span class="pre">fluo_corr()</span></code></a> function.</p>
+(<a class="reference internal" href="#fluo" id="id4">[Preedge_3]</a>) can be used.  The algorithm is contained in the
+<a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
 <code class="descname">fluo_corr</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>formula</em>, <em>elem</em>, <em>group=None</em>, <em>edge='K'</em>, <em>anginp=45</em>, <em>angout=45</em>, <em>**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate <span class="math">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
+<dd><p>calculate <span class="math notranslate">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
 XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
 EXAFS).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -478,14 +470,14 @@ EXAFS).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> – 1-d array of <span class="math">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – 1-d array of <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>formula</strong> – string for sample stoichiometry</li>
 <li><strong>group</strong> – output group</li>
 <li><strong>elem</strong> – atomic symbol (‘Zn’) or Z of absorbing element</li>
 <li><strong>edge</strong> – name of edge (‘K’, ‘L3’, …) [default ‘K’]</li>
 <li><strong>anginp</strong> – input angle in degrees  [default 45]</li>
 <li><strong>angout</strong> – output angle in degrees [default 45]</li>
-<li><strong>pre_kws</strong> – additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></code></a>.</li>
+<li><strong>pre_kws</strong> – additional keywords for <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -495,9 +487,9 @@ EXAFS).</p>
 </tbody>
 </table>
 <p>Follows the First Argument Group convention, using group members named
-<code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">mu</span></code>.  The value of <code class="docutils literal"><span class="pre">mu_corr</span></code> and <code class="docutils literal"><span class="pre">norm_corr</span></code> will
-be written to the output group, containing <span class="math">\(\mu(E)\)</span> and
-normalized <span class="math">\(\mu(E)\)</span> corrected for over-absorption.</p>
+<code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The value of <code class="docutils literal notranslate"><span class="pre">mu_corr</span></code> and <code class="docutils literal notranslate"><span class="pre">norm_corr</span></code> will
+be written to the output group, containing <span class="math notranslate">\(\mu(E)\)</span> and
+normalized <span class="math notranslate">\(\mu(E)\)</span> corrected for over-absorption.</p>
 </dd></dl>
 
 </div>
@@ -527,7 +519,7 @@ becoming widely available.</p>
 <p>Because of these effects, it is sometimes useful to change the resolution
 of XAFS spectra.  For example, one may need to reduce the resolution to
 match data measured with degraded resolution.  This can be done with
-<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> which convolves an XAFS spectrum with either a
+<code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> which convolves an XAFS spectrum with either a
 Gaussian or Lorentzian function with a known energy width.  Note that
 convolving with a Gaussian is less dramatic than using a Lorenztian, and
 usually better reflects the effect of an incident X-ray beam with degraded
@@ -535,7 +527,7 @@ resolution due to source or monochromator.</p>
 <p>One may also want to try to improve the energy resolution of an XAFS
 spectrum, either to compare it to data taken with higher resolution or to
 better identify and enumerate peaks in a XANES spectrum.  This can be done
-with <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> function which deconvolves either a Gaussian or
+with <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> function which deconvolves either a Gaussian or
 Lorentzian function from an XAFS spectrum.  This usually requires fairly
 good data.  Whereas a Gaussian most closely reflects broadening from the
 X-ray source, broadening due to the natural energy width of the core levels
@@ -543,7 +535,7 @@ is better described by a Lorenztian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
 fluorescence data, deconvolving with a Lorenztian is often better.</p>
 <div class="section" id="xas-convolve">
-<h3>9.2.5.1. <code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3>9.2.5.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
 <code class="descname">xas_convolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0):</code></dt>
@@ -556,20 +548,20 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
-<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
+<li><strong>energy</strong> – 1-d array of <span class="math notranslate">\(E\)</span></li>
+<li><strong>norm</strong> – 1-d array of normalized <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>group</strong> – output group</li>
 <li><strong>form</strong> – form of deconvolution function. One of
 ‘lorentzian’ or  ‘gaussian’ [‘lorentzian’]</li>
-<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
-<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
+<li><strong>esigma</strong> – energy <span class="math notranslate">\(\sigma\)</span> (in eV) to pass to
+<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal notranslate"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
 <li><strong>eshift</strong> – energy shift (in eV) to apply to result. [0.0]</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.</p>
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
 <p>The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -584,7 +576,7 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>conv</td>
-<td>array of convolved, normalized <span class="math">\(\mu(E)\)</span></td>
+<td>array of convolved, normalized <span class="math notranslate">\(\mu(E)\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -593,7 +585,7 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 
 </div>
 <div class="section" id="xas-deconvolve">
-<h3>9.2.5.2. <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
+<h3>9.2.5.2. <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="xas_deconvolve">
 <code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=None</em>, <em>group=None</em>, <em>form='lorentzian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em>, <em>smooth=True</em>, <em>sgwindow=None</em>, <em>sgorder=3</em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
@@ -607,16 +599,16 @@ with caution!</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> – 1-d array of <span class="math">\(E\)</span></li>
-<li><strong>norm</strong> – 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
+<li><strong>energy</strong> – 1-d array of <span class="math notranslate">\(E\)</span></li>
+<li><strong>norm</strong> – 1-d array of normalized <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>group</strong> – output group</li>
 <li><strong>form</strong> – form of deconvolution function. One of
 ‘lorentzian’ or  ‘gaussian’ [‘lorentzian’]</li>
-<li><strong>esigma</strong> – energy <span class="math">\(\sigma\)</span> (in eV) to pass to
-<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
+<li><strong>esigma</strong> – energy <span class="math notranslate">\(\sigma\)</span> (in eV) to pass to
+<a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian()</span></code></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal notranslate"><span class="pre">lorentzian()</span></code></a> lineshape [1.0]</li>
 <li><strong>eshift</strong> – energy shift (in eV) to apply to result. [0.0]</li>
 <li><strong>smooth</strong> – whether to smooth the result with the Savitzky-Golay
-method [<code class="docutils literal"><span class="pre">True</span></code>]</li>
+method [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
 <li><strong>sgwindow</strong> – window size for Savitzky-Golay function [found from data step and esigma]</li>
 <li><strong>sgorder</strong> – order for the Savitzky-Golay function [3]</li>
 </ul>
@@ -624,9 +616,9 @@ method [<code class="docutils literal"><span class="pre">True</span></code>]</li
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">norm</span></code>.</p>
-<p>Smoothing with <code class="xref py py-func docutils literal"><span class="pre">savitzky_golay()</span></code> requires a window and order.  By
-default, <code class="docutils literal"><span class="pre">window</span> <span class="pre">=</span> <span class="pre">int(esigma</span> <span class="pre">/</span> <span class="pre">estep)</span></code> where estep is step size for
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
+<p>Smoothing with <code class="xref py py-func docutils literal notranslate"><span class="pre">savitzky_golay()</span></code> requires a window and order.  By
+default, <code class="docutils literal notranslate"><span class="pre">window</span> <span class="pre">=</span> <span class="pre">int(esigma</span> <span class="pre">/</span> <span class="pre">estep)</span></code> where estep is step size for
 the gridded data, approximately the finest energy step in the data.</p>
 <p>The following data is put into the output group:</p>
 <blockquote>
@@ -642,7 +634,7 @@ the gridded data, approximately the finest energy step in the data.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>deconv</td>
-<td>array of deconvolved, normalized <span class="math">\(\mu(E)\)</span></td>
+<td>array of deconvolved, normalized <span class="math notranslate">\(\mu(E)\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -651,10 +643,10 @@ the gridded data, approximately the finest energy step in the data.</p>
 
 </div>
 <div class="section" id="examples-using-xas-deconvolve-and-xas-convolve">
-<h3>9.2.5.3. Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
-<p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
+<h3>9.2.5.3. Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
+<p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
 be:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
 <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
@@ -667,16 +659,16 @@ be:</p>
 </pre></div>
 </div>
 <p>resulting in deconvolved data:</p>
-<div class="figure align-center" id="id4">
+<div class="figure align-center" id="id8">
 <span id="fig-deconv-fe"></span><a class="reference external image-reference" href="../_images/xafs_deconv1.png"><img alt="../_images/xafs_deconv1.png" src="../_images/xafs_deconv1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.4 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math">\(\rm Fe_2O_3\)</span>.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.4 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math notranslate">\(\rm Fe_2O_3\)</span>.</span></p>
 </div>
 <p>To de-convolve an XAFS spectrum using the energy width of the core level,
-we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal"><span class="pre">_xray.core_width()</span></code></a> functiion, as shown below for Cu metal.
+we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xray.core_width()</span></code></a> functiion, as shown below for Cu metal.
 We can also test that the deconvolution is correct by using
-<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
+<code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
 data.  This can be done with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv2.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv2.lar</span>
 
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy i0 i1 mu&#39;</span><span class="p">)</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
@@ -701,24 +693,24 @@ data.  This can be done with:</p>
 </div>
 <p>with results shown below:</p>
 <div class="figure compound align-center" id="fig_xafs_deconv2">
-<div style="width: 45%" class="subfigure align-center" id="id5">
+<div style="width: 45%" class="subfigure align-center" id="id9">
 <span id="fig-xafs-deconv2a"></span><a class="reference external image-reference" href="../_images/xafs_deconv2a.png"><img alt="../_images/xafs_deconv2a.png" src="../_images/xafs_deconv2a.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.5 </span><span class="caption-text">Cu metal normalized <span class="math">\(\mu(E)\)</span> and spectrum deconvolved by the
+<p class="caption"><span class="caption-number">Figure 9.2.5 </span><span class="caption-text">Cu metal normalized <span class="math notranslate">\(\mu(E)\)</span> and spectrum deconvolved by the
 energy of its core level.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="id6">
+<div style="width: 45%" class="subfigure align-center" id="id10">
 <span id="fig-xafs-deconv2b"></span><a class="reference external image-reference" href="../_images/xafs_deconv2b.png"><img alt="../_images/xafs_deconv2b.png" src="../_images/xafs_deconv2b.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.2.6 </span><span class="caption-text">Comparison of original and re-convolved spectrum for Cu metal.  The
 difference shown in red is multiplied by 100.</span></p>
 </div>
-<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and
-<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> for Cu metal.</span></p>
-</div><p id="fig_xafs_deconv2">Finally, de-convolution of <span class="math">\(L_{\rm III}\)</span> XAFS data can be
+<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> for Cu metal.</span></p>
+</div><p id="fig_xafs_deconv2">Finally, de-convolution of <span class="math notranslate">\(L_{\rm III}\)</span> XAFS data can be
 particularly dramatic and useful.  As with the copper spectrum above, we’ll
-deconvolve <span class="math">\(L_{\rm III}\)</span> XAFS for platinum, using the nominal energy
+deconvolve <span class="math notranslate">\(L_{\rm III}\)</span> XAFS for platinum, using the nominal energy
 width of the core level (5.17 eV).  For this example, we also see
 noticeable improvement in amplitude of the XAFS.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv3.lar</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv3.lar</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/pt_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;energy time i1 i0&#39;</span><span class="p">)</span>
 <span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">log</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
@@ -750,19 +742,39 @@ noticeable improvement in amplitude of the XAFS.</p>
 </div>
 <p>with results shown below:</p>
 <div class="figure compound align-center" id="fig_xafs_deconv3">
-<div style="width: 45%" class="subfigure align-center" id="id7">
+<div style="width: 45%" class="subfigure align-center" id="id11">
 <span id="fig-xafs-deconv3a"></span><a class="reference external image-reference" href="../_images/xafs_deconv3a.png"><img alt="../_images/xafs_deconv3a.png" src="../_images/xafs_deconv3a.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.7 </span><span class="caption-text"><span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal, normalized <span class="math">\(\mu(E)\)</span> for raw
+<p class="caption"><span class="caption-number">Figure 9.2.7 </span><span class="caption-text"><span class="math notranslate">\(L_{\rm III}\)</span> XAFS of Pt metal, normalized <span class="math notranslate">\(\mu(E)\)</span> for raw
 data and the spectrum deconvolved by the energy of its core level.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="id8">
+<div style="width: 45%" class="subfigure align-center" id="id12">
 <span id="fig-xafs-deconv3b"></span><a class="reference external image-reference" href="../_images/xafs_deconv3b.png"><img alt="../_images/xafs_deconv3b.png" src="../_images/xafs_deconv3b.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.8 </span><span class="caption-text"><span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal, <span class="math">\(\chi(R)\)</span> for raw data and
+<p class="caption"><span class="caption-number">Figure 9.2.8 </span><span class="caption-text"><span class="math notranslate">\(L_{\rm III}\)</span> XAFS of Pt metal, <span class="math notranslate">\(\chi(R)\)</span> for raw data and
 the spectrum deconvolved by the energy of its core level.</span></p>
 </div>
-<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></code></a> and
-<code class="xref py py-func docutils literal"><span class="pre">xas_convolve()</span></code> for <span class="math">\(L_{\rm III}\)</span> XAFS of Pt metal.</span></p>
-<span class="target" id="fig_xafs_deconv3"></span></div></div>
+<p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> for <span class="math notranslate">\(L_{\rm III}\)</span> XAFS of Pt metal.</span></p>
+</div><p class="rubric" id="fig_xafs_deconv3">References</p>
+<p id="bibtex-bibliography-xafs/preedge-0"><table class="docutils citation" frame="void" id="weng" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Preedge_1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id3">2</a>)</em> Tsu-Chien Weng, Geoffrey&nbsp;S. Waldo, and James&nbsp;E. Penner-Hahn. A method for normalization of X-ray absorption spectra. <em>Journal of Synchrotron Radiation</em>, 12(4):506–510, Jul 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049504034193">doi:10.1107/S0909049504034193</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="lee-xiang" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Preedge_2]</a></td><td>Julia&nbsp;C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. <em>The Astrophysical Journal</em>, 702(2):970, 2009. URL: <a class="reference external" href="http://stacks.iop.org/0004-637X/702/i=2/a=970">http://stacks.iop.org/0004-637X/702/i=2/a=970</a>, <a class="reference external" href="https://doi.org/0004-637X/702/i=2/a=970">doi:0004-637X/702/i=2/a=970</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="fluo" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[Preedge_3]</a></td><td>D.&nbsp;Haskel. Fluo. <span><a class="reference external" href="#"></a></span>http://www.aps.anl.gov/~haskel/fluo.html, 1999.</td></tr>
+</tbody>
+</table>
+</p>
+</div>
 </div>
 </div>
 
@@ -784,20 +796,19 @@ the spectrum deconvolved by the energy of its core level.</span></p>
         <li class="right" >
           <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" >9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

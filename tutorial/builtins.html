@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>5.8. Tutorial: Builtin Functions &#8212; larch 0.9.35 documentation</title>
+    <title>5.8. Tutorial: Builtin Functions &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="modules.html" title="5.7. Tutorial: Running Larch Scripts, and Modules"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Larch Tutorial</a> &#187;</li> 
       </ul>
@@ -102,12 +92,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -126,8 +118,8 @@ several are Larch-specifc.   Note that the advanced math and scientific
 functions are not listed here, but elsewhere in the documentation.</p>
 <div class="section" id="builtin-data-values">
 <h2>5.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
-<p>The values <code class="docutils literal"><span class="pre">True</span></code>, <code class="docutils literal"><span class="pre">False</span></code>  represent the boolean values
-for true and false.  <code class="docutils literal"><span class="pre">None</span></code> is the null value.</p>
+<p>The values <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>  represent the boolean values
+for true and false.  <code class="docutils literal notranslate"><span class="pre">None</span></code> is the null value.</p>
 </div>
 <div class="section" id="larch-specific-builtin-functions">
 <h2>5.8.2. Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
@@ -156,24 +148,24 @@ Python module.</p>
 <dt id="dict2group">
 <code class="descname">dict2group</code><span class="sig-paren">(</span><em>dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dict2group" title="Permalink to this definition">¶</a></dt>
 <dd><p>return a group created from a dictionary.  Note that this is equivalent
-to <code class="docutils literal"><span class="pre">group(**dict)</span></code>.</p>
+to <code class="docutils literal notranslate"><span class="pre">group(**dict)</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
 <dd><p>get object from symbol table by name.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>  <span class="n">b</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>  <span class="n">b</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">get</span><span class="p">(</span><span class="s1">&#39;g.z&#39;</span><span class="p">)</span>
 <span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
 <p>this is can also be accomplished by the similar:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">)</span>
 <span class="s1">&#39;a string&#39;</span>
 </pre></div>
 </div>
-<p>but the <a class="reference internal" href="#get" title="get"><code class="xref py py-func docutils literal"><span class="pre">get()</span></code></a> version uses only the name of the object.</p>
+<p>but the <a class="reference internal" href="#get" title="get"><code class="xref py py-func docutils literal notranslate"><span class="pre">get()</span></code></a> version uses only the name of the object.</p>
 </dd></dl>
 
 <dl class="function">
@@ -186,7 +178,7 @@ to <code class="docutils literal"><span class="pre">group(**dict)</span></code>.
 <dt id="group_items">
 <code class="descname">group_items</code><span class="sig-paren">(</span><em>group</em><span class="sig-paren">)</span><a class="headerlink" href="#group_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>return a list of (key, val) pairs for items in a group. This is
-equivalent to <code class="docutils literal"><span class="pre">group2dict(group).items()</span></code>, and provides the idiomatic
+equivalent to <code class="docutils literal notranslate"><span class="pre">group2dict(group).items()</span></code>, and provides the idiomatic
 way to loop through all items in a group.</p>
 </dd></dl>
 
@@ -205,13 +197,13 @@ way to loop through all items in a group.</p>
 <dl class="function">
 <dt id="isgroup">
 <code class="descname">isgroup</code><span class="sig-paren">(</span><em>object</em><span class="sig-paren">)</span><a class="headerlink" href="#isgroup" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns <code class="docutils literal"><span class="pre">True</span></code> is the object is a group.</p>
+<dd><p>returns <code class="docutils literal notranslate"><span class="pre">True</span></code> is the object is a group.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="isparam">
 <code class="descname">isparam</code><span class="sig-paren">(</span><em>object</em><span class="sig-paren">)</span><a class="headerlink" href="#isparam" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns <code class="docutils literal"><span class="pre">True</span></code> is the object is a parameter.</p>
+<dd><p>returns <code class="docutils literal notranslate"><span class="pre">True</span></code> is the object is a parameter.</p>
 </dd></dl>
 
 <dl class="function">
@@ -220,7 +212,7 @@ way to loop through all items in a group.</p>
 <dd><p>returns a list of files in the current directory.  If a ‘*’ is used in
 the argument, the returned list is limited to files matching that
 pattern.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">ls</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
 <span class="p">[</span><span class="s1">&#39;cu.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu10k.chi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_10k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_150k.xmu&#39;</span><span class="p">,</span>
  <span class="s1">&#39;cu_50k.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_metal_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;cu_rt01.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe.060&#39;</span><span class="p">,</span>
  <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="s1">&#39;feo_exafs_pnccat2001.dat&#39;</span><span class="p">,</span>
@@ -236,7 +228,7 @@ pattern.  For example:</p>
 <dt id="mkdir">
 <code class="descname">mkdir</code><span class="sig-paren">(</span><em>directory_name</em><span class="optional">[</span>, <em>mode=0777</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#mkdir" title="Permalink to this definition">¶</a></dt>
 <dd><p>create directory (and any intermediate subdirectories) with the
-specified name.  The <code class="docutils literal"><span class="pre">mode</span></code> option sets the permission mask to use
+specified name.  The <code class="docutils literal notranslate"><span class="pre">mode</span></code> option sets the permission mask to use
 for creating directory (default=0777).</p>
 </dd></dl>
 
@@ -245,7 +237,7 @@ for creating directory (default=0777).</p>
 <code class="descname">more</code><span class="sig-paren">(</span><em>filename</em><span class="optional">[</span>, <em>pagelenghth=32</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">,</span> <span class="n">pagelength</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -272,7 +264,7 @@ show at a time.  By default, the file is shown 32 lines at a time.:</p>
 <dl class="function">
 <dt id="show">
 <code class="descname">show</code><span class="sig-paren">(</span><em>group</em><span class="optional">[</span>, <em>with_private=False</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#show" title="Permalink to this definition">¶</a></dt>
-<dd><p>display group members. The <code class="docutils literal"><span class="pre">with_private</span></code> option will show private
+<dd><p>display group members. The <code class="docutils literal notranslate"><span class="pre">with_private</span></code> option will show private
 members.</p>
 <p>See Also:  show_tree()</p>
 </dd></dl>
@@ -300,7 +292,7 @@ members.</p>
 <dt id="which">
 <code class="descname">which</code><span class="sig-paren">(</span><em>object</em><span class="sig-paren">)</span><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
 <dd><p>return full path of object in Larch’s symbol table:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
 <span class="s1">&#39;_builtin.which&#39;</span>
 </pre></div>
 </div>
@@ -318,13 +310,13 @@ members.</p>
 <dl class="function">
 <dt id="all">
 <code class="descname">all</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#all" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if bool(x) is <code class="docutils literal"><span class="pre">True</span></code> for all values x in the iterable.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if bool(x) is <code class="docutils literal notranslate"><span class="pre">True</span></code> for all values x in the iterable.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="any">
 <code class="descname">any</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#any" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if bool(x) is <code class="docutils literal"><span class="pre">True</span></code> for any x in the iterable.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if bool(x) is <code class="docutils literal notranslate"><span class="pre">True</span></code> for any x in the iterable.</p>
 </dd></dl>
 
 <dl class="function">
@@ -433,7 +425,7 @@ This is equivalent to (real + imag*1j) where imag defaults to 0.</p>
 <dt id="delattr">
 <code class="descname">delattr</code><span class="sig-paren">(</span><em>object</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#delattr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete a named attribute on an object.
-delattr(x, ‘y’) is equivalent to <code class="docutils literal"><span class="pre">del</span> <span class="pre">x.y</span></code>.</p>
+delattr(x, ‘y’) is equivalent to <code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">x.y</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -700,7 +692,7 @@ This always returns a floating point number.  Precision may be negative.</p>
 <dt id="setattr">
 <code class="descname">setattr</code><span class="sig-paren">(</span><em>object</em>, <em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#setattr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a named attribute on an object;</p>
-<p>setattr(x, ‘y’, v) is equivalent to <code class="docutils literal"><span class="pre">x.y</span> <span class="pre">=</span> <span class="pre">v</span></code>.</p>
+<p>setattr(x, ‘y’, v) is equivalent to <code class="docutils literal notranslate"><span class="pre">x.y</span> <span class="pre">=</span> <span class="pre">v</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -788,20 +780,19 @@ in length to the length of the shortest argument sequence.</p>
         <li class="right" >
           <a href="modules.html" title="5.7. Tutorial: Running Larch Scripts, and Modules"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" >5. Larch Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>1. Downloading and Installation &#8212; larch 0.9.35 documentation</title>
+    <title>1. Downloading and Installation &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -26,14 +18,13 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="2. Larch Community and Support" href="community.html" />
-    <link rel="prev" title="Larch" href="index.html" />
+    <link rel="prev" title="Getting Started with Larch" href="getting_started.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -61,15 +52,14 @@
           <a href="community.html" title="2. Larch Community and Support"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Larch"
+          <a href="getting_started.html" title="Getting Started with Larch"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="data/index.html">Reading Data</a>|</li>
-   <li><a href="plotting/index.html">Plotting</a>|</li>
-   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="index.html"> Larch Home</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
    <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xray/index.html">X-ray Databases</a>|</li>
    <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="devel/index.html">Scripting</a>]</li>
+   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
@@ -84,20 +74,22 @@
 <li><a class="reference internal" href="#python-versions-2-7-or-3-6">1.3. Python Versions: 2.7 or 3.6?</a></li>
 <li><a class="reference internal" href="#source-installation">1.4. Source Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">1.4.1. Prerequisites</a></li>
-<li><a class="reference internal" href="#installation-from-source">1.4.2. Installation from Source</a></li>
+<li><a class="reference internal" href="#optional-modules">1.4.2. Optional Modules</a></li>
+<li><a class="reference internal" href="#installation-from-source">1.4.3. Installation from Source</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#documentation-and-examples">1.5. Documentation and Examples</a></li>
-<li><a class="reference internal" href="#funding-and-support">1.6. Funding and Support</a></li>
-<li><a class="reference internal" href="#acknowledgements">1.7. Acknowledgements</a></li>
-<li><a class="reference internal" href="#license">1.8. License</a></li>
+<li><a class="reference internal" href="#citing-larch">1.6. Citing Larch</a></li>
+<li><a class="reference internal" href="#funding-and-support">1.7. Funding and Support</a></li>
+<li><a class="reference internal" href="#acknowledgements">1.8. Acknowledgements</a></li>
+<li><a class="reference internal" href="#license">1.9. License</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Larch</a></p>
+  <p class="topless"><a href="getting_started.html"
+                        title="previous chapter">Getting Started with Larch</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="community.html"
                         title="next chapter">2. Larch Community and Support</a></p>
@@ -110,12 +102,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -127,17 +121,18 @@
           <div class="body" role="main">
             
   <div class="section" id="downloading-and-installation">
-<h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
-<p>The latest release version of Larch is 0.9.35.  Larch is in active and
-continuing development, and the intention is to tag a new release version every
-three to six months.  Of course, there may be bugs and unintended features, and
-some missing or incomplete desired features as we add new functionality.  Still,
-most of what is in Larch for XAFS data analysis and working with XRF maps from
-X-ray microprobes is working and ready for use.</p>
+<span id="install-chapter"></span><h1>1. Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
+<p>The latest release version of Larch is 0.9.37.</p>
+<p>Larch is in active and continuing development, and the intention is to tag
+a new release version every three to six months.  Of course, there may be
+bugs and unintended features, and some missing or incomplete desired
+features as we add new functionality.  Still, most of what is in Larch for
+XAFS data analysis and working with XRF maps from X-ray microprobes is
+working and ready for use.</p>
 <div class="section" id="single-file-installers">
 <h2>1.1. Single-File Installers<a class="headerlink" href="#single-file-installers" title="Permalink to this headline">¶</a></h2>
-<p>For Windows, Mac OSX, and Linux, Larch now comes with simple installers,
-available at <a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads">Larch Installers (cars.uchicago.edu)</a>.  These are
+<p>For Windows, MacOSX, and Linux, Larch now comes with simple installers,
+available at <a class="reference external" href="http://cars.uchicago.edu/gsecarrs/Data/Larch">Larch Installers (cars.uchicago.edu)</a>.  These are
 self-contained files that will install a complete Python environment from
 Anaconda Python and all of X-rayLarch onto your computer.  Installing Larch
 this way will be create a folder in your home folder called <cite>xraylarch</cite> by
@@ -161,36 +156,36 @@ space.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Windows (64bit)</td>
-<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86_64.exe">Larch for 64bit Windows</a></td>
+<td><a class="reference external" href="http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86_64.exe">Larch for 64bit Windows</a></td>
 </tr>
 <tr class="row-odd"><td>Windows (32bit)</td>
-<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86.exe">Larch for 32bit Windows</a></td>
+<td><a class="reference external" href="http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe">Larch for 32bit Windows</a></td>
 </tr>
 <tr class="row-even"><td>Mac OSX (64bit)</td>
-<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-MacOSX-x86_64.sh">Larch for Mac OSX</a></td>
+<td><a class="reference external" href="http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-MacOSX-x86_64.sh">Larch for MacOSX</a></td>
 </tr>
 <tr class="row-odd"><td>Linux (64bit)</td>
-<td><a class="reference external" href="http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Linux-x86_64.sh">Larch for Linux</a></td>
+<td><a class="reference external" href="http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Linux-x86_64.sh">Larch for Linux</a></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>For Windows, download the appropriate executable installer corresponding to
 the architecture of your OS, and run it.  Most modern computers (including
-Windows 10) will be running 64-bit Windows, but a 32-bit version is
-provided for older systems.</p>
+Windows 10) will be running 64-bit Windows. A 32-bit version is provided
+for older systems, but support for this may be dropped in late 2018.</p>
 <p>For Mac OSX or Linux, download the appropriate file then open a Terminal
 (Applications-&gt;Utilities-&gt;Terminal on Mac OSX), use <cite>cd</cite> to move to the
 download folder (typically <cite>cd Downloads</cite>) and run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">35</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">37</span><span class="o">-</span><span class="n">MacOSX</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">35</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">xraylarch</span><span class="o">-</span><span class="mf">0.9</span><span class="o">.</span><span class="mi">37</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>Once installed, you will be able to upgrade to future versions of Larch using:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">xraylarch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
 <p>and you will be able to completely uninstall simply by removing the
@@ -200,7 +195,7 @@ Desktop containing links to many of the Larch GUI applications listed above in
 <a class="reference internal" href="index.html#larch-app-table"><span class="std std-ref">Table of Larch Applications and Programs</span></a>.</p>
 <p>A key advantage of using Anaconda is that once installed, updates can be
 installed with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
 <p>As of this writing, some functionality – notably X-ray diffraction – may
@@ -228,26 +223,34 @@ it manages, including Larch.</p>
 or 3.6 should work (though Python 3.6 may have undiscovered bugs) from the
 <a class="reference external" href="http://www.continuum.io/downloads">Anaconda Downloads</a> site.  Once that is installed, you can open a Terminal (on
 Linux or Mac OSX) or the Anaconda prompt (on Windows) and type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">yc</span> <span class="n">GSECARS</span> <span class="n">xraylarch</span>
 </pre></div>
 </div>
 <p>to install Larch.  On Windows or Mac OSX, then type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch_makeicons</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch_makeicons</span>
 </pre></div>
 </div>
 <p>to make a <cite>Larch</cite> folder on your desktop with shortcuts (Windows) or
-Applications (Mac OSX) for the main Larch applications.</p>
+Applications (MacOS) for the main Larch applications.</p>
+<p>One advantage of Anaconda Python is that it makes updates very easy.  As new
+releases of Larch and the required packages are released, you can get the
+latest versions with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="python-versions-2-7-or-3-6">
 <h2>1.3. Python Versions: 2.7 or 3.6?<a class="headerlink" href="#python-versions-2-7-or-3-6" title="Permalink to this headline">¶</a></h2>
-<p>As of this writing (October, 2017) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch works with both versions of Python.
-We invite Python-savvy users to try out Larch with Python 3.6, but warn that
-there may be undiscovered bugs.  We are eager to migrate Larch so that it works
-only with Python 3.6 and higher so that we can take advantage of many language
-features not available in earlier versions.  Following the schedule of many
-scientific Python libraries and tools, we expect to make this transition in
-early 2019.</p>
+<p>As of this writing (March, 2018) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch works with both versions of
+Python.  We invite Python-savvy users to try out Larch with Python 3.6.  We
+believe most things are working with Python 3.6, and are actively using
+Larch with Python 3.6, but there may be some undiscovered bugs.  We are
+eager to migrate Larch so that it works only with Python 3.6 and higher so
+that we can take advantage of many language features not available in
+earlier versions.  Following the schedule of many scientific Python
+libraries and tools, we expect to make this transition in early 2019.</p>
+<p>Currently, the installers above are built with Python 2.7.  We</p>
 </div>
 <div class="section" id="source-installation">
 <h2>1.4. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
@@ -255,7 +258,7 @@ early 2019.</p>
 releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases
 (github.com)</a>.  In addition, you can use <cite>git</cite> to grab the latest development
 version of the source code:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <div class="section" id="prerequisites">
@@ -263,26 +266,44 @@ version of the source code:</p>
 <p>Larch requires Python version 2.7 or 3.6. In addiion, the following Python
 packages are all required for Larch to work:</p>
 <blockquote>
-<div>numpy, scipy, matplotlib, h5py, sqlalchemy, six, lmfit, wxPython,
-wxmplot, wxutils, asteval.</div></blockquote>
-<p>These are all widely available, either from PyPI or for Anaconda Python 2.7 and
-3.6.  Those packages not included with core Anaconda packages can be installed
-from the GSECARS conda channel, and will be installed with <cite>conda install -c
-GSECARS xraylarch</cite>.  If you’re installing from source or using a Python
-distribution other than Anaconda, all these packages are also available from
-PyPI and can be installed with <cite>pip install</cite></p>
-<p>There are a few packages that are required for some of the advanced and
-in-development X-ray diffraction analysis capabilities.  These include</p>
+<div>numpy, scipy, matplotlib, h5py, peakutils, pillow, psutil, requests,
+sqlalchemy, six, termcolor, wxPython, lmfit, asteval, wxmplot, wxutils.</div></blockquote>
+<p>These are all available from PyPI (the Python Package Index), and for
+Anaconda Python 2.7 and 3.6.  The packages not included with core Anaconda
+packages are available on the GSECARS conda channel, and will be installed
+with <cite>conda install -c GSECARS xraylarch</cite>.  If you’re installing from
+source or using a Python distribution other than Anaconda, all these
+packages are also available from PyPI and can be installed with  <cite>pip
+install &lt;packagename&gt;</cite> or <cite>conda install -c GSECARS &lt;packagename&gt;</cite>.</p>
+</div>
+<div class="section" id="optional-modules">
+<h3>1.4.2. Optional Modules<a class="headerlink" href="#optional-modules" title="Permalink to this headline">¶</a></h3>
+<p>There are a few packages that are required only for some more specialized
+uses of Larch that may not be important for everyone using Larch. For
+example, the advanced and in-development X-ray diffraction analysis
+capabilities require the following packages:</p>
 <blockquote>
-<div>fabio, pyfai, pycifrw</div></blockquote>
+<div>fabio, pyFAI, PyCifRw</div></blockquote>
+<p>Some x-ray computed tomography capabilities are available, and require the
+packages:</p>
+<blockquote>
+<div>tomopy, scikit-image</div></blockquote>
+<p>Some Epics-based data collection tools use Larch, and require:</p>
+<blockquote>
+<div>pyepics, psycopg2, epicsscan</div></blockquote>
 <p>As with the other packages listed above, these are either available from the
 GSECARS anaconda channel or from PyPI.</p>
+<p>To be clear, most of Larch will work fine without these modules installed,
+but the corresponding functionality will not be available.</p>
+<p>At this writing (March, 2018), we do not have supported packages for
+Windows for fabio, pyFAI, or tomopy.  You may be able to install fabio and
+pyFAI separately, and we are working on these packages.</p>
 </div>
 <div class="section" id="installation-from-source">
-<h3>1.4.2. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
+<h3>1.4.3. Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this headline">¶</a></h3>
 <p>If installing from source, first unpack the source distribution kit, move
 into the created xraylarch-VERSION directory, and type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 </div>
@@ -293,8 +314,14 @@ into the created xraylarch-VERSION directory, and type:</p>
 several examples (including all those shown in this documentation) in the
 <cite>examples</cite> folder.</p>
 </div>
+<div class="section" id="citing-larch">
+<h2>1.6. Citing Larch<a class="headerlink" href="#citing-larch" title="Permalink to this headline">¶</a></h2>
+<p>Currently, the best citation for Larch is M. Newville, <em>Larch: An Analysis
+Package For XAFS And Related Spectroscopies</em>. Journal of Physics:
+Conference Series, 430:012007 (2013).  <a class="reference internal" href="#larch2013" id="id1">[Install_1]</a></p>
+</div>
 <div class="section" id="funding-and-support">
-<h2>1.6. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
+<h2>1.7. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
 <p>Larch development at the GeoScoilEnviroCARS sector of Center for Advanced
 Radiation Sources at the University of Chicago has been supported by the US
 National Science Foundation - Earth Sciences (EAR-1128799), and Department
@@ -303,7 +330,7 @@ specifically for Larch was granted by the National Science Foundation -
 Advanced CyberInfrastructure (ACI-1450468).</p>
 </div>
 <div class="section" id="acknowledgements">
-<h2>1.7. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
+<h2>1.8. Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h2>
 <p>Larch was mostly written by and is maintained by Matt Newville
 &lt;<a class="reference external" href="mailto:newville&#37;&#52;&#48;cars&#46;uchicago&#46;edu">newville<span>&#64;</span>cars<span>&#46;</span>uchicago<span>&#46;</span>edu</a>&gt;.  Bruce Ravel has had an incalculable influence on
 the design and implementation of this code and has provided countless fixes for
@@ -347,11 +374,11 @@ uncertainty package for automated calculation and propagation of
 uncertainties is also included in Larch, with slight modification.</p>
 </div>
 <div class="section" id="license">
-<h2>1.8. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<h2>1.9. License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">BSD</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">CLAUSE</span> <span class="n">LICENSE</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">BSD</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">CLAUSE</span> <span class="n">LICENSE</span>
 
 <span class="n">Copyright</span><span class="p">,</span> <span class="n">Licensing</span><span class="p">,</span> <span class="ow">and</span> <span class="n">Re</span><span class="o">-</span><span class="n">distribution</span>
 <span class="o">-----------------------------------------</span>
@@ -384,6 +411,14 @@ the BSD License:</p>
 <span class="n">OF</span> <span class="n">THIS</span> <span class="n">SOFTWARE</span><span class="p">,</span> <span class="n">EVEN</span> <span class="n">IF</span> <span class="n">ADVISED</span> <span class="n">OF</span> <span class="n">THE</span> <span class="n">POSSIBILITY</span> <span class="n">OF</span> <span class="n">SUCH</span> <span class="n">DAMAGE</span><span class="o">.</span>
 </pre></div>
 </div>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-installation-0"><table class="docutils citation" frame="void" id="larch2013" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Install_1]</a></td><td>M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. <em>Journal of Physics: Conference Series</em>, 430:012007, 2013. <a class="reference external" href="https://doi.org/10.1088/1742-6596/430/1/012007">doi:10.1088/1742-6596/430/1/012007</a>.</td></tr>
+</tbody>
+</table>
+</p>
 </div>
 </div>
 
@@ -403,21 +438,20 @@ the BSD License:</p>
           <a href="community.html" title="2. Larch Community and Support"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Larch"
+          <a href="getting_started.html" title="Getting Started with Larch"
              >previous</a> |</li>
-   <li>[<a href="data/index.html">Reading Data</a>|</li>
-   <li><a href="plotting/index.html">Plotting</a>|</li>
-   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="index.html"> Larch Home</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
    <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xray/index.html">X-ray Databases</a>|</li>
    <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="devel/index.html">Scripting</a>]</li>
+   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

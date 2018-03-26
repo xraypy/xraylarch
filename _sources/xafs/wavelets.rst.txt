@@ -13,7 +13,7 @@ contributions of a waveform into both time and frequency (or, for EXAFS,
 :math:`k` and :math:`R`).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
 applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
-:cite:ts:`munoz_wavelet` being one early application.   The
+Munoz *et al* :cite:`munoz_wavelet` being one early application.   The
 :func:`cauchy_wavelet` function described below follows this work,  and
 that article should be cited as the reference for this transform.
 
@@ -21,7 +21,7 @@ that article should be cited as the reference for this transform.
 :func:`cauchy_wavelet`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Continuous Cauchy Wavelet transform of :cite:ts:`munoz_wavelet`
+The Continuous Cauchy Wavelet transform of Munoz *et al* :cite:`munoz_wavelet`
 is implemented as the function :func:`cauchy_wavelet`:
 
 
@@ -119,3 +119,11 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
     The Cauchy Wavelet transform projected to :math:`k` and :math:`R`
     space.  In the left hand panel, the original EXAFS :math:`k^2\chi(k)`
     is shown for comparison.
+
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Wavelets_
+   :filter: docname in docnames

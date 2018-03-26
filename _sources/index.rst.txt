@@ -22,7 +22,6 @@ also be used as a Python library or from its own Python-like macro language
 that aims to be very easy to use for novices while also being complete
 enough for advanced data processing and analysis.
 
-
 Larch has several related target application areas:
 
   * XAFS analysis, becoming version 2 of the Ifeffit Package for EXAFS analysis.
@@ -69,8 +68,8 @@ in-development features and application will be explicitly described as
   | gse_mapviewer        | GUI       | XRF Map Viewer for data from the      |
   |                      |           | GSECARS X-ray microprobe              |
   +----------------------+-----------+---------------------------------------+
-  | xyfit                | GUI       | Display and Peak Fitting of XANES and |
-  |                      |           | other 1D spectra (beta).              |
+  | xas_viewer           | GUI       | Display XANES data, and Pre-edge      |
+  |                      |           | Peak Fitting.                         |
   +----------------------+-----------+---------------------------------------+
   | xrfdisplay           | GUI       | Display XRF Spectra                   |
   +----------------------+-----------+---------------------------------------+
@@ -85,13 +84,14 @@ in-development features and application will be explicitly described as
   | feff8l               | CLI       | Feff 8 EXAFS calculations - no XANES  |
   +----------------------+-----------+---------------------------------------+
 
-Larch is under active and open
-development, and has support from the U. S. National Science Foundation.
+Larch is under active and open development, and has support from the U. S. National Science
+Foundation.
 
 
 .. toctree::
    :maxdepth: 1
 
+   getting_started.rst
    installation.rst
    community.rst
    overview.rst
@@ -104,3 +104,4 @@ development, and has support from the U. S. National Science Foundation.
    xray/index.rst
    xrf/index.rst
    devel/index.rst
+   biblio.rst

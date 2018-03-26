@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>6. Reading and Writing Data &#8212; larch 0.9.35 documentation</title>
+    <title>6. Reading and Writing Data &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="../tutorial/builtins.html" title="5.8. Tutorial: Builtin Functions"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="#">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
@@ -106,12 +96,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -138,7 +130,7 @@ encoded) data files, with whitespace delimited numbers layed out as a
 table, with a fix number of columns and rows indicated by newlines.
 Typically a comment character such as “#” is used to signify header
 information.  For instance:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO.</span>
 <span class="c1"># data from 20-BM, 2001, as part of NXS school</span>
 <span class="c1">#------------------------</span>
 <span class="c1">#   energy     xmu       i0</span>
@@ -150,7 +142,7 @@ information.  For instance:</p>
 </pre></div>
 </div>
 <p>This file and others like it can be read with the builtin
-<a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a> function.</p>
+<a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_io.read_ascii">
 <code class="descclassname">_io.</code><code class="descname">read_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
@@ -161,9 +153,9 @@ the data.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) – name of file to read.</li>
-<li><strong>commentchar</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) – string of valid comment characters</li>
-<li><strong>labels</strong> (string, <code class="docutils literal"><span class="pre">None</span></code>, or <code class="docutils literal"><span class="pre">False</span></code>) – string to split for column labels</li>
+<li><strong>filename</strong> (<em>string</em>) – name of file to read.</li>
+<li><strong>commentchar</strong> (<em>string</em>) – string of valid comment characters</li>
+<li><strong>labels</strong> (string, <code class="docutils literal notranslate"><span class="pre">None</span></code>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>) – string to split for column labels</li>
 </ul>
 </td>
 </tr>
@@ -171,8 +163,8 @@ the data.</p>
 </table>
 </dd></dl>
 
-<p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">)</span>
+<p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
   <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
@@ -186,7 +178,7 @@ the data.</p>
 </div>
 <p>which reads the data file and sets array names according to the column
 labels in the file.   You can be explicit:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;e mutrans monitor&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;e mutrans monitor&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
   <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
@@ -199,7 +191,7 @@ labels in the file.   You can be explicit:</p>
 </pre></div>
 </div>
 <p>and to get the data as a 2-D array:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span> <span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
  <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
  <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
    <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
@@ -253,9 +245,9 @@ copied. Instead, the HDF5 file is kept open and data accessed from the
 file as needed.</p>
 </dd></dl>
 
-<p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><code class="xref py py-func docutils literal"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
+<p>An example using <a class="reference internal" href="#_io.h5_group" title="_io.h5_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">h5_group()</span></code></a> shows that one can browse through the
 data heirarchy of the HDF5 file, and pick out the needed data:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">h5group</span><span class="p">(</span><span class="s1">&#39;test.h5&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="n">test</span><span class="o">.</span><span class="n">h5</span><span class="p">:</span> <span class="mi">3</span> <span class="n">symbols</span> <span class="o">==</span>
   <span class="n">attrs</span><span class="p">:</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;Collection Time&#39;</span><span class="p">:</span> <span class="s1">&#39;: Sat Feb 4 13:29:00 2012&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
@@ -330,7 +322,7 @@ access is encapsulated into three functions:</p>
 <dl class="function">
 <dt id="_io.caget">
 <code class="descclassname">_io.</code><code class="descname">caget</code><span class="sig-paren">(</span><em>PV_name</em>, <em>as_string=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caget" title="Permalink to this definition">¶</a></dt>
-<dd><p>get the value of the Process Variable.  The optional <code class="docutils literal"><span class="pre">as_string</span></code>
+<dd><p>get the value of the Process Variable.  The optional <code class="docutils literal notranslate"><span class="pre">as_string</span></code>
 argument ensures the returned value is the string representation for the
 variable.</p>
 </dd></dl>
@@ -338,8 +330,8 @@ variable.</p>
 <dl class="function">
 <dt id="_io.caput">
 <code class="descclassname">_io.</code><code class="descname">caput</code><span class="sig-paren">(</span><em>PV_name</em>, <em>value</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
-<dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal"><span class="pre">wait</span></code> is
-<code class="docutils literal"><span class="pre">True</span></code>, the function will not return until the put “completes”. For
+<dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal notranslate"><span class="pre">wait</span></code> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>, the function will not return until the put “completes”. For
 some types of data, this may wait for some process (moving a motor,
 triggering a detector) to finish before returning.</p>
 </dd></dl>
@@ -392,7 +384,7 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 <div class="section" id="saving-and-restoring-larch-groups">
 <h2>6.8. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to save groups of data and be able to open them again
-later.  The <a class="reference internal" href="#_io.save" title="_io.save"><code class="xref py py-func docutils literal"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><code class="xref py py-func docutils literal"><span class="pre">restore()</span></code></a> mechanism here allows you to
+later.  The <a class="reference internal" href="#_io.save" title="_io.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore()</span></code></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
 <p>Some precautions should be kept in mind, as not all Larch data is easily
 transferrable.  Most importantly, Python functions cannot be saved to any
@@ -409,9 +401,9 @@ groups and data structures can be saved and restored.</p>
 <dl class="function">
 <dt id="_io.restore">
 <code class="descclassname">_io.</code><code class="descname">restore</code><span class="sig-paren">(</span><em>filename</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
-<dd><p>recover groups from a Larch ‘save’ file.  If <code class="docutils literal"><span class="pre">group</span></code> is None, the
+<dd><p>recover groups from a Larch ‘save’ file.  If <code class="docutils literal notranslate"><span class="pre">group</span></code> is None, the
 groups in the save file will be returned (in the order in which they
-were saved).  If <code class="docutils literal"><span class="pre">group</span></code> is an existing Larch group, the groups in
+were saved).  If <code class="docutils literal notranslate"><span class="pre">group</span></code> is an existing Larch group, the groups in
 the save file will be put inside that group, and will not be returned.</p>
 </dd></dl>
 
@@ -436,19 +428,18 @@ the save file will be put inside that group, and will not be returned.</p>
         <li class="right" >
           <a href="../tutorial/builtins.html" title="5.8. Tutorial: Builtin Functions"
              >previous</a> |</li>
-   <li>[<a href="#">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

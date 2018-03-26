@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.8. XAFS: Computing anomalous scattering factors from XAFS data &#8212; larch 0.9.35 documentation</title>
+    <title>9.8. XAFS: Computing anomalous scattering factors from XAFS data &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="feffit.html" title="9.7. XAFS: Fitting XAFS to Feff Paths"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">9. XAFS Analysis</a> &#187;</li> 
       </ul>
@@ -101,12 +91,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -121,8 +113,8 @@
 <span id="xafs-computing-anomalous-scattering-factors-from-xafs-data"></span><h1>9.8. XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom
-anomalous scattering factors of <span class="citation"><a class="reference internal" href="../biblio.html#citation-cromer-liberman">Cromer and Liberman</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-cromer-liberman">3</a><span>]</span></span>,
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-chantler">Chanter</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-chantler">2</a><span>]</span></span>, and others near the absorption edge.</p>
+anomalous scattering factors of :cite::<cite>Cromer_Liberman</cite>,
+:cite::<cite>Chantler</cite>, and others near the absorption edge.</p>
 <p>Since XAFS is sensitive to the atomic environment of the resonant atom
 (through the variations of the absorption coefficient), the scattering
 factors from the differential KK transform will also be sensitive to
@@ -136,24 +128,24 @@ ReflEXAFS).</p>
 <div class="section" id="overview-of-the-diffkk-implementation">
 <h2>9.8.1. Overview of the diffKK implementation<a class="headerlink" href="#overview-of-the-diffkk-implementation" title="Permalink to this headline">¶</a></h2>
 <p>This performs the same algorithm as the venerable DIFFKK program
-described in <span class="citation"><a class="reference internal" href="../biblio.html#citation-diffkk">Cross, Newville, Rehr, Sorensen, Bouldin, Watson, Gouder, Lander and Bell</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-diffkk">4</a><span>]</span></span>.  This uses the MacLaurin series
+described in :cite::<cite>diffkk</cite>.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
-data and the tabulated <span class="math">\(f''(E)\)</span>) Kramers-Kronig transform.  This
-algorithm is described in <span class="citation"><a class="reference internal" href="../biblio.html#citation-ohta-88">Ohta and Ishida</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-ohta-88">15</a><span>]</span></span>.  This implementation
+data and the tabulated <span class="math notranslate">\(f''(E)\)</span>) Kramers-Kronig transform.  This
+algorithm is described in :cite::<cite>Ohta:88</cite>.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast – not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.</p>
-<p>The input <span class="math">\(\mu(E)\)</span> data are first matched to the tabulated
-<span class="math">\(f''(E)\)</span> using the MBACK algorithm of <span class="citation"><a class="reference internal" href="../biblio.html#citation-weng">Weng, Waldo and Penner-Hahn</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-weng">22</a><span>]</span></span> with an
-option of using the modification proposed by <span class="citation"><a class="reference internal" href="../biblio.html#citation-lee-xiang">Lee, Xiang, Ravel, Kortright and Flanagan</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lee-xiang">8</a><span>]</span></span>.
-This scales the measured <span class="math">\(\mu(E)\)</span> to the size of the tabulated
+<p>The input <span class="math notranslate">\(\mu(E)\)</span> data are first matched to the tabulated
+<span class="math notranslate">\(f''(E)\)</span> using the MBACK algorithm of :cite::<cite>Weng</cite> with an
+option of using the modification proposed by :cite::<cite>lee-xiang</cite>.
+This scales the measured <span class="math notranslate">\(\mu(E)\)</span> to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
 <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 9.8.1</span></a>.</p>
-<p>The difference between the scaled <span class="math">\(\mu(E)\)</span> and the tabulated
-<span class="math">\(f''(E)\)</span> is then subjected to the KK transform.  The result is
-added to the tabulated <span class="math">\(f'(E)\)</span> spectrum to produce the resulting
+<p>The difference between the scaled <span class="math notranslate">\(\mu(E)\)</span> and the tabulated
+<span class="math notranslate">\(f''(E)\)</span> is then subjected to the KK transform.  The result is
+added to the tabulated <span class="math notranslate">\(f'(E)\)</span> spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
 shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 9.8.1</span></a>.</p>
 <div class="figure align-center" id="id1">
@@ -171,7 +163,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> – an array containing the measured <span class="math">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – an array containing the measured <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>z</strong> – the Z number of the absorber element</li>
 <li><strong>edge</strong> – the edge measured, usually K or L3</li>
 <li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
@@ -195,7 +187,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> – an array containing the measured <span class="math">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – an array containing the measured <span class="math notranslate">\(\mu(E)\)</span></li>
 <li><strong>z</strong> – the Z number of the absorber element</li>
 <li><strong>edge</strong> – the edge measured, usually K or L3</li>
 <li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
@@ -223,23 +215,23 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>f2</td>
-<td>array of tabulated <span class="math">\(f''(E)\)</span></td>
+<td>array of tabulated <span class="math notranslate">\(f''(E)\)</span></td>
 </tr>
 <tr class="row-odd"><td>f1</td>
-<td>array of tabulated <span class="math">\(f'(E)\)</span></td>
+<td>array of tabulated <span class="math notranslate">\(f'(E)\)</span></td>
 </tr>
 <tr class="row-even"><td>fpp</td>
-<td>array of normalized <span class="math">\(f''(E)\)</span></td>
+<td>array of normalized <span class="math notranslate">\(f''(E)\)</span></td>
 </tr>
 <tr class="row-odd"><td>fp</td>
-<td>array of KK transformed <span class="math">\(f'(E)\)</span></td>
+<td>array of KK transformed <span class="math notranslate">\(f'(E)\)</span></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>All four arrays are on the same energy grid as the input data.</p>
 <p>Here is an example script to make the figure shown above:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s1">&#39;Reading copper foil data&#39;</span>
 <span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/cu_10k.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">29</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">8979</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">})</span>
 
@@ -257,16 +249,16 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <div class="section" id="diffkk-on-l-edge-data">
 <h2>9.8.2. diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Permalink to this headline">¶</a></h2>
 <p>The diffKK method is fairly straightforward for K edge data.  The
-algorithm for matching the measured <span class="math">\(\mu(E)\)</span> to the tabulated
-<span class="math">\(f''(E)\)</span> works quite well over the entire data range, resulting
-in a relatively unambiguous determination of <span class="math">\(f'(E)\)</span>.  The
+algorithm for matching the measured <span class="math notranslate">\(\mu(E)\)</span> to the tabulated
+<span class="math notranslate">\(f''(E)\)</span> works quite well over the entire data range, resulting
+in a relatively unambiguous determination of <span class="math notranslate">\(f'(E)\)</span>.  The
 situation for L edge data is a bit more complicated.</p>
 <p>Consider the CeO<sub>2</sub>L edge data shown on the right on
 <a class="reference internal" href="#fig-ceo2-diffkk"><span class="std std-numref">Figure 9.8.4</span></a>.  For these data, the matching algorithm is
 quite a bit more challenging, in part due to the very large spectral
 weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
-tabulated <span class="math">\(f'(E)\)</span>.</p>
+tabulated <span class="math notranslate">\(f'(E)\)</span>.</p>
 <div class="figure compound align-center" id="fig-ceo2-diffkkcomp">
 <div style="width: 32%" class="subfigure" id="id2">
 <span id="fig-ceo2-xafs"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_xafs.png"><img alt="../_images/diffkk_ceo2_xafs.png" src="../_images/diffkk_ceo2_xafs.png" style="width: 100%;" /></a>
@@ -282,18 +274,18 @@ tabulated <span class="math">\(f'(E)\)</span>.</p>
 </div>
 <p class="caption"><span class="caption-text">DiffKK analysis of CeO<sub>2</sub> L edge data</span></p>
 </div><p id="fig-ceo2-diffkkcomp">These larch command created the plot in <a class="reference internal" href="#fig-ceo2-notok"><span class="std std-numref">Figure 9.8.3</span></a>.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The large white lines of the L<sub>3</sub>and L<sub>2</sub>edges cause an
 upwards slope in the function used to match the measured data to the
-tabulated data.  This results in a suspicious <span class="math">\(f'(E)\)</span>.  The
+tabulated data.  This results in a suspicious <span class="math notranslate">\(f'(E)\)</span>.  The
 situation is even worse when a higher order polynomial is used for
 the normalization.</p>
 <p>The situation is improved somewhat by a simple trick.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;whiteline&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
@@ -303,7 +295,7 @@ the L<sub>3</sub>and L<sub>2</sub>white lines.  The data from the white
 line energies to 20 eV above are excluded when determining the matching
 parameters.  This does a somewhat nicer job of forcing the flat parts of
 measured data to match the tabulated data.</p>
-<p>This seems to do a decent job of producing the <span class="math">\(f'(E)\)</span> data.
+<p>This seems to do a decent job of producing the <span class="math notranslate">\(f'(E)\)</span> data.
 Still, this exposes a shortcoming of the diffKK algorithm for L edge
 data.  This might be addressed by calculations of bare-atom scattering
 factors that better estimate the step ratios of real material.
@@ -311,6 +303,8 @@ Another possibility is measurement of data over much longer data
 ranges so that the matching algorithm can be made to do a good job far
 away from the absorption edges.  Or perhaps a non-differential
 algorithm would be more appropriate for L edge data.</p>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-xafs/diffkk-0"></p>
 </div>
 </div>
 
@@ -332,20 +326,19 @@ algorithm would be more appropriate for L edge data.</p>
         <li class="right" >
           <a href="feffit.html" title="9.7. XAFS: Fitting XAFS to Feff Paths"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" >9. XAFS Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

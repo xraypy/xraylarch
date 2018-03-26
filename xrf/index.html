@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>11. X-ray Fluorescence Analysis with Larch &#8212; larch 0.9.35 documentation</title>
+    <title>11. X-ray Fluorescence Analysis with Larch &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="../xray/index.html" title="10. X-ray Databases"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="#">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
@@ -100,12 +90,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -127,7 +119,7 @@ progress, this chapter discusses some of the existing tools.</p>
 <p>Traditionally, XRF spectra have been measured with MCAs (Multi Channel
 Analyzers) which holds an array of intensities.  Because of this history,
 the two concepts are often mixed, and one often talks about MCA traces as
-being the same as XRF spectra.  To be sure, an XRF spectrum <span class="math">\(I(E)\)</span>
+being the same as XRF spectra.  To be sure, an XRF spectrum <span class="math notranslate">\(I(E)\)</span>
 can be represented well with an MCA trace (intensities per bin) as long as
 one can convert bin number to energy.  Fortunately, most measurement
 systems in use have a linear relation (calibration) between bin number and
@@ -146,15 +138,15 @@ MCA spectrum may have many (typically 10s) of ROIs defined for particular
 emission lines.</p>
 <p>In Larch, MCAs and ROIs are exposed as Groups, each with several
 attributes, and some built-in functions.  For example, An MCA has arrays
-for <code class="docutils literal"><span class="pre">energy</span></code> and <code class="docutils literal"><span class="pre">counts</span></code>, as well as values for <code class="docutils literal"><span class="pre">real_time</span></code> and
-<code class="docutils literal"><span class="pre">live_time</span></code>, a deadtime correction factor <code class="docutils literal"><span class="pre">dt_factor</span></code>, and several
-ROIs.  Each ROI has a <code class="docutils literal"><span class="pre">left</span></code> and <code class="docutils literal"><span class="pre">right</span></code> channel index, and a
-<code class="xref py py-meth docutils literal"><span class="pre">roi.get_counts()</span></code> method.</p>
+for <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">counts</span></code>, as well as values for <code class="docutils literal notranslate"><span class="pre">real_time</span></code> and
+<code class="docutils literal notranslate"><span class="pre">live_time</span></code>, a deadtime correction factor <code class="docutils literal notranslate"><span class="pre">dt_factor</span></code>, and several
+ROIs.  Each ROI has a <code class="docutils literal notranslate"><span class="pre">left</span></code> and <code class="docutils literal notranslate"><span class="pre">right</span></code> channel index, and a
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">roi.get_counts()</span></code> method.</p>
 </div>
 <div class="section" id="creating-mca-objects">
 <h2>11.2. Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to create an MCA object is to read one from a disk file.  For
-data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></code></a>
+data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_gsemca()</span></code></a>
 function.</p>
 <dl class="function">
 <dt id="read_gsemca">
@@ -239,7 +231,7 @@ function.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>energy</strong> – array of energy values</li>
 <li><strong>counts</strong> – array of counts</li>
-<li><strong>mca</strong> – MCA group (as read from <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></code></a>), containing
+<li><strong>mca</strong> – MCA group (as read from <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_gsemca()</span></code></a>), containing
 ROI definitions, calibration values, and related data.</li>
 </ul>
 </td>
@@ -275,19 +267,18 @@ ROI definitions, calibration values, and related data.</li>
         <li class="right" >
           <a href="../xray/index.html" title="10. X-ray Databases"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="#">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>3. Larch: Motivation and Overview &#8212; larch 0.9.35 documentation</title>
+    <title>3. Larch: Motivation and Overview &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="community.html" title="2. Larch Community and Support"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="data/index.html">Reading Data</a>|</li>
-   <li><a href="plotting/index.html">Plotting</a>|</li>
-   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="index.html"> Larch Home</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
    <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xray/index.html">X-ray Databases</a>|</li>
    <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="devel/index.html">Scripting</a>]</li>
+   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
@@ -100,12 +90,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -193,16 +185,16 @@ with organizing data is <strong>Group</strong>.  This is simply a container into
 any sort of data or function can be placed, including other Groups.  The
 data in a Group can be accessed using a syntax of <strong>&lt;Group&gt;.&lt;Member&gt;</strong>,
 as with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group 1&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The Group <code class="docutils literal"><span class="pre">my_group</span></code> holds data for <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">title</span></code>.  Here,
-the <code class="docutils literal"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, …, 10])
-that will be held by <code class="docutils literal"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
-with the <a class="reference internal" href="tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal"><span class="pre">show()</span></code></a> function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">my_group</span><span class="p">)</span>
+<p>The Group <code class="docutils literal notranslate"><span class="pre">my_group</span></code> holds data for <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, and <code class="docutils literal notranslate"><span class="pre">title</span></code>.  Here,
+the <code class="docutils literal notranslate"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, …, 10])
+that will be held by <code class="docutils literal notranslate"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
+with the <a class="reference internal" href="tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show()</span></code></a> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">my_group</span><span class="p">)</span>
 <span class="o">==</span> <span class="n">Group</span> <span class="mh">0x6e15970</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
   <span class="n">scale</span><span class="p">:</span> <span class="mf">10.2</span>
   <span class="n">t</span><span class="p">:</span> <span class="s1">&#39;group 1&#39;</span>
@@ -211,15 +203,15 @@ with the <a class="reference internal" href="tutorial/builtins.html#show" title=
 </pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
-As the <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> members hold array, the size and datatype of the
+As the <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span>
 <span class="p">[</span>  <span class="mf">0.</span>           <span class="mf">8.58300405</span>   <span class="mf">9.27483375</span>   <span class="mf">1.43942408</span>  <span class="o">-</span><span class="mf">7.71938545</span>
   <span class="o">-</span><span class="mf">9.7810276</span>   <span class="o">-</span><span class="mf">2.85003808</span>   <span class="mf">6.70126331</span>  <span class="mf">10.09145412</span>   <span class="mf">4.20360855</span>
   <span class="o">-</span><span class="mf">5.54901533</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>will show the array elements.  The <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code> function will show a graph
+<p>will show the array elements.  The <code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code> function will show a graph
 of y(x).</p>
 <p>Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
@@ -276,19 +268,18 @@ and analysis steps that Ifeffit can do, including:</p>
         <li class="right" >
           <a href="community.html" title="2. Larch Community and Support"
              >previous</a> |</li>
-   <li>[<a href="data/index.html">Reading Data</a>|</li>
-   <li><a href="plotting/index.html">Plotting</a>|</li>
-   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li>[<a href="index.html"> Larch Home</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
    <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xray/index.html">X-ray Databases</a>|</li>
    <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="devel/index.html">Scripting</a>]</li>
+   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
  
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

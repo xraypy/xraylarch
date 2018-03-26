@@ -126,8 +126,8 @@ The MBACK algorithm
 ===================
 
 Larch provides an implementation of the MBACK algorithm of
-:cite:ts:`Weng` with an option of using the modification proposed by
-:cite:ts:`lee-xiang`.  In MBACK, the data are matched to the tabulated
+Weng :cite:`Weng` with an option of using the modification proposed by
+Lee *et al* :cite:`lee-xiang`.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, :math:`f''(E)`.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
@@ -164,7 +164,7 @@ data points above the absorption edge.  :math:`n_1+n_2=N`, where N is
 the total number of data points.
 
 If this is used in publication, a citation should be given to
-:cite:ts:`Weng`.
+Weng :cite:`Weng`.
 
 ..  function:: mback(energy, mu, group=None, ...)
 
@@ -283,7 +283,7 @@ effect can be corrected for small over-absorption.
 
 
 For XANES, a common correction method from the FLUO program by D. Haskel
-(:cite:ts:`fluo`) can be used.  The algorithm is contained in the
+(:cite:`fluo`) can be used.  The algorithm is contained in the
 :func:`fluo_corr` function.
 
 
@@ -540,3 +540,10 @@ with results shown below:
 
     Example of simple usage of :func:`xas_deconvolve` and
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Preedge_
+   :filter: docname in docnames

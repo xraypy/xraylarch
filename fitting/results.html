@@ -5,20 +5,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>8.4. Fit Results and Outputs &#8212; larch 0.9.35 documentation</title>
+    <title>8.4. Fit Results and Outputs &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.9.35',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -32,8 +24,7 @@
 			 "HTML-CSS": {scale: 90}});
   </script>
 
-  </head>
-  <body>
+  </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
 <table border=1>
   <tr>
@@ -63,13 +54,12 @@
         <li class="right" >
           <a href="minimize.html" title="8.3. minimize() and objective Functions"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
@@ -79,7 +69,7 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="previous chapter">8.3. <code class="docutils literal"><span class="pre">minimize()</span></code> and objective Functions</a></p>
+                        title="previous chapter">8.3. <code class="docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="lineshapes.html"
                         title="next chapter">8.5. Some Builtin Line-shape Functions</a></p>
@@ -92,12 +82,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -111,18 +103,18 @@
   <div class="section" id="fit-results-and-outputs">
 <span id="fitting-results-sec"></span><h1>8.4. Fit Results and Outputs<a class="headerlink" href="#fit-results-and-outputs" title="Permalink to this headline">¶</a></h1>
 <div class="versionchanged">
-<p><span class="versionmodified">Changed in version 0.9.34: </span><code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> returns a result group containing fit statistics.</p>
+<p><span class="versionmodified">Changed in version 0.9.34: </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> returns a result group containing fit statistics.</p>
 </div>
 <p>After the fit has completed, several statistics are output and available to
 describe the quality of the fit and the estimated values for the Parameter
 values and uncertainties.  The main statistics are written to group
-returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>, while the parameter values in <em>paramgroup</em>
+returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>, while the parameter values in <em>paramgroup</em>
 are updated to their best-fit values.</p>
 <p>The estimated values, uncertainties, and correlations for each varied
 Parameter are written as attributes of that Parameter.  Thus, after a fit,
-each variable Parameter <code class="docutils literal"><span class="pre">par</span></code> will be updated so that <code class="docutils literal"><span class="pre">par.value</span></code> will
-hold the estimated best-fit value, <code class="docutils literal"><span class="pre">par.stderr</span></code> will hold the estimated
-uncertainty (1-<span class="math">\(\sigma\)</span> standard error), and <code class="docutils literal"><span class="pre">par.correl</span></code> will hold
+each variable Parameter <code class="docutils literal notranslate"><span class="pre">par</span></code> will be updated so that <code class="docutils literal notranslate"><span class="pre">par.value</span></code> will
+hold the estimated best-fit value, <code class="docutils literal notranslate"><span class="pre">par.stderr</span></code> will hold the estimated
+uncertainty (1-<span class="math notranslate">\(\sigma\)</span> standard error), and <code class="docutils literal notranslate"><span class="pre">par.correl</span></code> will hold
 a dictionary of correlation values with the other variable Parameters.</p>
 <p>General Fit statistics describing the quality of the fit and details about
 how the fit proceeded will be put into the result group with
@@ -130,9 +122,9 @@ variable names and meanings as outlines in
 <a class="reference internal" href="#minimize-stats-table"><span class="std std-ref">Table of Fit Statistics</span></a>.  For advanced users,
 the fitting class instance and result from <cite>lmfit</cite> are available.</p>
 <blockquote id="minimize-stats-table">
-<div><p>Table of Fit Statistics and Results contained in the return value of <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</p>
+<div><p>Table of Fit Statistics and Results contained in the return value of <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</p>
 <p>Listed are the names and description of items in the fit result group
-returned by the <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> function.  Many of these items are
+returned by the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function.  Many of these items are
 directly from <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>.</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -156,10 +148,10 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 <td>ndata - nfree</td>
 </tr>
 <tr class="row-odd"><td>chi_square</td>
-<td>chi-square: <span class="math">\(\chi^2 = \sum_i^N [{\rm Resid}_i]^2\)</span></td>
+<td>chi-square: <span class="math notranslate">\(\chi^2 = \sum_i^N [{\rm Resid}_i]^2\)</span></td>
 </tr>
 <tr class="row-even"><td>chi_reduced</td>
-<td>reduced chi-square: <span class="math">\(\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}\)</span> |</td>
+<td>reduced chi-square: <span class="math notranslate">\(\chi^2_{\nu}= {\chi^2} / {(N - N_{\rm varys})}\)</span> |</td>
 </tr>
 <tr class="row-odd"><td>aic</td>
 <td><a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html#akaike-and-bayesian-information-criteria">Akaike Information Criteria</a></td>
@@ -205,7 +197,7 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 </div></blockquote>
 </div></blockquote>
 <div class="versionchanged">
-<p><span class="versionmodified">Changed in version 0.9.34: </span><a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal"><span class="pre">fit_report()</span></code></a> uses a result group returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code></p>
+<p><span class="versionmodified">Changed in version 0.9.34: </span><a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_report()</span></code></a> uses a result group returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></p>
 </div>
 <dl class="function">
 <dt id="fit_report">
@@ -216,8 +208,8 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>result</strong> – fit result group, returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
-<li><strong>show_correl</strong> – flag (<code class="docutils literal"><span class="pre">True</span></code>/<code class="docutils literal"><span class="pre">False</span></code>) to show parameter correlations.</li>
+<li><strong>result</strong> – fit result group, returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</li>
+<li><strong>show_correl</strong> – flag (<code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>) to show parameter correlations.</li>
 <li><strong>min_correl</strong> – smallest absolute value of correlation to show.</li>
 </ul>
 </td>
@@ -229,8 +221,8 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 </table>
 </dd></dl>
 
-<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal"><span class="pre">fit_report()</span></code></a> would look like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_report()</span></code></a> would look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 <span class="p">[[</span><span class="n">Fit</span> <span class="n">Statistics</span><span class="p">]]</span>
     <span class="c1"># function evals   = 28</span>
     <span class="c1"># data points      = 201</span>
@@ -270,20 +262,19 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
         <li class="right" >
           <a href="minimize.html" title="8.3. minimize() and objective Functions"
              >previous</a> |</li>
-   <li>[<a href="../data/index.html">Reading Data</a>|</li>
-   <li><a href="../plotting/index.html">Plotting</a>|</li>
-   <li><a href="index.html">Fitting Data</a>|</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="../devel/index.html">Scripting</a>]</li>
+   <li><a href="index.html">Curve Fitting</a>|</li>
 
           <li class="nav-item nav-item-1"><a href="index.html" >8. Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

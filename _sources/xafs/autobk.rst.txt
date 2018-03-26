@@ -102,7 +102,7 @@ The AUTOBK Algorithm
 ======================
 
 The background subtraction method used is the **AUTOBK** algorithm
-(see :cite:ts:`autobk`), in which a spline function is matched to the
+(see :cite:`autobk`), in which a spline function is matched to the
 low-*R* components of the resulting :math:`\chi(k)`.
 
 For reference, :math:`k = \sqrt{2m_e (E-E_0)/\hbar^2}` is the wavenumber of
@@ -409,3 +409,11 @@ As an example:
 
 
 .. literalinclude:: ../../examples/xafs/doc_autobk4.lar
+
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+   :style: unsrt
+   :labelprefix: Autobk_
+   :filter: docname in docnames
