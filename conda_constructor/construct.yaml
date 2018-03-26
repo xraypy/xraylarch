@@ -34,8 +34,8 @@ specs:
     - pycifrw
     - peakutils
     - psutil
-    - fabio=0.6.0
-    - pyfai=0.15.0  # [win64 or linux64 or osx]
+    - fabio=0.6.0 # [linux64 or osx]
+    - pyfai=0.15.0  # [linux64 or osx]
     - tomopy  # [linux64 or osx]
     - tifffile=0.14.0
     - wxpython=4.0.1
