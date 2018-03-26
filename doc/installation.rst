@@ -8,19 +8,20 @@ Downloading and Installation
 .. _Anaconda Python:               http://www.continuum.io/
 .. _Anaconda Downloads:            http://www.continuum.io/downloads
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
-.. _Larch Installers (cars.uchicago.edu): http://cars.uchicago.edu/xraylarch/downloads
-.. _Larch for 64bit Windows:  http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86_64.exe
-.. _Larch for 32bit Windows:  http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Windows-x86.exe
-.. _Larch for MacOSX :       http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-MacOSX-x86_64.sh
-.. _Larch for Linux:          http://cars.uchicago.edu/xraylarch/downloads/xraylarch-0.9.35-Linux-x86_64.sh
+.. _Larch Installers (cars.uchicago.edu): http://cars.uchicago.edu/gsecarrs/Data/Larch
+.. _Larch for 64bit Windows:  http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86_64.exe
+.. _Larch for 32bit Windows:  http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
+.. _Larch for MacOSX :       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-MacOSX-x86_64.sh
+.. _Larch for Linux:          http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Linux-x86_64.sh
 
+The latest release version of Larch is |release|.
 
-The latest release version of Larch is |release|.  Larch is in active and
-continuing development, and the intention is to tag a new release version every
-three to six months.  Of course, there may be bugs and unintended features, and
-some missing or incomplete desired features as we add new functionality.  Still,
-most of what is in Larch for XAFS data analysis and working with XRF maps from
-X-ray microprobes is working and ready for use.
+Larch is in active and continuing development, and the intention is to tag
+a new release version every three to six months.  Of course, there may be
+bugs and unintended features, and some missing or incomplete desired
+features as we add new functionality.  Still, most of what is in Larch for
+XAFS data analysis and working with XRF maps from X-ray microprobes is
+working and ready for use.
 
 Single-File Installers
 =========================
@@ -62,11 +63,11 @@ For Mac OSX or Linux, download the appropriate file then open a Terminal
 (Applications->Utilities->Terminal on Mac OSX), use `cd` to move to the
 download folder (typically `cd Downloads`) and run::
 
-    bash xraylarch-0.9.35-MacOSX-x86_64.sh
+    bash xraylarch-0.9.37-MacOSX-x86_64.sh
 
 or::
 
-    bash xraylarch-0.9.35-Linux-x86_64.sh
+    bash xraylarch-0.9.37-Linux-x86_64.sh
 
 Once installed, you will be able to upgrade to future versions of Larch using::
 
@@ -130,19 +131,20 @@ latest versions with::
    conda update --all
 
 
-
-
 Python Versions: 2.7 or 3.6?
 ================================
 
-As of this writing (October, 2017) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch works with both versions of Python.
-We invite Python-savvy users to try out Larch with Python 3.6, but warn that
-there may be undiscovered bugs.  We are eager to migrate Larch so that it works
-only with Python 3.6 and higher so that we can take advantage of many language
-features not available in earlier versions.  Following the schedule of many
-scientific Python libraries and tools, we expect to make this transition in
-early 2019.
+As of this writing (March, 2018) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  Larch works with both versions of
+Python.  We invite Python-savvy users to try out Larch with Python 3.6.  We
+believe most things are working with Python 3.6, and are actively using
+Larch with Python 3.6, but there may be some undiscovered bugs.  We are
+eager to migrate Larch so that it works only with Python 3.6 and higher so
+that we can take advantage of many language features not available in
+earlier versions.  Following the schedule of many scientific Python
+libraries and tools, we expect to make this transition in early 2019.
+
+Currently, the installers above are built with Python 2.7.  We
 
 Source Installation
 =========================
@@ -194,8 +196,12 @@ Some Epics-based data collection tools use Larch, and require:
 As with the other packages listed above, these are either available from the
 GSECARS anaconda channel or from PyPI.
 
-To be clear, Larch will work fine without these modules installed, but the
-corresponding functionality will not be available.
+To be clear, most of Larch will work fine without these modules installed,
+but the corresponding functionality will not be available.
+
+At this writing (March, 2018), we do not have supported packages for
+Windows for fabio, pyFAI, or tomopy.  You may be able to install fabio and
+pyFAI separately, and we are working on these packages.
 
 
 Installation from Source
