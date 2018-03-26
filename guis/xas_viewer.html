@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4.3. XAS_Viewer &#8212; larch 0.9.37 documentation</title>
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Larch Tutorial" href="../tutorial/index.html" />
+    <link rel="prev" title="4.2. GSECARS Mapviewr" href="mapviewer.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+			 "HTML-CSS": {scale: 90}});
+  </script>
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../tutorial/index.html" title="5. Larch Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="mapviewer.html" title="4.2. GSECARS Mapviewr"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch GUIs</a> &#187;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="mapviewer.html"
+                        title="previous chapter">4.2. GSECARS Mapviewr</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../tutorial/index.html"
+                        title="next chapter">5. Larch Tutorial</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/guis/xas_viewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="xas-viewer">
+<span id="guis-xas-viewer"></span><h1>4.3. XAS_Viewer<a class="headerlink" href="#xas-viewer" title="Permalink to this headline">¶</a></h1>
+<p>The XAS_Viewer GUI uses Larch to read and display XAFS spectra.  This is
+still in active development, with more features planned with special
+emphasis on helping users with XANES analysis.  Current features (as of
+March, 2018, Larch version 0.9.36) include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>read XAFS spectra from simple data column files.</li>
+<li>read XAFS spectra from Athena Project files.</li>
+<li>XAFS pre-edge removal and normalization.</li>
+<li>visualization of normalization steps.</li>
+<li>fitting of pre-edge peaks.</li>
+<li>saving of data to Athena Project files.</li>
+<li>saving of data to CSV files.</li>
+</ul>
+</div></blockquote>
+<p>The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
+normalization, and de-convolution of XAFS spectra.
+<a class="reference internal" href="#fig-xasviewer-1a"><span class="std std-numref">Figure 4.3.1</span></a> shows the main window for the XAS Viewer
+program.  The left-hand portion contains a s list of files (or data groups)
+that have been read into the program. Clicking on the file or group name
+makes that “the current data group”, while checking the boxes next to each
+name will select multiple files or group.  Buttons at the top of the list
+of files can be used to “Select All” or “Select None”.</p>
+<p>The right-hand portion of the XAS Viewer window shows multiple forms for
+data processing, each on a separate Notebook tab.  The main tab shown is
+labeled “XAS Normalization” with a form for normalizing XAS data, and
+choices for how to plot the data for the current group or the selected
+groups. This form is provides a graphical interface to the <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>
+and related functions.  A separate window (<a class="reference internal" href="#fig-xasviewer-1b"><span class="std std-numref">Figure 4.3.2</span></a>) will
+show an interactive plot of the chosen data to be plotted. As with all
+Larch plots, the plot can be zoomed in an out, and configured to change
+colors, linestyles, text for labels, and so on.  For example, clicking on
+the legend for each spectra will toggle the display of that spectra.</p>
+<p>Note that many of the entries for numbers on the form panels have a button
+with a fancy ‘+’ sign.  Clicking anywhere on the plot window will remember
+the energy value of the last point clicked. Then, clicking on one of
+these buttons will insert that “last-clicked energy” value into the
+corresponding field.</p>
+<p>The XAS Viewer program has notebook tabs or more specialized XANES and XAFS
+analysis.  Currently (March 2018), the only additional functionality is for
+fitting pre-edge peaks, which is under the “Pre-edge Peak Fit” tab as shown
+below, but we will be adding more functionality soon.</p>
+<div class="figure compound align-center" id="fig_xasviewer_1">
+<div style="width: 48%" class="subfigure align-center" id="id1">
+<span id="fig-xasviewer-1a"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_xasnorm.png"><img alt="../_images/XAS_Viewer_xasnorm.png" src="../_images/XAS_Viewer_xasnorm.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.1 </span><span class="caption-text">Main XAFS pre-edge subtraction and normalization form.</span></p>
+</div>
+<div style="width: 48%" class="subfigure align-center" id="id2">
+<span id="fig-xasviewer-1b"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_xas_plot.png"><img alt="../_images/XAS_Viewer_xas_plot.png" src="../_images/XAS_Viewer_xas_plot.png" style="width: 62%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.2 </span><span class="caption-text">An example of an interactive plot of XANES data.</span></p>
+</div>
+</div><p id="fig_xasviewer_1">Data groups can be read from plain ASCII data files using a GUI form to
+help build <span class="math notranslate">\(\mu(E)\)</span>, or from Athena Project files, as shown in
+<a class="reference internal" href="#fig-xasviewer-2a"><span class="std std-numref">Figure 4.3.3</span></a> and <a class="reference internal" href="#fig-xasviewer-2b"><span class="std std-numref">Figure 4.3.4</span></a>.  Multiple data
+groups can be read in, compared, and merged.  These datasets can then be
+exported to Athena Project files, or to CSV files.</p>
+<div class="figure compound align-center" id="fig_xasviewer_2">
+<div style="width: 48%" class="subfigure align-center" id="id3">
+<span id="fig-xasviewer-2a"></span><a class="reference external image-reference" href="../_images/DataImporter.png"><img alt="../_images/DataImporter.png" src="../_images/DataImporter.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.3 </span><span class="caption-text">ASCII data file importer.</span></p>
+</div>
+<div style="width: 48%" class="subfigure align-center" id="id4">
+<span id="fig-xasviewer-2b"></span><a class="reference external image-reference" href="../_images/AthenaImporter.png"><img alt="../_images/AthenaImporter.png" src="../_images/AthenaImporter.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.4 </span><span class="caption-text">Athena Project importer.</span></p>
+</div>
+</div><p id="fig_xasviewer_2">The “Pre-edge Peak Fit” tab (show in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 4.3.5</span></a>) provides a
+form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
+or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a>
+and the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function for curve-fitting with the ability to
+constrain fitting Parameters.</p>
+<p>To do fitting of pre-edge peaks with the interface, one begins by fitting a
+“baseline” to account for the main absorption edge.  This baseline is
+modeled as a Lorentzian curve plus a line.  Fitting a baseline requires
+identifying energy ranges for both the main spectrum to be fitted and the
+pre-edge peaks – the part of the spectrum where the baseline should <em>not</em>
+be fitted.  This is illustrated in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 4.3.5</span></a> and
+<a class="reference internal" href="#fig-xasviewer-3b"><span class="std std-numref">Figure 4.3.6</span></a>.  Note that there are separate ranges for the
+“fit range” and the “pre-edge peak” range (illustrated with grey lines and
+blue ‘+’ signs on the plot).  The “pre-edge peak” range should be inside
+the fit range.</p>
+<p>Clicking “Fit baseline” will fit a baseline function and display the
+results.  The initial fit may have poorly guessed ranges for the pre-edge
+peaks and fit range and may require some adjustment.</p>
+<div class="figure compound align-center" id="fig_xasviewer_3">
+<div style="width: 48%" class="subfigure align-center" id="id5">
+<span id="fig-xasviewer-3a"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_prepeak_baseline.png"><img alt="../_images/XAS_Viewer_prepeak_baseline.png" src="../_images/XAS_Viewer_prepeak_baseline.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.5 </span><span class="caption-text">Pre-edge peak Window of XAS_Viewer, showing how select regions of
+pre-edge peaks for fitting a baseline.</span></p>
+</div>
+<div style="width: 48%" class="subfigure align-center" id="id6">
+<span id="fig-xasviewer-3b"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_plot_baseline.png"><img alt="../_images/XAS_Viewer_plot_baseline.png" src="../_images/XAS_Viewer_plot_baseline.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.6 </span><span class="caption-text">Plot of pre-edge peaks with baseline.  Note that the grey vertical
+lines show the fit range, the blue crosses show the pre-edge peak
+range, and the pink line shows the centroid of the pre-edge peaks after
+removal of the baseline.</span></p>
+</div>
+</div><p id="fig_xasviewer_3">Once the pre-edge baseline is satisfactory, you can add functions to model
+the pre-edge peaks themselves.  Select one of the “Peak Models” (typically
+Gaussian, Lorentzian, or Voigt), which will show a new tab in the “model
+components area” in the lower part of the form.  Note that the baseline
+will consist of a Lorentzian and linear model component, so that there will
+be at least 3 tabs for the 3 or more components of the pre-edge peak model.
+This is shown in <a class="reference internal" href="#fig-xasviewer-4a"><span class="std std-numref">Figure 4.3.7</span></a>, which shows the form for 1
+Gaussian peak, and the baseline.  You can include multiple peaks by
+repeatedly selecting the peak type from the drop-down menu.</p>
+<p>After selecting a peak type, click on the “Pick Values from Data” button,
+and then pick two points on the plot to help give initial ranges for that
+peak.  The points you pick do not have to be very accurate, and the initial
+values selected for the <cite>amplitude</cite>, <cite>center</cite>, and <cite>sigma</cite> parameters can
+be modified.  Note that you can place bounds on any of these parameters –
+it is probably a good idea to enforce the <cite>amplitude</cite> and <cite>sigma</cite> to be
+positive.  If using multiple peaks, it is often helpful to give realistic
+energy bounds for the <cite>center</cite> of each peak, so that they do not overlap.</p>
+<div class="figure compound align-center" id="fig_xasviewer_4">
+<div style="width: 49%" class="subfigure align-center" id="id7">
+<span id="fig-xasviewer-4a"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_prepeak_1gaussian.png"><img alt="../_images/XAS_Viewer_prepeak_1gaussian.png" src="../_images/XAS_Viewer_prepeak_1gaussian.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.7 </span><span class="caption-text">Pre-edge peak Window of XAS_Viewer, showing how select regions of
+pre-edge peaks for fitting a baseline.</span></p>
+</div>
+<div style="width: 49%" class="subfigure align-center" id="id8">
+<span id="fig-xasviewer-4b"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_plot_1gaussian.png"><img alt="../_images/XAS_Viewer_plot_1gaussian.png" src="../_images/XAS_Viewer_plot_1gaussian.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.8 </span><span class="caption-text">Pre-edge peak Window of XAS_Viewer, showing how select regions of
+pre-edge peaks for fitting a baseline.</span></p>
+</div>
+</div><p id="fig_xasviewer_4">Upon doing a fit, the plot is updated to show the data, best-fit, and each
+of the components used in the fit (<a class="reference internal" href="#fig-xasviewer-4b"><span class="std std-numref">Figure 4.3.8</span></a>). Fit
+statistics and best-fit parameter values, their uncertainties, and
+correlations are shown as a report in a separate window, with an example
+shown in <a class="reference internal" href="#fig-xasviewer-5a"><span class="std std-numref">Figure 4.3.9</span></a>.  Note that for peaks such as Gaussian,
+Lorentzian, and Voigt, not only are <cite>amplitude</cite> (that is, area under the
+peak), <cite>sigma</cite>, and <cite>center</cite> shown but so are <cite>fwhm</cite> (full width of peak at
+half the maximum height) and <cite>height</cite> (the maximum height of the peak).</p>
+<div class="figure compound align-center" id="fig_xasviewer_5">
+<div style="width: 49%" class="subfigure align-left" id="id9">
+<span id="fig-xasviewer-5a"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_prepeak_fitresult.png"><img alt="../_images/XAS_Viewer_prepeak_fitresult.png" src="../_images/XAS_Viewer_prepeak_fitresult.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.9 </span><span class="caption-text">Fit result frame for Pre-edge peak fit.</span></p>
+</div>
+<div style="width: 49%" class="subfigure align-center" id="id10">
+<span id="fig-xasviewer-5b"></span><a class="reference external image-reference" href="../_images/XAS_Viewer_plot_1residual.png"><img alt="../_images/XAS_Viewer_plot_1residual.png" src="../_images/XAS_Viewer_plot_1residual.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.10 </span><span class="caption-text">Pre-edge Peak fit with residual.</span></p>
+</div>
+</div><p id="fig_xasviewer_5">Though the plot of the fit in <a class="reference internal" href="#fig-xasviewer-4b"><span class="std std-numref">Figure 4.3.8</span></a> looks good,
+plotting the fit along with the residual (by selecting “Data+Residual” in
+the drop-down menu of “Plot:” choices) as shown in
+<a class="reference internal" href="#fig-xasviewer-5b"><span class="std std-numref">Figure 4.3.10</span></a> reveals a systematic mis-fit.  That is, the
+<cite>data-fit</cite> for this model clearly shows some spectral structure beyond just
+the noise in the data.  Adding a second Gaussian (and maybe even a third)
+will greatly help this fit.  To do that, add another Gaussian peak
+component to the fit model using the drop-down menu of “Add component:”,
+select initial values for that Gaussian, and re-fit the model.  We’ll leave
+that as an exercise for the reader.</p>
+<p>Fit results can be saved in two different ways, using the “PreEdge Peaks”
+menu.  First, the model to set up the fit can be saved to a <cite>.modl</cite> file
+and then re-read later and used for other fits. This model file can also be
+read in and used with the <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a> python module for complete scripting
+control.  Secondly, a fit can be <em>exported</em> to an ASCII file that will
+include the text of the fit report and columns including data, best-fit,
+and each of the components of the model.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../tutorial/index.html" title="5. Larch Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="mapviewer.html" title="4.2. GSECARS Mapviewr"
+             >previous</a> |</li>
+   <li>[<a href="../index.html"> Larch Home</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch GUIs</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+    </div>
+  </body>
+</html>
