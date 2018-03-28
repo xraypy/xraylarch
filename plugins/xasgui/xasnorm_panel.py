@@ -16,6 +16,8 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
+from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
+from larch_plugins.xafs.xafsutils import guess_energy_units
 
 np.seterr(all='ignore')
 
@@ -74,7 +76,7 @@ class XASNormPanel(wx.Panel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, reporter=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
-
+        self.parent = parent
         self.controller = controller
         self.reporter = reporter
         self.skip_process = False
@@ -428,6 +430,20 @@ class XASNormPanel(wx.Panel):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
             return
+
+        en_units = getattr(dgroup, 'energy_units', None)
+        if en_units is None:
+            en_units = 'eV'
+            units = guess_energy_units(dgroup.energy)
+
+            if units != 'eV':
+                dlg = EnergyUnitsDialog(self.parent, units, dgroup.energy)
+                res = dlg.GetResponse()
+                dlg.Destroy()
+                if res.ok:
+                    en_units = res.units
+                    dgroup.xdat = dgroup.energy = res.energy
+            dgroup.energy_units = en_units
 
         form = self.read_form()
         e0 = form['e0']
