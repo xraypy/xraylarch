@@ -43,13 +43,15 @@ def ktoe(k):
 def guess_energy_units(e):
     """guesses the energy units of the input array of energies
     returns one of
-        'eV'    energy looks to be in eV
-        'keV'   energy looks to be in keV
-        'deg'   energy looks to be in degrees
+        'eV'     energy looks to be in eV
+        'keV'    energy looks to be in keV
+        'deg'    energy looks to be in degrees
+        'steps'  energy looks to be in angular steps
 
     The default is 'eV'.
-      'keV' =  max(e) < 120, smallest step < 0.005, e increasing
-      'deg' =  max(e) <  90, smallest step < 0.005, e decreasing
+      keV   :  max(e) < 120, smallest step < 0.005, e increasing
+      deg   :  max(e) <  90, smallest step < 0.005, e decreasing
+      steps :  max(e) > 200,000
 
     Note that there is a potential for ambiguity between data
     measured in 'deg' and data measured in 'keV' with e decreasing!
@@ -60,6 +62,8 @@ def guess_energy_units(e):
     emax = max(ework)
 
     units = 'eV'
+    if emax > 200000:
+        units = 'steps'
     if emax < 120.0 and (abs(ediff).min() < 0.005):
         units = 'keV'
         if emax < 90.0 and (ediff.mean() < 0.0):
