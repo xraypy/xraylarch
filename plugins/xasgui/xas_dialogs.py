@@ -25,22 +25,20 @@ class DeglitchDialog(wx.Dialog):
 
     def __init__(self, parent, dgroup, controller, callback=None, **kws):
 
-        self.xorig = dgroup.xdat[:]
-        self.yorig = dgroup.ydat[:]
-        self.xdat  = dgroup.xdat[:]
-        self.ydat  = dgroup.ydat[:]
         self.controller = controller
         self.callback = callback
-        self.removed_points = []
+        xdat  = dgroup.xdat[:]
+        ydat  = dgroup.ydat[:]
 
-        xrange = (max(self.xdat) - min(self.xdat))
-        xmax = int(max(self.xdat) + xrange/4.0)
-        xmin = int(min(self.xdat) - xrange/4.0)
+        self.history = [(xdat, ydat)]
+
+        xrange = (max(xdat) - min(xdat))
+        xmax = int(max(xdat) + xrange/4.0)
+        xmin = int(min(xdat) - xrange/4.0)
 
         lastx, lasty = self.controller.get_cursor()
-        print(" -- > ", lastx, lasty)
         if lastx is None:
-            lastx = min(self.xdat) - 100.0
+            lastx = min(xdat) - 100.0
 
         title = "Select Points to Remove"
 
@@ -58,13 +56,13 @@ class DeglitchDialog(wx.Dialog):
                                       tooltip='use last point selected from plot')
 
         self.btn_remove_xlast = Button(panel, 'Remove this point',
-                                       size=(200, -1),
+                                       size=(150, -1),
                                        action=partial(self.on_remove, opt='x'))
 
         self.choice_range = Choice(panel, choices=('above', 'below'),
                                     size=(75, -1))
 
-        self.wid_range = FloatCtrl(panel, value=max(self.xdat),
+        self.wid_range = FloatCtrl(panel, value=max(xdat),
                                    precision=2, minval=xmin, maxval=xmax,
                                    size=(125, -1))
 
@@ -73,10 +71,10 @@ class DeglitchDialog(wx.Dialog):
                                        tooltip='use last point selected from plot')
 
         self.btn_remove_range = Button(panel, 'Remove range',
-                                       size=(200, -1),
+                                       size=(150, -1),
                                        action=partial(self.on_remove, opt='range'))
 
-        self.btn_undo = Button(panel, 'Undo last remove', size=(200, -1),
+        self.btn_undo = Button(panel, 'Undo last remove', size=(150, -1),
                                action=self.on_undo)
 
         panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
@@ -90,22 +88,18 @@ class DeglitchDialog(wx.Dialog):
         panel.Add(self.wid_range)
         panel.Add(self.btn_remove_range)
 
-        panel.Add(self.btn_undo, dcol=3, newrow=True)
-        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=4, newrow=True)
-
+        panel.Add(self.btn_undo, dcol=2, newrow=True)
+        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=3)
         panel.pack()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
-        print(" on select ", opt, _x)
-        print(" or... ", self.controller.symtable._plotter.plot1_x)
         if opt == 'x':
             self.wid_xlast.SetValue(_x)
         elif opt == 'range':
             self.wid_range.SetValue(_x)
 
     def on_remove(self, event=None, opt=None):
-        print(" remove ",  opt)
         if opt == 'x':
             _x = self.wid_xlast.GetValue()
             print( " remove point at ", _x)
@@ -113,7 +107,6 @@ class DeglitchDialog(wx.Dialog):
             _x = self.wid_range.GetValue()
             above = self.choice_range.GetStringSelection()
             print( " remove points ", above, _x)
-
 
     def on_undo(self, event=None):
         print("undo!")
