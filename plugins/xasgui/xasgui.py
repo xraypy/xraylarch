@@ -550,13 +550,13 @@ class XASFrame(wx.Frame):
                                          self.onEnergyCalibrateData)
 
         items['fit_loadresult'] = MenuItem(self, ppeak_menu,
-                                           "&Read Fit Result\tCtrl+R",
-                                           "Read Fit Result from File",
+                                           "&Read Fit Model\tCtrl+R",
+                                           "Read Fit Model from File",
                                            self.onLoadFitResult)
 
         items['fit_saveresult'] = MenuItem(self, ppeak_menu,
-                                           "Save Fit Result",
-                                           "Save Fit Result to File",
+                                           "Save Fit Model",
+                                           "Save Fit Model to File",
                                            self.onSaveFitResult)
 
         items['fit_export'] = MenuItem(self, ppeak_menu,
