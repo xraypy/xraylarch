@@ -44,7 +44,7 @@ from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel)
 from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
-                                              DeglitchDialog)
+                                              DeglitchDialog, QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -74,6 +74,9 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 NB_PANELS = (('XAS Normalization', XASNormPanel),
              ('Pre-edge Peak Fit', PrePeakPanel))
+
+QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
+ This is not done automatically!''' 
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -108,7 +111,7 @@ class XASController():
             self.larch = Interpreter()
 
         self.filelist = None
-        self.file_groups = {}
+        self.file_groups = OrderedDict()
         self.fit_opts = {}
         self.group = None
 
@@ -497,6 +500,8 @@ class XASFrame(wx.Frame):
         items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                                   "Open Data File",  self.onReadDialog)
 
+        items['file_save'] = MenuItem(self, fmenu, "&Save Project\tCtrl+S",
+                                      "Save Session to Project File",  self.onSaveProject)
 
         items['file2athena'] = MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
                                         "Export Selected Groups to Athena Project",
@@ -608,33 +613,41 @@ class XASFrame(wx.Frame):
 
         groups2csv(savegroups, outfile, x='energy', y='norm', _larch=self.larch)
 
-
     def onExportAthena(self, evt=None):
-        group_ids = self.controller.filelist.GetCheckedStrings()
-        savegroups = []
-        groupnames = []
-        dgroup = None
-        for checked in group_ids:
-            groupname = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(groupname)
-            savegroups.append(dgroup)
-            groupnames.append(groupname)
-        if len(savegroups) < 1:
+        groups = []
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groups.append(self.controller.file_groups[str(checked)])
+
+        if len(groups) < 1:
              Popup(self, "No files selected to export to Athena",
                    "No files selected")
              return
+        self.save_athena_project(groups[0], groups, prompt=True)
 
-        deffile = "%s_%i.prj" % (groupname, len(groupnames))
+    def onSaveProject(self, evt=None):
+        groups = [gname for gname in self.controller.file_groups]
+        if len(groups) < 1:
+            Popup(self, "No files selected to export to Athena",
+                  "No files selected")
+            return
+        self.save_athena_project(groups[0], groups, prompt=True)
+
+    def save_athena_project(self, filename, grouplist, prompt=True):
+        if len(grouplist) < 1:
+            return
+        savegroups = [self.controller.get_group(gname) for gname in grouplist]
+
+        deffile = "%s_%i.prj" % (filename, len(grouplist))
         wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
 
-        outfile = FileSave(self, 'Export Selected Groups to Athena File',
+        outfile = FileSave(self, 'Save Groups to Athena Project File',
                            default_file=deffile, wildcard=wcards)
 
         if outfile is None:
             return
 
         aprj = AthenaProject(filename=outfile, _larch=self.larch)
-        for label, grp in zip(groupnames, savegroups):
+        for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp, label=label)
         aprj.save(use_gzip=True)
 
@@ -780,12 +793,11 @@ class XASFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, event):
-        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-
+        dlg = wx.MessageDialog(None, QUIT_MESSAGE,  'Question',  
+                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         if wx.ID_YES != dlg.ShowModal():
             return
-
+        
         self.controller.save_config()
         self.controller.get_display().Destroy()
 
