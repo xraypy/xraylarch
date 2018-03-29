@@ -1,14 +1,130 @@
 from collections import namedtuple
+from functools import partial
 
 import numpy as np
 import wx
-from wxutils import (FloatCtrl, SimpleText, Choice, OkCancel, GridPanel, LCEN)
+from wxutils import (SimpleText, Choice, Button,
+                     OkCancel, GridPanel, LCEN)
+
+
+from larch.utils import index_of
+from larch.wxlib import BitmapButton, FloatCtrl
+from larch_plugins.wx.icons import get_icon
+
 
 PI = np.pi
 DEG2RAD  = PI/180.0
 
 # Planck constant over 2 pi times c: 197.3269718 (0.0000044) MeV fm
 PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
+
+
+class DeglitchDialog(wx.Dialog):
+    """dialog for deglitching or removing unsightly data points"""
+    msg = """Select Points to remove"""
+
+    def __init__(self, parent, dgroup, controller, callback=None, **kws):
+
+        self.xorig = dgroup.xdat[:]
+        self.yorig = dgroup.ydat[:]
+        self.xdat  = dgroup.xdat[:]
+        self.ydat  = dgroup.ydat[:]
+        self.controller = controller
+        self.callback = callback
+        self.removed_points = []
+
+        xrange = (max(self.xdat) - min(self.xdat))
+        xmax = int(max(self.xdat) + xrange/4.0)
+        xmin = int(min(self.xdat) - xrange/4.0)
+
+        lastx, lasty = self.controller.get_cursor()
+        print(" -- > ", lastx, lasty)
+        if lastx is None:
+            lastx = min(self.xdat) - 100.0
+
+        title = "Select Points to Remove"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 250), title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.wid_xlast = FloatCtrl(panel, value=lastx, precision=2,
+                                   minval=xmin, maxval=xmax,
+                                   size=(125, -1))
+
+
+        self.btn_xlast = BitmapButton(panel, get_icon('plus'),
+                                      action=partial(self.on_select, opt='x'),
+                                      tooltip='use last point selected from plot')
+
+        self.btn_remove_xlast = Button(panel, 'Remove this point',
+                                       size=(200, -1),
+                                       action=partial(self.on_remove, opt='x'))
+
+        self.choice_range = Choice(panel, choices=('above', 'below'),
+                                    size=(75, -1))
+
+        self.wid_range = FloatCtrl(panel, value=max(self.xdat),
+                                   precision=2, minval=xmin, maxval=xmax,
+                                   size=(125, -1))
+
+        self.btn_range = BitmapButton(panel, get_icon('plus'),
+                                       action=partial(self.on_select, opt='range'),
+                                       tooltip='use last point selected from plot')
+
+        self.btn_remove_range = Button(panel, 'Remove range',
+                                       size=(200, -1),
+                                       action=partial(self.on_remove, opt='range'))
+
+        self.btn_undo = Button(panel, 'Undo last remove', size=(200, -1),
+                               action=self.on_undo)
+
+        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
+        panel.Add(self.btn_xlast)
+        panel.Add(self.wid_xlast)
+        panel.Add(self.btn_remove_xlast)
+
+        panel.Add(SimpleText(panel, 'Energy Range : '), newrow=True)
+        panel.Add(self.choice_range)
+        panel.Add(self.btn_range)
+        panel.Add(self.wid_range)
+        panel.Add(self.btn_remove_range)
+
+        panel.Add(self.btn_undo, dcol=3, newrow=True)
+        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=4, newrow=True)
+
+        panel.pack()
+
+    def on_select(self, event=None, opt=None):
+        _x, _y = self.controller.get_cursor()
+        print(" on select ", opt, _x)
+        print(" or... ", self.controller.symtable._plotter.plot1_x)
+        if opt == 'x':
+            self.wid_xlast.SetValue(_x)
+        elif opt == 'range':
+            self.wid_range.SetValue(_x)
+
+    def on_remove(self, event=None, opt=None):
+        print(" remove ",  opt)
+        if opt == 'x':
+            _x = self.wid_xlast.GetValue()
+            print( " remove point at ", _x)
+        elif opt == 'range':
+            _x = self.wid_range.GetValue()
+            above = self.choice_range.GetStringSelection()
+            print( " remove points ", above, _x)
+
+
+    def on_undo(self, event=None):
+        print("undo!")
+
+    def onOK(self, event=None):
+        print(" ... OK ")
+        self.callback(ok=True, xdat=[1], ydat=[2])
+        self.Destroy()
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
 
 
 class EnergyUnitsDialog(wx.Dialog):

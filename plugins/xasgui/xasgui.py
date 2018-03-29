@@ -42,8 +42,10 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
-                                  MergeDialog, RenameDialog, RemoveDialog)
+from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel)
+from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
+                                              DeglitchDialog)
+
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
                               is_athena_project, AthenaProject)
@@ -539,15 +541,13 @@ class XASFrame(wx.Frame):
                                           "Deglitch Data for This Group",
                                           self.onDeglitchData)
 
-        items['data_smooth'] = MenuItem(self, data_menu, "Smooth Data",
-                                         "Smooth Data for This Group",
-                                         self.onDeglitchData)
+        items['data_smooth'] = MenuItem(self, data_menu, "Smooth / Rebin Data",
+                                        "Smooth or Rebin Data for This Group",
+                                        self.onSmoothData)
 
         items['data_encalib'] = MenuItem(self, data_menu, "Recalibrate Energy",
                                          "Recalibrate Energy for This Group",
-                                         self.onDeglitchData)
-
-
+                                         self.onEnergyCalibrateData)
 
         items['fit_loadresult'] = MenuItem(self, ppeak_menu,
                                            "&Read Fit Result\tCtrl+R",
@@ -723,6 +723,7 @@ class XASFrame(wx.Frame):
         if len(groups) < 1:
             return
 
+
         outgroup = unique_name('merge', self.controller.file_groups)
         dlg = MergeDialog(self, groups, outgroup=outgroup)
         res = dlg.GetResponse()
@@ -740,6 +741,28 @@ class XASFrame(wx.Frame):
 
     def onDeglitchData(self, event=None):
         print(" Deglitch Data")
+        groupname = self.controller.groupname
+        dgroup = self.controller.get_group(groupname)
+        dlg = DeglitchDialog(self, dgroup, controller=self.controller,
+                             callback=self.onDeglitchDataComplete)
+        dlg.Show()
+
+    def onDeglitchDataComplete(self, event=None, ok=True, xdat=None, ydat=None):
+        print ("Deglitch done ", event, ok,  len(xdat))
+#         res = dlg.GetResponse()
+#         dlg.Destroy()
+#         if res.ok:
+#             dgroup.xdat = dgroup.energy = res.xdat
+#             dgroup.ydat = dgroup.mu     = res.ydat
+#             self.ShowFile(groupname=groupname)
+#         print(" Deglitch done")
+
+    def onSmoothData(self, event=None):
+        print(" Smooth Data")
+        pass
+
+    def onEnergyCalibrateData(self, event=None):
+        print(" Energy Calibrate Data")
         pass
 
     def onConfigDataFitting(self, event=None):
