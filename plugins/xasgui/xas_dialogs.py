@@ -3,7 +3,7 @@ from functools import partial
 
 import numpy as np
 import wx
-from wxutils import (SimpleText, Choice, Button, HLine,
+from wxutils import (SimpleText, Choice, Check, Button, HLine,
                      OkCancel, GridPanel, LCEN)
 
 
@@ -229,62 +229,29 @@ class MergeDialog(wx.Dialog):
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
-    msg = '''Quit XAS Viewer? You may want to save your project before Quitting!''' 
+    msg = '''You may want to save your project before Quitting!'''
 
     def __init__(self, parent, **kws):
-        title = "Quit Larch XAS Viewer"
+        title = "Quit Larch XAS Viewer?"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(425, 150))
-        
-        self.status = 'CANCEL'
-
+        self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        save   = Button(panel, 'Save Project and Quit', 
-                        action=self.onSave, size=(130, -1))
-        ok     = Button(panel, 'Quit without Saving', 
-                        action=self.onQuit, size=(130, -1))
-        cancel = Button(panel, 'Do not Quit', id=wx.ID_CANCEL,
-                        action=self.onCancel, size=(130, -1))
-        cancel.SetDefault()
+        self.save = Check(panel, default=False, label='Save Project?')
 
         panel.Add(SimpleText(panel, self.msg), dcol=3, newrow=True)
         panel.Add((2, 2), newrow=True)
-        panel.Add(HLine(panel, size=(500, 3)), dcol=3, newrow=True)
+        panel.Add(self.save, newrow=True)
         panel.Add((2, 2), newrow=True)
-        panel.Add(save, newrow=True)
-        panel.Add(cancel)
-        panel.Add(ok)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=3, newrow=True)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
-    def onSave(self, evt=None):
-        self.status = 'SAVE'
-
-    def onQuit(self, evt=None):
-        self.status = 'QUIT'
-
-    def onCancel(self, evt=None):
-        self.status = 'CANCEL'
-
-    def use(self):
-        quit_status = None
-        def set_quit_status(state): 
-            quit_status = state
-        
-        dlg = QuitDialog(self, callback=set_quit_status)
-        dlg.Show()
-        
-        if quit_status == 'CANCEL':
-            return
-        elif quit_status == 'SAVE' and len(self.controller.file_groups) > 0:
-            self.onSaveProject()        
-
-    def GetResponse(self, newname=None):
+    def GetResponse(self):
         self.Raise()
-        response = namedtuple('QuitResponse', ('state',))
-        if self.ShowModal() != wx.ID_OK:
-            pass
-        print("Get Response ", self.status)
-        return response(self.status)
+        response = namedtuple('QuitResponse', ('ok', 'save'))
+        ok = (self.ShowModal() == wx.ID_OK)
+        return response(ok, self.save.IsChecked())
 
 class RenameDialog(wx.Dialog):
     """dialog for renaming group"""
