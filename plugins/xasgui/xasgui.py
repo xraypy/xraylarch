@@ -76,7 +76,7 @@ NB_PANELS = (('XAS Normalization', XASNormPanel),
              ('Pre-edge Peak Fit', PrePeakPanel))
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
- This is not done automatically!''' 
+ This is not done automatically!'''
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -793,11 +793,23 @@ class XASFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, event):
-        dlg = wx.MessageDialog(None, QUIT_MESSAGE,  'Question',  
-                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        if wx.ID_YES != dlg.ShowModal():
+        # dlg = wx.MessageDialog(None, QUIT_MESSAGE,  'Question',
+        #                         wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        # if wx.ID_YES != dlg.ShowModal():
+        #     return
+
+        dlg = QuitDialog(self)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+
+        if not res.ok:
             return
-        
+
+        if res.save:
+            groups = [gname for gname in self.controller.file_groups]
+            if len(groups) > 0:
+                self.save_athena_project(groups[0], groups, prompt=True)
+
         self.controller.save_config()
         self.controller.get_display().Destroy()
 
