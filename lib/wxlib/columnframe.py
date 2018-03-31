@@ -170,7 +170,7 @@ class ColumnDataFileFrame(wx.Frame) :
         opts = dict(action=self.onUpdate, size=(120, -1))
 
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
+        xarr_labels = self.xarr_labels = ['_index'] + arr_labels
 
         self.xarr   = Choice(panel, choices=xarr_labels, **opts)
         self.yarr1  = Choice(panel, choices= arr_labels, **opts)
@@ -211,7 +211,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if '(' in self.array_sel['ypop']:
             self.ysuf.SetLabel(')')
 
-        ixsel, iysel, iy2sel = 0, 1, len(yarr_labels)-1
+        ixsel, iysel, iy2sel = 1, 1, len(yarr_labels)-1
         if self.array_sel['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.array_sel['xarr'])
         if self.array_sel['yarr1'] in arr_labels:
@@ -221,7 +221,6 @@ class ColumnDataFileFrame(wx.Frame) :
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
-
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -335,7 +334,7 @@ class ColumnDataFileFrame(wx.Frame) :
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
         deeplarch = self._larch._larch
-        try:   
+        try:
             deeplarch.eval(read_cmd, add_history=False)
         except:
             pass
@@ -380,7 +379,7 @@ class ColumnDataFileFrame(wx.Frame) :
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = arr_labels + ['<index>']
+        xarr_labels = self.xarr_labels = ['_index'] + arr_labels
         def update(wid, choices):
             curstr = wid.GetStringSelection()
             curind = wid.GetSelection()
@@ -469,7 +468,7 @@ class ColumnDataFileFrame(wx.Frame) :
         exprs = dict(xdat=None, ydat=None, yerr=None)
 
         ncol, npts = rdata.shape
-        if xname.startswith('<index') or ix >= ncol:
+        if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
             exprs['xdat'] = 'arange(%i)' % npts
