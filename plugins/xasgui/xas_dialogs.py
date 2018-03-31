@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 from functools import partial
 
@@ -7,7 +8,7 @@ from wxutils import (SimpleText, Choice, Check, Button, HLine,
                      OkCancel, GridPanel, LCEN)
 
 
-from larch.utils import index_of
+from larch.utils import index_of, index_nearest
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 
@@ -25,20 +26,20 @@ class DeglitchDialog(wx.Dialog):
 
     def __init__(self, parent, dgroup, controller, callback=None, **kws):
 
+        self.dgroup = dgroup
         self.controller = controller
         self.callback = callback
         xdat  = dgroup.xdat[:]
         ydat  = dgroup.ydat[:]
-
-        self.history = [(xdat, ydat)]
+        self.data = [(xdat, ydat)]
 
         xrange = (max(xdat) - min(xdat))
-        xmax = int(max(xdat) + xrange/4.0)
-        xmin = int(min(xdat) - xrange/4.0)
+        xmax = int(max(xdat) + xrange/5.0)
+        xmin = int(min(xdat) - xrange/5.0)
 
         lastx, lasty = self.controller.get_cursor()
         if lastx is None:
-            lastx = min(xdat) - 100.0
+            lastx = xmax
 
         title = "Select Points to Remove"
 
@@ -46,74 +47,118 @@ class DeglitchDialog(wx.Dialog):
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        self.wid_xlast = FloatCtrl(panel, value=lastx, precision=2,
-                                   minval=xmin, maxval=xmax,
-                                   size=(125, -1))
+        bb_xlast = BitmapButton(panel, get_icon('plus'),
+                                action=partial(self.on_select, opt='x'),
+                                tooltip='use last point selected from plot')
 
+        bb_range1 = BitmapButton(panel, get_icon('plus'),
+                                action=partial(self.on_select, opt='range1'),
+                                tooltip='use last point selected from plot')
+        bb_range2 = BitmapButton(panel, get_icon('plus'),
+                                action=partial(self.on_select, opt='range2'),
+                                tooltip='use last point selected from plot')
 
-        self.btn_xlast = BitmapButton(panel, get_icon('plus'),
-                                      action=partial(self.on_select, opt='x'),
-                                      tooltip='use last point selected from plot')
+        br_xlast = Button(panel, 'Remove point', size=(125, -1),
+                          action=partial(self.on_remove, opt='x'))
 
-        self.btn_remove_xlast = Button(panel, 'Remove this point',
-                                       size=(150, -1),
-                                       action=partial(self.on_remove, opt='x'))
+        br_range = Button(panel, 'Remove range', size=(125, -1),
+                          action=partial(self.on_remove, opt='range'))
 
-        self.choice_range = Choice(panel, choices=('above', 'below'),
-                                    size=(75, -1))
+        undo = Button(panel, 'Undo remove', size=(125, -1),
+                      action=self.on_undo)
 
-        self.wid_range = FloatCtrl(panel, value=max(xdat),
-                                   precision=2, minval=xmin, maxval=xmax,
-                                   size=(125, -1))
+        floatopts = dict(precision=2, minval=xmin, maxval=xmax, size=(125, -1))
 
-        self.btn_range = BitmapButton(panel, get_icon('plus'),
-                                       action=partial(self.on_select, opt='range'),
-                                       tooltip='use last point selected from plot')
+        self.wid_xlast = FloatCtrl(panel, value=lastx, **floatopts)
+        self.wid_range1 = FloatCtrl(panel, value=lastx, **floatopts)
+        self.wid_range2 = FloatCtrl(panel, value=lastx, **floatopts)
+        self.wid_range2.Disable()
 
-        self.btn_remove_range = Button(panel, 'Remove range',
-                                       size=(150, -1),
-                                       action=partial(self.on_remove, opt='range'))
+        self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
+                                    size=(100, -1), action=self.on_choice)
 
-        self.btn_undo = Button(panel, 'Undo last remove', size=(150, -1),
-                               action=self.on_undo)
-
-        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
-        panel.Add(self.btn_xlast)
+        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2)
+        panel.Add(bb_xlast)
         panel.Add(self.wid_xlast)
-        panel.Add(self.btn_remove_xlast)
+        panel.Add(br_xlast)
 
         panel.Add(SimpleText(panel, 'Energy Range : '), newrow=True)
         panel.Add(self.choice_range)
-        panel.Add(self.btn_range)
-        panel.Add(self.wid_range)
-        panel.Add(self.btn_remove_range)
+        panel.Add(bb_range1)
+        panel.Add(self.wid_range1)
+        panel.Add(br_range)
 
-        panel.Add(self.btn_undo, dcol=2, newrow=True)
-        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=3)
+        panel.Add((10, 10), dcol=2, newrow=True)
+        panel.Add(bb_range2)
+        panel.Add(self.wid_range2)
+
+        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=3, newrow=True)
+        panel.Add((10, 10))
+        panel.Add(undo)
+
         panel.pack()
+
+    def on_choice(self, event=None):
+        if self.choice_range.GetStringSelection() == 'between':
+            self.wid_range2.Enable()
+        else:
+            self.wid_range2.Disable()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
         if opt == 'x':
             self.wid_xlast.SetValue(_x)
-        elif opt == 'range':
-            self.wid_range.SetValue(_x)
+        elif opt == 'range1':
+            self.wid_range1.SetValue(_x)
+        elif opt == 'range2':
+            self.wid_range2.SetValue(_x)
 
     def on_remove(self, event=None, opt=None):
+        xwork, ywork = self.data[-1]
         if opt == 'x':
-            _x = self.wid_xlast.GetValue()
-            print( " remove point at ", _x)
+            bad = index_nearest(xwork, self.wid_xlast.GetValue())
         elif opt == 'range':
-            _x = self.wid_range.GetValue()
-            above = self.choice_range.GetStringSelection()
-            print( " remove points ", above, _x)
+            rchoice = self.choice_range.GetStringSelection().lower()
+            x1 = index_nearest(xwork, self.wid_range1.GetValue())
+            x2 = None
+            if rchoice == 'below':
+                x2, x1 = x1, x2
+            elif rchoice == 'between':
+                x2 = index_nearest(xwork, self.wid_range2.GetValue())
+                if x1 > x2:
+                    x1, x2 = x2, x1
+            bad = slice(x1, x2, None)
+
+        self.data.append((np.delete(xwork, bad), np.delete(ywork, bad)))
+        self.plot_results()
 
     def on_undo(self, event=None):
-        print("undo!")
+        if len(self.data) > 1:
+            self.data.pop()
+            self.plot_results()
+
+    def plot_results(self):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data[-1]
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+                    linewidth=3, title='deglitching: %s' % fname,
+                    label='current', xlabel=dgroup.plot_xlabel,
+                    ylabel=dgroup.plot_ylabel)
+
+        if len(self.data) > 1:
+            xold, yold = self.data[-2]
+            ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+                         marker='o', markersize=4, linewidth=2.0,
+                         label='previous', show_legend=True)
+        ppanel.canvas.draw()
 
     def onOK(self, event=None):
-        print(" ... OK ")
-        self.callback(ok=True, xdat=[1], ydat=[2])
+        xdat, ydat = self.data[-1]
+        self.callback(ok=True, dgroup=self.dgroup, xdat=xdat, ydat=ydat)
         self.Destroy()
 
     def GetResponse(self):
