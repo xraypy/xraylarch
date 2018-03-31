@@ -753,22 +753,18 @@ class XASFrame(wx.Frame):
 
 
     def onDeglitchData(self, event=None):
-        print(" Deglitch Data")
         groupname = self.controller.groupname
         dgroup = self.controller.get_group(groupname)
         dlg = DeglitchDialog(self, dgroup, controller=self.controller,
                              callback=self.onDeglitchDataComplete)
         dlg.Show()
 
-    def onDeglitchDataComplete(self, event=None, ok=True, xdat=None, ydat=None):
-        print ("Deglitch done ", event, ok,  len(xdat))
-#         res = dlg.GetResponse()
-#         dlg.Destroy()
-#         if res.ok:
-#             dgroup.xdat = dgroup.energy = res.xdat
-#             dgroup.ydat = dgroup.mu     = res.ydat
-#             self.ShowFile(groupname=groupname)
-#         print(" Deglitch done")
+    def onDeglitchDataComplete(self, event=None, ok=False, dgroup=None,
+                               xdat=None, ydat=None):
+        if ok and dgroup is not None and xdat is not None:
+            dgroup.xdat = dgroup.energy = xdat
+            dgroup.ydat = dgroup.mu     = ydat
+            self.ShowFile(groupname=dgroup.groupname)
 
     def onSmoothData(self, event=None):
         print(" Smooth Data")
@@ -793,11 +789,6 @@ class XASFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, event):
-        # dlg = wx.MessageDialog(None, QUIT_MESSAGE,  'Question',
-        #                         wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-        # if wx.ID_YES != dlg.ShowModal():
-        #     return
-
         dlg = QuitDialog(self)
         res = dlg.GetResponse()
         dlg.Destroy()
