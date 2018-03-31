@@ -1263,8 +1263,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                   datagroup=dgroup, peakframe=self)
 
         self.parent.subframes['result_frame'].show_fitresult()
-        for m in self.parent.afterfit_menus:
-            self.parent.menuitems[m].Enable(True)
+        [m.Enable(True) for m in self.parent.afterfit_menus]
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
