@@ -493,91 +493,83 @@ class XASFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
+        group_menu = wx.Menu()
         data_menu = wx.Menu()
         ppeak_menu = wx.Menu()
-        self.menuitems = items = {}
+        m = {}
 
-        items['file_open'] = MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
-                                  "Open Data File",  self.onReadDialog)
+        MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
+                 "Open Data File",  self.onReadDialog)
 
-        items['file_save'] = MenuItem(self, fmenu, "&Save Project\tCtrl+S",
-                                      "Save Session to Project File",  self.onSaveProject)
+        MenuItem(self, fmenu, "&Save Project\tCtrl+S",
+                 "Save Session to Project File",  self.onSaveProject)
 
-        items['file2athena'] = MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
-                                        "Export Selected Groups to Athena Project",
-                                        self.onExportAthena)
+        MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
+                 "Export Selected Groups to Athena Project",
+                 self.onExportAthena)
 
-        items['file2csv'] = MenuItem(self, fmenu, "Export Selected Groups to CSV",
-                                     "Export Selected Groups to CSV",
-                                     self.onExportCSV)
+        MenuItem(self, fmenu, "Export Selected Groups to CSV",
+                 "Export Selected Groups to CSV",  self.onExportCSV)
 
         fmenu.AppendSeparator()
 
-        items['larch_buffer'] = MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
-                                         'Show Larch Programming Buffer',
-                                         self.onShowLarchBuffer)
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+                 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
 
-        # items['filex'] = MenuItem(self, fmenu, "&Inspect \tCtrl+I",
+        #  MenuItem(self, fmenu, "&Inspect \tCtrl+I",
         #                           "e",  self.showInspectionTool)
-        items['quit'] = MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
 
+        MenuItem(self, group_menu, "Copy This Group",
+                 "Copy This Group", self.onCopyGroup)
 
-        items['group_copy'] = MenuItem(self, data_menu, "Copy This Group",
-                                         "Copy This Group",
-                                         self.onCopyGroup)
+        MenuItem(self, group_menu, "Rename This Group",
+                 "Rename This Group", self.onRenameGroup)
 
-        items['group_rename'] = MenuItem(self, data_menu, "Rename This Group",
-                                         "Rename This Group",
-                                         self.onRenameGroup)
-
-        items['group_remove'] = MenuItem(self, data_menu, "Remove Selected Groups",
-                                         "Remove Selected Group",
-                                         self.onRemoveGroups)
+        MenuItem(self, group_menu, "Remove Selected Groups",
+                 "Remove Selected Group", self.onRemoveGroups)
 
 
-        items['data_merge'] = MenuItem(self, data_menu, "Merge Selected Groups",
-                                            "Merge Selected Groups",
-                                            self.onMergeData)
-
-        data_menu.AppendSeparator()
-
-        items['data_deglitch'] = MenuItem(self, data_menu, "Deglitch Data",
-                                          "Deglitch Data for This Group",
-                                          self.onDeglitchData)
-
-        items['data_smooth'] = MenuItem(self, data_menu, "Smooth / Rebin Data",
-                                        "Smooth or Rebin Data for This Group",
-                                        self.onSmoothData)
-
-        items['data_encalib'] = MenuItem(self, data_menu, "Recalibrate Energy",
-                                         "Recalibrate Energy for This Group",
-                                         self.onEnergyCalibrateData)
-
-        items['fit_loadresult'] = MenuItem(self, ppeak_menu,
-                                           "&Read Fit Model\tCtrl+R",
-                                           "Read Fit Model from File",
-                                           self.onLoadFitResult)
-
-        items['fit_saveresult'] = MenuItem(self, ppeak_menu,
-                                           "Save Fit Model",
-                                           "Save Fit Model to File",
-                                           self.onSaveFitResult)
-
-        items['fit_export'] = MenuItem(self, ppeak_menu,
-                                       "Export Data and Fit",
-                                       "Export Data and Fit",
-                                       self.onExportFitResult)
+        MenuItem(self, group_menu, "Merge Selected Groups",
+                 "Merge Selected Groups", self.onMergeData)
 
 
-        self.afterfit_menus = ('fit_export', 'fit_saveresult')
+        MenuItem(self, data_menu, "Deglitch Data",
+                 "Deglitch Data for This Group",
+                 self.onDeglitchData)
+
+        MenuItem(self, data_menu, "Smooth / Rebin Data",
+                 "Smooth or Rebin Data for This Group",
+                 self.onSmoothData)
+
+        MenuItem(self, data_menu, "Recalibrate Energy",
+                 "Recalibrate Energy for This Group",
+                 self.onEnergyCalibrateData)
+
+        MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
+                 "Read Fit Model from File", self.onLoadFitResult)
+
+        fsave = MenuItem(self, ppeak_menu, "Save Fit Model",
+                            "Save Fit Model to File", self.onSaveFitResult)
+
+        fexport = MenuItem(self, ppeak_menu, "Export Data and Fit",
+                           "Export Data and Fit",
+                           self.onExportFitResult)
+
+
+        self.afterfit_menus = (fsave, fexport)
 
         for m in self.afterfit_menus:
-            items[m].Enable(False)
+            m.Enable(False)
 
         self.menubar.Append(fmenu, "&File")
+        self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(data_menu, "Data")
-        self.menubar.Append(ppeak_menu, "PreEdge Peaks")
+
+        self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -690,15 +682,15 @@ class XASFrame(wx.Frame):
         self.ShowFile(groupname=new_gname)
 
     def onRenameGroup(self, event=None):
+        fname = self.current_filename = self.controller.filelist.GetStringSelection()
         if fname is None:
-            fname = self.current_filename = self.controller.filelist.GetStringSelection()
-
-        dlg = RenameDialog(self, fame)
+            return
+        dlg = RenameDialog(self, fname)
         res = dlg.GetResponse()
         dlg.Destroy()
 
         if res.ok:
-            groupname = self.controller.file_groups.pop(self.current_filename)
+            groupname = self.controller.file_groups.pop(fname)
             self.controller.file_groups[res.newname] = groupname
             self.controller.filelist.rename_item(self.current_filename, res.newname)
             dgroup = self.controller.get_group(groupname)
