@@ -346,7 +346,6 @@ class XASFrame(wx.Frame):
         self.SetSize(XASVIEW_SIZE)
         self.SetFont(Font(10))
         self.larch_buffer.Hide()
-
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -370,7 +369,8 @@ class XASFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        self.controller.filelist = FileCheckList(leftpanel, main=self,
+        self.controller.filelist = FileCheckList(leftpanel,
+                                                 # main=self,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
         self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
@@ -473,8 +473,6 @@ class XASFrame(wx.Frame):
         if not hasattr(self.larch.symtable, groupname):
             return
 
-
-
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
@@ -541,13 +539,13 @@ class XASFrame(wx.Frame):
                  "Deglitch Data for This Group",
                  self.onDeglitchData)
 
-        MenuItem(self, data_menu, "Smooth / Rebin Data",
-                 "Smooth or Rebin Data for This Group",
-                 self.onSmoothData)
-
         MenuItem(self, data_menu, "Recalibrate Energy",
                  "Recalibrate Energy for This Group",
                  self.onEnergyCalibrateData)
+
+        MenuItem(self, data_menu, "Smooth / Rebin Data",
+                 "Smooth or Rebin Data for This Group",
+                 self.onSmoothData)
 
         MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
                  "Read Fit Model from File", self.onLoadFitResult)
@@ -728,15 +726,13 @@ class XASFrame(wx.Frame):
         if len(groups) < 1:
             return
 
-
         outgroup = unique_name('merge', self.controller.file_groups)
         dlg = MergeDialog(self, groups, outgroup=outgroup)
         res = dlg.GetResponse()
-        fname = res.group
-        gname = fix_varname(res.group.lower())
         dlg.Destroy()
-
         if res.ok:
+            fname = res.group
+            gname = fix_varname(res.group.lower())
             yname = 'norm' if res.ynorm else 'mu'
             self.controller.merge_groups(groups, master=res.master,
                                          yarray=yname, outgroup=gname)
@@ -745,18 +741,7 @@ class XASFrame(wx.Frame):
 
 
     def onDeglitchData(self, event=None):
-        groupname = self.controller.groupname
-        dgroup = self.controller.get_group(groupname)
-        dlg = DeglitchDialog(self, dgroup, controller=self.controller,
-                             callback=self.onDeglitchDataComplete)
-        dlg.Show()
-
-    def onDeglitchDataComplete(self, event=None, ok=False, dgroup=None,
-                               xdat=None, ydat=None):
-        if ok and dgroup is not None and xdat is not None:
-            dgroup.xdat = dgroup.energy = xdat
-            dgroup.ydat = dgroup.mu     = ydat
-            self.ShowFile(groupname=dgroup.groupname)
+        DeglitchDialog(self, self.controller).Show()
 
     def onSmoothData(self, event=None):
         print(" Smooth Data")
@@ -881,7 +866,6 @@ class XASFrame(wx.Frame):
         if self.controller.get_config('chdir_on_fileopen'):
             os.chdir(filedir)
             self.controller.set_workdir()
-
 
         # check for athena projects
         if is_athena_project(path):
