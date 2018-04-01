@@ -46,6 +46,7 @@ from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel)
 
 from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog,
                                               RemoveDialog, DeglitchDialog,
+                                              RebinDataDialog,
                                               SmoothDataDialog, QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
@@ -70,9 +71,6 @@ ICON_FILE = 'larch.ico'
 
 XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
-
-SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
-CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 NB_PANELS = (('XAS Normalization', XASNormPanel),
              ('Pre-edge Peak Fit', PrePeakPanel))
@@ -537,17 +535,18 @@ class XASFrame(wx.Frame):
                  "Merge Selected Groups", self.onMergeData)
 
 
-        MenuItem(self, data_menu, "Deglitch Data",
-                 "Deglitch Data for This Group",
+        MenuItem(self, data_menu, "Deglitch Data",  "Deglitch Data",
                  self.onDeglitchData)
 
         MenuItem(self, data_menu, "Recalibrate Energy",
-                 "Recalibrate Energy for This Group",
+                 "Recalibrate Energy",
                  self.onEnergyCalibrateData)
 
-        MenuItem(self, data_menu, "Smooth / Rebin Data",
-                 "Smooth or Rebin Data for This Group",
+        MenuItem(self, data_menu, "Smooth Data", "Smooth Data",
                  self.onSmoothData)
+
+        MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
+                 self.onRebinData)
 
         MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
                  "Read Fit Model from File", self.onLoadFitResult)
@@ -747,6 +746,9 @@ class XASFrame(wx.Frame):
 
     def onSmoothData(self, event=None):
         SmoothDataDialog(self, self.controller).Show()
+
+    def onRebinData(self, event=None):
+        RebinDataDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
         print(" Energy Calibrate Data")

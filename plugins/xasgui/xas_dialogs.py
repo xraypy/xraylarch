@@ -3,15 +3,16 @@ from collections import namedtuple, OrderedDict
 from functools import partial
 
 import numpy as np
+
 import wx
 from wxutils import (SimpleText, Choice, Check, Button, HLine,
                      OkCancel, GridPanel, LCEN)
 
 
-from larch.utils import index_of, index_nearest
+from larch.utils import index_of, index_nearest, interp
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
-
+from larch_plugins.xafs.xafsutils  import etok, ktoe
 
 PI = np.pi
 DEG2RAD  = PI/180.0
@@ -22,6 +23,172 @@ PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
 Plot_Choices = OrderedDict((('Raw Data', 'mu'),
                             ('Normalized', 'norm'),
                             ('Derivative', 'dmude')))
+
+
+class RebinDataDialog(wx.Dialog):
+    """dialog for rebinning data to standard XAFS grid"""
+    msg = "Rebin Data"
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
+        xmin = min(self.dgroup.xdat)
+        xmax = max(self.dgroup.xdat)
+        e0val = getattr(self.dgroup, 'e0', xmin)
+
+        title = "Rebin Data"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+
+        self.grouplist.SetStringSelection(self.dgroup.groupname)
+        self.grouplist.SetToolTip('select a new group, clear undo history')
+
+
+        opts  = dict(size=(75, -1), precision=3, act_on_losefocus=True)
+
+        self.wids = wids = {}
+        wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax,
+                             **opts)
+
+        wids['pre1'] = FloatCtrl(panel, value=xmin-e0val,  **opts)
+        wids['pre2'] = FloatCtrl(panel, value=-20, **opts)
+
+        wids['xanes1'] = FloatCtrl(panel, value=-20,  **opts)
+        wids['xanes2'] = FloatCtrl(panel, value=30, **opts)
+
+        wids['exafs1'] = FloatCtrl(panel, value=etok(30),  **opts)
+        wids['exafs2'] = FloatCtrl(panel, value=etok(xmax-e0val), **opts)
+
+        wids['pre_step'] = FloatCtrl(panel, value=5.0,  **opts)
+        wids['xanes_step'] = FloatCtrl(panel, value=0.25,  **opts)
+        wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
+
+
+        for wname, wid in wids.items():
+            wid.SetAction(partial(self.on_rebin, name=wname))
+
+        apply = Button(panel, 'Save Arrays for this Group', size=(200, -1),
+                      action=self.on_apply)
+        apply.SetToolTip('Save rebinned data, overwrite current arrays')
+
+        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+
+        panel.Add(SimpleText(panel, 'Rebin Data for Group: '))
+        panel.Add(self.grouplist, dcol=5)
+
+        panel.Add(SimpleText(panel, 'E0: '), newrow=True)
+        panel.Add(wids['e0'])
+
+        panel.Add(SimpleText(panel, 'Region '), newrow=True)
+        panel.Add(SimpleText(panel, 'Start '))
+        panel.Add(SimpleText(panel, 'Stop '))
+        panel.Add(SimpleText(panel, 'Step '))
+        panel.Add(SimpleText(panel, 'Units '))
+
+        panel.Add(SimpleText(panel, 'Pre-Edge: '), newrow=True)
+        panel.Add(wids['pre1'])
+        panel.Add(wids['pre2'])
+        panel.Add(wids['pre_step'])
+        panel.Add(SimpleText(panel, ' eV'))
+
+        panel.Add(SimpleText(panel, 'XANES: '), newrow=True)
+        panel.Add(wids['xanes1'])
+        panel.Add(wids['xanes2'])
+        panel.Add(wids['xanes_step'])
+        panel.Add(SimpleText(panel, ' eV'))
+
+        panel.Add(SimpleText(panel, 'EXAFS: '), newrow=True)
+        panel.Add(wids['exafs1'])
+        panel.Add(wids['exafs2'])
+        panel.Add(wids['exafs_step'])
+        panel.Add(SimpleText(panel, u'1/\u212B'))
+
+        panel.Add(apply, dcol=4, newrow=True)
+
+        panel.Add(HLine(panel, size=(450, 3)), dcol=6, newrow=True)
+        panel.Add(done, dcol=4, newrow=True)
+        panel.pack()
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.plot_results()
+
+    def on_rebin(self, event=None, name=None, value=None):
+        print(" rebin! ", name, value)
+
+        wids = self.wids
+        if name == 'pre2':
+            val = wids['pre2'].GetValue()
+            wids['xanes1'].SetValue(val, act=False)
+        elif name == 'xanes1':
+            val = wids['xanes1'].GetValue()
+            wids['pre2'].SetValue(val, act=False)
+        elif name == 'xanes2':
+            val = wids['xanes2'].GetValue()
+            wids['exafs1'].SetValue(etok(val), act=False)
+        elif name == 'exafs1':
+            val = wids['exafs1'].GetValue()
+            wids['xanes2'].SetValue(ktoe(val), act=False)
+
+        e0 = wids['e0'].GetValue()
+
+        xarr = []
+        for prefix in ('pre', 'xanes', 'exafs'):
+            start= wids['%s1' % prefix].GetValue()
+            stop = wids['%s2' % prefix].GetValue()
+            step = wids['%s_step' % prefix].GetValue()
+
+            npts = 1 + int(0.1  + abs(stop-start)/step)
+            a = np.linspace(start, stop, npts)
+            if prefix == 'exafs':
+                a = ktoe(a)
+            xarr.append(a+e0)
+
+        xnew = np.concatenate((xarr[0], xarr[1], xarr[2]))
+        ynew = interp(self.dgroup.xdat, self.dgroup.ydat, xnew, kind='cubic')
+        self.data = xnew, ynew
+        self.plot_results()
+
+    def on_apply(self, event=None):
+        xdat, ydat = self.data
+        dgroup = self.dgroup
+        dgroup.xdat = dgroup.energy = xdat
+        dgroup.ydat = dgroup.mu     = ydat
+        self.parent.np_panels[0].process(dgroup)
+        self.plot_results()
+
+    def on_done(self, event=None):
+        self.Destroy()
+
+    def plot_results(self):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
+                    linewidth=3, title='rebinning: %s' % fname,
+                    label='rebinned', xlabel=dgroup.plot_xlabel,
+                    ylabel=dgroup.plot_ylabel)
+
+        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+                     marker='o', markersize=4, linewidth=2.0,
+                     label='original', show_legend=True)
+        ppanel.canvas.draw()
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
 
 
 class SmoothDataDialog(wx.Dialog):
@@ -160,6 +327,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
         dgroup.ydat = dgroup.mu     = ydat
+        self.parent.np_panels[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -341,6 +509,7 @@ class DeglitchDialog(wx.Dialog):
         dgroup.xdat = dgroup.energy = xdat
         dgroup.ydat = dgroup.mu     = ydat
         self.reset_data_history()
+        self.parent.np_panels[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
