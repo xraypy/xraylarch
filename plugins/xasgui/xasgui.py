@@ -43,8 +43,10 @@ from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel)
-from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
-                                              DeglitchDialog, QuitDialog)
+
+from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog,
+                                              RemoveDialog, DeglitchDialog,
+                                              SmoothDataDialog, QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -744,8 +746,7 @@ class XASFrame(wx.Frame):
         DeglitchDialog(self, self.controller).Show()
 
     def onSmoothData(self, event=None):
-        print(" Smooth Data")
-        pass
+        SmoothDataDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
         print(" Energy Calibrate Data")
