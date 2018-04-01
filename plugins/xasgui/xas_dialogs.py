@@ -53,7 +53,7 @@ class RebinDataDialog(wx.Dialog):
         self.grouplist.SetToolTip('select a new group, clear undo history')
 
 
-        opts  = dict(size=(75, -1), precision=3, act_on_losefocus=True)
+        opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True)
 
         self.wids = wids = {}
         wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax,
@@ -82,11 +82,12 @@ class RebinDataDialog(wx.Dialog):
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
-        panel.Add(SimpleText(panel, 'Rebin Data for Group: '))
-        panel.Add(self.grouplist, dcol=5)
+        panel.Add(SimpleText(panel, 'Rebin Data for Group: '), dcol=2)
+        panel.Add(self.grouplist, dcol=3)
 
         panel.Add(SimpleText(panel, 'E0: '), newrow=True)
         panel.Add(wids['e0'])
+        panel.Add(SimpleText(panel, ' eV'))
 
         panel.Add(SimpleText(panel, 'Region '), newrow=True)
         panel.Add(SimpleText(panel, 'Start '))
