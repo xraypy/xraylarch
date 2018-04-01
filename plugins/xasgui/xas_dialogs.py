@@ -24,8 +24,172 @@ Plot_Choices = OrderedDict((('Raw Data', 'mu'),
                             ('Derivative', 'dmude')))
 
 
+class SmoothDataDialog(wx.Dialog):
+    """dialog for smoothing data"""
+    msg = "Smooth Data"
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
+
+        title = "Smooth Data"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(600, 200), title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+
+        self.grouplist.SetStringSelection(self.dgroup.groupname)
+        self.grouplist.SetToolTip('select a new group, clear undo history')
+
+        smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
+        conv_ops  = ('Lorenztian', 'Gaussian')
+
+        self.smooth_op = Choice(panel, choices=smooth_ops, size=(150, -1),
+                                action=self.on_smooth)
+        self.smooth_op.SetSelection(0)
+
+        self.conv_op = Choice(panel, choices=conv_ops, size=(150, -1),
+                                action=self.on_smooth)
+        self.conv_op.SetSelection(0)
+        self.conv_op.Disable()
+
+        opts  = dict(size=(50, -1), act_on_losefocus=True, odd_only=False)
+
+        self.sigma = FloatCtrl(panel, value=1, precision=2, minval=0, **opts)
+        self.par_n = FloatCtrl(panel, value=2, precision=0, minval=1, **opts)
+        self.par_o = FloatCtrl(panel, value=1, precision=0, minval=1, **opts)
+
+        for fc in (self.sigma, self.par_n, self.par_o):
+            fc.SetAction(self.on_smooth)
+
+        self.message = SimpleText(panel, label='         ', size=(200, -1))
+
+        apply = Button(panel, 'Save Array for this Group', size=(200, -1),
+                      action=self.on_apply)
+        apply.SetToolTip('Save smoothed data, overwrite current arrays')
+
+        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+
+
+
+        panel.Add(SimpleText(panel, 'Smooth Data for Group: '))
+        panel.Add(self.grouplist, dcol=5)
+
+        panel.Add(SimpleText(panel, 'Smoothing Method: '), newrow=True)
+        panel.Add(self.smooth_op)
+        panel.Add(SimpleText(panel, ' n= '))
+        panel.Add(self.par_n)
+        panel.Add(SimpleText(panel, ' order= '))
+        panel.Add(self.par_o)
+
+
+        panel.Add(SimpleText(panel, 'Convolution Form: '), newrow=True)
+        panel.Add(self.conv_op)
+        panel.Add(SimpleText(panel, 'sigma='))
+        panel.Add(self.sigma)
+
+        panel.Add((10, 10), newrow=True)
+        panel.Add(self.message, dcol=5)
+
+        panel.Add(apply, dcol=4, newrow=True)
+
+        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
+        panel.Add(done, dcol=4, newrow=True)
+
+        panel.pack()
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.plot_results()
+
+    def on_smooth(self, event=None, value=None):
+        smoothop = self.smooth_op.GetStringSelection().lower()
+        if smoothop == 'None':
+            return
+
+        convop   = self.conv_op.GetStringSelection()
+        self.par_n.Disable()
+        self.par_o.Disable()
+        self.sigma.Disable()
+        self.conv_op.Disable()
+        self.message.SetLabel('')
+        self.par_n.SetMin(1)
+        self.par_n.odd_only = False
+        par_n = int(self.par_n.GetValue())
+        par_o = int(self.par_o.GetValue())
+        sigma = self.sigma.GetValue()
+        if smoothop.startswith('box'):
+            self.par_n.Enable()
+            cmd = "boxcar({group:s}.ydat, {par_n:d})"
+        elif smoothop.startswith('savi'):
+            self.par_n.Enable()
+            self.par_n.odd_only = True
+            self.par_o.Enable()
+
+            x0 = max(par_o + 1, par_n)
+            if x0 % 2 == 0:
+                x0 += 1
+            self.par_n.SetMin(par_o + 1)
+            if par_n != x0:
+                self.par_n.SetValue(x0)
+            self.message.SetLabel('n must odd and > order+1')
+
+            cmd = "savitzky_golay({group:s}.ydat, {par_n:d}, {par_o:d})"
+
+        elif smoothop.startswith('conv'):
+            self.conv_op.Enable()
+            self.sigma.Enable()
+            cmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={sigma:f}, form='{convop:s}')"
+
+        cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
+                         sigma=sigma, par_n=par_n, par_o=par_o)
+
+        self.controller.larch.eval("_tmpy = %s" % cmd)
+        self.data = self.dgroup.xdat[:], self.controller.symtable._tmpy
+        self.plot_results()
+
+    def on_apply(self, event=None):
+        xdat, ydat = self.data
+        dgroup = self.dgroup
+        dgroup.xdat = dgroup.energy = xdat
+        dgroup.ydat = dgroup.mu     = ydat
+        self.plot_results()
+
+    def on_done(self, event=None):
+        self.Destroy()
+
+    def plot_results(self):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+                    linewidth=3, title='smoothing: %s' % fname,
+                    label='smoothed', xlabel=dgroup.plot_xlabel,
+                    ylabel=dgroup.plot_ylabel)
+
+        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+                     marker='o', markersize=4, linewidth=2.0,
+                     label='original', show_legend=True)
+        ppanel.canvas.draw()
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
+
+
+
 class DeglitchDialog(wx.Dialog):
-    """frame for deglitching or removing unsightly data points"""
+    """dialog for deglitching or removing unsightly data points"""
     msg = """Select Points to remove"""
 
     def __init__(self, parent, controller, **kws):
@@ -201,7 +365,6 @@ class DeglitchDialog(wx.Dialog):
                          label='previous', show_legend=True)
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
-
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
