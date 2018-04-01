@@ -1,5 +1,5 @@
 import os
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from functools import partial
 
 import numpy as np
@@ -19,19 +19,24 @@ DEG2RAD  = PI/180.0
 # Planck constant over 2 pi times c: 197.3269718 (0.0000044) MeV fm
 PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
 
+Plot_Choices = OrderedDict((('Raw Data', 'mu'),
+                            ('Normalized', 'norm'),
+                            ('Derivative', 'dmude')))
+
 
 class DeglitchDialog(wx.Dialog):
-    """dialog for deglitching or removing unsightly data points"""
+    """frame for deglitching or removing unsightly data points"""
     msg = """Select Points to remove"""
 
-    def __init__(self, parent, dgroup, controller, callback=None, **kws):
+    def __init__(self, parent, controller, **kws):
 
-        self.dgroup = dgroup
+        self.parent = parent
         self.controller = controller
-        self.callback = callback
-        xdat  = dgroup.xdat[:]
-        ydat  = dgroup.ydat[:]
-        self.data = [(xdat, ydat)]
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.reset_data_history()
+        xdat, ydat = self.data[-1]
 
         xrange = (max(xdat) - min(xdat))
         xmax = int(max(xdat) + xrange/5.0)
@@ -39,13 +44,20 @@ class DeglitchDialog(wx.Dialog):
 
         lastx, lasty = self.controller.get_cursor()
         if lastx is None:
-            lastx = xmax
+            lastx = max(xdat)
 
         title = "Select Points to Remove"
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 250), title=title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(520, 200), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+
+        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+
+        self.grouplist.SetStringSelection(self.dgroup.groupname)
+        self.grouplist.SetToolTip('select a new group, clear undo history')
 
         bb_xlast = BitmapButton(panel, get_icon('plus'),
                                 action=partial(self.on_select, opt='x'),
@@ -66,18 +78,29 @@ class DeglitchDialog(wx.Dialog):
 
         undo = Button(panel, 'Undo remove', size=(125, -1),
                       action=self.on_undo)
+        apply = Button(panel, 'Save Array for this Group', size=(200, -1),
+                      action=self.on_apply)
+        apply.SetToolTip('Save current arrays, clear undo history')
+
+        done = Button(panel, 'Done', size=(125, -1),
+                      action=self.on_done)
+
+        self.history_message = SimpleText(panel, '')
 
         floatopts = dict(precision=2, minval=xmin, maxval=xmax, size=(125, -1))
 
         self.wid_xlast = FloatCtrl(panel, value=lastx, **floatopts)
         self.wid_range1 = FloatCtrl(panel, value=lastx, **floatopts)
-        self.wid_range2 = FloatCtrl(panel, value=lastx, **floatopts)
+        self.wid_range2 = FloatCtrl(panel, value=lastx+1, **floatopts)
         self.wid_range2.Disable()
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
-                                    size=(100, -1), action=self.on_choice)
+                                    size=(100, -1), action=self.on_rangechoice)
 
-        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2)
+        panel.Add(SimpleText(panel, 'Deglitch Data for Group: '), dcol=3)
+        panel.Add(self.grouplist, dcol=2)
+
+        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
         panel.Add(bb_xlast)
         panel.Add(self.wid_xlast)
         panel.Add(br_xlast)
@@ -92,13 +115,24 @@ class DeglitchDialog(wx.Dialog):
         panel.Add(bb_range2)
         panel.Add(self.wid_range2)
 
-        panel.Add(OkCancel(panel, onOK=self.onOK), dcol=3, newrow=True)
-        panel.Add((10, 10))
+        panel.Add(apply, dcol=3, newrow=True)
+        panel.Add(self.history_message)
         panel.Add(undo)
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=5, newrow=True)
+        panel.Add(done, dcol=4, newrow=True)
 
         panel.pack()
 
-    def on_choice(self, event=None):
+    def reset_data_history(self):
+        self.data = [(self.dgroup.xdat[:], self.dgroup.ydat[:])]
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.reset_data_history()
+        self.plot_results()
+
+    def on_rangechoice(self, event=None):
         if self.choice_range.GetStringSelection() == 'between':
             self.wid_range2.Enable()
         else:
@@ -137,6 +171,17 @@ class DeglitchDialog(wx.Dialog):
             self.data.pop()
             self.plot_results()
 
+    def on_apply(self, event=None):
+        xdat, ydat = self.data[-1]
+        dgroup = self.dgroup
+        dgroup.xdat = dgroup.energy = xdat
+        dgroup.ydat = dgroup.mu     = ydat
+        self.reset_data_history()
+        self.plot_results()
+
+    def on_done(self, event=None):
+        self.Destroy()
+
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
@@ -155,11 +200,8 @@ class DeglitchDialog(wx.Dialog):
                          marker='o', markersize=4, linewidth=2.0,
                          label='previous', show_legend=True)
         ppanel.canvas.draw()
+        self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
 
-    def onOK(self, event=None):
-        xdat, ydat = self.data[-1]
-        self.callback(ok=True, dgroup=self.dgroup, xdat=xdat, ydat=ydat)
-        self.Destroy()
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
