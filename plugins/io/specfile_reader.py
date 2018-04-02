@@ -440,7 +440,12 @@ class SpecfileData(object):
         #NOTE: here impossible to catch an exception, if the next
         #fails, specfile will directly call sys.exit! the try: except
         #did not work!
-        self.sd = self.sf.select(str(scan)) #sd = specfile data
+        _scanstr = str(scan)
+        if ('.' in _scanstr):
+            _scansel = _scanstr
+        else:
+            _scansel = '{0}.1'.format(_scanstr)
+        self.sd = self.sf.select(_scansel) #sd = specfile data
 
         #the case cntx is not given, the first counter is taken by default
         if cntx == 1:
