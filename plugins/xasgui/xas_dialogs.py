@@ -13,6 +13,7 @@ from larch.utils import index_of, index_nearest, interp
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xafs.xafsutils  import etok, ktoe
+from larch_plugins.xafs.xafsplots import plotlabels
 
 PI = np.pi
 DEG2RAD  = PI/180.0
@@ -34,9 +35,9 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
-        xmin = min(self.dgroup.xdat)
-        xmax = max(self.dgroup.xdat)
+        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
+        xmin = min(self.dgroup.energy)
+        xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
         title = "Calibrate / Align Energy"
@@ -50,7 +51,7 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         self.grouplist.SetStringSelection(self.dgroup.groupname)
 
-        regroups = ['None'] + groupnames
+        refgroups = ['None'] + groupnames
 
         self.reflist = Choice(panel, choices=refgroups, size=(250, -1),
                               action=self.on_align)
@@ -110,13 +111,12 @@ class EnergyCalibrateDialog(wx.Dialog):
         panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
         panel.Add(done, dcol=4, newrow=True)
         panel.pack()
+        self.plot_results()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
         if opt in self.wids:
             self.wids[opt].SetValue(_x)
-
-
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
@@ -132,15 +132,15 @@ class EnergyCalibrateDialog(wx.Dialog):
         e0_old = wids['e0_old'].GetValue()
         e0_new = wids['e0_new'].GetValue()
 
-        xnew = self.dgroup.xdat - e0_old + e0_new
-        self.data = xnew, self.dgroup.ydat[:]
+        xnew = self.dgroup.energy - e0_old + e0_new
+        self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
     def on_apply(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
-        dgroup.ydat = dgroup.mu     = ydat
+        dgroup.energy = xdat
+        dgroup.norm   = ydat
         self.parent.np_panels[0].process(dgroup)
         self.plot_results()
 
@@ -162,10 +162,10 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='calibrated: %s' % fname,
-                    label='shifted', xlabel=dgroup.plot_xlabel,
-                    ylabel=dgroup.plot_ylabel, xmin=xmin, xmax=xmax)
+                    label='shifted', xlabel=plotlabels.energy,
+                    ylabel=plotlabels.norm, xmin=xmin, xmax=xmax)
 
-        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        xold, yold = self.dgroup.energy, self.dgroup.norm
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=2, linewidth=2.0,
                      label='original', show_legend=True,
@@ -173,7 +173,6 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         ppanel.axes.axvline(e0_old, ymin=0.1, ymax=0.9, color='#B07070')
         ppanel.axes.axvline(e0_new, ymin=0.1, ymax=0.9, color='#7070B0')
-
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -189,12 +188,12 @@ class RebinDataDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
-        xmin = min(self.dgroup.xdat)
-        xmax = max(self.dgroup.xdat)
+        self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
+        xmin = min(self.dgroup.energy)
+        xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
-        title = "Rebin Data"
+        title = "Rebin mu(E) Data"
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
 
@@ -270,6 +269,7 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(HLine(panel, size=(450, 3)), dcol=6, newrow=True)
         panel.Add(done, dcol=4, newrow=True)
         panel.pack()
+        self.plot_results()
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
@@ -305,15 +305,15 @@ class RebinDataDialog(wx.Dialog):
             xarr.append(a+e0)
 
         xnew = np.concatenate((xarr[0], xarr[1], xarr[2]))
-        ynew = interp(self.dgroup.xdat, self.dgroup.ydat, xnew, kind='cubic')
+        ynew = interp(self.dgroup.energy, self.dgroup.mu, xnew, kind='cubic')
         self.data = xnew, ynew
         self.plot_results()
 
     def on_apply(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
-        dgroup.ydat = dgroup.mu     = ydat
+        dgroup.energy = xdat
+        dgroup.mu     = ydat
         self.parent.np_panels[0].process(dgroup)
         self.plot_results()
 
@@ -329,10 +329,10 @@ class RebinDataDialog(wx.Dialog):
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
                     linewidth=3, title='rebinning: %s' % fname,
-                    label='rebinned', xlabel=dgroup.plot_xlabel,
-                    ylabel=dgroup.plot_ylabel)
+                    label='rebinned', xlabel=plotlabels.energy,
+                    ylabel=plotlabels.mu)
 
-        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        xold, yold = self.dgroup.energy, self.dgroup.mu
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True)
@@ -351,9 +351,9 @@ class SmoothDataDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
+        self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
 
-        title = "Smooth Data"
+        title = "Smooth mu(E) Data"
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(600, 200), title=title)
 
@@ -394,8 +394,6 @@ class SmoothDataDialog(wx.Dialog):
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
-
-
         panel.Add(SimpleText(panel, 'Smooth Data for Group: '))
         panel.Add(self.grouplist, dcol=5)
 
@@ -405,7 +403,6 @@ class SmoothDataDialog(wx.Dialog):
         panel.Add(self.par_n)
         panel.Add(SimpleText(panel, ' order= '))
         panel.Add(self.par_o)
-
 
         panel.Add(SimpleText(panel, 'Convolution Form: '), newrow=True)
         panel.Add(self.conv_op)
@@ -419,8 +416,8 @@ class SmoothDataDialog(wx.Dialog):
 
         panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
         panel.Add(done, dcol=4, newrow=True)
-
         panel.pack()
+        self.plot_results()
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
@@ -444,7 +441,7 @@ class SmoothDataDialog(wx.Dialog):
         sigma = self.sigma.GetValue()
         if smoothop.startswith('box'):
             self.par_n.Enable()
-            cmd = "boxcar({group:s}.ydat, {par_n:d})"
+            cmd = "boxcar({group:s}.mu, {par_n:d})"
         elif smoothop.startswith('savi'):
             self.par_n.Enable()
             self.par_n.odd_only = True
@@ -458,25 +455,25 @@ class SmoothDataDialog(wx.Dialog):
                 self.par_n.SetValue(x0)
             self.message.SetLabel('n must odd and > order+1')
 
-            cmd = "savitzky_golay({group:s}.ydat, {par_n:d}, {par_o:d})"
+            cmd = "savitzky_golay({group:s}.mu, {par_n:d}, {par_o:d})"
 
         elif smoothop.startswith('conv'):
             self.conv_op.Enable()
             self.sigma.Enable()
-            cmd = "smooth({group:s}.xdat, {group:s}.ydat, sigma={sigma:f}, form='{convop:s}')"
+            cmd = "smooth({group:s}.energy, {group:s}.mu, sigma={sigma:f}, form='{convop:s}')"
 
         cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
                          sigma=sigma, par_n=par_n, par_o=par_o)
 
         self.controller.larch.eval("_tmpy = %s" % cmd)
-        self.data = self.dgroup.xdat[:], self.controller.symtable._tmpy
+        self.data = self.dgroup.energy[:], self.controller.symtable._tmpy
         self.plot_results()
 
     def on_apply(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
-        dgroup.ydat = dgroup.mu     = ydat
+        dgroup.energy = xdat
+        dgroup.mu     = ydat
         self.parent.np_panels[0].process(dgroup)
         self.plot_results()
 
@@ -492,10 +489,10 @@ class SmoothDataDialog(wx.Dialog):
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='smoothing: %s' % fname,
-                    label='smoothed', xlabel=dgroup.plot_xlabel,
-                    ylabel=dgroup.plot_ylabel)
+                    label='smoothed', xlabel=plotlabels.energy,
+                    ylabel=plotlabels.mu)
 
-        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        xold, yold = self.dgroup.energy, self.dgroup.mu
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True)
@@ -503,7 +500,6 @@ class SmoothDataDialog(wx.Dialog):
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
-
 
 
 class DeglitchDialog(wx.Dialog):
@@ -528,7 +524,7 @@ class DeglitchDialog(wx.Dialog):
 
         title = "Select Points to Remove"
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(520, 200), title=title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(520, 225), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
@@ -603,9 +599,17 @@ class DeglitchDialog(wx.Dialog):
         panel.Add(done, dcol=4, newrow=True)
 
         panel.pack()
+        self.plot_results()
 
     def reset_data_history(self):
-        self.data = [(self.dgroup.xdat[:], self.dgroup.ydat[:])]
+        xdat = self.dgroup.xdat[:]
+        if hasattr(self.dgroup, 'energy'):
+            xdat = self.dgroup.energy[:]
+
+        ydat = self.dgroup.ydat[:]
+        if hasattr(self.dgroup, 'mu'):
+            ydat = self.dgroup.mu[:]
+        self.data = [(xdat, ydat)]
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
@@ -654,8 +658,8 @@ class DeglitchDialog(wx.Dialog):
     def on_apply(self, event=None):
         xdat, ydat = self.data[-1]
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
-        dgroup.ydat = dgroup.mu     = ydat
+        dgroup.energy = xdat
+        dgroup.mu     = ydat
         self.reset_data_history()
         self.parent.np_panels[0].process(dgroup)
         self.plot_results()
@@ -672,14 +676,14 @@ class DeglitchDialog(wx.Dialog):
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='deglitching: %s' % fname,
-                    label='current', xlabel=dgroup.plot_xlabel,
-                    ylabel=dgroup.plot_ylabel)
+                    label='current', xlabel=plotlabels.energy,
+                    ylabel=plotlabels.mu)
 
         if len(self.data) > 1:
-            xold, yold = self.data[-2]
+            xold, yold = self.data[0]
             ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                          marker='o', markersize=4, linewidth=2.0,
-                         label='previous', show_legend=True)
+                         label='original', show_legend=True)
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
 
