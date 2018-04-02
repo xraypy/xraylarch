@@ -196,7 +196,11 @@ class XASController():
     def get_group(self, groupname=None):
         if groupname is None:
             groupname = self.groupname
-        return getattr(self.symtable, groupname, None)
+        dgroup = getattr(self.symtable, groupname, None)
+        if dgroup is None and groupname in self.file_groups:
+            groupname = self.file_groups[groupname]
+            dgroup = getattr(self.symtable, groupname, None)
+        return dgroup
 
     def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
         """merge groups"""
