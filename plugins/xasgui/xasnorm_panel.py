@@ -18,6 +18,7 @@ from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xafs.xafsutils import guess_energy_units
+from larch_plugins.xafs.xafsplots import plotlabels
 
 np.seterr(all='ignore')
 
@@ -48,13 +49,6 @@ PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
                                ('Flattened', 'flat'),
                                ('Derivative', 'dmude')))
-
-PlotLabels = {'mu': r'$\mu(E)',
-              'norm': r'normalized $\mu(E)$',
-              'flat': r'flattened $\mu(E)$',
-              'deconv': r'deconvolved $\mu(E)$',
-              'dmude': r'$d\mu/dE$'}
-
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -321,7 +315,7 @@ class XASNormPanel(wx.Panel):
         last_id = group_ids[-1]
 
         yarray_name  = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
-        ylabel = PlotLabels[yarray_name]
+        ylabel = getattr(plotlabels, yarray_name)
 
         # print("Plot Sel:: ", group_ids)
         for checked in group_ids:
@@ -496,9 +490,9 @@ class XASNormPanel(wx.Panel):
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
 
-        lab = PlotLabels['norm']
+        lab = plotlabels.norm
         dgroup.plot_y2label = None
-        dgroup.plot_xlabel = r'$E \,\mathrm{(eV)}$'
+        dgroup.plot_xlabel = plotlabels.energy
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
         if dgroup.datatype != 'xas':
@@ -511,7 +505,7 @@ class XASNormPanel(wx.Panel):
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
             elif pchoice == 'norm+deriv':
-                lab = PlotLabels['norm']
+                lab = plotlabels.norm
                 dgroup.plot_y2label = 'dy/dx'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
                                        ('dmude', PLOTOPTS_D, 'dy/dx')]
@@ -519,7 +513,7 @@ class XASNormPanel(wx.Panel):
 
         pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
-            lab = PlotLabels[pchoice]
+            lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
         elif pchoice == 'prelines':
@@ -533,19 +527,19 @@ class XASNormPanel(wx.Panel):
             lab = r'pre-edge subtracted $\mu$'
 
         elif pchoice == 'norm+deriv':
-            lab = PlotLabels['norm']
-            lab2 = PlotLabels['dmude']
+            lab = plotlabels.norm
+            lab2 = plotlabels.dmude
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('dmude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
         elif pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
-            lab = PlotLabels['deconv']
+            lab = plotlabels.deconv
             dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab)]
 
         elif pchoice == 'deconv+norm' and hasattr(dgroup, 'deconv'):
-            lab1 = PlotLabels['norm']
-            lab2 = PlotLabels['deconv']
+            lab1 = plotlabels.norm
+            lab2 = plotlabels.deconv
             dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab2),
                                    ('norm', PLOTOPTS_1, lab1)]
             lab = lab1 + ' + ' + lab2
