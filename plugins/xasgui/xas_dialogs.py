@@ -3,6 +3,7 @@ from collections import namedtuple, OrderedDict
 from functools import partial
 
 import numpy as np
+from lmfit import Parameters, minimize
 
 import wx
 from wxutils import (SimpleText, Choice, Check, Button, HLine,
@@ -41,14 +42,13 @@ class EnergyCalibrateDialog(wx.Dialog):
 
         title = "Calibrate / Align Energy"
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 250), title=title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 275), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
         self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
-
-        self.grouplist.SetStringSelection(self.dgroup.groupname)
+        self.grouplist.SetStringSelection(self.dgroup.filename)
 
         refgroups = ['None'] + groupnames
 
@@ -56,9 +56,7 @@ class EnergyCalibrateDialog(wx.Dialog):
                               action=self.on_align)
         self.reflist.SetSelection(0)
 
-
         self.wids = wids = {}
-
         opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True,
                      minval=xmin, maxval=xmax)
 
@@ -78,7 +76,7 @@ class EnergyCalibrateDialog(wx.Dialog):
                                 tooltip='use last point selected from plot')
 
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
-                                   size=(250, -1), action=self.on_calib)
+                                   size=(250, -1), action=self.plot_results)
 
         for wname, wid in wids.items():
             wid.SetAction(partial(self.on_calib, name=wname))
@@ -93,7 +91,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         apply_sel.SetToolTip('''Apply the Energy Shift to the Selected Groups
   in XAS GUI, overwriting current arrays''')
 
-
+        apply_sel.Disable()
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
         panel.Add(SimpleText(panel, ' Energy Calibration for Group: '), dcol=2)
@@ -132,20 +130,59 @@ class EnergyCalibrateDialog(wx.Dialog):
             self.wids[opt].SetValue(_x)
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.dgroup = dgroup
+        self.wids['e0_old'].SetValue(dgroup.e0, act=False)
+        e0_new = dgroup.e0 + self.wids['eshift'].GetValue()
+        self.wids['e0_new'].SetValue(e0_new, act=False)
         self.plot_results()
 
     def on_align(self, event=None, name=None, value=None):
+        ref = self.controller.get_group(self.reflist.GetStringSelection())
+        dat = self.dgroup
+        if not hasattr(ref, 'dmude'):
+            ref.dmude = np.gradient(ref.mu)/np.gradient(ref.energy)
+        if not hasattr(dat, 'dmude'):
+            dat.dmude = np.gradient(dat.mu)/np.gradient(dat.energy)
 
+        i1 = index_of(ref.energy, ref.e0-30)
+        i2 = index_of(ref.energy, ref.e0+70)
+
+        def resid(pars, ref, dat, i1, i2):
+            "fit residual"
+            newx = dat.xdat + pars['eshift'].value
+            scale = pars['scale'].value
+            y = interp(newx, dat.dmude, ref.xdat, kind='cubic')
+            return (y*scale - ref.dmude)[i1:i2]
+
+        params = Parameters()
+        params.add('eshift', value=0, min=-50, max=50)
+        params.add('scale', value=1, min=0, max=50)
+
+        result = minimize(resid, params, args=(ref, dat, i1, i2))
+
+        eshift = result.params['eshift'].value
+        self.wids['eshift'].SetValue(eshift, act=False)
+        self.wids['e0_new'].SetValue(dat.e0 + eshift, act=False)
+
+        xnew = self.dgroup.energy + eshift
+        self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
     def on_calib(self, event=None, name=None, value=None):
         wids = self.wids
-
         e0_old = wids['e0_old'].GetValue()
         e0_new = wids['e0_new'].GetValue()
+        eshift = wids['eshift'].GetValue()
 
-        xnew = self.dgroup.energy - e0_old + e0_new
+        if name in ('e0_old', 'e0_new'):
+            eshift = e0_new - e0_old
+            wids['eshift'].SetValue(eshift, act=False)
+        elif name == 'eshift':
+            e0_new = e0_old + eshift
+            wids['e0_new'].SetValue(e0_new, act=False)
+
+        xnew = self.dgroup.energy + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
@@ -154,7 +191,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.norm   = ydat
-        self.parent.np_panels[0].process(dgroup)
+        self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
     def on_apply_sel(self, event=None):
@@ -164,7 +201,7 @@ class EnergyCalibrateDialog(wx.Dialog):
     def on_done(self, event=None):
         self.Destroy()
 
-    def plot_results(self):
+    def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
         xnew, ynew = self.data
@@ -177,19 +214,44 @@ class EnergyCalibrateDialog(wx.Dialog):
         xmin = min(e0_old, e0_new) - 25
         xmax = max(e0_old, e0_new) + 50
 
+        use_deriv = self.plottype.GetStringSelection().lower().startswith('deriv')
+
+        ylabel = plotlabels.norm
+        if use_deriv:
+            ynew = np.gradient(ynew)/np.gradient(xnew)
+            ylabel = plotlabels.dmude
+
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='calibrate: %s' % fname,
                     label='shifted', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.norm, xmin=xmin, xmax=xmax)
+                    ylabel=ylabel, xmin=xmin, xmax=xmax)
 
         xold, yold = self.dgroup.energy, self.dgroup.norm
+        if use_deriv:
+            yold = np.gradient(yold)/np.gradient(xold)
+
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=2, linewidth=2.0,
                      label='original', show_legend=True,
                      xmin=xmin, xmax=xmax)
 
-        ppanel.axes.axvline(e0_old, ymin=0.1, ymax=0.9, color='#B07070')
-        ppanel.axes.axvline(e0_new, ymin=0.1, ymax=0.9, color='#7070B0')
+        if self.reflist.GetStringSelection() != 'None':
+            refgroup = self.controller.get_group(self.reflist.GetStringSelection())
+            xref, yref = refgroup.energy, refgroup.norm
+            if use_deriv:
+                yref = np.gradient(yref)/np.gradient(xref)
+
+            ppanel.oplot(xref, yref, zorder=3, delay_draw=False,
+                         linewidth=2.0, style='short-dashed',
+                         label=refgroup.filename, show_legend=True,
+                         xmin=xmin, xmax=xmax)
+
+        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0,
+                        alpha=0.5, zorder=1, label='_nolegend')
+        color1 = ppanel.conf.traces[0].color
+        color2 = ppanel.conf.traces[1].color
+        ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
+        ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -331,7 +393,7 @@ class RebinDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.np_panels[0].process(dgroup)
+        self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -483,7 +545,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.np_panels[0].process(dgroup)
+        self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -667,7 +729,7 @@ class DeglitchDialog(wx.Dialog):
         dgroup.energy = xdat
         dgroup.mu     = ydat
         self.reset_data_history()
-        self.parent.np_panels[0].process(dgroup)
+        self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
