@@ -189,14 +189,12 @@ class EnergyCalibrateDialog(wx.Dialog):
     def on_apply_one(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
-        dgroup.energy = xdat
-        dgroup.norm   = ydat
+        dgroup.xdat = dgroup.energy = xdat
         self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
     def on_apply_sel(self, event=None):
         xdat, ydat = self.data
-        print(" Apply to Selected!")
 
     def on_done(self, event=None):
         self.Destroy()
@@ -221,38 +219,39 @@ class EnergyCalibrateDialog(wx.Dialog):
             ynew = np.gradient(ynew)/np.gradient(xnew)
             ylabel = plotlabels.dmude
 
-        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
-                    linewidth=3, title='calibrate: %s' % fname,
-                    label='shifted', xlabel=plotlabels.energy,
-                    ylabel=ylabel, xmin=xmin, xmax=xmax)
+        opts = dict(xmin=xmin, xmax=xmax, linewidth=3,
+                    ylabel=ylabel, xlabel=plotlabels.energy,
+                    delay_draw=True, show_legend=True)
+
+        ppanel.plot(xnew, ynew, zorder=20, marker=None,
+                    title='calibrate: %s' % fname,
+                    label='shifted', **opts)
+
 
         xold, yold = self.dgroup.energy, self.dgroup.norm
         if use_deriv:
             yold = np.gradient(yold)/np.gradient(xold)
 
-        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
-                     marker='o', markersize=2, linewidth=2.0,
-                     label='original', show_legend=True,
-                     xmin=xmin, xmax=xmax)
+        ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
+                     label='original', **opts)
 
         if self.reflist.GetStringSelection() != 'None':
             refgroup = self.controller.get_group(self.reflist.GetStringSelection())
             xref, yref = refgroup.energy, refgroup.norm
             if use_deriv:
                 yref = np.gradient(yref)/np.gradient(xref)
+            ppanel.oplot(xref, yref, style='short dashed', zorder=5,
+                         marker=None, label=refgroup.filename, **opts)
 
-            ppanel.oplot(xref, yref, zorder=3, delay_draw=False,
-                         linewidth=2.0, style='short-dashed',
-                         label=refgroup.filename, show_legend=True,
-                         xmin=xmin, xmax=xmax)
+        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
+                        zorder=1, label='_nolegend_')
 
-        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0,
-                        alpha=0.5, zorder=1, label='_nolegend')
         color1 = ppanel.conf.traces[0].color
         color2 = ppanel.conf.traces[1].color
         ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
         ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
         ppanel.canvas.draw()
+        ppanel.conf.draw_legend(show=True)
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
