@@ -21,8 +21,7 @@ DEG2RAD  = PI/180.0
 # Planck constant over 2 pi times c: 197.3269718 (0.0000044) MeV fm
 PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
 
-Plot_Choices = OrderedDict((('Raw Data', 'mu'),
-                            ('Normalized', 'norm'),
+Plot_Choices = OrderedDict((('Normalized', 'norm'),
                             ('Derivative', 'dmude')))
 
 
@@ -66,6 +65,10 @@ class EnergyCalibrateDialog(wx.Dialog):
         wids['e0_old'] = FloatCtrl(panel, value=e0val, **opts)
         wids['e0_new'] = FloatCtrl(panel, value=e0val, **opts)
 
+        opts['minval'] = -500
+        opts['maxval'] = 500
+        wids['eshift'] = FloatCtrl(panel, value=0.0, **opts)
+
 
         bb_e0old = BitmapButton(panel, get_icon('plus'),
                                 action=partial(self.on_select, opt='e0_old'),
@@ -81,32 +84,42 @@ class EnergyCalibrateDialog(wx.Dialog):
             wid.SetAction(partial(self.on_calib, name=wname))
 
 
-        apply = Button(panel, 'Save Arrays for this Group', size=(200, -1),
-                      action=self.on_apply)
-        apply.SetToolTip('Save rebinned data, overwrite current arrays')
+        apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
+                           action=self.on_apply_one)
+        apply_one.SetToolTip('Save rebinned data, overwrite current arrays')
+
+        apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
+                           action=self.on_apply_sel)
+        apply_sel.SetToolTip('''Apply the Energy Shift to the Selected Groups
+  in XAS GUI, overwriting current arrays''')
+
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
-        panel.Add(SimpleText(panel, 'Energy Calibration for Group: '), dcol=2)
-        panel.Add(self.grouplist, dcol=3)
+        panel.Add(SimpleText(panel, ' Energy Calibration for Group: '), dcol=2)
+        panel.Add(self.grouplist, dcol=5)
 
-        panel.Add(SimpleText(panel, 'Plot Arrays as: '), dcol=2, newrow=True)
-        panel.Add(self.plottype, dcol=3)
+        panel.Add(SimpleText(panel, ' Plot Arrays as: '), dcol=2, newrow=True)
+        panel.Add(self.plottype, dcol=5)
 
-        panel.Add(SimpleText(panel, 'Current Energy Reference: '), newrow=True)
+        panel.Add(SimpleText(panel, ' Energy Reference (E0): '), newrow=True)
         panel.Add(bb_e0old)
         panel.Add(wids['e0_old'])
         panel.Add(SimpleText(panel, ' eV'))
-        panel.Add(SimpleText(panel, 'Calibrate to: '), newrow=True)
+
+        panel.Add(SimpleText(panel, ' Calibrate to: '), newrow=True)
         panel.Add(bb_e0new)
         panel.Add(wids['e0_new'])
         panel.Add(SimpleText(panel, ' eV'))
+        panel.Add(SimpleText(panel, ' Energy Shift : '), dcol=2, newrow=True)
+        panel.Add(wids['eshift'])
+        panel.Add(SimpleText(panel, ' eV '))
+        panel.Add(apply_sel, dcol=2)
 
+        panel.Add(SimpleText(panel, ' Auto-Align to : '), dcol=2, newrow=True)
+        panel.Add(self.reflist, dcol=5)
 
-        panel.Add(SimpleText(panel, 'Auto-Align to : '), dcol=2, newrow=True)
-        panel.Add(self.reflist, dcol=4)
-
-        panel.Add(apply, dcol=4, newrow=True)
+        panel.Add(apply_one, dcol=4, newrow=True)
 
         panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
         panel.Add(done, dcol=4, newrow=True)
@@ -136,13 +149,17 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
-    def on_apply(self, event=None):
+    def on_apply_one(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.norm   = ydat
         self.parent.np_panels[0].process(dgroup)
         self.plot_results()
+
+    def on_apply_sel(self, event=None):
+        xdat, ydat = self.data
+        print(" Apply to Selected!")
 
     def on_done(self, event=None):
         self.Destroy()
@@ -161,7 +178,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         xmax = max(e0_old, e0_new) + 50
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
-                    linewidth=3, title='calibrated: %s' % fname,
+                    linewidth=3, title='calibrate: %s' % fname,
                     label='shifted', xlabel=plotlabels.energy,
                     ylabel=plotlabels.norm, xmin=xmin, xmax=xmax)
 
@@ -375,7 +392,6 @@ class SmoothDataDialog(wx.Dialog):
         self.conv_op = Choice(panel, choices=conv_ops, size=(150, -1),
                                 action=self.on_smooth)
         self.conv_op.SetSelection(0)
-        self.conv_op.Disable()
 
         opts  = dict(size=(50, -1), act_on_losefocus=True, odd_only=False)
 
@@ -425,20 +441,15 @@ class SmoothDataDialog(wx.Dialog):
 
     def on_smooth(self, event=None, value=None):
         smoothop = self.smooth_op.GetStringSelection().lower()
-        if smoothop == 'None':
-            return
 
         convop   = self.conv_op.GetStringSelection()
-        self.par_n.Disable()
-        self.par_o.Disable()
-        self.sigma.Disable()
-        self.conv_op.Disable()
         self.message.SetLabel('')
         self.par_n.SetMin(1)
         self.par_n.odd_only = False
         par_n = int(self.par_n.GetValue())
         par_o = int(self.par_o.GetValue())
         sigma = self.sigma.GetValue()
+        cmd = '{group:s}.mu' # No smoothing
         if smoothop.startswith('box'):
             self.par_n.Enable()
             cmd = "boxcar({group:s}.mu, {par_n:d})"
@@ -458,8 +469,6 @@ class SmoothDataDialog(wx.Dialog):
             cmd = "savitzky_golay({group:s}.mu, {par_n:d}, {par_o:d})"
 
         elif smoothop.startswith('conv'):
-            self.conv_op.Enable()
-            self.sigma.Enable()
             cmd = "smooth({group:s}.energy, {group:s}.mu, sigma={sigma:f}, form='{convop:s}')"
 
         cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
@@ -568,7 +577,6 @@ class DeglitchDialog(wx.Dialog):
         self.wid_xlast = FloatCtrl(panel, value=lastx, **floatopts)
         self.wid_range1 = FloatCtrl(panel, value=lastx, **floatopts)
         self.wid_range2 = FloatCtrl(panel, value=lastx+1, **floatopts)
-        self.wid_range2.Disable()
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
                                     size=(100, -1), action=self.on_rangechoice)
@@ -619,8 +627,6 @@ class DeglitchDialog(wx.Dialog):
     def on_rangechoice(self, event=None):
         if self.choice_range.GetStringSelection() == 'between':
             self.wid_range2.Enable()
-        else:
-            self.wid_range2.Disable()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
@@ -805,14 +811,13 @@ class QuitDialog(wx.Dialog):
         self.needs_save = True
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        self.save = Check(panel, default=False, label='Save Project?')
-        msg = '''You may want to save your project before Quitting!'''
+        self.save = Check(panel, default=False,
+                          label='Save Project before Quitting?')
 
-        panel.Add(SimpleText(panel, msg), dcol=3, newrow=True)
-        panel.Add((2, 2), newrow=True)
-        panel.Add(self.save, newrow=True)
-        panel.Add((2, 2), newrow=True)
-        panel.Add(HLine(panel, size=(500, 3)), dcol=3, newrow=True)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(self.save)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=2, newrow=True)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
