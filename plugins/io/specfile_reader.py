@@ -454,7 +454,7 @@ class SpecfileData(object):
             _cntx = cntx
 
         ## x-axis
-        scan_datx = self.sd.datacol(_cntx)
+        scan_datx = self.sd.data_column_by_name(_cntx)
         _xlabel = 'x'
         _xscale = 1.0
         if scnt is None:
@@ -467,7 +467,7 @@ class SpecfileData(object):
                     _xscale = 1000.0
                     _xlabel = "energy, eV"
                 else:
-                    scan_datx = self.sd.datacol(cntx)
+                    scan_datx = self.sd.data_column_by_name(cntx)
                     _xscale = 1.0
                     _xlabel = "energy, keV"
         else:
@@ -475,7 +475,7 @@ class SpecfileData(object):
 
         ## z-axis (start with the signal)
         # data signal
-        datasig = self.sd.datacol(csig)
+        datasig = self.sd.data_column_by_name(csig)
         # data monitor
         if cmon is None:
             datamon = np.ones_like(datasig)
@@ -485,11 +485,11 @@ class SpecfileData(object):
                datamon = _mot2array(cmon, datasig)
                labmon = str(cmon) 
         else:
-            datamon = self.sd.datacol(cmon)
+            datamon = self.sd.data_column_by_name(cmon)
             labmon = str(cmon)
         # data cps
         if csec is not None:
-            scan_datz = ( ( datasig / datamon ) * np.mean(datamon) ) / self.sd.datacol(csec)
+            scan_datz = ( ( datasig / datamon ) * np.mean(datamon) ) / self.sd.data_column_by_name(csec)
             _zlabel = "((signal/{0})*mean({0}))/seconds".format(labmon)
         else:
             scan_datz = (datasig / datamon)
