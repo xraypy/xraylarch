@@ -374,13 +374,14 @@ class EscanData:
         if self.correct_deadtime:
             idet = -1
             nmca = -1
-            for label,pvname in zip(self.det_desc,self.det_addr):
+            for label, pvname in zip(self.det_desc,self.det_addr):
                 idet = idet + 1
                 if 'mca' in pvname:
-                    nmca = nmca + 1 # int(pvname.split('mca')[1].split('.')[0]) -1
+                    nmca = int(pvname.split('mca')[1].split('.')[0]) -1
                     if idet in self.bad_channels:
                         self.det_corr[idet,:] *= 0
                     else:
+                        print("  idet, nmca ", idet, nmca)
                         self.det_corr[idet,:] *= self.dt_factor[nmca,:]
 
             isum = -1
