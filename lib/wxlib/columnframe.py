@@ -72,8 +72,6 @@ class EditColumnFrame(wx.Frame) :
             cnew.Bind(wx.EVT_CHAR, partial(self.update_char, index=i))
             cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
 
-            # cnew.Bind(wx.EVT_TEXT,       partial(self.update3, index=i))
-
             arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
             cinfo = SimpleText(self, label=info_str)
@@ -122,7 +120,6 @@ class ColumnDataFileFrame(wx.Frame) :
         self.path = filename
 
         group = self.initgroup = self.read_column_file(self.path)
-
         self.subframes = {}
         self.workgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype',
@@ -130,13 +127,13 @@ class ColumnDataFileFrame(wx.Frame) :
             setattr(self.workgroup, attr, getattr(group, attr, None))
 
         arr_labels = [l.lower() for l in self.initgroup.array_labels]
+
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
             if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
                 self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-
         self.array_sel = {'xpop': '',  'xarr': None,
                           'ypop': '',  'yop': '/',
                           'yarr1': None, 'yarr2': None, 'use_deriv': False}
@@ -168,9 +165,8 @@ class ColumnDataFileFrame(wx.Frame) :
                            colour=self.colors.title, style=LCEN)
 
         opts = dict(action=self.onUpdate, size=(120, -1))
-
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = ['_index'] + arr_labels
+        xarr_labels = self.xarr_labels = arr_labels + ['_index']
 
         self.xarr   = Choice(panel, choices=xarr_labels, **opts)
         self.yarr1  = Choice(panel, choices= arr_labels, **opts)
@@ -211,7 +207,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if '(' in self.array_sel['ypop']:
             self.ysuf.SetLabel(')')
 
-        ixsel, iysel, iy2sel = 1, 1, len(yarr_labels)-1
+        ixsel, iysel, iy2sel = 0, 1, len(yarr_labels)-1
         if self.array_sel['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.array_sel['xarr'])
         if self.array_sel['yarr1'] in arr_labels:
@@ -340,7 +336,6 @@ class ColumnDataFileFrame(wx.Frame) :
             pass
         if deeplarch.error:
             # self._larch.input.clear()
-            print("Cannot read ", path)
             msg = ["Error trying to read '%s':" % path, ""]
             for err in deeplarch.error:
                 exc_name, errmsg = err.get_error()
@@ -379,7 +374,7 @@ class ColumnDataFileFrame(wx.Frame) :
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
-        xarr_labels = self.xarr_labels = ['_index'] + arr_labels
+        xarr_labels = self.xarr_labels = arr_labels + ['_index']
         def update(wid, choices):
             curstr = wid.GetStringSelection()
             curind = wid.GetSelection()
@@ -425,7 +420,10 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{group:s}.%s = %s" % (aname, expr))
 
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
-            buff.append("{group:s}.energy = {group:s}.xdat")
+            if self.reader == 'read_gsescan':
+                buff.append("{group:s}.energy = {group:s}.x")
+            else:
+                buff.append("{group:s}.energy = {group:s}.xdat")
             buff.append("{group:s}.mu = {group:s}.ydat")
 
         script = "\n".join(buff)
