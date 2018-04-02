@@ -189,7 +189,6 @@ class EscanData:
                     if 'mca' in a:
                          w = a.split('mca')[1]
                          self.det_mcas[idet] = int(w)
-            print('MCAS: ' , mca, self.det_mcas)
             for idet, nam in enumerate(self.det_desc):
                 name1 = nam.strip().lower()
                 # print( idet, name, name1, mca, self.det_mcas[idet])
@@ -381,7 +380,6 @@ class EscanData:
                     if idet in self.bad_channels:
                         self.det_corr[idet,:] *= 0
                     else:
-                        print("  idet, nmca ", idet, nmca)
                         self.det_corr[idet,:] *= self.dt_factor[nmca,:]
 
             isum = -1
