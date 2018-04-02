@@ -42,12 +42,11 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel)
-
-from larch_plugins.xasgui.xas_dialogs import (MergeDialog, RenameDialog,
-                                              RemoveDialog, DeglitchDialog,
-                                              RebinDataDialog,
-                                              SmoothDataDialog, QuitDialog)
+from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel, MergeDialog,
+                                  RenameDialog, RemoveDialog,
+                                  DeglitchDialog, RebinDataDialog,
+                                  EnergyCalibrateDialog, SmoothDataDialog,
+                                  QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -751,8 +750,7 @@ class XASFrame(wx.Frame):
         RebinDataDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
-        print(" Energy Calibrate Data")
-        pass
+        EnergyCalibrateDialog(self, self.controller).Show()
 
     def onConfigDataFitting(self, event=None):
         pass
