@@ -25,9 +25,163 @@ Plot_Choices = OrderedDict((('Raw Data', 'mu'),
                             ('Derivative', 'dmude')))
 
 
+class EnergyCalibrateDialog(wx.Dialog):
+    """dialog for calibrating energy"""
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.xdat[:], self.dgroup.ydat[:]]
+        xmin = min(self.dgroup.xdat)
+        xmax = max(self.dgroup.xdat)
+        e0val = getattr(self.dgroup, 'e0', xmin)
+
+        title = "Calibrate / Align Energy"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 250), title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+
+        self.grouplist.SetStringSelection(self.dgroup.groupname)
+
+        regroups = ['None'] + groupnames
+
+        self.reflist = Choice(panel, choices=refgroups, size=(250, -1),
+                              action=self.on_align)
+        self.reflist.SetSelection(0)
+
+
+        self.wids = wids = {}
+
+        opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True,
+                     minval=xmin, maxval=xmax)
+
+        wids['e0_old'] = FloatCtrl(panel, value=e0val, **opts)
+        wids['e0_new'] = FloatCtrl(panel, value=e0val, **opts)
+
+
+        bb_e0old = BitmapButton(panel, get_icon('plus'),
+                                action=partial(self.on_select, opt='e0_old'),
+                                tooltip='use last point selected from plot')
+        bb_e0new = BitmapButton(panel, get_icon('plus'),
+                                action=partial(self.on_select, opt='e0_new'),
+                                tooltip='use last point selected from plot')
+
+        self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
+                                   size=(250, -1), action=self.on_calib)
+
+        for wname, wid in wids.items():
+            wid.SetAction(partial(self.on_calib, name=wname))
+
+
+        apply = Button(panel, 'Save Arrays for this Group', size=(200, -1),
+                      action=self.on_apply)
+        apply.SetToolTip('Save rebinned data, overwrite current arrays')
+
+        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+
+        panel.Add(SimpleText(panel, 'Energy Calibration for Group: '), dcol=2)
+        panel.Add(self.grouplist, dcol=3)
+
+        panel.Add(SimpleText(panel, 'Plot Arrays as: '), dcol=2, newrow=True)
+        panel.Add(self.plottype, dcol=3)
+
+        panel.Add(SimpleText(panel, 'Current Energy Reference: '), newrow=True)
+        panel.Add(bb_e0old)
+        panel.Add(wids['e0_old'])
+        panel.Add(SimpleText(panel, ' eV'))
+        panel.Add(SimpleText(panel, 'Calibrate to: '), newrow=True)
+        panel.Add(bb_e0new)
+        panel.Add(wids['e0_new'])
+        panel.Add(SimpleText(panel, ' eV'))
+
+
+        panel.Add(SimpleText(panel, 'Auto-Align to : '), dcol=2, newrow=True)
+        panel.Add(self.reflist, dcol=4)
+
+        panel.Add(apply, dcol=4, newrow=True)
+
+        panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
+        panel.Add(done, dcol=4, newrow=True)
+        panel.pack()
+
+    def on_select(self, event=None, opt=None):
+        _x, _y = self.controller.get_cursor()
+        if opt in self.wids:
+            self.wids[opt].SetValue(_x)
+
+
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.plot_results()
+
+    def on_align(self, event=None, name=None, value=None):
+
+        self.plot_results()
+
+    def on_calib(self, event=None, name=None, value=None):
+        wids = self.wids
+
+        e0_old = wids['e0_old'].GetValue()
+        e0_new = wids['e0_new'].GetValue()
+
+        xnew = self.dgroup.xdat - e0_old + e0_new
+        self.data = xnew, self.dgroup.ydat[:]
+        self.plot_results()
+
+    def on_apply(self, event=None):
+        xdat, ydat = self.data
+        dgroup = self.dgroup
+        dgroup.xdat = dgroup.energy = xdat
+        dgroup.ydat = dgroup.mu     = ydat
+        self.parent.np_panels[0].process(dgroup)
+        self.plot_results()
+
+    def on_done(self, event=None):
+        self.Destroy()
+
+    def plot_results(self):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        e0_old = self.wids['e0_old'].GetValue()
+        e0_new = self.wids['e0_new'].GetValue()
+
+        xmin = min(e0_old, e0_new) - 25
+        xmax = max(e0_old, e0_new) + 50
+
+        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+                    linewidth=3, title='calibrated: %s' % fname,
+                    label='shifted', xlabel=dgroup.plot_xlabel,
+                    ylabel=dgroup.plot_ylabel, xmin=xmin, xmax=xmax)
+
+        xold, yold = self.dgroup.xdat, self.dgroup.ydat
+        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+                     marker='o', markersize=2, linewidth=2.0,
+                     label='original', show_legend=True,
+                     xmin=xmin, xmax=xmax)
+
+        ppanel.axes.axvline(e0_old, ymin=0.1, ymax=0.9, color='#B07070')
+        ppanel.axes.axvline(e0_new, ymin=0.1, ymax=0.9, color='#7070B0')
+
+        ppanel.canvas.draw()
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
+
+
 class RebinDataDialog(wx.Dialog):
     """dialog for rebinning data to standard XAFS grid"""
-    msg = "Rebin Data"
     def __init__(self, parent, controller, **kws):
 
         self.parent = parent
@@ -50,8 +204,6 @@ class RebinDataDialog(wx.Dialog):
                                 action=self.on_groupchoice)
 
         self.grouplist.SetStringSelection(self.dgroup.groupname)
-        self.grouplist.SetToolTip('select a new group, clear undo history')
-
 
         opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True)
 
@@ -124,8 +276,6 @@ class RebinDataDialog(wx.Dialog):
         self.plot_results()
 
     def on_rebin(self, event=None, name=None, value=None):
-        print(" rebin! ", name, value)
-
         wids = self.wids
         if name == 'pre2':
             val = wids['pre2'].GetValue()
@@ -194,7 +344,6 @@ class RebinDataDialog(wx.Dialog):
 
 class SmoothDataDialog(wx.Dialog):
     """dialog for smoothing data"""
-    msg = "Smooth Data"
     def __init__(self, parent, controller, **kws):
 
         self.parent = parent
@@ -359,8 +508,6 @@ class SmoothDataDialog(wx.Dialog):
 
 class DeglitchDialog(wx.Dialog):
     """dialog for deglitching or removing unsightly data points"""
-    msg = """Select Points to remove"""
-
     def __init__(self, parent, controller, **kws):
 
         self.parent = parent
@@ -541,7 +688,6 @@ class DeglitchDialog(wx.Dialog):
 
 class EnergyUnitsDialog(wx.Dialog):
     """dialog for selecting, changing energy units, forcing data to eV"""
-    msg = """Specify Energy Units"""
     unit_choices = ['eV', 'keV', 'deg', 'steps']
 
     def __init__(self, parent, unitname, energy_array, **kws):
@@ -610,7 +756,6 @@ class EnergyUnitsDialog(wx.Dialog):
 
 class MergeDialog(wx.Dialog):
     """dialog for merging groups"""
-    msg = """Merge Selected Groups"""
     ychoices = ['raw mu(E)', 'normalized mu(E)']
 
     def __init__(self, parent, groupnames, outgroup='merge', **kws):
@@ -649,7 +794,6 @@ class MergeDialog(wx.Dialog):
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
-    msg = '''You may want to save your project before Quitting!'''
 
     def __init__(self, parent, **kws):
         title = "Quit Larch XAS Viewer?"
@@ -658,8 +802,9 @@ class QuitDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
         self.save = Check(panel, default=False, label='Save Project?')
+        msg = '''You may want to save your project before Quitting!'''
 
-        panel.Add(SimpleText(panel, self.msg), dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, msg), dcol=3, newrow=True)
         panel.Add((2, 2), newrow=True)
         panel.Add(self.save, newrow=True)
         panel.Add((2, 2), newrow=True)
@@ -675,8 +820,6 @@ class QuitDialog(wx.Dialog):
 
 class RenameDialog(wx.Dialog):
     """dialog for renaming group"""
-    msg = """Rename Group"""
-
     def __init__(self, parent, oldname,  **kws):
         title = "Rename Group %s" % (oldname)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
@@ -704,8 +847,6 @@ class RenameDialog(wx.Dialog):
 
 class RemoveDialog(wx.Dialog):
     """dialog for removing groups"""
-    msg = """Remove Selected Group"""
-
     def __init__(self, parent, grouplist,  **kws):
         title = "Remove %i Selected Group" % len(grouplist)
         self.grouplist = grouplist
