@@ -46,7 +46,8 @@ from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel, MergeDialog,
                                   RenameDialog, RemoveDialog,
                                   DeglitchDialog, RebinDataDialog,
                                   EnergyCalibrateDialog, SmoothDataDialog,
-                                  OverAbsoprtionDialog, QuitDialog)
+                                  OverAbsorptionDialog, QuitDialog)
+
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
