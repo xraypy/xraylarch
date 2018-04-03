@@ -91,7 +91,6 @@ class EnergyCalibrateDialog(wx.Dialog):
         apply_sel.SetToolTip('''Apply the Energy Shift to the Selected Groups
   in XAS GUI, overwriting current arrays''')
 
-        apply_sel.Disable()
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
         panel.Add(SimpleText(panel, ' Energy Calibration for Group: '), dcol=2)
@@ -145,8 +144,8 @@ class EnergyCalibrateDialog(wx.Dialog):
         if not hasattr(dat, 'dmude'):
             dat.dmude = np.gradient(dat.mu)/np.gradient(dat.energy)
 
-        i1 = index_of(ref.energy, ref.e0-30)
-        i2 = index_of(ref.energy, ref.e0+70)
+        i1 = index_of(ref.energy, ref.e0-15)
+        i2 = index_of(ref.energy, ref.e0+35)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
@@ -156,11 +155,10 @@ class EnergyCalibrateDialog(wx.Dialog):
             return (y*scale - ref.dmude)[i1:i2]
 
         params = Parameters()
-        params.add('eshift', value=0, min=-50, max=50)
+        params.add('eshift', value=ref.e0-dat.e0, min=-50, max=50)
         params.add('scale', value=1, min=0, max=50)
 
         result = minimize(resid, params, args=(ref, dat, i1, i2))
-
         eshift = result.params['eshift'].value
         self.wids['eshift'].SetValue(eshift, act=False)
         self.wids['e0_new'].SetValue(dat.e0 + eshift, act=False)
@@ -194,7 +192,14 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply_sel(self, event=None):
-        xdat, ydat = self.data
+
+        eshift = self.wids['eshift'].GetValue()
+        for checked in self.controller.filelist.GetCheckedStrings():
+            fname  = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(fname)
+            dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
+            self.parent.nb_panels[0].process(dgroup)
+
 
     def on_done(self, event=None):
         self.Destroy()
