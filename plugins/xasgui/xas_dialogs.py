@@ -15,6 +15,7 @@ from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels
+from larch_plugins.xray.xraydb_plugin import guess_edge
 
 PI = np.pi
 DEG2RAD  = PI/180.0
@@ -24,6 +25,191 @@ PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
 
 Plot_Choices = OrderedDict((('Normalized', 'norm'),
                             ('Derivative', 'dmude')))
+
+ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
+             'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
+             'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
+             'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo',
+             'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
+             'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
+             'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf',
+             'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb',
+             'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
+             'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf')
+
+EDGES_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
+
+class OverAbsorptionDialog(wx.Dialog):
+    """dialog for correcting over-absorption"""
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
+
+        title = "Correct Over-absorption"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 275), title=title)
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+        self.grouplist.SetStringSelection(self.dgroup.filename)
+
+        self.wids = wids = {}
+        opts  = dict(size=(90, -1), precision=1, act_on_losefocus=True,
+                     minval=-90, maxval=180)
+
+        wids['phi_in']  = FloatCtrl(panel, value=45, **opts)
+        wids['phi_out'] = FloatCtrl(panel, value=45, **opts)
+
+        edges = ('K', 'L3', 'L2', 'L1', 'M45', 'M3')
+
+        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(100, -1))
+        wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(100, -1))
+
+        self.set_default_elem_edge(dgroup)
+
+        wids['formula'] = StaticText(panel, '', size=(350, -1))
+
+        for wname, wid in wids.items():
+            wid.SetAction(self.on_correct)
+
+
+        apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
+                           action=self.on_apply_one)
+        apply_one.SetToolTip('Save corrected data, overwrite current arrays')
+
+        apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
+                           action=self.on_apply_sel)
+        apply_sel.SetToolTip('''Apply SA Correction to the Selected Groups
+in XAS GUI, overwriting current arrays''')
+
+        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+
+        panel.Add(SimpleText(panel, ' Over-absorption Correction for Group: '), dcol=2)
+        panel.Add(self.grouplist, dcol=5)
+
+        panel.Add(SimpleText(panel, ' Absorbing Element: '), newrow=True)
+        panel.Add(wids['elem'])
+        panel.Add(SimpleText(panel, ' Edge: '))
+        panel.Add(wids['edge'])
+
+
+        panel.Add(SimpleText(panel, ' Material Formula: '), newrow=True)
+        panel.Add(wids['formula'])
+
+        panel.Add(SimpleText(panel, ' Incident Angle: '), newrow=True)
+        panel.Add(wids['phi_in'])
+        panel.Add(SimpleText(panel, ' Exit Angle: '), newrow=True)
+        panel.Add(wids['phi_out'])
+
+        panel.Add(apply_one, dcol=4, newrow=True)
+
+        panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
+        panel.Add(done, dcol=4, newrow=True)
+        panel.pack()
+        self.plot_results()
+
+    def on_select(self, event=None, opt=None):
+        _x, _y = self.controller.get_cursor()
+        if opt in self.wids:
+            self.wids[opt].SetValue(_x)
+
+    def set_default_elem_edge(self, dgroup):
+        elem, edge = guess_edge(dgroup.e0, _larch=controller._larch)
+        self.wids['elem'].SetStringSelection(elem)
+        self.wids['edge'].SetStringSelection(edge)
+
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.set_default_elem_edge(self.dgroup)
+        self.plot_results()
+
+    def on_correct(self, event=None, value=None):
+        print(" SA Correct!")
+
+
+    def on_apply_one(self, event=None):
+        xdat, ydat = self.data
+        dgroup = self.dgroup
+        dgroup.xdat = dgroup.energy = xdat
+        self.parent.nb_panels[0].process(dgroup)
+        self.plot_results()
+
+    def on_apply_sel(self, event=None):
+
+        for checked in self.controller.filelist.GetCheckedStrings():
+            fname  = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(fname)
+            dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
+            self.parent.nb_panels[0].process(dgroup)
+
+
+    def on_done(self, event=None):
+        self.Destroy()
+
+    def plot_results(self, event=None):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        e0_old = self.wids['e0_old'].GetValue()
+        e0_new = self.wids['e0_new'].GetValue()
+
+        xmin = min(e0_old, e0_new) - 25
+        xmax = max(e0_old, e0_new) + 50
+
+        use_deriv = self.plottype.GetStringSelection().lower().startswith('deriv')
+
+        ylabel = plotlabels.norm
+        if use_deriv:
+            ynew = np.gradient(ynew)/np.gradient(xnew)
+            ylabel = plotlabels.dmude
+
+        opts = dict(xmin=xmin, xmax=xmax, linewidth=3,
+                    ylabel=ylabel, xlabel=plotlabels.energy,
+                    delay_draw=True, show_legend=True)
+
+        ppanel.plot(xnew, ynew, zorder=20, marker=None,
+                    title='calibrate: %s' % fname,
+                    label='shifted', **opts)
+
+
+        xold, yold = self.dgroup.energy, self.dgroup.norm
+        if use_deriv:
+            yold = np.gradient(yold)/np.gradient(xold)
+
+        ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
+                     label='original', **opts)
+
+        if self.reflist.GetStringSelection() != 'None':
+            refgroup = self.controller.get_group(self.reflist.GetStringSelection())
+            xref, yref = refgroup.energy, refgroup.norm
+            if use_deriv:
+                yref = np.gradient(yref)/np.gradient(xref)
+            ppanel.oplot(xref, yref, style='short dashed', zorder=5,
+                         marker=None, label=refgroup.filename, **opts)
+
+        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
+                        zorder=1, label='_nolegend_')
+
+        color1 = ppanel.conf.traces[0].color
+        color2 = ppanel.conf.traces[1].color
+        ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
+        ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
+        ppanel.canvas.draw()
+        ppanel.conf.draw_legend(show=True)
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
 
 
 class EnergyCalibrateDialog(wx.Dialog):
@@ -89,7 +275,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
                            action=self.on_apply_sel)
         apply_sel.SetToolTip('''Apply the Energy Shift to the Selected Groups
-  in XAS GUI, overwriting current arrays''')
+in XAS GUI, overwriting current arrays''')
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
@@ -192,7 +378,6 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.plot_results()
 
     def on_apply_sel(self, event=None):
-
         eshift = self.wids['eshift'].GetValue()
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
