@@ -411,13 +411,13 @@ def core_width(element, edge=None, _larch=None):
     return xdb.corehole_width(element, edge=edge)
 
 @ValidateLarchPlugin
-def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
+def guess_edge(energy, edges=['K', 'L3', 'L2', 'L1', 'M5'], _larch=None):
     """guess an element and edge based on energy (in eV)
 
     Arguments
     ---------
     energy (float) : approximate edge energy (in eV)
-    edges (list of strings) : edges to consider ['K', 'L3', 'L2']
+    edges (list of strings) : edges to consider ['K', 'L3', 'L2', 'L1', 'M5']
 
     Returns
     -------
@@ -429,10 +429,11 @@ def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
 
     # build initial energy tables
     if not _larch.symtable.has_symbol('%s._edges_K'  % (MODNAME)):
-        energies_k = [-1000]*200
-        energies_l3 = [-1000]*200
-        energies_l2 = [-1000]*200
-        energies_l1 = [-1000]*200
+        energies_k = [-1000]*150
+        energies_l3 = [-1000]*150
+        energies_l2 = [-1000]*150
+        energies_l1 = [-1000]*150
+        energies_m5 = [-1000]*150
         maxz = 0
 
         for row in xdb.tables['xray_levels'].select().execute().fetchall():
@@ -447,21 +448,25 @@ def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
                 energies_l2[iz] = en
             elif edgename == 'L1':
                 energies_l1[iz] = en
+            elif edgename == 'M5':
+                energies_m5[iz] = en
         energies_k = np.array(energies_k[:maxz])
         energies_l3 = np.array(energies_l3[:maxz])
         energies_l2 = np.array(energies_l2[:maxz])
         energies_l1 = np.array(energies_l1[:maxz])
+        energies_m5 = np.array(energies_l1[:maxz])
         _larch.symtable.set_symbol('%s._edges_K'  % (MODNAME), energies_k)
         _larch.symtable.set_symbol('%s._edges_L3'  % (MODNAME), energies_l3)
         _larch.symtable.set_symbol('%s._edges_L2'  % (MODNAME), energies_l2)
         _larch.symtable.set_symbol('%s._edges_L1'  % (MODNAME), energies_l1)
+        _larch.symtable.set_symbol('%s._edges_m5'  % (MODNAME), energies_l1)
 
     for edge in edges:
         tname =  '%s._edges_%s'  % (MODNAME, edge.lower())
         if _larch.symtable.has_symbol(tname):
             energies = _larch.symtable.get_symbol(tname)
         else:
-            energies = [-1000]*200
+            energies = [-1000]*150
             maxz = 0
             for row in xdb.tables['xray_levels'].select().execute().fetchall():
                 ir, elem, edgename, en, eyield, xjump = row
@@ -480,7 +485,7 @@ def guess_edge(energy, edges=['K', 'L3', 'L2'], _larch=None):
             diff = 2.0*diff
         if edge == 'K': # prefer K edge
             diff = 0.25*diff
-        elif edge == 'L1': # penalize L1 edge
+        elif edge in ('L1', 'M5'): # penalize L1 and M5 edges
             diff = 2.0*diff
         if diff < min_diff:
             min_diff = diff
