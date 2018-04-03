@@ -46,7 +46,7 @@ from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel, MergeDialog,
                                   RenameDialog, RemoveDialog,
                                   DeglitchDialog, RebinDataDialog,
                                   EnergyCalibrateDialog, SmoothDataDialog,
-                                  QuitDialog)
+                                  OverAbsoprtionDialog, QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -551,6 +551,9 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
                  self.onRebinData)
 
+        MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
+                 self.onCorrectOverAbsorptionData)
+
         MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
                  "Read Fit Model from File", self.onLoadFitResult)
 
@@ -752,6 +755,9 @@ class XASFrame(wx.Frame):
 
     def onRebinData(self, event=None):
         RebinDataDialog(self, self.controller).Show()
+
+    def onCorrectOverAbsorptionData(self, event=None):
+        OverAbsorptionDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
         EnergyCalibrateDialog(self, self.controller).Show()
