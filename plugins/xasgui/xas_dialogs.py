@@ -133,7 +133,7 @@ class OverAbsorptionDialog(wx.Dialog):
         formula = wids['formula'].GetValue()
 
         cmd = """fluo_corr(%s.energy, %s.mu, '%s', '%s', edge='%s', group=%s,
- anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname
+ anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname,
                                  formula, elem, edge, dgroup.groupname,
                                  anginp, angout)
 
