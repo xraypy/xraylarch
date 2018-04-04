@@ -343,6 +343,8 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=True,
             journal = perl2json(t)
         elif key == 'args':
             dat['args'] = perl2json(t)
+        elif key == 'xdi':
+            dat['xdi'] = t
         elif key in ('x', 'y', 'i0', 'signal', 'stddev'):
             dat[key] = np.array([float(x) for x in perl2json(t)])
         elif key == '1;': # end of list
