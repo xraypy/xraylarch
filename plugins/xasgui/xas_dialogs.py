@@ -6,8 +6,9 @@ import numpy as np
 from lmfit import Parameters, minimize
 
 import wx
-from wxutils import (SimpleText, Choice, Check, Button, HLine,
-                     OkCancel, GridPanel, LCEN)
+
+from wxutils import (SimpleText,  Choice, Check,
+                     Button, HLine, OkCancel, GridPanel, LCEN)
 
 
 from larch.utils import index_of, index_nearest, interp
@@ -37,7 +38,7 @@ ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
              'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf')
 
-EDGES_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
+EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 
 class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
@@ -67,31 +68,32 @@ class OverAbsorptionDialog(wx.Dialog):
         wids['phi_in']  = FloatCtrl(panel, value=45, **opts)
         wids['phi_out'] = FloatCtrl(panel, value=45, **opts)
 
-        edges = ('K', 'L3', 'L2', 'L1', 'M45', 'M3')
+        opts = dict(size=(75, -1), action=self.on_correct)
 
-        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(100, -1))
-        wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(100, -1))
+        wids['elem'] = Choice(panel, choices=ELEM_LIST, **opts)
+        wids['edge'] = Choice(panel, choices=EDGE_LIST, **opts)
 
-        self.set_default_elem_edge(dgroup)
+        wids['formula'] = wx.TextCtrl(panel, -1, '',  size=(350, -1))
+        wids['formula'].Bind(wx.EVT_TEXT_ENTER, self.on_correct)
+        wids['formula'].Bind(wx.EVT_KILL_FOCUS, self.on_correct)
 
-        wids['formula'] = StaticText(panel, '', size=(350, -1))
+        self.set_default_elem_edge(self.dgroup)
 
-        for wname, wid in wids.items():
-            wid.SetAction(self.on_correct)
-
+        for wname in ('phi_in', 'phi_out'):
+            wids[wname].SetAction(self.on_correct)
 
         apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
                            action=self.on_apply_one)
         apply_one.SetToolTip('Save corrected data, overwrite current arrays')
 
-        apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
-                           action=self.on_apply_sel)
-        apply_sel.SetToolTip('''Apply SA Correction to the Selected Groups
-in XAS GUI, overwriting current arrays''')
+        # apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
+        #                    action=self.on_apply_sel)
+        #apply_sel.SetToolTip('''Apply SA Correction to the Selected Groups
+        # in XAS GUI, overwriting current arrays''')
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
-        panel.Add(SimpleText(panel, ' Over-absorption Correction for Group: '), dcol=2)
+        panel.Add(SimpleText(panel, ' Correction for Group: '), dcol=1)
         panel.Add(self.grouplist, dcol=5)
 
         panel.Add(SimpleText(panel, ' Absorbing Element: '), newrow=True)
@@ -101,39 +103,48 @@ in XAS GUI, overwriting current arrays''')
 
 
         panel.Add(SimpleText(panel, ' Material Formula: '), newrow=True)
-        panel.Add(wids['formula'])
+        panel.Add(wids['formula'], dcol=3)
 
         panel.Add(SimpleText(panel, ' Incident Angle: '), newrow=True)
         panel.Add(wids['phi_in'])
+        panel.Add(SimpleText(panel, 'degrees'))
         panel.Add(SimpleText(panel, ' Exit Angle: '), newrow=True)
         panel.Add(wids['phi_out'])
+        panel.Add(SimpleText(panel, 'degrees'))
 
         panel.Add(apply_one, dcol=4, newrow=True)
 
         panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
         panel.Add(done, dcol=4, newrow=True)
         panel.pack()
-        self.plot_results()
-
-    def on_select(self, event=None, opt=None):
-        _x, _y = self.controller.get_cursor()
-        if opt in self.wids:
-            self.wids[opt].SetValue(_x)
+        # self.plot_results()
 
     def set_default_elem_edge(self, dgroup):
-        elem, edge = guess_edge(dgroup.e0, _larch=controller._larch)
+        elem, edge = guess_edge(dgroup.e0, _larch=self.controller.larch)
         self.wids['elem'].SetStringSelection(elem)
         self.wids['edge'].SetStringSelection(edge)
-
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
         self.set_default_elem_edge(self.dgroup)
-        self.plot_results()
+        self.on_correct()
 
     def on_correct(self, event=None, value=None):
-        print(" SA Correct!")
+        wids = self.wids
+        dgroup = self.dgroup
+        anginp = wids['phi_in'].GetValue()
+        angout = wids['phi_out'].GetValue()
+        elem   = wids['elem'].GetStringSelection()
+        edge   = wids['edge'].GetStringSelection()
+        formula = wids['formula'].GetValue()
 
+        cmd = "fluo_corr(%s.energy, %s.mu, '%s', '%s',  edge='%s', group=%s, anginp=%.1f, angout=%.1f)"
+        gname = dgroup.groupname
+        cmd = cmd % (gname, gname,
+                     formula, elem, edge, gname, anginp, angout)
+
+        self.controller.larch.eval(cmd0
+        self.plot_results()
 
     def on_apply_one(self, event=None):
         xdat, ydat = self.data
@@ -143,7 +154,6 @@ in XAS GUI, overwriting current arrays''')
         self.plot_results()
 
     def on_apply_sel(self, event=None):
-
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
@@ -157,54 +167,21 @@ in XAS GUI, overwriting current arrays''')
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
-        xnew, ynew = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
-        e0_old = self.wids['e0_old'].GetValue()
-        e0_new = self.wids['e0_new'].GetValue()
 
-        xmin = min(e0_old, e0_new) - 25
-        xmax = max(e0_old, e0_new) + 50
+        opts = dict(linewidth=3, ylabel=plotlabels.norm,
+                    xlabel=plotlabels.energy, delay_draw=True,
+                    show_legend=True)
 
-        use_deriv = self.plottype.GetStringSelection().lower().startswith('deriv')
+        ppanel.plot(dgroup.energy, dgroup.norm_corr, zorder=10, marker=None,
+                    title='Over-absorption Correction: %s' % fname,
+                    label='corrected', **opts)
 
-        ylabel = plotlabels.norm
-        if use_deriv:
-            ynew = np.gradient(ynew)/np.gradient(xnew)
-            ylabel = plotlabels.dmude
+        ppanel.oplot(dgroup.energy, dgroup.norm, zorder=10, marker='o',
+                     markersize=3, label='original', **opts)
 
-        opts = dict(xmin=xmin, xmax=xmax, linewidth=3,
-                    ylabel=ylabel, xlabel=plotlabels.energy,
-                    delay_draw=True, show_legend=True)
-
-        ppanel.plot(xnew, ynew, zorder=20, marker=None,
-                    title='calibrate: %s' % fname,
-                    label='shifted', **opts)
-
-
-        xold, yold = self.dgroup.energy, self.dgroup.norm
-        if use_deriv:
-            yold = np.gradient(yold)/np.gradient(xold)
-
-        ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
-                     label='original', **opts)
-
-        if self.reflist.GetStringSelection() != 'None':
-            refgroup = self.controller.get_group(self.reflist.GetStringSelection())
-            xref, yref = refgroup.energy, refgroup.norm
-            if use_deriv:
-                yref = np.gradient(yref)/np.gradient(xref)
-            ppanel.oplot(xref, yref, style='short dashed', zorder=5,
-                         marker=None, label=refgroup.filename, **opts)
-
-        axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
-                        zorder=1, label='_nolegend_')
-
-        color1 = ppanel.conf.traces[0].color
-        color2 = ppanel.conf.traces[1].color
-        ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
-        ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
         ppanel.canvas.draw()
         ppanel.conf.draw_legend(show=True)
 
