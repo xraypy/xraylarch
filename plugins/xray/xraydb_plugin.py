@@ -428,7 +428,7 @@ def guess_edge(energy, edges=['K', 'L3', 'L2', 'L1', 'M5'], _larch=None):
     min_diff = 1e9
 
     # build initial energy tables
-    if not _larch.symtable.has_symbol('%s._edges_K'  % (MODNAME)):
+    if not _larch.symtable.has_symbol('%s._edges_k'  % (MODNAME)):
         energies_k = [-1000]*150
         energies_l3 = [-1000]*150
         energies_l2 = [-1000]*150
@@ -455,10 +455,10 @@ def guess_edge(energy, edges=['K', 'L3', 'L2', 'L1', 'M5'], _larch=None):
         energies_l2 = np.array(energies_l2[:maxz])
         energies_l1 = np.array(energies_l1[:maxz])
         energies_m5 = np.array(energies_l1[:maxz])
-        _larch.symtable.set_symbol('%s._edges_K'  % (MODNAME), energies_k)
-        _larch.symtable.set_symbol('%s._edges_L3'  % (MODNAME), energies_l3)
-        _larch.symtable.set_symbol('%s._edges_L2'  % (MODNAME), energies_l2)
-        _larch.symtable.set_symbol('%s._edges_L1'  % (MODNAME), energies_l1)
+        _larch.symtable.set_symbol('%s._edges_k'  % (MODNAME), energies_k)
+        _larch.symtable.set_symbol('%s._edges_l3'  % (MODNAME), energies_l3)
+        _larch.symtable.set_symbol('%s._edges_l2'  % (MODNAME), energies_l2)
+        _larch.symtable.set_symbol('%s._edges_l1'  % (MODNAME), energies_l1)
         _larch.symtable.set_symbol('%s._edges_m5'  % (MODNAME), energies_l1)
 
     for edge in edges:
