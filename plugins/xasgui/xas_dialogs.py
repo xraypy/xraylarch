@@ -142,8 +142,7 @@ class OverAbsorptionDialog(wx.Dialog):
         gname = dgroup.groupname
         cmd = cmd % (gname, gname,
                      formula, elem, edge, gname, anginp, angout)
-
-        self.controller.larch.eval(cmd0
+        self.controller.larch.eval(cmd)
         self.plot_results()
 
     def on_apply_one(self, event=None):
