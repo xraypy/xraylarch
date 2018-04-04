@@ -53,7 +53,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         title = "Correct Over-absorption"
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 275), title=title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
@@ -68,19 +68,12 @@ class OverAbsorptionDialog(wx.Dialog):
         wids['phi_in']  = FloatCtrl(panel, value=45, **opts)
         wids['phi_out'] = FloatCtrl(panel, value=45, **opts)
 
-        opts = dict(size=(75, -1), action=self.on_correct)
+        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(75, -1))
+        wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(75, -1))
 
-        wids['elem'] = Choice(panel, choices=ELEM_LIST, **opts)
-        wids['edge'] = Choice(panel, choices=EDGE_LIST, **opts)
-
-        wids['formula'] = wx.TextCtrl(panel, -1, '',  size=(350, -1))
-        wids['formula'].Bind(wx.EVT_TEXT_ENTER, self.on_correct)
-        wids['formula'].Bind(wx.EVT_KILL_FOCUS, self.on_correct)
+        wids['formula'] = wx.TextCtrl(panel, -1, '', size=(300, -1))
 
         self.set_default_elem_edge(self.dgroup)
-
-        for wname in ('phi_in', 'phi_out'):
-            wids[wname].SetAction(self.on_correct)
 
         apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
                            action=self.on_apply_one)
@@ -90,6 +83,10 @@ class OverAbsorptionDialog(wx.Dialog):
         #                    action=self.on_apply_sel)
         #apply_sel.SetToolTip('''Apply SA Correction to the Selected Groups
         # in XAS GUI, overwriting current arrays''')
+
+        correct = Button(panel, 'Do Correction',
+                         size=(175, -1), action=self.do_correct)
+
 
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
@@ -101,21 +98,19 @@ class OverAbsorptionDialog(wx.Dialog):
         panel.Add(SimpleText(panel, ' Edge: '))
         panel.Add(wids['edge'])
 
-
         panel.Add(SimpleText(panel, ' Material Formula: '), newrow=True)
         panel.Add(wids['formula'], dcol=3)
 
-        panel.Add(SimpleText(panel, ' Incident Angle: '), newrow=True)
+        panel.Add(SimpleText(panel, ' Incident Angle (deg): '), newrow=True)
         panel.Add(wids['phi_in'])
-        panel.Add(SimpleText(panel, 'degrees'))
-        panel.Add(SimpleText(panel, ' Exit Angle: '), newrow=True)
+        panel.Add(SimpleText(panel, ' Exit Angle (deg): '))
         panel.Add(wids['phi_out'])
-        panel.Add(SimpleText(panel, 'degrees'))
 
-        panel.Add(apply_one, dcol=4, newrow=True)
+        panel.Add(correct,   dcol=2, newrow=True)
+        panel.Add(apply_one, dcol=3)
 
-        panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
-        panel.Add(done, dcol=4, newrow=True)
+        panel.Add(HLine(panel, size=(450, 3)), dcol=7, newrow=True)
+        panel.Add(done, dcol=3, newrow=True)
         panel.pack()
         # self.plot_results()
 
@@ -127,9 +122,8 @@ class OverAbsorptionDialog(wx.Dialog):
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
         self.set_default_elem_edge(self.dgroup)
-        self.on_correct()
 
-    def on_correct(self, event=None, value=None):
+    def do_correct(self, event=None):
         wids = self.wids
         dgroup = self.dgroup
         anginp = wids['phi_in'].GetValue()
@@ -138,10 +132,11 @@ class OverAbsorptionDialog(wx.Dialog):
         edge   = wids['edge'].GetStringSelection()
         formula = wids['formula'].GetValue()
 
-        cmd = "fluo_corr(%s.energy, %s.mu, '%s', '%s',  edge='%s', group=%s, anginp=%.1f, angout=%.1f)"
-        gname = dgroup.groupname
-        cmd = cmd % (gname, gname,
-                     formula, elem, edge, gname, anginp, angout)
+        cmd = """fluo_corr(%s.energy, %s.mu, '%s', '%s', edge='%s', group=%s,
+ anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname
+                                 formula, elem, edge, dgroup.groupname,
+                                 anginp, angout)
+
         self.controller.larch.eval(cmd)
         self.plot_results()
 
@@ -175,7 +170,7 @@ class OverAbsorptionDialog(wx.Dialog):
                     show_legend=True)
 
         ppanel.plot(dgroup.energy, dgroup.norm_corr, zorder=10, marker=None,
-                    title='Over-absorption Correction: %s' % fname,
+                    title='Over-absorption Correction:\n %s' % fname,
                     label='corrected', **opts)
 
         ppanel.oplot(dgroup.energy, dgroup.norm, zorder=10, marker='o',
@@ -390,7 +385,7 @@ in XAS GUI, overwriting current arrays''')
                     delay_draw=True, show_legend=True)
 
         ppanel.plot(xnew, ynew, zorder=20, marker=None,
-                    title='calibrate: %s' % fname,
+                    title='Energy Calibration:\n %s' % fname,
                     label='shifted', **opts)
 
 
@@ -572,7 +567,7 @@ class RebinDataDialog(wx.Dialog):
         path, fname = os.path.split(dgroup.filename)
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
-                    linewidth=3, title='rebinning: %s' % fname,
+                    linewidth=3, title='Enegy rebinning:\n %s' % fname,
                     label='rebinned', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu)
 
@@ -724,7 +719,7 @@ class SmoothDataDialog(wx.Dialog):
         path, fname = os.path.split(dgroup.filename)
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
-                    linewidth=3, title='smoothing: %s' % fname,
+                    linewidth=3, title='Smoothing:\n %s' % fname,
                     label='smoothed', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu)
 
@@ -908,7 +903,7 @@ class DeglitchDialog(wx.Dialog):
         path, fname = os.path.split(dgroup.filename)
 
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
-                    linewidth=3, title='deglitching: %s' % fname,
+                    linewidth=3, title='De-glitching:\n %s' % fname,
                     label='current', xlabel=plotlabels.energy,
                     ylabel=plotlabels.mu)
 
