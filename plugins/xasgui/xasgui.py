@@ -42,12 +42,13 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel, MergeDialog,
-                                  RenameDialog, RemoveDialog,
-                                  DeglitchDialog, RebinDataDialog,
-                                  EnergyCalibrateDialog, SmoothDataDialog,
-                                  OverAbsorptionDialog, QuitDialog)
-
+from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
+                                  LinearComboPanel, PCAPanel, LASSOPanel,
+                                  EXAFSPanel, MergeDialog, RenameDialog,
+                                  RemoveDialog, DeglitchDialog,
+                                  RebinDataDialog, EnergyCalibrateDialog,
+                                  SmoothDataDialog, OverAbsorptionDialog,
+                                  QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -73,7 +74,12 @@ XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
 NB_PANELS = (('XAS Normalization', XASNormPanel),
-             ('Pre-edge Peak Fit', PrePeakPanel))
+             ('Pre-edge Peak Fit', PrePeakPanel),
+             ('Linear Combo Fits', LinearComboPanel),
+             ('PCA',  PCAPanel),
+             ('LASSO', LASSOPanel),
+             ('EXAFS', EXAFSPanel),
+             )
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
