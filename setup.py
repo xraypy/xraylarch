@@ -3,7 +3,7 @@
 Setup.py for xraylarch
 """
 from __future__ import print_function
-from distutils.core import setup
+from setuptools import setup
 
 import time
 import os
@@ -94,19 +94,6 @@ for desc, mods in all_modules:
         except ImportError:
             s = (modname + ' '*25)[:25]
             missing.append('     %s %s' % (s, desc))
-missing_reqs = []
-for mod in modules_imported:
-    if mod in required_modules and not modules_imported[mod]:
-        missing_reqs.append(mod)
-
-if len(missing_reqs) > 0:
-    print('\n=== Cannot Install Larch, these REQUIRED Modules are missing: ')
-    print(' %s' % (', '.join(missing_reqs)))
-    print(' ')
-    print(' Please read INSTALL for further information.')
-    print(' ')
-    sys.exit()
-
 
 ## For Travis-CI, need to write a local site config file
 ##
@@ -198,6 +185,9 @@ for pdir in pluginpaths:
             pfiles.append(fname)
     data_files.append((pjoin(larchdir, pdir), pfiles))
 
+# Get all required packages from requirements.txt:
+with open('requirements.txt', 'r') as f:
+    requirements = f.readlines()
 
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
@@ -206,11 +196,11 @@ setup(name = 'xraylarch',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
       download_url = 'http://xraypy.github.io/xraylarch/',
-      requires = list(required_modules.keys()),
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
       packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
+      install_requires=requirements,
       data_files  = data_files,
       platforms = ['Windows', 'Linux', 'Mac OS X'],
       classifiers=['Intended Audience :: Science/Research',

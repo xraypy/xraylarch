@@ -10,3 +10,4 @@ requests>=2.1
 asteval>=0.9.12
 lmfit>=0.9.9
 psutil
+termcolor
