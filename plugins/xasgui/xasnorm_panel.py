@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-XANES Data Viewer and Analysis Tool
+XANES Normalization panel
 """
 import os
 import time
@@ -22,16 +22,12 @@ from larch_plugins.xafs.xafsplots import plotlabels
 
 np.seterr(all='ignore')
 
-FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
-
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
                   marker='None', markersize=4)
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-SMOOTH_OPS = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
-CONV_OPS = ('Lorenztian', 'Gaussian')
 DECONV_OPS = ('None', 'Lorenztian', 'Gaussian')
 
 PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
@@ -41,9 +37,8 @@ PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Flattened', 'flat'),
                                ('Pre-edge subtracted', 'preedge'),
                                ('Raw Data + Pre-edge/Post-edge', 'prelines'),
-                               ('Deconvolved + Normalized',   'deconv+norm'),
-                               ('Deconvolved',   'deconv')
-                               ))
+                               ('Deconvolved + Normalized', 'deconv+norm'),
+                               ('Deconvolved', 'deconv')))
 
 PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
@@ -94,7 +89,8 @@ class XASNormPanel(wx.Panel):
         self.SetFont(Font(10))
         titleopts = dict(font=Font(11), colour='#AA0000')
 
-        xas = self.xaspanel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
+        xas = self.xaspanel = GridPanel(self, ncols=4, nrows=4, pad=2,
+                                        itemstyle=LCEN)
 
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(200, -1))
@@ -105,10 +101,10 @@ class XASNormPanel(wx.Panel):
         self.plotsel_op.SetStringSelection('Normalized')
 
         plot_one = Button(xas, 'Plot This Group', size=(150, -1),
-                         action=self.onPlotOne)
+                          action=self.onPlotOne)
 
         plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
-                         action=self.onPlotSel)
+                          action=self.onPlotSel)
 
         self.btns = {}
 
@@ -146,7 +142,7 @@ class XASNormPanel(wx.Panel):
 
         self.xas_pre1 = FloatCtrl(xas, value=-np.inf, **opts)
         self.xas_pre2 = FloatCtrl(xas, value=-30, **opts)
-        self.xas_nor1 = FloatCtrl(xas, value=50,   **opts)
+        self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
         self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
 
         opts = {'size': (75, -1), 'gformat': True}
@@ -218,10 +214,10 @@ class XASNormPanel(wx.Panel):
         xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add((5, 5), 0, LCEN, 3)
         sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
-        sizer.Add(xas,   0, LCEN, 3)
-        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add(xas, 0, LCEN, 3)
+        sizer.Add((5, 5), 0, LCEN, 3)
         sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
         pack(self, sizer)
 
@@ -314,7 +310,7 @@ class XASNormPanel(wx.Panel):
             return
         last_id = group_ids[-1]
 
-        yarray_name  = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
+        yarray_name = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
         ylabel = getattr(plotlabels, yarray_name)
 
         # print("Plot Sel:: ", group_ids)
@@ -329,8 +325,8 @@ class XASNormPanel(wx.Panel):
                 self.plot(dgroup, title='', new=newplot,
                           plot_yarrays=plot_yarrays,
                           show_legend=True, with_extras=False,
-                          delay_draw=(last_id!=checked))
-                newplot=False
+                          delay_draw=(last_id != checked))
+                newplot = False
         self.controller.get_display(stacked=False).panel.canvas.draw()
 
     def onSaveConfigBtn(self, evt=None):
@@ -373,14 +369,17 @@ class XASNormPanel(wx.Panel):
                 self.process(grp)
 
     def onSet_XASE0(self, evt=None, value=None):
+        "handle setting e0"
         self.xas_autoe0.SetValue(0)
         self.onReprocess()
 
     def onSet_XASStep(self, evt=None, value=None):
+        "handle setting edge step"
         self.xas_autostep.SetValue(0)
         self.onReprocess()
 
     def onReprocess(self, evt=None, value=None, **kws):
+        "handle request reprocess"
         if self.skip_process:
             return
         try:
@@ -391,7 +390,8 @@ class XASNormPanel(wx.Panel):
         self.plot(dgroup)
 
     def on_selpoint(self, evt=None, opt='e0'):
-        xval, yval = self.controller.get_cursor()
+        "on point selected by cursor"
+        xval, _ = self.controller.get_cursor()
         if xval is None:
             return
 
@@ -482,7 +482,7 @@ class XASNormPanel(wx.Panel):
         for attr in ('e0', 'edge_step'):
             dgroup.xasnorm_config[attr] = getattr(dgroup, attr)
 
-        for attr in ('pre1', 'pre2',  'nnorm', 'norm1', 'norm2'):
+        for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
             dgroup.xasnorm_config[attr] = getattr(dgroup.pre_edge_details, attr)
 
         self.skip_process = False
@@ -496,12 +496,12 @@ class XASNormPanel(wx.Panel):
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
         if dgroup.datatype != 'xas':
-            pchoice  = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
+            pchoice = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
             dgroup.plot_xlabel = 'x'
             dgroup.plot_ylabel = 'y'
             dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
             dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
-            if pchoice  == 'dmude':
+            if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
             elif pchoice == 'norm+deriv':
@@ -511,7 +511,7 @@ class XASNormPanel(wx.Panel):
                                        ('dmude', PLOTOPTS_D, 'dy/dx')]
             return
 
-        pchoice  = PlotOne_Choices[self.plotone_op.GetStringSelection()]
+        pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
@@ -576,13 +576,12 @@ class XASNormPanel(wx.Panel):
 
         popts = kws
         path, fname = os.path.split(dgroup.filename)
-        if not 'label' in popts:
+        if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
-        zoom_out = (zoom_out or
-                  min(dgroup.xdat) >= viewlims[1] or
-                  max(dgroup.xdat) <= viewlims[0] or
-                  min(dgroup.ydat) >= viewlims[3] or
-                  max(dgroup.ydat) <= viewlims[2])
+        zoom_out = (zoom_out or min(dgroup.xdat) >= viewlims[1] or
+                    max(dgroup.xdat) <= viewlims[0] or
+                    min(dgroup.ydat) >= viewlims[3] or
+                    max(dgroup.ydat) <= viewlims[2])
 
         if not zoom_out:
             popts['xmin'] = viewlims[0]
