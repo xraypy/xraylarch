@@ -58,15 +58,20 @@ tomo_modules = {'tomopy': 'tomopy',
 epics_modules = {'epics': 'pyepics'}
 scan_modules = {'epicsscan': 'epicsscan', 'psycopg2': 'psycopg2'}
 
+spec_modules = {'silx': 'silx'}
+pca_modules = {'sklearn': 'scikit-image'}
+
 testing_modules = {'nose': 'nose', 'pytest': 'pytest'}
 
 all_modules = (('basic analysis', required_modules),
-           ('graphics and plotting', graphics_modules),
-           ('xrd modules', xrd_modules),
-           ('tomography modules', tomo_modules),
-           ('connecting to the EPICS control system', epics_modules),
-            # ('scanning with EpicsScan', scan_modules),
-           ('testing tools',  testing_modules))
+               ('graphics and plotting', graphics_modules),
+               ('xrd modules', xrd_modules),
+               ('tomography modules', tomo_modules),
+               ('connecting to the EPICS control system', epics_modules),
+               ('reading Spec files', spec_modules),
+               ('PCA and machine learning', pca_modules),
+               ('scanning with EpicsScan', scan_modules),
+               ('testing tools',  testing_modules))
 
 
 # files that may be left from earlier install(s) and should be removed
