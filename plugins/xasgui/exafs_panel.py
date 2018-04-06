@@ -10,6 +10,8 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
+from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN, FS_LEFT
+
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      GridPanel, CEN, RCEN, LCEN, Font)
 
@@ -52,6 +54,7 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
 
 
+CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100')
 
 class EXAFSPanel(wx.Panel):
     """EXAFS Panel"""
@@ -81,12 +84,82 @@ class EXAFSPanel(wx.Panel):
         self.SetFont(Font(10))
         titleopts = dict(font=Font(11), colour='#AA0000')
 
+
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.wids = wids = {}
+        self.bnts = btns = {}
+
+        opts = dict(size=(100, -1), digits=2, increment=0.1)
+        wids['e0'] = FloatSpin(panel, -1, **opts)
+
+        opts['size'] = (75, -1)
+        wids['rbkg'] = FloatSpin(panel, -1, value=1.0,
+                                 min_val=0, max_val=25, **opts)
+        wids['bkg_kmin'] = FloatSpin(panel, -1, value=0,
+                                 min_val=0, max_val=125, **opts)
+
+        wids['bkg_kmax'] = FloatSpin(panel, -1, min_val=0, max_val=125, **opts)
+
+        opts['increment'] = opts['digits'] = 1
+        wids['bkg_kweight'] = FloatSpin(panel, -1, value=1,
+                                 min_val=0, max_val=8, **opts)
+
+        for name in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight'):
+            wids[name].Bind(EVT_FLOATSPIN, self.on_autobk)
+
+        for name in ('bkg_kmin', 'bkg_kmax'):
+            bb = BitmapButton(panel, get_icon('plus'),
+                              action=partial(self.on_selpoint, opt=name),
+                              tooltip='use last point selected from plot')
+            btns[name] = bb
+        opts = dict(choices=CLAMPLIST, size=(60, -1), action=self.on_autobk)
+        wids['bkg_clamplo'] = Choice(panel, **opts)
+        wids['bkg_clamphi'] = Choice(panel, **opts)
 
         panel.Add(SimpleText(panel, ' EXAFS Processing',
                            **titleopts), dcol=6)
 
+        panel.Add((10, 10), newrow=True)
+        panel.Add(HLine(panel, size=(250, 2)), dcol=7)
+
+        panel.Add(SimpleText(panel, ' Background subtraction',
+                             **titleopts), dcol=6, newrow=True)
+
+        panel.Add(SimpleText(panel, 'E0: '), dcol=2, newrow=True)
+        panel.Add(wids['e0'], dcol=2)
+        panel.Add(SimpleText(panel, 'Rbkg: '), dcol=2, newrow=True)
+        panel.Add(wids['rbkg'])
+        panel.Add(SimpleText(panel, 'k weight: '), dcol=2)
+        panel.Add(wids['bkg_kweight'])
+
+        panel.Add(SimpleText(panel, 'K range: '), newrow=True)
+        panel.Add(btns['bkg_kmin'])
+        panel.Add(wids['bkg_kmin'])
+        panel.Add(SimpleText(panel, ' : '))
+        panel.Add(btns['bkg_kmax'])
+        panel.Add(wids['bkg_kmax'])
+
+        panel.Add(SimpleText(panel, 'Clamps Low k: '), dcol=2, newrow=True)
+        panel.Add( wids['bkg_clamplo'])
+        panel.Add(SimpleText(panel, 'high k: '), dcol=2)
+        panel.Add( wids['bkg_clamphi'])
+
+        panel.Add((10, 10), newrow=True)
+        panel.Add(HLine(panel, size=(250, 2)), dcol=7)
+
+        panel.Add(SimpleText(panel, ' Fourier transform',
+                             **titleopts), dcol=6, newrow=True)
+
         panel.pack()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        sizer.Add(panel, 1, LCEN, 3)
+        pack(self, sizer)
+
+    def on_autobk(self, event=None):
+        print("do autobk")
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
