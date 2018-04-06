@@ -59,7 +59,7 @@ epics_modules = {'epics': 'pyepics'}
 scan_modules = {'epicsscan': 'epicsscan', 'psycopg2': 'psycopg2'}
 
 spec_modules = {'silx': 'silx'}
-pca_modules = {'sklearn': 'scikit-image'}
+pca_modules = {'ssklearn': 'scikit-image'}
 
 testing_modules = {'nose': 'nose', 'pytest': 'pytest'}
 
@@ -70,7 +70,7 @@ all_modules = (('basic analysis', required_modules),
                ('connecting to the EPICS control system', epics_modules),
                ('reading Spec files', spec_modules),
                ('PCA and machine learning', pca_modules),
-               ('scanning with EpicsScan', scan_modules),
+               # ('scanning with EpicsScan', scan_modules),
                ('testing tools',  testing_modules))
 
 
@@ -304,7 +304,7 @@ if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
     msg = """%s
- Warning: Some optional Python Packages were not found. Some functionality
+ Note: Some optional Python Packages were not found. Some functionality
  will not be available without these packages:
 
      Package Name              Needed for
