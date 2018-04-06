@@ -59,7 +59,7 @@ epics_modules = {'epics': 'pyepics'}
 scan_modules = {'epicsscan': 'epicsscan', 'psycopg2': 'psycopg2'}
 
 spec_modules = {'silx': 'silx'}
-pca_modules = {'ssklearn': 'scikit-image'}
+pca_modules = {'sklearn': 'scikit-learn'}
 
 testing_modules = {'nose': 'nose', 'pytest': 'pytest'}
 
