@@ -10,7 +10,7 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN, FS_LEFT
+from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      GridPanel, CEN, RCEN, LCEN, Font)
