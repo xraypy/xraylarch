@@ -9,8 +9,11 @@ import sys
 ## require that numpy be available right away!!
 import numpy
 
-import matplotlib
-matplotlib.use('WXAgg')
+try:
+    import matplotlib
+    matplotlib.use('WXAgg')
+except:
+    pass
 
 major, minor = sys.version_info[0], sys.version_info[1]
 if major < 2 or (major == 2 and minor < 7):
