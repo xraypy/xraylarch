@@ -17,6 +17,8 @@ from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
+from larch_plugins.xasgui.taskpanel import TaskPanel
+
 from larch_plugins.xafs.xafsutils import guess_energy_units
 from larch_plugins.xafs.xafsplots import plotlabels
 
@@ -61,36 +63,17 @@ def default_xasnorm_config():
                 deconv_ewid=0.5)
 
 
-class XASNormPanel(wx.Panel):
+class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
+    configname = 'xasnorm_config'
     def __init__(self, parent, controller=None, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
-        self.parent = parent
-        self.controller = controller
-        self.skip_process = False
-        self.build_display()
-
-    def onPanelExposed(self, **kws):
-        # called when notebook is selected
-        try:
-            fname = self.controller.filelist.GetStringSelection()
-            gname = self.controller.file_groups[fname]
-            dgroup = self.controller.get_group(gname)
-            self.fill_form(dgroup)
-        except:
-            pass
-
-    def larch_eval(self, cmd):
-        """eval"""
-        self.controller.larch.eval(cmd)
+        TaskPanel.__init__(self, parent, controller, **kws)
 
     def build_display(self):
         self.SetFont(Font(10))
         titleopts = dict(font=Font(11), colour='#AA0000')
 
-        xas = self.xaspanel = GridPanel(self, ncols=4, nrows=4, pad=2,
-                                        itemstyle=LCEN)
-
+        xas = self.panel
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(200, -1))
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
@@ -124,10 +107,9 @@ class XASNormPanel(wx.Panel):
 
         self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
 
-
         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
             bb = BitmapButton(xas, get_icon('plus'),
-                              action=partial(self.on_selpoint, opt=name),
+                              action=partial(self.onSelPoint, opt=name),
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
@@ -221,16 +203,11 @@ class XASNormPanel(wx.Panel):
         pack(self, sizer)
 
 
-    def get_config(self, dgroup=None):
-        """get processing configuration for a group"""
-        if dgroup is None:
-            dgroup = self.controller.get_group()
-
-        conf = getattr(dgroup, 'xasnorm_config', {})
-        if 'e0' not in conf:
-            conf = default_xasnorm_config()
-        dgroup.xasnorm_config = conf
-        return conf
+    def customize_config(self, config):
+        if 'e0' not in config:
+            config.update( default_xasnorm_config())
+        dgroup.xasnorm_config = config
+        return config
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
@@ -388,7 +365,7 @@ class XASNormPanel(wx.Panel):
         self.process(dgroup)
         self.plot(dgroup)
 
-    def on_selpoint(self, evt=None, opt='e0'):
+    def onSelPoint(self, evt=None, opt='e0'):
         "on point selected by cursor"
         xval, _ = self.controller.get_cursor()
         if xval is None:
