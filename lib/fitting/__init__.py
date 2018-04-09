@@ -14,7 +14,10 @@ from scipy.stats import f
 import matplotlib
 
 if HAS_WXPYTHON:
-    matplotlib.use("WXAgg")
+    try:
+        matplotlib.use("WXAgg")
+    except UserWarning:
+        pass
 
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
