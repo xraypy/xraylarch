@@ -102,14 +102,11 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
 
-def default_prepeaks_config():
-    return dict(mask_elo=-10, mask_ehi=-5,
-                fit_emin=-40, fit_emax=0,
-                yarray='norm')
 
 MIN_CORREL = 0.0010
 
 class FitResultFrame(wx.Frame):
+    config_sect = 'prepeak'
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
@@ -408,7 +405,7 @@ class PrePeakPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             # print(" Fill prepeak panel from group ", fname, gname, dgroup)
-            self.fill_form_from_group(dgroup)
+            self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -544,9 +541,7 @@ class PrePeakPanel(wx.Panel):
         pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
         pan.Add(self.message, dcol=7)
 
-
         pan.pack()
-
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((5,5), 0, LCEN, 3)
@@ -566,32 +561,37 @@ class PrePeakPanel(wx.Panel):
 
         conf = getattr(dgroup, 'prepeak_config', {})
         if 'e0' not in conf:
-            conf = default_prepeak_config()
+            conf = dict(e0 = dgroup.e0, elo=-10, ehi=-5,
+                        emin=-40, emax=0, yarray='norm')
+
+        dgroup.prepeak_config = conf
         if not hasattr(dgroup, 'prepeaks'):
             dgroup.prepeaks = Group()
-        dgroup.prepeaks.config = conf
+
         return conf
 
-    def fill_form_from_group(self, dgroup):
-        self.ppeak_e0.SetValue(dgroup.e0)
-        if hasattr(dgroup, 'prepeaks'):
-            self.ppeak_emin.SetValue(dgroup.prepeaks.emin)
-            self.ppeak_emax.SetValue(dgroup.prepeaks.emax)
-            self.ppeak_elo.SetValue(dgroup.prepeaks.elo)
-            self.ppeak_ehi.SetValue(dgroup.prepeaks.ehi)
+    def fill_form(self, dat):
+        if isinstance(dat, Group):
+            self.ppeak_e0.SetValue(dat.e0)
+            if hasattr(dat, 'prepeaks'):
+                self.ppeak_emin.SetValue(dat.prepeaks.emin)
+                self.ppeak_emax.SetValue(dat.prepeaks.emax)
+                self.ppeak_elo.SetValue(dat.prepeaks.elo)
+                self.ppeak_ehi.SetValue(dat.prepeaks.ehi)
 
-    def fill_form_from_dict(self, data):
-        self.ppeak_e0.SetValue(data['e0'])
-        self.ppeak_emin.SetValue(data['emin'])
-        self.ppeak_emax.SetValue(data['emax'])
-        self.ppeak_elo.SetValue(data['elo'])
-        self.ppeak_ehi.SetValue(data['ehi'])
-        self.array_choice.SetStringSelection(data['array_desc'])
-        self.show_e0.Enable(data['show_e0'])
-        self.show_centroid.Enable(data['show_centroid'])
-        self.show_fitrange.Enable(data['show_fitrange'])
-        self.show_peakrange.Enable(data['show_peakrange'])
-        self.plot_sub_bline.Enable(data['plot_sub_bline'])
+        elif instance(dat, dict):
+            self.ppeak_e0.SetValue(dat['e0'])
+            self.ppeak_emin.SetValue(dat['emin'])
+            self.ppeak_emax.SetValue(dat['emax'])
+            self.ppeak_elo.SetValue(dat['elo'])
+            self.ppeak_ehi.SetValue(dat['ehi'])
+
+            self.array_choice.SetStringSelection(dat['array_desc'])
+            self.show_e0.Enable(dat['show_e0'])
+            self.show_centroid.Enable(dat['show_centroid'])
+            self.show_fitrange.Enable(dat['show_fitrange'])
+            self.show_peakrange.Enable(dat['show_peakrange'])
+            self.plot_sub_bline.Enable(dat['plot_sub_bline'])
 
     def read_form(self):
         "read for, returning dict of values"
@@ -642,7 +642,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             # cmp.bkgbox.SetValue(1)
             self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
 
-        self.fill_form_from_group(dgroup)
+        self.fill_form(dgroup)
         self.fitmodel_btn.Enable()
         # self.fitallmodel_btn.Enable()
 
@@ -1109,7 +1109,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                     val = result.init_values.get(pname, par.value)
                     wids.value.SetValue(val)
 
-        self.fill_form_from_dict(result.user_options)
+        self.fill_form(result.user_options)
         return result
 
     def onExportFitResult(self, event=None):
