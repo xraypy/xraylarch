@@ -52,6 +52,7 @@ class TaskPanel(wx.Panel):
         self.controller = controller
         self.larch = controller.larch
         self.wids = {}
+        self.btns = {}
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.build_display()
 
@@ -130,7 +131,7 @@ class TaskPanel(wx.Panel):
     def onPlotSel(self, evt=None):
         pass
 
-    def onSelPoint(self, evt=None, opt='xmin'):
+    def onSelPoint(self, evt=None, opt='__'):
         xval = None
         try:
             xval = self.larch.symtable._plotter.plot1_x
