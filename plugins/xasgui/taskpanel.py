@@ -53,6 +53,7 @@ class TaskPanel(wx.Panel):
         self.larch = controller.larch
         self.wids = {}
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
+        self.build_display()
 
 
     def onPanelExposed(self, **kws):
