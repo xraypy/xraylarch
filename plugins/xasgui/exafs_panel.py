@@ -19,6 +19,8 @@ from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
+from larch_plugins.xasgui.taskpanel import TaskPanel
+
 from larch_plugins.xafs.xafsutils import guess_energy_units
 from larch_plugins.xafs.xafsplots import plotlabels
 
@@ -46,36 +48,20 @@ FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 KWLIST = ('0', '1', '2', '3', '4', '5')
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100')
 
-class EXAFSPanel(wx.Panel):
+class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
-    def __init__(self, parent, controller=None, reporter=None, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
-        self.parent = parent
-        self.controller = controller
-        self.reporter = reporter
+    title = 'EXAFS panel'
+    configname = 'exafs_config'
+
+    def __init__(self, parent, controller, **kws):
+        TaskPanel.__init__(self, parent, controller, **kws)
         self.skip_process = False
-        self.build_display()
-
-    def onPanelExposed(self, **kws):
-        # called when notebook is selected
-        try:
-            fname = self.controller.filelist.GetStringSelection()
-            gname = self.controller.file_groups[fname]
-            dgroup = self.controller.get_group(gname)
-            self.fill_form(dgroup)
-        except:
-            pass
-
-    def larch_eval(self, cmd):
-        "eval"
-        self.controller.larch.eval(cmd)
 
     def build_display(self):
         self.SetFont(Font(10))
         titleopts = dict(font=Font(11), colour='#AA0000')
 
-
-        panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
+        panel = self.panel
 
         self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(200, -1))
@@ -104,8 +90,8 @@ class EXAFSPanel(wx.Panel):
             return Button(panel, 'Copy', size=(50, -1),
                           action=partial(self.onCopyParam, name))
 
-        self.wids = wids = {}
-        self.bnts = btns = {}
+        wids = self.wids
+        btns = self.btns
 
         opts = dict(size=(90, -1), digits=2, increment=0.1)
         wids['e0'] = FloatSpin(panel, -1, **opts)
@@ -141,7 +127,7 @@ class EXAFSPanel(wx.Panel):
 
         for name in ('bkg_kmin', 'bkg_kmax', 'fft_kmin', 'fft_kmax'):
             bb = BitmapButton(panel, get_icon('plus'),
-                              action=partial(self.on_selpoint, opt=name),
+                              action=partial(self.onSelPoint, opt=name),
                               tooltip='use last point selected from plot')
             btns[name] = bb
         opts = dict(choices=CLAMPLIST, size=(70, -1), action=self.on_autobk)
@@ -244,6 +230,9 @@ class EXAFSPanel(wx.Panel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
+        print("EXAFS Panel Fill Form")
+
+
 
 #         widlist = (self.xas_e0, self.xas_step, self.xas_pre1,
 #                    self.xas_pre2, self.xas_nor1, self.xas_nor2,
@@ -307,13 +296,6 @@ class EXAFSPanel(wx.Panel):
         conf = self.get_config()
         conf.update(self.read_form())
         opts = {}
-
-
-    def on_selpoint(self, evt=None, opt='e0'):
-        "on point selected by cursor"
-        xval, _ = self.controller.get_cursor()
-        if xval is None:
-            return
 
 
     def process(self, dgroup, **kws):
