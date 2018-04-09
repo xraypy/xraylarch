@@ -44,7 +44,7 @@ class LASSOPanel(TaskPanel):
     title = 'LASSO / Partial Least Squares Analysis'
     configname = 'lasso_config'
 
-    def __init__(self, parent, controller, reporter=None, **kws):
+    def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller, **kws)
 
     def process(self, dgroup, **kws):

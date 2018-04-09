@@ -63,11 +63,10 @@ def default_xasnorm_config():
 
 class XASNormPanel(wx.Panel):
     """XAS normalization Panel"""
-    def __init__(self, parent, controller=None, reporter=None, **kws):
+    def __init__(self, parent, controller=None, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
         self.parent = parent
         self.controller = controller
-        self.reporter = reporter
         self.skip_process = False
         self.build_display()
 

@@ -44,7 +44,7 @@ class PCAPanel(TaskPanel):
     title = 'Principal Component / Non-negative Factor Analysis'
     configname = 'pca_config'
 
-    def __init__(self, parent, controller, reporter=None, **kws):
+    def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller, **kws)
 
     def process(self, dgroup, **kws):
