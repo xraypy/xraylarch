@@ -46,7 +46,6 @@ class TaskPanel(wx.Panel):
     configname = 'generic_config'
 
     def __init__(self, parent, controller, **kws):
-
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.controller = controller
@@ -54,7 +53,9 @@ class TaskPanel(wx.Panel):
         self.wids = {}
         self.btns = {}
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
+        self.skip_process = True
         self.build_display()
+        self.skip_process = False
 
 
     def onPanelExposed(self, **kws):
@@ -64,7 +65,6 @@ class TaskPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             self.fill_form(dgroup)
-
 
     def larch_eval(self, cmd):
         """eval"""
