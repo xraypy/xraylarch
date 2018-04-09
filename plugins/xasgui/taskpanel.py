@@ -92,9 +92,9 @@ class TaskPanel(wx.Panel):
 
         conf = getattr(dgroup, self.configname, {})
 
-        return self.customize_config(conf)
+        return self.customize_config(conf, dgroup=dgroup)
 
-    def customize_config(self, config):
+    def customize_config(self, config, dgroup=None):
         """override to customize getting the panels config"""
         return config
 

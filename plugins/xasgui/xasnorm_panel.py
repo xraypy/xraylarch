@@ -203,10 +203,11 @@ class XASNormPanel(TaskPanel):
         pack(self, sizer)
 
 
-    def customize_config(self, config):
+    def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
-            config.update( default_xasnorm_config())
-        dgroup.xasnorm_config = config
+            config.update(default_xasnorm_config())
+        if dgroup is not None:
+            dgroup.xasnorm_config = config
         return config
 
     def fill_form(self, dgroup):
