@@ -441,7 +441,6 @@ overwriting current arrays''')
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
 
-
 class RebinDataDialog(wx.Dialog):
     """dialog for rebinning data to standard XAFS grid"""
     def __init__(self, parent, controller, **kws):
@@ -489,7 +488,8 @@ class RebinDataDialog(wx.Dialog):
 
 
         for wname, wid in wids.items():
-            wid.SetAction(partial(self.on_rebin, name=wname))
+            if wname != 'grouplist':
+                wid.SetAction(partial(self.on_rebin, name=wname))
 
         apply = Button(panel, 'Save Arrays for this Group', size=(200, -1),
                       action=self.on_apply)
@@ -605,7 +605,6 @@ class RebinDataDialog(wx.Dialog):
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
 
-
 class SmoothDataDialog(wx.Dialog):
     """dialog for smoothing data"""
     def __init__(self, parent, controller, **kws):
@@ -617,13 +616,13 @@ class SmoothDataDialog(wx.Dialog):
 
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
 
-        title = "Smooth mu(E) Data"
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 200),
+                           title="Smooth mu(E) Data")
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
 
         self.wids = wids = {}
-
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(600, 200), title=title)
-
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
@@ -634,11 +633,11 @@ class SmoothDataDialog(wx.Dialog):
         smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
         conv_ops  = ('Lorenztian', 'Gaussian')
 
-        self.smooth_op = Choice(panel, choices=smooth_ops, size=(150, -1),
+        self.smooth_op = Choice(panel, choices=smooth_ops, size=(125, -1),
                                 action=self.on_smooth)
         self.smooth_op.SetSelection(0)
 
-        self.conv_op = Choice(panel, choices=conv_ops, size=(150, -1),
+        self.conv_op = Choice(panel, choices=conv_ops, size=(125, -1),
                                 action=self.on_smooth)
         self.conv_op.SetSelection(0)
 
@@ -653,39 +652,60 @@ class SmoothDataDialog(wx.Dialog):
 
         self.message = SimpleText(panel, label='         ', size=(200, -1))
 
-        apply = Button(panel, 'Save Array for this Group', size=(200, -1),
-                      action=self.on_apply)
-        apply.SetToolTip('Save smoothed data, overwrite current arrays')
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+                               action=self.on_apply)
+        wids['apply'].SetToolTip('Save corrected data, overwrite current arrays')
 
-        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+                           action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save corrected data as new group')
 
-        panel.Add(SimpleText(panel, 'Smooth Data for Group: '))
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_smooth',
+                                           size=(250, -1))
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        add_text('Smooth Data for Group: ', newrow=False)
         panel.Add(wids['grouplist'], dcol=5)
 
-        panel.Add(SimpleText(panel, 'Smoothing Method: '), newrow=True)
+        add_text('Smoothing Method: ')
         panel.Add(self.smooth_op)
-        panel.Add(SimpleText(panel, ' n= '))
+        add_text(' n= ', newrow=False)
         panel.Add(self.par_n)
-        panel.Add(SimpleText(panel, ' order= '))
+        add_text(' order= ', newrow=False)
         panel.Add(self.par_o)
 
-        panel.Add(SimpleText(panel, 'Convolution Form: '), newrow=True)
+        add_text('Convolution Form: ')
         panel.Add(self.conv_op)
-        panel.Add(SimpleText(panel, 'sigma='))
+        add_text(' sigma= ', newrow=False)
         panel.Add(self.sigma)
 
         panel.Add((10, 10), newrow=True)
         panel.Add(self.message, dcol=5)
 
-        panel.Add(apply, dcol=4, newrow=True)
+        panel.Add(wids['apply'], newrow=True)
 
-        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
-        panel.Add(done, dcol=4, newrow=True)
+        panel.Add(wids['save_as'],  newrow=True)
+        panel.Add(wids['save_as_name'], dcol=5)
+
         panel.pack()
         self.plot_results()
 
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat = self.data
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+        self.parent.nb_panels[0].process(ngroup)
+        self.parent.onNewGroup(ngroup)
+
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        wids['save_as_name'].SetValue(self.dgroup.filename + '_smooth')
         self.plot_results()
 
     def on_smooth(self, event=None, value=None):
@@ -759,7 +779,6 @@ class SmoothDataDialog(wx.Dialog):
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
 
-
 class DeglitchDialog(wx.Dialog):
     """dialog for deglitching or removing unsightly data points"""
     def __init__(self, parent, controller, **kws):
@@ -780,13 +799,11 @@ class DeglitchDialog(wx.Dialog):
         if lastx is None:
             lastx = max(xdat)
 
-        title = "Select Points to Remove"
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(500, 225),
+                           title="Select Points to Remove")
 
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
         self.wids = wids = {}
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(520, 225), title=title)
-
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
-
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
@@ -813,12 +830,17 @@ class DeglitchDialog(wx.Dialog):
 
         undo = Button(panel, 'Undo remove', size=(125, -1),
                       action=self.on_undo)
-        apply = Button(panel, 'Save Array for this Group', size=(200, -1),
-                      action=self.on_apply)
-        apply.SetToolTip('Save current arrays, clear undo history')
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+                               action=self.on_apply)
+        wids['apply'].SetToolTip('''Save deglitched, overwrite current arrays,
+clear undo history''')
 
-        done = Button(panel, 'Done', size=(125, -1),
-                      action=self.on_done)
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+                                 action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save deglitched data as new group')
+
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_clean',
+                                           size=(250, -1))
 
         self.history_message = SimpleText(panel, '')
 
@@ -829,17 +851,20 @@ class DeglitchDialog(wx.Dialog):
         self.wid_range2 = FloatCtrl(panel, value=lastx+1, **floatopts)
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
-                                    size=(100, -1), action=self.on_rangechoice)
+                                    size=(75, -1), action=self.on_rangechoice)
 
-        panel.Add(SimpleText(panel, 'Deglitch Data for Group: '), dcol=3)
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        add_text('Deglitch Data for Group: ', dcol=3, newrow=False)
         panel.Add(wids['grouplist'], dcol=2)
 
-        panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
+        add_text('Single Energy : ', dcol=2)
         panel.Add(bb_xlast)
         panel.Add(self.wid_xlast)
         panel.Add(br_xlast)
 
-        panel.Add(SimpleText(panel, 'Energy Range : '), newrow=True)
+        add_text('Energy Range : ')
         panel.Add(self.choice_range)
         panel.Add(bb_range1)
         panel.Add(self.wid_range1)
@@ -849,15 +874,26 @@ class DeglitchDialog(wx.Dialog):
         panel.Add(bb_range2)
         panel.Add(self.wid_range2)
 
-        panel.Add(apply, dcol=3, newrow=True)
+        panel.Add(wids['apply'], dcol=3, newrow=True)
         panel.Add(self.history_message)
         panel.Add(undo)
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=5, newrow=True)
-        panel.Add(done, dcol=4, newrow=True)
+        panel.Add(wids['save_as'], dcol=3, newrow=True)
+        panel.Add(wids['save_as_name'], dcol=2)
 
         panel.pack()
         self.plot_results()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat = self.data[-1]
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+        self.parent.nb_panels[0].process(ngroup)
+        self.parent.onNewGroup(ngroup)
 
     def reset_data_history(self):
         xdat = self.dgroup.xdat[:]
@@ -871,6 +907,7 @@ class DeglitchDialog(wx.Dialog):
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
         self.reset_data_history()
         self.plot_results()
 
@@ -920,8 +957,6 @@ class DeglitchDialog(wx.Dialog):
         self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
-    def on_done(self, event=None):
-        self.Destroy()
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
