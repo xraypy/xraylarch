@@ -77,11 +77,11 @@ class OverAbsorptionDialog(wx.Dialog):
 
         self.set_default_elem_edge(self.dgroup)
 
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
                                action=self.on_apply)
         wids['apply'].SetToolTip('Save corrected data, overwrite current arrays')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
         wids['save_as'].SetToolTip('Save corrected data as new group')
 
@@ -89,7 +89,7 @@ class OverAbsorptionDialog(wx.Dialog):
                                            size=(250, -1))
 
         wids['correct'] = Button(panel, 'Do Correction',
-                                 size=(125, -1), action=self.on_correct)
+                                 size=(150, -1), action=self.on_correct)
         wids['correct'].SetToolTip('Calculate Correction')
 
         def add_text(text, dcol=1, newrow=True):
@@ -243,16 +243,16 @@ class EnergyCalibrateDialog(wx.Dialog):
                                    size=(250, -1), action=self.plot_results)
 
 
-        apply_one = Button(panel, 'Save / Overwrite ', size=(125, -1),
+        apply_one = Button(panel, 'Save / Overwrite ', size=(150, -1),
                            action=self.on_apply_one)
         apply_one.SetToolTip('Save rebinned data, overwrite current arrays')
 
-        apply_sel = Button(panel, 'Apply Energy shift to Selected Groups',
-                           size=(225, -1),  action=self.on_apply_sel)
+        apply_sel = Button(panel, 'Apply Sshift to Selected Groups',
+                           size=(250, -1),  action=self.on_apply_sel)
         apply_sel.SetToolTip('''Apply the Energy Shift to all Selected Groups,
 overwriting current arrays''')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
         wids['save_as'].SetToolTip('Save shifted data as new group')
 
@@ -495,8 +495,6 @@ class RebinDataDialog(wx.Dialog):
                       action=self.on_apply)
         apply.SetToolTip('Save rebinned data, overwrite current arrays')
 
-        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
-
         panel.Add(SimpleText(panel, 'Rebin Data for Group: '), dcol=2)
         panel.Add(wids['grouplist'], dcol=3)
 
@@ -530,8 +528,6 @@ class RebinDataDialog(wx.Dialog):
 
         panel.Add(apply, dcol=4, newrow=True)
 
-        panel.Add(HLine(panel, size=(450, 3)), dcol=6, newrow=True)
-        panel.Add(done, dcol=4, newrow=True)
         panel.pack()
         self.plot_results()
 
@@ -633,11 +629,11 @@ class SmoothDataDialog(wx.Dialog):
         smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
         conv_ops  = ('Lorenztian', 'Gaussian')
 
-        self.smooth_op = Choice(panel, choices=smooth_ops, size=(125, -1),
+        self.smooth_op = Choice(panel, choices=smooth_ops, size=(150, -1),
                                 action=self.on_smooth)
         self.smooth_op.SetSelection(0)
 
-        self.conv_op = Choice(panel, choices=conv_ops, size=(125, -1),
+        self.conv_op = Choice(panel, choices=conv_ops, size=(150, -1),
                                 action=self.on_smooth)
         self.conv_op.SetSelection(0)
 
@@ -652,11 +648,11 @@ class SmoothDataDialog(wx.Dialog):
 
         self.message = SimpleText(panel, label='         ', size=(200, -1))
 
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
                                action=self.on_apply)
         wids['apply'].SetToolTip('Save corrected data, overwrite current arrays')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                            action=self.on_saveas)
         wids['save_as'].SetToolTip('Save corrected data as new group')
 
@@ -830,12 +826,12 @@ class DeglitchDialog(wx.Dialog):
 
         undo = Button(panel, 'Undo remove', size=(125, -1),
                       action=self.on_undo)
-        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
                                action=self.on_apply)
         wids['apply'].SetToolTip('''Save deglitched, overwrite current arrays,
 clear undo history''')
 
-        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
                                  action=self.on_saveas)
         wids['save_as'].SetToolTip('Save deglitched data as new group')
 
@@ -851,7 +847,7 @@ clear undo history''')
         self.wid_range2 = FloatCtrl(panel, value=lastx+1, **floatopts)
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
-                                    size=(75, -1), action=self.on_rangechoice)
+                                    size=(90, -1), action=self.on_rangechoice)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
