@@ -235,8 +235,41 @@ class XASController():
         this.ydat = 1.0*getattr(this, yarray)
         this.plot_xlabel = 'energy'
         this.plot_ylabel = yarray
-
         return outgroup
+
+    def copy_group(self, filename, new_filename=None):
+        """copy XAS group (by filename) to new group"""
+        groupname = self.file_groups[filename]
+        if not hasattr(self.larch.symtable, groupname):
+            return
+
+        ogroup = self.get_group(groupname)
+
+        ngroup = Group(datatype=ogroup.datatype,
+                       copied_from=groupname)
+
+        for attr in dir(ogroup):
+            do_copy = True
+            if attr in ('xdat', 'ydat', 'i0', 'data' 'yerr',
+                        'energy', 'mu'):
+                val = getattr(ogroup, attr)*1.0
+            elif attr in ('norm', 'flat', 'deriv', 'deconv',
+                        'post_edge', 'pre_edge'):
+                do_copy = False
+            else:
+                try:
+                    val = copy.deepcopy(getattr(ogroup, attr))
+                except ValueError:
+                    do_copy = False
+            if do_copy:
+                setattr(ngroup, attr, val)
+
+        if new_filename is None:
+            new_filename = filename + '_1'
+        ngroup.filename = unique_name(new_filename, self.file_groups.keys())
+        ngroup.groupname = unique_name(groupname, self.file_groups.values())
+        setattr(self.larch.symtable, ngroup.groupname, ngroup)
+        return ngroup
 
     def get_cursor(self):
         try:
@@ -525,8 +558,8 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        #  MenuItem(self, fmenu, "&Inspect \tCtrl+I",
-        #                           "e",  self.showInspectionTool)
+        MenuItem(self, fmenu, "&Inspect \tCtrl+I",
+                 "e",  self.showInspectionTool)
 
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
@@ -658,40 +691,22 @@ class XASFrame(wx.Frame):
     def onConfigDataProcessing(self, event=None):
         pass
 
+    def onNewGroup(self, datagroup):
+        """
+        install and display a new group, as from 'copy / modify'
+        Note: this is a group object, not the groupname or filename
+        """
+        dgroup = datagroup
+        self.install_group(dgroup.groupname, dgroup.filename, overwrite=False)
+        self.nb_panels[0].process(dgroup)
+        self.ShowFile(groupname=dgroup.groupname)
+
     def onCopyGroup(self, event=None):
         fname = self.current_filename
         if fname is None:
-            fname = self.current_filename = self.controller.filelist.GetStringSelection()
-
-        groupname = self.controller.file_groups[fname]
-        if not hasattr(self.larch.symtable, groupname):
-            return
-        ogroup = self.controller.get_group(groupname)
-
-        ngroup = Group(datatype=ogroup.datatype,
-                       energy=1.0*ogroup.energy,
-                       mu=1.0*ogroup.mu,
-                       xdat=1.0*ogroup.energy,
-                       ydat=1.0*ogroup.mu)
-
-        for attr in dir(ogroup):
-            if attr in ('i0', 'data' 'yerr'):
-                val = getattr(ogroup, attr)*1.0
-            if attr in ('norm', 'flat', 'deriv', 'deconv', 'post_edge', 'pre_edge'):
-                pass
-            else:
-                try:
-                    val = copy.deepcopy(getattr(ogroup, attr))
-                except ValueError:
-                    val = None
-            setattr(ngroup, attr, val)
-
-        new_fname = unique_name(fname,     self.controller.file_groups.keys())
-        new_gname = unique_name(groupname, self.controller.file_groups.values())
-        setattr(self.larch.symtable, new_gname, ngroup)
-        self.install_group(new_gname, new_fname, overwrite=False)
-        self.nb_panels[0].process(ngroup)
-        self.ShowFile(groupname=new_gname)
+            fname = self.controller.filelist.GetStringSelection()
+        ngroup = self.controller.copy_group(fname)
+        self.onNewGroup(ngroup)
 
     def onRenameGroup(self, event=None):
         fname = self.current_filename = self.controller.filelist.GetStringSelection()
