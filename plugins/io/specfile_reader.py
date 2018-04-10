@@ -62,7 +62,7 @@ HAS_SFDW = False
 try:
     from .specfile_writer import SpecfileDataWriter
     HAS_SFDW = True
-except ValueError, ImportError:
+except (ValueError, ImportError):
     pass
 
 ### UTILITIES (the class is below!)
