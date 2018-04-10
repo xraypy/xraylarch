@@ -203,6 +203,8 @@ class XASController():
     def get_group(self, groupname=None):
         if groupname is None:
             groupname = self.groupname
+            if groupname is None:
+                return None
         dgroup = getattr(self.symtable, groupname, None)
         if dgroup is None and groupname in self.file_groups:
             groupname = self.file_groups[groupname]
