@@ -6,10 +6,10 @@ import numpy as np
 from lmfit import Parameters, minimize
 
 import wx
+from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
 
-from wxutils import (SimpleText,  Choice, Check,
-                     Button, HLine, OkCancel, GridPanel, LCEN)
-
+from wxutils import (SimpleText, Choice, Check, Button, HLine, OkCancel,
+                     GridPanel, LCEN, RCEN)
 
 from larch.utils import index_of, index_nearest, interp
 from larch.wxlib import BitmapButton, FloatCtrl
@@ -53,66 +53,73 @@ class OverAbsorptionDialog(wx.Dialog):
 
         title = "Correct Over-absorption"
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
-
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
-
-        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
-                                action=self.on_groupchoice)
-        self.grouplist.SetStringSelection(self.dgroup.filename)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 250), title=title)
 
         self.wids = wids = {}
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
+                                   action=self.on_groupchoice)
+
+        wids['grouplist'].SetStringSelection(self.dgroup.filename)
+
         opts  = dict(size=(90, -1), precision=1, act_on_losefocus=True,
                      minval=-90, maxval=180)
 
-        wids['phi_in']  = FloatCtrl(panel, value=45, **opts)
-        wids['phi_out'] = FloatCtrl(panel, value=45, **opts)
+        fs_opts = dict(size=(90, -1), value=45, digits=1, increment=1)
+        wids['phi_in']  = FloatSpin(panel, **fs_opts)
+        wids['phi_out'] = FloatSpin(panel, **fs_opts)
 
-        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(75, -1))
-        wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(75, -1))
+        wids['elem'] = Choice(panel, choices=ELEM_LIST, size=(50, -1))
+        wids['edge'] = Choice(panel, choices=EDGE_LIST, size=(50, -1))
 
-        wids['formula'] = wx.TextCtrl(panel, -1, '', size=(300, -1))
+        wids['formula'] = wx.TextCtrl(panel, -1, '', size=(250, -1))
 
         self.set_default_elem_edge(self.dgroup)
 
-        apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
-                           action=self.on_apply_one)
-        apply_one.SetToolTip('Save corrected data, overwrite current arrays')
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(125, -1),
+                               action=self.on_apply)
+        wids['apply'].SetToolTip('Save corrected data, overwrite current arrays')
 
-        # apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
-        #                    action=self.on_apply_sel)
-        #apply_sel.SetToolTip('''Apply SA Correction to the Selected Groups
-        # in XAS GUI, overwriting current arrays''')
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+                           action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save corrected data as new group')
 
-        correct = Button(panel, 'Do Correction',
-                         size=(175, -1), action=self.do_correct)
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_abscorr',
+                                           size=(250, -1))
 
+        wids['correct'] = Button(panel, 'Do Correction',
+                                 size=(125, -1), action=self.on_correct)
+        wids['correct'].SetToolTip('Calculate Correction')
 
-        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+        def left_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        panel.Add(SimpleText(panel, ' Correction for Group: '), dcol=1)
-        panel.Add(self.grouplist, dcol=5)
+        left_text(' Correction for Group: ', newrow=False)
+        panel.Add(wids['grouplist'], dcol=5)
 
-        panel.Add(SimpleText(panel, ' Absorbing Element: '), newrow=True)
+        left_text(' Absorbing Element: ')
         panel.Add(wids['elem'])
-        panel.Add(SimpleText(panel, ' Edge: '))
+
+        left_text('  Edge:  ', newrow=False)
         panel.Add(wids['edge'])
 
-        panel.Add(SimpleText(panel, ' Material Formula: '), newrow=True)
+        left_text(' Material Formula: ')
         panel.Add(wids['formula'], dcol=3)
 
-        panel.Add(SimpleText(panel, ' Incident Angle (deg): '), newrow=True)
+        left_text(' Incident Angle (deg): ')
         panel.Add(wids['phi_in'])
-        panel.Add(SimpleText(panel, ' Exit Angle (deg): '))
+
+        left_text(' Exit Angle (deg): ')
         panel.Add(wids['phi_out'])
 
-        panel.Add(correct,   dcol=2, newrow=True)
-        panel.Add(apply_one, dcol=3)
+        panel.Add(wids['correct'], newrow=True)
+        panel.Add(wids['apply'], dcol=2)
 
-        panel.Add(HLine(panel, size=(450, 3)), dcol=7, newrow=True)
-        panel.Add(done, dcol=3, newrow=True)
+        panel.Add(wids['save_as'], newrow=True)
+        panel.Add(wids['save_as_name'], dcol=3)
         panel.pack()
-        # self.plot_results()
 
     def set_default_elem_edge(self, dgroup):
         elem, edge = guess_edge(dgroup.e0, _larch=self.controller.larch)
@@ -120,10 +127,22 @@ class OverAbsorptionDialog(wx.Dialog):
         self.wids['edge'].SetStringSelection(edge)
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        fname = self.wids['grouplist'].GetStringSelection()
+        self.dgroup = self.controller.get_group(fname)
         self.set_default_elem_edge(self.dgroup)
+        wids['save_as_name'].SetValue(self.dgroup.filename + '_abscorr')
 
-    def do_correct(self, event=None):
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = self.wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        if hasattr(self.dgroup, 'norm_corr' ):
+            ngroup.mu = ngroup.norm_corr*1.0
+            del ngroup.norm_corr
+        self.parent.onNewGroup(ngroup)
+
+    def on_correct(self, event=None):
         wids = self.wids
         dgroup = self.dgroup
         anginp = wids['phi_in'].GetValue()
@@ -131,32 +150,23 @@ class OverAbsorptionDialog(wx.Dialog):
         elem   = wids['elem'].GetStringSelection()
         edge   = wids['edge'].GetStringSelection()
         formula = wids['formula'].GetValue()
+        if len(formula) < 1:
+            return
 
         cmd = """fluo_corr(%s.energy, %s.mu, '%s', '%s', edge='%s', group=%s,
- anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname,
-                                 formula, elem, edge, dgroup.groupname,
-                                 anginp, angout)
+     anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname,
+                                     formula, elem, edge, dgroup.groupname,
+                                     anginp, angout)
 
         self.controller.larch.eval(cmd)
         self.plot_results()
 
-    def on_apply_one(self, event=None):
+    def on_apply(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
         self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
-
-    def on_apply_sel(self, event=None):
-        for checked in self.controller.filelist.GetCheckedStrings():
-            fname  = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(fname)
-            dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
-            self.parent.nb_panels[0].process(dgroup)
-
-
-    def on_done(self, event=None):
-        self.Destroy()
 
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
