@@ -558,8 +558,8 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, "&Inspect \tCtrl+I",
-                 "e",  self.showInspectionTool)
+        # MenuItem(self, fmenu, "&Inspect \tCtrl+J",
+        #         " e ",  self.showInspectionTool)
 
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
