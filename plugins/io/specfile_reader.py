@@ -62,7 +62,7 @@ HAS_SFDW = False
 try:
     from .specfile_writer import SpecfileDataWriter
     HAS_SFDW = True
-except ImportError:
+except ValueError, ImportError:
     pass
 
 ### UTILITIES (the class is below!)
@@ -109,7 +109,7 @@ def _str2rng(rngstr, keeporder=True, rebin=None):
             _rngout = _rngout[::int(rebin)]
         except:
             raise NameError("Wrong rebin={0}".format(int(rebin)))
-    
+
     def uniquify(seq):
         # Order preserving uniquifier by Dave Kirby
         seen = set()
@@ -162,7 +162,7 @@ def _checkScans(scans):
     """compatibility layer"""
     print("DEPRECATED: use '_check_scans' instead")
     return _check_scans(scans)
-        
+
 def _check_scans(scans):
     """simple checker for scans input"""
     if scans is None:
@@ -235,7 +235,7 @@ def _pymca_SG(ydat, npoints=3, degree=1, order=0):
             1 means that filter results in smoothing the first
               derivative of function.
             and so on ...
-   
+
     Returns
     -------
     ys : smoothed array
@@ -253,7 +253,7 @@ def savitzky_golay(y, window_size, order, deriv=0):
     from data.  It has the advantage of preserving the original shape
     and features of the signal better than other types of filtering
     approaches, such as moving averages techhniques.
-    
+
     Parameters
     ----------
     y : array_like, shape (N,)
@@ -292,7 +292,7 @@ def savitzky_golay(y, window_size, order, deriv=0):
     plt.plot(t, ysg, 'r', label='Filtered signal')
     plt.legend()
     plt.show()
-    
+
     References
     ----------
     .. [1] A. Savitzky, M. J. E. Golay, Smoothing and Differentiation
@@ -330,7 +330,7 @@ def savitzky_golay(y, window_size, order, deriv=0):
 ### ==================================================================
 class SpecfileData(object):
     """SpecfileData object"""
-    
+
     def __init__(self, fname=None, cntx=1, cnty=None, csig=None,
                  cmon=None, csec=None, norm=None, verbosity=0):
         """reads the given specfile
@@ -353,7 +353,7 @@ class SpecfileData(object):
                'sum' -> (z-min(z)/sum(z)
 
         verbosity : level of verbosity [int, 0]
-        
+
         Returns
         -------
         None, sets attributes.
@@ -406,7 +406,7 @@ class SpecfileData(object):
                'max-min' -> (z-min(z))/(max(z)-min(z))
                'area' -> (z-min(z))/trapz(z, x)
                'sum' -> (z-min(z)/sum(z)
- 
+
         Returns
         -------
         scan_datx : 1D array with x data (scanned axis)
@@ -418,7 +418,7 @@ class SpecfileData(object):
         """
         if HAS_SPECFILE is False:
             raise NameError("Specfile not available!")
-        
+
         #get keywords arguments
         cntx = kws.get('cntx', self.cntx)
         cnty = kws.get('cnty', self.cnty)
@@ -483,7 +483,7 @@ class SpecfileData(object):
         elif (('int' in str(type(cmon))) or ('float' in str(type(cmon))) ):
                # the case we want to divide by a constant value
                datamon = _mot2array(cmon, datasig)
-               labmon = str(cmon) 
+               labmon = str(cmon)
         else:
             datamon = self.sd.data_column_by_name(cmon)
             labmon = str(cmon)
@@ -596,7 +596,7 @@ class SpecfileData(object):
         ----------
         scans : string or list of scans to load [None]; the format of the
                 string is intended to be parsed by '_str2rng()'
-        
+
         motinfo : boolean [True] returns also motors and scaninfo
                   dictionaries (see self.get_scan())
 
@@ -660,14 +660,14 @@ class SpecfileData(object):
         """
         #check inputs - some already checked in get_scan()/get_scans()
         nscans = _check_scans(scans)
-        
+
         actions = ['single', 'average', 'sum', 'join']
         if not action in actions:
             raise NameError("'action={0}' not in known actions {1}".format(actions))
 
         # moved to get_scans
         xdats, zdats = self.get_scans(scans=nscans, motinfo=False, **kws)
-        
+
         # override 'action' keyword if it is only one scan
         if len(nscans) == 1:
             action = 'single'
@@ -676,7 +676,7 @@ class SpecfileData(object):
             if self.verbosity > 0: print("INFO: merging data...")
             return _pymca_average(xdats, zdats)
         elif action == 'sum':
-            return _numpy_sum_list(xdats, zdats)    
+            return _numpy_sum_list(xdats, zdats)
         elif action == 'join':
             return np.concatenate(xdats, axis=0), np.concatenate(zdats, axis=0)
         elif action == 'single':
@@ -784,19 +784,19 @@ class SpecfileData(object):
             return zcts_corr * secs
         else:
             return zcts_corr
-    
+
     def get_filter(self, ydats, method='scipySG', **kws):
         """get filtered data using a list of ydats and given method
 
         Parameters
         ----------
         ydats : list of 1D arrays
-        
+
         method : 'scipySG' -> Savitsky Golay filter from Scipy
                               (see savitzky_golay())
                  'pymcaSG' -> Savitsky Golay filter from PyMca
                               (see _pymca_SG())
-        
+
         Returns
         -------
         ysdats : list of 1D smoothed arrays
@@ -852,8 +852,8 @@ class SpecfileData(object):
             fout.wScan(['Energy', '{0}'.format(i['zlabel'])], [x, y],
                        title='{0}'.format(self.sd.command()),
                        motpos=self.sd.allmotorpos())
-        
-           
+
+
 ### LARCH ###
 def _specfiledata_getdoc(method):
     """to get the docstring of method inside a class"""
@@ -941,5 +941,3 @@ if __name__ == '__main__':
     #test02(100)
     #test03
     pass
-
-
