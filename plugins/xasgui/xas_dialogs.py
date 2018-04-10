@@ -44,6 +44,7 @@ class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
     def __init__(self, parent, controller, **kws):
 
+
         self.parent = parent
         self.controller = controller
         self.dgroup = self.controller.get_group()
@@ -51,13 +52,11 @@ class OverAbsorptionDialog(wx.Dialog):
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
-        title = "Correct Over-absorption"
-
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 250), title=title)
-
-        self.wids = wids = {}
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 250),
+                           title="Correct Over-absorption")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        self.wids = wids = {}
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                    action=self.on_groupchoice)
@@ -93,25 +92,25 @@ class OverAbsorptionDialog(wx.Dialog):
                                  size=(125, -1), action=self.on_correct)
         wids['correct'].SetToolTip('Calculate Correction')
 
-        def left_text(text, dcol=1, newrow=True):
+        def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        left_text(' Correction for Group: ', newrow=False)
+        add_text(' Correction for Group: ', newrow=False)
         panel.Add(wids['grouplist'], dcol=5)
 
-        left_text(' Absorbing Element: ')
+        add_text(' Absorbing Element: ')
         panel.Add(wids['elem'])
 
-        left_text('  Edge:  ', newrow=False)
+        add_text('  Edge:  ', newrow=False)
         panel.Add(wids['edge'])
 
-        left_text(' Material Formula: ')
+        add_text(' Material Formula: ')
         panel.Add(wids['formula'], dcol=3)
 
-        left_text(' Incident Angle (deg): ')
+        add_text(' Incident Angle (deg): ')
         panel.Add(wids['phi_in'])
 
-        left_text(' Exit Angle (deg): ')
+        add_text(' Exit Angle (deg): ')
         panel.Add(wids['phi_out'])
 
         panel.Add(wids['correct'], newrow=True)
@@ -207,33 +206,31 @@ class EnergyCalibrateDialog(wx.Dialog):
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
-        title = "Calibrate / Align Energy"
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250),
+                           title="Calibrate / Align Energy")
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 275), title=title)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
-
-        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
-                                action=self.on_groupchoice)
-        self.grouplist.SetStringSelection(self.dgroup.filename)
+        self.wids = wids = {}
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
+                                   action=self.on_groupchoice)
+        wids['grouplist'].SetStringSelection(self.dgroup.filename)
 
         refgroups = ['None'] + groupnames
 
-        self.reflist = Choice(panel, choices=refgroups, size=(250, -1),
+        wids['reflist'] = Choice(panel, choices=refgroups, size=(250, -1),
                               action=self.on_align)
-        self.reflist.SetSelection(0)
+        wids['reflist'].SetSelection(0)
 
-        self.wids = wids = {}
-        opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True,
-                     minval=xmin, maxval=xmax)
+        opts  = dict(size=(90, -1), value=e0val, digits=3, increment=0.1)
 
-        wids['e0_old'] = FloatCtrl(panel, value=e0val, **opts)
-        wids['e0_new'] = FloatCtrl(panel, value=e0val, **opts)
+        wids['e0_old'] = FloatSpin(panel, **opts)
+        wids['e0_new'] = FloatSpin(panel, **opts)
+        opts['value'] = 0.0
+        wids['eshift'] = FloatSpin(panel, **opts)
 
-        opts['minval'] = -500
-        opts['maxval'] = 500
-        wids['eshift'] = FloatCtrl(panel, value=0.0, **opts)
-
+        for wname in ('e0_old', 'e0_new', 'eshift'):
+            wids[wname].Bind(EVT_FLOATSPIN, partial(self.on_calib, name=wname))
 
         bb_e0old = BitmapButton(panel, get_icon('plus'),
                                 action=partial(self.on_select, opt='e0_old'),
@@ -245,48 +242,57 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
                                    size=(250, -1), action=self.plot_results)
 
-        for wname, wid in wids.items():
-            wid.SetAction(partial(self.on_calib, name=wname))
 
-
-        apply_one = Button(panel, 'Save Arrays for this Group', size=(175, -1),
+        apply_one = Button(panel, 'Save / Overwrite ', size=(125, -1),
                            action=self.on_apply_one)
         apply_one.SetToolTip('Save rebinned data, overwrite current arrays')
 
-        apply_sel = Button(panel, 'Apply to Selected Groups', size=(175, -1),
-                           action=self.on_apply_sel)
-        apply_sel.SetToolTip('''Apply the Energy Shift to the Selected Groups
-in XAS GUI, overwriting current arrays''')
+        apply_sel = Button(panel, 'Apply Energy shift to Selected Groups',
+                           size=(225, -1),  action=self.on_apply_sel)
+        apply_sel.SetToolTip('''Apply the Energy Shift to all Selected Groups,
+overwriting current arrays''')
 
-        done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(125, -1),
+                           action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save shifted data as new group')
 
-        panel.Add(SimpleText(panel, ' Energy Calibration for Group: '), dcol=2)
-        panel.Add(self.grouplist, dcol=5)
+        wids['save_as_name'] = wx.TextCtrl(panel, -1,
+                                           self.dgroup.filename + '_eshift',
+                                           size=(250, -1))
 
-        panel.Add(SimpleText(panel, ' Plot Arrays as: '), dcol=2, newrow=True)
-        panel.Add(self.plottype, dcol=5)
 
-        panel.Add(SimpleText(panel, ' Energy Reference (E0): '), newrow=True)
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        add_text(' Energy Calibration for Group: ', dcol=2, newrow=False)
+        panel.Add(wids['grouplist'], dcol=3)
+
+        add_text(' Plot Arrays as: ', dcol=2)
+        panel.Add(self.plottype, dcol=3)
+
+        add_text(' Auto-Align to : ', dcol=2)
+        panel.Add(wids['reflist'], dcol=3)
+
+        add_text(' Energy Reference (E0): ')
         panel.Add(bb_e0old)
         panel.Add(wids['e0_old'])
-        panel.Add(SimpleText(panel, ' eV'))
+        add_text(' eV', newrow=False)
 
-        panel.Add(SimpleText(panel, ' Calibrate to: '), newrow=True)
+        add_text(' Calibrate to: ')
         panel.Add(bb_e0new)
         panel.Add(wids['e0_new'])
-        panel.Add(SimpleText(panel, ' eV'))
-        panel.Add(SimpleText(panel, ' Energy Shift : '), dcol=2, newrow=True)
+        add_text(' eV', newrow=False)
+
+        add_text(' Energy Shift : ', dcol=2)
         panel.Add(wids['eshift'])
-        panel.Add(SimpleText(panel, ' eV '))
-        panel.Add(apply_sel, dcol=2)
+        add_text(' eV', newrow=False)
 
-        panel.Add(SimpleText(panel, ' Auto-Align to : '), dcol=2, newrow=True)
-        panel.Add(self.reflist, dcol=5)
+        panel.Add(apply_one, dcol=2, newrow=True)
+        panel.Add(apply_sel, dcol=4)
 
-        panel.Add(apply_one, dcol=4, newrow=True)
+        panel.Add(wids['save_as'], dcol=2, newrow=True)
+        panel.Add(wids['save_as_name'], dcol=3)
 
-        panel.Add(HLine(panel, size=(550, 3)), dcol=7, newrow=True)
-        panel.Add(done, dcol=4, newrow=True)
         panel.pack()
         self.plot_results()
 
@@ -296,15 +302,16 @@ in XAS GUI, overwriting current arrays''')
             self.wids[opt].SetValue(_x)
 
     def on_groupchoice(self, event=None):
-        dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.dgroup = dgroup
-        self.wids['e0_old'].SetValue(dgroup.e0, act=False)
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_eshift')
+        self.wids['e0_old'].SetValue(dgroup.e0)
         e0_new = dgroup.e0 + self.wids['eshift'].GetValue()
-        self.wids['e0_new'].SetValue(e0_new, act=False)
+        self.wids['e0_new'].SetValue(e0_new)
         self.plot_results()
 
     def on_align(self, event=None, name=None, value=None):
-        ref = self.controller.get_group(self.reflist.GetStringSelection())
+        ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
         dat = self.dgroup
         if not hasattr(ref, 'dmude'):
             ref.dmude = np.gradient(ref.mu)/np.gradient(ref.energy)
@@ -327,14 +334,14 @@ in XAS GUI, overwriting current arrays''')
 
         result = minimize(resid, params, args=(ref, dat, i1, i2))
         eshift = result.params['eshift'].value
-        self.wids['eshift'].SetValue(eshift, act=False)
-        self.wids['e0_new'].SetValue(dat.e0 + eshift, act=False)
+        self.wids['eshift'].SetValue(eshift)
+        self.wids['e0_new'].SetValue(dat.e0 + eshift)
 
         xnew = self.dgroup.energy + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
-    def on_calib(self, event=None, name=None, value=None):
+    def on_calib(self, event=None, name=None):
         wids = self.wids
         e0_old = wids['e0_old'].GetValue()
         e0_new = wids['e0_new'].GetValue()
@@ -342,10 +349,10 @@ in XAS GUI, overwriting current arrays''')
 
         if name in ('e0_old', 'e0_new'):
             eshift = e0_new - e0_old
-            wids['eshift'].SetValue(eshift, act=False)
+            wids['eshift'].SetValue(eshift)
         elif name == 'eshift':
             e0_new = e0_old + eshift
-            wids['e0_new'].SetValue(e0_new, act=False)
+            wids['e0_new'].SetValue(e0_new)
 
         xnew = self.dgroup.energy + eshift
         self.data = xnew, self.dgroup.norm[:]
@@ -366,9 +373,15 @@ in XAS GUI, overwriting current arrays''')
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
             self.parent.nb_panels[0].process(dgroup)
 
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
-    def on_done(self, event=None):
-        self.Destroy()
+        eshift = self.wids['eshift'].GetValue()
+        ngroup.xdat = ngroup.energy = eshift + ngroup.energy[:]
+        self.parent.onNewGroup(ngroup)
 
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -377,8 +390,9 @@ in XAS GUI, overwriting current arrays''')
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
-        e0_old = self.wids['e0_old'].GetValue()
-        e0_new = self.wids['e0_new'].GetValue()
+        wids = self.wids
+        e0_old = wids['e0_old'].GetValue()
+        e0_new = wids['e0_new'].GetValue()
 
         xmin = min(e0_old, e0_new) - 25
         xmax = max(e0_old, e0_new) + 50
@@ -406,8 +420,8 @@ in XAS GUI, overwriting current arrays''')
         ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
                      label='original', **opts)
 
-        if self.reflist.GetStringSelection() != 'None':
-            refgroup = self.controller.get_group(self.reflist.GetStringSelection())
+        if wids['reflist'].GetStringSelection() != 'None':
+            refgroup = self.controller.get_group(wids['reflist'].GetStringSelection())
             xref, yref = refgroup.energy, refgroup.norm
             if use_deriv:
                 yref = np.gradient(yref)/np.gradient(xref)
@@ -444,18 +458,19 @@ class RebinDataDialog(wx.Dialog):
 
         title = "Rebin mu(E) Data"
 
+        self.wids = wids = {}
+
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
 
-        self.grouplist.SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
 
         opts  = dict(size=(90, -1), precision=3, act_on_losefocus=True)
 
-        self.wids = wids = {}
         wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax,
                              **opts)
 
@@ -483,7 +498,7 @@ class RebinDataDialog(wx.Dialog):
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
         panel.Add(SimpleText(panel, 'Rebin Data for Group: '), dcol=2)
-        panel.Add(self.grouplist, dcol=3)
+        panel.Add(wids['grouplist'], dcol=3)
 
         panel.Add(SimpleText(panel, 'E0: '), newrow=True)
         panel.Add(wids['e0'])
@@ -521,7 +536,7 @@ class RebinDataDialog(wx.Dialog):
         self.plot_results()
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.plot_results()
 
     def on_rebin(self, event=None, name=None, value=None):
@@ -604,15 +619,17 @@ class SmoothDataDialog(wx.Dialog):
 
         title = "Smooth mu(E) Data"
 
+        self.wids = wids = {}
+
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(600, 200), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
 
-        self.grouplist.SetStringSelection(self.dgroup.groupname)
-        self.grouplist.SetToolTip('select a new group, clear undo history')
+        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetToolTip('select a new group, clear undo history')
 
         smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
         conv_ops  = ('Lorenztian', 'Gaussian')
@@ -643,7 +660,7 @@ class SmoothDataDialog(wx.Dialog):
         done = Button(panel, 'Done', size=(125, -1), action=self.on_done)
 
         panel.Add(SimpleText(panel, 'Smooth Data for Group: '))
-        panel.Add(self.grouplist, dcol=5)
+        panel.Add(wids['grouplist'], dcol=5)
 
         panel.Add(SimpleText(panel, 'Smoothing Method: '), newrow=True)
         panel.Add(self.smooth_op)
@@ -668,7 +685,7 @@ class SmoothDataDialog(wx.Dialog):
         self.plot_results()
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.plot_results()
 
     def on_smooth(self, event=None, value=None):
@@ -765,16 +782,17 @@ class DeglitchDialog(wx.Dialog):
 
         title = "Select Points to Remove"
 
+        self.wids = wids = {}
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(520, 225), title=title)
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
 
-        self.grouplist = Choice(panel, choices=groupnames, size=(250, -1),
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
 
-        self.grouplist.SetStringSelection(self.dgroup.groupname)
-        self.grouplist.SetToolTip('select a new group, clear undo history')
+        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetToolTip('select a new group, clear undo history')
 
         bb_xlast = BitmapButton(panel, get_icon('plus'),
                                 action=partial(self.on_select, opt='x'),
@@ -814,7 +832,7 @@ class DeglitchDialog(wx.Dialog):
                                     size=(100, -1), action=self.on_rangechoice)
 
         panel.Add(SimpleText(panel, 'Deglitch Data for Group: '), dcol=3)
-        panel.Add(self.grouplist, dcol=2)
+        panel.Add(wids['grouplist'], dcol=2)
 
         panel.Add(SimpleText(panel, 'Single Energy : '), dcol=2, newrow=True)
         panel.Add(bb_xlast)
@@ -852,7 +870,7 @@ class DeglitchDialog(wx.Dialog):
         self.data = [(xdat, ydat)]
 
     def on_groupchoice(self, event=None):
-        self.dgroup = self.controller.get_group(self.grouplist.GetStringSelection())
+        self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.reset_data_history()
         self.plot_results()
 
