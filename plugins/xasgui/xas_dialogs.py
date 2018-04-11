@@ -129,7 +129,7 @@ class OverAbsorptionDialog(wx.Dialog):
         fname = self.wids['grouplist'].GetStringSelection()
         self.dgroup = self.controller.get_group(fname)
         self.set_default_elem_edge(self.dgroup)
-        wids['save_as_name'].SetValue(self.dgroup.filename + '_abscorr')
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_abscorr')
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -558,7 +558,7 @@ class RebinDataDialog(wx.Dialog):
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
-        wids['save_as_name'].SetValue(self.dgroup.filename + '_rebin')
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_rebin')
         self.plot_results()
 
     def on_rebin(self, event=None, name=None, value=None):
@@ -727,7 +727,7 @@ class SmoothDataDialog(wx.Dialog):
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
-        wids['save_as_name'].SetValue(self.dgroup.filename + '_smooth')
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_smooth')
         self.plot_results()
 
     def on_smooth(self, event=None, value=None):
@@ -793,6 +793,127 @@ class SmoothDataDialog(wx.Dialog):
                     ylabel=plotlabels.mu)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
+        ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+                     marker='o', markersize=4, linewidth=2.0,
+                     label='original', show_legend=True)
+        ppanel.canvas.draw()
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
+
+class DeconvolutionDialog(wx.Dialog):
+    """dialog for energy deconvolution"""
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
+
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 200),
+                           title="Deconvolve mu(E) Data")
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+
+        self.wids = wids = {}
+
+        wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
+                                action=self.on_groupchoice)
+
+        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetToolTip('select a new group, clear undo history')
+
+        deconv_ops  = ('Lorenztian', 'Gaussian')
+
+        wids['deconv_op'] = Choice(panel, choices=deconv_ops, size=(150, -1),
+                                   action=self.on_deconvolve)
+
+        wids['esigma'] = FloatSpin(panel, value=0.5, digits=2, size=(90, -1),
+                                   increment=0.1)
+        wids['esigma'].Bind(EVT_FLOATSPIN, self.on_deconvolve)
+
+
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+                               action=self.on_apply)
+        wids['apply'].SetToolTip('Save corrected data, overwrite current arrays')
+
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+                           action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save corrected data as new group')
+
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_deconv',
+                                           size=(250, -1))
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        add_text('Deconvolve Data for Group: ', newrow=False)
+        panel.Add(wids['grouplist'], dcol=5)
+
+        add_text('Functional Form: ')
+        panel.Add(wids['deconv_op'])
+
+        add_text(' sigma= ')
+        panel.Add(wids['esigma'])
+        panel.Add(wids['apply'], newrow=True)
+        panel.Add(wids['save_as'],  newrow=True)
+        panel.Add(wids['save_as_name'], dcol=5)
+        panel.pack()
+        self.plot_results()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat = self.data
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+        self.parent.nb_panels[0].process(ngroup)
+        self.parent.onNewGroup(ngroup)
+
+    def on_groupchoice(self, event=None):
+        self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_deconv')
+        self.plot_results()
+
+    def on_deconvolve(self, event=None, value=None):
+        deconv_form  = self.wids['deconv_op'].GetStringSelection()
+
+        esigma = self.wids['esigma'].GetValue()
+
+        dopts = [self.dgroup.groupname,
+                 "form='%s'" % (deconv_form),
+                 "esigma=%.4f" % (esigma)]
+        self.controller.larch.eval("xas_deconvolve(%s)" % (', '.join(dopts)))
+
+        self.data = self.dgroup.energy[:], self.dgroup.deconv[:]
+        self.plot_results()
+
+    def on_apply(self, event=None):
+        xdat, ydat = self.data
+        dgroup = self.dgroup
+        dgroup.energy = xdat
+        dgroup.mu     = ydat
+        self.parent.nb_panels[0].process(dgroup)
+        self.plot_results()
+
+    def plot_results(self):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        xnew, ynew = self.data
+        dgroup = self.dgroup
+        path, fname = os.path.split(dgroup.filename)
+
+        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+                    linewidth=3, title='Deconvolving:\n %s' % fname,
+                    label='deconvolved', xlabel=plotlabels.energy,
+                    ylabel=plotlabels.mu)
+
+        xold, yold = self.dgroup.energy, self.dgroup.norm
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
                      label='original', show_legend=True)
@@ -928,7 +1049,7 @@ clear undo history''')
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
-        wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
+        self.wids['save_as_name'].SetValue(self.dgroup.filename + '_clean')
         self.reset_data_history()
         self.plot_results()
 
