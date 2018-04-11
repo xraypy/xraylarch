@@ -48,7 +48,7 @@ from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
                                   RemoveDialog, DeglitchDialog,
                                   RebinDataDialog, EnergyCalibrateDialog,
                                   SmoothDataDialog, OverAbsorptionDialog,
-                                  QuitDialog)
+                                  DeconvolutionDialog, QuitDialog)
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
                               gsescan_group, fix_varname, groups2csv,
@@ -593,6 +593,9 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Rebin Data", "Rebin Data",
                  self.onRebinData)
 
+        MenuItem(self, data_menu, "Deconvolve Data",
+                 "Deconvolution of Data",  self.onDeconvolveData)
+
         MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
@@ -785,6 +788,9 @@ class XASFrame(wx.Frame):
 
     def onEnergyCalibrateData(self, event=None):
         EnergyCalibrateDialog(self, self.controller).Show()
+
+    def onDeconvolveData(self, event=None):
+        DeconvolutionDialog(self, self.controller).Show()
 
     def onConfigDataFitting(self, event=None):
         pass

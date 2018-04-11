@@ -30,17 +30,13 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-DECONV_OPS = ('None', 'Lorenztian', 'Gaussian')
-
 PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
                                ('Derivative', 'dmude'),
                                ('Normalized + Derivative', 'norm+deriv'),
                                ('Flattened', 'flat'),
                                ('Pre-edge subtracted', 'preedge'),
-                               ('Raw Data + Pre-edge/Post-edge', 'prelines'),
-                               ('Deconvolved + Normalized', 'deconv+norm'),
-                               ('Deconvolved', 'deconv')))
+                               ('Raw Data + Pre-edge/Post-edge', 'prelines')))
 
 PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
                                ('Normalized', 'norm'),
@@ -59,8 +55,7 @@ def default_xasnorm_config():
     return dict(e0=0, edge_step=None, pre1=-200, pre2=-25, nnorm=2, norm1=25,
                 norm2=-10, nvict=1, auto_step=True, auto_e0=True,
                 show_e0=True, plotone_op='Normalized',
-                plotsel_op='Normalized', deconv_form='none',
-                deconv_ewid=0.5)
+                plotsel_op='Normalized')
 
 
 class XASNormPanel(TaskPanel):
@@ -91,11 +86,6 @@ class XASNormPanel(TaskPanel):
         self.btns = {}
 
         opts = dict(action=self.onReprocess)
-
-        self.deconv_ewid = FloatCtrl(xas, value=0.5, precision=2,
-                                     minval=0, size=(50, -1), **opts)
-
-        self.deconv_form = Choice(xas, choices=DECONV_OPS, size=(100, -1), **opts)
 
         e0opts_panel = wx.Panel(xas)
         self.xas_autoe0 = Check(e0opts_panel, default=True, label='auto?', **opts)
@@ -185,12 +175,6 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.xas_nnor)
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
-        xas.Add(SimpleText(xas, ' Deconvolution:'), newrow=True)
-        xas.Add(self.deconv_form, dcol=5)
-        xas.Add(SimpleText(xas, 'Energy width:'))
-        xas.Add(self.deconv_ewid)
-        xas.Add(CopyBtn('deconv'), style=RCEN)
-
         xas.Add(saveconf, dcol=6, newrow=True)
         xas.pack()
 
@@ -218,8 +202,7 @@ class XASNormPanel(TaskPanel):
         widlist = (self.xas_e0, self.xas_step, self.xas_pre1,
                    self.xas_pre2, self.xas_nor1, self.xas_nor2,
                    self.xas_vict, self.xas_nnor, self.xas_showe0,
-                   self.xas_autoe0, self.xas_autostep,
-                   self.deconv_form, self.deconv_ewid)
+                   self.xas_autoe0, self.xas_autostep)
 
         if dgroup.datatype == 'xas':
             for k in widlist:
@@ -241,8 +224,6 @@ class XASNormPanel(TaskPanel):
             self.xas_showe0.SetValue(opts['show_e0'])
             self.xas_autoe0.SetValue(opts['auto_e0'])
             self.xas_autostep.SetValue(opts['auto_step'])
-            self.deconv_form.SetStringSelection(opts['deconv_form'])
-            self.deconv_ewid.SetValue(opts['deconv_ewid'])
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
@@ -273,8 +254,6 @@ class XASNormPanel(TaskPanel):
         form_opts['auto_e0'] = self.xas_autoe0.IsChecked()
         form_opts['auto_step'] = self.xas_autostep.IsChecked()
 
-        form_opts['deconv_form'] = self.deconv_form.GetStringSelection()
-        form_opts['deconv_ewid'] = self.deconv_ewid.GetValue()
         return form_opts
 
     def onPlotOne(self, evt=None):
@@ -334,8 +313,6 @@ class XASNormPanel(TaskPanel):
             copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'xas_norm':
             copy_attrs('nnorm', 'norm1', 'norm2')
-        elif name == 'deconv':
-            copy_attrs('deconv_form', 'deconv_ewid')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -388,7 +365,7 @@ class XASNormPanel(TaskPanel):
             print(" unknown selection point ", opt)
 
     def process(self, dgroup, **kws):
-        """ handle process (pre-edge/normalize, deconvolve) of XAS data from XAS form
+        """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
         if self.skip_process:
             return
@@ -446,16 +423,6 @@ class XASNormPanel(TaskPanel):
         self.xas_nor1.SetValue(dgroup.pre_edge_details.norm1)
         self.xas_nor2.SetValue(dgroup.pre_edge_details.norm2)
 
-        # deconvolution
-        deconv_form = form['deconv_form'].lower()
-        deconv_ewid = float(form['deconv_ewid'])
-        if not deconv_form.startswith('none') and deconv_ewid > 1.e-3:
-            dopts = [dgroup.groupname,
-                     "form='%s'" % (deconv_form),
-                     "esigma=%.4f" % (deconv_ewid)]
-            self.larch_eval("xas_deconvolve(%s)" % (', '.join(dopts)))
-
-
         for attr in ('e0', 'edge_step'):
             dgroup.xasnorm_config[attr] = getattr(dgroup, attr)
 
@@ -510,16 +477,6 @@ class XASNormPanel(TaskPanel):
                                    ('dmude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
-        elif pchoice == 'deconv' and hasattr(dgroup, 'deconv'):
-            lab = plotlabels.deconv
-            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab)]
-
-        elif pchoice == 'deconv+norm' and hasattr(dgroup, 'deconv'):
-            lab1 = plotlabels.norm
-            lab2 = plotlabels.deconv
-            dgroup.plot_yarrays = [('deconv', PLOTOPTS_1, lab2),
-                                   ('norm', PLOTOPTS_1, lab1)]
-            lab = lab1 + ' + ' + lab2
 
         dgroup.plot_ylabel = lab
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
