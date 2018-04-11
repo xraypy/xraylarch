@@ -1883,12 +1883,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            (a,b,c,d) = imd.panel.get_viewlimits()
-            try:
-                if (d,b) == area.shape:
-                    imd.panel.add_highlight_area(area.value, label=label)
-            except:
-                pass
+            h, w = self.owner.current_file.get_shape()
+            highlight = np.zeros((w, h))
+            highlight[np.where(area.value)] = 1
+            imd.panel.add_highlight_area(highlight, label=label)
 
     def onDelete(self, event=None):
         aname = self._getarea()
