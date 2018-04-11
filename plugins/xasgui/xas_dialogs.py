@@ -114,7 +114,7 @@ class OverAbsorptionDialog(wx.Dialog):
         panel.Add(wids['phi_out'])
 
         panel.Add(wids['correct'], newrow=True)
-        panel.Add(wids['apply'], dcol=2)
+        panel.Add(wids['apply'], dcol=2, newrow=True)
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
@@ -247,7 +247,7 @@ class EnergyCalibrateDialog(wx.Dialog):
                            action=self.on_apply_one)
         apply_one.SetToolTip('Save rebinned data, overwrite current arrays')
 
-        apply_sel = Button(panel, 'Apply Sshift to Selected Groups',
+        apply_sel = Button(panel, 'Apply Shift to Selected Groups',
                            size=(250, -1),  action=self.on_apply_sel)
         apply_sel.SetToolTip('''Apply the Energy Shift to all Selected Groups,
 overwriting current arrays''')
@@ -259,7 +259,6 @@ overwriting current arrays''')
         wids['save_as_name'] = wx.TextCtrl(panel, -1,
                                            self.dgroup.filename + '_eshift',
                                            size=(250, -1))
-
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -455,13 +454,13 @@ class RebinDataDialog(wx.Dialog):
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
-        title = "Rebin mu(E) Data"
 
-        self.wids = wids = {}
-
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250), title=title)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250),
+                           title="Rebin mu(E) Data")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+
+        self.wids = wids = {}
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
@@ -491,48 +490,75 @@ class RebinDataDialog(wx.Dialog):
             if wname != 'grouplist':
                 wid.SetAction(partial(self.on_rebin, name=wname))
 
-        apply = Button(panel, 'Save Arrays for this Group', size=(200, -1),
-                      action=self.on_apply)
-        apply.SetToolTip('Save rebinned data, overwrite current arrays')
 
-        panel.Add(SimpleText(panel, 'Rebin Data for Group: '), dcol=2)
+        wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
+                               action=self.on_apply)
+        wids['apply'].SetToolTip('Save rebinned data, overwrite current arrays')
+
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+                                 action=self.on_saveas)
+        wids['save_as'].SetToolTip('Save corrected data as new group')
+
+        wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin',
+                                           size=(250, -1))
+
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        add_text('Rebin Data for Group: ', dcol=2, newrow=False)
         panel.Add(wids['grouplist'], dcol=3)
 
-        panel.Add(SimpleText(panel, 'E0: '), newrow=True)
+        add_text('E0: ')
         panel.Add(wids['e0'])
-        panel.Add(SimpleText(panel, ' eV'))
+        add_text(' eV', newrow=False)
 
-        panel.Add(SimpleText(panel, 'Region '), newrow=True)
-        panel.Add(SimpleText(panel, 'Start '))
-        panel.Add(SimpleText(panel, 'Stop '))
-        panel.Add(SimpleText(panel, 'Step '))
-        panel.Add(SimpleText(panel, 'Units '))
+        add_text('Region ')
+        add_text('Start ', newrow=False)
+        add_text('Stop ', newrow=False)
+        add_text('Step ', newrow=False)
+        add_text('Units ', newrow=False)
 
-        panel.Add(SimpleText(panel, 'Pre-Edge: '), newrow=True)
+        add_text('Pre-Edge: ')
         panel.Add(wids['pre1'])
         panel.Add(wids['pre2'])
         panel.Add(wids['pre_step'])
-        panel.Add(SimpleText(panel, ' eV'))
+        add_text(' eV', newrow=False)
 
-        panel.Add(SimpleText(panel, 'XANES: '), newrow=True)
+        add_text('XANES: ')
         panel.Add(wids['xanes1'])
         panel.Add(wids['xanes2'])
         panel.Add(wids['xanes_step'])
-        panel.Add(SimpleText(panel, ' eV'))
+        add_text(' eV', newrow=False)
 
-        panel.Add(SimpleText(panel, 'EXAFS: '), newrow=True)
+        add_text('EXAFS: ')
         panel.Add(wids['exafs1'])
         panel.Add(wids['exafs2'])
         panel.Add(wids['exafs_step'])
-        panel.Add(SimpleText(panel, u'1/\u212B'))
+        add_text(u'1/\u212B', newrow=False)
 
-        panel.Add(apply, dcol=4, newrow=True)
-
+        panel.Add(wids['apply'], dcol=2, newrow=True)
+        panel.Add(wids['save_as'],  dcol=2, newrow=True)
+        panel.Add(wids['save_as_name'], dcol=3)
         panel.pack()
+
         self.plot_results()
+
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat = self.data
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+        self.parent.nb_panels[0].process(ngroup)
+        self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        wids['save_as_name'].SetValue(self.dgroup.filename + '_rebin')
         self.plot_results()
 
     def on_rebin(self, event=None, name=None, value=None):
@@ -778,7 +804,6 @@ class SmoothDataDialog(wx.Dialog):
 class DeglitchDialog(wx.Dialog):
     """dialog for deglitching or removing unsightly data points"""
     def __init__(self, parent, controller, **kws):
-
         self.parent = parent
         self.controller = controller
         self.dgroup = self.controller.get_group()
@@ -952,7 +977,6 @@ clear undo history''')
         self.reset_data_history()
         self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
-
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
