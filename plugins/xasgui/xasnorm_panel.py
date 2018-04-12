@@ -236,7 +236,7 @@ class XASNormPanel(TaskPanel):
         self.process(dgroup)
 
     def read_form(self):
-        "read for, returning dict of values"
+        "read form, return dict of values"
         form_opts = {}
         form_opts['e0'] = self.xas_e0.GetValue()
         form_opts['edge_step'] = self.xas_step.GetValue()
