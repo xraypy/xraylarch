@@ -1884,7 +1884,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
             h, w = self.owner.current_file.get_shape()
-            highlight = np.zeros((w, h))
+            highlight = np.zeros((h, w))
+            # print("Area:  file shape: width, height = ", w, h)
+            # print("Area:  area shape ", area.value.shape)
             highlight[np.where(area.value)] = 1
             imd.panel.add_highlight_area(highlight, label=label)
 
@@ -2198,8 +2200,11 @@ class MapViewerFrame(wx.Frame):
             else:
                 ym, xm = mask.shape
                 tmask = np.zeros((ny, nx)).astype(bool)
+                xmax = min(nx, xm+xoff)
+                # print("lassoHandler " , ny, nx, ym, xm, xoff, yoff, xmax)
                 for iy in range(ym):
-                    tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
+                    if iy+yoff < ny:
+                        tmask[iy+yoff, xoff:xmax] = mask[iy]
                 mask = tmask
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomo)
@@ -2936,7 +2941,6 @@ class MapViewerFrame(wx.Frame):
             self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
-
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
