@@ -77,19 +77,19 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = True
 
         wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
-                                    action=self.onPlotOne, size=(200, -1))
+                                    action=self.onPlot, size=(200, -1))
         wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
                                     action=self.onPlotSel, size=(200, -1))
 
         wids['plot_kweight'] = Choice(panel, choices=KWLIST,
-                                      action=self.onPlotOne, size=(100, -1))
+                                      action=self.onPlot, size=(100, -1))
 
 
         wids['plotone_op'].SetSelection(0)
         wids['plotsel_op'].SetSelection(0)
 
         plot_one = Button(panel, 'Plot This Group', size=(150, -1),
-                          action=self.onPlotOne)
+                          action=self.onPlot)
 
         plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
@@ -319,7 +319,7 @@ class EXAFSPanel(TaskPanel):
         if tpars != self.last_process_pars:
             self.controller.larch.eval(autobk_cmd.format(**form))
             self.controller.larch.eval(xftf_cmd.format(**form))
-            self.onPlotOne()
+            self.onPlot()
 
         self.last_process_pars = tpars
         self.skip_process = False
@@ -327,36 +327,23 @@ class EXAFSPanel(TaskPanel):
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
 
-    def onPlotOne(self, evt=None):
+    def onPlot(self, evt=None):
         form = self.read_form()
         plotchoice = form['plotone_op'].lower()
-        form['title'] = self.dgroup.filename
-        cmd = None
+        form['title'] = '"%s"' % self.dgroup.filename
+        form['show_win'] = 'True' if 'window' in plotchoice else 'False'
+        form['show_mag'] = 'True' if '|chi(r)|' in plotchoice else 'False'
+        form['show_re'] = 'True' if 're[chi(r' in plotchoice else 'False'
+
+        cmd = "plot_chik({group:s}, kweight={plot_kweight: d}, show_window={show_win:s}"
         if plotchoice.startswith('mu'):
             cmd = "plot_bkg({group:s}"
-        elif plotchoice.startswith('chi(k)'):
-            cmd = "plot_chik({group:s}, kweight={plot_kweight: d}"
-            if 'window' in plotchoice.lower():
-                cmd = cmd + ', show_window=True'
-            else:
-                cmd = cmd + ', show_window=False'
-
         elif 'chi(r)' in plotchoice:
-            cmd = "plot_chir({group:s}"
-            if plotchoice.startswith('|'):
-                cmd = cmd  + ', show_mag=True'
-            if 're[' in plotchoice:
-                cmd = cmd  + ', show_real=True'
+            cmd = "plot_chir({group:s}, show_mag={show_mag:s}, show_real={show_re:s}"
 
-        if cmd is not None:
-            cmd = cmd + ', title="{title:s}")'
-            self.controller.larch.eval(cmd.format(**form))
+        cmd = cmd + ', title={title:s})'
+        self.controller.larch.eval(cmd.format(**form))
 
     def onPlotSel(self, evt=None):
         newplot = True
         pass
-
-    def plot(self, dgroup, title=None, plot_yarrays=None, delay_draw=False,
-             new=True, zoom_out=True, with_extras=True, **kws):
-
-        print("plot ", dgroup)
