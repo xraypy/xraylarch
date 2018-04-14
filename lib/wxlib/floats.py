@@ -5,6 +5,9 @@ Code for floating point controls
 import sys
 from functools import partial
 import wx
+from wx.lib.agw import floatspin as fspin
+
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 HAS_NUMPY = False
 try:
@@ -286,6 +289,23 @@ class FloatCtrl(wx.TextCtrl):
         self.SetForegroundColour(fgcol)
         self.SetBackgroundColour(bgcol)
         self.Refresh()
+
+
+def FloatSpin(parent, value=0, action=None, tooltip=None,
+                 size=(100, -1), digits=1, increment=1, **kws):
+    """FloatSpin with action and tooltip"""
+    if value is None:
+        value = 0
+    fs = fspin.FloatSpin(parent, -1, size=size, value=value,
+                         digits=digits, increment=increment, **kws)
+    if action is not None:
+        fs.Bind(fspin.EVT_FLOATSPIN, action)
+    if tooltip is not None:
+        if is_wxPhoenix:
+            fs.SetToolTip(tooltip)
+        else:
+            fs.SetToolTipString(tooltip)
+    return fs
 
 class NumericCombo(wx.ComboBox):
     """
