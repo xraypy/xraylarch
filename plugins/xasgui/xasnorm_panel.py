@@ -14,7 +14,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      GridPanel, CEN, RCEN, LCEN, Font)
 
 from larch.utils import index_of
-from larch.wxlib import BitmapButton, FloatCtrl
+from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xasgui.taskpanel import TaskPanel
@@ -60,9 +60,9 @@ def default_xasnorm_config():
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
-    configname = 'xasnorm_config'
     def __init__(self, parent, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller, **kws)
+        TaskPanel.__init__(self, parent, controller,
+                           configname='xasnorm_config', **kws)
 
     def build_display(self):
         self.SetFont(Font(10))
@@ -109,17 +109,16 @@ class XASNormPanel(TaskPanel):
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(1)
 
-        opts.update({'size': (75, -1), 'precision': 1})
+        opts.update({'size': (75, -1), 'digits': 2, 'increment': 1})
 
-        self.xas_pre1 = FloatCtrl(xas, value=-np.inf, **opts)
-        self.xas_pre2 = FloatCtrl(xas, value=-30, **opts)
-        self.xas_nor1 = FloatCtrl(xas, value=50, **opts)
-        self.xas_nor2 = FloatCtrl(xas, value=np.inf, **opts)
+        self.xas_pre1 = FloatSpin(xas, value=-1000, **opts)
+        self.xas_pre2 = FloatSpin(xas, value=-30, **opts)
+        self.xas_nor1 = FloatSpin(xas, value=50, **opts)
+        self.xas_nor2 = FloatSpin(xas, value=5000, **opts)
 
-        opts = {'size': (75, -1), 'gformat': True}
-        self.xas_e0 = FloatCtrl(xas, value=0, action=self.onSet_XASE0, **opts)
-        self.xas_step = FloatCtrl(xas, value=0, action=self.onSet_XASStep, **opts)
-
+        opts = {'size': (75, -1), 'digits': 4, 'increment': 0.1, 'value': 0}
+        self.xas_e0   = FloatSpin(xas, action=self.onSet_XASE0, **opts)
+        self.xas_step = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -214,7 +213,15 @@ class XASNormPanel(TaskPanel):
             self.plotone_op.SetStringSelection(opts['plotone_op'])
             self.plotsel_op.SetStringSelection(opts['plotsel_op'])
             self.xas_e0.SetValue(opts['e0'])
-            self.xas_step.SetValue(opts['edge_step'])
+            edge_step = opts.get('edge_step', None)
+            if edge_step is None:
+                edge_step = 1
+
+            ndigits = int(2 - round(np.log10(abs(edge_step))))
+            self.xas_step.SetDigits(ndigits+1)
+            self.xas_step.SetIncrement(0.5*10**(-ndigits))
+            self.xas_step.SetValue(edge_step)
+
             self.xas_pre1.SetValue(opts['pre1'])
             self.xas_pre2.SetValue(opts['pre2'])
             self.xas_nor1.SetValue(opts['norm1'])
@@ -414,9 +421,9 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
 
         if form['auto_e0']:
-            self.xas_e0.SetValue(dgroup.e0, act=False)
+            self.xas_e0.SetValue(dgroup.e0) # , act=False)
         if form['auto_step']:
-            self.xas_step.SetValue(dgroup.edge_step, act=False)
+            self.xas_step.SetValue(dgroup.edge_step) # , act=False)
 
         self.xas_pre1.SetValue(dgroup.pre_edge_details.pre1)
         self.xas_pre2.SetValue(dgroup.pre_edge_details.pre2)
