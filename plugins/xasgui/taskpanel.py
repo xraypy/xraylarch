@@ -40,16 +40,16 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
     meant to be subclassed
-
     """
-    title = 'generic panel'
-    configname = 'generic_config'
-
-    def __init__(self, parent, controller, **kws):
+    def __init__(self, parent, controller, configname='task_config',
+                 title='Generic Panel', **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
+        self.title = title
+        self.configname = configname
+
         self.wids = {}
         self.btns = {}
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)

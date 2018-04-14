@@ -41,11 +41,13 @@ PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
 
 class LASSOPanel(TaskPanel):
     """LASSO Panel"""
-    title = 'LASSO / Partial Least Squares Analysis'
-    configname = 'lasso_config'
+
 
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller, **kws)
+        TaskPanel.__init__(self, parent, controller,
+                           configname='lasso_config',
+                           title='LASSO / Partial Least Squares Analysis',
+                           **kws)
 
     def process(self, dgroup, **kws):
         """ handle LASSO processing"""

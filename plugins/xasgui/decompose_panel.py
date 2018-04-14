@@ -41,11 +41,12 @@ PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
 
 class PCAPanel(TaskPanel):
     """PCA Panel"""
-    title = 'Principal Component / Non-negative Factor Analysis'
-    configname = 'pca_config'
 
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller, **kws)
+        TaskPanel.__init__(self, parent, controller,
+                           configname='pca_config',
+                           title='Principal Component / Non-negative Factor Analysis',
+                           **kws)
 
     def process(self, dgroup, **kws):
         """ handle PCA processing"""

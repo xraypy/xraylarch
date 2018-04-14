@@ -41,11 +41,11 @@ PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
-    title = 'Linear Combination Analysis'
-    configname = 'linearcombo_config'
-
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller, **kws)
+        TaskPanel.__init__(self, parent, controller,
+                           configname='linearcombo_config',
+                           title='Linear Combination Analysis',
+                           **kws)
 
     def process(self, dgroup, **kws):
         """ handle linear combo processing"""
