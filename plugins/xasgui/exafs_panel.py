@@ -10,13 +10,11 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
-
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     GridPanel, CEN, RCEN, LCEN, Font)
+                      CEN, RCEN, LCEN, Font)
 
 from larch.utils import index_of
-from larch.wxlib import BitmapButton, FloatCtrl
+from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xasgui.taskpanel import TaskPanel
@@ -47,7 +45,7 @@ autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, e0={e0: .4f},
       clamp_lo={bkg_clamplo: .1f}, clamp_hi={bkg_clamphi: .1f})"""
 
 xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
-      kweight={fft_kweight: .3f}, dk={fft_dk: .3f}, window={kwindow:s})"""
+      kweight={fft_kweight: .3f}, dk={fft_dk: .3f}, window='{kwindow:s}')"""
 
 
 def default_exafs_config():
@@ -59,11 +57,9 @@ def default_exafs_config():
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
-    title = 'EXAFS panel'
-    configname = 'exafs_config'
-
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller, **kws)
+        TaskPanel.__init__(self, parent, controller,
+                           configname='exafs_config', **kws)
         self.skip_process = False
         self.last_process_pars = None
 
@@ -101,37 +97,32 @@ class EXAFSPanel(TaskPanel):
             return Button(panel, 'Copy', size=(50, -1),
                           action=partial(self.onCopyParam, name))
 
-        opts = dict(size=(90, -1), digits=2, increment=0.1)
-        wids['e0'] = FloatSpin(panel, -1, **opts)
+        opts = dict(size=(90, -1), digits=2, increment=0.1,
+                    action=self.process)
+        wids['e0'] = FloatSpin(panel, **opts)
 
         opts['size'] = (90, -1)
-        wids['rbkg'] = FloatSpin(panel, -1, value=1.0,
+        wids['rbkg'] = FloatSpin(panel, value=1.0,
                                  min_val=0, max_val=25, **opts)
-        wids['bkg_kmin'] = FloatSpin(panel, -1, value=0,
-                                 min_val=0, max_val=125, **opts)
+        wids['bkg_kmin'] = FloatSpin(panel,  value=0,
+                                     min_val=0, max_val=125, **opts)
 
-        wids['bkg_kmax'] = FloatSpin(panel, -1, min_val=0, max_val=125, **opts)
+        wids['bkg_kmax'] = FloatSpin(panel, min_val=0, max_val=125, **opts)
 
-        wids['fft_kmin'] = FloatSpin(panel, -1, value=0,
-                                 min_val=0, max_val=125, **opts)
+        wids['fft_kmin'] = FloatSpin(panel, value=0,
+                                     min_val=0, max_val=125, **opts)
 
-        wids['fft_kmax'] = FloatSpin(panel, -1, min_val=0, max_val=125, **opts)
+        wids['fft_kmax'] = FloatSpin(panel, min_val=0, max_val=125, **opts)
 
-        wids['fft_dk'] = FloatSpin(panel, -1, value=3,
-                                 min_val=0, max_val=125, **opts)
+        wids['fft_dk'] = FloatSpin(panel, value=3,
+                                   min_val=0, max_val=125, **opts)
 
         opts['increment'] = opts['digits'] = 1
-        wids['bkg_kweight'] = FloatSpin(panel, -1, value=1,
-                                 min_val=0, max_val=8, **opts)
+        wids['bkg_kweight'] = FloatSpin(panel, value=1,
+                                        min_val=0, max_val=8, **opts)
 
-        wids['fft_kweight'] = FloatSpin(panel, -1, value=1,
-                                 min_val=0, max_val=8, **opts)
-
-        for name in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight'):
-            wids[name].Bind(EVT_FLOATSPIN, self.process)
-
-        for name in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kweight'):
-            wids[name].Bind(EVT_FLOATSPIN, self.process)
+        wids['fft_kweight'] = FloatSpin(panel, value=1,
+                                        min_val=0, max_val=8, **opts)
 
         for name in ('bkg_kmin', 'bkg_kmax', 'fft_kmin', 'fft_kmax'):
             bb = BitmapButton(panel, get_icon('plus'),
