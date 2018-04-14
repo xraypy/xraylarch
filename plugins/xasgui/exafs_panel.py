@@ -246,8 +246,11 @@ class EXAFSPanel(TaskPanel):
 
             if val is None:
                 val = opts.get(attr, -1)
-                if 'kmax' in attr:
+                if attr == 'bkg_kmax':
                     val = 0.25 + etok(max(dgroup.energy) - dgroup.e0)
+                elif attr == 'fft_kmax':
+                    val = -1.0 + etok(max(dgroup.energy) - dgroup.e0)
+
             wids[attr].SetValue(val)
 
         for attr in ('bkg_clamplo', 'bkg_clamphi', 'plot_kweight'):
