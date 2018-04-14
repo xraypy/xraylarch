@@ -247,7 +247,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
 @ValidateLarchPlugin
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
-              label=None, title=None, new=True, win=1, _larch=None):
+              scale_window=True, label=None, title=None, new=True,
+              win=1, _larch=None):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
               new=True, win=1)
@@ -260,6 +261,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      kweight      k-weighting for plot [read from last xftf(), or 0]
      kmax         max k to show [None, end of data]
      show_window  bool whether to also plot k-window [True]
+     scale_window bool whether to scale k-window to max |chi(k)| [True]
      label        string for label [``None`` to use 'chi']
      title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
@@ -286,7 +288,10 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
     if show_window and hasattr(dgroup, 'kwin'):
-        _plot(dgroup.k, dgroup.kwin, zorder=12, label='window', **opts)
+        kwin = dgroup.kwin
+        if scale_window:
+            kwin = kwin*max(abs(chi))
+        _plot(dgroup.k, kwin, zorder=12, label='window',  **opts)
     #endif
 #enddef
 
