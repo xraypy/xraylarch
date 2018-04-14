@@ -34,7 +34,7 @@ from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
-                         FloatCtrl, SetTip)
+                         FloatCtrl, FloatSpin, SetTip)
 
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
@@ -212,8 +212,9 @@ class FitResultFrame(wx.Frame):
         self.wids['all_correl'] = Button(panel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
 
-        self.wids['min_correl'] = FloatCtrl(panel, value=MIN_CORREL,
-                                            minval=0, size=(60, -1), gformat=True)
+        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
+                                            min_val=0, size=(60, -1),
+                                            digits=3, increment=0.1)
 
         ctitle = SimpleText(panel, 'minimum correlation: ')
         sizer.Add(title,  (irow, 0), (1, 1), LCEN)
@@ -431,13 +432,13 @@ class PrePeakPanel(wx.Panel):
                               tooltip='use last point selected from plot')
             self.btns[name] = bb
 
-        opts = dict(size=(75, -1), gformat=True, precision=1)
+        opts = dict(size=(75, -1), digits=1, increment=0.1)
 
-        self.ppeak_e0   = FloatCtrl(pan, value=0, **opts)
-        self.ppeak_emin = FloatCtrl(pan, value=-30, **opts)
-        self.ppeak_emax = FloatCtrl(pan, value=0, **opts)
-        self.ppeak_elo = FloatCtrl(pan, value=-15, **opts)
-        self.ppeak_ehi = FloatCtrl(pan, value=-5, **opts)
+        self.ppeak_e0   = FloatSpin(pan, value=0, **opts)
+        self.ppeak_emin = FloatSpin(pan, value=-30, **opts)
+        self.ppeak_emax = FloatSpin(pan, value=0, **opts)
+        self.ppeak_elo = FloatSpin(pan, value=-15, **opts)
+        self.ppeak_ehi = FloatSpin(pan, value=-5, **opts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, 25))
@@ -859,7 +860,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
             minst = mclass(prefix=prefix)
 
-        panel = GridPanel(self.mod_nb, ncols=1, nrows=1, pad=1, itemstyle=CEN)
+        panel = GridPanel(self.mod_nb, ncols=2, nrows=5, pad=2, itemstyle=CEN)
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
