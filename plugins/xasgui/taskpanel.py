@@ -139,4 +139,4 @@ class TaskPanel(wx.Panel):
             return
 
         if opt in self.wids:
-            self.wids[opts].SetValue(xval)
+            self.wids[opt].SetValue(xval)
