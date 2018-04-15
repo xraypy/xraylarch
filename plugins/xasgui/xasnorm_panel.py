@@ -109,7 +109,7 @@ class XASNormPanel(TaskPanel):
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(1)
 
-        opts.update({'size': (75, -1), 'digits': 2, 'increment': 1})
+        opts.update({'size': (75, -1), 'digits': 2, 'increment': 5.0})
 
         self.xas_pre1 = FloatSpin(xas, value=-1000, **opts)
         self.xas_pre2 = FloatSpin(xas, value=-30, **opts)
@@ -215,11 +215,11 @@ class XASNormPanel(TaskPanel):
             self.xas_e0.SetValue(opts['e0'])
             edge_step = opts.get('edge_step', None)
             if edge_step is None:
-                edge_step = 1
+                edge_step = 1.0
 
             ndigits = int(2 - round(np.log10(abs(edge_step))))
             self.xas_step.SetDigits(ndigits+1)
-            self.xas_step.SetIncrement(0.5*10**(-ndigits))
+            self.xas_step.SetIncrement(0.2*10**(-ndigits))
             self.xas_step.SetValue(edge_step)
 
             self.xas_pre1.SetValue(opts['pre1'])
