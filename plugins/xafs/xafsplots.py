@@ -7,6 +7,7 @@ Plotting macros for XAFS data sets and fits
   plot_mu()        mu(E) for XAFS data group in various forms
   plot_bkg()       mu(E) and background mu0(E) for XAFS data group
   plot_chik()      chi(k) for XAFS data group
+  plot_chie()      chi(E) for XAFS data group
   plot_chir()      chi(R) for XAFS data group
   plot_chifit()    chi(k) and chi(R) for fit to feffit dataset
   plot_path_k()    chi(k) for a single path of a feffit dataset
@@ -52,6 +53,7 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    flat    = r'flattened $\mu(E)$',
                    deconv  = r'deconvolved $\mu(E)$',
                    dmude   = r'$d\mu(E)/dE$',
+                   chie    = r'$\chi(E)$',
                    chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
                    chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
                    chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
@@ -242,6 +244,53 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
                       color=plotlabels.e0color, win=win, _larch=_larch)
         _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
     #endif
+#enddef
+
+
+@ValidateLarchPlugin
+def plot_chie(dgroup, emin=0, emax=None,
+             label=None, title=None, new=True, win=1, _larch=None):
+    """
+    plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
+
+    Plot chi(E) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup   group of XAFS data after autobk() results (see Note 1)
+     emin     min energy to show, relative to E0 [0]
+     emax     max energy to show, relative to E0 [None, end of data]
+     label    string for label [``None``: 'mu']
+     title    string for plot titlel [None, may use filename if available]
+     new      bool whether to start a new plot [True]
+     win      integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         energy, mu, bkg, norm, e0, pre_edge, edge_step, filename
+    """
+    if hasattr(dgroup, 'mu'):
+        mu = dgroup.mu
+    elif  hasattr(dgroup, 'mutrans'):
+        mu = dgroup.mutrans
+    else:
+        raise ValueError("XAFS data group has no array for mu")
+    #endif
+
+    chie = mu - dgroup.bkg
+    xmin = dgroup.e0
+    if emin is not None:
+        xmin = dgroup.e0 + emin
+    if emax is not None:
+        xmax = dgroup.e0 + emax
+
+    title = _get_title(dgroup, title=title)
+
+    opts = dict(win=win, show_legend=True, linewidth=3, _larch=_larch)
+    _plot(dgroup.energy, chie, xlabel=plotlabels.energy, ylabel=lpotlabels.chie,
+         title=title, label=label, zorder=20, new=new, xmin=xmin, xmax=xmax,
+         **opts)
 #enddef
 
 
