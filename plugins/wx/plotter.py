@@ -154,7 +154,7 @@ class PlotDisplay(PlotFrame):
         hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
-        self.cursor_hist.insert(0, (x, y))
+        self.cursor_hist.insert(0, (x, y, time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
@@ -205,7 +205,7 @@ class StackedPlotDisplay(StackedPlotFrame):
         hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
-        self.cursor_hist.insert(0, (x, y))
+        self.cursor_hist.insert(0, (x, y, time.time()))
         if len(self.cursor_hist) > hmax:
             self.cursor_hist = self.cursor_hist[:hmax]
         symtable.set_symbol('%s_cursor_hist' % self.symname, self.cursor_hist)
