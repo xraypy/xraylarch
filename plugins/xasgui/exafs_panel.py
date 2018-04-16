@@ -63,6 +63,8 @@ def default_exafs_config():
 
 ## plotone_op='chi(k)', plotsel_op='chi(k)')
 
+
+
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
@@ -83,16 +85,21 @@ class EXAFSPanel(TaskPanel):
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
 
-        def CopyBtn(name):
-            return Button(panel, 'Copy', size=(50, -1),
-                          action=partial(self.onCopyParam, name))
+        def FloatSpinWithPin(name, value, **kws):
+            s = wx.BoxSizer(wx.HORIZONTAL)
+            self.wids[name] = FloatSpin(panel, value=value, **kws)
+            bb = BitmapButton(panel, get_icon('pin'), size=(25, 25),
+                              action=partial(self.onSelPoint, opt=name),
+                              tooltip='use last point selected from plot')
+            s.Add(wids[name])
+            s.Add(bb)
+            return s
 
-
-        for space, label in (('e', 'Energy'), ('k', 'K space'),
-                             ('r', 'R space')): # , ('w', 'Wavelet')):
+        for space, label in (('e', 'Energy'), ('k', 'K space'), ('r', 'R space')):
             cname = 'plotopts_%s' % space
             oname = 'plotone_%s' % space
             sname = 'plotsel_%s' % space
+            fname = 'plotoff_%s' % space
 
             actone = partial(self.onPlot, selected=False)
             actsel = partial(self.onPlot, selected=True)
@@ -102,51 +109,47 @@ class EXAFSPanel(TaskPanel):
                                      size=(100, -1), action=actone)
             wids[oname] = ToggleButton(panel, label, size=(100, -1), action=actone)
             wids[sname] = ToggleButton(panel, label, size=(100, -1), action=actsel)
+            wids[fname] = FloatSpin(panel, value=0, digits=2, action=self.onPlot,
+                                    increment=0.25, size=(100, -1))
+
             # if space != 'w':
 
         wids['plot_kweight'] = FloatSpin(panel, value=2,
-                                         action=self.onPlot, size=(90, -1),
+                                         action=self.onPlot, size=(100, -1),
                                          min_val=0, max_val=4, digits=0,
                                          increment=1)
 
 
-        opts = dict(size=(90, -1), digits=2, increment=0.1,
+        opts = dict(size=(100, -1), digits=2, increment=0.1, min_val=0,
                     action=self.process)
         wids['e0'] = FloatSpin(panel, **opts)
 
-        wids['rbkg'] = FloatSpin(panel, value=1.0,
-                                 min_val=0, max_val=25, **opts)
-        wids['bkg_kmin'] = FloatSpin(panel,  value=0,
-                                     min_val=0, max_val=125, **opts)
+        opts['max_val'] = 10
+        wids['rbkg'] = FloatSpin(panel, value=1.0,  **opts)
 
-        wids['bkg_kmax'] = FloatSpin(panel, min_val=0, max_val=125, **opts)
+        opts['max_val'] = 125
+        bkg_kmin = FloatSpinWithPin('bkg_kmin', value=0, **opts)
 
-        wids['fft_kmin'] = FloatSpin(panel, value=0,
-                                     min_val=0, max_val=125, **opts)
+        bkg_kmax = FloatSpinWithPin('bkg_kmax', value=20, **opts)
 
-        wids['fft_kmax'] = FloatSpin(panel, min_val=0, max_val=125, **opts)
+        fft_kmin = FloatSpinWithPin('fft_kmin', value=0, **opts)
 
-        wids['fft_dk'] = FloatSpin(panel, value=3,
-                                   min_val=0, max_val=125, **opts)
+        fft_kmax = FloatSpinWithPin('fft_kmax', value=20, **opts)
+
+        wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 
         opts['increment'] = opts['digits'] = 1
-        wids['bkg_kweight'] = FloatSpin(panel, value=1,
-                                        min_val=0, max_val=8, **opts)
+        opts['max_val'] = 10
+        wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
 
-        wids['fft_kweight'] = FloatSpin(panel, value=1,
-                                        min_val=0, max_val=8, **opts)
+        wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
 
-        for name in ('bkg_kmin', 'bkg_kmax', 'fft_kmin', 'fft_kmax'):
-            bb = BitmapButton(panel, get_icon('plus'),
-                              action=partial(self.onSelPoint, opt=name),
-                              tooltip='use last point selected from plot')
-            btns[name] = bb
-        opts = dict(choices=CLAMPLIST, size=(70, -1), action=self.process)
+        opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.process)
         wids['bkg_clamplo'] = Choice(panel, **opts)
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.process, size=(100, -1))
+                                     action=self.process, size=(125, -1))
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -163,87 +166,87 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
 
-        add_text('Plot Selected Groups: ', dcol=2, newrow=True)
-        panel.Add(plotsel_buttons, dcol=5)
+        add_text('Plot Selected Groups: ', newrow=True)
+        panel.Add(plotsel_buttons, dcol=3)
 
 
-        add_text('Plot This Group: ', dcol=2, newrow=True)
-        panel.Add(plotone_buttons, dcol=5)
+        add_text('Plot This Group: ', newrow=True)
+        panel.Add(plotone_buttons, dcol=3)
+
+        add_text('K weight : ', newrow=False)
+        panel.Add(wids['plot_kweight'])
 
 
-        add_text('Plot Options: ', dcol=2, newrow=True)
+        add_text('Plot Choice: ', newrow=True)
         popts = wx.BoxSizer(wx.HORIZONTAL)
         popts.Add(wids['plotopts_e'])
         popts.Add(wids['plotopts_k'])
         popts.Add(wids['plotopts_r'])
-        panel.Add(popts, dcol=5)
-
-        add_text('K weight for plot: ', dcol=2)
-        panel.Add(wids['plot_kweight'])
+        panel.Add(popts, dcol=3)
 
 
-        panel.Add(HLine(panel, size=(250, 2)), dcol=7, newrow=True)
+        add_text('Plot Offset: ', newrow=True)
+        oopts = wx.BoxSizer(wx.HORIZONTAL)
+        oopts.Add(wids['plotoff_e'])
+        oopts.Add(wids['plotoff_k'])
+        oopts.Add(wids['plotoff_r'])
+        panel.Add(oopts, dcol=3)
+
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction',
-                             **titleopts), dcol=4, newrow=True)
-        panel.Add(SimpleText(panel, ' Copy to Selected Groups?'),
-                  style=RCEN, dcol=3)
+                             **titleopts), dcol=3, newrow=True)
 
+        panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
+                         action=partial(self.onCopyParam, 'bkg')),
+                  dcol=3, style=RCEN)
 
-        add_text('E0: ', dcol=2, newrow=True)
-        panel.Add(wids['e0'], dcol=4)
-        panel.Add(CopyBtn('e0'), style=RCEN)
+        add_text('R_bkg: ')
+        panel.Add(wids['rbkg'])
 
-        add_text('R_bkg: ', dcol=2, newrow=True)
-        panel.Add(wids['rbkg'], dcol=1)
-
-        add_text('K weight: ', dcol=2, newrow=False)
-        panel.Add(wids['bkg_kweight'], dcol=1)
-        panel.Add(CopyBtn('rbkg'), style=RCEN)
+        add_text('E0: ', newrow=False)
+        panel.Add(wids['e0'])
 
 
         add_text('K range: ')
-        panel.Add(btns['bkg_kmin'], style=RCEN)
-        panel.Add(wids['bkg_kmin'])
+        panel.Add(bkg_kmin)
+        add_text(' : ',newrow=False)
+        panel.Add(bkg_kmax)
 
-        add_text(' : ', dcol=1, newrow=False)
-        panel.Add(btns['bkg_kmax'], style=RCEN)
-        panel.Add(wids['bkg_kmax'])
-        panel.Add(CopyBtn('bkg_krange'), style=RCEN)
+        add_text('K weight: ', newrow=False)
+        panel.Add(wids['bkg_kweight'], dcol=1)
 
 
-        add_text('Clamps Low E: ', dcol=2, newrow=True)
+        add_text('Clamps Low E: ', newrow=True)
         panel.Add( wids['bkg_clamplo'])
-        add_text('high E: ', dcol=2, newrow=False)
+        add_text('high E: ',  newrow=False)
         panel.Add( wids['bkg_clamphi'])
-        panel.Add(CopyBtn('bkg_clamps'), style=RCEN)
 
-        panel.Add(HLine(panel, size=(250, 2)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform',
-                             **titleopts), dcol=6, newrow=True)
+                             **titleopts), dcol=3, newrow=True)
 
+        panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
+                         action=partial(self.onCopyParam, 'fft')),
+                  dcol=3, style=RCEN)
 
         panel.Add(SimpleText(panel, 'K range: '), newrow=True)
-        panel.Add(btns['fft_kmin'], style=RCEN)
-        panel.Add(wids['fft_kmin'])
+        panel.Add(fft_kmin)
 
         panel.Add(SimpleText(panel, ' : '))
-        panel.Add(btns['fft_kmax'], style=RCEN)
-        panel.Add(wids['fft_kmax'])
-        panel.Add(CopyBtn('fft_krange'), style=RCEN)
+        panel.Add(fft_kmax)
 
-        panel.Add(SimpleText(panel, 'K weight : '), dcol=2, newrow=True)
-        panel.Add(wids['fft_kweight'], dcol=4)
-        panel.Add(CopyBtn('fft_kweight'), style=RCEN)
+        panel.Add(SimpleText(panel, 'K weight : '), newrow=False)
+        panel.Add(wids['fft_kweight'])
 
-        panel.Add(SimpleText(panel, 'K window : '), dcol=2, newrow=True)
+        panel.Add(SimpleText(panel, 'K window : '), newrow=True)
         panel.Add(wids['fft_kwindow'])
-        panel.Add(SimpleText(panel, ' dk : '), dcol=2)
+        panel.Add(SimpleText(panel, ' dk : '))
         panel.Add(wids['fft_dk'])
-        panel.Add(CopyBtn('fft_kwin'), style=RCEN)
 
-        panel.Add(HLine(panel, size=(250, 2)), dcol=7, newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(saveconf, dcol=4, newrow=True)
         panel.pack()
@@ -254,6 +257,17 @@ class EXAFSPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
+
+    def onSelPoint(self, evt=None, opt='__'):
+        print("on sel point ", evt, opt, opt in self.wids)
+        xval = None
+        try:
+            xval = self.larch.symtable._plotter.plot1_x
+        except:
+            return
+
+        if opt in self.wids:
+            self.wids[opt].SetValue(xval)
 
     def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
