@@ -83,42 +83,53 @@ class XASNormPanel(TaskPanel):
         plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
 
-        self.btns = {}
+        self.wids = {}
+
+        def FloatSpinWithPin(name, value, **kws):
+            s = wx.BoxSizer(wx.HORIZONTAL)
+            self.wids[name] = FloatSpin(xas, value=value, **kws)
+            bb = BitmapButton(xas, get_icon('pin'), size=(25, 25),
+                              action=partial(self.onSelPoint, opt=name),
+                              tooltip='use last point selected from plot')
+            s.Add(self.wids[name])
+            s.Add(bb)
+            return s
+
 
         opts = dict(action=self.onReprocess)
 
         e0opts_panel = wx.Panel(xas)
-        self.xas_autoe0 = Check(e0opts_panel, default=True, label='auto?', **opts)
-        self.xas_showe0 = Check(e0opts_panel, default=True, label='show?', **opts)
+        self.wids['autoe0'] = Check(e0opts_panel, default=True, label='auto?', **opts)
+        self.wids['showe0'] = Check(e0opts_panel, default=True, label='show?', **opts)
         sx = wx.BoxSizer(wx.HORIZONTAL)
-        sx.Add(self.xas_autoe0, 0, LCEN, 4)
-        sx.Add(self.xas_showe0, 0, LCEN, 4)
+        sx.Add(self.wids['autoe0'], 0, LCEN, 4)
+        sx.Add(self.wids['showe0'], 0, LCEN, 4)
         pack(e0opts_panel, sx)
 
-        self.xas_autostep = Check(xas, default=True, label='auto?', **opts)
-
-        for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
-            bb = BitmapButton(xas, get_icon('plus'),
-                              action=partial(self.onSelPoint, opt=name),
-                              tooltip='use last point selected from plot')
-            self.btns[name] = bb
+        self.wids['autostep'] = Check(xas, default=True, label='auto?', **opts)
+#
+#         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
+#             bb = BitmapButton(xas, get_icon('plus'),
+#                               action=partial(self.onSelPoint, opt=name),
+#                               tooltip='use last point selected from plot')
+#             self.btns[name] = bb
 
         opts['size'] = (50, -1)
-        self.xas_vict = Choice(xas, choices=('0', '1', '2', '3'), **opts)
-        self.xas_nnor = Choice(xas, choices=('0', '1', '2', '3'), **opts)
-        self.xas_vict.SetSelection(1)
-        self.xas_nnor.SetSelection(1)
+        self.wids['vict'] = Choice(xas, choices=('0', '1', '2', '3'), **opts)
+        self.wids['nnor'] = Choice(xas, choices=('0', '1', '2', '3'), **opts)
+        self.wids['vict'].SetSelection(1)
+        self.wids['nnor'].SetSelection(1)
 
         opts.update({'size': (75, -1), 'digits': 2, 'increment': 5.0})
 
-        self.xas_pre1 = FloatSpin(xas, value=-1000, **opts)
-        self.xas_pre2 = FloatSpin(xas, value=-30, **opts)
-        self.xas_nor1 = FloatSpin(xas, value=50, **opts)
-        self.xas_nor2 = FloatSpin(xas, value=5000, **opts)
+        xas_pre1 = FloatSpinWithPin('pre1', value=-1000, **opts)
+        xas_pre2 = FloatSpinWithPin('pre2', value=-30, **opts)
+        xas_nor1 = FloatSpinWithPin('nor1', value=50, **opts)
+        xas_nor2 = FloatSpinWithPin('nor2', value=5000, **opts)
 
         opts = {'size': (75, -1), 'digits': 4, 'increment': 0.1, 'value': 0}
-        self.xas_e0   = FloatSpin(xas, action=self.onSet_XASE0, **opts)
-        self.xas_step = FloatSpin(xas, action=self.onSet_XASStep, **opts)
+        xas_e0   = FloatSpinWithPin('e0', action=self.onSet_XASE0, **opts)
+        self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -127,51 +138,49 @@ class XASNormPanel(TaskPanel):
             return Button(xas, 'Copy', size=(50, -1),
                           action=partial(self.onCopyParam, name))
 
+        def add_text(text, dcol=1, newrow=True):
+            xas.Add(SimpleText(xas, text), dcol=dcol, newrow=newrow)
+
+
+
         xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
-                           **titleopts), dcol=6)
+                           **titleopts), dcol=4)
         xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
 
         xas.Add(plot_sel, newrow=True)
         xas.Add(self.plotsel_op, dcol=6)
 
         xas.Add(plot_one, newrow=True)
-        xas.Add(self.plotone_op, dcol=6)
+        xas.Add(self.plotone_op, dcol=4)
         xas.Add((10, 10))
         xas.Add(CopyBtn('plotone_op'), style=RCEN)
 
-        xas.Add(SimpleText(xas, 'E0 : '), newrow=True)
-        xas.Add(self.btns['e0'])
-        xas.Add(self.xas_e0)
-        xas.Add(e0opts_panel, dcol=4)
+        add_text('E0 : ')
+        xas.Add(xas_e0)
+        xas.Add(e0opts_panel, dcol=3)
         xas.Add((10, 1))
         xas.Add(CopyBtn('xas_e0'), style=RCEN)
 
-        xas.Add(SimpleText(xas, 'Edge Step: '), newrow=True)
-        xas.Add((10, 1))
-        xas.Add(self.xas_step)
-        xas.Add(self.xas_autostep, dcol=3)
-        xas.Add((10, 1))
+        add_text('Edge Step: ')
+        xas.Add(self.wids['step'])
+        xas.Add(self.wids['autostep'], dcol=3)
         xas.Add((10, 1))
         xas.Add(CopyBtn('xas_step'), style=RCEN)
 
-        xas.Add(SimpleText(xas, 'Pre-edge range: '), newrow=True)
-        xas.Add(self.btns['pre1'])
-        xas.Add(self.xas_pre1)
-        xas.Add(SimpleText(xas, ':'))
-        xas.Add(self.btns['pre2'])
-        xas.Add(self.xas_pre2)
+        add_text('Pre-edge range: ')
+        xas.Add(xas_pre1)
+        add_text(' : ', newrow=False)
+        xas.Add(xas_pre2)
         xas.Add(SimpleText(xas, 'Victoreen:'))
-        xas.Add(self.xas_vict)
+        xas.Add(self.wids['vict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
 
-        xas.Add(SimpleText(xas, 'Normalization range: '), newrow=True)
-        xas.Add(self.btns['nor1'])
-        xas.Add(self.xas_nor1)
-        xas.Add(SimpleText(xas, ':'))
-        xas.Add(self.btns['nor2'])
-        xas.Add(self.xas_nor2)
+        add_text('Normalization range: ')
+        xas.Add(xas_nor1)
+        add_text(' : ', newrow=False)
+        xas.Add(xas_nor2)
         xas.Add(SimpleText(xas, 'Poly Order:'))
-        xas.Add(self.xas_nnor)
+        xas.Add(self.wids['nnor'])
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
         xas.Add(saveconf, dcol=6, newrow=True)
@@ -198,13 +207,9 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
 
-        widlist = (self.xas_e0, self.xas_step, self.xas_pre1,
-                   self.xas_pre2, self.xas_nor1, self.xas_nor2,
-                   self.xas_vict, self.xas_nnor, self.xas_showe0,
-                   self.xas_autoe0, self.xas_autostep)
 
         if dgroup.datatype == 'xas':
-            for k in widlist:
+            for k in self.wids.values():
                 k.Enable()
 
             self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
@@ -212,31 +217,31 @@ class XASNormPanel(TaskPanel):
 
             self.plotone_op.SetStringSelection(opts['plotone_op'])
             self.plotsel_op.SetStringSelection(opts['plotsel_op'])
-            self.xas_e0.SetValue(opts['e0'])
+            self.wids['e0'].SetValue(opts['e0'])
             edge_step = opts.get('edge_step', None)
             if edge_step is None:
                 edge_step = 1.0
 
             ndigits = int(2 - round(np.log10(abs(edge_step))))
-            self.xas_step.SetDigits(ndigits+1)
-            self.xas_step.SetIncrement(0.2*10**(-ndigits))
-            self.xas_step.SetValue(edge_step)
+            self.wids['step'].SetDigits(ndigits+1)
+            self.wids['step'].SetIncrement(0.2*10**(-ndigits))
+            self.wids['step'].SetValue(edge_step)
 
-            self.xas_pre1.SetValue(opts['pre1'])
-            self.xas_pre2.SetValue(opts['pre2'])
-            self.xas_nor1.SetValue(opts['norm1'])
-            self.xas_nor2.SetValue(opts['norm2'])
-            self.xas_vict.SetSelection(opts['nvict'])
-            self.xas_nnor.SetSelection(opts['nnorm'])
-            self.xas_showe0.SetValue(opts['show_e0'])
-            self.xas_autoe0.SetValue(opts['auto_e0'])
-            self.xas_autostep.SetValue(opts['auto_step'])
+            self.wids['pre1'].SetValue(opts['pre1'])
+            self.wids['pre2'].SetValue(opts['pre2'])
+            self.wids['nor1'].SetValue(opts['norm1'])
+            self.wids['nor2'].SetValue(opts['norm2'])
+            self.wids['vict'].SetSelection(opts['nvict'])
+            self.wids['nnor'].SetSelection(opts['nnorm'])
+            self.wids['showe0'].SetValue(opts['show_e0'])
+            self.wids['autoe0'].SetValue(opts['auto_e0'])
+            self.wids['autostep'].SetValue(opts['auto_step'])
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
             self.plotone_op.SetStringSelection('Raw Data')
             self.plotsel_op.SetStringSelection('Raw Data')
-            for k in widlist:
+            for k in self.wids.values():
                 k.Disable()
 
         self.skip_process = False
@@ -245,21 +250,21 @@ class XASNormPanel(TaskPanel):
     def read_form(self):
         "read form, return dict of values"
         form_opts = {}
-        form_opts['e0'] = self.xas_e0.GetValue()
-        form_opts['edge_step'] = self.xas_step.GetValue()
-        form_opts['pre1'] = self.xas_pre1.GetValue()
-        form_opts['pre2'] = self.xas_pre2.GetValue()
-        form_opts['norm1'] = self.xas_nor1.GetValue()
-        form_opts['norm2'] = self.xas_nor2.GetValue()
-        form_opts['nnorm'] = int(self.xas_nnor.GetSelection())
-        form_opts['nvict'] = int(self.xas_vict.GetSelection())
+        form_opts['e0'] = self.wids['e0'].GetValue()
+        form_opts['edge_step'] = self.wids['step'].GetValue()
+        form_opts['pre1'] = self.wids['pre1'].GetValue()
+        form_opts['pre2'] = self.wids['pre2'].GetValue()
+        form_opts['norm1'] = self.wids['nor1'].GetValue()
+        form_opts['norm2'] = self.wids['nor2'].GetValue()
+        form_opts['nnorm'] = int(self.wids['nnor'].GetSelection())
+        form_opts['nvict'] = int(self.wids['vict'].GetSelection())
 
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
 
-        form_opts['show_e0'] = self.xas_showe0.IsChecked()
-        form_opts['auto_e0'] = self.xas_autoe0.IsChecked()
-        form_opts['auto_step'] = self.xas_autostep.IsChecked()
+        form_opts['show_e0'] = self.wids['showe0'].IsChecked()
+        form_opts['auto_e0'] = self.wids['autoe0'].IsChecked()
+        form_opts['auto_step'] = self.wids['autostep'].IsChecked()
 
         return form_opts
 
@@ -331,12 +336,12 @@ class XASNormPanel(TaskPanel):
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
-        self.xas_autoe0.SetValue(0)
+        self.wids['autoe0'].SetValue(0)
         self.onReprocess()
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
-        self.xas_autostep.SetValue(0)
+        self.wids['autostep'].SetValue(0)
         self.onReprocess()
 
     def onReprocess(self, evt=None, value=None, **kws):
@@ -356,18 +361,12 @@ class XASNormPanel(TaskPanel):
         if xval is None:
             return
 
-        e0 = self.xas_e0.GetValue()
+        e0 = self.wids['e0'].GetValue()
         if opt == 'e0':
-            self.xas_e0.SetValue(xval)
-            self.xas_autoe0.SetValue(0)
-        elif opt == 'pre1':
-            self.xas_pre1.SetValue(xval-e0)
-        elif opt == 'pre2':
-            self.xas_pre2.SetValue(xval-e0)
-        elif opt == 'nor1':
-            self.xas_nor1.SetValue(xval-e0)
-        elif opt == 'nor2':
-            self.xas_nor2.SetValue(xval-e0)
+            self.wids['e0'].SetValue(xval)
+            self.wids['autoe0'].SetValue(0)
+        elif opt in ('pre1', 'pre2', 'nor1', 'nor2'):
+            self.wids[opt].SetValue(xval-e0)
         else:
             print(" unknown selection point ", opt)
 
@@ -421,14 +420,14 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
 
         if form['auto_e0']:
-            self.xas_e0.SetValue(dgroup.e0) # , act=False)
+            self.wids['e0'].SetValue(dgroup.e0) # , act=False)
         if form['auto_step']:
-            self.xas_step.SetValue(dgroup.edge_step) # , act=False)
+            self.wids['step'].SetValue(dgroup.edge_step) # , act=False)
 
-        self.xas_pre1.SetValue(dgroup.pre_edge_details.pre1)
-        self.xas_pre2.SetValue(dgroup.pre_edge_details.pre2)
-        self.xas_nor1.SetValue(dgroup.pre_edge_details.norm1)
-        self.xas_nor2.SetValue(dgroup.pre_edge_details.norm2)
+        self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
+        self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
+        self.wids['nor1'].SetValue(dgroup.pre_edge_details.norm1)
+        self.wids['nor2'].SetValue(dgroup.pre_edge_details.norm2)
 
         for attr in ('e0', 'edge_step'):
             dgroup.xasnorm_config[attr] = getattr(dgroup, attr)
