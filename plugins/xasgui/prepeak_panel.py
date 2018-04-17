@@ -425,20 +425,24 @@ class PrePeakPanel(wx.Panel):
 
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
 
-        self.btns = {}
-        for name in ('ppeak_e0', 'ppeak_elo', 'ppeak_emin', 'ppeak_emax', 'ppeak_ehi'):
-            bb = BitmapButton(pan, get_icon('plus'),
-                              action=partial(self.on_selpoint, opt=name),
+        self.wids = {}
+
+        def FloatSpinWithPin(name, value, **kws):
+            s = wx.BoxSizer(wx.HORIZONTAL)
+            self.wids[name] = FloatSpin(pan, value=value, **kws)
+            bb = BitmapButton(pan, get_icon('pin'), size=(25, 25),
+                              action=partial(self.onSelPoint, opt=name),
                               tooltip='use last point selected from plot')
-            self.btns[name] = bb
+            s.Add(self.wids[name])
+            s.Add(bb)
+            return s
 
         opts = dict(size=(75, -1), digits=1, increment=0.1)
-
-        self.ppeak_e0   = FloatSpin(pan, value=0, **opts)
-        self.ppeak_emin = FloatSpin(pan, value=-30, **opts)
-        self.ppeak_emax = FloatSpin(pan, value=0, **opts)
-        self.ppeak_elo = FloatSpin(pan, value=-15, **opts)
-        self.ppeak_ehi = FloatSpin(pan, value=-5, **opts)
+        ppeak_e0   = FloatSpinWithPin('ppeak_e0', value=0, **opts)
+        ppeak_elo  = FloatSpinWithPin('ppeak_elo', value=-15, **opts)
+        ppeak_ehi  = FloatSpinWithPin('ppeak_ehi', value=-5, **opts)
+        ppeak_emin = FloatSpinWithPin('ppeak_emin', value=-30, **opts)
+        ppeak_emax = FloatSpinWithPin('ppeak_emax', value=0, **opts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, 25))
@@ -479,47 +483,43 @@ class PrePeakPanel(wx.Panel):
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
 
-        titleopts = dict(font=Font(11), colour='#AA0000')
-        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=7)
-        pan.Add(SimpleText(pan, ' Run Fit:'), style=LCEN)
+        def add_text(text, dcol=1, newrow=True):
+            pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
-        pan.Add(SimpleText(pan, 'Array to fit: '), newrow=True)
-        pan.Add(self.array_choice, dcol=4)
-        pan.Add((10, 10), dcol=2)
+        titleopts = dict(font=Font(11), colour='#AA0000')
+        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=5)
+        add_text(' Run Fit:', newrow=False)
+
+        add_text('Array to fit: ')
+        pan.Add(self.array_choice, dcol=3)
+        pan.Add((10, 10))
         pan.Add(self.fitbline_btn)
 
-        pan.Add(SimpleText(pan, 'E0: '), newrow=True)
-        pan.Add(self.btns['ppeak_e0'])
-        pan.Add(self.ppeak_e0)
-        pan.Add((10, 10), dcol=3)
+        add_text('E0: ')
+        pan.Add(ppeak_e0)
+        pan.Add((10, 10), dcol=2)
         pan.Add(self.show_e0)
         pan.Add(self.fitmodel_btn)
 
 
-        pan.Add(SimpleText(pan, 'Fit Energy Range: '), newrow=True)
-        pan.Add(self.btns['ppeak_emin'])
-        pan.Add(self.ppeak_emin)
-        pan.Add(SimpleText(pan, ':'))
-        pan.Add(self.btns['ppeak_emax'])
-        pan.Add(self.ppeak_emax)
-        pan.Add(self.show_fitrange, dcol=1)
+        add_text('Fit Energy Range: ')
+        pan.Add(ppeak_emin)
+        add_text(' : ', newrow=False)
+        pan.Add(ppeak_emax)
+        pan.Add(self.show_fitrange)
         pan.Add(self.fitsel_btn)
-
-
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         t.SetToolTip('Range used as mask for background')
 
         pan.Add(t, newrow=True)
-        pan.Add(self.btns['ppeak_elo'])
-        pan.Add(self.ppeak_elo)
-        pan.Add(SimpleText(pan, ':'))
-        pan.Add(self.btns['ppeak_ehi'])
-        pan.Add(self.ppeak_ehi)
-        pan.Add(self.show_peakrange, dcol=1)
+        pan.Add(ppeak_elo)
+        add_text(' : ', newrow=False)
+        pan.Add(ppeak_ehi)
+        pan.Add(self.show_peakrange)
 
-        pan.Add(SimpleText(pan, 'Peak Centroid: '), newrow=True)
-        pan.Add(self.msg_centroid, dcol=5)
+        add_text( 'Peak Centroid: ')
+        pan.Add(self.msg_centroid, dcol=3)
         pan.Add(self.show_centroid, dcol=1)
 
 
@@ -573,19 +573,19 @@ class PrePeakPanel(wx.Panel):
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
-            self.ppeak_e0.SetValue(dat.e0)
+            self.wids['ppeak_e0'].SetValue(dat.e0)
             if hasattr(dat, 'prepeaks'):
-                self.ppeak_emin.SetValue(dat.prepeaks.emin)
-                self.ppeak_emax.SetValue(dat.prepeaks.emax)
-                self.ppeak_elo.SetValue(dat.prepeaks.elo)
-                self.ppeak_ehi.SetValue(dat.prepeaks.ehi)
+                self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
+                self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
+                self.wids['ppeak_elo'].SetValue(dat.prepeaks.elo)
+                self.wids['ppeak_ehi'].SetValue(dat.prepeaks.ehi)
 
         elif instance(dat, dict):
-            self.ppeak_e0.SetValue(dat['e0'])
-            self.ppeak_emin.SetValue(dat['emin'])
-            self.ppeak_emax.SetValue(dat['emax'])
-            self.ppeak_elo.SetValue(dat['elo'])
-            self.ppeak_ehi.SetValue(dat['ehi'])
+            self.wids['ppeak_e0'].SetValue(dat['e0'])
+            self.wids['ppeak_emin'].SetValue(dat['emin'])
+            self.wids['ppeak_emax'].SetValue(dat['emax'])
+            self.wids['ppeak_elo'].SetValue(dat['elo'])
+            self.wids['ppeak_ehi'].SetValue(dat['ehi'])
 
             self.array_choice.SetStringSelection(dat['array_desc'])
             self.show_e0.Enable(dat['show_e0'])
@@ -603,11 +603,11 @@ class PrePeakPanel(wx.Panel):
                      'array_name': Array_Choices[array_desc],
                      'baseline_form': 'lorentzian'}
 
-        form_opts['e0'] = self.ppeak_e0.GetValue()
-        form_opts['emin'] = self.ppeak_emin.GetValue()
-        form_opts['emax'] = self.ppeak_emax.GetValue()
-        form_opts['elo'] = self.ppeak_elo.GetValue()
-        form_opts['ehi'] = self.ppeak_ehi.GetValue()
+        form_opts['e0'] = self.wids['ppeak_e0'].GetValue()
+        form_opts['emin'] = self.wids['ppeak_emin'].GetValue()
+        form_opts['emax'] = self.wids['ppeak_emax'].GetValue()
+        form_opts['elo'] = self.wids['ppeak_elo'].GetValue()
+        form_opts['ehi'] = self.wids['ppeak_ehi'].GetValue()
         form_opts['plot_sub_bline'] = self.plot_sub_bline.IsChecked()
         form_opts['show_centroid'] = self.show_centroid.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
@@ -1139,15 +1139,14 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                ydata=y, yerr=yerr, x=x)
 
 
-    def on_selpoint(self, evt=None, opt='xmin'):
+    def onSelPoint(self, evt=None, opt='xmin'):
         xval = None
         try:
             xval = self.larch.symtable._plotter.plot1_x
         except:
             return
-        wid = getattr(self, opt, None)
-        if wid is not None:
-            wid.SetValue(xval)
+        if opt in self.wids:
+            self.wids[opt].SetValue(xval)
 
     def get_xranges(self, x):
         opts = self.read_form()
