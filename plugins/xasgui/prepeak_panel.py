@@ -81,11 +81,10 @@ ModelFuncs = {'constant': 'ConstantModel',
               'rectangle': 'RectangleModel'}
 
 
-Array_Choices = OrderedDict((('Raw Data', 'mu'),
-                             ('Normalized', 'norm'),
-                             ('Flattened', 'flat'),
-                             ('Deconvolved', 'deconv'),
-                             ('Derivative', 'dmude')))
+Array_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
+                             ('Normalized \u03BC(E)', 'norm'),
+                             ('Deconvolved \u03BC(E)', 'deconv'),
+                             ('Derivative \u03BC(E)', 'dmude')))
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
@@ -437,7 +436,7 @@ class PrePeakPanel(wx.Panel):
             s.Add(bb)
             return s
 
-        opts = dict(size=(75, -1), digits=1, increment=0.1)
+        opts = dict(size=(75, -1), digits=2, increment=0.1)
         ppeak_e0   = FloatSpinWithPin('ppeak_e0', value=0, **opts)
         ppeak_elo  = FloatSpinWithPin('ppeak_elo', value=-15, **opts)
         ppeak_ehi  = FloatSpinWithPin('ppeak_ehi', value=-5, **opts)
@@ -453,7 +452,7 @@ class PrePeakPanel(wx.Panel):
         self.fitmodel_btn.Disable()
         self.fitsel_btn.Disable()
 
-        self.array_choice = Choice(pan, size=(125, -1),
+        self.array_choice = Choice(pan, size=(150, -1),
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
@@ -486,7 +485,7 @@ class PrePeakPanel(wx.Panel):
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
-        titleopts = dict(font=Font(11), colour='#AA0000')
+        titleopts = dict(font=Font(12), colour='#AA0000')
         pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=5)
         add_text(' Run Fit:', newrow=False)
 
