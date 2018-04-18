@@ -30,18 +30,17 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = OrderedDict((('Raw Data', 'mu'),
-                               ('Normalized', 'norm'),
-                               ('Derivative', 'dmude'),
-                               ('Normalized + Derivative', 'norm+deriv'),
-                               ('Flattened', 'flat'),
-                               ('Pre-edge subtracted', 'preedge'),
-                               ('Raw Data + Pre-edge/Post-edge', 'prelines')))
+PlotOne_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
+                               ('Normalized \u03BC(E)', 'norm'),
+                               ('d\u03BC(E)/dE', 'dmude'),
+                               ('Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
+                               ('Flattened \u03BC(E)', 'flat'),
+                               ('\u03BC(E) + Pre-/Post-edge', 'prelines')))
 
-PlotSel_Choices = OrderedDict((('Raw Data', 'mu'),
-                               ('Normalized', 'norm'),
-                               ('Flattened', 'flat'),
-                               ('Derivative', 'dmude')))
+PlotSel_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
+                               ('Normalized \u03BC(E)', 'norm'),
+                               ('Flattened \u03BC(E)', 'flat'),
+                               ('d\u03BC(E)/dE', 'dmude')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -65,14 +64,13 @@ class XASNormPanel(TaskPanel):
                            configname='xasnorm_config', **kws)
 
     def build_display(self):
-        self.SetFont(Font(10))
-        titleopts = dict(font=Font(11), colour='#AA0000')
+        titleopts = dict(font=Font(12), colour='#AA0000')
 
         xas = self.panel
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(200, -1))
+                                 action=self.onPlotOne, size=(175, -1))
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(200, -1))
+                                 action=self.onPlotSel, size=(175, -1))
 
         self.plotone_op.SetStringSelection('Normalized')
         self.plotsel_op.SetStringSelection('Normalized')
@@ -107,12 +105,7 @@ class XASNormPanel(TaskPanel):
         pack(e0opts_panel, sx)
 
         self.wids['autostep'] = Check(xas, default=True, label='auto?', **opts)
-#
-#         for name in ('e0', 'pre1', 'pre2', 'nor1', 'nor2'):
-#             bb = BitmapButton(xas, get_icon('plus'),
-#                               action=partial(self.onSelPoint, opt=name),
-#                               tooltip='use last point selected from plot')
-#             self.btns[name] = bb
+
 
         opts['size'] = (50, -1)
         self.wids['vict'] = Choice(xas, choices=('0', '1', '2', '3'), **opts)
@@ -127,7 +120,7 @@ class XASNormPanel(TaskPanel):
         xas_nor1 = FloatSpinWithPin('nor1', value=50, **opts)
         xas_nor2 = FloatSpinWithPin('nor2', value=5000, **opts)
 
-        opts = {'size': (75, -1), 'digits': 4, 'increment': 0.1, 'value': 0}
+        opts = {'size': (75, -1), 'digits': 2, 'increment': 0.1, 'value': 0}
         xas_e0   = FloatSpinWithPin('e0', action=self.onSet_XASE0, **opts)
         self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
@@ -467,7 +460,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
         elif pchoice == 'prelines':
-            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, plotlabels.mu),
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
         elif pchoice == 'preedge':
