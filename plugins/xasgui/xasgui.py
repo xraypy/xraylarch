@@ -69,7 +69,6 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right',  marker='None', markersize=4)
 
 ICON_FILE = 'larch.ico'
-
 XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
@@ -83,6 +82,8 @@ NB_PANELS = (('XAS Normalization', XASNormPanel),
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
+
+WX_DEBUG = False
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -180,9 +181,9 @@ class XASController():
         report = fit_report(fitresult, show_correl=True,
                             min_correl=0.25, sort_pars=True)
 
-        self.report_frame.SetFont(Font(8))
+        self.report_frame.SetFont(Font(9))
         self.report_frame.set_text(report)
-        self.report_frame.SetFont(Font(8))
+        self.report_frame.SetFont(Font(9))
         self.report_frame.Raise()
 
     def get_iconfile(self):
@@ -389,7 +390,7 @@ class XASFrame(wx.Frame):
         self.plotframe = None
         self.SetTitle(title)
         self.SetSize(XASVIEW_SIZE)
-        self.SetFont(Font(10))
+        self.SetFont(Font(11))
         self.larch_buffer.Hide()
         self.createMainPanel()
         self.createMenus()
@@ -408,7 +409,7 @@ class XASFrame(wx.Frame):
 
         def Btn(msg, x, act):
             b = Button(ltop, msg, size=(x, 30),  action=act)
-            b.SetFont(Font(10))
+            b.SetFont(Font(11))
             return b
 
         sel_none = Btn('Select None',   120, self.onSelNone)
@@ -436,7 +437,7 @@ class XASFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, 'initializing...', size=(300, -1))
-        self.title.SetFont(Font(10))
+        self.title.SetFont(Font(11))
 
         ir = 0
         sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
@@ -560,8 +561,9 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        # MenuItem(self, fmenu, "&Inspect \tCtrl+J",
-        #         " e ",  self.showInspectionTool)
+        if WX_DEBUG:
+            MenuItem(self, fmenu, "&Inspect \tCtrl+J",
+                     " wx inspection tool ",  self.showInspectionTool)
 
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
