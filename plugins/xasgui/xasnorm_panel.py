@@ -274,19 +274,15 @@ class XASNormPanel(TaskPanel):
         yarray_name = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
         ylabel = getattr(plotlabels, yarray_name)
 
-        # print("Plot Sel:: ", group_ids)
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             plot_yarrays = [(yarray_name, PLOTOPTS_1, dgroup.filename)]
-            dgroup.plot_ylabel = ylabel
             if dgroup is not None:
                 dgroup.plot_extras = []
-                # print(" PlotSel -> plot ", checked, (last_id!=checked) )
-                self.plot(dgroup, title='', new=newplot,
-                          plot_yarrays=plot_yarrays,
-                          show_legend=True, with_extras=False,
-                          delay_draw=(last_id != checked))
+                self.plot(dgroup, title='', new=newplot, multi=True,
+                          plot_yarrays=plot_yarrays, show_legend=True,
+                          with_extras=False,  delay_draw=(last_id != checked))
                 newplot = False
         self.controller.get_display(stacked=False).panel.canvas.draw()
 
@@ -485,7 +481,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
 
     def plot(self, dgroup, title=None, plot_yarrays=None, delay_draw=False,
-             new=True, zoom_out=True, with_extras=True, **kws):
+             multi=False, new=True, zoom_out=True, with_extras=True, **kws):
 
         self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
@@ -511,6 +507,8 @@ class XASNormPanel(TaskPanel):
         path, fname = os.path.split(dgroup.filename)
         if 'label' not in popts:
             popts['label'] = dgroup.plot_ylabel
+
+
         zoom_out = (zoom_out or min(dgroup.xdat) >= viewlims[1] or
                     max(dgroup.xdat) <= viewlims[0] or
                     min(dgroup.ydat) >= viewlims[3] or
@@ -526,6 +524,10 @@ class XASNormPanel(TaskPanel):
         popts['ylabel'] = dgroup.plot_ylabel
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
+
+        if multi:
+            yarray_name = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
+            popts['ylabel'] = getattr(plotlabels, yarray_name)
 
         plot_extras = None
         if new:
@@ -546,8 +548,7 @@ class XASNormPanel(TaskPanel):
                 popts['label'] = yalabel
 
             popts['delay_draw'] = delay_draw or (i != narr)
-            # print("plot:: ", i, popts['delay_draw'], plotcmd)
-            # print(popts)
+            # print("plot:: ", i, popts['delay_draw'], plotcmd, popts)
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
 
