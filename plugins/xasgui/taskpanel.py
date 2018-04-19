@@ -51,7 +51,8 @@ class TaskPanel(wx.Panel):
         self.configname = configname
 
         self.wids = {}
-        self.btns = {}
+        self.SetFont(Font(11))
+
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.skip_process = True
         self.build_display()
