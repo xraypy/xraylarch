@@ -30,6 +30,7 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
+
 units_list = ('eV', u'1/\u212B')
 PlotChoices = {'e': ('\u03BC(E) + \u03BC0(E)', '\u03A7(E)'),
                'k': ('\u03A7(k)', '\u03A7(k) + Window'),
@@ -37,6 +38,17 @@ PlotChoices = {'e': ('\u03BC(E) + \u03BC0(E)', '\u03A7(E)'),
 
 
 PlotOne_Choices = OrderedDict((('\u03BC(E) + \u03BC0(E)', 'bkg'),
+                               ('\u03A7(E)', 'chie'),
+                               ('\u03A7(k)', 'k'),
+                               ('\u03A7(k) + Window', 'kwin'),
+                               ('|\u03A7(R)|', 'r_mag'),
+                               ('Re[\u03A7(R)]', 'r_re'),
+                               ('|\u03A7(R)| + Re[\u03A7(R)]', 'r_remag')
+                               ))
+
+
+PlotAlt_Choices = OrderedDict((('< None > ', 'none'),
+                               ('\u03BC(E) + \u03BC0(E)', 'bkg'),
                                ('\u03A7(E)', 'chie'),
                                ('\u03A7(k)', 'k'),
                                ('\u03A7(k) + Window', 'kwin'),
@@ -98,10 +110,14 @@ class EXAFSPanel(TaskPanel):
 
         self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(175, -1))
+        self.plotalt_op = Choice(panel, choices=list(PlotAlt_Choices.keys()),
+                                 action=self.onPlotOne, size=(175, -1))
+
         self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
                                  action=self.onPlotSel, size=(175, -1))
 
         self.plotone_op.SetSelection(1)
+        self.plotalt_op.SetSelection(0)
         self.plotsel_op.SetSelection(1)
 
         plot_one = Button(panel, 'Plot This Group', size=(150, -1),
@@ -123,34 +139,14 @@ class EXAFSPanel(TaskPanel):
             s.Add(wids[name])
             s.Add(bb)
             return s
+        wids['plot_offset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+                                        action=self.onPlotSel)
 
-#         for space, label in (('e', 'Energy'), ('k', 'K space'), ('r', 'R space')):
-#             cname = 'plotopts_%s' % space
-#             oname = 'plotone_%s' % space
-#             sname = 'plotsel_%s' % space
-#             fname = 'plotoff_%s' % space
-#
-#             actone = partial(self.onPlot, selected=False)
-#             actsel = partial(self.onPlot, selected=True)
-#
-#             if space in PlotChoices:
-#                 wids[cname] = Choice(panel, choices=PlotChoices[space],
-#                                      size=(100, -1), action=actone)
-#             wids[oname] = ToggleButton(panel, label, size=(100, -1), action=actone)
-#             wids[sname] = ToggleButton(panel, label, size=(100, -1), action=actsel)
-#             wids[fname] = FloatSpin(panel, value=0, digits=2, action=self.onPlot,
-#                                     increment=0.25, size=(100, -1))
-#
-            # if space != 'w':
+        wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
+                                         action=self.onPlotOne,
+                                         min_val=0, max_val=5)
 
-        wids['plot_kweight'] = FloatSpin(panel, value=2,
-                                         action=self.onPlotOne, size=(75, -1),
-                                         min_val=0, max_val=5, digits=1,
-                                         increment=1)
-
-
-        opts = dict(size=(75, -1), digits=2, increment=0.1, min_val=0,
-                    action=self.process)
+        opts = dict(digits=2, increment=0.1, min_val=0, action=self.process)
         wids['e0'] = FloatSpin(panel, **opts)
 
         opts['max_val'] = 10
@@ -182,43 +178,24 @@ class EXAFSPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-#         plotsel_buttons = wx.BoxSizer(wx.HORIZONTAL)
-#         plotsel_buttons.Add(wids['plotsel_e'])
-#         plotsel_buttons.Add(wids['plotsel_k'])
-#         plotsel_buttons.Add(wids['plotsel_r'])
-#
-#         plotone_buttons = wx.BoxSizer(wx.HORIZONTAL)
-#         plotone_buttons.Add(wids['plotone_e'])
-#         plotone_buttons.Add(wids['plotone_k'])
-#         plotone_buttons.Add(wids['plotone_r'])
 
         panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
 
         panel.Add(plot_sel, newrow=True)
-        panel.Add(self.plotsel_op, dcol=3)
+        panel.Add(self.plotsel_op, dcol=2)
 
+        add_text('Vertical Offset: ', newrow=False)
+        panel.Add(wids['plot_offset'], dcol=2)
 
         panel.Add(plot_one, newrow=True)
-        panel.Add(self.plotone_op, dcol=3)
+        panel.Add(self.plotone_op, dcol=2)
 
-        add_text('K weight : ', newrow=False)
+        add_text('Plot K weight: ', newrow=False)
         panel.Add(wids['plot_kweight'])
 
+        add_text('Second Plot: ', newrow=True)
+        panel.Add(self.plotalt_op, dcol=2)
 
-        add_text('Plot Choice: ', newrow=True)
-        popts = wx.BoxSizer(wx.HORIZONTAL)
-        # popts.Add(wids['plotopts_e'])
-        # popts.Add(wids['plotopts_k'])
-        # popts.Add(wids['plotopts_r'])
-        panel.Add(popts, dcol=3)
-
-
-        add_text('Plot Offset: ', newrow=True)
-        oopts = wx.BoxSizer(wx.HORIZONTAL)
-        # oopts.Add(wids['plotoff_e'])
-        # oopts.Add(wids['plotoff_k'])
-        # oopts.Add(wids['plotoff_r'])
-        panel.Add(oopts, dcol=3)
 
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
@@ -230,19 +207,19 @@ class EXAFSPanel(TaskPanel):
                          action=partial(self.onCopyParam, 'bkg')),
                   dcol=3, style=RCEN)
 
-        add_text('R_bkg: ')
+        add_text('R bkg: ')
         panel.Add(wids['rbkg'])
 
         add_text('E0: ', newrow=False)
         panel.Add(wids['e0'])
 
 
-        add_text('K range: ')
+        add_text('K min: ')
         panel.Add(bkg_kmin)
-        add_text(' : ',newrow=False)
+        add_text('K max:',newrow=False)
         panel.Add(bkg_kmax)
 
-        add_text('K weight: ', newrow=False)
+        add_text('K weight: ', newrow=True)
         panel.Add(wids['bkg_kweight'], dcol=1)
 
 
@@ -258,15 +235,15 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
                          action=partial(self.onCopyParam, 'fft')),
-                  dcol=3, style=RCEN)
+                  dcol=2, style=RCEN)
 
-        panel.Add(SimpleText(panel, 'K range: '), newrow=True)
+        panel.Add(SimpleText(panel, 'K min: '), newrow=True)
         panel.Add(fft_kmin)
 
-        panel.Add(SimpleText(panel, ' : '))
+        panel.Add(SimpleText(panel, 'K max:'))
         panel.Add(fft_kmax)
 
-        panel.Add(SimpleText(panel, 'K weight : '), newrow=False)
+        panel.Add(SimpleText(panel, 'K weight : '), newrow=True)
         panel.Add(wids['fft_kweight'])
 
         panel.Add(SimpleText(panel, 'K window : '), newrow=True)
@@ -404,6 +381,10 @@ class EXAFSPanel(TaskPanel):
 
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
+
+    def onPlotAlt(self, evt=None, selected=False):
+        form = self.read_form()
+        # print("form : ", form)
 
     def onPlotOne(self, evt=None, selected=False):
         form = self.read_form()
