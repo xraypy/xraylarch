@@ -35,6 +35,21 @@ PlotChoices = {'e': ('\u03BC(E) + \u03BC0(E)', '\u03A7(E)'),
                'k': ('\u03A7(k)', '\u03A7(k) + Window'),
                'r': ('|\u03A7(R)|', 'Re[\u03A7(R)]', '|\u03A7(R)| + Re[\u03A7(R)]')}
 
+
+PlotOne_Choices = OrderedDict((('\u03BC(E) + \u03BC0(E)', 'bkg'),
+                               ('\u03A7(E)', 'chie'),
+                               ('\u03A7(k)', 'k'),
+                               ('\u03A7(k) + Window', 'kwin'),
+                               ('|\u03A7(R)|', 'r_mag'),
+                               ('Re[\u03A7(R)]', 'r_re'),
+                               ('|\u03A7(R)| + Re[\u03A7(R)]', 'r_remag')
+                               ))
+
+PlotSel_Choices = OrderedDict((('\u03A7(E)', 'chie'),
+                               ('\u03A7(k)', 'k'),
+                               ('|\u03A7(R)|', 'r_mag'),
+                               ('Re[\u03A7(R)]', 'r_re')))
+
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
@@ -74,13 +89,27 @@ class EXAFSPanel(TaskPanel):
         self.last_process_pars = None
 
     def build_display(self):
-        self.SetFont(Font(10))
-        titleopts = dict(font=Font(11), colour='#AA0000')
+        titleopts = dict(font=Font(12), colour='#AA0000')
 
         panel = self.panel
         wids = self.wids
-        btns = self.btns
         self.skip_process = True
+
+
+        self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
+                                 action=self.onPlotOne, size=(175, -1))
+        self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
+                                 action=self.onPlotSel, size=(175, -1))
+
+        self.plotone_op.SetSelection(1)
+        self.plotsel_op.SetSelection(1)
+
+        plot_one = Button(panel, 'Plot This Group', size=(150, -1),
+                          action=self.onPlotOne)
+
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
+                          action=self.onPlotSel)
+
 
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -95,32 +124,32 @@ class EXAFSPanel(TaskPanel):
             s.Add(bb)
             return s
 
-        for space, label in (('e', 'Energy'), ('k', 'K space'), ('r', 'R space')):
-            cname = 'plotopts_%s' % space
-            oname = 'plotone_%s' % space
-            sname = 'plotsel_%s' % space
-            fname = 'plotoff_%s' % space
-
-            actone = partial(self.onPlot, selected=False)
-            actsel = partial(self.onPlot, selected=True)
-
-            if space in PlotChoices:
-                wids[cname] = Choice(panel, choices=PlotChoices[space],
-                                     size=(100, -1), action=actone)
-            wids[oname] = ToggleButton(panel, label, size=(100, -1), action=actone)
-            wids[sname] = ToggleButton(panel, label, size=(100, -1), action=actsel)
-            wids[fname] = FloatSpin(panel, value=0, digits=2, action=self.onPlot,
-                                    increment=0.25, size=(100, -1))
-
+#         for space, label in (('e', 'Energy'), ('k', 'K space'), ('r', 'R space')):
+#             cname = 'plotopts_%s' % space
+#             oname = 'plotone_%s' % space
+#             sname = 'plotsel_%s' % space
+#             fname = 'plotoff_%s' % space
+#
+#             actone = partial(self.onPlot, selected=False)
+#             actsel = partial(self.onPlot, selected=True)
+#
+#             if space in PlotChoices:
+#                 wids[cname] = Choice(panel, choices=PlotChoices[space],
+#                                      size=(100, -1), action=actone)
+#             wids[oname] = ToggleButton(panel, label, size=(100, -1), action=actone)
+#             wids[sname] = ToggleButton(panel, label, size=(100, -1), action=actsel)
+#             wids[fname] = FloatSpin(panel, value=0, digits=2, action=self.onPlot,
+#                                     increment=0.25, size=(100, -1))
+#
             # if space != 'w':
 
         wids['plot_kweight'] = FloatSpin(panel, value=2,
-                                         action=self.onPlot, size=(100, -1),
-                                         min_val=0, max_val=4, digits=0,
+                                         action=self.onPlotOne, size=(75, -1),
+                                         min_val=0, max_val=5, digits=1,
                                          increment=1)
 
 
-        opts = dict(size=(100, -1), digits=2, increment=0.1, min_val=0,
+        opts = dict(size=(75, -1), digits=2, increment=0.1, min_val=0,
                     action=self.process)
         wids['e0'] = FloatSpin(panel, **opts)
 
@@ -138,8 +167,7 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 
-        opts['increment'] = opts['digits'] = 1
-        opts['max_val'] = 10
+        opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
         wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
 
         wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
@@ -154,24 +182,24 @@ class EXAFSPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        plotsel_buttons = wx.BoxSizer(wx.HORIZONTAL)
-        plotsel_buttons.Add(wids['plotsel_e'])
-        plotsel_buttons.Add(wids['plotsel_k'])
-        plotsel_buttons.Add(wids['plotsel_r'])
-
-        plotone_buttons = wx.BoxSizer(wx.HORIZONTAL)
-        plotone_buttons.Add(wids['plotone_e'])
-        plotone_buttons.Add(wids['plotone_k'])
-        plotone_buttons.Add(wids['plotone_r'])
+#         plotsel_buttons = wx.BoxSizer(wx.HORIZONTAL)
+#         plotsel_buttons.Add(wids['plotsel_e'])
+#         plotsel_buttons.Add(wids['plotsel_k'])
+#         plotsel_buttons.Add(wids['plotsel_r'])
+#
+#         plotone_buttons = wx.BoxSizer(wx.HORIZONTAL)
+#         plotone_buttons.Add(wids['plotone_e'])
+#         plotone_buttons.Add(wids['plotone_k'])
+#         plotone_buttons.Add(wids['plotone_r'])
 
         panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
 
-        add_text('Plot Selected Groups: ', newrow=True)
-        panel.Add(plotsel_buttons, dcol=3)
+        panel.Add(plot_sel, newrow=True)
+        panel.Add(self.plotsel_op, dcol=3)
 
 
-        add_text('Plot This Group: ', newrow=True)
-        panel.Add(plotone_buttons, dcol=3)
+        panel.Add(plot_one, newrow=True)
+        panel.Add(self.plotone_op, dcol=3)
 
         add_text('K weight : ', newrow=False)
         panel.Add(wids['plot_kweight'])
@@ -179,17 +207,17 @@ class EXAFSPanel(TaskPanel):
 
         add_text('Plot Choice: ', newrow=True)
         popts = wx.BoxSizer(wx.HORIZONTAL)
-        popts.Add(wids['plotopts_e'])
-        popts.Add(wids['plotopts_k'])
-        popts.Add(wids['plotopts_r'])
+        # popts.Add(wids['plotopts_e'])
+        # popts.Add(wids['plotopts_k'])
+        # popts.Add(wids['plotopts_r'])
         panel.Add(popts, dcol=3)
 
 
         add_text('Plot Offset: ', newrow=True)
         oopts = wx.BoxSizer(wx.HORIZONTAL)
-        oopts.Add(wids['plotoff_e'])
-        oopts.Add(wids['plotoff_k'])
-        oopts.Add(wids['plotoff_r'])
+        # oopts.Add(wids['plotoff_e'])
+        # oopts.Add(wids['plotoff_k'])
+        # oopts.Add(wids['plotoff_r'])
         panel.Add(oopts, dcol=3)
 
 
@@ -369,7 +397,7 @@ class EXAFSPanel(TaskPanel):
         if tpars != self.last_process_pars:
             self.controller.larch.eval(autobk_cmd.format(**form))
             self.controller.larch.eval(xftf_cmd.format(**form))
-            self.onPlot()
+            self.onPlotOne()
 
         self.last_process_pars = tpars
         self.skip_process = False
@@ -377,7 +405,7 @@ class EXAFSPanel(TaskPanel):
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
 
-    def onPlot(self, evt=None, selected=False):
+    def onPlotOne(self, evt=None, selected=False):
         form = self.read_form()
         # print("form : ", form)
 
@@ -417,4 +445,5 @@ class EXAFSPanel(TaskPanel):
 
     def onPlotSel(self, evt=None):
         newplot = True
+        print("Plot Selected!!")
         pass
