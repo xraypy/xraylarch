@@ -436,7 +436,7 @@ class PrePeakPanel(wx.Panel):
             s.Add(bb)
             return s
 
-        opts = dict(size=(75, -1), digits=2, increment=0.1)
+        opts = dict(digits=2, increment=0.1)
         ppeak_e0   = FloatSpinWithPin('ppeak_e0', value=0, **opts)
         ppeak_elo  = FloatSpinWithPin('ppeak_elo', value=-15, **opts)
         ppeak_ehi  = FloatSpinWithPin('ppeak_ehi', value=-5, **opts)

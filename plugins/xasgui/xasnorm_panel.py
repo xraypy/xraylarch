@@ -114,14 +114,14 @@ class XASNormPanel(TaskPanel):
         self.wids['vict'].SetSelection(1)
         self.wids['nnor'].SetSelection(1)
 
-        opts.update({'size': (75, -1), 'digits': 2, 'increment': 5.0})
+        opts.update({'size': (100, -1),'digits': 2, 'increment': 5.0})
 
         xas_pre1 = FloatSpinWithPin('pre1', value=-1000, **opts)
         xas_pre2 = FloatSpinWithPin('pre2', value=-30, **opts)
         xas_nor1 = FloatSpinWithPin('nor1', value=50, **opts)
         xas_nor2 = FloatSpinWithPin('nor2', value=5000, **opts)
 
-        opts = {'size': (75, -1), 'digits': 2, 'increment': 0.1, 'value': 0}
+        opts = {'digits': 2, 'increment': 0.1, 'value': 0}
         xas_e0   = FloatSpinWithPin('e0', action=self.onSet_XASE0, **opts)
         self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
