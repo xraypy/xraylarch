@@ -52,9 +52,9 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
 
 def default_xasnorm_config():
     return dict(e0=0, edge_step=None, pre1=-200, pre2=-25, nnorm=2, norm1=25,
-                norm2=-10, nvict=1, auto_step=True, auto_e0=True,
-                show_e0=True, plotone_op='Normalized',
-                plotsel_op='Normalized')
+                norm2=-10, nvict=1, auto_step=True, auto_e0=True, show_e0=True,
+                plotone_op='Normalized \u03BC(E)',
+                plotsel_op='Normalized \u03BC(E)')
 
 
 class XASNormPanel(TaskPanel):
@@ -67,13 +67,15 @@ class XASNormPanel(TaskPanel):
         titleopts = dict(font=Font(12), colour='#AA0000')
 
         xas = self.panel
+        self.wids = {}
+
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(175, -1))
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
                                  action=self.onPlotSel, size=(175, -1))
 
-        self.plotone_op.SetStringSelection('Normalized')
-        self.plotsel_op.SetStringSelection('Normalized')
+        self.plotone_op.SetSelection(1)
+        self.plotsel_op.SetSelection(1)
 
         plot_one = Button(xas, 'Plot This Group', size=(150, -1),
                           action=self.onPlotOne)
@@ -81,7 +83,6 @@ class XASNormPanel(TaskPanel):
         plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
 
-        self.wids = {}
 
         def FloatSpinWithPin(name, value, **kws):
             s = wx.BoxSizer(wx.HORIZONTAL)
