@@ -24,43 +24,29 @@ from larch_plugins.xafs.xafsplots import plotlabels
 
 np.seterr(all='ignore')
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
-                  marker='None', markersize=4)
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
+# plot options:
+mu_bkg  = u'\u03BC(E) + \u03BC0(E)'
+chie    = u'\u03A7(E)'
+chik    = u'\u03A7(k)'
+chikwin = u'\u03A7(k) + Window'
+chirmag = u'|\u03A7(R)|'
+chirre  = u'Re[\u03A7(R)]'
+chirmr  = u'|\u03A7(R)| + Re[\u03A7(R)]'
+noplot  = '<no plot>'
+
+PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]
+PlotAlt_Choices = [noplot] + PlotOne_Choices
+PlotSel_Choices = [chie, chik, chirmag, chirre]
 
 
-units_list = ('eV', u'1/\u212B')
-PlotChoices = {'e': ('\u03BC(E) + \u03BC0(E)', '\u03A7(E)'),
-               'k': ('\u03A7(k)', '\u03A7(k) + Window'),
-               'r': ('|\u03A7(R)|', 'Re[\u03A7(R)]', '|\u03A7(R)| + Re[\u03A7(R)]')}
-
-
-PlotOne_Choices = OrderedDict((('\u03BC(E) + \u03BC0(E)', 'bkg'),
-                               ('\u03A7(E)', 'chie'),
-                               ('\u03A7(k)', 'k'),
-                               ('\u03A7(k) + Window', 'kwin'),
-                               ('|\u03A7(R)|', 'r_mag'),
-                               ('Re[\u03A7(R)]', 'r_re'),
-                               ('|\u03A7(R)| + Re[\u03A7(R)]', 'r_remag')
-                               ))
-
-
-PlotAlt_Choices = OrderedDict((('< None > ', 'none'),
-                               ('\u03BC(E) + \u03BC0(E)', 'bkg'),
-                               ('\u03A7(E)', 'chie'),
-                               ('\u03A7(k)', 'k'),
-                               ('\u03A7(k) + Window', 'kwin'),
-                               ('|\u03A7(R)|', 'r_mag'),
-                               ('Re[\u03A7(R)]', 'r_re'),
-                               ('|\u03A7(R)| + Re[\u03A7(R)]', 'r_remag')
-                               ))
-
-PlotSel_Choices = OrderedDict((('\u03A7(E)', 'chie'),
-                               ('\u03A7(k)', 'k'),
-                               ('|\u03A7(R)|', 'r_mag'),
-                               ('Re[\u03A7(R)]', 'r_re')))
+PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
+            chie:    "plot_chie({group:s}",
+            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:f}",
+            chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:f}",
+            chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
+            chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
+            chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
+            noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
@@ -76,18 +62,12 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
 
 
 def default_exafs_config():
-    opts = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
+    return dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
                 bkg_clamphi=5, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
-                plot_kweight=2, plot_voffset=0,
-                plotone_op='\u03A7(k)',
-                plotsel_op='\u03A7(k)',
+                plot_kweight=2, plot_kweight_alt=2, plot_voffset=0,
+                plotone_op='\u03A7(k)', plotsel_op='\u03A7(k)',
                 plotalt_op='< None >')
-    return opts
-
-## plotone_op='chi(k)', plotsel_op='chi(k)')
-
-
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
@@ -105,13 +85,12 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = True
 
 
-        self.wids['plotone_op'] = Choice(panel, choices=list(PlotOne_Choices.keys()),
+        self.wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
                                          action=self.onPlotOne, size=(175, -1))
-        self.wids['plotalt_op'] = Choice(panel, choices=list(PlotAlt_Choices.keys()),
-                                 action=self.onPlotOne, size=(175, -1))
-
-        self.wids['plotsel_op'] = Choice(panel, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(175, -1))
+        self.wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
+                                         action=self.onPlotOne, size=(175, -1))
+        self.wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
+                                         action=self.onPlotSel, size=(175, -1))
 
         self.wids['plotone_op'].SetSelection(1)
         self.wids['plotalt_op'].SetSelection(0)
@@ -144,11 +123,15 @@ class EXAFSPanel(TaskPanel):
                                          action=self.onPlotOne,
                                          min_val=0, max_val=5)
 
+        wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
+                                         action=self.onPlotOne,
+                                         min_val=0, max_val=5)
+
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.process)
         wids['e0'] = FloatSpin(panel, **opts)
 
         opts['max_val'] = 10
-        wids['rbkg'] = FloatSpin(panel, value=1.0,  **opts)
+        wids['rbkg'] = FloatSpin(panel, value=1.0,  max_val=5.0, **opts)
 
         opts['max_val'] = 125
         bkg_kmin = FloatSpinWithPin('bkg_kmin', value=0, **opts)
@@ -176,7 +159,6 @@ class EXAFSPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-
         panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
 
         panel.Add(plot_sel, newrow=True)
@@ -191,9 +173,10 @@ class EXAFSPanel(TaskPanel):
         add_text('Plot k weight: ', newrow=False)
         panel.Add(wids['plot_kweight'])
 
-        add_text('Second Plot: ', newrow=True)
+        add_text('Add Second Plot: ', newrow=True)
         panel.Add(self.wids['plotalt_op'], dcol=2)
-
+        add_text('Plot2 k weight: ', newrow=False)
+        panel.Add(wids['plot_kweight_alt'])
 
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
@@ -288,7 +271,7 @@ class EXAFSPanel(TaskPanel):
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk', 'plot_kweight',
-                     'plot_voffset'):
+                     'plot_kweight_alt', 'plot_voffset'):
             val = getattr(dgroup, attr, None)
             if val is None:
                 val = opts.get(attr, -1)
@@ -316,7 +299,7 @@ class EXAFSPanel(TaskPanel):
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk', 'plot_kweight',
-                     'plot_voffset'):
+                     'plot_kweight_alt', 'plot_voffset'):
             form_opts[attr] = wids[attr].GetValue()
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
@@ -362,48 +345,20 @@ class EXAFSPanel(TaskPanel):
         self.last_process_pars = tpars
         self.skip_process = False
 
-    def get_plot_arrays(self, dgroup):
+    def onPlotOne(self, evt=None):
         form = self.read_form()
-
-    def onPlotOne(self, evt=None, selected=False):
-        form = self.read_form()
-        print("form : ", form)
-
         form['title'] = '"%s"' % self.dgroup.filename
 
-        if selected:
-            print("PLOT SELECTED")
-
-
-        if form['plotone_e']:
-            form['win'] =  1
-            if '\u03A7' in form['plotopts_e'].lower():
-                print(" plot chi(e)")
-            else:
-                cmd = "plot_bkg({group:s}"
-                cmd = cmd + ", win={win:d}, title={title:s})"
-                self.controller.larch.eval(cmd.format(**form))
-
-        if form['plotone_k']:
-            form['win'] =  2
-            show_win = 'window' in form['plotopts_k'].lower()
-            form['show_win'] = 'True' if show_win else 'False'
-            cmd = "plot_chik({group:s}, kweight={plot_kweight:.1f}, show_window={show_win:s}"
-            cmd = cmd + ", win={win:d}, title={title:s})"
-            self.controller.larch.eval(cmd.format(**form))
-
-        if form['plotone_r']:
-            form['win'] = 3
-            show_mag = '|' in form['plotopts_r'].lower()
-            show_re  = 're[' in form['plotopts_r'].lower()
-            form['show_mag'] = 'True' if show_mag else 'False'
-            form['show_re'] = 'True' if  show_re else 'False'
-            cmd = "plot_chir({group:s}, show_mag={show_mag:s}, show_real={show_re:s}"
-            cmd = cmd + ", win={win:d}, title={title:s})"
-            self.controller.larch.eval(cmd.format(**form))
+        cmd = PlotCmds[form['plotone_op']] + ", win=1, title={title:s})"
+        # 2nd plot
+        cmd2 =  PlotCmds[form['plotalt_op']]
+        if cmd2 is not None:
+            cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
+            cmd2 = cmd2 + ", win=2, title={title:s})"
+            cmd = "%s\n%s" % (cmd, cmd2)
+        self.controller.larch.eval(cmd.format(**form))
 
 
     def onPlotSel(self, evt=None):
-        newplot = True
-        print("Plot Selected!!")
-        pass
+        form = self.read_form()
+        print("Plot Sel form : ", form)
