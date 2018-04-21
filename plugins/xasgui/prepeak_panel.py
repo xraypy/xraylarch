@@ -456,15 +456,15 @@ class PrePeakPanel(wx.Panel):
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
-        models_peaks = Choice(pan, size=(125, -1),
+        models_peaks = Choice(pan, size=(150, -1),
                               choices=ModelChoices['peaks'],
                               action=self.addModel)
 
-        models_other = Choice(pan, size=(125, -1),
+        models_other = Choice(pan, size=(150, -1),
                               choices=ModelChoices['other'],
                               action=self.addModel)
 
-        self.plot_choice = Choice(pan, size=(125, -1),
+        self.plot_choice = Choice(pan, size=(150, -1),
                                   choices=PlotChoices,
                                   action=self.onPlot)
 
