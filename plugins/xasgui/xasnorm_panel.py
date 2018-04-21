@@ -40,7 +40,7 @@ PlotOne_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
 PlotSel_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
                                ('Normalized \u03BC(E)', 'norm'),
                                ('Flattened \u03BC(E)', 'flat'),
-                               ('d\u03BC(E)/dE', 'dmude')))
+                               ('d\u03BC(E)/dE (normalized)', 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -94,7 +94,6 @@ class XASNormPanel(TaskPanel):
             s.Add(bb)
             return s
 
-
         opts = dict(action=self.onReprocess)
 
         e0opts_panel = wx.Panel(xas)
@@ -114,7 +113,7 @@ class XASNormPanel(TaskPanel):
         self.wids['vict'].SetSelection(1)
         self.wids['nnor'].SetSelection(1)
 
-        opts.update({'size': (100, -1),'digits': 2, 'increment': 5.0})
+        opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0})
 
         xas_pre1 = FloatSpinWithPin('pre1', value=-1000, **opts)
         xas_pre2 = FloatSpinWithPin('pre2', value=-30, **opts)
@@ -406,8 +405,8 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
-
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
+        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
