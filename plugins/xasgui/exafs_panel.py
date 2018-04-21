@@ -130,8 +130,8 @@ class EXAFSPanel(TaskPanel):
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.process)
         wids['e0'] = FloatSpin(panel, **opts)
 
-        opts['max_val'] = 10
-        wids['rbkg'] = FloatSpin(panel, value=1.0,  max_val=5.0, **opts)
+        opts['max_val'] = 5
+        wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
 
         opts['max_val'] = 125
         bkg_kmin = FloatSpinWithPin('bkg_kmin', value=0, **opts)
