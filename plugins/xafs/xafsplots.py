@@ -246,7 +246,6 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     #endif
 #enddef
 
-
 @ValidateLarchPlugin
 def plot_chie(dgroup, emin=0, emax=None,
              label=None, title=None, new=True, win=1, _larch=None):
@@ -279,7 +278,7 @@ def plot_chie(dgroup, emin=0, emax=None,
     #endif
 
     chie = mu - dgroup.bkg
-    xmin = dgroup.e0
+    xmin, xmax = dgroup.e0, None
     if emin is not None:
         xmin = dgroup.e0 + emin
     if emax is not None:
@@ -288,11 +287,10 @@ def plot_chie(dgroup, emin=0, emax=None,
     title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, show_legend=True, linewidth=3, _larch=_larch)
-    _plot(dgroup.energy, chie, xlabel=plotlabels.energy, ylabel=lpotlabels.chie,
+    _plot(dgroup.energy, chie, xlabel=plotlabels.energy, ylabel=plotlabels.chie,
          title=title, label=label, zorder=20, new=new, xmin=xmin, xmax=xmax,
          **opts)
 #enddef
-
 
 @ValidateLarchPlugin
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
@@ -650,6 +648,7 @@ def initializeLarchPlugin(_larch=None):
 def registerLarchPlugin():
     return ('_xafs', {'plot_mu':plot_mu,
                       'plot_bkg':plot_bkg,
+                      'plot_chie': plot_chie,
                       'plot_chik': plot_chik,
                       'plot_chir': plot_chir,
                       'plot_chifit': plot_chifit,
