@@ -100,7 +100,7 @@ def redraw(win=1, show_legend=True, _larch=None):
 def plot_mu(dgroup, show_norm=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
             emin=None, emax=None, label='mu', new=True, delay_draw=False,
-            title=None, win=1, _larch=None):
+            offset=0, title=None, win=1, _larch=None):
     """
     plot_mu(dgroup, norm=False, deriv=False, show_pre=False, show_post=False,
              show_e0=False, show_deriv=False, emin=None, emax=None, label=None,
@@ -123,6 +123,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
      title      string for plot titlel [None, may use filename if available]
      new        bool whether to start a new plot [True]
      delay_draw bool whether to delay draw until more traces are added [False]
+     offset      vertical offset to use for y-array [0]
      win        integer plot window to use [1]
 
     Notes
@@ -162,28 +163,28 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
                 title=title, xmin=xmin, xmax=xmax,
                 delay_draw=True, _larch=_larch)
 
-    _plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
+    _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
           label=label, zorder=20, new=new, **opts)
 
     if with_deriv:
         dmu = gradient(mu)/gradient(dgroup.energy)
-        _plot(dgroup.energy, dmu, ylabel=plotlabels.dmude,
+        _plot(dgroup.energy, dmu+offset, ylabel=plotlabels.dmude,
               label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
 
     if (not show_norm and not show_deriv):
         if show_pre:
-            _plot(dgroup.energy, dgroup.pre_edge, label='pre_edge',
+            _plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge',
                   zorder=18, **opts)
         #endif
         if show_post:
-            _plot(dgroup.energy, dgroup.post_edge, label='post_edge',
+            _plot(dgroup.energy, dgroup.post_edge+offset, label='post_edge',
                   zorder=18, **opts)
             if show_pre:
                 i = index_of(dgroup.energy, dgroup.e0)
                 ypre = dgroup.pre_edge[i]
                 ypost = dgroup.post_edge[i]
-                _plot_arrow(dgroup.e0, ypre, dgroup.e0, ypost,
+                _plot_arrow(dgroup.e0, ypre, dgroup.e0+offset, ypost,
                             color=plotlabels.e0color, width=0.25,
                             head_width=0, zorder=3, win=win, _larch=_larch)
             #endif
@@ -202,8 +203,8 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
 
 @ValidateLarchPlugin
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
-             label=None, title=None, new=True, delay_draw=False, win=1,
-             _larch=None):
+             label=None, title=None, new=True, delay_draw=False, offset=0,
+             win=1, _larch=None):
     """
     plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
 
@@ -211,16 +212,17 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
     Arguments
     ----------
-     dgroup   group of XAFS data after autobk() results (see Note 1)
-     norm     bool whether to show normalized data [True]
-     emin     min energy to show, relative to E0 [None, start of data]
-     emax     max energy to show, relative to E0 [None, end of data]
-     show_e0  bool whether to show E0 [False]
-     label    string for label [``None``: 'mu']
-     title    string for plot titlel [None, may use filename if available]
-     new      bool whether to start a new plot [True]
-     delay_draw bool whether to delay draw until more traces are added [False]
-     win      integer plot window to use [1]
+     dgroup      group of XAFS data after autobk() results (see Note 1)
+     norm        bool whether to show normalized data [True]
+     emin        min energy to show, relative to E0 [None, start of data]
+     emax        max energy to show, relative to E0 [None, end of data]
+     show_e0     bool whether to show E0 [False]
+     label       string for label [``None``: 'mu']
+     title       string for plot titlel [None, may use filename if available]
+     new         bool whether to start a new plot [True]
+     delay_draw  bool whether to delay draw until more traces are added [False]
+     offset      vertical offset to use for y-array [0]
+     win         integer plot window to use [1]
 
     Notes
     -----
@@ -253,10 +255,10 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
     opts = dict(win=win, show_legend=True, linewidth=3,
                 delay_draw=True, _larch=_larch)
-    _plot(dgroup.energy, mu, xlabel=plotlabels.energy, ylabel=ylabel,
+    _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, zorder=20, new=new, xmin=xmin, xmax=xmax,
          **opts)
-    _plot(dgroup.energy, bkg, zorder=18, label='bkg', **opts)
+    _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
     if show_e0:
         _plot_axvline(dgroup.e0, zorder=2, size=3, label='E0',
                       color=plotlabels.e0color, win=win, _larch=_larch)
@@ -269,7 +271,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 
 @ValidateLarchPlugin
 def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
-              new=True, delay_draw=False, win=1, _larch=None):
+              new=True, delay_draw=False, offset=0, win=1, _larch=None):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
 
@@ -277,14 +279,15 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
 
     Arguments
     ----------
-     dgroup   group of XAFS data after autobk() results (see Note 1)
-     emin     min energy to show, relative to E0 [-25]
-     emax     max energy to show, relative to E0 [None, end of data]
-     label    string for label [``None``: 'mu']
-     title    string for plot titlel [None, may use filename if available]
-     new      bool whether to start a new plot [True]
-     delay_draw bool whether to delay draw until more traces are added [False]
-     win      integer plot window to use [1]
+     dgroup      group of XAFS data after autobk() results (see Note 1)
+     emin        min energy to show, relative to E0 [-25]
+     emax        max energy to show, relative to E0 [None, end of data]
+     label       string for label [``None``: 'mu']
+     title       string for plot titlel [None, may use filename if available]
+     new         bool whether to start a new plot [True]
+     delay_draw  bool whether to delay draw until more traces are added [False]
+     offset      vertical offset to use for y-array [0]
+     win         integer plot window to use [1]
 
     Notes
     -----
@@ -308,8 +311,7 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
 
     title = _get_title(dgroup, title=title)
 
-
-    _plot(dgroup.energy, chie, xlabel=plotlabels.energy,
+    _plot(dgroup.energy, chie+offset, xlabel=plotlabels.energy,
           ylabel=plotlabels.chie, title=title, label=label, zorder=20,
           new=new, xmin=xmin, xmax=xmax, win=win, show_legend=True,
           delay_draw=delay_draw, linewidth=3, _larch=_larch)
@@ -319,7 +321,7 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
 @ValidateLarchPlugin
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
               scale_window=True, label=None, title=None, new=True,
-              delay_draw=False, win=1, _larch=None):
+              delay_draw=False, offset=0, win=1, _larch=None):
     """
     plot_chik(dgroup, kweight=None, kmax=None, show_window=True, label=None,
               new=True, win=1)
@@ -337,6 +339,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
+     offset       vertical offset to use for y-array [0]
      win          integer plot window to use [1]
 
     Notes
@@ -356,7 +359,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
         label = 'chi'
     #endif
     title = _get_title(dgroup, title=title)
-    _plot(dgroup.k, chi, xlabel=plotlabels.k,
+    _plot(dgroup.k, chi+offset, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=title,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
 
@@ -364,7 +367,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
         kwin = dgroup.kwin
         if scale_window:
             kwin = kwin*max(abs(chi))
-        _plot(dgroup.k, kwin, zorder=12, label='window',  **opts)
+        _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
     #endif
     if not delay_draw:
         redraw(win=win, _larch=_larch)
@@ -375,7 +378,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 @ValidateLarchPlugin
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, label=None, title=None, new=True, delay_draw=False,
-              win=1, _larch=None):
+              offset=0, win=1, _larch=None):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, label=None, new=True, win=1)
@@ -393,6 +396,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      rmax         max R to show [None, end of data]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
+     offset       vertical offset to use for y-array [0]
      win          integer plot window to use [1]
 
     Notes
@@ -416,15 +420,15 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
         label = 'chir'
     #endif
     if show_mag:
-        _plot(dgroup.r, dgroup.chir_mag, label='%s (mag)' % label, **opts)
+        _plot(dgroup.r, dgroup.chir_mag+offset, label='%s (mag)' % label, **opts)
         opts['new'] = False
     #endif
     if show_real:
-        _plot(dgroup.r, dgroup.chir_re, label='%s (real)' % label, **opts)
+        _plot(dgroup.r, dgroup.chir_re+offset, label='%s (real)' % label, **opts)
         opts['new'] = False
     #endif
     if show_imag:
-        _plot(dgroup.r, dgroup.chir_im, label='%s (imag)' % label, **opts)
+        _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
     if not delay_draw:
         redraw(win=win, _larch=_larch)
@@ -434,7 +438,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
 @ValidateLarchPlugin
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
-                title=None, new=True, delay_draw=False,  win=1, _larch=None):
+                title=None, new=True, delay_draw=False, offset=0, win=1,
+                _larch=None):
     """
     plot_chifit(dataset, kmin=0, kmax=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
@@ -455,6 +460,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
      title        string for plot titlel [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
+     offset       vertical offset to use for y-array [0]
      win          integer plot window to use [1]
 
     """
@@ -473,10 +479,10 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
               _larch=_larch)
 
     # k-weighted chi(k) in first plot window
-    _plot(dataset.data.k, data_chik, xmin=kmin, xmax=kmax,
+    _plot(dataset.data.k, data_chik+offset, xmin=kmin, xmax=kmax,
             xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
             label='data', new=new, **opts)
-    _plot(dataset.model.k, model_chik, label='fit',  **opts)
+    _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
 
     # show chi(R) in next plot window
     opts['win'] = win+1
@@ -487,21 +493,21 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                  'xmax': rmax, 'new': new})
 
     if show_mag:
-        _plot(dataset.data.r,  dataset.data.chir_mag,
+        _plot(dataset.data.r,  dataset.data.chir_mag+offset,
              label='|data|', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_mag,
+        _plot(dataset.model.r, dataset.model.chir_mag+offset,
              label='|fit|',  **opts)
     #endif
     if show_real:
-        _plot(dataset.data.r, dataset.data.chir_re, label='Re[data]', **opts)
+        _plot(dataset.data.r, dataset.data.chir_re+offset, label='Re[data]', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_re, label='Re[fit]',  **opts)
+        _plot(dataset.model.r, dataset.model.chir_re+offset, label='Re[fit]',  **opts)
     #endif
     if show_imag:
-        plot(dataset.data.r, dataset.data.chir_im, label='Im[data]', **opts)
+        plot(dataset.data.r, dataset.data.chir_im+offset, label='Im[data]', **opts)
         opts['new'] = False
-        plot(dataset.model.r, dataset.model.chir_im, label='Im[fit]',  **opts)
+        plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
     #endif
     if not delay_draw:
         redraw(win=win, _larch=_larch)
@@ -544,7 +550,8 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
 @ValidateLarchPlugin
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
                 show_mag=True, show_real=False, show_imag=True,
-                new=False, delay_draw=False, win=1, _larch=None, **kws):
+                new=False, delay_draw=False, win=1, _larch=None,
+                **kws):
     """
     plot_path_r(dataset, ipath,rmax=None, offset=0, label=None,
                 show_mag=True, show_real=False, show_imag=True,
