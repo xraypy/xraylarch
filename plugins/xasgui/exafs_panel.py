@@ -361,16 +361,18 @@ class EXAFSPanel(TaskPanel):
 
         bcmd = PlotCmds[form['plotsel_op']]
         form['new'] = 'True'
-        for checked in group_ids:
+        offset = form['plot_voffset']
+        for i, checked in enumerate(group_ids):
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
             if dgroup is not None:
                 form['group'] = dgroup.groupname
+                form['offset'] = offset * i
                 self.process_group(dgroup, **form)
 
-                extra = ", win=1, delay_draw=True, label='{group:s}', new={new:s})"
+                extra = """, offset={offset:.3f}, win=1, delay_draw=True,
+    label='{group:s}', new={new:s})"""
                 cmd = "%s%s" % (bcmd, extra)
-                print( " ==> ", cmd.format(**form))
                 self.controller.larch.eval(cmd.format(**form))
 
                 form['new'] = 'False'
