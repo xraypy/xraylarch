@@ -268,7 +268,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
 #enddef
 
 @ValidateLarchPlugin
-def plot_chie(dgroup, emin=0, emax=None, label=None, title=None,
+def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
               new=True, delay_draw=False, win=1, _larch=None):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
@@ -278,7 +278,7 @@ def plot_chie(dgroup, emin=0, emax=None, label=None, title=None,
     Arguments
     ----------
      dgroup   group of XAFS data after autobk() results (see Note 1)
-     emin     min energy to show, relative to E0 [0]
+     emin     min energy to show, relative to E0 [-25]
      emax     max energy to show, relative to E0 [None, end of data]
      label    string for label [``None``: 'mu']
      title    string for plot titlel [None, may use filename if available]
@@ -300,7 +300,7 @@ def plot_chie(dgroup, emin=0, emax=None, label=None, title=None,
     #endif
 
     chie = mu - dgroup.bkg
-    xmin, xmax = dgroup.e0, None
+    xmin, xmax = dgroup.e0-25.0, None
     if emin is not None:
         xmin = dgroup.e0 + emin
     if emax is not None:
