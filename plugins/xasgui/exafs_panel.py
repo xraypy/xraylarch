@@ -41,8 +41,8 @@ PlotSel_Choices = [chie, chik, chirmag, chirre]
 
 PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             chie:    "plot_chie({group:s}",
-            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:f}",
-            chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:f}",
+            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
+            chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:.0f}",
             chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
             chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
             chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
@@ -75,7 +75,6 @@ class EXAFSPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller,
                            configname='exafs_config', **kws)
         self.skip_process = False
-        self.last_process_pars = None
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -243,17 +242,6 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
 
 
-    def onSelPoint(self, evt=None, opt='__'):
-        print("on sel point ", evt, opt, opt in self.wids)
-        xval = None
-        try:
-            xval = self.larch.symtable._plotter.plot1_x
-        except:
-            return
-
-        if opt in self.wids:
-            self.wids[opt].SetValue(xval)
-
     def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
             config.update(default_exafs_config())
@@ -322,7 +310,7 @@ class EXAFSPanel(TaskPanel):
         conf.update(self.read_form())
         opts = {}
 
-    def process(self, event=None):
+    def process(self, event=None, with_plot=True):
         """ handle process of XAS data
         """
         if self.skip_process:
@@ -331,19 +319,24 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = True
         form = self.read_form()
 
-        tpars = [int(form[attr]*100) for attr in
-                 ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
-                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
-                  'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
-        tpars.append(form['fft_kwindow'])
+        self.process_group(self.dgroup, **form)
+        self.onPlotOne()
 
-        if tpars != self.last_process_pars:
-            self.controller.larch.eval(autobk_cmd.format(**form))
-            self.controller.larch.eval(xftf_cmd.format(**form))
-            self.onPlotOne()
-
-        self.last_process_pars = tpars
         self.skip_process = False
+
+    def process_group(self, dgroup, **kws):
+        pars = [int(kws.get(attr, 0)*1000) for attr in
+                ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+                 'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
+                 'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
+        pars.append(kws['fft_kwindow'])
+
+        lpars = getattr(dgroup, 'exafs_formvals', False)
+        if pars != lpars:
+            self.controller.larch.eval(autobk_cmd.format(**kws))
+            self.controller.larch.eval(xftf_cmd.format(**kws))
+            self.dgroup.exafs_formvals = pars
+
 
     def onPlotOne(self, evt=None):
         form = self.read_form()
@@ -360,5 +353,26 @@ class EXAFSPanel(TaskPanel):
 
 
     def onPlotSel(self, evt=None):
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        if len(group_ids) < 1:
+            return
+
         form = self.read_form()
-        print("Plot Sel form : ", form)
+
+        bcmd = PlotCmds[form['plotsel_op']]
+        form['new'] = 'True'
+        for checked in group_ids:
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            if dgroup is not None:
+                form['group'] = dgroup.groupname
+                self.process_group(dgroup, **form)
+
+                extra = ", win=1, delay_draw=True, label='{group:s}', new={new:s})"
+                cmd = "%s%s" % (bcmd, extra)
+                print( " ==> ", cmd.format(**form))
+                self.controller.larch.eval(cmd.format(**form))
+
+                form['new'] = 'False'
+
+        self.controller.larch.eval("redraw(win=1, show_legend=True)")
