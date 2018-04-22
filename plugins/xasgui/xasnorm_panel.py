@@ -238,7 +238,7 @@ class XASNormPanel(TaskPanel):
                 k.Disable()
 
         self.skip_process = False
-        self.process(dgroup)
+        self.process(dgroup=dgroup)
 
     def read_form(self):
         "read form, return dict of values"
@@ -321,7 +321,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 grp.xasnorm_config.update(opts)
                 self.fill_form(grp)
-                self.process(grp)
+                self.process(dgroup=grp)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
@@ -341,7 +341,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         except TypeError:
             return
-        self.process(dgroup)
+        self.process(dgroup=dgroup)
         self.plot(dgroup)
 
     def onSelPoint(self, evt=None, opt='e0'):
@@ -359,11 +359,15 @@ class XASNormPanel(TaskPanel):
         else:
             print(" unknown selection point ", opt)
 
-    def process(self, dgroup, **kws):
+    def process(self, dgroup=None, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
         if self.skip_process:
             return
+
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
         self.skip_process = True
 
         dgroup.custom_plotopts = {}
@@ -498,7 +502,7 @@ class XASNormPanel(TaskPanel):
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
-            self.process(dgroup)
+            self.process(dgroup=dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays

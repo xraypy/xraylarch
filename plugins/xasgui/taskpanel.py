@@ -66,6 +66,7 @@ class TaskPanel(wx.Panel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             self.fill_form(dgroup)
+            self.process()
 
     def larch_eval(self, cmd):
         """eval"""
