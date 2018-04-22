@@ -522,11 +522,12 @@ class XASFrame(wx.Frame):
         dgroup = self.controller.get_group(groupname)
         self.controller.group = dgroup
         self.controller.groupname = groupname
-        current_nbpanel = self.nb_panels[self.nb.GetSelection()]
+        c_panel = self.nb_panels[self.nb.GetSelection()]
+        c_panel.fill_form(dgroup)
 
-        self.nb_panels[0].fill_form(dgroup)
-        if with_plot:
-            self.nb_panels[0].plot(dgroup)
+        if with_plot and hasattr(c_panel, 'plot'):
+            c_panel.process()
+            c_panel.plot(dgroup)
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
