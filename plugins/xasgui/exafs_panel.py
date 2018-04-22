@@ -269,10 +269,12 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
         self.process(dgroup=dgroup)
 
-    def read_form(self):
+    def read_form(self, dgroup=None):
         "read form, return dict of values"
-        self.dgroup = self.controller.get_group()
-        form_opts = {'group': self.dgroup.groupname}
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        self.dgroup = dgroup
+        form_opts = {'group': dgroup.groupname}
 
         wids = self.wids
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -315,11 +317,12 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = False
 
     def process(self, dgroup=None, opts=None, **kws):
-        if dgroup is None:
-            dgroup = self.controller.get_group()
-
         if opts is None:
             opts = self.read_form()
+        if dgroup is not None:
+            self.dgroup = dgroup
+            opts['group'] = dgroup.groupname
+
         opts.update(kws)
         pars = [int(opts.get(attr, 0)*1000) for attr in
                 ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -328,16 +331,20 @@ class EXAFSPanel(TaskPanel):
         pars.append(opts['fft_kwindow'])
 
         lpars = getattr(dgroup, 'exafs_formvals', False)
-        # print("Process ", kws)
-        # print("Process ", pars)
+
         if pars != lpars:
             self.controller.larch.eval(autobk_cmd.format(**opts))
             self.controller.larch.eval(xftf_cmd.format(**opts))
             self.dgroup.exafs_formvals = pars
 
+    def plot(self, dgroup=None):
+        self.onPlotOne(dgroup=dgroup)
 
-    def onPlotOne(self, evt=None):
+    def onPlotOne(self, evt=None, dgroup=None):
         form = self.read_form()
+        if dgroup is not None:
+            self.dgroup = dgroup
+            opts['group'] = dgroup.groupname
         form['title'] = '"%s"' % self.dgroup.filename
 
         cmd = PlotCmds[form['plotone_op']] + ", win=1, title={title:s})"
@@ -366,7 +373,7 @@ class EXAFSPanel(TaskPanel):
             if dgroup is not None:
                 form['group'] = dgroup.groupname
                 form['offset'] = offset * i
-                self.process(dgroup=dgroup, **form)
+                self.process(dgroup=dgroup, opts=form)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{group:s}', new={new:s})"""

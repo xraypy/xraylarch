@@ -504,15 +504,11 @@ class XASFrame(wx.Frame):
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
 
-    def ShowFile(self, evt=None, groupname=None, with_plot=True, **kws):
+    def ShowFile(self, evt=None, groupname=None, process=True, **kws):
         filename = None
-        if evt is not None: #
+        if evt is not None:
             filename = str(evt.GetString())
-            # could have clicking on filename add to "Selected":
-            #  checked = list(self.controller.filelist.GetCheckedStrings())
-            #  if filename not in checked:
-            #      checked.append(filename)
-            #  self.controller.filelist.SetCheckedStrings(checked)
+
         if groupname is None and filename is not None:
             groupname = self.controller.file_groups[filename]
 
@@ -520,18 +516,19 @@ class XASFrame(wx.Frame):
             return
 
         dgroup = self.controller.get_group(groupname)
-        self.controller.group = dgroup
-        self.controller.groupname = groupname
-        c_panel = self.nb_panels[self.nb.GetSelection()]
-        c_panel.fill_form(dgroup)
-
-        if with_plot and hasattr(c_panel, 'plot'):
-            c_panel.process()
-            c_panel.plot(dgroup)
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
         self.current_filename = filename
+
+        self.controller.group = dgroup
+        self.controller.groupname = groupname
+        cur_panel = self.nb_panels[self.nb.GetSelection()]
+        if process:
+            cur_panel.fill_form(dgroup=dgroup)
+            cur_panel.process(dgroup=dgroup)
+            if hasattr(cur_panel, 'plot'):
+                cur_panel.plot(dgroup=dgroup)
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -706,7 +703,6 @@ class XASFrame(wx.Frame):
         """
         dgroup = datagroup
         self.install_group(dgroup.groupname, dgroup.filename, overwrite=False)
-        self.nb_panels[0].process(dgroup)
         self.ShowFile(groupname=dgroup.groupname)
 
     def onCopyGroup(self, event=None):
@@ -938,12 +934,11 @@ class XASFrame(wx.Frame):
         {group:s}.plot_ylabel = 'mu'
         {group:s}.plot_xlabel = 'energy'
         """
-        for gname in namelist:
+        for gname innamelist:
+            process = (gname == namelist[0]) or (gname == namelist[-1])
             self.larch.eval(s.format(group=gname))
-            dgroup = self.install_group(gname, gname, with_plot=False)
-            # self.nb_panels[0].fill_form(dgroup)
-        if dgroup is not None:
-            self.nb_panels[0].plot(dgroup)
+            dgroup = self.install_group(gname, gname, process=process)
+
         self.larch.eval("del _prj")
 
 
@@ -980,7 +975,7 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path))
             self.install_group(gname, filename, overwrite=True)
 
-    def install_group(self, groupname, filename, overwrite=False, with_plot=True):
+    def install_group(self, groupname, filename, overwrite=False, process=True):
         """add groupname / filename to list of available data groups"""
 
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -1000,7 +995,7 @@ class XASFrame(wx.Frame):
             self.controller.filelist.Append(filename)
             self.controller.file_groups[filename] = groupname
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname, with_plot=with_plot)
+        self.ShowFile(groupname=groupname, process=process)
         self.controller.filelist.SetStringSelection(filename)
         return thisgroup
 
