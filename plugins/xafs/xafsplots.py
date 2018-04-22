@@ -89,7 +89,10 @@ def _get_title(dgroup, title=None):
 
 @ValidateLarchPlugin
 def redraw(win=1, show_legend=True, _larch=None):
-    panel = _getDisplay(win=win, _larch=_larch).panel
+    try:
+        panel = _getDisplay(win=win, _larch=_larch).panel
+    except AttributeError:
+        return
     panel.conf.show_legend = show_legend
     if show_legend:
         panel.conf.draw_legend()
