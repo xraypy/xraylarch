@@ -370,6 +370,9 @@ class XASNormPanel(TaskPanel):
 
         self.skip_process = True
 
+        if not hasattr(dgroup, 'xasnorm_config'):
+            dgroup.xasnorm_config = default_xasnorm_config()
+
         dgroup.custom_plotopts = {}
         # print("XAS norm process ", dgroup.datatype)
 
