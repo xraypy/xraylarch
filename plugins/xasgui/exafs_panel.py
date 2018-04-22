@@ -74,6 +74,7 @@ class EXAFSPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller,
                            configname='exafs_config', **kws)
         self.skip_process = False
+        self.last_plot = 'one'
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -312,7 +313,10 @@ class EXAFSPanel(TaskPanel):
         form = self.read_form()
 
         self.process(dgroup=self.dgroup, opts=form)
-        self.onPlotOne()
+        if self.last_plot == 'selected':
+            self.onPlotSel()
+        else:
+            self.onPlotOne()
 
         self.skip_process = False
 
@@ -336,6 +340,10 @@ class EXAFSPanel(TaskPanel):
             self.controller.larch.eval(autobk_cmd.format(**opts))
             self.controller.larch.eval(xftf_cmd.format(**opts))
             self.dgroup.exafs_formvals = pars
+            for attr in default_exafs_config().keys():
+                if attr in opts and attr in dgroup.exafs_config:
+                    dgroup.exafs_config[attr] = opts[attr]
+
 
     def plot(self, dgroup=None):
         self.onPlotOne(dgroup=dgroup)
@@ -355,13 +363,13 @@ class EXAFSPanel(TaskPanel):
             cmd2 = cmd2 + ", win=2, title={title:s})"
             cmd = "%s\n%s" % (cmd, cmd2)
         self.controller.larch.eval(cmd.format(**form))
-
+        self.last_plot = 'one'
+        self.parent.SetFocus()
 
     def onPlotSel(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
-
         form = self.read_form()
 
         bcmd = PlotCmds[form['plotsel_op']]
@@ -373,7 +381,7 @@ class EXAFSPanel(TaskPanel):
             if dgroup is not None:
                 form['group'] = dgroup.groupname
                 form['offset'] = offset * i
-                self.process(dgroup=dgroup, opts=form)
+                # self.process(dgroup=dgroup, opts=form)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{group:s}', new={new:s})"""
@@ -383,3 +391,5 @@ class EXAFSPanel(TaskPanel):
                 form['new'] = 'False'
 
         self.controller.larch.eval("redraw(win=1, show_legend=True)")
+        self.last_plot = 'selected'
+        self.parent.SetFocus()
