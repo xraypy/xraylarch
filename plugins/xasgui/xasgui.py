@@ -934,11 +934,10 @@ class XASFrame(wx.Frame):
         {group:s}.plot_ylabel = 'mu'
         {group:s}.plot_xlabel = 'energy'
         """
-        for gname innamelist:
+        for gname in namelist:
             process = (gname == namelist[0]) or (gname == namelist[-1])
             self.larch.eval(s.format(group=gname))
             dgroup = self.install_group(gname, gname, process=process)
-
         self.larch.eval("del _prj")
 
 
