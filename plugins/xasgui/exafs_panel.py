@@ -242,7 +242,7 @@ class EXAFSPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        print("Fill form ", opts, self.configname)
+        # print("Fill form ", opts, self.configname)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -344,7 +344,7 @@ class EXAFSPanel(TaskPanel):
         form = self.read_form()
         if dgroup is not None:
             self.dgroup = dgroup
-            opts['group'] = dgroup.groupname
+            form['group'] = dgroup.groupname
         form['title'] = '"%s"' % self.dgroup.filename
 
         cmd = PlotCmds[form['plotone_op']] + ", win=1, title={title:s})"
