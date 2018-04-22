@@ -93,11 +93,14 @@ def redraw(win=1, show_legend=True, _larch=None):
         panel = _getDisplay(win=win, _larch=_larch).panel
     except AttributeError:
         return
+    #endtry
     panel.conf.show_legend = show_legend
-    if show_legend:
+    if show_legend:  # note: draw_legend *will* redraw the canvas
         panel.conf.draw_legend()
     else:
         panel.canvas.draw()
+    #endif
+#enddef
 
 @ValidateLarchPlugin
 def plot_mu(dgroup, show_norm=False, show_deriv=False,
@@ -174,7 +177,6 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
         _plot(dgroup.energy, dmu+offset, ylabel=plotlabels.dmude,
               label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
-
     if (not show_norm and not show_deriv):
         if show_pre:
             _plot(dgroup.energy, dgroup.pre_edge+offset, label='pre_edge',
