@@ -63,11 +63,10 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
 
 def default_exafs_config():
     return dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
-                bkg_clamphi=5, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
+                bkg_clamphi=50, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
                 plot_kweight=2, plot_kweight_alt=2, plot_voffset=0,
-                plotone_op='\u03A7(k)', plotsel_op='\u03A7(k)',
-                plotalt_op='< None >')
+                plotone_op=chik, plotsel_op=chik, plotalt_op=noplot)
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
@@ -78,22 +77,20 @@ class EXAFSPanel(TaskPanel):
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
-
         panel = self.panel
         wids = self.wids
         self.skip_process = True
 
+        wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
+                                    action=self.onPlotOne, size=(175, -1))
+        wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
+                                    action=self.onPlotOne, size=(175, -1))
+        wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
+                                    action=self.onPlotSel, size=(175, -1))
 
-        self.wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
-                                         action=self.onPlotOne, size=(175, -1))
-        self.wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
-                                         action=self.onPlotOne, size=(175, -1))
-        self.wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
-                                         action=self.onPlotSel, size=(175, -1))
-
-        self.wids['plotone_op'].SetSelection(1)
-        self.wids['plotalt_op'].SetSelection(0)
-        self.wids['plotsel_op'].SetSelection(1)
+        wids['plotone_op'].SetSelection(1)
+        wids['plotalt_op'].SetSelection(0)
+        wids['plotsel_op'].SetSelection(1)
 
         plot_one = Button(panel, 'Plot This Group', size=(150, -1),
                           action=self.onPlotOne)
@@ -116,17 +113,13 @@ class EXAFSPanel(TaskPanel):
             return s
 
         wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
-                                        action=self.onPlotSel)
-
+                                         action=self.onPlotSel)
         wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                         action=self.onPlotOne,
-                                         min_val=0, max_val=5)
-
+                                         action=self.onPlotOne, min_val=0, max_val=5)
         wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                         action=self.onPlotOne,
-                                         min_val=0, max_val=5)
+                                             action=self.onPlotOne,  min_val=0, max_val=5)
 
-        opts = dict(digits=2, increment=0.1, min_val=0, action=self.process)
+        opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
 
         opts['max_val'] = 5
@@ -148,12 +141,12 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
 
-        opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.process)
+        opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.onProcess)
         wids['bkg_clamplo'] = Choice(panel, **opts)
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.process, size=(125, -1))
+                                     action=self.onProcess, size=(125, -1))
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -201,7 +194,6 @@ class EXAFSPanel(TaskPanel):
         add_text('kweight: ', newrow=True)
         panel.Add(wids['bkg_kweight'], dcol=1)
 
-
         add_text('Clamps Low E: ', newrow=True)
         panel.Add( wids['bkg_clamplo'])
         add_text('high E: ',  newrow=False)
@@ -236,11 +228,9 @@ class EXAFSPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-
         sizer.Add(panel, 1, LCEN, 3)
         pack(self, sizer)
         self.skip_process = False
-
 
     def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
@@ -252,6 +242,7 @@ class EXAFSPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
+        print("Fill form ", opts, self.configname)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -276,7 +267,7 @@ class EXAFSPanel(TaskPanel):
             wids[attr].SetStringSelection(opts[attr])
 
         self.skip_process = False
-        self.process()
+        self.process(dgroup=dgroup)
 
     def read_form(self):
         "read form, return dict of values"
@@ -310,31 +301,38 @@ class EXAFSPanel(TaskPanel):
         conf.update(self.read_form())
         opts = {}
 
-    def process(self, event=None, with_plot=True):
-        """ handle process of XAS data
-        """
+    def onProcess(self, event=None):
+        """ handle process events"""
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
 
-        self.process_group(self.dgroup, **form)
+        self.process(dgroup=self.dgroup, opts=form)
         self.onPlotOne()
 
         self.skip_process = False
 
-    def process_group(self, dgroup, **kws):
-        pars = [int(kws.get(attr, 0)*1000) for attr in
+    def process(self, dgroup=None, opts=None, **kws):
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
+        if opts is None:
+            opts = self.read_form()
+        opts.update(kws)
+        pars = [int(opts.get(attr, 0)*1000) for attr in
                 ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
                  'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
-        pars.append(kws['fft_kwindow'])
+        pars.append(opts['fft_kwindow'])
 
         lpars = getattr(dgroup, 'exafs_formvals', False)
+        # print("Process ", kws)
+        # print("Process ", pars)
         if pars != lpars:
-            self.controller.larch.eval(autobk_cmd.format(**kws))
-            self.controller.larch.eval(xftf_cmd.format(**kws))
+            self.controller.larch.eval(autobk_cmd.format(**opts))
+            self.controller.larch.eval(xftf_cmd.format(**opts))
             self.dgroup.exafs_formvals = pars
 
 
@@ -368,7 +366,7 @@ class EXAFSPanel(TaskPanel):
             if dgroup is not None:
                 form['group'] = dgroup.groupname
                 form['offset'] = offset * i
-                self.process_group(dgroup, **form)
+                self.process(dgroup=dgroup, **form)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{group:s}', new={new:s})"""
