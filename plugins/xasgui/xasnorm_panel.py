@@ -40,7 +40,7 @@ PlotOne_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
 PlotSel_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
                                ('Normalized \u03BC(E)', 'norm'),
                                ('Flattened \u03BC(E)', 'flat'),
-                               ('d\u03BC(E)/dE', 'dmude')))
+                               ('d\u03BC(E)/dE (normalized)', 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -52,9 +52,9 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
 
 def default_xasnorm_config():
     return dict(e0=0, edge_step=None, pre1=-200, pre2=-25, nnorm=2, norm1=25,
-                norm2=-10, nvict=1, auto_step=True, auto_e0=True,
-                show_e0=True, plotone_op='Normalized',
-                plotsel_op='Normalized')
+                norm2=-10, nvict=1, auto_step=True, auto_e0=True, show_e0=True,
+                plotone_op='Normalized \u03BC(E)',
+                plotsel_op='Normalized \u03BC(E)')
 
 
 class XASNormPanel(TaskPanel):
@@ -67,13 +67,15 @@ class XASNormPanel(TaskPanel):
         titleopts = dict(font=Font(12), colour='#AA0000')
 
         xas = self.panel
+        self.wids = {}
+
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(175, -1))
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
                                  action=self.onPlotSel, size=(175, -1))
 
-        self.plotone_op.SetStringSelection('Normalized')
-        self.plotsel_op.SetStringSelection('Normalized')
+        self.plotone_op.SetSelection(1)
+        self.plotsel_op.SetSelection(1)
 
         plot_one = Button(xas, 'Plot This Group', size=(150, -1),
                           action=self.onPlotOne)
@@ -81,7 +83,6 @@ class XASNormPanel(TaskPanel):
         plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
 
-        self.wids = {}
 
         def FloatSpinWithPin(name, value, **kws):
             s = wx.BoxSizer(wx.HORIZONTAL)
@@ -92,7 +93,6 @@ class XASNormPanel(TaskPanel):
             s.Add(self.wids[name])
             s.Add(bb)
             return s
-
 
         opts = dict(action=self.onReprocess)
 
@@ -113,14 +113,14 @@ class XASNormPanel(TaskPanel):
         self.wids['vict'].SetSelection(1)
         self.wids['nnor'].SetSelection(1)
 
-        opts.update({'size': (75, -1), 'digits': 2, 'increment': 5.0})
+        opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0})
 
         xas_pre1 = FloatSpinWithPin('pre1', value=-1000, **opts)
         xas_pre2 = FloatSpinWithPin('pre2', value=-30, **opts)
         xas_nor1 = FloatSpinWithPin('nor1', value=50, **opts)
         xas_nor2 = FloatSpinWithPin('nor2', value=5000, **opts)
 
-        opts = {'size': (75, -1), 'digits': 2, 'increment': 0.1, 'value': 0}
+        opts = {'digits': 2, 'increment': 0.1, 'value': 0}
         xas_e0   = FloatSpinWithPin('e0', action=self.onSet_XASE0, **opts)
         self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
@@ -238,7 +238,7 @@ class XASNormPanel(TaskPanel):
                 k.Disable()
 
         self.skip_process = False
-        self.process(dgroup)
+        self.process(dgroup=dgroup)
 
     def read_form(self):
         "read form, return dict of values"
@@ -321,7 +321,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 grp.xasnorm_config.update(opts)
                 self.fill_form(grp)
-                self.process(grp)
+                self.process(dgroup=grp)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
@@ -341,7 +341,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         except TypeError:
             return
-        self.process(dgroup)
+        self.process(dgroup=dgroup)
         self.plot(dgroup)
 
     def onSelPoint(self, evt=None, opt='e0'):
@@ -359,12 +359,19 @@ class XASNormPanel(TaskPanel):
         else:
             print(" unknown selection point ", opt)
 
-    def process(self, dgroup, **kws):
+    def process(self, dgroup=None, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
         if self.skip_process:
             return
+
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
         self.skip_process = True
+
+        if not hasattr(dgroup, 'xasnorm_config'):
+            dgroup.xasnorm_config = default_xasnorm_config()
 
         dgroup.custom_plotopts = {}
         # print("XAS norm process ", dgroup.datatype)
@@ -405,8 +412,8 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
-
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
+        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
@@ -498,7 +505,7 @@ class XASNormPanel(TaskPanel):
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None)):
-            self.process(dgroup)
+            self.process(dgroup=dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays

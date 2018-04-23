@@ -24,16 +24,29 @@ from larch_plugins.xafs.xafsplots import plotlabels
 
 np.seterr(all='ignore')
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
-                  marker='None', markersize=4)
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
+# plot options:
+mu_bkg  = u'\u03BC(E) + \u03BC0(E)'
+chie    = u'\u03A7(E)'
+chik    = u'\u03A7(k)'
+chikwin = u'\u03A7(k) + Window'
+chirmag = u'|\u03A7(R)|'
+chirre  = u'Re[\u03A7(R)]'
+chirmr  = u'|\u03A7(R)| + Re[\u03A7(R)]'
+noplot  = '<no plot>'
 
-units_list = ('eV', u'1/\u212B')
-PlotChoices = {'e': ('\u03BC(E) + \u03BC0(E)', '\u03A7(E)'),
-               'k': ('\u03A7(k)', '\u03A7(k) + Window'),
-               'r': ('|\u03A7(R)|', 'Re[\u03A7(R)]', '|\u03A7(R)| + Re[\u03A7(R)]')}
+PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]
+PlotAlt_Choices = [noplot] + PlotOne_Choices
+PlotSel_Choices = [chie, chik, chirmag, chirre]
+
+
+PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
+            chie:    "plot_chie({group:s}",
+            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
+            chikwin: "plot_chik({group:s}, show_window=True, kweight={plot_kweight:.0f}",
+            chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
+            chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
+            chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
+            noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
@@ -49,21 +62,11 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
 
 
 def default_exafs_config():
-    opts = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
-                bkg_clamphi=5, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
+    return dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
+                bkg_clamphi=50, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
-                plot_kweight=2)
-    for space in ('e', 'k', 'r'):
-        opts['plotopts_%s' % space] = PlotChoices[space][0]
-        opts['plotone_%s' % space] = False
-        opts['plotsel_%s' % space] = False
-
-    opts['plotone_k'] = True
-    return opts
-
-## plotone_op='chi(k)', plotsel_op='chi(k)')
-
-
+                plot_kweight=2, plot_kweight_alt=2, plot_voffset=0,
+                plotone_op=chik, plotsel_op=chik, plotalt_op=noplot)
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
@@ -71,16 +74,31 @@ class EXAFSPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller,
                            configname='exafs_config', **kws)
         self.skip_process = False
-        self.last_process_pars = None
+        self.last_plot = 'one'
 
     def build_display(self):
-        self.SetFont(Font(10))
-        titleopts = dict(font=Font(11), colour='#AA0000')
-
+        titleopts = dict(font=Font(12), colour='#AA0000')
         panel = self.panel
         wids = self.wids
-        btns = self.btns
         self.skip_process = True
+
+        wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
+                                    action=self.onPlotOne, size=(175, -1))
+        wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
+                                    action=self.onPlotOne, size=(175, -1))
+        wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
+                                    action=self.onPlotSel, size=(175, -1))
+
+        wids['plotone_op'].SetSelection(1)
+        wids['plotalt_op'].SetSelection(0)
+        wids['plotsel_op'].SetSelection(1)
+
+        plot_one = Button(panel, 'Plot This Group', size=(150, -1),
+                          action=self.onPlotOne)
+
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
+                          action=self.onPlotSel)
+
 
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -95,37 +113,18 @@ class EXAFSPanel(TaskPanel):
             s.Add(bb)
             return s
 
-        for space, label in (('e', 'Energy'), ('k', 'K space'), ('r', 'R space')):
-            cname = 'plotopts_%s' % space
-            oname = 'plotone_%s' % space
-            sname = 'plotsel_%s' % space
-            fname = 'plotoff_%s' % space
+        wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+                                         action=self.onPlotSel)
+        wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
+                                         action=self.onPlotOne, min_val=0, max_val=5)
+        wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
+                                             action=self.onPlotOne,  min_val=0, max_val=5)
 
-            actone = partial(self.onPlot, selected=False)
-            actsel = partial(self.onPlot, selected=True)
-
-            if space in PlotChoices:
-                wids[cname] = Choice(panel, choices=PlotChoices[space],
-                                     size=(100, -1), action=actone)
-            wids[oname] = ToggleButton(panel, label, size=(100, -1), action=actone)
-            wids[sname] = ToggleButton(panel, label, size=(100, -1), action=actsel)
-            wids[fname] = FloatSpin(panel, value=0, digits=2, action=self.onPlot,
-                                    increment=0.25, size=(100, -1))
-
-            # if space != 'w':
-
-        wids['plot_kweight'] = FloatSpin(panel, value=2,
-                                         action=self.onPlot, size=(100, -1),
-                                         min_val=0, max_val=4, digits=0,
-                                         increment=1)
-
-
-        opts = dict(size=(100, -1), digits=2, increment=0.1, min_val=0,
-                    action=self.process)
+        opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
 
-        opts['max_val'] = 10
-        wids['rbkg'] = FloatSpin(panel, value=1.0,  **opts)
+        opts['max_val'] = 5
+        wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
 
         opts['max_val'] = 125
         bkg_kmin = FloatSpinWithPin('bkg_kmin', value=0, **opts)
@@ -138,85 +137,63 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 
-        opts['increment'] = opts['digits'] = 1
-        opts['max_val'] = 10
+        opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
         wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
 
         wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
 
-        opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.process)
+        opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.onProcess)
         wids['bkg_clamplo'] = Choice(panel, **opts)
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.process, size=(125, -1))
+                                     action=self.onProcess, size=(125, -1))
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        plotsel_buttons = wx.BoxSizer(wx.HORIZONTAL)
-        plotsel_buttons.Add(wids['plotsel_e'])
-        plotsel_buttons.Add(wids['plotsel_k'])
-        plotsel_buttons.Add(wids['plotsel_r'])
-
-        plotone_buttons = wx.BoxSizer(wx.HORIZONTAL)
-        plotone_buttons.Add(wids['plotone_e'])
-        plotone_buttons.Add(wids['plotone_k'])
-        plotone_buttons.Add(wids['plotone_r'])
-
         panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
 
-        add_text('Plot Selected Groups: ', newrow=True)
-        panel.Add(plotsel_buttons, dcol=3)
+        panel.Add(plot_sel, newrow=True)
+        panel.Add(self.wids['plotsel_op'], dcol=2)
 
+        add_text('Vertical offset: ', newrow=False)
+        panel.Add(wids['plot_voffset'], dcol=2)
 
-        add_text('Plot This Group: ', newrow=True)
-        panel.Add(plotone_buttons, dcol=3)
+        panel.Add(plot_one, newrow=True)
+        panel.Add(self.wids['plotone_op'], dcol=2)
 
-        add_text('K weight : ', newrow=False)
+        add_text('Plot k weight: ', newrow=False)
         panel.Add(wids['plot_kweight'])
 
-
-        add_text('Plot Choice: ', newrow=True)
-        popts = wx.BoxSizer(wx.HORIZONTAL)
-        popts.Add(wids['plotopts_e'])
-        popts.Add(wids['plotopts_k'])
-        popts.Add(wids['plotopts_r'])
-        panel.Add(popts, dcol=3)
-
-
-        add_text('Plot Offset: ', newrow=True)
-        oopts = wx.BoxSizer(wx.HORIZONTAL)
-        oopts.Add(wids['plotoff_e'])
-        oopts.Add(wids['plotoff_k'])
-        oopts.Add(wids['plotoff_r'])
-        panel.Add(oopts, dcol=3)
+        add_text('Add Second Plot: ', newrow=True)
+        panel.Add(self.wids['plotalt_op'], dcol=2)
+        add_text('Plot2 k weight: ', newrow=False)
+        panel.Add(wids['plot_kweight_alt'])
 
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction',
-                             **titleopts), dcol=3, newrow=True)
+                             **titleopts), dcol=2, newrow=True)
 
-        panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
+        panel.Add(Button(panel, 'Copy To Selected Groups', size=(175, -1),
                          action=partial(self.onCopyParam, 'bkg')),
-                  dcol=3, style=RCEN)
+                  dcol=2)
 
-        add_text('R_bkg: ')
+        add_text('R bkg: ')
         panel.Add(wids['rbkg'])
 
         add_text('E0: ', newrow=False)
         panel.Add(wids['e0'])
 
-
-        add_text('K range: ')
+        add_text('k min: ')
         panel.Add(bkg_kmin)
-        add_text(' : ',newrow=False)
+        add_text('k max:',newrow=False)
         panel.Add(bkg_kmax)
 
-        add_text('K weight: ', newrow=False)
+        add_text('kweight: ', newrow=True)
         panel.Add(wids['bkg_kweight'], dcol=1)
-
 
         add_text('Clamps Low E: ', newrow=True)
         panel.Add( wids['bkg_clamplo'])
@@ -226,19 +203,19 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform',
-                             **titleopts), dcol=3, newrow=True)
+                             **titleopts), dcol=2, newrow=True)
 
         panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
                          action=partial(self.onCopyParam, 'fft')),
-                  dcol=3, style=RCEN)
+                  dcol=2)
 
-        panel.Add(SimpleText(panel, 'K range: '), newrow=True)
+        panel.Add(SimpleText(panel, 'k min: '), newrow=True)
         panel.Add(fft_kmin)
 
-        panel.Add(SimpleText(panel, ' : '))
+        panel.Add(SimpleText(panel, 'k max:'))
         panel.Add(fft_kmax)
 
-        panel.Add(SimpleText(panel, 'K weight : '), newrow=False)
+        panel.Add(SimpleText(panel, 'k weight : '), newrow=True)
         panel.Add(wids['fft_kweight'])
 
         panel.Add(SimpleText(panel, 'K window : '), newrow=True)
@@ -252,22 +229,9 @@ class EXAFSPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-
         sizer.Add(panel, 1, LCEN, 3)
         pack(self, sizer)
         self.skip_process = False
-
-
-    def onSelPoint(self, evt=None, opt='__'):
-        print("on sel point ", evt, opt, opt in self.wids)
-        xval = None
-        try:
-            xval = self.larch.symtable._plotter.plot1_x
-        except:
-            return
-
-        if opt in self.wids:
-            self.wids[opt].SetValue(xval)
 
     def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
@@ -279,13 +243,15 @@ class EXAFSPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
+        # print("Fill form ", opts, self.configname)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
         self.skip_process = True
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
-                     'fft_kweight', 'fft_dk', 'plot_kweight'):
+                     'fft_kweight', 'fft_dk', 'plot_kweight',
+                     'plot_kweight_alt', 'plot_voffset'):
             val = getattr(dgroup, attr, None)
             if val is None:
                 val = opts.get(attr, -1)
@@ -297,45 +263,32 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             wids[attr].SetStringSelection("%d" % opts.get(attr, 0))
-        for attr in ('fft_kwindow', 'plotopts_e', 'plotopts_k', 'plotopts_r'):
+
+        for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             wids[attr].SetStringSelection(opts[attr])
 
-        for space in ('e', 'k', 'r'): # , 'w'):
-            cname = 'plotopts_%s' % space
-            oname = 'plotone_%s' % space
-            sname = 'plotsel_%s' % space
-            wids[oname].SetValue(opts[oname])
-            wids[cname].SetStringSelection(opts[cname])
-            wids[sname].SetValue(opts[sname])
         self.skip_process = False
-        self.process()
+        self.process(dgroup=dgroup)
 
-    def read_form(self):
+    def read_form(self, dgroup=None):
         "read form, return dict of values"
-        self.dgroup = self.controller.get_group()
-        form_opts = {'group': self.dgroup.groupname}
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        self.dgroup = dgroup
+        form_opts = {'group': dgroup.groupname}
 
         wids = self.wids
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
-                     'fft_kweight', 'fft_dk', 'plot_kweight'):
+                     'fft_kweight', 'fft_dk', 'plot_kweight',
+                     'plot_kweight_alt', 'plot_voffset'):
             form_opts[attr] = wids[attr].GetValue()
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             form_opts[attr] = int(wids[attr].GetStringSelection())
 
-        for attr in ('fft_kwindow', 'plotopts_e', 'plotopts_k', 'plotopts_r'):
+        for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             form_opts[attr] = wids[attr].GetStringSelection()
-
-        for space in ('e', 'k', 'r'): # , 'w'):
-            cname = 'plotopts_%s' % space
-            oname = 'plotone_%s' % space
-            sname = 'plotsel_%s' % space
-            form_opts[oname] = wids[oname].GetValue()
-            form_opts[cname] = wids[cname].GetStringSelection()
-            form_opts[sname] = wids[sname].GetValue()
-
-            # if space != 'w':
 
         return form_opts
 
@@ -351,70 +304,92 @@ class EXAFSPanel(TaskPanel):
         conf.update(self.read_form())
         opts = {}
 
-    def process(self, event=None):
-        """ handle process of XAS data
-        """
+    def onProcess(self, event=None):
+        """ handle process events"""
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
 
-        tpars = [int(form[attr]*100) for attr in
-                 ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
-                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
-                  'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
-        tpars.append(form['fft_kwindow'])
+        self.process(dgroup=self.dgroup, opts=form)
+        if self.last_plot == 'selected':
+            self.onPlotSel()
+        else:
+            self.onPlotOne()
 
-        if tpars != self.last_process_pars:
-            self.controller.larch.eval(autobk_cmd.format(**form))
-            self.controller.larch.eval(xftf_cmd.format(**form))
-            self.onPlot()
-
-        self.last_process_pars = tpars
         self.skip_process = False
 
-    def get_plot_arrays(self, dgroup):
-        form = self.read_form()
+    def process(self, dgroup=None, opts=None, **kws):
+        if opts is None:
+            opts = self.read_form()
+        if dgroup is not None:
+            self.dgroup = dgroup
+            opts['group'] = dgroup.groupname
 
-    def onPlot(self, evt=None, selected=False):
-        form = self.read_form()
-        # print("form : ", form)
+        opts.update(kws)
+        pars = [int(opts.get(attr, 0)*1000) for attr in
+                ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+                 'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
+                 'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
+        pars.append(opts['fft_kwindow'])
 
+        lpars = getattr(dgroup, 'exafs_formvals', False)
+
+        if pars != lpars:
+            self.controller.larch.eval(autobk_cmd.format(**opts))
+            self.controller.larch.eval(xftf_cmd.format(**opts))
+            self.dgroup.exafs_formvals = pars
+            for attr in default_exafs_config().keys():
+                if attr in opts and attr in dgroup.exafs_config:
+                    dgroup.exafs_config[attr] = opts[attr]
+
+
+    def plot(self, dgroup=None):
+        self.onPlotOne(dgroup=dgroup)
+
+    def onPlotOne(self, evt=None, dgroup=None):
+        form = self.read_form()
+        if dgroup is not None:
+            self.dgroup = dgroup
+            form['group'] = dgroup.groupname
         form['title'] = '"%s"' % self.dgroup.filename
 
-        if selected:
-            print("PLOT SELECTED")
-
-
-        if form['plotone_e']:
-            form['win'] =  1
-            if '\u03A7' in form['plotopts_e'].lower():
-                print(" plot chi(e)")
-            else:
-                cmd = "plot_bkg({group:s}"
-                cmd = cmd + ", win={win:d}, title={title:s})"
-                self.controller.larch.eval(cmd.format(**form))
-
-        if form['plotone_k']:
-            form['win'] =  2
-            show_win = 'window' in form['plotopts_k'].lower()
-            form['show_win'] = 'True' if show_win else 'False'
-            cmd = "plot_chik({group:s}, kweight={plot_kweight:.1f}, show_window={show_win:s}"
-            cmd = cmd + ", win={win:d}, title={title:s})"
-            self.controller.larch.eval(cmd.format(**form))
-
-        if form['plotone_r']:
-            form['win'] = 3
-            show_mag = '|' in form['plotopts_r'].lower()
-            show_re  = 're[' in form['plotopts_r'].lower()
-            form['show_mag'] = 'True' if show_mag else 'False'
-            form['show_re'] = 'True' if  show_re else 'False'
-            cmd = "plot_chir({group:s}, show_mag={show_mag:s}, show_real={show_re:s}"
-            cmd = cmd + ", win={win:d}, title={title:s})"
-            self.controller.larch.eval(cmd.format(**form))
-
+        cmd = PlotCmds[form['plotone_op']] + ", win=1, title={title:s})"
+        # 2nd plot
+        cmd2 =  PlotCmds[form['plotalt_op']]
+        if cmd2 is not None:
+            cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
+            cmd2 = cmd2 + ", win=2, title={title:s})"
+            cmd = "%s\n%s" % (cmd, cmd2)
+        self.controller.larch.eval(cmd.format(**form))
+        self.last_plot = 'one'
+        self.parent.SetFocus()
 
     def onPlotSel(self, evt=None):
-        newplot = True
-        pass
+        group_ids = self.controller.filelist.GetCheckedStrings()
+        if len(group_ids) < 1:
+            return
+        form = self.read_form()
+
+        bcmd = PlotCmds[form['plotsel_op']]
+        form['new'] = 'True'
+        offset = form['plot_voffset']
+        for i, checked in enumerate(group_ids):
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            if dgroup is not None:
+                form['group'] = dgroup.groupname
+                form['offset'] = offset * i
+                # self.process(dgroup=dgroup, opts=form)
+
+                extra = """, offset={offset:.3f}, win=1, delay_draw=True,
+    label='{group:s}', new={new:s})"""
+                cmd = "%s%s" % (bcmd, extra)
+                self.controller.larch.eval(cmd.format(**form))
+
+                form['new'] = 'False'
+
+        self.controller.larch.eval("redraw(win=1, show_legend=True)")
+        self.last_plot = 'selected'
+        self.parent.SetFocus()

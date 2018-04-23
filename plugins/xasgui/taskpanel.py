@@ -65,7 +65,8 @@ class TaskPanel(wx.Panel):
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            self.fill_form(dgroup)
+            self.fill_form(dgroup=dgroup)
+            self.process(dgroup=dgroup)
 
     def larch_eval(self, cmd):
         """eval"""
@@ -116,7 +117,7 @@ class TaskPanel(wx.Panel):
                 form_opts[name] = wid.GetValue()
         return form_opts
 
-    def process(self, dgroup, **kws):
+    def process(self, dgroup=None, **kws):
         """override to handle data process step"""
         if self.skip_process:
             return
