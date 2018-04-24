@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import copy
+import platform
 import numpy as np
 np.seterr(all='ignore')
 
@@ -19,6 +20,7 @@ import wx.lib.mixins.inspection
 from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+is_windows = platform.system().startswith('Windows')
 
 from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
                      Choice, Check, MenuItem, GUIColors, GridPanel, CEN,
@@ -42,7 +44,8 @@ from larch_plugins.wx.plotter import _newplot, _plot
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
-from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
+from larch_plugins.xasgui import (FONTSIZE, FNB_STYLE,
+                                  PrePeakPanel, XASNormPanel,
                                   LinearComboPanel, PCAPanel, LASSOPanel,
                                   EXAFSPanel, MergeDialog, RenameDialog,
                                   RemoveDialog, DeglitchDialog,
@@ -59,14 +62,7 @@ from larch_plugins.xafs import pre_edge, pre_edge_baseline
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NODRAG|flat_nb.FNB_NO_NAV_BUTTONS
 
-
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
-                  marker='None', markersize=4)
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right',  marker='None', markersize=4)
 
 ICON_FILE = 'larch.ico'
 XASVIEW_SIZE = (950, 625)
@@ -179,9 +175,9 @@ class XASController():
         report = fit_report(fitresult, show_correl=True,
                             min_correl=0.25, sort_pars=True)
 
-        self.report_frame.SetFont(Font(9))
+        self.report_frame.SetFont(Font(FONTSIZE-1))
         self.report_frame.set_text(report)
-        self.report_frame.SetFont(Font(9))
+        self.report_frame.SetFont(Font(FONTSIZE-1))
         self.report_frame.Raise()
 
     def get_iconfile(self):
@@ -390,7 +386,8 @@ class XASFrame(wx.Frame):
         self.plotframe = None
         self.SetTitle(title)
         self.SetSize(XASVIEW_SIZE)
-        self.SetFont(Font(11))
+
+        self.SetFont(Font(FONTSIZE))
         self.larch_buffer.Hide()
         self.createMainPanel()
         self.createMenus()
@@ -409,7 +406,7 @@ class XASFrame(wx.Frame):
 
         def Btn(msg, x, act):
             b = Button(ltop, msg, size=(x, 30),  action=act)
-            b.SetFont(Font(11))
+            b.SetFont(Font(FONTSIZE))
             return b
 
         sel_none = Btn('Select None',   120, self.onSelNone)
@@ -437,7 +434,7 @@ class XASFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, 'initializing...', size=(300, -1))
-        self.title.SetFont(Font(11))
+        self.title.SetFont(Font(FONTSIZE+1))
 
         ir = 0
         sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
