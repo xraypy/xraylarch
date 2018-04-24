@@ -29,15 +29,16 @@ class TaskPanel(wx.Panel):
     """generic panel for main tasks.
     meant to be subclassed
     """
-    def __init__(self, parent, controller, configname='task_config',
-                 title='Generic Panel', **kws):
+    def __init__(self, parent, controller, title='Generic Panel',
+                 configname='task_config', config=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
         self.title = title
         self.configname = configname
-
+        if config is not None:
+            self.set_defaultconfig(config)
         self.wids = {}
         self.SetFont(Font(FONTSIZE))
 
@@ -82,20 +83,23 @@ class TaskPanel(wx.Panel):
     def get_defaultconfig(self):
         """get the default configuration for this session"""
         conf = self.controller.larch.symtable._sys.xas_viewer
-        getattr(conf, self.configname, {})
+        return getattr(conf, self.configname, {})
 
     def get_config(self, dgroup=None):
-        """get processing configuration for a group"""
+        """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-
         conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        setattr(dgroup, self.configname, conf)
+        return conf
 
-        return self.customize_config(conf, dgroup=dgroup)
-
-    def customize_config(self, config, dgroup=None):
-        """override to customize getting the panels config"""
-        return config
+    def set_config(self, dgroup, config):
+        """set/update processing configuration for a group"""
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        conf.update(config)
+        setattr(dgroup, self.configname, conf)
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
