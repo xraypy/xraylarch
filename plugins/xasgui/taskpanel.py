@@ -5,25 +5,17 @@ np.seterr(all='ignore')
 
 from functools import partial
 from collections import OrderedDict
-import json
 
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
-
-import wx.dataview as dv
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font, FileSave, FileOpen)
 
-from larch import Group, site_config
-from larch.utils import index_of
-
+from larch import Group
 from larch.wxlib import (BitmapButton, FloatCtrl, SetTip)
-
 from larch_plugins.std import group2dict
-from larch_plugins.wx.icons import get_icon
 
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -31,11 +23,7 @@ CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
-
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
+FONTSIZE = 10
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
@@ -51,7 +39,7 @@ class TaskPanel(wx.Panel):
         self.configname = configname
 
         self.wids = {}
-        self.SetFont(Font(11))
+        self.SetFont(Font(FONTSIZE))
 
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.skip_process = True
