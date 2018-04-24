@@ -25,13 +25,14 @@ from larch_plugins.xafs.xafsplots import plotlabels
 np.seterr(all='ignore')
 
 # plot options:
-mu_bkg  = u'\u03BC(E) + \u03BC0(E)'
-chie    = u'\u03A7(E)'
-chik    = u'\u03A7(k)'
-chikwin = u'\u03A7(k) + Window'
-chirmag = u'|\u03A7(R)|'
-chirre  = u'Re[\u03A7(R)]'
-chirmr  = u'|\u03A7(R)| + Re[\u03A7(R)]'
+
+mu_bkg  = u'\u03bC(E) + \u03bc0(E)'
+chie    = u'\u03c7(E)'
+chik    = u'\u03c7(k)'
+chikwin = u'\u03c7(k) + Window(k)'
+chirmag = u'|\u03c7(R)|'
+chirre  = u'Re[\u03c7(R)]'
+chirmr  = u'|\u03c7(R)| + Re[\u03c7(R)]'
 noplot  = '<no plot>'
 
 PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]

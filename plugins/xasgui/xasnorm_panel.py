@@ -30,17 +30,17 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
-                               ('Normalized \u03BC(E)', 'norm'),
-                               ('d\u03BC(E)/dE', 'dmude'),
-                               ('Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
-                               ('Flattened \u03BC(E)', 'flat'),
-                               ('\u03BC(E) + Pre-/Post-edge', 'prelines')))
+PlotOne_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
+                               (u'Normalized \u03BC(E)', 'norm'),
+                               (u'd\u03BC(E)/dE', 'dmude'),
+                               (u'Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
+                               (u'Flattened \u03BC(E)', 'flat'),
+                               (u'\u03BC(E) + Pre-/Post-edge', 'prelines')))
 
-PlotSel_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
-                               ('Normalized \u03BC(E)', 'norm'),
-                               ('Flattened \u03BC(E)', 'flat'),
-                               ('d\u03BC(E)/dE (normalized)', 'dnormde')))
+PlotSel_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
+                               (u'Normalized \u03BC(E)', 'norm'),
+                               (u'Flattened \u03BC(E)', 'flat'),
+                               (u'd\u03BC(E)/dE (normalized)', 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -138,7 +138,7 @@ class XASNormPanel(TaskPanel):
 
         xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
                            **titleopts), dcol=4)
-        xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
+        xas.Add(SimpleText(xas, 'Copy to Selected Groups?'), style=RCEN, dcol=3)
 
         xas.Add(plot_sel, newrow=True)
         xas.Add(self.plotsel_op, dcol=6)
