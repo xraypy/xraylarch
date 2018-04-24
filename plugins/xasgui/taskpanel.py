@@ -86,13 +86,22 @@ class TaskPanel(wx.Panel):
         sizer.Add(self.panel, 1, wx.LEFT|wx.CENTER, 3)
         pack(self, sizer)
 
+    def set_defaultconfig(self, config):
+        """set the default configuration for this session"""
+        conf = self.controller.larch.symtable._sys.xas_viewer
+        setattr(conf, self.configname, {key:val for key, val in config.items()})
+
+    def get_defaultconfig(self):
+        """get the default configuration for this session"""
+        conf = self.controller.larch.symtable._sys.xas_viewer
+        getattr(conf, self.configname, {})
 
     def get_config(self, dgroup=None):
         """get processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
 
-        conf = getattr(dgroup, self.configname, {})
+        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
 
         return self.customize_config(conf, dgroup=dgroup)
 
