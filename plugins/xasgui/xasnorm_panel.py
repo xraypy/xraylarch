@@ -189,6 +189,8 @@ class XASNormPanel(TaskPanel):
 
 
     def customize_config(self, config, dgroup=None):
+        if config is None:
+            config = {}
         if 'e0' not in config:
             config.update(default_xasnorm_config())
         if dgroup is not None:
@@ -359,6 +361,10 @@ class XASNormPanel(TaskPanel):
         else:
             print(" unknown selection point ", opt)
 
+    def make_dnormde(self, dgroup):
+        form = dict(group=dgroup.groupname)
+        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
+
     def process(self, dgroup=None, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
@@ -413,7 +419,7 @@ class XASNormPanel(TaskPanel):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
-        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
+        self.make_dnormde(dgroup)
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
@@ -556,6 +562,9 @@ class XASNormPanel(TaskPanel):
 
             popts['delay_draw'] = delay_draw or (i != narr)
             # print("plot:: ", i, popts['delay_draw'], plotcmd, popts)
+            if yaname == 'dnormde' and not hasattr(dgroup, yaname):
+                self.make_dnormde(dgroup)
+
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
 
