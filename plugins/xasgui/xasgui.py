@@ -116,7 +116,6 @@ class XASController():
         self.larch = _larch
         if self.larch is None:
             self.larch = Interpreter()
-
         self.filelist = None
         self.file_groups = OrderedDict()
         self.fit_opts = {}
@@ -131,7 +130,6 @@ class XASController():
 
         _larch = self.larch
         _larch.eval("import xafs_plots")
-        _larch.symtable._sys.xas_viewer = Group()
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
@@ -383,7 +381,9 @@ class XASFrame(wx.Frame):
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
-        self.larch=self.larch_buffer.larchshell
+        self.larch = self.larch_buffer.larchshell
+        self.larch.symtable._sys.xas_viewer = Group()
+
         self.controller = XASController(wxparent=self, _larch=self.larch)
         self.current_filename = None
         self.subframes = {}
