@@ -61,8 +61,7 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
       kweight={fft_kweight: .3f}, dk={fft_dk: .3f}, window='{fft_kwindow:s}')"""
 
 
-def default_exafs_config():
-    return dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
+defaults = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
                 bkg_clamphi=50, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
                 plot_kweight=2, plot_kweight_alt=2, plot_voffset=0,
@@ -75,6 +74,7 @@ class EXAFSPanel(TaskPanel):
                            configname='exafs_config', **kws)
         self.skip_process = False
         self.last_plot = 'one'
+        self.set_defaultconfig(defaults)
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -235,7 +235,7 @@ class EXAFSPanel(TaskPanel):
 
     def customize_config(self, config, dgroup=None):
         if 'e0' not in config:
-            config.update(default_exafs_config())
+            config.update(self.get_config())
         if dgroup is not None:
             dgroup.exafs_config = config
         return config
@@ -293,16 +293,30 @@ class EXAFSPanel(TaskPanel):
         return form_opts
 
     def onSaveConfigBtn(self, evt=None):
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        opts = {}
-        opts.update(getattr(conf, 'exafs', {}))
-        opts.update(self.read_form())
-        conf.xas_norm = opts
+        conf = self.get_config()
+        conf.update(self.read_form())
+        self.set_defaultconfig(conf)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
         conf.update(self.read_form())
-        opts = {}
+
+        attrs =  ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi')
+
+        if name.startswith('fft'):
+            attrs = ('fft_kmin', 'fft_kmax',
+                     'fft_kweight', 'fft_dk', 'fft_kwindow')
+
+        for attr in attrs:
+            self.dgroup.exafs_config[attr] = conf[attr]
+
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            for attr in attrs:
+                dgroup.exafs_config[attr] = conf[attr]
+
 
     def onProcess(self, event=None):
         """ handle process events"""
@@ -340,7 +354,7 @@ class EXAFSPanel(TaskPanel):
             self.controller.larch.eval(autobk_cmd.format(**opts))
             self.controller.larch.eval(xftf_cmd.format(**opts))
             self.dgroup.exafs_formvals = pars
-            for attr in default_exafs_config().keys():
+            for attr in self.get_config().keys():
                 if attr in opts and attr in dgroup.exafs_config:
                     dgroup.exafs_config[attr] = opts[attr]
 
