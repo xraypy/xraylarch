@@ -306,7 +306,7 @@ class EXAFSPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            self.set_group(dgroup, out)
+            self.set_config(dgroup, out)
 
     def onProcess(self, event=None):
         """ handle process events"""
