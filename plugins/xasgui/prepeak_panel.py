@@ -80,11 +80,10 @@ ModelFuncs = {'constant': 'ConstantModel',
               'step': 'StepModel',
               'rectangle': 'RectangleModel'}
 
-
-Array_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
-                             ('Normalized \u03BC(E)', 'norm'),
-                             ('Deconvolved \u03BC(E)', 'deconv'),
-                             ('Derivative \u03BC(E)', 'dmude')))
+Array_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
+                             (u'Normalized \u03BC(E)', 'norm'),
+                             (u'Deconvolved \u03BC(E)', 'deconv'),
+                             (u'Derivative \u03BC(E)', 'dmude')))
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'

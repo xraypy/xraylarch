@@ -30,17 +30,17 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
-                               ('Normalized \u03BC(E)', 'norm'),
-                               ('d\u03BC(E)/dE', 'dmude'),
-                               ('Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
-                               ('Flattened \u03BC(E)', 'flat'),
-                               ('\u03BC(E) + Pre-/Post-edge', 'prelines')))
+PlotOne_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
+                               (u'Normalized \u03BC(E)', 'norm'),
+                               (u'd\u03BC(E)/dE', 'dmude'),
+                               (u'Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
+                               (u'Flattened \u03BC(E)', 'flat'),
+                               (u'\u03BC(E) + Pre-/Post-edge', 'prelines')))
 
-PlotSel_Choices = OrderedDict((('Raw \u03BC(E)', 'mu'),
-                               ('Normalized \u03BC(E)', 'norm'),
-                               ('Flattened \u03BC(E)', 'flat'),
-                               ('d\u03BC(E)/dE (normalized)', 'dnormde')))
+PlotSel_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
+                               (u'Normalized \u03BC(E)', 'norm'),
+                               (u'Flattened \u03BC(E)', 'flat'),
+                               (u'd\u03BC(E)/dE (normalized)', 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
@@ -50,18 +50,17 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
 
 
-def default_xasnorm_config():
-    return dict(e0=0, edge_step=None, pre1=-200, pre2=-25, nnorm=2, norm1=25,
-                norm2=-10, nvict=1, auto_step=True, auto_e0=True, show_e0=True,
-                plotone_op='Normalized \u03BC(E)',
+defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
+                show_e0=True, pre1=-200, pre2=-25, norm1=75, norm2=-10,
+                nvict=1, nnorm=1, plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
-
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='xasnorm_config', **kws)
+                           configname='xasnorm_config',
+                           config=defaults, **kws)
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -138,7 +137,7 @@ class XASNormPanel(TaskPanel):
 
         xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
                            **titleopts), dcol=4)
-        xas.Add(SimpleText(xas, ' Copy to Selected Groups?'), style=RCEN, dcol=3)
+        xas.Add(SimpleText(xas, 'Copy to Selected Groups?'), style=RCEN, dcol=3)
 
         xas.Add(plot_sel, newrow=True)
         xas.Add(self.plotsel_op, dcol=6)
@@ -188,18 +187,10 @@ class XASNormPanel(TaskPanel):
         pack(self, sizer)
 
 
-    def customize_config(self, config, dgroup=None):
-        if 'e0' not in config:
-            config.update(default_xasnorm_config())
-        if dgroup is not None:
-            dgroup.xasnorm_config = config
-        return config
-
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
-
 
         if dgroup.datatype == 'xas':
             for k in self.wids.values():
@@ -301,7 +292,6 @@ class XASNormPanel(TaskPanel):
         def copy_attrs(*args):
             for a in args:
                 opts[a] = conf[a]
-
         if name == 'plotone_op':
             copy_attrs('plotone_op')
         elif name == 'xas_e0':
@@ -319,7 +309,7 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group:
-                grp.xasnorm_config.update(opts)
+                self.set_config(grp, opts)
                 self.fill_form(grp)
                 self.process(dgroup=grp)
 
@@ -359,6 +349,10 @@ class XASNormPanel(TaskPanel):
         else:
             print(" unknown selection point ", opt)
 
+    def make_dnormde(self, dgroup):
+        form = dict(group=dgroup.groupname)
+        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
+
     def process(self, dgroup=None, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
@@ -369,9 +363,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
 
         self.skip_process = True
-
-        if not hasattr(dgroup, 'xasnorm_config'):
-            dgroup.xasnorm_config = default_xasnorm_config()
+        self.get_config()
 
         dgroup.custom_plotopts = {}
         # print("XAS norm process ", dgroup.datatype)
@@ -413,7 +405,7 @@ class XASNormPanel(TaskPanel):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
-        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
+        self.make_dnormde(dgroup)
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
@@ -425,12 +417,13 @@ class XASNormPanel(TaskPanel):
         self.wids['nor1'].SetValue(dgroup.pre_edge_details.norm1)
         self.wids['nor2'].SetValue(dgroup.pre_edge_details.norm2)
 
+        conf = {}
         for attr in ('e0', 'edge_step'):
-            dgroup.xasnorm_config[attr] = getattr(dgroup, attr)
-
+            conf[attr] = getattr(dgroup, attr)
         for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
-            dgroup.xasnorm_config[attr] = getattr(dgroup.pre_edge_details, attr)
+            conf[attr] = getattr(dgroup.pre_edge_details, attr)
 
+        self.set_config(dgroup, conf)
         self.skip_process = False
 
     def get_plot_arrays(self, dgroup):
@@ -556,6 +549,9 @@ class XASNormPanel(TaskPanel):
 
             popts['delay_draw'] = delay_draw or (i != narr)
             # print("plot:: ", i, popts['delay_draw'], plotcmd, popts)
+            if yaname == 'dnormde' and not hasattr(dgroup, yaname):
+                self.make_dnormde(dgroup)
+
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
 

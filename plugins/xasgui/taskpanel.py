@@ -5,25 +5,17 @@ np.seterr(all='ignore')
 
 from functools import partial
 from collections import OrderedDict
-import json
 
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as flat_nb
-
-import wx.dataview as dv
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
                      FRAMESTYLE, Font, FileSave, FileOpen)
 
-from larch import Group, site_config
-from larch.utils import index_of
-
+from larch import Group
 from larch.wxlib import (BitmapButton, FloatCtrl, SetTip)
-
 from larch_plugins.std import group2dict
-from larch_plugins.wx.icons import get_icon
 
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -31,27 +23,24 @@ CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
-PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
-PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
-
-PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
-                  side='right', marker='None', markersize=4)
+FONTSIZE = 10
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
     meant to be subclassed
     """
-    def __init__(self, parent, controller, configname='task_config',
-                 title='Generic Panel', **kws):
+    def __init__(self, parent, controller, title='Generic Panel',
+                 configname='task_config', config=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.controller = controller
         self.larch = controller.larch
         self.title = title
         self.configname = configname
-
+        if config is not None:
+            self.set_defaultconfig(config)
         self.wids = {}
-        self.SetFont(Font(11))
+        self.SetFont(Font(FONTSIZE))
 
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.skip_process = True
@@ -94,20 +83,23 @@ class TaskPanel(wx.Panel):
     def get_defaultconfig(self):
         """get the default configuration for this session"""
         conf = self.controller.larch.symtable._sys.xas_viewer
-        getattr(conf, self.configname, {})
+        return getattr(conf, self.configname, {})
 
     def get_config(self, dgroup=None):
-        """get processing configuration for a group"""
+        """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-
         conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        setattr(dgroup, self.configname, conf)
+        return conf
 
-        return self.customize_config(conf, dgroup=dgroup)
-
-    def customize_config(self, config, dgroup=None):
-        """override to customize getting the panels config"""
-        return config
+    def set_config(self, dgroup, config):
+        """set/update processing configuration for a group"""
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        conf.update(config)
+        setattr(dgroup, self.configname, conf)
 
     def fill_form(self, dat):
         if isinstance(dat, Group):

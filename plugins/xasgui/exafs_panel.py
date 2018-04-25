@@ -25,13 +25,14 @@ from larch_plugins.xafs.xafsplots import plotlabels
 np.seterr(all='ignore')
 
 # plot options:
-mu_bkg  = u'\u03BC(E) + \u03BC0(E)'
-chie    = u'\u03A7(E)'
-chik    = u'\u03A7(k)'
-chikwin = u'\u03A7(k) + Window'
-chirmag = u'|\u03A7(R)|'
-chirre  = u'Re[\u03A7(R)]'
-chirmr  = u'|\u03A7(R)| + Re[\u03A7(R)]'
+
+mu_bkg  = u'\u03bC(E) + \u03bc0(E)'
+chie    = u'\u03c7(E)'
+chik    = u'\u03c7(k)'
+chikwin = u'\u03c7(k) + Window(k)'
+chirmag = u'|\u03c7(R)|'
+chirre  = u'Re[\u03c7(R)]'
+chirmr  = u'|\u03c7(R)| + Re[\u03c7(R)]'
 noplot  = '<no plot>'
 
 PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]
@@ -71,10 +72,10 @@ class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='exafs_config', **kws)
+                           configname='exafs_config',
+                           config=defaults, **kws)
         self.skip_process = False
         self.last_plot = 'one'
-        self.set_defaultconfig(defaults)
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -233,17 +234,9 @@ class EXAFSPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
-    def customize_config(self, config, dgroup=None):
-        if 'e0' not in config:
-            config.update(self.get_config())
-        if dgroup is not None:
-            dgroup.exafs_config = config
-        return config
-
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        # print("Fill form ", opts, self.configname)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -308,15 +301,12 @@ class EXAFSPanel(TaskPanel):
             attrs = ('fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk', 'fft_kwindow')
 
-        for attr in attrs:
-            self.dgroup.exafs_config[attr] = conf[attr]
+        out = {a: conf[a] for a in attrs}
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            for attr in attrs:
-                dgroup.exafs_config[attr] = conf[attr]
-
+            self.set_group(dgroup, out)
 
     def onProcess(self, event=None):
         """ handle process events"""
@@ -353,11 +343,8 @@ class EXAFSPanel(TaskPanel):
         if pars != lpars:
             self.controller.larch.eval(autobk_cmd.format(**opts))
             self.controller.larch.eval(xftf_cmd.format(**opts))
-            self.dgroup.exafs_formvals = pars
-            for attr in self.get_config().keys():
-                if attr in opts and attr in dgroup.exafs_config:
-                    dgroup.exafs_config[attr] = opts[attr]
-
+            dgroup.exafs_formvals = pars
+            self.set_config(dgroup, opts)
 
     def plot(self, dgroup=None):
         self.onPlotOne(dgroup=dgroup)
