@@ -35,11 +35,12 @@ if os.name == 'nt':
 if 'LARCHDIR' in os.environ:
     usr_larchdir = nativepath(os.environ['LARCHDIR'])
 
-# on Linux, check for HOME/.local/share
+# on Linux, check for HOME/.local/share,
+# make with mode=711 if needed
 if platform.system() == 'Linux' and os.getuid() > 0:
     lshare = os.path.join(home_dir, '.local', 'share')
     if not os.path.exists(lshare):
-        os.makedirs(lshare, mode=0751)
+        os.makedirs(lshare), mode=oct(457)) # 457 = 7,1,1 
 
 ##
 ## names (and loading order) for core plugin modules
