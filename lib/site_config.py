@@ -8,6 +8,7 @@ site configuration for larch:
 """
 from __future__ import print_function
 
+import platform
 import sys
 import os
 from os.path import exists, abspath, join
@@ -33,6 +34,12 @@ if os.name == 'nt':
 
 if 'LARCHDIR' in os.environ:
     usr_larchdir = nativepath(os.environ['LARCHDIR'])
+
+# on Linux, check for HOME/.local/share
+if platform.system() == 'Linux' and os.getuid() > 0:
+    lshare = os.path.join(home_dir, '.local', 'share')
+    if not os.path.exists(lshare):
+        os.makedirs(lshare, mode=0751)
 
 ##
 ## names (and loading order) for core plugin modules
