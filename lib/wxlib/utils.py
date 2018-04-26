@@ -63,7 +63,8 @@ class FileCheckList(wx.CheckListBox):
 
         self.SetDropTarget(FileDropTarget(main))
 
-        self.SetBackgroundColour(wx.Colour(248, 248, 235))
+        self.SetBackgroundColour((250, 250, 250, 255))
+        self.SetForegroundColour((5, 5, 85, 255))
         if select_action is not None:
             self.Bind(wx.EVT_LISTBOX,  select_action)
         self.remove_action = remove_action
