@@ -198,7 +198,7 @@ class XrayDB(object):
     a complete listing.
     """
 
-    def __init__(self, dbname='xraydb.sqlite', read_only=True):
+    def __init__(self, dbname='xrayref.db', read_only=True): ##dbname='xraydb.sqlite'
         "connect to an existing database"
         if not os.path.exists(dbname):
             parent, child = os.path.split(__file__)
