@@ -444,7 +444,6 @@ class XASFrame(wx.Frame):
                                                  # main=self,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
-        self.controller.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
