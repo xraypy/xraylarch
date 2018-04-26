@@ -115,11 +115,11 @@ class EXAFSPanel(TaskPanel):
             return s
 
         wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
-                                         action=self.onPlotSel)
+                                         action=self.onProcess)
         wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                         action=self.onPlotOne, min_val=0, max_val=5)
+                                         action=self.onProcess, min_val=0, max_val=5)
         wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                             action=self.onPlotOne,  min_val=0, max_val=5)
+                                             action=self.onProcess,  min_val=0, max_val=5)
 
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
@@ -236,11 +236,12 @@ class EXAFSPanel(TaskPanel):
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
+        print("EXAFS Fill form " , dgroup)
+
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
-        self.skip_process = True
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
                      'fft_kweight', 'fft_dk', 'plot_kweight',
@@ -265,6 +266,7 @@ class EXAFSPanel(TaskPanel):
 
     def read_form(self, dgroup=None):
         "read form, return dict of values"
+        self.skip_process = True
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
@@ -282,7 +284,7 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             form_opts[attr] = wids[attr].GetStringSelection()
-
+        self.skip_process = False
         return form_opts
 
     def onSaveConfigBtn(self, evt=None):
@@ -345,9 +347,6 @@ class EXAFSPanel(TaskPanel):
             self.controller.larch.eval(xftf_cmd.format(**opts))
             dgroup.exafs_formvals = pars
             self.set_config(dgroup, opts)
-
-    def plot(self, dgroup=None):
-        self.onPlotOne(dgroup=dgroup)
 
     def onPlotOne(self, evt=None, dgroup=None):
         form = self.read_form()
