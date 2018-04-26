@@ -45,7 +45,6 @@ class AthenaImporter(wx.Frame) :
         self.select_imported.Disable()
 
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
-        self.grouplist.SetBackgroundColour(wx.Colour(255, 255, 255))
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LCEN, 0)
