@@ -40,7 +40,7 @@ if 'LARCHDIR' in os.environ:
 if platform.system() == 'Linux' and os.getuid() > 0:
     lshare = os.path.join(home_dir, '.local', 'share')
     if not os.path.exists(lshare):
-        os.makedirs(lshare), mode=oct(457)) # 457 = 7,1,1 
+        os.makedirs(lshare, mode=oct(457)) # 457 = 7,1,1 
 
 ##
 ## names (and loading order) for core plugin modules
