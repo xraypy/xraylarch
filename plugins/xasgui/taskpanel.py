@@ -1,10 +1,11 @@
 import time
 import os
-import numpy as np
-np.seterr(all='ignore')
-
+import platform
 from functools import partial
 from collections import OrderedDict
+
+import numpy as np
+np.seterr(all='ignore')
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -22,8 +23,13 @@ LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
+FONTSIZE = 8
 
-FONTSIZE = 10
+if platform.system() == 'Windows':
+    FONTSIZE = 10
+
+if platform.system() == 'Darwin':
+    FONTSIZE = 9
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
