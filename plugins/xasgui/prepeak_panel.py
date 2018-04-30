@@ -759,7 +759,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 plot_extras.append(('vline', ecen, None,  popts))
 
 
-        pframe = self.controller.get_display(stacked=(plot_choice==PLOT_RESID))
+        pframe = self.controller.get_display(win=2,
+                                             stacked=(plot_choice==PLOT_RESID))
         ppanel = pframe.panel
         axes = ppanel.axes
 
@@ -992,7 +993,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for a model from the selected data range
         """
         try:
-            plotframe = self.controller.get_display(stacked=False)
+            plotframe = self.controller.get_display()
             curhist = plotframe.cursor_hist[:]
             plotframe.Raise()
         except:
@@ -1033,7 +1034,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 parwids[name].value.SetValue(param.value)
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xdat)
-        plotframe = self.controller.get_display(stacked=False)
+        plotframe = self.controller.get_display()
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xdat, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
@@ -1046,7 +1047,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if fgroup is None:
             return
 
-        plotframe = self.controller.get_display(stacked=False)
+        plotframe = self.controller.get_display()
         plotframe.Raise()
 
         plotframe.cursor_hist = []

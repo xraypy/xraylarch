@@ -236,7 +236,7 @@ class EXAFSPanel(TaskPanel):
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
-        print("EXAFS Fill form " , dgroup)
+        # print("EXAFS Fill form " , dgroup)
 
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
@@ -362,9 +362,12 @@ class EXAFSPanel(TaskPanel):
             cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
             cmd2 = cmd2 + ", win=2, title={title:s})"
             cmd = "%s\n%s" % (cmd, cmd2)
+            self.get_display(win=2)
+
         self.controller.larch.eval(cmd.format(**form))
         self.last_plot = 'one'
         self.parent.SetFocus()
+
 
     def onPlotSel(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
