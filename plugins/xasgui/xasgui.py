@@ -82,7 +82,7 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
 WX_DEBUG = False
 
 #############################
-## Hack System and Startfile on Windows to 
+## Hack System and Startfile on Windows to
 ## try to track down weird error of starting
 ## other applications
 import platform
@@ -212,15 +212,27 @@ class XASController():
         larchdir = self.symtable._sys.config.larchdir
         return os.path.join(larchdir, 'icons', ICON_FILE)
 
-    def get_display(self, stacked=False):
-        win = 1
-        wintitle='Larch XAS Plot Window'
-        if stacked:
-            win = 2
-            wintitle='Larch XAS Plot Window'
+    def get_display(self, win=1, stacked=False):
+        wintitle='Larch XAS Plot Window %i' % win
+        # if stacked:
+        #     win = 2
+        #    wintitle='Larch XAS Plot Window'
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
                     size=PLOTWIN_SIZE)
         out = self.symtable._plotter.get_display(**opts)
+        if win > 1:
+            p1 = getattr(self.symtable._plotter, 'plot1', None)
+            if p1 is not None:
+                try:
+                    siz = p1.GetSize()
+                    pos = p1.GetPosition()
+                    pos[0] += int(siz[0]/4)
+                    pos[1] += int(siz[1]/4)
+                    out.SetSize(pos)
+                    if not stacked:
+                        out.SetSize(siz)
+                except Exception:
+                    pass
         return out
 
     def get_group(self, groupname=None):
