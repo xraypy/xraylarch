@@ -29,7 +29,7 @@ if platform.system() == 'Windows':
     FONTSIZE = 10
 
 if platform.system() == 'Darwin':
-    FONTSIZE = 9
+    FONTSIZE = 10
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
