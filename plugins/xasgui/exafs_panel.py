@@ -88,9 +88,9 @@ class EXAFSPanel(TaskPanel):
         wids['plotsel_op'] = Choice(panel, choices=PlotSel_Choices,
                                     action=self.onPlotSel, size=(175, -1))
 
-        wids['plotone_op'].SetSelection(1)
-        wids['plotalt_op'].SetSelection(0)
-        wids['plotsel_op'].SetSelection(1)
+        wids['plotone_op'].SetStringSelection(chik)
+        wids['plotsel_op'].SetStringSelection(chik)
+        wids['plotalt_op'].SetStringSelection(noplot)
 
         plot_one = Button(panel, 'Plot This Group', size=(150, -1),
                           action=self.onPlotOne)
@@ -242,8 +242,7 @@ class EXAFSPanel(TaskPanel):
         wids = self.wids
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
-                     'fft_kweight', 'fft_dk', 'plot_kweight',
-                     'plot_kweight_alt', 'plot_voffset'):
+                     'fft_kweight', 'fft_dk'):
             val = getattr(dgroup, attr, None)
             if val is None:
                 val = opts.get(attr, -1)
@@ -257,7 +256,8 @@ class EXAFSPanel(TaskPanel):
             wids[attr].SetStringSelection("%d" % opts.get(attr, 0))
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
-            wids[attr].SetStringSelection(opts[attr])
+            if attr in opts:
+                wids[attr].SetStringSelection(opts[attr])
 
         self.skip_process = False
         self.process(dgroup=dgroup)
