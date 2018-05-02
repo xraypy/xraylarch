@@ -64,9 +64,7 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
 
 defaults = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
                 bkg_clamphi=50, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
-                fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
-                plot_kweight=2, plot_kweight_alt=2, plot_voffset=0,
-                plotone_op=chik, plotsel_op=chik, plotalt_op=noplot)
+                fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel')
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
