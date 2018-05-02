@@ -236,9 +236,9 @@ class EXAFSPanel(TaskPanel):
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
-        # print("EXAFS Fill form " , dgroup)
-
         opts = self.get_config(dgroup)
+        # print("EXAFS Fill form dgroup: ", dgroup)
+        # print("EXAFS Fill form opts  : ", opts)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -312,12 +312,12 @@ class EXAFSPanel(TaskPanel):
 
     def onProcess(self, event=None):
         """ handle process events"""
+        # print("onProcess ", event, self.skip_process)
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
-
         self.process(dgroup=self.dgroup, opts=form)
         if self.last_plot == 'selected':
             self.onPlotSel()
@@ -347,6 +347,9 @@ class EXAFSPanel(TaskPanel):
             self.controller.larch.eval(xftf_cmd.format(**opts))
             dgroup.exafs_formvals = pars
             self.set_config(dgroup, opts)
+    
+    def plot(self):
+        self.PlotOne()
 
     def onPlotOne(self, evt=None, dgroup=None):
         form = self.read_form()
@@ -362,8 +365,10 @@ class EXAFSPanel(TaskPanel):
             cmd2 = cmd2.replace('plot_kweight', 'plot_kweight_alt')
             cmd2 = cmd2 + ", win=2, title={title:s})"
             cmd = "%s\n%s" % (cmd, cmd2)
-            self.get_display(win=2)
+            self.controller.get_display(win=2)
 
+        # print(" on Plot One ")
+        # print(cmd)
         self.controller.larch.eval(cmd.format(**form))
         self.last_plot = 'one'
         self.parent.SetFocus()
