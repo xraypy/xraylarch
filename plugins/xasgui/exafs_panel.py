@@ -238,7 +238,7 @@ class EXAFSPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         # print("EXAFS Fill form dgroup: ", dgroup)
-        # print("EXAFS Fill form opts  : ", opts)
+        # print("EXAFS Fill form opts     : ", opts)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -312,7 +312,6 @@ class EXAFSPanel(TaskPanel):
 
     def onProcess(self, event=None):
         """ handle process events"""
-        # print("onProcess ", event, self.skip_process)
         if self.skip_process:
             return
 
@@ -348,8 +347,8 @@ class EXAFSPanel(TaskPanel):
             dgroup.exafs_formvals = pars
             self.set_config(dgroup, opts)
     
-    def plot(self):
-        self.PlotOne()
+    def plot(self, dgroup=None):
+        self.onPlotOne(dgroup=dgroup)
 
     def onPlotOne(self, evt=None, dgroup=None):
         form = self.read_form()
@@ -367,8 +366,6 @@ class EXAFSPanel(TaskPanel):
             cmd = "%s\n%s" % (cmd, cmd2)
             self.controller.get_display(win=2)
 
-        # print(" on Plot One ")
-        # print(cmd)
         self.controller.larch.eval(cmd.format(**form))
         self.last_plot = 'one'
         self.parent.SetFocus()
