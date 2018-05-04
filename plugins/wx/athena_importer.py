@@ -42,8 +42,6 @@ class AthenaImporter(wx.Frame) :
         sel_imp  = Button(ltop, 'Import Selected Groups', size=(200, 30), action=self.onOK)
 
         self.select_imported = sel_imp
-        self.select_imported.Disable()
-
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
 
         tsizer = wx.GridBagSizer(2, 2)
@@ -80,11 +78,13 @@ class AthenaImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-        self.all = read_athena(self.filename, do_bkg=False,
-                               do_fft=False, with_journal=False,
-                               _larch=_larch)
-        for item in dir(self.all):
-            self.grouplist.Append(item)
+        self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False, 
+                                     _larch=_larch)
+        self.allgroups = []
+        for item in dir(self.a_project):
+            if not item.startswith('_athena_'):
+                self.allgroups.append(item)
+                self.grouplist.Append(item)
         self.Show()
         self.Raise()
 
@@ -94,7 +94,6 @@ class AthenaImporter(wx.Frame) :
     def onOK(self, event=None):
         """generate script to import groups"""
         namelist = [str(n) for n in self.grouplist.GetCheckedStrings()]
-
         if self.read_ok_cb is not None and len(namelist) > 0:
             self.read_ok_cb(self.filename, namelist)
 
@@ -104,18 +103,15 @@ class AthenaImporter(wx.Frame) :
         self.Destroy()
 
     def onSelAll(self, event=None):
-        self.grouplist.SetCheckedStrings(dir(self.all))
-        self.select_imported.Enable()
+        self.grouplist.SetCheckedStrings(self.allgroups)
 
     def onSelNone(self, event=None):
         self.grouplist.SetCheckedStrings([])
-        self.select_imported.Disable()
 
     def onShowGroup(self, event=None):
         """column selections changed calc xdat and ydat"""
-        self.select_imported.Enable()
         gname = event.GetString()
-        grp = getattr(self.all, gname)
+        grp = getattr(self.a_project, gname)
         glist = list(self.grouplist.GetCheckedStrings())
         if gname not in glist:
             glist.append(gname)
