@@ -962,7 +962,7 @@ class XASFrame(wx.Frame):
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
         s = """
-        {group:s} = _prj.{group:s}
+        {group:s} = _prj.{prjgroup:s}
         {group:s}.datatype = 'xas'
         {group:s}.xdat = 1.0*{group:s}.energy
         {group:s}.ydat = 1.0*{group:s}.mu
@@ -971,9 +971,11 @@ class XASFrame(wx.Frame):
         {group:s}.plot_xlabel = 'energy'
         """
         for gname in namelist:
+            this = getattr(self.larch.symtable._prj, gname)
+            a_id = str(getattr(this, 'athena_id', gname))
             process = (gname == namelist[0]) or (gname == namelist[-1])
-            self.larch.eval(s.format(group=gname))
-            dgroup = self.install_group(gname, gname, process=process)
+            self.larch.eval(s.format(group=a_id, prjgroup=gname))
+            dgroup = self.install_group(a_id, gname, process=process)
         self.larch.eval("del _prj")
 
 
@@ -1012,7 +1014,6 @@ class XASFrame(wx.Frame):
 
     def install_group(self, groupname, filename, overwrite=False, process=True):
         """add groupname / filename to list of available data groups"""
-
         thisgroup = getattr(self.larch.symtable, groupname)
         thisgroup.groupname = groupname
         thisgroup.filename = filename
