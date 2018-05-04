@@ -75,7 +75,7 @@ def is_athena_project(filename):
     text = _read_raw_athena(filename)
     if text is None:
         return False
-    return __test_athena_text(text)
+    return _test_athena_text(text)
 
 
 def make_hashkey():
@@ -495,11 +495,13 @@ class AthenaProject(object):
         data = None
         try:
             data = parse_jsonathena(text, self.filename)
-        except json.decoder.JSONDecodeError:
+        except ValueError:
             #  try as perl format
+            # print("Not json-athena ", sys.exc_info())
             try:
                 data = parse_perlathena(text, self.filename)
-            except json.decoder.JSONDecodeError:
+            except:
+                # print("Not perl-athena ", sys.exc_info())
                 pass
 
         if text is None:
