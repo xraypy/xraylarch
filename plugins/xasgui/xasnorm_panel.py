@@ -430,6 +430,9 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
 
         lab = plotlabels.norm
+        if dgroup is None:
+            return
+
         dgroup.plot_y2label = None
         dgroup.plot_xlabel = plotlabels.energy
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
