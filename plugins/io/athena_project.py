@@ -354,17 +354,17 @@ class AthenaProject(object):
         self.header = None
         self.journal = None
         self.filename = filename
+        #print("Athena Project: ", filename)
         if filename is not None:
-            self.read(filename)
+            if os.path.exists(filename) and is_athena_project(filename):
+                self.read(filename)
 
     def add_group(self, group, label=None, signal=None):
         """add Larch group (presumably XAFS data) to Athena project"""
-
         from larch_plugins.xafs import pre_edge
         from larch_plugins.xray.xraydb_plugin import guess_edge
 
         x = athena_array(group, 'energy')
-
         yname = None
         for _name in ('mu', 'mutrans', 'mufluor'):
             if hasattr(group, _name):
