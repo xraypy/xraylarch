@@ -354,7 +354,6 @@ class AthenaProject(object):
         self.header = None
         self.journal = None
         self.filename = filename
-        #print("Athena Project: ", filename)
         if filename is not None:
             if os.path.exists(filename) and is_athena_project(filename):
                 self.read(filename)
