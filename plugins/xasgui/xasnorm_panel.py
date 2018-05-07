@@ -278,11 +278,9 @@ class XASNormPanel(TaskPanel):
         self.controller.get_display(stacked=False).panel.canvas.draw()
 
     def onSaveConfigBtn(self, evt=None):
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        opts = {}
-        opts.update(getattr(conf, 'xas_norm', {}))
-        opts.update(self.read_form())
-        conf.xas_norm = opts
+        conf = self.get_config()
+        conf.update(self.read_form())
+        self.set_defaultconfig(conf)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()

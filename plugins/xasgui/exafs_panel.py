@@ -25,7 +25,6 @@ from larch_plugins.xafs.xafsplots import plotlabels
 np.seterr(all='ignore')
 
 # plot options:
-
 mu_bkg  = u'\u03bC(E) + \u03bc0(E)'
 chie    = u'\u03c7(E)'
 chik    = u'\u03c7(k)'
