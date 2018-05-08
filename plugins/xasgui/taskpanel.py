@@ -15,7 +15,9 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      Font, FileSave, FileOpen)
 
 from larch import Group
-from larch.wxlib import (BitmapButton, FloatCtrl, SetTip, GridPanel)
+from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, SetTip, GridPanel)
+
+from larch_plugins.wx.icons import get_icon
 from larch_plugins.std import group2dict
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -135,6 +137,24 @@ class TaskPanel(wx.Panel):
         self.skip_process = True
         form = self.read_form()
 
+    def add_text(self, text, dcol=1, newrow=True):
+        self.panel.Add(SimpleText(self.panel, text),
+                       dcol=dcol, newrow=newrow)
+
+    def add_floatspin(self, name, value, with_pin=True,
+                      plot_win=None, **kws):
+        """create FloatSpin with Pin button for onSelPoint"""
+        s = wx.BoxSizer(wx.HORIZONTAL)
+        self.wids[name] = FloatSpin(self.panel, value=value, **kws)
+        pin_action = partial(self.onSelPoint, opt=name, win=plot_win)
+        bb = BitmapButton(self.panel, get_icon('pin'), size=(25, 25),
+                          tooltip='use last point selected from plot',
+                          action=pin_action)
+
+        s.Add(self.wids[name])
+        s.Add(bb)
+        return s
+
     def onPlot(self, evt=None):
         pass
 
@@ -144,12 +164,30 @@ class TaskPanel(wx.Panel):
     def onPlotSel(self, evt=None, groups=None, **kws):
         pass
 
-    def onSelPoint(self, evt=None, opt='__'):
-        xval = None
-        try:
-            xval = self.larch.symtable._plotter.plot1_x
-        except:
-            return
+    def onSelPoint(self, evt=None, opt='__', win=None):
+        """
+        get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
 
-        if opt in self.wids:
-            self.wids[opt].SetValue(xval)
+        by default it finds the latest cursor position from the
+        cursor history of the first 20 plot windows.
+        """
+        if opt not in self.wids:
+            return None
+
+        if win is None:
+            wins = range(1, 21)
+        else:
+            wins = [win]
+
+        last_x, last_y, last_time = None, None, -1
+        plotter = self.larch.symtable._plotter
+        for win in wins:
+            winhist = getattr(plotter, 'plot%d_cursor_hist' % i, None)
+            if winhist is not None:
+                for px, py, pt in winhist:
+                    if pt > last_time:
+                        last_x, last_y, last_time = px, py, pt
+
+        if last_x is not None:
+            self.wids[opt].SetValue(last_x)
