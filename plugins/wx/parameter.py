@@ -10,10 +10,12 @@ import numpy as np
 import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
-from wxutils import FloatCtrl, Choice, pack, HLine, GridPanel, LEFT
+from wxutils import Choice, pack, HLine, LEFT
 
 from larch import Parameter, Group
 from larch.larchlib import Empty
+
+from larch.wxlib import (FloatCtrl, GridPanel)
 
 infoicon = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACzElEQVR42m2TW0gUURjHv3Nm"
