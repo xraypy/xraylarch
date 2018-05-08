@@ -136,10 +136,10 @@ class TaskPanel(wx.Panel):
     def onPlot(self, evt=None):
         pass
 
-    def onPlotOne(self, evt=None):
+    def onPlotOne(self, evt=None, dgroup=None, **kws):
         pass
 
-    def onPlotSel(self, evt=None):
+    def onPlotSel(self, evt=None, groups=None, **kws):
         pass
 
     def onSelPoint(self, evt=None, opt='__'):
