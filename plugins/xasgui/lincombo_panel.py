@@ -10,8 +10,8 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     GridPanel, CEN, RCEN, LCEN, Font)
+from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
+                     RCEN, LCEN, Font)
 
 from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, ToggleButton

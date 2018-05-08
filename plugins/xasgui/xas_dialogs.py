@@ -6,13 +6,12 @@ import numpy as np
 from lmfit import Parameters, minimize
 
 import wx
-from wx.lib.agw.floatspin import FloatSpin, EVT_FLOATSPIN
 
 from wxutils import (SimpleText, Choice, Check, Button, HLine, OkCancel,
-                     GridPanel, LCEN, RCEN)
+                     LCEN, RCEN)
 
 from larch.utils import index_of, index_nearest, interp
-from larch.wxlib import BitmapButton, FloatCtrl
+from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, GridPanel
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels
@@ -222,15 +221,14 @@ class EnergyCalibrateDialog(wx.Dialog):
                               action=self.on_align)
         wids['reflist'].SetSelection(0)
 
-        opts  = dict(size=(90, -1), value=e0val, digits=3, increment=0.1)
+        opts  = dict(size=(90, -1), value=e0val, digits=3, increment=0.1,
+                     action=partial(self.on_calib, name=wname))
 
         wids['e0_old'] = FloatSpin(panel, **opts)
         wids['e0_new'] = FloatSpin(panel, **opts)
         opts['value'] = 0.0
         wids['eshift'] = FloatSpin(panel, **opts)
 
-        for wname in ('e0_old', 'e0_new', 'eshift'):
-            wids[wname].Bind(EVT_FLOATSPIN, partial(self.on_calib, name=wname))
 
         bb_e0old = BitmapButton(panel, get_icon('plus'),
                                 action=partial(self.on_select, opt='e0_old'),
@@ -832,8 +830,7 @@ class DeconvolutionDialog(wx.Dialog):
                                    action=self.on_deconvolve)
 
         wids['esigma'] = FloatSpin(panel, value=0.5, digits=2, size=(90, -1),
-                                   increment=0.1)
-        wids['esigma'].Bind(EVT_FLOATSPIN, self.on_deconvolve)
+                                   increment=0.1, action=self.on_deconvolve)
 
 
         wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),

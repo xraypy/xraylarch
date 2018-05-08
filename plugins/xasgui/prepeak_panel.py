@@ -14,8 +14,8 @@ import wx.lib.agw.flatnotebook as flat_nb
 import wx.dataview as dv
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font, FileSave, FileOpen)
+                     MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
+                     Font, FileSave, FileOpen)
 
 from lmfit import Parameter, Parameters, fit_report
 try:
@@ -34,7 +34,7 @@ from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
-                         FloatCtrl, FloatSpin, SetTip)
+                         FloatCtrl, FloatSpin, SetTip, GridPanel)
 
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
@@ -116,8 +116,8 @@ class FitResultFrame(wx.Frame):
 
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
-        sizer.SetVGap(2)
-        sizer.SetHGap(2)
+        sizer.SetVGap(5)
+        sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
         self.SetMinSize((600, 450))

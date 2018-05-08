@@ -11,13 +11,12 @@ import wx
 import wx.lib.agw.flatnotebook as flat_nb
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     MenuItem, GUIColors, GridPanel, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font, FileSave, FileOpen)
+                     MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
+                     Font, FileSave, FileOpen)
 
 from larch import Group
-from larch.wxlib import (BitmapButton, FloatCtrl, SetTip)
+from larch.wxlib import (BitmapButton, FloatCtrl, SetTip, GridPanel)
 from larch_plugins.std import group2dict
-
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
@@ -49,6 +48,9 @@ class TaskPanel(wx.Panel):
         self.SetFont(Font(FONTSIZE))
 
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
+        self.panel.sizer.SetVGap(5)
+        self.panel.sizer.SetHGap(5)
+        # print("Gap: ", self.panel.sizer.GetHGap(), self.panel.sizer.GetVGap())
         self.skip_process = True
         self.build_display()
         self.skip_process = False

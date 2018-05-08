@@ -23,8 +23,8 @@ is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 
 from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
-                     Choice, Check, MenuItem, GUIColors, GridPanel, CEN,
-                     RCEN, LCEN, FRAMESTYLE, Font)
+                     Choice, Check, MenuItem, GUIColors, CEN, RCEN, LCEN,
+                     FRAMESTYLE, Font)
 
 from larch import Interpreter, Group
 from larch.utils import index_of
