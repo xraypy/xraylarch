@@ -83,29 +83,46 @@ class LinearComboPanel(TaskPanel):
 
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
 
-        wids['e0']  = FloatSpin(panel, **opts)
-        wids['elo'] = FloatSpin(panel, **opts)
-        wids['ehi'] = FloatSpin(panel, **opts)
+        e0_wids = FloatSpinWithPin('e0', value=0, **opts)
+        elo_wids = FloatSpinWithPin('elo', value=-20, **opts)
+        ehi_wids = FloatSpinWithPin('ehi', value=30, **opts)
 
+        wids['ncomps'] = FloatSpin(panel, value=4, digits=0, increment=1,
+                                   min_val=1, max_val=1000,
+                                   action=self.onProcess)
 
-        wids['dofit'] = Button(panel, 'Do Fit', size=(200, -1),
+        wids['runfit'] = Button(panel, 'Fit this Group', size=(100, -1),
                                action=self.onProcess)
         wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(200, -1),
                                   action=self.onSaveConfigBtn)
 
+        opts = dict(default=True, size=(75, -1), action=self.onPlotOne)
+
+        wids['show_e0']       = Check(panel, label='show?', **opts)
+        wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
+        add_text('Run Fit', newrow=False)
 
-        panel.Add(wids['dofit'], newrow=True)
-        panel.Add(wids['fitspace'], dcol=2)
+        add_text('Array to Fit: ', newrow=True)
+        panel.Add(wids['fitspace'], dcol=4)
+        panel.Add(wids['runfit'])
 
         add_text('E0: ')
-        panel.Add(wids['e0'])
+        panel.Add(e0_wids, dcol=3)
+        panel.Add(wids['show_e0'])
+
 
         add_text('Fit Energy Range: ')
-        panel.Add(wids['elo'])
+        panel.Add(elo_wids)
         add_text(' : ', newrow=False)
-        panel.Add(wids['ehi'])
+        panel.Add(ehi_wids)
+        panel.Add(wids['show_fitrange'])
+
+        add_text('Number of compoents: ')
+        panel.Add(wids['ncomps'])
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
