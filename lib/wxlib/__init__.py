@@ -7,7 +7,7 @@ from . import larchfilling
 from . import readlinetextctrl
 from . import utils
 from .utils import (ToggleButton, BitmapButton, SetTip,
-                    FileCheckList, FileDropTarget)
+                    FileCheckList, FileDropTarget, GridPanel)
 
 from .larchframe import LarchFrame, LarchPanel
 from .columnframe import ColumnDataFileFrame, EditColumnFrame
