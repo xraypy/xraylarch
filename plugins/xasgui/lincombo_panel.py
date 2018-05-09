@@ -67,7 +67,7 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=0.1, min_val=0, plot_win=1,
+        opts = dict(digits=2, increment=0.1, min_val=0,
                     action=self.onProcess)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
