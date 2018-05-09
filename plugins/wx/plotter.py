@@ -643,6 +643,41 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     symtable.clear_callbacks(xsym)
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
+@larch.ValidateLarchPlugin
+def last_cursor_pos(win=None, _larch=None):
+    """return most recent cursor position -- 'last click on plot'
+
+    By default, this returns the last postion for all plot windows.
+    If win is not `None`, the last position for that window will be returned
+
+    Arguments
+    ---------
+    win  (int or None) index of window to get cursor position [None, all windows]
+
+    Returns
+    -------
+    x, y coordinates of most recent cursor click, in user units
+    """
+    plotter = _larch.symtable._plotter
+
+    histories = []
+    for attr in dir(plotter):
+        if attr.endswith('_cursor_hist'):
+            histories.append(attr)
+
+    if win is not None:
+        tmp = []
+        for attr in histories:
+            if attr.startswith('plot%d_' % win):
+                tmp.append(attr)
+        histories = tmp
+
+    _x, _y, _t = None, None, 0
+    for hist in histories:
+        for px, py, pt in getattr(plotter, hist, [None, None, -1]):
+            if pt > _t:
+                _x, _y, _t = px, py, pt
+    return _x, _y
 
 @larch.ValidateLarchPlugin
 def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
@@ -806,6 +841,7 @@ def registerLarchPlugin():
                       'get_display':_getDisplay,
                       'close_all_displays':_closeDisplays,
                       'get_cursor': _getcursor,
+                      'last_cursor_pos': last_cursor_pos,
                       'imshow':_imshow,
                       'contour':_contour,
                       'xrf_plot': _xrf_plot,
