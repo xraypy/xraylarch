@@ -111,7 +111,8 @@ class XASNormPanel(TaskPanel):
 
         opts = {'digits': 2, 'increment': 0.1, 'value': 0}
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
-        self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
+        xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
+                                      with_pin=False, **opts)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -141,7 +142,7 @@ class XASNormPanel(TaskPanel):
         xas.Add(CopyBtn('xas_e0'), style=RCEN)
 
         add_text('Edge Step: ')
-        xas.Add(self.wids['step'])
+        xas.Add(xas_step)
         xas.Add(self.wids['autostep'], dcol=3)
         xas.Add((10, 1))
         xas.Add(CopyBtn('xas_step'), style=RCEN)
