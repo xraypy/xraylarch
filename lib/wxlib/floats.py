@@ -16,6 +16,8 @@ try:
 except ImportError:
     pass
 
+from .icons import get_icon
+
 def make_steps(prec=3, tmin=0, tmax=10, base=10, steps=(1, 2, 5)):
     """make a list of 'steps' to use for a numeric ComboBox
     returns a list of floats, such as
@@ -306,6 +308,17 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
         else:
             fs.SetToolTipString(tooltip)
     return fs
+
+def FloatSpinWithPin(parent, value=0, pin_action=None, **kws):
+    """create a FloatSpin with Pin button with action"""
+    tooltip = 'use last point selected from plot'
+    fspin = FloatSpin(parent, value=value, **kws)
+    bmbtn = wx.BitmapButton(parent, -1, get_icon('pin'), size=(25, 25))
+    bmbtn.Bind(wx.EVT_BUTTON, pin_action)
+    if is_wxPhoenix:
+        bmbtn.SetToolTip(tooltip)
+    else:
+        bmbtn.SetToolTipString(tooltip)
 
 class NumericCombo(wx.ComboBox):
     """
