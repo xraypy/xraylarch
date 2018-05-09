@@ -15,7 +15,10 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                      Font, FileSave, FileOpen)
 
 from larch import Group
-from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, SetTip, GridPanel)
+
+from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
+                         FloatSpin, FloatSpinWithPin)
+
 
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.plotter import last_cursor_pos
@@ -142,17 +145,19 @@ class TaskPanel(wx.Panel):
         self.panel.Add(SimpleText(self.panel, text),
                        dcol=dcol, newrow=newrow)
 
-    def add_floatspin(self, name, value, with_pin=True,
-                      plot_win=None, **kws):
+    def add_floatspin(self, name, value, with_pin=True, **kws):
         """create FloatSpin with Pin button for onSelPoint"""
-        s = wx.BoxSizer(wx.HORIZONTAL)
-        self.wids[name] = FloatSpin(self.panel, value=value, **kws)
-        pin_action = partial(self.onSelPoint, opt=name, win=plot_win)
-        bb = BitmapButton(self.panel, get_icon('pin'), size=(25, 25),
-                          tooltip='use last point selected from plot',
-                          action=pin_action)
+        if with_pin:
+            pin_action = partial(self.onSelPoint, opt=name)
+            fspin, bb = FloatSpinWithPin(self.panel, value=value,
+                                         pin_action=pin_action, **kws)
+        else:
+            fspin = FloatSpinWithPin(self.panel, value=value, **kws)
+            bb = (1, 1)
 
-        s.Add(self.wids[name])
+        self.wids[name] = fspin
+        s = wx.BoxSizer(wx.HORIZONTAL)
+        s.Add(fspin)
         s.Add(bb)
         return s
 
