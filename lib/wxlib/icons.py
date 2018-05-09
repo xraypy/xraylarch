@@ -37,7 +37,7 @@ RAW_ICONS = {
 #   f = open('my.png', 'rb')
 #   print(base64.b64encode(f.read()))
 
-aliases = dict(ww=leftarrow, ee=rightarrow, nn=uparrow, ss=downarrow)
+aliases = dict(ww='leftarrow', ee='rightarrow', nn='uparrow', ss='downarrow')
 for old, new in aliases.items():
     RAW_ICONS[new] = RAW_ICONS[old]
 
