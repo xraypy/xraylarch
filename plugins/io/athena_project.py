@@ -49,7 +49,7 @@ def _read_raw_athena(filename):
     try:
         fh = GzipFile(filename)
         text = bytes2str(fh.read())
-    except OSError:
+    except Exception:
         errtype, errval, errtb = sys.exc_info()
         text = None
     finally:
@@ -60,7 +60,7 @@ def _read_raw_athena(filename):
         try:
             fh = open(filename, 'r')
             text = bytes2str(fh.read())
-        except OSError:
+        except Exception:
             errtype, errval, errtb = sys.exc_info()
             text = None
         finally:
