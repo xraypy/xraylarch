@@ -7,7 +7,6 @@ import time
 import wx
 import numpy as np
 
-from functools import partial
 from collections import OrderedDict
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
@@ -56,7 +55,6 @@ class LinearComboPanel(TaskPanel):
         self.controller.larch.eval(cmd)
 
     def build_display(self):
-
         titleopts = dict(font=Font(12), colour='#AA0000')
         panel = self.panel
         wids = self.wids
@@ -67,25 +65,14 @@ class LinearComboPanel(TaskPanel):
 
         wids['fitspace'].SetStringSelection(norm)
 
-        def FloatSpinWithPin(name, value, **kws):
-            s = wx.BoxSizer(wx.HORIZONTAL)
-            self.wids[name] = FloatSpin(panel, value=value, **kws)
-            bb = BitmapButton(panel, get_icon('pin'), size=(25, 25),
-                              action=partial(self.onSelPoint, opt=name),
-                              tooltip='use last point selected from plot')
-            s.Add(wids[name])
-            s.Add(bb)
-            return s
+        add_text = self.add_text
 
+        opts = dict(digits=2, increment=0.1, min_val=0, plot_win=1,
+                    action=self.onProcess)
 
-        def add_text(text, dcol=1, newrow=True):
-            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
-
-        opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
-
-        e0_wids = FloatSpinWithPin('e0', value=0, **opts)
-        elo_wids = FloatSpinWithPin('elo', value=-20, **opts)
-        ehi_wids = FloatSpinWithPin('ehi', value=30, **opts)
+        e0_wids = self.add_floatspin('e0', value=0, **opts)
+        elo_wids = self.add_floatspin('elo', value=-20, **opts)
+        ehi_wids = self.add_floatspin('ehi', value=30, **opts)
 
         wids['ncomps'] = FloatSpin(panel, value=4, digits=0, increment=1,
                                    min_val=1, max_val=1000,
