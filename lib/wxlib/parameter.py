@@ -15,24 +15,6 @@ from .utils import SetTip
 from larch import Parameter, Group
 from larch.larchlib import Empty
 
-infoicon = PyEmbeddedImage(
-    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACzElEQVR42m2TW0gUURjHv3Nm"
-    "b+6ut028lOaldm0RL2gGxWamSWHWi4JhPRjokyhCYWA9lfRQD0FUBJbdCBEEUzFILFjxQaxQ"
-    "Wi+prXfXXV11J2zXXXdmOjPO7no78zAcvu//+/7nO+dDcMD6Ob14OiwisnDItpk0aXOi5XWX"
-    "ecm68qW5Irtvby7aualq/q49k6FrlEulOQ4Pi4ALxLa8DFjsG/0zc9bKDzezhvcByt8PntRr"
-    "Y7vlCmk4QmhXkGNZAIyBI0CXy7MxNW8vaizVG/05RQ9aNOmGHJNCIT3Mi3m9T3xcjSAvXgXG"
-    "eSeM0SyBcOBxe1cnRn6ntVTlWoS86s6ZxwqV/DYWxXjHwc7HKcFwVA0dEzQMLbuBJS5YAnG7"
-    "PK+eXo6vRNk36qisa1VWhHEEFsU+F5gkRisR8O1Y2eSE6tsAQmZZ5/i39ghUUN+UEpmZM8xX"
-    "x0QtAMiXGEJBoS4MUmKCYWCOhre/1gMAlhNcOBfMBpR3911+cPKpHgoToQBAEKmkIDZUDqlR"
-    "QXBBdwg6Ru3QOrImNFGA8ADSV2ZtsQQZ6prOKpIye4XqGPntKyQYGku0oJRJoLb9D8zT7j0A"
-    "sqGtV1FaeUOUKq1gCRM1Eo/BX8FFXTjcyk+EcdsG1LRNCkIQ7YsQjlkwnRD6ndlgHGARzg44"
-    "QPC8VA/pcWHw5OsU2Bwu6Jv+Kwh9DhDHTgzeO5csAPR1n4pZiboViQCVnALjHQNQ5PG0/ViA"
-    "7jE79E85eP/bEAKgwFsx+vDSa/+NJ9R2fuQQVcY3QCbF8Kg0FWjXFrzpnYXZVacoBuGPgOly"
-    "mrquLPe85PwATX61TKbNbeIAXxeeMto1JiCqSRO87cySqWyl475z3zDxS51bU0yFHqmnNAkZ"
-    "/MX65Mz6rHlz9PMzxm5+4V2b2zpwGgMziiQoSBODQ6KPEa2EpS0WzuWwkMg/fjB3pv4HvQJH"
-    "bUDKnS4AAAAASUVORK5CYII=")
-
-
 PAR_FIX = 'fix'
 PAR_VAR = 'vary'
 PAR_CON = 'constrain'
@@ -161,7 +143,7 @@ class ParameterWidgets(object):
         elif bounds == BOUNDS_none:
             self.minval.SetValue(-np.inf)
             self.maxval.SetValue(np.inf)
-            
+
         elif bounds == BOUNDS_pos:
             self.minval.SetValue(0)
             if float(self.maxval.GetValue()) == 0:
