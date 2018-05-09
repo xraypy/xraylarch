@@ -314,11 +314,14 @@ def FloatSpinWithPin(parent, value=0, pin_action=None, **kws):
     tooltip = 'use last point selected from plot'
     fspin = FloatSpin(parent, value=value, **kws)
     bmbtn = wx.BitmapButton(parent, -1, get_icon('pin'), size=(25, 25))
-    bmbtn.Bind(wx.EVT_BUTTON, pin_action)
+    if pin_action is not None:
+        parent.Bind(wx.EVT_BUTTON, pin_action, bmbtn)
     if is_wxPhoenix:
         bmbtn.SetToolTip(tooltip)
     else:
         bmbtn.SetToolTipString(tooltip)
+    return fspin, bmbtn
+
 
 class NumericCombo(wx.ComboBox):
     """
