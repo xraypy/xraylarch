@@ -40,7 +40,7 @@ from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
 
-from larch_plugins.wx.plotter import _newplot, _plot
+from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
@@ -308,13 +308,9 @@ class XASController():
         setattr(self.larch.symtable, ngroup.groupname, ngroup)
         return ngroup
 
-    def get_cursor(self):
-        try:
-            xval = self.symtable._plotter.plot1_x
-            yval = self.symtable._plotter.plot1_y
-        except:
-            xval, yval = None, None
-        return xval, yval
+    def get_cursor(self, win=None):
+        """get last cursor from selected window"""
+        return last_cursor_pos(win=win, _larch=self.larch)
 
     def plot_group(self, groupname=None, title=None, plot_yarrays=None,
                    new=True, zoom_out=True, **kws):
