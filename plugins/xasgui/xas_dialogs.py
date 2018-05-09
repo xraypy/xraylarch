@@ -11,7 +11,10 @@ from wxutils import (SimpleText, Choice, Check, Button, HLine, OkCancel,
                      LCEN, RCEN)
 
 from larch.utils import index_of, index_nearest, interp
-from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, GridPanel
+
+from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl,
+                         FloatSpin, FloatSpinWithPin)
+
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels
@@ -51,7 +54,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 250),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 275),
                            title="Correct Over-absorption")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
@@ -221,21 +224,17 @@ class EnergyCalibrateDialog(wx.Dialog):
                               action=self.on_align)
         wids['reflist'].SetSelection(0)
 
-        opts  = dict(size=(90, -1), value=e0val, digits=3, increment=0.1,
-                     action=partial(self.on_calib, name=wname))
+        opts  = dict(size=(90, -1), digits=3, increment=0.1)
+        for wname in ('e0_old', 'e0_new'):
+            opts['action'] = partial(self.on_calib, name=wname)
+            opts['pin_action'] = partial(self.on_select, name=wname)
+            fspin, bmbtn = FloatSpinWithPin(panel, value=e0val, **opts)
+            wids[wname] = fspin
+            wids[wname+'btn'] = bmbtn
 
-        wids['e0_old'] = FloatSpin(panel, **opts)
-        wids['e0_new'] = FloatSpin(panel, **opts)
-        opts['value'] = 0.0
-        wids['eshift'] = FloatSpin(panel, **opts)
-
-
-        bb_e0old = BitmapButton(panel, get_icon('plus'),
-                                action=partial(self.on_select, opt='e0_old'),
-                                tooltip='use last point selected from plot')
-        bb_e0new = BitmapButton(panel, get_icon('plus'),
-                                action=partial(self.on_select, opt='e0_new'),
-                                tooltip='use last point selected from plot')
+        opts['action'] = partial(self.on_calib, name='eshift')
+        opts.pop('pin_action')
+        wids['eshift'] = FloatSpin(panel, value=0, **opts)
 
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
                                    size=(250, -1), action=self.plot_results)
@@ -261,33 +260,33 @@ overwriting current arrays''')
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        add_text(' Energy Calibration for Group: ', dcol=2, newrow=False)
+        add_text(' Energy Calibration for Group: ',  newrow=False)
         panel.Add(wids['grouplist'], dcol=3)
 
-        add_text(' Plot Arrays as: ', dcol=2)
+        add_text(' Plot Arrays as: ')
         panel.Add(self.plottype, dcol=3)
 
-        add_text(' Auto-Align to : ', dcol=2)
+        add_text(' Auto-Align to : ')
         panel.Add(wids['reflist'], dcol=3)
 
         add_text(' Energy Reference (E0): ')
-        panel.Add(bb_e0old)
         panel.Add(wids['e0_old'])
+        panel.Add(wids['e0_oldbtn'])
         add_text(' eV', newrow=False)
 
         add_text(' Calibrate to: ')
-        panel.Add(bb_e0new)
         panel.Add(wids['e0_new'])
+        panel.Add(wids['e0_newbtn'])
         add_text(' eV', newrow=False)
 
-        add_text(' Energy Shift : ', dcol=2)
-        panel.Add(wids['eshift'])
+        add_text(' Energy Shift : ')
+        panel.Add(wids['eshift'], dcol=2)
         add_text(' eV', newrow=False)
 
-        panel.Add(apply_one, dcol=2, newrow=True)
+        panel.Add(apply_one, newrow=True)
         panel.Add(apply_sel, dcol=4)
 
-        panel.Add(wids['save_as'], dcol=2, newrow=True)
+        panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
 
         panel.pack()
@@ -698,7 +697,7 @@ class SmoothDataDialog(wx.Dialog):
 
         add_text('Convolution Form: ')
         panel.Add(self.conv_op)
-        add_text(' sigma= ', newrow=False)
+        add_text(' sigma: ', newrow=False)
         panel.Add(self.sigma)
 
         panel.Add((10, 10), newrow=True)
@@ -950,14 +949,14 @@ class DeglitchDialog(wx.Dialog):
         wids['grouplist'].SetStringSelection(self.dgroup.groupname)
         wids['grouplist'].SetToolTip('select a new group, clear undo history')
 
-        bb_xlast = BitmapButton(panel, get_icon('plus'),
+        bb_xlast = BitmapButton(panel, get_icon('pin'),
                                 action=partial(self.on_select, opt='x'),
                                 tooltip='use last point selected from plot')
 
-        bb_range1 = BitmapButton(panel, get_icon('plus'),
+        bb_range1 = BitmapButton(panel, get_icon('pin'),
                                 action=partial(self.on_select, opt='range1'),
                                 tooltip='use last point selected from plot')
-        bb_range2 = BitmapButton(panel, get_icon('plus'),
+        bb_range2 = BitmapButton(panel, get_icon('pin'),
                                 action=partial(self.on_select, opt='range2'),
                                 tooltip='use last point selected from plot')
 
@@ -999,19 +998,19 @@ clear undo history''')
         panel.Add(wids['grouplist'], dcol=2)
 
         add_text('Single Energy : ', dcol=2)
-        panel.Add(bb_xlast)
         panel.Add(self.wid_xlast)
+        panel.Add(bb_xlast)
         panel.Add(br_xlast)
 
         add_text('Energy Range : ')
         panel.Add(self.choice_range)
-        panel.Add(bb_range1)
         panel.Add(self.wid_range1)
+        panel.Add(bb_range1)
         panel.Add(br_range)
 
         panel.Add((10, 10), dcol=2, newrow=True)
-        panel.Add(bb_range2)
         panel.Add(self.wid_range2)
+        panel.Add(bb_range2)
 
         panel.Add(wids['apply'], dcol=3, newrow=True)
         panel.Add(self.history_message)
