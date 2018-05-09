@@ -38,11 +38,11 @@ except:
 from larch import Interpreter, site_config
 from larch.utils import index_of
 from larch.utils.strutils import bytes2str
+from larch.wxlib import get_icon
 
-from wxutils import (SimpleText, EditableListBox, Font,
-                     pack, Popup, Button, get_icon, Check, MenuItem,
-                     Choice, FileOpen, FileSave, fix_filename, HLine,
-                     GridPanel, CEN, LEFT, RIGHT)
+from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
+                     Button, Check, MenuItem, Choice, FileOpen, FileSave,
+                     fix_filename, HLine, GridPanel, CEN, LEFT, RIGHT)
 
 from larch_plugins.wx.periodictable import PeriodicTablePanel
 from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
