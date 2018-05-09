@@ -152,7 +152,7 @@ class TaskPanel(wx.Panel):
             fspin, bb = FloatSpinWithPin(self.panel, value=value,
                                          pin_action=pin_action, **kws)
         else:
-            fspin = FloatSpinWithPin(self.panel, value=value, **kws)
+            fspin = FloatSpin(self.panel, value=value, **kws)
             bb = (1, 1)
 
         self.wids[name] = fspin
