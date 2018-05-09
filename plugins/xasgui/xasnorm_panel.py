@@ -16,6 +16,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 from larch.utils import index_of
 from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin
 from larch_plugins.wx.icons import get_icon
+from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
@@ -82,17 +83,6 @@ class XASNormPanel(TaskPanel):
         plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
 
-
-        def FloatSpinWithPin(name, value, **kws):
-            s = wx.BoxSizer(wx.HORIZONTAL)
-            self.wids[name] = FloatSpin(xas, value=value, **kws)
-            bb = BitmapButton(xas, get_icon('pin'), size=(25, 25),
-                              action=partial(self.onSelPoint, opt=name),
-                              tooltip='use last point selected from plot')
-            s.Add(self.wids[name])
-            s.Add(bb)
-            return s
-
         opts = dict(action=self.onReprocess)
 
         e0opts_panel = wx.Panel(xas)
@@ -114,13 +104,13 @@ class XASNormPanel(TaskPanel):
 
         opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0})
 
-        xas_pre1 = FloatSpinWithPin('pre1', value=-1000, **opts)
-        xas_pre2 = FloatSpinWithPin('pre2', value=-30, **opts)
-        xas_nor1 = FloatSpinWithPin('nor1', value=50, **opts)
-        xas_nor2 = FloatSpinWithPin('nor2', value=5000, **opts)
+        xas_pre1 = self.add_floatspin('pre1', value=-1000, **opts)
+        xas_pre2 = self.add_floatspin('pre2', value=-30, **opts)
+        xas_nor1 = self.add_floatspin('nor1', value=50, **opts)
+        xas_nor2 = self.add_floatspin('nor2', value=5000, **opts)
 
         opts = {'digits': 2, 'increment': 0.1, 'value': 0}
-        xas_e0   = FloatSpinWithPin('e0', action=self.onSet_XASE0, **opts)
+        xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
         self.wids['step'] = FloatSpin(xas, action=self.onSet_XASStep, **opts)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
@@ -130,10 +120,7 @@ class XASNormPanel(TaskPanel):
             return Button(xas, 'Copy', size=(50, -1),
                           action=partial(self.onCopyParam, name))
 
-        def add_text(text, dcol=1, newrow=True):
-            xas.Add(SimpleText(xas, text), dcol=dcol, newrow=newrow)
-
-
+        add_text = self.add_text
 
         xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
                            **titleopts), dcol=4)
@@ -321,6 +308,30 @@ class XASNormPanel(TaskPanel):
         self.wids['autostep'].SetValue(0)
         self.onReprocess()
 
+    def onSelPoint(self, evt=None, opt='__', win=None):
+        """
+        get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
+
+        by default it finds the latest cursor position from the
+        cursor history of the first 20 plot windows.
+        """
+        if opt not in self.wids:
+            return None
+
+        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
+        if _x is None:
+            return
+
+        e0 = self.wids['e0'].GetValue()
+        if opt == 'e0':
+            self.wids['e0'].SetValue(_x)
+            self.wids['autoe0'].SetValue(0)
+        elif opt in ('pre1', 'pre2', 'nor1', 'nor2'):
+            self.wids[opt].SetValue(_x-e0)
+
+        self.onReprocess()
+
     def onReprocess(self, evt=None, value=None, **kws):
         "handle request reprocess"
         if self.skip_process:
@@ -331,21 +342,6 @@ class XASNormPanel(TaskPanel):
             return
         self.process(dgroup=dgroup)
         self.plot(dgroup)
-
-    def onSelPoint(self, evt=None, opt='e0'):
-        "on point selected by cursor"
-        xval, _ = self.controller.get_cursor()
-        if xval is None:
-            return
-
-        e0 = self.wids['e0'].GetValue()
-        if opt == 'e0':
-            self.wids['e0'].SetValue(xval)
-            self.wids['autoe0'].SetValue(0)
-        elif opt in ('pre1', 'pre2', 'nor1', 'nor2'):
-            self.wids[opt].SetValue(xval-e0)
-        else:
-            print(" unknown selection point ", opt)
 
     def make_dnormde(self, dgroup):
         form = dict(group=dgroup.groupname)
