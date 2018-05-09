@@ -18,6 +18,7 @@ from larch import Group
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, SetTip, GridPanel)
 
 from larch_plugins.wx.icons import get_icon
+from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.std import group2dict
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -175,19 +176,7 @@ class TaskPanel(wx.Panel):
         if opt not in self.wids:
             return None
 
-        if win is None:
-            wins = range(1, 21)
-        else:
-            wins = [win]
+        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
 
-        last_x, last_y, last_time = None, None, -1
-        plotter = self.larch.symtable._plotter
-        for win in wins:
-            winhist = getattr(plotter, 'plot%d_cursor_hist' % i, None)
-            if winhist is not None:
-                for px, py, pt in winhist:
-                    if pt > last_time:
-                        last_x, last_y, last_time = px, py, pt
-
-        if last_x is not None:
-            self.wids[opt].SetValue(last_x)
+        if _x is not None:
+            self.wids[opt].SetValue(_x)
