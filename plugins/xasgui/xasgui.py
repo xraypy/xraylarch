@@ -63,18 +63,16 @@ LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 
-
 ICON_FILE = 'larch.ico'
 XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
 NB_PANELS = (('XAS Normalization', XASNormPanel),
-             ('Pre-edge Peak Fit', PrePeakPanel),
-             ('Linear Combo Fits', LinearComboPanel),
+             ('Pre-edge Peaks', PrePeakPanel),
+             ('Linear Combos', LinearComboPanel),
              ('PCA',  PCAPanel),
              ('LASSO', LASSOPanel),
-             ('EXAFS', EXAFSPanel),
-             )
+             ('EXAFS', EXAFSPanel) )
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
