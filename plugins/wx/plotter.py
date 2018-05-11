@@ -659,7 +659,6 @@ def last_cursor_pos(win=None, _larch=None):
     x, y coordinates of most recent cursor click, in user units
     """
     plotter = _larch.symtable._plotter
-
     histories = []
     for attr in dir(plotter):
         if attr.endswith('_cursor_hist'):
@@ -671,13 +670,13 @@ def last_cursor_pos(win=None, _larch=None):
             if attr.startswith('plot%d_' % win):
                 tmp.append(attr)
         histories = tmp
-
     _x, _y, _t = None, None, 0
     for hist in histories:
         for px, py, pt in getattr(plotter, hist, [None, None, -1]):
-            if pt > _t:
+            if pt > _t and px is not None:
                 _x, _y, _t = px, py, pt
     return _x, _y
+
 
 @larch.ValidateLarchPlugin
 def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
