@@ -15,7 +15,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
                      RCEN, LCEN, Font)
 
 from larch.utils import index_of
-from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, ToggleButton
+from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, ToggleButton, GridPanel
 from larch_plugins.wx.icons import get_icon
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
@@ -90,7 +90,7 @@ class LinearComboPanel(TaskPanel):
         wids['show_e0']       = Check(panel, label='show?', **opts)
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
-
+        wids['sum_to_1']  = Check(panel, label='Components must sum to 1?', default=True)
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
         add_text('Run Fit', newrow=False)
 
@@ -109,30 +109,39 @@ class LinearComboPanel(TaskPanel):
         panel.Add(ehi_wids)
         panel.Add(wids['show_fitrange'])
 
-        add_text('Number of compoents: ')
+        add_text('Max # of components: ')
         panel.Add(wids['ncomps'])
+        panel.Add(wids['sum_to_1'], dcol=3)
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        groupnames = list(self.controller.file_groups.keys())
+        groupnames = ['<none>'] + list(self.controller.file_groups.keys())
+        sgrid = GridPanel(panel, nrows=6)
 
-        for i in range(8):
+        sgrid.Add(SimpleText(sgrid, "#"))
+        sgrid.Add(SimpleText(sgrid, "Group"))
+        sgrid.Add(SimpleText(sgrid, "Value"))
+        sgrid.Add(SimpleText(sgrid, "Min"))
+        sgrid.Add(SimpleText(sgrid, "Max"))
+        sgrid.Add(SimpleText(sgrid, "Use?"))
+
+        fopts = dict(value=0., minval=0, maxval=1, precision=3, size=(50, -1))
+        for i in range(6):
             p = "comp%i" % (i+1)
-            wids['%s_choice' % p] = Choice(panel, choices=groupnames, size=(200, -1))
-            wids['%s_val' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
-            wids['%s_min' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
-            wids['%s_max' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
-            wids['%s_use' % p] = Check(panel, label='use?', default=True)
-            add_text("%i" % (i+1))
-            panel.Add(wids['%s_choice' % p])
-            panel.Add(wids['%s_val' % p] )
-            panel.Add(wids['%s_min' % p])
-            panel.Add(wids['%s_max' % p])
-            panel.Add(wids['%s_use' % p])
+            wids['%s_choice' % p] = Choice(sgrid, choices=groupnames, size=(180, -1))
+            wids['%s_val' % p] = FloatCtrl(sgrid, **fopts)
+            wids['%s_min' % p] = FloatCtrl(sgrid, **fopts)
+            wids['%s_max' % p] = FloatCtrl(sgrid, **fopts)
+            wids['%s_use' % p] = Check(sgrid, label='', default=False)
+            sgrid.Add(SimpleText(sgrid, "%i" % (i+1)), newrow=True)
+            sgrid.Add(wids['%s_choice' % p])
+            sgrid.Add(wids['%s_val' % p] )
+            sgrid.Add(wids['%s_min' % p])
+            sgrid.Add(wids['%s_max' % p])
+            sgrid.Add(wids['%s_use' % p])
 
-
-
-
+        sgrid.pack()
+        panel.Add(sgrid, dcol=7, newrow=True)
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
 
