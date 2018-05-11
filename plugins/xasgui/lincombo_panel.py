@@ -5,6 +5,8 @@ Linear Combination panel
 import os
 import time
 import wx
+import wx.lib.scrolledpanel as scrolled
+
 import numpy as np
 
 from collections import OrderedDict
@@ -88,6 +90,7 @@ class LinearComboPanel(TaskPanel):
         wids['show_e0']       = Check(panel, label='show?', **opts)
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
+
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
         add_text('Run Fit', newrow=False)
 
@@ -110,6 +113,25 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['ncomps'])
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+
+        groupnames = list(self.controller.file_groups.keys())
+
+        for i in range(8):
+            p = "comp%i" % (i+1)
+            wids['%s_choice' % p] = Choice(panel, choices=groupnames, size=(200, -1))
+            wids['%s_val' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
+            wids['%s_min' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
+            wids['%s_max' % p] = FloatCtrl(panel, value=0., minval=0, maxval=1, precision=3)
+            wids['%s_use' % p] = Check(panel, label='use?', default=True)
+            add_text("%i" % (i+1))
+            panel.Add(wids['%s_choice' % p])
+            panel.Add(wids['%s_val' % p] )
+            panel.Add(wids['%s_min' % p])
+            panel.Add(wids['%s_max' % p])
+            panel.Add(wids['%s_use' % p])
+
+
+
 
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
