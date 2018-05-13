@@ -35,7 +35,8 @@ PlotCmds = {norm:   "plot_mu({group:, norm=True}",
             noplot: None}
 
 
-defaults = dict(e0=0, elow=-20, ehi=30, fitspace=norm, sum_to_one=True)
+defaults = dict(e0=0, elow=-20, ehi=30, fitspace=norm, all_combos=True,
+                sum_to_one=True, show_e0=True, show_fitrange=True)
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
@@ -63,8 +64,7 @@ class LinearComboPanel(TaskPanel):
         self.skip_process = True
 
         wids['fitspace'] = Choice(panel, choices=FitSpace_Choices,
-                                   size=(175, -1))
-
+                                  size=(175, -1))
         wids['fitspace'].SetStringSelection(norm)
 
         add_text = self.add_text
@@ -76,12 +76,11 @@ class LinearComboPanel(TaskPanel):
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
         ehi_wids = self.add_floatspin('ehi', value=30, **opts)
 
-        wids['ncomps'] = FloatSpin(panel, value=4, digits=0, increment=1,
-                                   min_val=1, max_val=1000,
+        wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
                                    action=self.onProcess)
+        wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(150, -1),
+                                      action=self.onProcess)
 
-        wids['runfit'] = Button(panel, 'Fit this Group', size=(100, -1),
-                               action=self.onProcess)
         wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(200, -1),
                                   action=self.onSaveConfigBtn)
 
@@ -90,17 +89,20 @@ class LinearComboPanel(TaskPanel):
         wids['show_e0']       = Check(panel, label='show?', **opts)
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
-        wids['sum_to_1']  = Check(panel, label='Components must sum to 1?', default=True)
+        wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
+        wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
+
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
         add_text('Run Fit', newrow=False)
 
         add_text('Array to Fit: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=4)
-        panel.Add(wids['runfit'])
+        panel.Add(wids['fit_group'])
 
         add_text('E0: ')
         panel.Add(e0_wids, dcol=3)
         panel.Add(wids['show_e0'])
+        panel.Add(wids['fit_selected'])
 
 
         add_text('Fit Energy Range: ')
@@ -109,9 +111,8 @@ class LinearComboPanel(TaskPanel):
         panel.Add(ehi_wids)
         panel.Add(wids['show_fitrange'])
 
-        add_text('Max # of components: ')
-        panel.Add(wids['ncomps'])
-        panel.Add(wids['sum_to_1'], dcol=3)
+        panel.Add(wids['sum_to_one'], dcol=2, newrow=True)
+        panel.Add(wids['all_combos'], dcol=3)
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
@@ -120,15 +121,15 @@ class LinearComboPanel(TaskPanel):
 
         sgrid.Add(SimpleText(sgrid, "#"))
         sgrid.Add(SimpleText(sgrid, "Group"))
-        sgrid.Add(SimpleText(sgrid, "Value"))
+        sgrid.Add(SimpleText(sgrid, "Weight"))
         sgrid.Add(SimpleText(sgrid, "Min"))
         sgrid.Add(SimpleText(sgrid, "Max"))
         sgrid.Add(SimpleText(sgrid, "Use?"))
 
-        fopts = dict(value=0., minval=0, maxval=1, precision=3, size=(50, -1))
+        fopts = dict(value=0., minval=0, maxval=1, precision=4, size=(60, -1))
         for i in range(6):
             p = "comp%i" % (i+1)
-            wids['%s_choice' % p] = Choice(sgrid, choices=groupnames, size=(180, -1))
+            wids['%s_choice' % p] = Choice(sgrid, choices=groupnames, size=(190, -1))
             wids['%s_val' % p] = FloatCtrl(sgrid, **fopts)
             wids['%s_min' % p] = FloatCtrl(sgrid, **fopts)
             wids['%s_max' % p] = FloatCtrl(sgrid, **fopts)
@@ -153,6 +154,7 @@ class LinearComboPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
+        # print("Fill Form ", dgroup, opts)
 
         self.dgroup = dgroup
         self.skip_process = True
