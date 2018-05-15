@@ -503,8 +503,9 @@ class AthenaProject(object):
                 # print("Not perl-athena ", sys.exc_info())
                 pass
 
-        if text is None:
-            raise Value("cannot convert Athena file '%s' as JSON" % (self.filename))
+        if data is None:
+            raise ValueError("cannot read file '%s' as Athena Project File" % (self.filename))
+
 
         self.header = data.header
         self.journal = data.journal
