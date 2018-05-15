@@ -155,15 +155,11 @@ class LinearComboPanel(TaskPanel):
         comps = []
         for wname, wid in self.wids.items():
             if wname.startswith('compchoice'):
+                pref, n = wname.split('_')
                 if wid.GetSelection() > 0:
-                    pref, n = wname.split('_')
-                    weight = self.wids["compval_%2.2i" % n].GetValue()
-                    comps.append((int(n), wid.GetStringSelection(), weight))
-
-        for wname, wid in self.wids.items():
-            if wname.startswith('compval'):
-                wid.SetValue(0)
-
+                    comps.append((int(n), wid.GetStringSelection()))
+                else:
+                    self.wids["compval_%s" % n].SetValue(0)
 
         cnames = set([elem[1] for elem in comps])
         if len(cnames) < len(comps):
