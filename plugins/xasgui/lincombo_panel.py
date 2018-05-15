@@ -9,6 +9,7 @@ import wx.lib.scrolledpanel as scrolled
 
 import numpy as np
 
+from functools import partial
 from collections import OrderedDict
 
 from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
@@ -30,12 +31,12 @@ noplot  = '<no plot>'
 
 FitSpace_Choices = [norm, dmude, chik]
 
-PlotCmds = {norm:   "plot_mu({group:, norm=True}",
-            chik:    "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
+PlotCmds = {norm: "plot_mu({group:, norm=True}",
+            chik: "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
             noplot: None}
 
 
-defaults = dict(e0=0, elow=-20, ehi=30, fitspace=norm, all_combos=True,
+defaults = dict(e0=0, elo=-20, ehi=30, fitspace=norm, all_combos=True,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
 class LinearComboPanel(TaskPanel):
@@ -69,8 +70,7 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=0.1, min_val=0,
-                    action=self.onProcess)
+        opts = dict(digits=2, increment=0.1, action=self.onProcess)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
@@ -126,21 +126,18 @@ class LinearComboPanel(TaskPanel):
         sgrid.Add(SimpleText(sgrid, "Max"))
         sgrid.Add(SimpleText(sgrid, "Use?"))
 
-        fopts = dict(value=0., minval=0, maxval=1, precision=4, size=(60, -1))
-        for i in range(6):
-            p = "comp%i" % (i+1)
-            wids['%s_choice' % p] = Choice(sgrid, choices=groupnames, size=(190, -1))
-            wids['%s_val' % p] = FloatCtrl(sgrid, **fopts)
-            wids['%s_min' % p] = FloatCtrl(sgrid, **fopts)
-            wids['%s_max' % p] = FloatCtrl(sgrid, **fopts)
-            wids['%s_use' % p] = Check(sgrid, label='', default=False)
-            sgrid.Add(SimpleText(sgrid, "%i" % (i+1)), newrow=True)
-            sgrid.Add(wids['%s_choice' % p])
-            sgrid.Add(wids['%s_val' % p] )
-            sgrid.Add(wids['%s_min' % p])
-            sgrid.Add(wids['%s_max' % p])
-            sgrid.Add(wids['%s_use' % p])
-
+        fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
+        for i in range(1, 11):
+            si = ("comp", "_%2.2i" % i)
+            sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
+            wids['%schoice%s' % si] = Choice(sgrid, choices=groupnames, size=(200, -1),
+                                           action=partial(self.onComponent, comp=i))
+            wids['%sval%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
+            wids['%smin%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
+            wids['%smax%s' % si] = FloatCtrl(sgrid, value=1, **fopts)
+            wids['%suse%s' % si] = Check(sgrid, label='', default=False)
+            for cname in ('choice', 'val', 'min', 'max', 'use'):
+                sgrid.Add(wids[("%%s%s%%s" % cname) % si])
         sgrid.pack()
         panel.Add(sgrid, dcol=7, newrow=True)
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
@@ -151,23 +148,58 @@ class LinearComboPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
+    def onComponent(self, evt=None, comp=None):
+        if comp is None or evt is None:
+            return
+
+        comps = []
+        for wname, wid in self.wids.items():
+            if wname.startswith('compchoice'):
+                if wid.GetSelection() > 0:
+                    pref, n = wname.split('_')
+                    comps.append((int(n), wid.GetStringSelection()))
+
+        cnames = set([elem[1] for elem in comps])
+        if len(cnames) < len(comps):
+            comps.remove((comp, evt.GetString()))
+            self.wids["compchoice_%2.2i" % comp].SetSelection(0)
+
+        print("comps : ", comps)
+
+
+
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        # print("Fill Form ", dgroup, opts)
+        print("OPTS ", opts)
 
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
         for attr in ('e0', 'elo', 'ehi'):
-            val = getattr(dgroup, attr, None)
-            if val is None:
-                val = opts.get(attr, -1)
-            wids[attr].SetValue(val)
+            val = getattr(opts, attr, None)
+            if val is not None:
+                wids[attr].SetValue(val)
+
+        for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
+            wids[attr].Enable(getattr(opts, attr, False))
 
         for attr in ('fitspace',):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
+
+        groupnames = ['<none>'] + list(self.controller.file_groups.keys())
+        for wname, wid in wids.items():
+            if wname.startswith('compchoice'):
+                cur = wid.GetStringSelection()
+                wid.Clear()
+                wid.AppendItems(groupnames)
+                if cur in groupnames:
+                    wid.SetStringSelection(cur)
+                else:
+                    wid.SetSelection(0)
+            elif wname.startswith('comp'):
+                wid.SetValue(getattr(opts, wname, wid.GetValue()))
 
         self.skip_process = False
         self.process(dgroup=dgroup)
@@ -179,7 +211,6 @@ class LinearComboPanel(TaskPanel):
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
         form_opts = {'group': dgroup.groupname}
-
         wids = self.wids
         for attr in ('e0', 'elo', 'ehi'):
             form_opts[attr] = wids[attr].GetValue()
