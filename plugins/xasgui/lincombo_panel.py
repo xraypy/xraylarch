@@ -157,21 +157,30 @@ class LinearComboPanel(TaskPanel):
             if wname.startswith('compchoice'):
                 if wid.GetSelection() > 0:
                     pref, n = wname.split('_')
-                    comps.append((int(n), wid.GetStringSelection()))
+                    weight = self.wids["compval_%2.2i" % n].GetValue()
+                    comps.append((int(n), wid.GetStringSelection(), weight))
+
+        for wname, wid in self.wids.items():
+            if wname.startswith('compval'):
+                wid.SetValue(0)
+
 
         cnames = set([elem[1] for elem in comps])
         if len(cnames) < len(comps):
             comps.remove((comp, evt.GetString()))
             self.wids["compchoice_%2.2i" % comp].SetSelection(0)
 
-        print("comps : ", comps)
+        weight = 1.0 / len(comps)
+
+        for n, cname in comps:
+            self.wids["compval_%2.2i" % n].SetValue(weight)
 
 
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        print("OPTS ", opts)
+        # print("OPTS ", opts)
 
         self.dgroup = dgroup
         self.skip_process = True
