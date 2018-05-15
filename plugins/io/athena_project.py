@@ -279,6 +279,8 @@ def parse_perlathena(text, filename):
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
         name = fix_varname(label)
+        if name.startswith('_'):
+            name = 'd' + name
         setattr(out, name, this)
         out.group_names.append(name)
 
@@ -330,6 +332,8 @@ def parse_jsonathena(text, filename):
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, name)
         name = fix_varname(label)
+        if name.startswith('_'):
+            name = 'd' + name
         setattr(out, name, this)
         out.group_names.append(name)
     return out
