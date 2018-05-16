@@ -88,3 +88,20 @@ def SelectWorkdir(parent,  message='Select Working Folder...'):
     dlg.Destroy()
     os.chdir(path)
     return path
+
+
+def OkCancel(panel, onOK=None, onCancel=None):
+    """Add OK / Cancel buttons
+    OkCancel(panel, onOK=None, onCancel=None)
+    returns a wx.StdDialogButtonSizer
+    """
+    btnsizer = wx.StdDialogButtonSizer()
+    _ok = wx.Button(panel, wx.ID_OK)
+    _no = wx.Button(panel, wx.ID_CANCEL)
+    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
+    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
+    _ok.SetDefault()
+    btnsizer.AddButton(_ok)
+    btnsizer.AddButton(_no)
+    btnsizer.Realize()
+    return btnsizer
