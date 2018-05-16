@@ -772,7 +772,7 @@ class XASFrame(wx.Frame):
     def onRemoveGroups(self, event=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
-            groups.append(self.controller.file_groups[str(checked)])
+            groups.append(str(checked))
         if len(groups) < 1:
             return
 

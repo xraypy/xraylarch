@@ -1284,7 +1284,7 @@ class RemoveDialog(wx.Dialog):
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
 
-        panel.Add(SimpleText(panel, 'Remove %i Selected Grous?' % (len(grouplist))),
+        panel.Add(SimpleText(panel, 'Remove %i Selected Groups?' % (len(grouplist))),
                   newrow=True, dcol=2)
 
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
