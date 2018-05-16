@@ -753,11 +753,20 @@ class XASFrame(wx.Frame):
         dlg.Destroy()
 
         if res.ok:
+            selected = []
+            for checked in self.controller.filelist.GetCheckedStrings():
+                selected.append(str(checked))
+            if self.current_filename in selected:
+                selected.remove(self.current_filename)
+                selected.append(res.newname)
+
             groupname = self.controller.file_groups.pop(fname)
             self.controller.file_groups[res.newname] = groupname
             self.controller.filelist.rename_item(self.current_filename, res.newname)
             dgroup = self.controller.get_group(groupname)
             dgroup.filename = self.current_filename = res.newname
+
+            self.controller.filelist.SetCheckedStrings(selected)
             self.controller.filelist.SetStringSelection(res.newname)
 
     def onRemoveGroups(self, event=None):
