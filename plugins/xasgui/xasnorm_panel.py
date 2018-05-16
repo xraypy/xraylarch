@@ -173,6 +173,27 @@ class XASNormPanel(TaskPanel):
         sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
         pack(self, sizer)
 
+    def get_config(self, dgroup=None):
+        """custom get_config to possibly inherit from Athena settings"""
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
+        if hasattr(dgroup, self.configname):
+            conf = getattr(dgroup, self.configname)
+        else:
+            conf = self.get_defaultconfig()
+            if hasattr(dgroup, 'bkg_params'): # from Athena
+                conf['e0']   = getattr(dgroup.bkg_params, 'e0', conf['e0'])
+                conf['pre1'] = getattr(dgroup.bkg_params, 'pre1', conf['pre1'])
+                conf['pre2'] = getattr(dgroup.bkg_params, 'pre2', conf['pre2'])
+                conf['norm1'] = getattr(dgroup.bkg_params, 'nor1', conf['norm1'])
+                conf['norm2'] = getattr(dgroup.bkg_params, 'nor2', conf['norm2'])
+                conf['nnorm'] = getattr(dgroup.bkg_params, 'nnor', conf['nnorm'])
+                conf['nvict'] = getattr(dgroup.bkg_params, 'nvic', conf['nvict'])
+                conf['autostep'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
+
+        setattr(dgroup, self.configname, conf)
+        return conf
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
@@ -214,9 +235,7 @@ class XASNormPanel(TaskPanel):
             self.plotsel_op.SetStringSelection('Raw Data')
             for k in self.wids.values():
                 k.Disable()
-
         self.skip_process = False
-        self.process(dgroup=dgroup)
 
     def read_form(self):
         "read form, return dict of values"
@@ -280,11 +299,9 @@ class XASNormPanel(TaskPanel):
         if name == 'plotone_op':
             copy_attrs('plotone_op')
         elif name == 'xas_e0':
-            copy_attrs('e0', 'show_e0')
-            opts['auto_e0'] = False
+            copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
-            copy_attrs('edge_step')
-            opts['auto_step'] = False
+            copy_attrs('edge_step', 'auto_step')
         elif name == 'xas_pre':
             copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'xas_norm':
@@ -296,7 +313,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 self.set_config(grp, opts)
                 self.fill_form(grp)
-                self.process(dgroup=grp)
+                self.process(grp)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
@@ -357,7 +374,8 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
 
         self.skip_process = True
-        self.get_config()
+        # print("process ", dgroup, dgroup.filename)
+        self.get_config(dgroup)
 
         dgroup.custom_plotopts = {}
         # print("XAS norm process ", dgroup.datatype)
