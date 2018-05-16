@@ -2,19 +2,20 @@
 
 import sys
 import wx
+import wx.lib.mixins.inspection
+
 import matplotlib
 matplotlib.use('WXAgg')
 
 import larch
-from larch.wxlib import larchframe
+from larch.wxlib.larchframe import LarchFrame
 
 class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
     def OnInit(self):
-        self.Init()
-        frame = larchframe.LarchFrame(exit_on_close=True, with_inspection=True)
+        frame = LarchFrame(exit_on_close=True, with_inspection=False)
         frame.Show()
         self.SetTopWindow(frame)
         return True
