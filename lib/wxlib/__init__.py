@@ -6,8 +6,10 @@ from . import larchframe
 from . import larchfilling
 from . import readlinetextctrl
 from . import utils
-from .utils import (set_sizer, pack, SetTip, Font, HLine, Check,
-                    MenuItem, Popup)
+
+from .utils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
+                    Popup, is_wxPhoenix, RIGHT, LEFT, CEN , LCEN, RCEN,
+                    CCEN, LTEXT, FRAMESTYLE)
 
 from .buttons import Button, ToggleButton, BitmapButton
 from .choice import Choice, YesNo
