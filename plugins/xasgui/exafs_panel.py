@@ -256,9 +256,7 @@ class EXAFSPanel(TaskPanel):
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
-
         self.skip_process = False
-        self.process(dgroup=dgroup)
 
     def read_form(self, dgroup=None):
         "read form, return dict of values"
