@@ -14,8 +14,7 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
                       CEN, RCEN, LCEN, Font)
 
 from larch.utils import index_of
-from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, ToggleButton
-from larch_plugins.wx.icons import get_icon
+from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton, get_icon)
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xasgui.taskpanel import TaskPanel
 

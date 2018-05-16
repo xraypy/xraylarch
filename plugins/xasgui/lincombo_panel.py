@@ -16,8 +16,8 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
                      RCEN, LCEN, Font)
 
 from larch.utils import index_of
-from larch.wxlib import BitmapButton, FloatCtrl, FloatSpin, ToggleButton, GridPanel
-from larch_plugins.wx.icons import get_icon
+from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
+                         GridPanel, get_icon)
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
 np.seterr(all='ignore')
@@ -170,7 +170,6 @@ class LinearComboPanel(TaskPanel):
 
         for n, cname in comps:
             self.wids["compval_%2.2i" % n].SetValue(weight)
-
 
 
     def fill_form(self, dgroup):

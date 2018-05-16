@@ -34,11 +34,10 @@ from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
-                         FloatCtrl, FloatSpin, SetTip, GridPanel)
+                         FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon)
 
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
-from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.parameter import ParameterPanel
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

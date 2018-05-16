@@ -17,10 +17,8 @@ from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
 from larch import Group
 
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
-                         FloatSpin, FloatSpinWithPin)
+                         FloatSpin, FloatSpinWithPin, get_icon)
 
-
-from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.std import group2dict
 

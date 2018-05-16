@@ -13,9 +13,8 @@ from wxutils import (SimpleText, Choice, Check, Button, HLine, OkCancel,
 from larch.utils import index_of, index_nearest, interp
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl,
-                         FloatSpin, FloatSpinWithPin)
+                         FloatSpin, FloatSpinWithPin, get_icon)
 
-from larch_plugins.wx.icons import get_icon
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels
 from larch_plugins.xray.xraydb_plugin import guess_edge

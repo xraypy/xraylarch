@@ -34,14 +34,13 @@ from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
                          ReportFrame, BitmapButton, FileCheckList,
-                         FloatCtrl, SetTip)
+                         FloatCtrl, SetTip, get_icon)
 
 from larch.fitting import fit_report
 
 from larch_plugins.std import group2dict
 
 from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
-from larch_plugins.wx.icons import get_icon
 from larch_plugins.wx.athena_importer import AthenaImporter
 
 from larch_plugins.xasgui import (FONTSIZE, FNB_STYLE,
