@@ -22,9 +22,7 @@ from wx.richtext import RichTextCtrl
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 
-from wxutils import (SimpleText, pack, Button, Popup, HLine, FileSave,
-                     Choice, Check, MenuItem, GUIColors, CEN, RCEN, LCEN,
-                     FRAMESTYLE, Font)
+
 
 from larch import Interpreter, Group
 from larch.utils import index_of
@@ -35,6 +33,11 @@ from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
                          ReportFrame, BitmapButton, FileCheckList,
                          FloatCtrl, SetTip, get_icon)
+
+from larch.wxlib import (SimpleText, pack, Button, Popup, HLine, FileSave,
+                         Choice, Check, MenuItem, GUIColors, CEN, RCEN,
+                         LCEN, FRAMESTYLE, Font)
+
 
 from larch.fitting import fit_report
 
@@ -522,7 +525,6 @@ class XASFrame(wx.Frame):
         self.SetStatusText('ready')
         self.Raise()
 
-
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
@@ -720,6 +722,7 @@ class XASFrame(wx.Frame):
         aprj = AthenaProject(filename=outfile, _larch=self.larch)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp, label=label)
+
         aprj.save(use_gzip=True)
 
     def onConfigDataProcessing(self, event=None):
