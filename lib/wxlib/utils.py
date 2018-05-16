@@ -5,11 +5,6 @@ A collection of wx utility functions,
 mostly simplified wrappers around existing widgets.
 """
 import wx
-from array import array
-from functools import partial
-from collections import OrderedDict
-
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 # some common abbrevs for wx ALIGNMENT styles
 RIGHT = wx.ALIGN_RIGHT

@@ -1,4 +1,5 @@
 import wx
+from collections import OrderedDict
 
 class FileDropTarget(wx.FileDropTarget):
     def __init__(self, main):
