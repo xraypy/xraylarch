@@ -7,9 +7,8 @@ def SetTip(wid, msg):
     "set tooltip message"
     wid.SetToolTip(wx.ToolTip(msg))
 
-def BitmapButton(parent, bmp, action=None, tooltip=None,
-                 size=(20, 20), **kws):
-    b = wx.BitmapButton(parent, -1, bmp, size=size, **kws)
+def BitmapButton(parent, bmp, action=None, tooltip=None, size=(20, 20), **kws):
+    b = wx.BitmapButton(parent, id=-1, bitmap=bmp, size=size, **kws)
     if action is not None:
         parent.Bind(wx.EVT_BUTTON, action, b)
     if tooltip is not None:
