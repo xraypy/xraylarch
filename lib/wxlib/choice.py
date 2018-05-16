@@ -1,3 +1,5 @@
+import wx
+
 class Choice(wx.Choice):
     """Simple Choice with default and bound action
     c = Choice(panel, choices, default=0, action=None, **kws)
