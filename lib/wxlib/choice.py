@@ -52,19 +52,3 @@ class YesNo(wx.Choice):
             self.SetSelection(0)
         elif choice in self.choices:
             self.SetSelection(self.choices.index(choice))
-
-def OkCancel(panel, onOK=None, onCancel=None):
-    """Add OK / Cancel buttons
-    OkCancel(panel, onOK=None, onCancel=None)
-    returns a wx.StdDialogButtonSizer
-    """
-    btnsizer = wx.StdDialogButtonSizer()
-    _ok = wx.Button(panel, wx.ID_OK)
-    _no = wx.Button(panel, wx.ID_CANCEL)
-    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
-    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
-    _ok.SetDefault()
-    btnsizer.AddButton(_ok)
-    btnsizer.AddButton(_no)
-    btnsizer.Realize()
-    return btnsizer

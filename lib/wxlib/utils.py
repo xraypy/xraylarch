@@ -61,6 +61,12 @@ def SetChildrenFont(widget, font, dsize=None):
     for child in widget.GetChildren():
         set_font_with_children(child, font, dsize=dsize)
 
+def HLine(parent, size=(700, 3)):
+    """Simple horizontal line
+    h = HLine(parent, size=(700, 3)
+    """
+    return wx.StaticLine(parent, size=size, style=wx.LI_HORIZONTAL|wx.GROW)
+
 def HLineText(panel, text, colour='#222288'):
     """draw an Horizontal line, then SimpleText underneath
     HLineText(panel, text, **kws)
@@ -111,9 +117,3 @@ def Popup(parent, message, title, style=None, **kws):
     ret = dlg.ShowModal()
     dlg.Destroy()
     return ret
-
-def HLine(parent, size=(700, 3)):
-    """Simple horizontal line
-    h = HLine(parent, size=(700, 3)
-    """
-    return wx.StaticLine(parent, size=size, style=wx.LI_HORIZONTAL|wx.GROW)
