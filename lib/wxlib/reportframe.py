@@ -1,10 +1,7 @@
 import wx
-
-from wxutils import (SimpleText, FloatCtrl, pack, Button, HLine,
-                     Choice,  Check, MenuItem, GUIColors,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
-
 from wx.richtext import RichTextCtrl
+
+from .utils import (pack, FRAMESTYLE)
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -18,7 +15,7 @@ class ReportFrame(wx.Frame):
 
         self.report.SetEditable(False)
         self.report.SetFont(Font(11))
-        self.report.SetMinSize((500, 500))
+        self.reportx.SetMinSize((500, 500))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.report, 1, wx.ALL|wx.GROW, 2)

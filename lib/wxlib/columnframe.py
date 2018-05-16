@@ -12,9 +12,14 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
-from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
-                     Choice,  Check, MenuItem, GUIColors,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+
+from .text import SimpleText
+from .floats import FloatCtrl
+from .colors import GUIColors
+from .buttons import Button
+from .choice import Choice
+from .utils import (pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
+                    FRAMESTYLE, Font)
 
 import larch
 from larch import Group
@@ -23,7 +28,6 @@ from larch.utils.strutils import fix_varname, file2groupname
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
-
 
 XPRE_OPS = ('', 'log(', '-log(')
 YPRE_OPS = ('', 'log(', '-log(')

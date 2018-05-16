@@ -27,9 +27,9 @@ from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.utils import Closure
 from larch.larchlib import Procedure
-from wxutils import Button, pack
+from .buttons import Button
+from .utils import pack, is_wxPhoenix
 
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 VERSION = '0.9.5(Larch)'
 

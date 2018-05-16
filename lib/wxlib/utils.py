@@ -6,6 +6,8 @@ mostly simplified wrappers around existing widgets.
 """
 import wx
 
+is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+
 # some common abbrevs for wx ALIGNMENT styles
 RIGHT = wx.ALIGN_RIGHT
 LEFT  = wx.ALIGN_LEFT

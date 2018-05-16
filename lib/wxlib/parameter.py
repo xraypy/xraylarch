@@ -8,9 +8,10 @@ import ast
 import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
 
-from wxutils import Choice, pack, HLine, GridPanel, LEFT
+from .gridpanel import GridPanel
+from .choice import Choice
+from .utils import  LEFT, pack, HLine, SetTip
 from .floats import FloatCtrl
-from .utils import SetTip
 
 from larch import Parameter, Group
 from larch.larchlib import Empty
