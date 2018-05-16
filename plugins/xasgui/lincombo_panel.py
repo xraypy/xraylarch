@@ -204,9 +204,7 @@ class LinearComboPanel(TaskPanel):
                     wid.SetSelection(0)
             elif wname.startswith('comp'):
                 wid.SetValue(getattr(opts, wname, wid.GetValue()))
-
         self.skip_process = False
-        self.process(dgroup=dgroup)
 
     def read_form(self, dgroup=None):
         "read form, return dict of values"
