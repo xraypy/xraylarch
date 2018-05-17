@@ -532,7 +532,7 @@ class AthenaProject(object):
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
-                         nnorm=float(pars.nnorm)-1,
+                         nnorm=float(pars.nnorm),
                          make_flat=bool(pars.flatten), _larch=self._larch)
                 if do_bkg and hasattr(pars, 'rbkg'):
                     autobk(this, _larch=self._larch, e0=float(pars.e0),
