@@ -978,9 +978,9 @@ class XASFrame(wx.Frame):
         for gname in namelist:
             this = getattr(self.larch.symtable._prj, gname)
             a_id = str(getattr(this, 'athena_id', gname))
-            process = (gname == namelist[0]) or (gname == namelist[-1])
+            # process = (gname == namelist[0]) or (gname == namelist[-1])
             self.larch.eval(s.format(group=a_id, prjgroup=gname))
-            dgroup = self.install_group(a_id, gname, process=process)
+            dgroup = self.install_group(a_id, gname, process=True)
         self.larch.eval("del _prj")
 
 
