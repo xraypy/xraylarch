@@ -29,7 +29,9 @@ dmude   = u'd\u03bC(E)/dE'
 chik    = u'\u03c7(k)'
 noplot  = '<no plot>'
 
+
 FitSpace_Choices = [norm, dmude, chik]
+Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 PlotCmds = {norm: "plot_mu({group:, norm=True}",
             chik: "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
@@ -69,6 +71,11 @@ class LinearComboPanel(TaskPanel):
                                   size=(175, -1))
         wids['fitspace'].SetStringSelection(norm)
 
+
+        wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
+                                  size=(175, -1), action=self.onPlot)
+        wids['plotchoice'].SetSelection(0)
+
         add_text = self.add_text
 
         opts = dict(digits=2, increment=0.1, action=self.onFitOne)
@@ -82,7 +89,7 @@ class LinearComboPanel(TaskPanel):
         wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(150, -1),
                                       action=self.onFitAll)
 
-        wids['add_selected'] = Button(panel, 'Use Selected Groups', size=(200, -1),
+        wids['add_selected'] = Button(panel, 'Use Selected Groups as Components', size=(250, -1),
                                       action=self.onUseSelected)
 
         wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(200, -1),
@@ -103,10 +110,13 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['fitspace'], dcol=4)
         panel.Add(wids['fit_group'])
 
+        add_text('Plot : ', newrow=True)
+        panel.Add(wids['plotchoice'], dcol=4)
+        panel.Add(wids['fit_selected'])
+
         add_text('E0: ')
         panel.Add(e0_wids, dcol=3)
         panel.Add(wids['show_e0'])
-        panel.Add(wids['fit_selected'])
 
 
         add_text('Fit Energy Range: ')
@@ -118,9 +128,9 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['sum_to_one'], dcol=2, newrow=True)
         panel.Add(wids['all_combos'], dcol=3)
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(400, 2)), dcol=5, newrow=True)
 
-        add_text('Standards: ')
+        add_text('Components: ')
         panel.Add(wids['add_selected'], dcol=4)
 
         groupnames = ['<none>'] + list(self.controller.file_groups.keys())
@@ -129,9 +139,8 @@ class LinearComboPanel(TaskPanel):
         sgrid.Add(SimpleText(sgrid, "#"))
         sgrid.Add(SimpleText(sgrid, "Group"))
         sgrid.Add(SimpleText(sgrid, "Weight"))
-        sgrid.Add(SimpleText(sgrid, "Min"))
-        sgrid.Add(SimpleText(sgrid, "Max"))
-        sgrid.Add(SimpleText(sgrid, "Use?"))
+        sgrid.Add(SimpleText(sgrid, "Min Weight"))
+        sgrid.Add(SimpleText(sgrid, "Max Weight"))
 
         fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
         for i in range(1, 1+MAX_STANDARDS):
@@ -142,11 +151,11 @@ class LinearComboPanel(TaskPanel):
             wids['%sval%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
             wids['%smin%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
             wids['%smax%s' % si] = FloatCtrl(sgrid, value=1, **fopts)
-            wids['%suse%s' % si] = Check(sgrid, label='', default=False)
-            for cname in ('choice', 'val', 'min', 'max', 'use'):
+            for cname in ('choice', 'val', 'min', 'max'):
                 sgrid.Add(wids[("%%s%s%%s" % cname) % si])
         sgrid.pack()
-        panel.Add(sgrid, dcol=7, newrow=True)
+        panel.Add(sgrid, dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(400, 2)), dcol=5, newrow=True)
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
 
@@ -192,7 +201,7 @@ class LinearComboPanel(TaskPanel):
                 wids[attr].SetValue(val)
 
         for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
-            wids[attr].Enable(getattr(opts, attr, False))
+            wids[attr].Enable(getattr(opts, attr, True))
 
         for attr in ('fitspace',):
             if attr in opts:
@@ -223,7 +232,7 @@ class LinearComboPanel(TaskPanel):
         for attr in ('e0', 'elo', 'ehi'):
             form_opts[attr] = wids[attr].GetValue()
 
-        for attr in ('fitspace',):
+        for attr in ('fitspace', 'plotchoice'):
             form_opts[attr] = wids[attr].GetStringSelection()
 
         for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
@@ -232,8 +241,6 @@ class LinearComboPanel(TaskPanel):
         for attr, wid in wids.items():
             if attr.startswith('compchoice'):
                 form_opts[attr] = wid.GetStringSelection()
-            elif attr.startswith('compuse'):
-                form_opts[attr] = wid.IsChecked()
             elif attr.startswith('comp'):
                 form_opts[attr] = wid.GetValue()
 
@@ -254,14 +261,11 @@ class LinearComboPanel(TaskPanel):
         if len(selected_groups) > MAX_STANDARDS:
             selected_groups = selected_groups[:MAX_STANDARDS]
         weight = 1.0/len(selected_groups)
-        for attr, wid in self.wids.items():
-            if attr.startswith('compuse'):
-                wid.SetValue(False)
+
         for i, sel in enumerate(selected_groups):
             si = "_%2.2i" % (i+1)
             self.wids['compchoice%s' % si].SetStringSelection(sel)
             self.wids['compval%s' % si].SetValue(weight)
-            self.wids['compuse%s' % si].SetValue(True)
 
         self.skip_process = False
 
@@ -294,4 +298,9 @@ class LinearComboPanel(TaskPanel):
         self.skip_process = False
 
     def plot(self, dgroup=None):
-        self.onPlotOne(dgroup=dgroup)
+        self.onPlot(dgroup=dgroup)
+
+    def onPlot(self, evt=None, dgroup=None):
+        form = self.read_form()
+
+        print(" Plot ", form['plotchoice'], form['group'])
