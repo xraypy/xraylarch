@@ -39,6 +39,8 @@ PlotCmds = {norm: "plot_mu({group:, norm=True}",
 defaults = dict(e0=0, elo=-20, ehi=30, fitspace=norm, all_combos=True,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
+MAX_STANDARDS = 10
+
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
     def __init__(self, parent, controller, **kws):
@@ -51,8 +53,7 @@ class LinearComboPanel(TaskPanel):
         """ handle linear combo processing"""
         if self.skip_process:
             return
-        self.skip_process = True
-        form = self.read_form()
+        return self.read_form()
 
     def larch_eval(self, cmd):
         """eval"""
@@ -70,16 +71,19 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=0.1, action=self.onProcess)
+        opts = dict(digits=2, increment=0.1, action=self.onFitOne)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
         ehi_wids = self.add_floatspin('ehi', value=30, **opts)
 
         wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
-                                   action=self.onProcess)
+                                   action=self.onFitOne)
         wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(150, -1),
-                                      action=self.onProcess)
+                                      action=self.onFitAll)
+
+        wids['add_selected'] = Button(panel, 'Use Selected Groups', size=(200, -1),
+                                      action=self.onUseSelected)
 
         wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(200, -1),
                                   action=self.onSaveConfigBtn)
@@ -116,6 +120,9 @@ class LinearComboPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
+        add_text('Standards: ')
+        panel.Add(wids['add_selected'], dcol=4)
+
         groupnames = ['<none>'] + list(self.controller.file_groups.keys())
         sgrid = GridPanel(panel, nrows=6)
 
@@ -127,7 +134,7 @@ class LinearComboPanel(TaskPanel):
         sgrid.Add(SimpleText(sgrid, "Use?"))
 
         fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
-        for i in range(1, 11):
+        for i in range(1, 1+MAX_STANDARDS):
             si = ("comp", "_%2.2i" % i)
             sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
             wids['%schoice%s' % si] = Choice(sgrid, choices=groupnames, size=(200, -1),
@@ -175,7 +182,6 @@ class LinearComboPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        # print("OPTS ", opts)
 
         self.dgroup = dgroup
         self.skip_process = True
@@ -220,6 +226,17 @@ class LinearComboPanel(TaskPanel):
         for attr in ('fitspace',):
             form_opts[attr] = wids[attr].GetStringSelection()
 
+        for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
+            form_opts[attr] = wids[attr].Enabled
+
+        for attr, wid in wids.items():
+            if attr.startswith('compchoice'):
+                form_opts[attr] = wid.GetStringSelection()
+            elif attr.startswith('compuse'):
+                form_opts[attr] = wid.IsChecked()
+            elif attr.startswith('comp'):
+                form_opts[attr] = wid.GetValue()
+
         self.skip_process = False
         return form_opts
 
@@ -228,16 +245,52 @@ class LinearComboPanel(TaskPanel):
         conf.update(self.read_form())
         self.set_defaultconfig(conf)
 
-    def onProcess(self, event=None):
+    def onUseSelected(self, event=None):
+        """ use selected groups as standards"""
+        self.skip_process = True
+        selected_groups = self.controller.filelist.GetCheckedStrings()
+        if len(selected_groups) == 0:
+            return
+        if len(selected_groups) > MAX_STANDARDS:
+            selected_groups = selected_groups[:MAX_STANDARDS]
+        weight = 1.0/len(selected_groups)
+        for attr, wid in self.wids.items():
+            if attr.startswith('compuse'):
+                wid.SetValue(False)
+        for i, sel in enumerate(selected_groups):
+            si = "_%2.2i" % (i+1)
+            self.wids['compchoice%s' % si].SetStringSelection(sel)
+            self.wids['compval%s' % si].SetValue(weight)
+            self.wids['compuse%s' % si].SetValue(True)
+
+        self.skip_process = False
+
+    def onFitOne(self, event=None):
         """ handle process events"""
+        print("onFitOne ", event, self.skip_process)
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
-        self.process(dgroup=self.dgroup, opts=form)
-        self.plot()
 
+        print(" FORM ", form)
+
+        self.plot()
+        self.skip_process = False
+
+    def onFitAll(self, event=None):
+        """ handle process events"""
+        print("onFitAll ", event, self.skip_process)
+        if self.skip_process:
+            return
+
+        self.skip_process = True
+        form = self.read_form()
+
+        print(" FORM ", form)
+
+        self.plot()
         self.skip_process = False
 
     def plot(self, dgroup=None):
