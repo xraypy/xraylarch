@@ -12,6 +12,7 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
+import lmfit
 from larch import Group
 from larch.utils import index_of
 
@@ -39,7 +40,7 @@ PlotCmds = {norm: "plot_mu({group:, norm=True}",
             noplot: None}
 
 
-defaults = dict(e0=0, elo=-20, ehi=30, fitspace=norm, all_combos=False,
+defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=False,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
 MAX_COMPONENTS = 10
@@ -75,11 +76,11 @@ class LinearComboPanel(TaskPanel):
 
         wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
                                   size=(175, -1), action=self.onPlot)
-        wids['plotchoice'].SetSelection(0)
+        wids['plotchoice'].SetSelection(1)
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=0.1)
+        opts = dict(digits=2, increment=1.0)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
@@ -233,7 +234,7 @@ class LinearComboPanel(TaskPanel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
-        opts = {'group': dgroup.groupname}
+        opts = {'group': dgroup.groupname, 'filename':dgroup.filename}
         wids = self.wids
         for attr in ('e0', 'elo', 'ehi'):
             opts[attr] = wids[attr].GetValue()
@@ -268,6 +269,10 @@ class LinearComboPanel(TaskPanel):
         opts['func'] = 'lincombo_fit'
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
+        opts['arrayname'] = 'norm'
+        if opts['fitspace'] == dmude:
+            opts['arrayname'] = 'dmude'
+
         self.skip_process = False
         return opts
 
@@ -307,7 +312,11 @@ lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:
 {gname:s}.lcf_result = lcf_result
 """
         self.controller.larch.eval(script.format(**form))
+
         dgroup = self.controller.get_group(groupname)
+        print(lmfit.fit_report(dgroup.lcf_result.result))
+        print(dgroup.lcf_result.weights)
+
         self.plot(dgroup=dgroup)
 
     def onFitOne(self, event=None):
@@ -336,5 +345,39 @@ lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:
         self.onPlot(dgroup=dgroup)
 
     def onPlot(self, evt=None, dgroup=None):
-        form = self.read_form()
-        print("on Plot ", form['plotchoice'], form['group'])
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+
+        form = self.read_form(dgroup=dgroup)
+        form['plotopt'] = 'show_norm=True'
+        if form['arrayname'] == 'dmude':
+            form['plotopt'] = 'show_deriv=True'
+
+        erange = form['ehi'] - form['elo']
+        form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
+        form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
+
+        cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
+        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}')"""]
+
+        if hasattr(dgroup, 'lcf_result'):
+            with_comps = "Components" in form['plotchoice']
+            delay = 'delay_draw=True' if with_comps else 'delay_draw=False'
+            xarr = "{group:s}.lcf_result.xdata"
+            yfit = "{group:s}.lcf_result.yfit"
+            ycmp = "{group:s}.lcf_result.ycomps"
+            cmds.append("plot(%s, %s, label='fit', zorder=30, %s)" % (xarr, yfit, delay))
+            ncomps = len(dgroup.lcf_result.ycomps)
+            if with_comps:
+                for i, key in enumerate(dgroup.lcf_result.ycomps):
+                    delay = 'delay_draw=False' if i==(ncomps-1) else 'delay_draw=True'
+                    cmds.append("plot(%s, %s['%s'], label='%s', %s)" % (xarr, ycmp, key, key, delay))
+
+        if form['show_e0']:
+            cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
+        if form['show_fitrange']:
+            cmds.append("plot_axvline({elo_abs:1f}, color='#EECCCC', zorder=-10)")
+            cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
+
+        script = "\n".join(cmds)
+        self.controller.larch.eval(script.format(**form))
