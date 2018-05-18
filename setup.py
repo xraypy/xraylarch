@@ -41,7 +41,9 @@ required_modules = {'numpy': 'numpy',
                     'peakutils': 'peakutils',
                     'PIL' : 'pillow',
                     'asteval': 'asteval',
+                    'uncertainties': 'uncertainties',
                     'lmfit': 'lmfit',
+                    'yaml': 'pyyaml',
                     'termcolor': 'termcolor'}
 
 
