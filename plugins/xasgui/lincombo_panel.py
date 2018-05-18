@@ -12,7 +12,7 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-
+from larch import Group
 from larch.utils import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
@@ -25,11 +25,11 @@ np.seterr(all='ignore')
 
 
 # plot options:
-norm    = u'Normalized \u03bC(E)'
-dmude   = u'd\u03bC(E)/dE'
-chik    = u'\u03c7(k)'
-noplot  = '<no plot>'
-
+norm   = u'Normalized \u03bC(E)'
+dmude  = u'd\u03bC(E)/dE'
+chik   = u'\u03c7(k)'
+noplot = '<no plot>'
+noname = '<none>'
 
 FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
@@ -39,10 +39,10 @@ PlotCmds = {norm: "plot_mu({group:, norm=True}",
             noplot: None}
 
 
-defaults = dict(e0=0, elo=-20, ehi=30, fitspace=norm, all_combos=True,
+defaults = dict(e0=0, elo=-20, ehi=30, fitspace=norm, all_combos=False,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
-MAX_STANDARDS = 10
+MAX_COMPONENTS = 10
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
@@ -79,7 +79,7 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=0.1, action=self.onFitOne)
+        opts = dict(digits=2, increment=0.1)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
@@ -102,7 +102,7 @@ class LinearComboPanel(TaskPanel):
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
-        wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
+        wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=False)
 
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
         add_text('Run Fit', newrow=False)
@@ -134,7 +134,7 @@ class LinearComboPanel(TaskPanel):
         add_text('Components: ')
         panel.Add(wids['add_selected'], dcol=4)
 
-        groupnames = ['<none>'] + list(self.controller.file_groups.keys())
+        groupnames = [noname] + list(self.controller.file_groups.keys())
         sgrid = GridPanel(panel, nrows=6)
 
         sgrid.Add(SimpleText(sgrid, "#"))
@@ -144,7 +144,7 @@ class LinearComboPanel(TaskPanel):
         sgrid.Add(SimpleText(sgrid, "Max Weight"))
 
         fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
-        for i in range(1, 1+MAX_STANDARDS):
+        for i in range(1, 1+MAX_COMPONENTS):
             si = ("comp", "_%2.2i" % i)
             sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
             wids['%schoice%s' % si] = Choice(sgrid, choices=groupnames, size=(200, -1),
@@ -192,23 +192,28 @@ class LinearComboPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-
         self.dgroup = dgroup
+        if isinstance(dgroup, Group):
+            d_emin = min(dgroup.energy)
+            d_emax = max(dgroup.energy)
+            if opts['e0'] < d_emin or opts['e0'] > d_emax:
+                opts['e0'] = dgroup.e0
+
         self.skip_process = True
         wids = self.wids
         for attr in ('e0', 'elo', 'ehi'):
-            val = getattr(opts, attr, None)
+            val = opts.get(attr, None)
             if val is not None:
                 wids[attr].SetValue(val)
 
         for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
-            wids[attr].Enable(getattr(opts, attr, True))
+            wids[attr].SetValue(opts.get(attr, True))
 
         for attr in ('fitspace',):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 
-        groupnames = ['<none>'] + list(self.controller.file_groups.keys())
+        groupnames = [noname] + list(self.controller.file_groups.keys())
         for wname, wid in wids.items():
             if wname.startswith('compchoice'):
                 cur = wid.GetStringSelection()
@@ -219,7 +224,7 @@ class LinearComboPanel(TaskPanel):
                 else:
                     wid.SetSelection(0)
             elif wname.startswith('comp'):
-                wid.SetValue(getattr(opts, wname, wid.GetValue()))
+                wid.SetValue(opts.get(wname, wid.GetValue()))
         self.skip_process = False
 
     def read_form(self, dgroup=None):
@@ -228,25 +233,43 @@ class LinearComboPanel(TaskPanel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
-        form_opts = {'group': dgroup.groupname}
+        opts = {'group': dgroup.groupname}
         wids = self.wids
         for attr in ('e0', 'elo', 'ehi'):
-            form_opts[attr] = wids[attr].GetValue()
+            opts[attr] = wids[attr].GetValue()
 
         for attr in ('fitspace', 'plotchoice'):
-            form_opts[attr] = wids[attr].GetStringSelection()
+            opts[attr] = wids[attr].GetStringSelection()
 
         for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
-            form_opts[attr] = wids[attr].Enabled
+            opts[attr] = wids[attr].GetValue()
 
         for attr, wid in wids.items():
             if attr.startswith('compchoice'):
-                form_opts[attr] = wid.GetStringSelection()
+                opts[attr] = wid.GetStringSelection()
             elif attr.startswith('comp'):
-                form_opts[attr] = wid.GetValue()
+                opts[attr] = wid.GetValue()
 
+        comps, wval, wmin, wmax = [], [], [], []
+        for i in range(MAX_COMPONENTS):
+            scomp = "_%2.2i" % (i+1)
+            cname = opts['compchoice%s' % scomp]
+            if cname != noname:
+                wval.append(str(opts['compval%s' % scomp]))
+                wmin.append(str(opts['compmin%s' % scomp]))
+                wmax.append(str(opts['compmax%s' % scomp]))
+                comps.append(self.controller.file_groups[cname])
+        opts['comps']   = ', '.join(comps)
+        opts['weights'] = ', '.join(wval)
+        opts['minvals'] = ', '.join(wmin)
+        opts['maxvals'] = ', '.join(wmax)
+        opts['elo_abs'] = float(opts['elo']) + float(opts['e0'])
+        opts['ehi_abs'] = float(opts['ehi']) + float(opts['e0'])
+        opts['func'] = 'lincombo_fit'
+        if opts['all_combos']:
+            opts['func'] = 'lincombo_fitall'
         self.skip_process = False
-        return form_opts
+        return opts
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.get_config()
@@ -259,48 +282,54 @@ class LinearComboPanel(TaskPanel):
         selected_groups = self.controller.filelist.GetCheckedStrings()
         if len(selected_groups) == 0:
             return
-        if len(selected_groups) > MAX_STANDARDS:
-            selected_groups = selected_groups[:MAX_STANDARDS]
+        if len(selected_groups) >= MAX_COMPONENTS:
+            selected_groups = selected_groups[:MAX_COMPONENTS]
         weight = 1.0/len(selected_groups)
+
+        for i in range(MAX_COMPONENTS):
+            si = "_%2.2i" % (i+1)
+            self.wids['compchoice%s' % si].SetStringSelection(noname)
+            self.wids['compval%s' % si].SetValue(0.0)
 
         for i, sel in enumerate(selected_groups):
             si = "_%2.2i" % (i+1)
             self.wids['compchoice%s' % si].SetStringSelection(sel)
             self.wids['compval%s' % si].SetValue(weight)
-
         self.skip_process = False
+
+
+    def do_fit(self, groupname, form):
+        """run lincombo fit for a group"""
+        form['gname'] = groupname
+        script = """
+lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:.4f}, sum_to_one={sum_to_one},
+          weights=[{weights:s}], minvals=[{minvals:s}], maxvals=[{maxvals:s}])
+{gname:s}.lcf_result = lcf_result
+"""
+        self.controller.larch.eval(script.format(**form))
+        dgroup = self.controller.get_group(groupname)
+        self.plot(dgroup=dgroup)
 
     def onFitOne(self, event=None):
         """ handle process events"""
-        print("onFitOne ", event, self.skip_process)
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
-
-        print(" FORM ", form)
-        cmd = "comps =`< ["
-        comp_names = []
-        for key, val in form.items():
-            if key.startswith('compchoice'):
-                comp_names.append(val)
-
-        self.plot()
+        self.do_fit(form['group'], form)
         self.skip_process = False
 
     def onFitAll(self, event=None):
         """ handle process events"""
-        print("onFitAll ", event, self.skip_process)
         if self.skip_process:
             return
 
         self.skip_process = True
         form = self.read_form()
-
-        print(" FORM ", form)
-
-        self.plot()
+        for sel in self.controller.filelist.GetCheckedStrings():
+            gname = self.controller.file_groups[sel]
+            self.do_fit(gname, form)
         self.skip_process = False
 
     def plot(self, dgroup=None):
@@ -308,5 +337,4 @@ class LinearComboPanel(TaskPanel):
 
     def onPlot(self, evt=None, dgroup=None):
         form = self.read_form()
-
         print("on Plot ", form['plotchoice'], form['group'])
