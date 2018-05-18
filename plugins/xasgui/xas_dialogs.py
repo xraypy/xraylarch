@@ -7,13 +7,12 @@ from lmfit import Parameters, minimize
 
 import wx
 
-from wxutils import (SimpleText, Choice, Check, Button, HLine, OkCancel,
-                     LCEN, RCEN)
 
 from larch.utils import index_of, index_nearest, interp
 
-from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl,
-                         FloatSpin, FloatSpinWithPin, get_icon)
+from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
+                         FloatSpinWithPin, get_icon, SimpleText, Choice,
+                         Check, Button, HLine, OkCancel, LCEN, RCEN)
 
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels

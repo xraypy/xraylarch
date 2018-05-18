@@ -12,12 +12,13 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from wxutils import (SimpleText, pack, Button, HLine, Choice, Check, CEN,
-                     RCEN, LCEN, Font)
 
 from larch.utils import index_of
+
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
-                         GridPanel, get_icon)
+                         GridPanel, get_icon, SimpleText, pack, Button,
+                         HLine, Choice, Check, CEN, RCEN, LCEN, Font)
+
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
 np.seterr(all='ignore')
@@ -279,6 +280,11 @@ class LinearComboPanel(TaskPanel):
         form = self.read_form()
 
         print(" FORM ", form)
+        cmd = "comps =`< ["
+        comp_names = []
+        for key, val in form.items():
+            if key.startswith('compchoice'):
+                comp_names.append(val)
 
         self.plot()
         self.skip_process = False
@@ -303,4 +309,4 @@ class LinearComboPanel(TaskPanel):
     def onPlot(self, evt=None, dgroup=None):
         form = self.read_form()
 
-        print(" Plot ", form['plotchoice'], form['group'])
+        print("on Plot ", form['plotchoice'], form['group'])

@@ -13,10 +13,6 @@ import wx.lib.agw.flatnotebook as flat_nb
 
 import wx.dataview as dv
 
-from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
-                     Font, FileSave, FileOpen)
-
 from lmfit import Parameter, Parameters, fit_report
 try:
     from lmfit.model import (save_modelresult, load_modelresult,
@@ -34,7 +30,10 @@ from larch.utils import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
-                         FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon)
+                         FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon,
+                         SimpleText, pack, Button, HLine, Choice, Check,
+                         MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
+                         Font, FileSave, FileOpen)
 
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult

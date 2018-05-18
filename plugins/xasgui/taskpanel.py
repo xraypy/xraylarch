@@ -10,14 +10,14 @@ np.seterr(all='ignore')
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 
-from wxutils import (SimpleText, pack, Button, HLine, Choice, Check,
-                     MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
-                     Font, FileSave, FileOpen)
 
 from larch import Group
 
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
-                         FloatSpin, FloatSpinWithPin, get_icon)
+                         FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
+                         pack, Button, HLine, Choice, Check, MenuItem,
+                         GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font,
+                         FileSave, FileOpen)
 
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.std import group2dict
