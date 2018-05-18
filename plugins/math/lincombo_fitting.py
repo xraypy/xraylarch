@@ -86,7 +86,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     if xmin is not None:
         imin = index_of(xdat, xmin)
     if xmax is not None:
-        imax = index_of(xdat, xmax)
+        imax = index_of(xdat, xmax) + 1
 
     xdat = xdat[slice(imin, imax)]
     ydat = ydat[slice(imin, imax)]
