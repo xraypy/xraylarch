@@ -535,7 +535,8 @@ class XASFrame(wx.Frame):
             if s in self.controller.file_groups:
                 group = self.controller.file_groups.pop(s)
 
-    def ShowFile(self, evt=None, groupname=None, process=True, **kws):
+    def ShowFile(self, evt=None, groupname=None, process=True,
+                 plot=True, **kws):
         filename = None
         if evt is not None:
             filename = str(evt.GetString())
@@ -558,7 +559,7 @@ class XASFrame(wx.Frame):
         if process:
             cur_panel.fill_form(dgroup=dgroup)
             cur_panel.process(dgroup=dgroup)
-            if hasattr(cur_panel, 'plot'):
+            if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
 
     def createMenus(self):
@@ -975,13 +976,14 @@ class XASFrame(wx.Frame):
         {group:s}.plot_ylabel = 'mu'
         {group:s}.plot_xlabel = 'energy'
         """
+
         for gname in namelist:
             this = getattr(self.larch.symtable._prj, gname)
             a_id = str(getattr(this, 'athena_id', gname))
-            # process = (gname == namelist[0]) or (gname == namelist[-1])
             self.larch.eval(s.format(group=a_id, prjgroup=gname))
-            dgroup = self.install_group(a_id, gname, process=True)
+            dgroup = self.install_group(a_id, gname, process=True, plot=False)
         self.larch.eval("del _prj")
+
 
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
@@ -1017,7 +1019,8 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path))
             self.install_group(gname, filename, overwrite=True)
 
-    def install_group(self, groupname, filename, overwrite=False, process=True):
+    def install_group(self, groupname, filename, overwrite=False,
+                      process=True, plot=True):
         """add groupname / filename to list of available data groups"""
         thisgroup = getattr(self.larch.symtable, groupname)
         thisgroup.groupname = groupname
@@ -1036,7 +1039,7 @@ class XASFrame(wx.Frame):
             self.controller.filelist.Append(filename)
             self.controller.file_groups[filename] = groupname
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname, process=process)
+        self.ShowFile(groupname=groupname, process=process, plot=plot)
         self.controller.filelist.SetStringSelection(filename)
         return thisgroup
 
