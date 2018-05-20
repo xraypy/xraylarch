@@ -35,11 +35,6 @@ noname = '<none>'
 FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
-PlotCmds = {norm: "plot_mu({group:, norm=True}",
-            chik: "plot_chik({group:s}, show_window=False, kweight={plot_kweight:.0f}",
-            noplot: None}
-
-
 defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=False,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
@@ -241,7 +236,6 @@ class LinearComboPanel(TaskPanel):
 
         for attr in ('fitspace', 'plotchoice'):
             opts[attr] = wids[attr].GetStringSelection()
-
         for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
             opts[attr] = wids[attr].GetValue()
 
@@ -269,6 +263,7 @@ class LinearComboPanel(TaskPanel):
         opts['func'] = 'lincombo_fit'
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
+
         opts['arrayname'] = 'norm'
         if opts['fitspace'] == dmude:
             opts['arrayname'] = 'dmude'
@@ -308,7 +303,7 @@ class LinearComboPanel(TaskPanel):
         form['gname'] = groupname
         script = """
 lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:.4f}, sum_to_one={sum_to_one},
-          weights=[{weights:s}], minvals=[{minvals:s}], maxvals=[{maxvals:s}])
+          arrayname='{arrayname:s}', weights=[{weights:s}], minvals=[{minvals:s}], maxvals=[{maxvals:s}])
 {gname:s}.lcf_result = lcf_result
 """
         self.controller.larch.eval(script.format(**form))
