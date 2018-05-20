@@ -131,8 +131,8 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     result = lmfit.minimize(lincombo_resid, params, args=(ydat, ycomps))
 
     # gather results
-    weights, stderrs, weights_lstsq = {}, {}, {}
-    fcomps = {}
+    weights, weights_lstsq = OrderedDict(), OrderedDict()
+    stderrs, fcomps = OrderedDict(), OrderedDict()
     for i in range(ncomps):
         label = get_label(components[i])
         weights[label] = result.params['c%i' % i].value
