@@ -1256,10 +1256,10 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
 
-        self.parent.show_subframe('result_frame', FitResultFrame,
+        self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
 
-        self.parent.subframes['result_frame'].show_fitresult()
+        self.parent.subframes['prepeak_result_frame'].show_fitresult()
         [m.Enable(True) for m in self.parent.afterfit_menus]
 
     def update_start_values(self, params):
