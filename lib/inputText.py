@@ -143,7 +143,7 @@ class HistoryBuffer(object):
             self.load(filename=filename)
 
     def add(self, text=''):
-        if len(text.strip()) > 0 and not text.startswith('#'):
+        if len(text.strip()) > 0:
             self.buffer.append(text)
 
     def clear(self):
