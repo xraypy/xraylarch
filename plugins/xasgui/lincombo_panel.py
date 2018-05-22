@@ -18,12 +18,12 @@ from larch.utils import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
-                         HLine, Choice, Check, CEN, RCEN, LCEN, Font)
+                         HLine, Choice, Check, CEN, RCEN, LCEN, Font,
+                         FRAMESTYLE, GUIColors)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
 np.seterr(all='ignore')
-
 
 # plot options:
 norm   = u'Normalized \u03bC(E)'
@@ -40,10 +40,39 @@ defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=False,
 
 MAX_COMPONENTS = 10
 
+
+class ResultFrame(wx.Frame):
+    def __init__(self, parent=None, mainframe=None, datagroup=None, **kws):
+
+        wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
+                          style=FRAMESTYLE, size=(625, 750), **kws)
+        self.parent = parent
+        self.mainframe = mainframe
+        self.datagroup = datagroup
+        self.build()
+
+    def build(self):
+        sizer = wx.GridBagSizer(10, 5)
+        sizer.SetVGap(5)
+        sizer.SetHGap(5)
+
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((600, 450))
+        self.colors = GUIColors()
+
+    def show_result(self, datagroup=None, fit_number=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+
+        lcf_history = getattr(self.datagroup, 'lcf_history', [])
+        print("show result!! ")
+        print(lmfit.fit_report(self.datagroup.lcf_result[0].result))
+        print(self.datagroup.lcf_result[0].weights)
+
+
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
     def __init__(self, parent, controller, **kws):
-
         TaskPanel.__init__(self, parent, controller,
                            configname='lincombo_config',
                            config=defaults, **kws)
@@ -53,10 +82,6 @@ class LinearComboPanel(TaskPanel):
         if self.skip_process:
             return
         return self.read_form()
-
-    def larch_eval(self, cmd):
-        """eval"""
-        self.controller.larch.eval(cmd)
 
     def build_display(self):
         titleopts = dict(font=Font(12), colour='#AA0000')
@@ -301,16 +326,25 @@ class LinearComboPanel(TaskPanel):
     def do_fit(self, groupname, form):
         """run lincombo fit for a group"""
         form['gname'] = groupname
-        script = """
-lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:.4f}, sum_to_one={sum_to_one},
-          arrayname='{arrayname:s}', weights=[{weights:s}], minvals=[{minvals:s}], maxvals=[{maxvals:s}])
-{gname:s}.lcf_result = lcf_result
+        script = """# do LCF for {gname:s}
+result = {func:s}({gname:s}, [{comps:s}],
+            xmin={elo_abs:.4f}, xmax={ehi_abs:.4f}, sum_to_one={sum_to_one}, arrayname='{arrayname:s}',
+            weights=[{weights:s}],
+            minvals=[{minvals:s}],
+            maxvals=[{maxvals:s}])
 """
-        self.controller.larch.eval(script.format(**form))
+        if form['all_combos']:
+            script = "%s\n{gname:s}.lcf_result = result\n" % script
+        else:
+            script = "%s\n{gname:s}.lcf_result = [result]\n" % script
+
+        self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
-        print(lmfit.fit_report(dgroup.lcf_result.result))
-        print(dgroup.lcf_result.weights)
+        self.parent.show_subframe('lcf_result_frame',  ResultFrame,
+                                  datagroup=dgroup, mainframe=self)
+
+        self.parent.subframes['lcf_result_frame'].show_result()
 
         self.plot(dgroup=dgroup)
 
@@ -358,13 +392,13 @@ lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:
         if hasattr(dgroup, 'lcf_result'):
             with_comps = "Components" in form['plotchoice']
             delay = 'delay_draw=True' if with_comps else 'delay_draw=False'
-            xarr = "{group:s}.lcf_result.xdata"
-            yfit = "{group:s}.lcf_result.yfit"
-            ycmp = "{group:s}.lcf_result.ycomps"
+            xarr = "{group:s}.lcf_result[0].xdata"
+            yfit = "{group:s}.lcf_result[0].yfit"
+            ycmp = "{group:s}.lcf_result[0].ycomps"
             cmds.append("plot(%s, %s, label='fit', zorder=30, %s)" % (xarr, yfit, delay))
-            ncomps = len(dgroup.lcf_result.ycomps)
+            ncomps = len(dgroup.lcf_result[0].ycomps)
             if with_comps:
-                for i, key in enumerate(dgroup.lcf_result.ycomps):
+                for i, key in enumerate(dgroup.lcf_result[0].ycomps):
                     delay = 'delay_draw=False' if i==(ncomps-1) else 'delay_draw=True'
                     cmds.append("plot(%s, %s['%s'], label='%s', %s)" % (xarr, ycmp, key, key, delay))
 
@@ -375,4 +409,4 @@ lcf_result = {func:s}({gname:s}, [{comps:s}], xmin={elo_abs:.4f}, xmax={ehi_abs:
             cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
 
         script = "\n".join(cmds)
-        self.controller.larch.eval(script.format(**form))
+        self.larch_eval(script.format(**form))
