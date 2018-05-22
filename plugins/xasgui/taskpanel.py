@@ -26,12 +26,9 @@ LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
+
 FONTSIZE = 8
-
-if platform.system() == 'Windows':
-    FONTSIZE = 10
-
-if platform.system() == 'Darwin':
+if platform.system() in ('Windows', 'Darwin'):
     FONTSIZE = 10
 
 class TaskPanel(wx.Panel):
@@ -54,11 +51,9 @@ class TaskPanel(wx.Panel):
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
-        # print("Gap: ", self.panel.sizer.GetHGap(), self.panel.sizer.GetVGap())
         self.skip_process = True
         self.build_display()
         self.skip_process = False
-
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
