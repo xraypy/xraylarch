@@ -337,8 +337,8 @@ class EXAFSPanel(TaskPanel):
         lpars = getattr(dgroup, 'exafs_formvals', False)
 
         if pars != lpars:
-            self.controller.larch.eval(autobk_cmd.format(**opts))
-            self.controller.larch.eval(xftf_cmd.format(**opts))
+            self.larch_eval(autobk_cmd.format(**opts))
+            self.larch_eval(xftf_cmd.format(**opts))
             dgroup.exafs_formvals = pars
             self.set_config(dgroup, opts)
 
@@ -361,7 +361,7 @@ class EXAFSPanel(TaskPanel):
             cmd = "%s\n%s" % (cmd, cmd2)
             self.controller.get_display(win=2)
 
-        self.controller.larch.eval(cmd.format(**form))
+        self.larch_eval(cmd.format(**form))
         self.last_plot = 'one'
         self.parent.SetFocus()
 
@@ -388,9 +388,9 @@ class EXAFSPanel(TaskPanel):
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{label:s}', new={new:s})"""
                 cmd = "%s%s" % (bcmd, extra)
-                self.controller.larch.eval(cmd.format(**form))
+                self.larch_eval(cmd.format(**form))
                 form['new'] = 'False'
 
-        self.controller.larch.eval("redraw(win=1, show_legend=True)")
+        self.larch_eval("redraw(win=1, show_legend=True)")
         self.last_plot = 'selected'
         self.parent.SetFocus()
