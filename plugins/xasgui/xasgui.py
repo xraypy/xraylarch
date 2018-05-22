@@ -81,6 +81,42 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
 
 WX_DEBUG = False
 
+XASGUI_STARTUP = """
+import xafs_plots
+def extract_athenagroup(pgroup):
+    'extract xas group from athena group'
+    g = pgroup
+    g.datatype = 'xas'
+    g.xdat = 1.0*g.energy
+    g.ydat = 1.0*g.mu
+    g.yerr = 1.0
+    g.plot_xlabel = 'energy'
+    g.plot_ylabel = 'mu'
+    return g
+#enddef
+"""
+
+"""
+### extract group {group:s} from Athena project _prj
+{group:s} = _prj.{prjgroup:s}
+{group:s}.datatype = 'xas'
+{group:s}.xdat = 1.0*{group:s}.energy
+{group:s}.ydat = 1.0*{group:s}.mu
+{group:s}.yerr = 1.0
+{group:s}.plot_ylabel = 'mu'
+{group:s}.plot_xlabel = 'energy'
+
+### extract group {group:s} from Athena project _prj
+{group:s} = _prj.{prjgroup:s}
+{group:s}.datatype = 'xas'
+{group:s}.xdat = 1.0*{group:s}.energy
+{group:s}.ydat = 1.0*{group:s}.mu
+{group:s}.yerr = 1.0
+{group:s}.plot_ylabel = 'mu'
+{group:s}.plot_xlabel = 'energy'
+"""
+
+
 #############################
 ## Hack System and Startfile on Windows to
 ## try to track down weird error of starting
@@ -153,7 +189,7 @@ class XASController():
         fico = self.get_iconfile()
 
         _larch = self.larch
-        _larch.eval("import xafs_plots")
+        _larch.eval(XASGUI_STARTUP)
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
@@ -967,24 +1003,13 @@ class XASFrame(wx.Frame):
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
-        s = """
-        {group:s} = _prj.{prjgroup:s}
-        {group:s}.datatype = 'xas'
-        {group:s}.xdat = 1.0*{group:s}.energy
-        {group:s}.ydat = 1.0*{group:s}.mu
-        {group:s}.yerr = 1.0
-        {group:s}.plot_ylabel = 'mu'
-        {group:s}.plot_xlabel = 'energy'
-        """
-
+        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
         for gname in namelist:
             this = getattr(self.larch.symtable._prj, gname)
-            a_id = str(getattr(this, 'athena_id', gname))
-            self.larch.eval(s.format(group=a_id, prjgroup=gname))
-            dgroup = self.install_group(a_id, gname, process=True, plot=False)
+            gid = str(getattr(this, 'athena_id', gname))
+            self.larch.eval(script.format(group=gid, prjgroup=gname))
+            dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
-
-
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
                   overwrite=False):
