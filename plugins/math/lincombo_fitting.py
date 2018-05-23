@@ -124,9 +124,10 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     if sum_to_one:
         expr = ['1'] + ['c%i' % i for i in range(ncomps-1)]
         params['c%i' % (ncomps-1)].expr = '-'.join(expr)
-        params['c%i' % (ncomps-1)].vary = False
-        params['c%i' % (ncomps-1)].min = -np.inf
-        params['c%i' % (ncomps-1)].max =  np.inf
+
+    expr = ['c%i' % i for i in range(ncomps)]
+    params.add('total', expr='+'.join(expr))
+
 
     result = lmfit.minimize(lincombo_resid, params, args=(ydat, ycomps))
 
