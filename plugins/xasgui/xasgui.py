@@ -82,9 +82,9 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
 WX_DEBUG = False
 
 XASGUI_STARTUP = """
-import xafs_plots
+# Larch startup for XAS Viewer
 def extract_athenagroup(pgroup):
-    'extract xas group from athena group'
+    '''extract xas group from athena group'''
     g = pgroup
     g.datatype = 'xas'
     g.xdat = 1.0*g.energy
@@ -627,6 +627,11 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
+
+        MenuItem(self, fmenu, 'Save History Script\tCtrl+H',
+                 'Save History as Larch Script',
+                 self.onSaveLarchHistory)
+
         if WX_DEBUG:
             MenuItem(self, fmenu, "&Inspect \tCtrl+J",
                      " wx inspection tool ",  self.showInspectionTool)
@@ -697,6 +702,18 @@ class XASFrame(wx.Frame):
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
+    def onSaveLarchHistory(self, evt=None):
+        wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
+        deffile = 'xas_viewer_history.lar'
+        dlg = FileSave(self, message='Save Session History File',
+                       wildcard=wildcard,
+                       defaultFile=deffile,
+                       style=wx.FD_SAVE|wx.FD_CHANGE_DIR)
+        if dlg.ShowModal() == wx.ID_OK:
+            fout = os.path.abspath(dlg.GetPath())
+            self.larch.input.history.save(fout, session_only=True)
+            self.SetStatusText("Wrote %s" % fout, 0)
+        dlg.Destroy()
 
     def onExportCSV(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
