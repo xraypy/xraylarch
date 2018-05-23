@@ -628,8 +628,8 @@ class XASFrame(wx.Frame):
                  self.onShowLarchBuffer)
 
 
-        MenuItem(self, fmenu, 'Save History Script\tCtrl+H',
-                 'Save History as Larch Script',
+        MenuItem(self, fmenu, 'Save Larch Script of History\tCtrl+H',
+                 'Save Session History as Larch Script',
                  self.onSaveLarchHistory)
 
         if WX_DEBUG:
@@ -704,16 +704,12 @@ class XASFrame(wx.Frame):
 
     def onSaveLarchHistory(self, evt=None):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
-        deffile = 'xas_viewer_history.lar'
-        dlg = FileSave(self, message='Save Session History File',
-                       wildcard=wildcard,
-                       defaultFile=deffile,
-                       style=wx.FD_SAVE|wx.FD_CHANGE_DIR)
-        if dlg.ShowModal() == wx.ID_OK:
-            fout = os.path.abspath(dlg.GetPath())
-            self.larch.input.history.save(fout, session_only=True)
-            self.SetStatusText("Wrote %s" % fout, 0)
-        dlg.Destroy()
+        path = FileSave(self, message='Save Session History as Larch Script',
+                        wildcard=wildcard,
+                        default_file='xas_viewer_history.lar')
+        if path is not None:
+            self.larch._larch.input.history.save(path, session_only=True)
+            self.SetStatusText("Wrote %s" % path, 0)
 
     def onExportCSV(self, evt=None):
         group_ids = self.controller.filelist.GetCheckedStrings()
