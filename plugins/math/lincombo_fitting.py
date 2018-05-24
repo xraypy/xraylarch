@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import json
+import copy
 
 from itertools import combinations
 from collections import OrderedDict
@@ -128,22 +129,21 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     expr = ['c%i' % i for i in range(ncomps)]
     params.add('total', expr='+'.join(expr))
 
-
     result = lmfit.minimize(lincombo_resid, params, args=(ydat, ycomps))
 
     # gather results
     weights, weights_lstsq = OrderedDict(), OrderedDict()
-    stderrs, fcomps = OrderedDict(), OrderedDict()
+    params, fcomps = OrderedDict(), OrderedDict()
     for i in range(ncomps):
         label = get_label(components[i])
         weights[label] = result.params['c%i' % i].value
-        stderrs[label] = result.params['c%i' % i].stderr
+        params[label] = copy.deepcopy(result.params['c%i' % i])
         weights_lstsq[label] = ls_vals[i]
         fcomps[label] = ycomps[:, i] * result.params['c%i' % i].value
 
     yfit = ydat + lincombo_resid(result.params, ydat, ycomps)
     return Group(result=result, chisqr=result.chisqr, redchi=result.redchi,
-                 weights=weights, stderrs=stderrs, weights_lstsq=weights_lstsq,
+                 params=params, weights=weights, weights_lstsq=weights_lstsq,
                  xdata=xdat, ydata=ydat, yfit=yfit, ycomps=fcomps)
 
 @ValidateLarchPlugin
