@@ -6,6 +6,7 @@ import os
 import time
 import wx
 import wx.lib.scrolledpanel as scrolled
+import wx.dataview as dv
 
 import numpy as np
 
@@ -13,6 +14,8 @@ from functools import partial
 from collections import OrderedDict
 
 import lmfit
+from lmfit.printfuncs import gformat
+
 from larch import Group
 from larch.utils import index_of
 
@@ -42,13 +45,14 @@ MAX_COMPONENTS = 10
 
 
 class ResultFrame(wx.Frame):
-    def __init__(self, parent=None, mainframe=None, datagroup=None, **kws):
+    def __init__(self, parent=None, mainframe=None, **kws):
 
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
                           style=FRAMESTYLE, size=(625, 750), **kws)
         self.parent = parent
         self.mainframe = mainframe
-        self.datagroup = datagroup
+        self.datagroup = None
+        self.form = None
         self.build()
 
     def build(self):
@@ -57,18 +61,119 @@ class ResultFrame(wx.Frame):
         sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((600, 450))
+        self.SetMinSize((650, 480))
         self.colors = GUIColors()
 
-    def show_result(self, datagroup=None, fit_number=None):
+        # title row
+        self.wids = wids = {}
+        title = SimpleText(panel, 'Linear Combination Results',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
+                                        colour=self.colors.title, style=LCEN)
+
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, 'showing top 4 fits'), (irow, 0), (1, 2), LCEN)
+
+        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
+        self.wids['param'] = []
+        pview.AppendTextColumn(' Statistic or Weight', width=200)
+        pview.AppendTextColumn(' Value, Fit #1 ', width=100)
+        pview.AppendTextColumn(' Value, Fit #2 ', width=100)
+        pview.AppendTextColumn(' Value, Fit #3 ', width=100)
+        pview.AppendTextColumn(' Value, Fit #4 ', width=100)
+
+        for col in range(5):
+            this = pview.Columns[col]
+            align = wx.ALIGN_LEFT if col==0 else wx.ALIGN_RIGHT
+            this.Sortable = False
+            this.Alignment = this.Renderer.Alignment = align
+
+        pview.SetMinSize((650, 450))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectColumn)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 4), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def onSelectColumn(self, evt=None):
+        print(" onSelectColumn ", evt, dir(evt))
+
+        if self.wids['params'] is None:
+            return
+        # print(dir(self.wids['params']))
+        # print("Column: ", evt.GetColumn(), evt.GetDataViewColumn())
+        # print("Column: ", self.wids['params'].CurrentColumn)
+
+
+    def show_results(self, datagroup=None, form=None):
         if datagroup is not None:
             self.datagroup = datagroup
+        if form is not None:
+            self.form = form
 
         lcf_history = getattr(self.datagroup, 'lcf_history', [])
-        print("show result!! ")
-        print(lmfit.fit_report(self.datagroup.lcf_result[0].result))
-        print(self.datagroup.lcf_result[0].weights)
+        # print(lmfit.fit_report(self.datagroup.lcf_result[0].result))
 
+        wids = self.wids
+
+        wids['data_title'].SetLabel(self.datagroup.filename)
+
+        wids['params'].DeleteAllItems()
+        wids['paramsdata'] = []
+        results = self.datagroup.lcf_result[:4]
+        nresults = len(results)
+
+        for name, attr, slen in (('# function evals', 'nfev', 'd'),
+                                 ('# of variables',   'nvarys', 'd'),
+                                 ('# of data points', 'ndata', 'd'),
+                                 ('Chi-square', 'chisqr', 10),
+                                 ('Reduced Chi-square', 'redchi', 10),
+                                 ('Akaike info crit', 'aic', 10)):
+
+            args = [name, '', '', '', '']
+            for i, r in enumerate(results):
+                val = getattr(r.result, attr)
+                if slen == 'd':
+                    args[i+1] = '%d' % val
+                else:
+                    args[i+1] = gformat(val, slen)
+            wids['params'].AppendItem(tuple(args))
+
+        for cname in form['comp_names']:
+            args = [cname, '', '', '', '']
+            for i, r in enumerate(results):
+                if cname in r.params:
+                    args[i+1] = gformat(r.params[cname].value, 10)
+            wids['params'].AppendItem(tuple(args))
+
+        for cname in ('total', ):
+            args = [cname, '', '', '', '']
+            for i, r in enumerate(results):
+                if cname in r.result.params:
+                    args[i+1] = gformat(r.result.params[cname].value, 10)
+            wids['params'].AppendItem(tuple(args))
+        self.Refresh()
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
@@ -92,8 +197,6 @@ class LinearComboPanel(TaskPanel):
         wids['fitspace'] = Choice(panel, choices=FitSpace_Choices,
                                   size=(175, -1))
         wids['fitspace'].SetStringSelection(norm)
-
-
         wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
                                   size=(175, -1), action=self.onPlot)
         wids['plotchoice'].SetSelection(1)
@@ -139,7 +242,6 @@ class LinearComboPanel(TaskPanel):
         add_text('E0: ')
         panel.Add(e0_wids, dcol=3)
         panel.Add(wids['show_e0'])
-
 
         add_text('Fit Energy Range: ')
         panel.Add(elo_wids)
@@ -270,7 +372,7 @@ class LinearComboPanel(TaskPanel):
             elif attr.startswith('comp'):
                 opts[attr] = wid.GetValue()
 
-        comps, wval, wmin, wmax = [], [], [], []
+        comps, cnames, wval, wmin, wmax = [], [], [], [], []
         for i in range(MAX_COMPONENTS):
             scomp = "_%2.2i" % (i+1)
             cname = opts['compchoice%s' % scomp]
@@ -279,6 +381,8 @@ class LinearComboPanel(TaskPanel):
                 wmin.append(str(opts['compmin%s' % scomp]))
                 wmax.append(str(opts['compmax%s' % scomp]))
                 comps.append(self.controller.file_groups[cname])
+                cnames.append(cname)
+        opts['comp_names'] = cnames
         opts['comps']   = ', '.join(comps)
         opts['weights'] = ', '.join(wval)
         opts['minvals'] = ', '.join(wmin)
@@ -341,11 +445,11 @@ result = {func:s}({gname:s}, [{comps:s}],
         self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
-        self.parent.show_subframe('lcf_result_frame',  ResultFrame,
-                                  datagroup=dgroup, mainframe=self)
+        self.parent.show_subframe('lcf_result',  ResultFrame,
+                                  mainframe=self)
 
-        self.parent.subframes['lcf_result_frame'].show_result()
-
+        self.parent.subframes['lcf_result'].show_results(datagroup=dgroup,
+                                                         form=form)
         self.plot(dgroup=dgroup)
 
     def onFitOne(self, event=None):
