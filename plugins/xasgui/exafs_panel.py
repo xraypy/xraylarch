@@ -265,6 +265,8 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
+        if dgroup is None:
+            return {}
         form_opts = {'group': dgroup.groupname}
 
         wids = self.wids
@@ -332,6 +334,9 @@ class EXAFSPanel(TaskPanel):
                 ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
                  'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
+        if not 'fft_kwindow' in opts:
+            return
+
         pars.append(opts['fft_kwindow'])
 
         lpars = getattr(dgroup, 'exafs_formvals', False)
@@ -347,6 +352,8 @@ class EXAFSPanel(TaskPanel):
 
     def onPlotOne(self, evt=None, dgroup=None):
         form = self.read_form()
+        if len(form) == 0:
+            return
         if dgroup is not None:
             self.dgroup = dgroup
             form['group'] = dgroup.groupname
