@@ -38,6 +38,8 @@ noname = '<none>'
 FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
+DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+
 defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=False,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
@@ -80,9 +82,7 @@ class ResultFrame(wx.Frame):
         irow += 1
         sizer.Add(wids['nfits_title'], (irow, 0), (1, 4), LCEN)
 
-        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=dvstyle)
-
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.AppendTextColumn(' Fit #', width=50)
         sview.AppendTextColumn(' N_Vary', width=60)
         sview.AppendTextColumn(' N_Data', width=60)
@@ -100,7 +100,7 @@ class ResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        sview.SetMinSize((675, 175))
+        sview.SetMinSize((675, 200))
 
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
@@ -113,15 +113,23 @@ class ResultFrame(wx.Frame):
         irow += 1
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
-        title = SimpleText(panel, '[[Variables]]',  font=Font(12),
+        title = SimpleText(panel, '[[Weights]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         irow += 1
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
-        self.wids['parampanel'] = wx.Panel(self)
+        self.wids['parampanel'] = ppan = wx.Panel(self)
+
+        p1 = SimpleText(ppan, ' < Parameters > ')
+        os = wx.BoxSizer(wx.VERTICAL)
+        os.Add(p1, 1, 3)
+        pack(ppan, os)
+
+        ppan.SetMinSize((675, 200))
+
 
         irow += 1
-        sizer.Add(self.wids['parampanel'], (irow, 0), (1, 4), LCEN)
+        sizer.Add(ppan, (irow, 0), (1, 4), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
@@ -174,23 +182,47 @@ class ResultFrame(wx.Frame):
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
 
+        ppan = self.wids['parampanel']
+        ppan.DestroyChildren()
+
+        pview = dv.DataViewListCtrl(ppan, style=DVSTYLE)
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+        pview.AppendTextColumn(' Fit #', width=50)
+        for i, cname in enumerate(form['comp_names']):
+            pview.AppendTextColumn(cname, width=100)
+        pview.AppendTextColumn('Total', width=100)
+
+        for col in range(len(form['comp_names'])+2):
+            this = pview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_CENTER
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+
+        for i, res in enumerate(results):
+            args = ['%i' % (i+1)]
+            for cname in form['comp_names'] + ['total']:
+                if cname in res.params:
+                    val = res.params[cname].value
+                    val = "%.4f" % val
+                else:
+                    val = '--'
+                args.append(val)
+            pview.AppendItem(tuple(args))
+
+        os = wx.BoxSizer(wx.VERTICAL)
+        os.Add(pview, 1, wx.GROW|wx.ALL)
+        pack(ppan, os)
+
+        pview.SetMinSize((675, 200))
+        s1, s2 = self.GetSize()
+        if s2 % 2 == 0:
+            s2 = s2 + 1
+        else:
+            s2 = s2 - 1
+        self.SetSize((s1, s2))
         self.Refresh()
-
-
-#
-#         for cname in form['comp_names']:
-#             args = [cname, '', '', '', '']
-#             for i, r in enumerate(results):
-#                 if cname in r.params:
-#                     args[i+1] = gformat(r.params[cname].value, 10)
-#             wids['params'].AppendItem(tuple(args))
-#
-#         for cname in ('total', ):
-#             args = [cname, '', '', '', '']
-#             for i, r in enumerate(results):
-#                 if cname in r.result.params:
-#                     args[i+1] = gformat(r.result.params[cname].value, 10)
-#             wids['params'].AppendItem(tuple(args))
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
