@@ -141,6 +141,10 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
         weights_lstsq[label] = ls_vals[i]
         fcomps[label] = ycomps[:, i] * result.params['c%i' % i].value
 
+
+    if 'total' in result.params:
+        params['total'] = copy.deepcopy(result.params['total'])
+
     yfit = ydat + lincombo_resid(result.params, ydat, ycomps)
     return Group(result=result, chisqr=result.chisqr, redchi=result.redchi,
                  params=params, weights=weights, weights_lstsq=weights_lstsq,
