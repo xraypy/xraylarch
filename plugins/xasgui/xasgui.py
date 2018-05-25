@@ -470,6 +470,15 @@ class XASFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
     def createMainPanel(self):
+
+        display0 = wx.Display(0)
+        client_area = display0.ClientArea
+        xmin, ymin, xmax, ymax = client_area
+        xpos = int((xmax-xmin)*0.02) + xmin
+        ypos = int((ymax-ymin)*0.04) + ymin
+        self.SetPosition((xpos, ypos))
+
+
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(250)
 
@@ -483,7 +492,6 @@ class XASFrame(wx.Frame):
 
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
-
         self.controller.filelist = FileCheckList(leftpanel,
                                                  # main=self,
                                                  select_action=self.ShowFile,
@@ -557,6 +565,7 @@ class XASFrame(wx.Frame):
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz+5, ypos))
+        plotframe.SetSize((ysiz, ysiz))
 
         self.SetStatusText('ready')
         self.Raise()
