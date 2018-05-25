@@ -61,7 +61,7 @@ class ResultFrame(wx.Frame):
         sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((650, 480))
+        self.SetMinSize((700, 480))
         self.colors = GUIColors()
 
         # title row
@@ -69,42 +69,65 @@ class ResultFrame(wx.Frame):
         title = SimpleText(panel, 'Linear Combination Results',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
 
-        wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
+        wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(12),
                                         colour=self.colors.title, style=LCEN)
 
+        wids['nfits_title'] = SimpleText(panel, 'showing top 5 fits')
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
         sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
 
         irow += 1
-        sizer.Add(SimpleText(panel, 'showing top 4 fits'), (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['nfits_title'], (irow, 0), (1, 4), LCEN)
 
         dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
-        self.wids['param'] = []
-        pview.AppendTextColumn(' Statistic or Weight', width=200)
-        pview.AppendTextColumn(' Value, Fit #1 ', width=100)
-        pview.AppendTextColumn(' Value, Fit #2 ', width=100)
-        pview.AppendTextColumn(' Value, Fit #3 ', width=100)
-        pview.AppendTextColumn(' Value, Fit #4 ', width=100)
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=dvstyle)
 
-        for col in range(5):
-            this = pview.Columns[col]
-            align = wx.ALIGN_LEFT if col==0 else wx.ALIGN_RIGHT
-            this.Sortable = False
+        sview.AppendTextColumn(' Fit #', width=50)
+        sview.AppendTextColumn(' N_Vary', width=60)
+        sview.AppendTextColumn(' N_Data', width=60)
+        sview.AppendTextColumn(' N_eval', width=60)
+        sview.AppendTextColumn(u' \u03c7\u00B2', width=100)
+        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=100)
+        sview.AppendTextColumn(' Akaike Info', width=100)
+        sview.AppendTextColumn(' Bayesian Info', width=100)
+
+        for col in range(8):
+            this = sview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_CENTER
+            this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((650, 450))
-        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectColumn)
+        sview.SetMinSize((675, 175))
+
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        irow += 1
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(sview, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(pview, (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+
+        title = SimpleText(panel, '[[Variables]]',  font=Font(12),
+                           colour=self.colors.title, style=LCEN)
+        irow += 1
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        self.wids['parampanel'] = wx.Panel(self)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(self.wids['parampanel'], (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, "Add Plot Buttons here"),  (irow, 0), (1, 4), LCEN)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -116,11 +139,6 @@ class ResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def onSelectColumn(self, evt=None):
-        print(" onSelectColumn ", evt, dir(evt))
-
-        if self.wids['params'] is None:
-            return
         # print(dir(self.wids['params']))
         # print("Column: ", evt.GetColumn(), evt.GetDataViewColumn())
         # print("Column: ", self.wids['params'].CurrentColumn)
@@ -136,44 +154,43 @@ class ResultFrame(wx.Frame):
         # print(lmfit.fit_report(self.datagroup.lcf_result[0].result))
 
         wids = self.wids
-
         wids['data_title'].SetLabel(self.datagroup.filename)
 
-        wids['params'].DeleteAllItems()
+        wids['stats'].DeleteAllItems()
         wids['paramsdata'] = []
-        results = self.datagroup.lcf_result[:4]
+        results = self.datagroup.lcf_result[:8]
         nresults = len(results)
+        wids['nfits_title'].SetLabel('showing top %i results' % nresults)
 
-        for name, attr, slen in (('# function evals', 'nfev', 'd'),
-                                 ('# of variables',   'nvarys', 'd'),
-                                 ('# of data points', 'ndata', 'd'),
-                                 ('Chi-square', 'chisqr', 10),
-                                 ('Reduced Chi-square', 'redchi', 10),
-                                 ('Akaike info crit', 'aic', 10)):
-
-            args = [name, '', '', '', '']
-            for i, r in enumerate(results):
-                val = getattr(r.result, attr)
-                if slen == 'd':
-                    args[i+1] = '%d' % val
+        for i, res in enumerate(results):
+            args = ['%i' % (i+1)]
+            for attr in ('nvarys', 'ndata', 'nfev',
+                         'chisqr', 'redchi', 'aic', 'bic'):
+                val = getattr(res.result, attr)
+                if isinstance(val, int):
+                    val = '%d' % val
                 else:
-                    args[i+1] = gformat(val, slen)
-            wids['params'].AppendItem(tuple(args))
+                    val = gformat(val, 10)
+                args.append(val)
+            wids['stats'].AppendItem(tuple(args))
 
-        for cname in form['comp_names']:
-            args = [cname, '', '', '', '']
-            for i, r in enumerate(results):
-                if cname in r.params:
-                    args[i+1] = gformat(r.params[cname].value, 10)
-            wids['params'].AppendItem(tuple(args))
-
-        for cname in ('total', ):
-            args = [cname, '', '', '', '']
-            for i, r in enumerate(results):
-                if cname in r.result.params:
-                    args[i+1] = gformat(r.result.params[cname].value, 10)
-            wids['params'].AppendItem(tuple(args))
         self.Refresh()
+
+
+#
+#         for cname in form['comp_names']:
+#             args = [cname, '', '', '', '']
+#             for i, r in enumerate(results):
+#                 if cname in r.params:
+#                     args[i+1] = gformat(r.params[cname].value, 10)
+#             wids['params'].AppendItem(tuple(args))
+#
+#         for cname in ('total', ):
+#             args = [cname, '', '', '', '']
+#             for i, r in enumerate(results):
+#                 if cname in r.result.params:
+#                     args[i+1] = gformat(r.result.params[cname].value, 10)
+#             wids['params'].AppendItem(tuple(args))
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
