@@ -120,9 +120,7 @@ class ResultFrame(wx.Frame):
 
         wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(12),
                                         colour=self.colors.title, style=LCEN)
-
         wids['nfits_title'] = SimpleText(panel, 'showing top 5 fits')
-
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
@@ -321,13 +319,46 @@ class ResultFrame(wx.Frame):
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
-        if self.form is not None and self.larch_eval is not None:
-            self.larch_eval(make_lcfplot(self.datagroup,
-                                         self.form, nfit=self.current_fit)
+        if self.form is None or self.larch_eval is None:
+            return
+        self.larch_eval(make_lcfplot(self.datagroup,
+                                     self.form, nfit=self.current_fit)
 
     def onPlotSel(self, evt=None):
         print(" on plot sel ", evt,
               self.wids['plot_nchoice'].GetStringSelection())
+        if self.form is None or self.larch_eval is None:
+            return
+        form = self.form
+        dgroup = self.datagroup
+
+        form['plotopt'] = 'show_norm=True'
+        if form['arrayname'] == 'dmude':
+            form['plotopt'] = 'show_deriv=True'
+
+        erange = form['ehi'] - form['elo']
+        form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
+        form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
+
+        cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
+        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}')"""]
+
+        nfits = int(self.wids['plot_nchoice'].GetStringSelection())
+        for i in range(nfits):
+            delay = 'delay_draw=True' if i==nfits-1 else 'delay_draw=False'
+            xarr = "{group:s}.lcf_result[%i].xdata" % i
+            yfit = "{group:s}.lcf_result[%i].yfit" % i
+            lab = 'Fit #%i' % i
+            cmds.append("plot(%s, %s, label=%s, zorder=30, %s)" % (xarr, yfit, lab, delay))
+
+        if form['show_e0']:
+            cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
+        if form['show_fitrange']:
+            cmds.append("plot_axvline({elo_abs:1f}, color='#EECCCC', zorder=-10)")
+            cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
+
+        script = "\n".join(cmds)
+        self.larch_eval(script.format(**form))
 
 
 class LinearComboPanel(TaskPanel):
