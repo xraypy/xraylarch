@@ -65,7 +65,8 @@ def make_lcfplot(dgroup, form, nfit=0):
         xarr = "{group:s}.lcf_result[{nfit:d}].xdata"
         yfit = "{group:s}.lcf_result[{nfit:d}].yfit"
         ycmp = "{group:s}.lcf_result[{nfit:d}].ycomps"
-        cmds.append("plot(%s, %s, label='fit', zorder=30, %s)" % (xarr, yfit, delay))
+        lab = 'Fit #%2.2i' % (nfit+1)
+        cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, lab, delay))
         ncomps = len(dgroup.lcf_result[nfit].ycomps)
         if with_comps:
             for i, key in enumerate(dgroup.lcf_result[nfit].ycomps):
@@ -322,11 +323,9 @@ class ResultFrame(wx.Frame):
         if self.form is None or self.larch_eval is None:
             return
         self.larch_eval(make_lcfplot(self.datagroup,
-                                     self.form, nfit=self.current_fit)
+                                     self.form, nfit=self.current_fit))
 
     def onPlotSel(self, evt=None):
-        print(" on plot sel ", evt,
-              self.wids['plot_nchoice'].GetStringSelection())
         if self.form is None or self.larch_eval is None:
             return
         form = self.form
@@ -345,11 +344,11 @@ class ResultFrame(wx.Frame):
 
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
         for i in range(nfits):
-            delay = 'delay_draw=True' if i==nfits-1 else 'delay_draw=False'
+            delay = 'delay_draw=True' if i<nfits-1 else 'delay_draw=False'
             xarr = "{group:s}.lcf_result[%i].xdata" % i
             yfit = "{group:s}.lcf_result[%i].yfit" % i
-            lab = 'Fit #%i' % i
-            cmds.append("plot(%s, %s, label=%s, zorder=30, %s)" % (xarr, yfit, lab, delay))
+            lab = 'Fit #%2.2i' % (i+1)
+            cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, lab, delay))
 
         if form['show_e0']:
             cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
