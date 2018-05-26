@@ -40,11 +40,10 @@ Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=False,
+defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=True,
                 sum_to_one=True, show_e0=True, show_fitrange=True)
 
 MAX_COMPONENTS = 10
-
 
 class ResultFrame(wx.Frame):
     def __init__(self, parent=None, mainframe=None, **kws):
@@ -71,10 +70,22 @@ class ResultFrame(wx.Frame):
         title = SimpleText(panel, 'Linear Combination Results',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
 
+        wids['plot_one'] = Button(panel, 'Plot This Fit', size=(150, -1),
+                                  action=self.onPlotOne)
+        wids['plot_sel'] = Button(panel, 'Plot top N Fits', size=(150, -1),
+                                  action=self.onPlotSel)
+
+        wids['plot_ntitle'] = SimpleText(panel, 'N fits: ')
+
+        wids['plot_nchoice'] = Choice(panel, size=(100, -1),
+                                      choices=['%d' % i for i in range(1, 21)])
+
         wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(12),
                                         colour=self.colors.title, style=LCEN)
 
         wids['nfits_title'] = SimpleText(panel, 'showing top 5 fits')
+
+
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
         sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
@@ -83,6 +94,7 @@ class ResultFrame(wx.Frame):
         sizer.Add(wids['nfits_title'], (irow, 0), (1, 4), LCEN)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
         sview.AppendTextColumn(' Fit #', width=50)
         sview.AppendTextColumn(' N_Vary', width=60)
         sview.AppendTextColumn(' N_Data', width=60)
@@ -100,7 +112,7 @@ class ResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        sview.SetMinSize((675, 200))
+        sview.SetMinSize((700, 175))
 
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
@@ -111,7 +123,7 @@ class ResultFrame(wx.Frame):
         sizer.Add(sview, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
 
         title = SimpleText(panel, '[[Weights]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
@@ -124,18 +136,28 @@ class ResultFrame(wx.Frame):
         os = wx.BoxSizer(wx.VERTICAL)
         os.Add(p1, 1, 3)
         pack(ppan, os)
-
-        ppan.SetMinSize((675, 200))
-
+        ppan.SetMinSize((700, 175))
 
         irow += 1
         sizer.Add(ppan, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(SimpleText(panel, "Add Plot Buttons here"),  (irow, 0), (1, 4), LCEN)
+
+        sizer.Add(self.wids['plot_one'],    (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_sel'],    (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_ntitle'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_nchoice'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
+        self.wids['report'] = SimpleText(panel, '< >', size=(650, 200), style=LCEN)
+
+        sizer.Add(self.wids['report'], (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -147,7 +169,6 @@ class ResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-        # print(dir(self.wids['params']))
         # print("Column: ", evt.GetColumn(), evt.GetDataViewColumn())
         # print("Column: ", self.wids['params'].CurrentColumn)
 
@@ -165,8 +186,7 @@ class ResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
 
         wids['stats'].DeleteAllItems()
-        wids['paramsdata'] = []
-        results = self.datagroup.lcf_result[:8]
+        results = self.datagroup.lcf_result[:20]
         nresults = len(results)
         wids['nfits_title'].SetLabel('showing top %i results' % nresults)
 
@@ -185,9 +205,10 @@ class ResultFrame(wx.Frame):
         ppan = self.wids['parampanel']
         ppan.DestroyChildren()
 
-        pview = dv.DataViewListCtrl(ppan, style=DVSTYLE)
-        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+        pview = self.wids['params'] = dv.DataViewListCtrl(ppan, style=DVSTYLE)
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitParam)
         pview.AppendTextColumn(' Fit #', width=50)
+
         for i, cname in enumerate(form['comp_names']):
             pview.AppendTextColumn(cname, width=100)
         pview.AppendTextColumn('Total', width=100)
@@ -203,11 +224,9 @@ class ResultFrame(wx.Frame):
         for i, res in enumerate(results):
             args = ['%i' % (i+1)]
             for cname in form['comp_names'] + ['total']:
+                val = '--'
                 if cname in res.params:
-                    val = res.params[cname].value
-                    val = "%.4f" % val
-                else:
-                    val = '--'
+                    val = "%.4f" % res.params[cname].value
                 args.append(val)
             pview.AppendItem(tuple(args))
 
@@ -215,7 +234,7 @@ class ResultFrame(wx.Frame):
         os.Add(pview, 1, wx.GROW|wx.ALL)
         pack(ppan, os)
 
-        pview.SetMinSize((675, 200))
+        pview.SetMinSize((700, 200))
         s1, s2 = self.GetSize()
         if s2 % 2 == 0:
             s2 = s2 + 1
@@ -223,6 +242,40 @@ class ResultFrame(wx.Frame):
             s2 = s2 - 1
         self.SetSize((s1, s2))
         self.Refresh()
+
+    def onSelectFitParam(self, evt=None):
+        if self.wids['params'] is None:
+            return
+        item = self.wids['params'].GetSelectedRow()
+        self.show_fitresult(item+1)
+
+
+    def onSelectFitStat(self, evt=None):
+        if self.wids['stats'] is None:
+            return
+        item = self.wids['stats'].GetSelectedRow()
+        self.show_fitresult(item+1)
+
+    def show_fitresult(self, n):
+        fit_result = self.datagroup.lcf_result[n]
+        print("fit result : " , n, fit_result)
+        print("fit result : " , fit_result.result)
+        buff = []
+        for pname, par in fit_result.params.items():
+            s = "%s = %s" % (pname, gformat(par.value, 10))
+            if par.stderr is not None:
+                s = "%s +/- %s" % (s, gformat(par.stderr, 10))
+            buff.append(s)
+        self.wids['report'].SetLabel('\n'.join(buff))
+
+
+    def onPlotOne(self, evt=None):
+        print(" on plot one ", evt)
+
+    def onPlotSel(self, evt=None):
+        print(" on plot sel ", evt,
+              self.wids['plot_nchoice'].GetStringSelection())
+
 
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
@@ -275,7 +328,7 @@ class LinearComboPanel(TaskPanel):
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
-        wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=False)
+        wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
 
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
         add_text('Run Fit', newrow=False)
