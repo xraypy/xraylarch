@@ -577,7 +577,8 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, _larch=None, **kws):
     if plotter is None:
         return
     plotter.Raise()
-
+    if 'label' not in kws:
+        kws['label'] = ''
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
     plotter.panel.canvas.draw()
 
@@ -598,7 +599,8 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, size=None,
     if plotter is None:
         return
     plotter.Raise()
-
+    if 'label' not in kws:
+        kws['label'] = ''
     plotter.panel.axes.axvline(x, ymin=ymin, ymax=ymax, **kws)
     plotter.panel.canvas.draw()
 
