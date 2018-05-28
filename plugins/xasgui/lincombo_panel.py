@@ -22,7 +22,7 @@ from larch.utils import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
                          HLine, Choice, Check, CEN, RCEN, LCEN, Font,
-                         FRAMESTYLE, GUIColors)
+                         MenuItem, FRAMESTYLE, GUIColors)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
@@ -48,6 +48,7 @@ MAX_COMPONENTS = 10
 def make_lcfplot(dgroup, form, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
     form['nfit'] = nfit
+    form['label'] = label = 'Fit #%2.2d' % (nfit+1)
     form['plotopt'] = 'show_norm=True'
     if form['arrayname'] == 'dmude':
         form['plotopt'] = 'show_deriv=True'
@@ -56,8 +57,9 @@ def make_lcfplot(dgroup, form, nfit=0):
     form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
     form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
 
+
     cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
-    emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}')"""]
+    emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}')"""]
 
     if hasattr(dgroup, 'lcf_result'):
         with_comps = "Components" in form['plotchoice']
@@ -65,8 +67,7 @@ def make_lcfplot(dgroup, form, nfit=0):
         xarr = "{group:s}.lcf_result[{nfit:d}].xdata"
         yfit = "{group:s}.lcf_result[{nfit:d}].yfit"
         ycmp = "{group:s}.lcf_result[{nfit:d}].ycomps"
-        lab = 'Fit #%2.2i' % (nfit+1)
-        cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, lab, delay))
+        cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, label, delay))
         ncomps = len(dgroup.lcf_result[nfit].ycomps)
         if with_comps:
             for i, key in enumerate(dgroup.lcf_result[nfit].ycomps):
@@ -86,13 +87,31 @@ class ResultFrame(wx.Frame):
     def __init__(self, parent=None,  **kws):
 
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
-                          style=FRAMESTYLE, size=(625, 750), **kws)
+                          style=FRAMESTYLE, size=(675, 700), **kws)
         self.parent = parent
         self.datagroup = None
         self.form = None
         self.larch_eval = None
         self.current_fit = 0
+        self.createMenus()
         self.build()
+
+    def createMenus(self):
+        self.menubar = wx.MenuBar()
+        fmenu = wx.Menu()
+        m = {}
+
+        MenuItem(self, fmenu, "Save This Fit And Components",
+                 "Save Fit and Compoents to Data File",  self.onSaveFit)
+
+        MenuItem(self, fmenu, "Save Statistics and Weights for N Fits",
+                 "Save Statistics and Weights to Data File",  self.onSaveStats)
+
+        MenuItem(self, fmenu, "Save Data and Top N Fits",
+                 "Save Data and Best N Fits",  self.onSaveMultiFits)
+
+        self.menubar.Append(fmenu, "&File")
+        self.SetMenuBar(self.menubar)
 
     def build(self):
         sizer = wx.GridBagSizer(10, 5)
@@ -100,7 +119,7 @@ class ResultFrame(wx.Frame):
         sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((700, 480))
+        self.SetMinSize((675, 600))
         self.colors = GUIColors()
 
         # title row
@@ -130,6 +149,37 @@ class ResultFrame(wx.Frame):
         irow += 1
         sizer.Add(wids['nfits_title'], (irow, 0), (1, 4), LCEN)
 
+        irow += 1
+        sizer.Add(self.wids['plot_one'],    (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_sel'],    (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_ntitle'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_nchoice'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
+        self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',  font=Font(12),
+                                              colour=self.colors.title, style=LCEN)
+        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 4), LCEN)
+
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        pview.SetMinSize((675, 200))
+        pview.AppendTextColumn(' Parameter ', width=250)
+        pview.AppendTextColumn(' Best-Fit Value', width=150)
+        pview.AppendTextColumn(' Uncertainty ', width=150)
+        for col in range(3):
+            this = pview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_LEFT
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+
+
+        irow += 1
+        sizer.Add(self.wids['params'], (irow, 0), (1, 4), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
         sview.AppendTextColumn(' Fit #', width=50)
@@ -149,18 +199,18 @@ class ResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        sview.SetMinSize((700, 175))
+        sview.SetMinSize((675, 175))
 
+        irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
-        irow += 1
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Weights]]',  font=Font(12),
@@ -172,44 +222,13 @@ class ResultFrame(wx.Frame):
         os = wx.BoxSizer(wx.VERTICAL)
         os.Add(p1, 1, 3)
         pack(ppan, os)
-        ppan.SetMinSize((700, 175))
+        ppan.SetMinSize((675, 175))
 
         irow += 1
         sizer.Add(ppan, (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
-
-        irow += 1
-        self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',  font=Font(12),
-                                              colour=self.colors.title, style=LCEN)
-        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 4), LCEN)
-
-        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        pview.SetMinSize((700, 175))
-        pview.AppendTextColumn(' Parameter ', width=250)
-        pview.AppendTextColumn(' Best-Fit Value', width=150)
-        pview.AppendTextColumn(' Uncertainty ', width=150)
-        for col in range(3):
-            this = pview.Columns[col]
-            isort, align = True, wx.ALIGN_RIGHT
-            if col == 0:
-                align = wx.ALIGN_LEFT
-            this.Sortable = isort
-            this.Alignment = this.Renderer.Alignment = align
-
-
-        irow += 1
-        sizer.Add(self.wids['params'], (irow, 0), (1, 4), LCEN)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(700, 3)), (irow, 0), (1, 4), LCEN)
-
-        irow += 1
-        sizer.Add(self.wids['plot_one'],    (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_sel'],    (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_ntitle'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_nchoice'], (irow, 3), (1, 1), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -236,11 +255,11 @@ class ResultFrame(wx.Frame):
 
         wids['stats'].DeleteAllItems()
         results = self.datagroup.lcf_result[:20]
-        nresults = len(results)
-        wids['nfits_title'].SetLabel('showing top %i results' % nresults)
+        self.nresults = len(results)
+        wids['nfits_title'].SetLabel('showing top %i results' % self.nresults)
 
         for i, res in enumerate(results):
-            args = ['%2.2i' % (i+1)]
+            args = ['%2.2d' % (i+1)]
             for attr in ('nvarys', 'ndata', 'nfev',
                          'chisqr', 'redchi', 'aic', 'bic'):
                 val = getattr(res.result, attr)
@@ -271,7 +290,7 @@ class ResultFrame(wx.Frame):
             this.Alignment = this.Renderer.Alignment = align
 
         for i, res in enumerate(results):
-            args = ['%2.2i' % (i+1)]
+            args = ['%2.2d' % (i+1)]
             for cname in form['comp_names'] + ['total']:
                 val = '--'
                 if cname in res.params:
@@ -283,13 +302,14 @@ class ResultFrame(wx.Frame):
         os.Add(wview, 1, wx.GROW|wx.ALL)
         pack(wpan, os)
 
-        wview.SetMinSize((700, 200))
+        wview.SetMinSize((675, 200))
         s1, s2 = self.GetSize()
         if s2 % 2 == 0:
             s2 = s2 + 1
         else:
             s2 = s2 - 1
         self.SetSize((s1, s2))
+        self.show_fitresult(0)
         self.Refresh()
 
     def onSelectFitParam(self, evt=None):
@@ -307,10 +327,10 @@ class ResultFrame(wx.Frame):
     def show_fitresult(self, n):
         fit_result = self.datagroup.lcf_result[n]
         self.current_fit = n
-
-        self.wids['paramstitle'].SetLabel('[[Parameters for Fit # %2.2i]]' % (n+1))
-
         wids = self.wids
+        wids['nfits_title'].SetLabel('Showing Fit # %2.2d of Top %i Fits' % (n+1, self.nresults))
+        wids['paramstitle'].SetLabel('[[Parameters for Fit # %2.2d]]' % (n+1))
+
         wids['params'].DeleteAllItems()
 
         for pname, par in fit_result.params.items():
@@ -347,7 +367,7 @@ class ResultFrame(wx.Frame):
             delay = 'delay_draw=True' if i<nfits-1 else 'delay_draw=False'
             xarr = "{group:s}.lcf_result[%i].xdata" % i
             yfit = "{group:s}.lcf_result[%i].yfit" % i
-            lab = 'Fit #%2.2i' % (i+1)
+            lab = 'Fit #%2.2d' % (i+1)
             cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, lab, delay))
 
         if form['show_e0']:
@@ -358,6 +378,15 @@ class ResultFrame(wx.Frame):
 
         script = "\n".join(cmds)
         self.larch_eval(script.format(**form))
+
+    def onSaveFit(self, evt=None):
+        print("save fit and components")
+
+    def onSaveStats(self, evt=None):
+        print("save stats")
+
+    def onSaveMultiFits(self, evt=None):
+        print("save multi fits")
 
 
 class LinearComboPanel(TaskPanel):
@@ -388,7 +417,7 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=1.0)
+        opts = dict(digits=2, increment=1.0, relative_e0=True)
 
         e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=-20, **opts)
@@ -453,7 +482,7 @@ class LinearComboPanel(TaskPanel):
 
         fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
         for i in range(1, 1+MAX_COMPONENTS):
-            si = ("comp", "_%2.2i" % i)
+            si = ("comp", "_%2.2d" % i)
             sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
             wids['%schoice%s' % si] = Choice(sgrid, choices=groupnames, size=(200, -1),
                                            action=partial(self.onComponent, comp=i))
@@ -489,12 +518,12 @@ class LinearComboPanel(TaskPanel):
         cnames = set([elem[1] for elem in comps])
         if len(cnames) < len(comps):
             comps.remove((comp, evt.GetString()))
-            self.wids["compchoice_%2.2i" % comp].SetSelection(0)
+            self.wids["compchoice_%2.2d" % comp].SetSelection(0)
 
         weight = 1.0 / len(comps)
 
         for n, cname in comps:
-            self.wids["compval_%2.2i" % n].SetValue(weight)
+            self.wids["compval_%2.2d" % n].SetValue(weight)
 
 
     def fill_form(self, dgroup):
@@ -559,7 +588,7 @@ class LinearComboPanel(TaskPanel):
 
         comps, cnames, wval, wmin, wmax = [], [], [], [], []
         for i in range(MAX_COMPONENTS):
-            scomp = "_%2.2i" % (i+1)
+            scomp = "_%2.2d" % (i+1)
             cname = opts['compchoice%s' % scomp]
             if cname != noname:
                 wval.append(str(opts['compval%s' % scomp]))
@@ -601,12 +630,12 @@ class LinearComboPanel(TaskPanel):
         weight = 1.0/len(selected_groups)
 
         for i in range(MAX_COMPONENTS):
-            si = "_%2.2i" % (i+1)
+            si = "_%2.2d" % (i+1)
             self.wids['compchoice%s' % si].SetStringSelection(noname)
             self.wids['compval%s' % si].SetValue(0.0)
 
         for i, sel in enumerate(selected_groups):
-            si = "_%2.2i" % (i+1)
+            si = "_%2.2d" % (i+1)
             self.wids['compchoice%s' % si].SetStringSelection(sel)
             self.wids['compval%s' % si].SetValue(weight)
         self.skip_process = False
