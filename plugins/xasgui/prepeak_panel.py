@@ -1136,14 +1136,23 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                                ydata=y, yerr=yerr, x=x)
 
 
-    def onSelPoint(self, evt=None, opt='xmin'):
-        xval = None
-        try:
-            xval = self.larch.symtable._plotter.plot1_x
-        except:
-            return
-        if opt in self.wids:
-            self.wids[opt].SetValue(xval)
+    def onSelPoint(self, evt=None, opt='__', relative_e0=False, win=None):
+        """
+        get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
+
+        by default it finds the latest cursor position from the
+        cursor history of the first 20 plot windows.
+        """
+        if opt not in self.wids:
+            return None
+
+        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
+
+        if _x is not None:
+            if relative_e0 and 'e0' in self.wids:
+                _x -= self.wids['e0'].GetValue()
+            self.wids[opt].SetValue(_x)
 
     def get_xranges(self, x):
         opts = self.read_form()

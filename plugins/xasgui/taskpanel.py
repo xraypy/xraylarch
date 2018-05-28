@@ -138,10 +138,12 @@ class TaskPanel(wx.Panel):
         self.panel.Add(SimpleText(self.panel, text),
                        dcol=dcol, newrow=newrow)
 
-    def add_floatspin(self, name, value, with_pin=True, **kws):
+    def add_floatspin(self, name, value, with_pin=True, relative_e0=False,
+                      **kws):
         """create FloatSpin with Pin button for onSelPoint"""
         if with_pin:
-            pin_action = partial(self.onSelPoint, opt=name)
+            pin_action = partial(self.onSelPoint, opt=name,
+                                 relative_e0=relative_e0)
             fspin, bb = FloatSpinWithPin(self.panel, value=value,
                                          pin_action=pin_action, **kws)
         else:
@@ -163,7 +165,7 @@ class TaskPanel(wx.Panel):
     def onPlotSel(self, evt=None, groups=None, **kws):
         pass
 
-    def onSelPoint(self, evt=None, opt='__', win=None):
+    def onSelPoint(self, evt=None, opt='__', relative_e0=False, win=None):
         """
         get last selected point from a specified plot window
         and fill in the value for the widget defined by `opt`.
@@ -177,4 +179,6 @@ class TaskPanel(wx.Panel):
         _x, _y = last_cursor_pos(win=win, _larch=self.larch)
 
         if _x is not None:
+            if relative_e0 and 'e0' in self.wids and opt is not 'e0':
+                _x -= self.wids['e0'].GetValue()
             self.wids[opt].SetValue(_x)
