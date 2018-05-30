@@ -14,7 +14,7 @@ from functools import partial
 from collections import OrderedDict
 
 import lmfit
-from lmfit.printfuncs import gformat
+from lmfit.printfuncs import gformat, fit_report
 
 from larch import Group
 from larch.utils import index_of
@@ -22,9 +22,10 @@ from larch.utils import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
                          HLine, Choice, Check, CEN, RCEN, LCEN, Font,
-                         MenuItem, FRAMESTYLE, GUIColors)
+                         MenuItem, FRAMESTYLE, GUIColors, FileSave)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
+from larch_plugins.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
 
@@ -104,10 +105,10 @@ class ResultFrame(wx.Frame):
         MenuItem(self, fmenu, "Save This Fit And Components",
                  "Save Fit and Compoents to Data File",  self.onSaveFit)
 
-        MenuItem(self, fmenu, "Save Statistics and Weights for N Fits",
-                 "Save Statistics and Weights to Data File",  self.onSaveStats)
+        MenuItem(self, fmenu, "Save Statistics for Best N Fits",
+                 "Save Statistics and Weights for Best N Fits",  self.onSaveStats)
 
-        MenuItem(self, fmenu, "Save Data and Top N Fits",
+        MenuItem(self, fmenu, "Save Data and Best N Fits",
                  "Save Data and Best N Fits",  self.onSaveMultiFits)
 
         self.menubar.Append(fmenu, "&File")
@@ -380,13 +381,60 @@ class ResultFrame(wx.Frame):
         self.larch_eval(script.format(**form))
 
     def onSaveFit(self, evt=None):
+        "Save Fit and Compoents to Data File"
         print("save fit and components")
+        nfit = self.current_fit
+        dgroup = self.datagroup
+        nfits = int(self.wids['plot_nchoice'].GetStringSelection())
+
+
+        deffile = "%s_Fit%i.dat" % (dgroup.filename, nfit+1)
+        wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
+
+        path = FileSave(self, 'Save Fit and Components to File',
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+
+        form  = self.form
+        label = [' energy    ',
+                 ' data      ',
+                 ' best_fit  ']
+        result = dgroup.lcf_result[nfit]
+
+        header = ['Fit #%2.2d' % (nfit+1),
+                  'Fit arrayname: %s' %  form['arrayname'],
+                  'E0:  %f '  % form['e0'],
+                  'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
+                  'Components: ']
+        for key, val in result.weights.items():
+            header.append('%s: %f' % (key, val))
+
+        report = fit_report(result.result).split('\n')
+        header.extend(report)
+
+        out = [result.xdata, result.ydata, result.yfit]
+        for compname, compdata in result.ycomps.items():
+            label.append(' %s' % (compname + ' '*(max(1, 12-len(compname)))))
+            out.append(compdata)
+
+        label = ' '.join(label)
+        _larch = self.parent.controller.larch
+        write_ascii(path, header=header, label=label, _larch=_larch, *out)
+
 
     def onSaveStats(self, evt=None):
-        print("save stats")
+        "Save Statistics and Weights for Best N Fits"
+        nfits = int(self.wids['plot_nchoice'].GetStringSelection())
+        print("save stats  %d ", nfits)
 
     def onSaveMultiFits(self, evt=None):
-        print("save multi fits")
+        "Save Data and Best N Fits"
+        nfits = int(self.wids['plot_nchoice'].GetStringSelection())
+        print("save multi fits %d" % nfits)
+
+
+
 
 
 class LinearComboPanel(TaskPanel):
