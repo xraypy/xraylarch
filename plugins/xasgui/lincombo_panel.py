@@ -397,9 +397,9 @@ class ResultFrame(wx.Frame):
             return
 
         form  = self.form
-        label = [' energy      ',
-                 ' data        ',
-                 ' best_fit    ']
+        label = [' energy         ',
+                 ' data           ',
+                 ' best_fit       ']
         result = dgroup.lcf_result[nfit]
 
         header = ['Fit #%2.2d' % (nfit+1),
@@ -415,7 +415,7 @@ class ResultFrame(wx.Frame):
 
         out = [result.xdata, result.ydata, result.yfit]
         for compname, compdata in result.ycomps.items():
-            label.append(' %s' % (compname + ' '*(max(1, 14-len(compname)))))
+            label.append(' %s' % (compname + ' '*(max(1, 15-len(compname)))))
             out.append(compdata)
 
         label = ' '.join(label)
@@ -430,7 +430,7 @@ class ResultFrame(wx.Frame):
         deffile = "%s_LinearStats%i.dat" % (dgroup.filename, nfits)
         wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
 
-        path = FileSave(self, 'Save Statistics and Weights for Best N Filts'
+        path = FileSave(self, 'Save Statistics and Weights for Best N Fits',
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
