@@ -388,7 +388,7 @@ class ResultFrame(wx.Frame):
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
 
 
-        deffile = "%s_Fit%i.dat" % (dgroup.filename, nfit+1)
+        deffile = "%s_LinearFit%i.dat" % (dgroup.filename, nfit+1)
         wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
 
         path = FileSave(self, 'Save Fit and Components to File',
@@ -397,9 +397,9 @@ class ResultFrame(wx.Frame):
             return
 
         form  = self.form
-        label = [' energy    ',
-                 ' data      ',
-                 ' best_fit  ']
+        label = [' energy      ',
+                 ' data        ',
+                 ' best_fit    ']
         result = dgroup.lcf_result[nfit]
 
         header = ['Fit #%2.2d' % (nfit+1),
@@ -408,14 +408,14 @@ class ResultFrame(wx.Frame):
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'Components: ']
         for key, val in result.weights.items():
-            header.append('%s: %f' % (key, val))
+            header.append('  %s: %f' % (key, val))
 
         report = fit_report(result.result).split('\n')
         header.extend(report)
 
         out = [result.xdata, result.ydata, result.yfit]
         for compname, compdata in result.ycomps.items():
-            label.append(' %s' % (compname + ' '*(max(1, 12-len(compname)))))
+            label.append(' %s' % (compname + ' '*(max(1, 14-len(compname)))))
             out.append(compdata)
 
         label = ' '.join(label)
@@ -426,7 +426,17 @@ class ResultFrame(wx.Frame):
     def onSaveStats(self, evt=None):
         "Save Statistics and Weights for Best N Fits"
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
+
+        deffile = "%s_LinearStats%i.dat" % (dgroup.filename, nfits)
+        wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
+
+        path = FileSave(self, 'Save Statistics and Weights for Best N Filts'
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+
         print("save stats  %d ", nfits)
+
 
     def onSaveMultiFits(self, evt=None):
         "Save Data and Best N Fits"
