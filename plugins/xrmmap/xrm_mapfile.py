@@ -699,8 +699,10 @@ class GSEXRM_MapFile(object):
         self.rowdata          = []
         self.npts             = None
         self.roi_slices       = None
+        self.roi_lims         = None
         self._pixeltime       = None
         self.masterfile       = None
+
         self.masterfile_mtime = -1
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
@@ -1032,7 +1034,6 @@ class GSEXRM_MapFile(object):
         self.add_map_config(self.mapconf)
 
         self.process_row(0, flush=True, callback=callback)
-
         self.status = GSEXRM_FileStatus.hasdata
 
     def process_row(self, irow, flush=False, callback=None):
@@ -1071,11 +1072,30 @@ class GSEXRM_MapFile(object):
         if maxrow is not None:
             nrows = min(nrows, maxrow)
 
+        current_row = self.last_row
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
                 self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
                 irow  = irow + 1
+
+            print("Process ROIS for rows %d to %d " % (current_row+1, self.last_row+1))
+            rows = slice(current_row, self.last_row+1)
+            roigrp = self.xrmmap['roimap']
+            for roiname in roigrp['mcasum'].keys():
+                roi_slice = self.roi_lims[roiname]
+                print(roiname, roi_slice)
+                sumraw = roigrp['mcasum'][roiname]['raw'][rows,]
+                sumcor = roigrp['mcasum'][roiname]['cor'][rows,]
+                for detname in self.mca_dets:
+                    mcaraw = self.xrmmap[detname]['counts'][rows,:,roi_slice].sum(axis=2)
+                    mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][rows,:]
+                    roigrp[detname][roiname]['raw'][rows,] = mcaraw
+                    roigrp[detname][roiname]['cor'][rows,] = mcacor
+                    sumraw += mcaraw
+                    sumcor += mcacor
+                roigrp['mcasum'][roiname]['raw'][rows,] = sumraw
+                roigrp['mcasum'][roiname]['cor'][rows,] = sumcor
 
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
 
@@ -1209,18 +1229,18 @@ class GSEXRM_MapFile(object):
                 tpos = rowpos.transpose()
                 pos[thisrow, :npts, :] = tpos[:npts, :]
                 nmca, xnpts, nchan = row.counts.shape
-                mca_dets = []
+                self.mca_dets = []
                 dt.add(" map xrf 1")
                 for gname in map_items:
                     g = self.xrmmap[gname]
                     if bytes2str(g.attrs.get('type', '')) == 'mca detector':
-                        mca_dets.append(gname)
+                        self.mca_dets.append(gname)
                         nrows, npts, nchan =  g['counts'].shape
                 dt.add(" map xrf 2")
-                _nr, npts, nchan = self.xrmmap[mca_dets[0]]['counts'].shape
+                _nr, npts, nchan = self.xrmmap[self.mca_dets[0]]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
                 dt.add(" map xrf 3")
-                for idet, gname in enumerate(mca_dets):
+                for idet, gname in enumerate(self.mca_dets):
                     grp = self.xrmmap[gname]
                     grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
                     grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
@@ -1231,25 +1251,34 @@ class GSEXRM_MapFile(object):
                 dt.add(" map xrf 4")
                 self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
                 dt.add(" map xrf 5")
-                roigrp = self.xrmmap['roimap']
 
+                roigrp = self.xrmmap['roimap']
                 en  = self.xrmmap['mcasum']['energy'][:]
-                for roiname in roigrp['mcasum'].keys():
-                    en_lim = roigrp['mcasum'][roiname]['limits'][:]
-                    roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
-                                      np.abs(en-en_lim[1]).argmin())
-                    sumraw = roigrp['mcasum'][roiname]['raw'][thisrow,]
-                    sumcor = roigrp['mcasum'][roiname]['cor'][thisrow,]
-                    for detname in mca_dets:
-                        mcaraw = self.xrmmap[detname]['counts'][thisrow,][:,roi_slice].sum(axis=1)
-                        mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][thisrow,]
-                        roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
-                        roigrp[detname][roiname]['cor'][thisrow,] = mcacor
-                        sumraw += mcaraw
-                        sumcor += mcacor
-                    roigrp['mcasum'][roiname]['raw'][thisrow,] = sumraw
-                    roigrp['mcasum'][roiname]['cor'][thisrow,] = sumcor
-                dt.add(" map xrf 6")
+                if self.roi_lims is None:
+                    # print("Setting ROI SLICES ! ", list(roigrp['mcasum'].keys()))
+                    self.roi_lims = {}
+                    for roiname in roigrp['mcasum'].keys():
+                        en_lim = roigrp['mcasum'][roiname]['limits'][:]
+                        roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
+                                          np.abs(en-en_lim[1]).argmin())
+                        self.roi_lims[roiname] = roi_slice
+#                 dt.add(" map xrf roi slices!")
+#                 # print("ROI SLICES ", self.roi_lims)
+#                 for roiname in roigrp['mcasum'].keys():
+#                     roi_slice = self.roi_lims[roiname]
+#                     sumraw = roigrp['mcasum'][roiname]['raw'][thisrow,]
+#                     sumcor = roigrp['mcasum'][roiname]['cor'][thisrow,]
+#                     for detname in self.mca_dets:
+#                         mcaraw = self.xrmmap[detname]['counts'][thisrow,][:,roi_slice].sum(axis=1)
+#                         mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][thisrow,]
+#                         roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
+#                         roigrp[detname][roiname]['cor'][thisrow,] = mcacor
+#                         sumraw += mcaraw
+#                         sumcor += mcacor
+#                     roigrp['mcasum'][roiname]['raw'][thisrow,] = sumraw
+#                     roigrp['mcasum'][roiname]['cor'][thisrow,] = sumcor
+                dt.add(" map xrf 6 %i " %  thisrow)
+                # print(" xrf 6: " , thisrow, self.xrmmap[detname]['counts'].shape, roi_slice)
 
         else:
             if self.flag_xrf:
