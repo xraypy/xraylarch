@@ -101,7 +101,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     ncomps = len(components)
 
     # second use unconstrained linear algebra to estimate weights
-    ls_out = np.linalg.lstsq(ycomps, ydat, rcond=None)
+    ls_out = np.linalg.lstsq(ycomps, ydat, rcond=-1)
     ls_vals = ls_out[0]
     # third use lmfit, imposing bounds and sum_to_one constraint
     if weights in (None, [None]*ncomps):
