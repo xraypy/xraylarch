@@ -120,7 +120,7 @@ class ResultFrame(wx.Frame):
         sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((675, 600))
+        self.SetMinSize((650, 600))
         self.colors = GUIColors()
 
         # title row
@@ -238,6 +238,7 @@ class ResultFrame(wx.Frame):
         mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
 
         pack(self, mainsizer)
+        # self.SetSize((725, 750))
         self.Show()
         self.Raise()
 
@@ -382,15 +383,12 @@ class ResultFrame(wx.Frame):
 
     def onSaveFit(self, evt=None):
         "Save Fit and Compoents to Data File"
-        print("save fit and components")
         nfit = self.current_fit
         dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
 
-
         deffile = "%s_LinearFit%i.dat" % (dgroup.filename, nfit+1)
         wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
-
         path = FileSave(self, 'Save Fit and Components to File',
                         default_file=deffile, wildcard=wcards)
         if path is None:
@@ -402,8 +400,10 @@ class ResultFrame(wx.Frame):
                  ' best_fit       ']
         result = dgroup.lcf_result[nfit]
 
-        header = ['Fit #%2.2d' % (nfit+1),
-                  'Fit arrayname: %s' %  form['arrayname'],
+        header = ['Larch Linear Fit Result for Fit: #%2.2d' % (nfit+1),
+                  'Dataset filename: %s ' % dgroup.filename,
+                  'Larch group: %s ' % dgroup.groupname,
+                  'Array name: %s' %  form['arrayname'],
                   'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'Components: ']
@@ -425,26 +425,83 @@ class ResultFrame(wx.Frame):
 
     def onSaveStats(self, evt=None):
         "Save Statistics and Weights for Best N Fits"
+        dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
-
-        deffile = "%s_LinearStats%i.dat" % (dgroup.filename, nfits)
+        results = dgroup.lcf_result[:nfits]
+        nresults = len(results)
+        deffile = "%s_LinearStats%i.dat" % (dgroup.filename, nresults)
         wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
 
         path = FileSave(self, 'Save Statistics and Weights for Best N Fits',
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
+        form = self.form
+        header = ['Larch Linear Fit Statistics for top %2.2d results' % (nresults),
+                  'Dataset filename: %s ' % dgroup.filename,
+                  'Larch group: %s ' % dgroup.groupname,
+                  'Array name: %s' %  form['arrayname'],
+                  'E0:  %f '  % form['e0'],
+                  'Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
 
-        print("save stats  %d ", nfits)
+        label = ['fit #', 'nvarys', 'ndata', 'nfev',
+                  'chisqr', 'redchi', 'aic', 'bic']
+        label.extend(form['comp_names'])
+        label.append('Total')
+        for i in range(len(label)):
+            if len(label[i]) < 13:
+                label[i] = (" %s                " % label[i])[:13]
+        label = ' '.join(label)
 
+        out = []
+        for i, res in enumerate(results):
+            dat = [(i+1)]
+            for attr in ('nvarys', 'ndata', 'nfev',
+                         'chisqr', 'redchi', 'aic', 'bic'):
+                dat.append(getattr(res.result, attr))
+            for cname in form['comp_names'] + ['total']:
+                val = 0.0
+                if cname in res.params:
+                    val = res.params[cname].value
+                dat.append(val)
+            out.append(dat)
+
+        out = np.array(out).transpose()
+        _larch = self.parent.controller.larch
+        write_ascii(path, header=header, label=label, _larch=_larch, *out)
 
     def onSaveMultiFits(self, evt=None):
         "Save Data and Best N Fits"
+        dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
-        print("save multi fits %d" % nfits)
+        results = dgroup.lcf_result[:nfits]
+        nresults = len(results)
 
+        deffile = "%s_LinearFits%i.dat" % (dgroup.filename, nresults)
+        wcards  = 'Data Files (*.dat)|*.dat|All files (*.*)|*.*'
 
+        path = FileSave(self, 'Save Best N Fits',
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+        form = self.form
+        header = ['Larch Linear Arrays for top %2.2d results' % (nresults),
+                  'Dataset filename: %s ' % dgroup.filename,
+                  'Larch group: %s ' % dgroup.groupname,
+                  'Array name: %s' %  form['arrayname'],
+                  'E0:  %f '  % form['e0'],
+                  'Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
 
+        label = [' energy         ',  ' data           ']
+        label.extend([' fit_%2.2d         ' % i for i in range(nresults)])
+        label = ' '.join(label)
+
+        out = [results[0].xdata, results[0].ydata]
+        for i, res in enumerate(results):
+            out.append(results[i].yfit)
+
+        _larch = self.parent.controller.larch
+        write_ascii(path, header=header, label=label, _larch=_larch, *out)
 
 
 class LinearComboPanel(TaskPanel):
