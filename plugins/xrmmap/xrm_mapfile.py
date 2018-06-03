@@ -137,7 +137,8 @@ def isGSEXRM_MapFolder(fname):
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.1',
+           # 'Version': '2.0.1',
+           'Version': '1.0.1',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
@@ -1077,27 +1078,53 @@ class GSEXRM_MapFile(object):
             irow = self.last_row + 1
             while irow < nrows:
                 self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
+                if irow > 2 and (irow+1) % 25 == 0:
+                    self.set_roidata(current_row, self.last_row)
+                    current_row = self.last_row
                 irow  = irow + 1
 
-            print("Process ROIS for rows %d to %d " % (current_row+1, self.last_row+1))
-            rows = slice(current_row, self.last_row+1)
-            roigrp = self.xrmmap['roimap']
-            for roiname in roigrp['mcasum'].keys():
-                roi_slice = self.roi_lims[roiname]
-                print(roiname, roi_slice)
-                sumraw = roigrp['mcasum'][roiname]['raw'][rows,]
-                sumcor = roigrp['mcasum'][roiname]['cor'][rows,]
-                for detname in self.mca_dets:
-                    mcaraw = self.xrmmap[detname]['counts'][rows,:,roi_slice].sum(axis=2)
-                    mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][rows,:]
-                    roigrp[detname][roiname]['raw'][rows,] = mcaraw
-                    roigrp[detname][roiname]['cor'][rows,] = mcacor
-                    sumraw += mcaraw
-                    sumcor += mcacor
-                roigrp['mcasum'][roiname]['raw'][rows,] = sumraw
-                roigrp['mcasum'][roiname]['cor'][rows,] = sumcor
-
+        self.set_roidata(current_row)
         print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+
+
+    def set_roidata(self, row_start=0, row_end=None):
+        if row_end is None:
+            row_end = self.last_row
+
+        print("Process ROIS for rows %d to %d " % (row_start+1, row_end+1))
+        rows = slice(row_start, row_end+1)
+        roigrp = self.xrmmap['roimap']
+
+        conf = self.xrmmap['config']
+        roi_names = [h5str(s) for s in conf['rois/name']]
+        roi_limits = conf['rois/limits'].value
+        # print("roi names ", roi_names, roi_limits)
+
+        for roiname, lims in zip(roi_names, roi_limits):
+            dt = debugtime()
+            roi_slice = lims[0]
+            # dt.add('get slice')
+            sumraw = roigrp['mcasum'][roiname]['raw'][rows,]
+            # dt.add('get sum raw')
+            sumcor = roigrp['mcasum'][roiname]['cor'][rows,]
+            # dt.add('get sum cor')
+
+            for detname in self.mca_dets:
+                mcaraw = self.xrmmap[detname]['counts'][rows,:,roi_slice].sum(axis=2)
+                # dt.add(" mcaraw %s " % detname)
+                mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][rows,:]
+                # dt.add(" mcacor %s " % detname)
+                roigrp[detname][roiname]['raw'][rows,] = mcaraw
+                roigrp[detname][roiname]['cor'][rows,] = mcacor
+                # dt.add(" set roigrps for %s " % detname)
+                sumraw += mcaraw
+                sumcor += mcacor
+                # dt.add(" sum  %s " % detname)
+            #dt.show()
+
+            roigrp['mcasum'][roiname]['raw'][rows,] = sumraw
+            roigrp['mcasum'][roiname]['cor'][rows,] = sumcor
+        self.h5root.flush()
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
