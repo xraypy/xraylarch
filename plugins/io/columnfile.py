@@ -382,7 +382,7 @@ def write_ascii(filename, *args, **kws):
     header:      array of strings for header
 
     """
-    ARRAY_MINLEN = 5
+    ARRAY_MINLEN = 2
     _larch = kws['_larch']
     com = kws.get('commentchar', '#')
     label = kws.get('label', None)
@@ -404,6 +404,9 @@ def write_ascii(filename, *args, **kws):
 
         else:
             header.append(repr(arg))
+
+    if arraylen is None:
+        raise ValueError("write_ascii() need %i or more elements in arrays." % ARRAY_MINLEN)
 
     buff = []
     if header is None:
