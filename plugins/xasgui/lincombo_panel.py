@@ -500,15 +500,15 @@ class LinearComboPanel(TaskPanel):
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
 
-        panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=5)
+        panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=4)
         add_text('Run Fit', newrow=False)
 
         add_text('Array to Fit: ', newrow=True)
-        panel.Add(wids['fitspace'], dcol=4)
+        panel.Add(wids['fitspace'], dcol=3)
         panel.Add(wids['fit_group'])
 
         add_text('Plot : ', newrow=True)
-        panel.Add(wids['plotchoice'], dcol=4)
+        panel.Add(wids['plotchoice'], dcol=3)
         panel.Add(wids['fit_selected'])
 
         add_text('E0: ')
@@ -524,7 +524,7 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['sum_to_one'], dcol=2, newrow=True)
         panel.Add(wids['all_combos'], dcol=3)
 
-        panel.Add(HLine(panel, size=(400, 2)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(500, 2)), dcol=5, newrow=True)
 
         add_text('Components: ')
         panel.Add(wids['add_selected'], dcol=4)
@@ -534,11 +534,11 @@ class LinearComboPanel(TaskPanel):
 
         sgrid.Add(SimpleText(sgrid, "#"))
         sgrid.Add(SimpleText(sgrid, "Group"))
-        sgrid.Add(SimpleText(sgrid, "Weight"))
+        sgrid.Add(SimpleText(sgrid, "Initial Weight"))
         sgrid.Add(SimpleText(sgrid, "Min Weight"))
         sgrid.Add(SimpleText(sgrid, "Max Weight"))
 
-        fopts = dict(minval=-10, maxval=20, precision=4, size=(60, -1))
+        fopts = dict(minval=-10, maxval=20, precision=4, size=(75, -1))
         for i in range(1, 1+MAX_COMPONENTS):
             si = ("comp", "_%2.2d" % i)
             sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
