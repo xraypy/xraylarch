@@ -137,8 +137,8 @@ def isGSEXRM_MapFolder(fname):
     return has_xrmdata
 
 H5ATTRS = {'Type': 'XRM 2D Map',
-           # 'Version': '2.0.1',
-           'Version': '1.0.1',
+           'Version': '2.0.1',
+           # 'Version': '1.0.1',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time': '',
@@ -1091,10 +1091,10 @@ class GSEXRM_MapFile(object):
         if row_end is None:
             row_end = self.last_row
 
-        print("Process ROIS for rows %d to %d " % (row_start+1, row_end+1))
+        print("Process ROIs for rows %d to %d " % (row_start+1, row_end+1))
         rows = slice(row_start, row_end+1)
         roigrp = self.xrmmap['roimap']
-
+        # print("Dir ROIMAP : ", list(roigrp.keys()))
         conf = self.xrmmap['config']
         roi_names = [h5str(s) for s in conf['rois/name']]
         roi_limits = conf['rois/limits'].value
@@ -1226,6 +1226,7 @@ class GSEXRM_MapFile(object):
 
         dt.add(" ran callback, print, version  %s"  %self.version)
 
+        # print(" Version ", self.version, version_ge(self.version, '2.0.0'))
         if version_ge(self.version, '2.0.0'):
 
             mcasum_raw,mcasum_cor = [],[]
