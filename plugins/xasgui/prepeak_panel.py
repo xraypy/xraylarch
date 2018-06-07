@@ -38,6 +38,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
 from larch_plugins.wx.parameter import ParameterPanel
+from larch_plugins.wx.plotter import last_cursor_pos
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
