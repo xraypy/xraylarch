@@ -596,6 +596,7 @@ class PrePeakPanel(wx.Panel):
         dgroup = self.controller.get_group()
         array_desc = self.array_choice.GetStringSelection()
         form_opts = {'gname': dgroup.groupname,
+                     'filename': dgroup.filename,
                      'array_desc': array_desc.lower(),
                      'array_name': Array_Choices[array_desc],
                      'baseline_form': 'lorentzian'}
@@ -723,7 +724,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         plotopts = {'xmin': pxmin, 'xmax': pxmax,
                     'ymin': pymin, 'ymax': pymax,
-                    'title': '%s: %s' % (opts['gname'], title),
+                    'title': '%s:\n%s' % (opts['filename'], title),
                     'xlabel': 'Energy (eV)',
                     'ylabel': '%s $\mu$' % opts['array_desc'],
                     'label': '%s $\mu$' % opts['array_desc'],
@@ -992,7 +993,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for a model from the selected data range
         """
         try:
-            plotframe = self.controller.get_display()
+            plotframe = self.controller.get_display(1)
             curhist = plotframe.cursor_hist[:]
             plotframe.Raise()
         except:
