@@ -759,7 +759,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 plot_extras.append(('vline', ecen, None,  popts))
 
 
-        pframe = self.controller.get_display(win=2,
+        pframe = self.controller.get_display(win=1,
                                              stacked=(plot_choice==PLOT_RESID))
         ppanel = pframe.panel
         axes = ppanel.axes
@@ -993,7 +993,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for a model from the selected data range
         """
         try:
-            plotframe = self.controller.get_display(1)
+            plotframe = self.controller.get_display()
             curhist = plotframe.cursor_hist[:]
             plotframe.Raise()
         except:
