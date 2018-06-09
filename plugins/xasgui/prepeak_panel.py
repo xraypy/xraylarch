@@ -462,6 +462,9 @@ class PrePeakPanel(wx.Panel):
                               choices=ModelChoices['other'],
                               action=self.addModel)
 
+        self.models_peaks = models_peaks
+        self.models_other = models_other
+
         self.plot_choice = Choice(pan, size=(150, -1),
                                   choices=PlotChoices,
                                   action=self.onPlot)
@@ -827,6 +830,9 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             model = event.GetString()
         if model is None or model.startswith('<'):
             return
+
+        self.models_peaks.SetSelection(0)
+        self.models_other.SetSelection(0)
 
         if prefix is None:
             p = model[:5].lower()
