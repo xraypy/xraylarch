@@ -128,14 +128,14 @@ class ResultFrame(wx.Frame):
         title = SimpleText(panel, 'Linear Combination Results',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
 
-        wids['plot_one'] = Button(panel, 'Plot This Fit', size=(150, -1),
+        wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
-        wids['plot_sel'] = Button(panel, 'Plot top N Fits', size=(150, -1),
+        wids['plot_sel'] = Button(panel, 'Plot top N Fits', size=(125, -1),
                                   action=self.onPlotSel)
 
         wids['plot_ntitle'] = SimpleText(panel, 'N fits to plot: ')
 
-        wids['plot_nchoice'] = Choice(panel, size=(100, -1),
+        wids['plot_nchoice'] = Choice(panel, size=(60, -1),
                                       choices=['%d' % i for i in range(1, 21)])
         wids['plot_nchoice'].SetStringSelection('5')
 
@@ -143,29 +143,32 @@ class ResultFrame(wx.Frame):
                                         colour=self.colors.title, style=LCEN)
         wids['nfits_title'] = SimpleText(panel, 'showing top 5 fits')
 
+        wids['show_e0']       = Check(panel, label='show E0?',
+                                      size=(125, 30), default=True)
+        wids['show_fitrange'] = Check(panel, label='show fit range?',
+                                      size=(125, 30), default=True)
+
+
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 2), LCEN)
 
         irow += 1
-        sizer.Add(wids['nfits_title'], (irow, 0), (1, 4), LCEN)
+        sizer.Add(wids['nfits_title'],     (irow, 0), (1, 1), LCEN)
 
-        irow += 1
-        sizer.Add(self.wids['plot_one'],    (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_sel'],    (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_ntitle'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_nchoice'], (irow, 3), (1, 1), LCEN)
 
         irow += 1
         self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',  font=Font(12),
                                               colour=self.colors.title, style=LCEN)
-        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 4), LCEN)
+        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 1), LCEN)
+
+
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        pview.SetMinSize((675, 200))
-        pview.AppendTextColumn(' Parameter ', width=250)
-        pview.AppendTextColumn(' Best-Fit Value', width=150)
-        pview.AppendTextColumn(' Uncertainty ', width=150)
+        pview.SetMinSize((475, 175))
+        pview.AppendTextColumn(' Parameter ', width=200)
+        pview.AppendTextColumn(' Best-Fit Value', width=125)
+        pview.AppendTextColumn(' Uncertainty ', width=125)
         for col in range(3):
             this = pview.Columns[col]
             isort, align = True, wx.ALIGN_RIGHT
@@ -176,23 +179,28 @@ class ResultFrame(wx.Frame):
 
 
         irow += 1
-        sizer.Add(self.wids['params'], (irow, 0), (1, 4), LCEN)
+        sizer.Add(self.wids['params'],       (irow,   0), (5, 1), LCEN)
+        sizer.Add(self.wids['plot_one'],     (irow,   1), (1, 2), LCEN)
+        sizer.Add(self.wids['plot_sel'],     (irow+1, 1), (1, 2), LCEN)
+        sizer.Add(self.wids['plot_ntitle'],  (irow+2, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['plot_nchoice'], (irow+2, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LCEN)
+        sizer.Add(self.wids['show_fitrange'],(irow+4, 1), (1, 2), LCEN)
 
-        irow += 1
+        irow += 5
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
         sview.AppendTextColumn(' Fit #', width=50)
-        sview.AppendTextColumn(' N_Vary', width=60)
-        sview.AppendTextColumn(' N_Data', width=60)
+        sview.AppendTextColumn(' N_vary', width=50)
         sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(u' \u03c7\u00B2', width=100)
-        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=100)
-        sview.AppendTextColumn(' Akaike Info', width=100)
-        sview.AppendTextColumn(' Bayesian Info', width=100)
+        sview.AppendTextColumn(u' \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(' Akaike Info', width=110)
+        sview.AppendTextColumn(' Bayesian Info', width=110)
 
-        for col in range(8):
+        for col in range(sview.ColumnCount):
             this = sview.Columns[col]
             isort, align = True, wx.ALIGN_RIGHT
             if col == 0:
@@ -254,6 +262,8 @@ class ResultFrame(wx.Frame):
 
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
+        wids['show_e0'].SetValue(form['show_e0'])
+        wids['show_fitrange'].SetValue(form['show_fitrange'])
 
         wids['stats'].DeleteAllItems()
         results = self.datagroup.lcf_result[:20]
@@ -262,13 +272,12 @@ class ResultFrame(wx.Frame):
 
         for i, res in enumerate(results):
             args = ['%2.2d' % (i+1)]
-            for attr in ('nvarys', 'ndata', 'nfev',
-                         'chisqr', 'redchi', 'aic', 'bic'):
+            for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
                 val = getattr(res.result, attr)
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
-                    val = gformat(val, 10)
+                    val = gformat(val, 11)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
 
@@ -336,20 +345,26 @@ class ResultFrame(wx.Frame):
         wids['params'].DeleteAllItems()
 
         for pname, par in fit_result.params.items():
-            args = [pname, gformat(par.value, 10), '--']
+            args = [pname, gformat(par.value, 11), '--']
             if par.stderr is not None:
-                args[2] = gformat(par.stderr, 10)
+                args[2] = gformat(par.stderr, 11)
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
         if self.form is None or self.larch_eval is None:
             return
+
+        for attr in ('show_e0', 'show_fitrange'):
+            self.form[attr] = self.wids[attr].GetValue()
+
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
     def onPlotSel(self, evt=None):
         if self.form is None or self.larch_eval is None:
             return
+        for attr in ('show_e0', 'show_fitrange'):
+            self.form[attr] = self.wids[attr].GetValue()
         form = self.form
         dgroup = self.datagroup
 
@@ -437,15 +452,17 @@ class ResultFrame(wx.Frame):
         if path is None:
             return
         form = self.form
+
         header = ['Larch Linear Fit Statistics for top %2.2d results' % (nresults),
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
                   'E0:  %f '  % form['e0'],
-                  'Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
+                  'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
+                  'N_Data: %d' % results[0].ndata]
 
-        label = ['fit #', 'nvarys', 'ndata', 'nfev',
-                  'chisqr', 'redchi', 'aic', 'bic']
+        label = ['fit #', 'n_varys', 'n_eval', 'chi2',
+                  'chi2_reduced', 'akaike_info', 'bayesian_info']
         label.extend(form['comp_names'])
         label.append('Total')
         for i in range(len(label)):
@@ -456,8 +473,7 @@ class ResultFrame(wx.Frame):
         out = []
         for i, res in enumerate(results):
             dat = [(i+1)]
-            for attr in ('nvarys', 'ndata', 'nfev',
-                         'chisqr', 'redchi', 'aic', 'bic'):
+            for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
                 dat.append(getattr(res.result, attr))
             for cname in form['comp_names'] + ['total']:
                 val = 0.0
