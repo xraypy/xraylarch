@@ -593,6 +593,9 @@ class XASFrame(wx.Frame):
             return
 
         dgroup = self.controller.get_group(groupname)
+        if dgroup is None:
+            return
+
         if filename is None:
             filename = dgroup.filename
         self.title.SetLabel(filename)
@@ -602,7 +605,7 @@ class XASFrame(wx.Frame):
         self.controller.groupname = groupname
         cur_panel = self.nb_panels[self.nb.GetSelection()]
         if process:
-            cur_panel.fill_form(dgroup=dgroup)
+            cur_panel.fill_form(dgroup)
             cur_panel.process(dgroup=dgroup)
             if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
