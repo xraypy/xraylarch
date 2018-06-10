@@ -856,22 +856,26 @@ class XASFrame(wx.Frame):
 
 
     def onMergeData(self, event=None):
-        groups = []
+        groups = OrderedDict()
         for checked in self.controller.filelist.GetCheckedStrings():
-            groups.append(self.controller.file_groups[str(checked)])
+            cname = str(checked)
+            groups[cname] = self.controller.file_groups[cname]
         if len(groups) < 1:
             return
 
         outgroup = unique_name('merge', self.controller.file_groups)
-        dlg = MergeDialog(self, groups, outgroup=outgroup)
+        dlg = MergeDialog(self, list(groups.keys()), outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
         if res.ok:
             fname = res.group
             gname = fix_varname(res.group.lower())
+            master = self.controller.file_groups[res.master]
             yname = 'norm' if res.ynorm else 'mu'
-            self.controller.merge_groups(groups, master=res.master,
-                                         yarray=yname, outgroup=gname)
+            self.controller.merge_groups(list(groups.values()),
+                                         master=master,
+                                         yarray=yname,
+                                         outgroup=gname)
             self.install_group(gname, fname, overwrite=False)
             self.controller.filelist.SetStringSelection(fname)
 
