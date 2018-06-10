@@ -992,8 +992,8 @@ clear undo history''')
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        add_text('Deglitch Data for Group: ', dcol=3, newrow=False)
-        panel.Add(wids['grouplist'], dcol=2)
+        add_text('Deglitch Data for Group: ', dcol=2, newrow=False)
+        panel.Add(wids['grouplist'], dcol=5)
 
         add_text('Single Energy : ', dcol=2)
         panel.Add(self.wid_xlast)
@@ -1010,12 +1010,12 @@ clear undo history''')
         panel.Add(self.wid_range2)
         panel.Add(bb_range2)
 
-        panel.Add(wids['apply'], dcol=3, newrow=True)
-        panel.Add(self.history_message)
+        panel.Add(wids['apply'], dcol=2, newrow=True)
+        panel.Add(self.history_message, dcol=2)
         panel.Add(undo)
 
-        panel.Add(wids['save_as'], dcol=3, newrow=True)
-        panel.Add(wids['save_as_name'], dcol=2)
+        panel.Add(wids['save_as'], dcol=2, newrow=True)
+        panel.Add(wids['save_as_name'], dcol=4)
 
         panel.pack()
         self.plot_results()
