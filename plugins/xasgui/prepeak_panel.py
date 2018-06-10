@@ -114,6 +114,7 @@ class FitResultFrame(wx.Frame):
         self.parent = parent
         self.peakframe = peakframe
         self.datagroup = datagroup
+        self.nfit = 0
         self.build()
 
     def build(self):
@@ -256,6 +257,16 @@ class FitResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def get_fitresult(self, nfit=0):
+        fhist = getattr(self.datagroup, 'fit_history', [])
+        self.fit_history = fhist
+        # if confused, get latest fit (ie, nfit=0)
+        self.nfit = max(0, nfit)
+        if self.nfit > len(fhist):
+            self.nfit = 0
+        return fhist[self.nfit]
+
+
     def onSelectParameter(self, evt=None):
         if self.wids['params'] is None:
             return
@@ -267,8 +278,7 @@ class FitResultFrame(wx.Frame):
         cormin= self.wids['min_correl'].GetValue()
         self.wids['correl'].DeleteAllItems()
 
-        fit_history = getattr(self.datagroup, 'fit_history', [])
-        result = fit_history[-1]
+        result = self.get_fitresult()
         this = result.params[pname]
         if this.correl is not None:
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
@@ -277,8 +287,8 @@ class FitResultFrame(wx.Frame):
                     self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
 
     def onAllCorrel(self, evt=None):
-        fit_history = getattr(self.datagroup, 'fit_history', [])
-        params = fit_history[-1].params
+        result = self.get_fitresult()
+        params = result.params
         parnames = list(params.keys())
 
         cormin= self.wids['min_correl'].GetValue()
@@ -303,22 +313,14 @@ class FitResultFrame(wx.Frame):
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
     def onCopyParams(self, evt=None):
-        fit_history = getattr(self.datagroup, 'fit_history', [])
-        self.peakframe.update_start_values(fit_history[-1].params)
+        result = self.get_fitresult()
+        self.peakframe.update_start_values(result.params)
 
-    def show_fitresult(self, datagroup=None, fit_number=None):
+    def show_fitresult(self, datagroup=None, fit_number=1):
         if datagroup is not None:
             self.datagroup = datagroup
 
-        fit_history = getattr(self.datagroup, 'fit_history', [])
-
-        if len(fit_history) < 1:
-            print("No fit reults to show for datagroup ", self.datagroup)
-
-        if fit_number is None:
-            fit_number = len(fit_history)
-
-        result = fit_history[fit_number-1]
+        result = self.get_fitresult(nfit=fit_number-1)
         wids = self.wids
         wids['method'].SetLabel(result.method)
         wids['ndata'].SetLabel("%d" % result.ndata)
@@ -336,13 +338,13 @@ class FitResultFrame(wx.Frame):
             wids['chisqr'].SetLabel("%f" % result.chisqr)
         wids['aic'].SetLabel("%f" % result.aic)
         wids['bic'].SetLabel("%f" % result.bic)
-        wids['hist_info'].SetLabel("Fit #%d of %d" % (fit_number, len(fit_history)))
+        wids['hist_info'].SetLabel("Fit #%d of %d" % (fit_number, len(self.fit_history)))
 
         wids['data_title'].SetLabel(self.datagroup.filename)
 
         desc = result.model_repr
         parts = []
-        tlen = 70
+        tlen = 95
         while len(desc) >= tlen:
             i = desc[tlen-1:].find('+')
             parts.append(desc[:tlen+i])
@@ -1073,7 +1075,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         if outfile is not None:
             try:
-                self.save_fit_result(dgroup.fit_history[-1], outfile)
+                self.save_fit_result(self.get_fitresult(), outfile)
             except IOError:
                 print('could not write %s' % outfile)
 
@@ -1134,7 +1136,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 else:
                     yerr = yerr[i1:i2]
 
-            export_modelresult(dgroup.fit_history[-1],
+            export_modelresult(self.get_fitresult(),
                                filename=outfile,
                                datafile=dgroup.filename,
                                ydata=y, yerr=yerr, x=x)
@@ -1265,7 +1267,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if not hasattr(dgroup, 'fit_history'):
             dgroup.fit_history = []
 
-        dgroup.fit_history.append(result)
+        dgroup.fit_history.insert(0, result)
         self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
 
