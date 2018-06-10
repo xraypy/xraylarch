@@ -152,12 +152,11 @@ class FitResultFrame(wx.Frame):
 
         irow += 1
         wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
-                                        size=(550, 50), style=LCEN)
+                                        size=(625, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
-
         irow += 1
-        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
@@ -202,7 +201,7 @@ class FitResultFrame(wx.Frame):
 #             sizer.Add(wids[attr],                           (irow, 1), (1, 1), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
@@ -236,7 +235,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(pview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
@@ -381,15 +380,23 @@ class FitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
 
-        desc = result.model_repr
+
+        dwords = []
+        for word in result.model_repr.split('Model('):
+            if ',' in word:
+                pref, suff = word.split(', ')
+                dwords.append( ("%sModel(%s" % (pref.title(), suff) ))
+            else:
+                dwords.append(word)
+        desc = ''.join(dwords)
         parts = []
-        tlen = 95
+        tlen = 85
         while len(desc) >= tlen:
             i = desc[tlen-1:].find('+')
             parts.append(desc[:tlen+i])
             desc = desc[tlen+i:]
         parts.append(desc)
-        wids['model_desc'].SetLabel('\n'.join(parts))
+        wids['model_desc'].SetLabel('\n'.join(desc))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for i, param in enumerate(result.params.values()):
@@ -670,12 +677,12 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 
         self.msg_centroid.SetLabel(dgroup.centroid_msg)
 
-        if 'loren_' not in self.fit_components:
-            self.addModel(model='Lorentzian', prefix='loren_', isbkg=True)
-        if 'line_' not in self.fit_components:
-            self.addModel(model='Linear', prefix='line_', isbkg=True)
+        if 'bp_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='bp_', isbkg=True)
+        if 'bl_' not in self.fit_components:
+            self.addModel(model='Linear', prefix='bl_', isbkg=True)
 
-        for prefix in ('loren_', 'line_'):
+        for prefix in ('bp_', 'bl_'):
             cmp = self.fit_components[prefix]
             # cmp.bkgbox.SetValue(1)
             self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
@@ -765,8 +772,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                     'ymin': pymin, 'ymax': pymax,
                     'title': '%s:\n%s' % (opts['filename'], title),
                     'xlabel': 'Energy (eV)',
-                    'ylabel': '%s $\mu$' % opts['array_desc'],
-                    'label': '%s $\mu$' % opts['array_desc'],
+                    'ylabel': opts['array_desc'],
+                    'label': opts['array_desc'],
                     'delay_draw': True,
                     'show_legend': True}
 
@@ -797,8 +804,11 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
             if ecen > min(dgroup.energy):
                 plot_extras.append(('vline', ecen, None,  popts))
 
-        pframe = self.controller.get_display(win=2,
-                                             stacked=(plot_choice==PLOT_RESID))
+        if plot_choice == PLOT_RESID:
+            pframe = self.controller.get_display(win=2, stacked=True)
+        else:
+            pframe = self.controller.get_display(win=1)
+
         ppanel = pframe.panel
         axes = ppanel.axes
 
@@ -1034,7 +1044,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         for a model from the selected data range
         """
         try:
-            plotframe = self.controller.get_display(win=2)
+            plotframe = self.controller.get_display(win=1)
             curhist = plotframe.cursor_hist[:]
             plotframe.Raise()
         except:
@@ -1075,7 +1085,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
                 parwids[name].value.SetValue(param.value)
 
         dgroup._tmp = mod.eval(guesses, x=dgroup.xdat)
-        plotframe = self.controller.get_display(win=2)
+        plotframe = self.controller.get_display(win=1)
         plotframe.cursor_hist = []
         plotframe.oplot(dgroup.xdat, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
@@ -1088,7 +1098,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         if fgroup is None:
             return
 
-        plotframe = self.controller.get_display(win=2)
+        plotframe = self.controller.get_display(win=1)
         plotframe.Raise()
 
         plotframe.cursor_hist = []
