@@ -132,7 +132,7 @@ class TaskPanel(wx.Panel):
         if self.skip_process:
             return
         self.skip_process = True
-        form = self.read_form()
+        # form = self.read_form()
 
     def add_text(self, text, dcol=1, newrow=True):
         self.panel.Add(SimpleText(self.panel, text),
