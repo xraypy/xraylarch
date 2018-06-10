@@ -39,6 +39,7 @@ from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
 from larch_plugins.wx.parameter import ParameterPanel
 from larch_plugins.wx.plotter import last_cursor_pos
+from larch_plugins.xasgui.taskpanel import TaskPanel
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
@@ -98,9 +99,11 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-
-
 MIN_CORREL = 0.0010
+
+defaults = dict(e=None, elo=-10, ehi=-5,
+                emin=-40, emax=0, yarray='norm')
+
 
 class FitResultFrame(wx.Frame):
     config_sect = 'prepeak'
@@ -372,20 +375,18 @@ class FitResultFrame(wx.Frame):
 
         self.Refresh()
 
-class PrePeakPanel(wx.Panel):
+class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
+        TaskPanel.__init__(self, parent, controller,
+                           configname='prepreaks_config',
+                           config=defaults, **kws)
 
-        wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
-        self.parent = parent
-        self.controller = controller
-        self.larch = controller.larch
         self.fit_components = OrderedDict()
         self.fit_model = None
         self.fit_params = None
         self.user_added_params = None
         self.summary = None
-        self.sizer = wx.GridBagSizer(10, 6)
-        self.build_display()
+
         self.pick2_timer = wx.Timer(self)
         self.pick2_group = None
         self.Bind(wx.EVT_TIMER, self.onPick2Timer, self.pick2_timer)
@@ -406,10 +407,6 @@ class PrePeakPanel(wx.Panel):
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
-
-    def larch_eval(self, cmd):
-        """eval"""
-        self.controller.larch.eval(cmd)
 
     def build_display(self):
         self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
@@ -562,8 +559,8 @@ class PrePeakPanel(wx.Panel):
 
         conf = getattr(dgroup, 'prepeak_config', {})
         if 'e0' not in conf:
-            conf = dict(e0 = dgroup.e0, elo=-10, ehi=-5,
-                        emin=-40, emax=0, yarray='norm')
+            conf = defaults
+            conf['e0'] = getattr(dgroup, 'e0', -1)
 
         dgroup.prepeak_config = conf
         if not hasattr(dgroup, 'prepeaks'):
