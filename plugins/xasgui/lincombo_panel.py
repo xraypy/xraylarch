@@ -130,7 +130,7 @@ class ResultFrame(wx.Frame):
 
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
-        wids['plot_sel'] = Button(panel, 'Plot top N Fits', size=(125, -1),
+        wids['plot_sel'] = Button(panel, 'Plot N Best Fits', size=(125, -1),
                                   action=self.onPlotSel)
 
         wids['plot_ntitle'] = SimpleText(panel, 'N fits to plot: ')
@@ -141,7 +141,7 @@ class ResultFrame(wx.Frame):
 
         wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(12),
                                         colour=self.colors.title, style=LCEN)
-        wids['nfits_title'] = SimpleText(panel, 'showing top 5 fits')
+        wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
         wids['show_e0']       = Check(panel, label='show E0?',
                                       size=(125, 30), default=True)
@@ -165,10 +165,10 @@ class ResultFrame(wx.Frame):
 
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        pview.SetMinSize((475, 175))
-        pview.AppendTextColumn(' Parameter ', width=200)
-        pview.AppendTextColumn(' Best-Fit Value', width=125)
-        pview.AppendTextColumn(' Uncertainty ', width=125)
+        pview.SetMinSize((475, 200))
+        pview.AppendTextColumn(' Parameter ', width=230)
+        pview.AppendTextColumn(' Best-Fit Value', width=120)
+        pview.AppendTextColumn(' Standard Error ', width=120)
         for col in range(3):
             this = pview.Columns[col]
             isort, align = True, wx.ALIGN_RIGHT
@@ -268,7 +268,7 @@ class ResultFrame(wx.Frame):
         wids['stats'].DeleteAllItems()
         results = self.datagroup.lcf_result[:20]
         self.nresults = len(results)
-        wids['nfits_title'].SetLabel('showing top %i results' % self.nresults)
+        wids['nfits_title'].SetLabel('showing %i best results' % self.nresults)
 
         for i, res in enumerate(results):
             args = ['%2.2d' % (i+1)]
@@ -339,7 +339,7 @@ class ResultFrame(wx.Frame):
         fit_result = self.datagroup.lcf_result[n]
         self.current_fit = n
         wids = self.wids
-        wids['nfits_title'].SetLabel('Showing Fit # %2.2d of Top %i Fits' % (n+1, self.nresults))
+        wids['nfits_title'].SetLabel('Showing Fit # %2.2d of %i Best Fits' % (n+1, self.nresults))
         wids['paramstitle'].SetLabel('[[Parameters for Fit # %2.2d]]' % (n+1))
 
         wids['params'].DeleteAllItems()
@@ -453,13 +453,13 @@ class ResultFrame(wx.Frame):
             return
         form = self.form
 
-        header = ['Larch Linear Fit Statistics for top %2.2d results' % (nresults),
+        header = ['Larch Linear Fit Statistics for %2.2d best results' % (nresults),
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
                   'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
-                  'N_Data: %d' % results[0].ndata]
+                  'N_Data: %d' % len(results[0].xdata)]
 
         label = ['fit #', 'n_varys', 'n_eval', 'chi2',
                   'chi2_reduced', 'akaike_info', 'bayesian_info']
@@ -501,7 +501,7 @@ class ResultFrame(wx.Frame):
         if path is None:
             return
         form = self.form
-        header = ['Larch Linear Arrays for top %2.2d results' % (nresults),
+        header = ['Larch Linear Arrays for %2.2d best results' % (nresults),
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
@@ -812,7 +812,6 @@ result = {func:s}({gname:s}, [{comps:s}],
         """ handle process events"""
         if self.skip_process:
             return
-
         self.skip_process = True
         form = self.read_form()
         for sel in self.controller.filelist.GetCheckedStrings():
@@ -829,36 +828,3 @@ result = {func:s}({gname:s}, [{comps:s}],
         form = self.read_form(dgroup=dgroup)
         script = make_lcfplot(dgroup, form, nfit=0)
         self.larch_eval(script)
-
-#         form['plotopt'] = 'show_norm=True'
-#         if form['arrayname'] == 'dmude':
-#             form['plotopt'] = 'show_deriv=True'
-#
-#         erange = form['ehi'] - form['elo']
-#         form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
-#         form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
-#
-#         cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
-#         emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}')"""]
-#
-#         if hasattr(dgroup, 'lcf_result'):
-#             with_comps = "Components" in form['plotchoice']
-#             delay = 'delay_draw=True' if with_comps else 'delay_draw=False'
-#             xarr = "{group:s}.lcf_result[0].xdata"
-#             yfit = "{group:s}.lcf_result[0].yfit"
-#             ycmp = "{group:s}.lcf_result[0].ycomps"
-#             cmds.append("plot(%s, %s, label='fit', zorder=30, %s)" % (xarr, yfit, delay))
-#             ncomps = len(dgroup.lcf_result[0].ycomps)
-#             if with_comps:
-#                 for i, key in enumerate(dgroup.lcf_result[0].ycomps):
-#                     delay = 'delay_draw=False' if i==(ncomps-1) else 'delay_draw=True'
-#                     cmds.append("plot(%s, %s['%s'], label='%s', %s)" % (xarr, ycmp, key, key, delay))
-#
-#         if form['show_e0']:
-#             cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
-#         if form['show_fitrange']:
-#             cmds.append("plot_axvline({elo_abs:1f}, color='#EECCCC', zorder=-10)")
-#             cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
-#
-#         script = "\n".join(cmds)
-#         self.larch_eval(script.format(**form))
