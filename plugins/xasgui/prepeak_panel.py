@@ -45,6 +45,7 @@ LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
+DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                           'Quadratic', 'Exponential', 'PowerLaw'
@@ -123,7 +124,7 @@ class FitResultFrame(wx.Frame):
         sizer.SetHGap(5)
 
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((600, 450))
+        self.SetMinSize((700, 450))
         self.colors = GUIColors()
 
         # title row
@@ -137,52 +138,83 @@ class FitResultFrame(wx.Frame):
         wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
                                        colour=self.colors.title, style=LCEN)
 
-        sizer.Add(title,              (0, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title'], (0, 2), (1, 2), LCEN)
-        sizer.Add(wids['hist_info'],  (0, 4), (1, 2), LCEN)
+        wids['hist_hint'] = SimpleText(panel, '  (fit #01 is most recent)',
+                                       font=Font(12), colour=self.colors.title,
+                                       style=LCEN)
 
-        irow = 1
-        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
-                                        size=(550, 75), style=LCEN)
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
+                                        size=(550, 50), style=LCEN)
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
-        for label, attr in (('Fit method', 'method'),
-                            ('# Fit Evaluations', 'nfev'),
-                            ('# Data Points', 'ndata'),
-                            ('# Fit Variables', 'nvarys'),
-                            ('# Free Points', 'nfree'),
-                            ('Chi-square', 'chisqr'),
-                            ('Reduced Chi-square', 'redchi'),
-                            ('Akaike Info Criteria', 'aic'),
-                            ('Bayesian Info Criteria', 'bic')):
-            irow += 1
-            wids[attr] = SimpleText(panel, '?')
-            sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
-            sizer.Add(wids[attr],                           (irow, 1), (1, 1), LCEN)
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
+        sview.AppendTextColumn(' Fit #',  width=50)
+        sview.AppendTextColumn(' N_data', width=50)
+        sview.AppendTextColumn(' N_vary', width=50)
+        sview.AppendTextColumn(' N_eval', width=60)
+        sview.AppendTextColumn(u' \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(' Akaike Info', width=110)
+        sview.AppendTextColumn(' Bayesian Info', width=110)
+
+        for col in range(sview.ColumnCount):
+            this = sview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_CENTER
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+        sview.SetMinSize((675, 125))
 
         irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
+
+#         for label, attr in (('Fit method', 'method'),
+#                             ('# Fit Evaluations', 'nfev'),
+#                             ('# Data Points', 'ndata'),
+#                             ('# Fit Variables', 'nvarys'),
+#                             ('# Free Points', 'nfree'),
+#                             ('Chi-square', 'chisqr'),
+#                             ('Reduced Chi-square', 'redchi'),
+#                             ('Akaike Info Criteria', 'aic'),
+#                             ('Bayesian Info Criteria', 'bic')):
+#             irow += 1
+#             wids[attr] = SimpleText(panel, '?')
+#             sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
+#             sizer.Add(wids[attr],                           (irow, 1), (1, 1), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 1), LCEN)
 
-        self.wids['copy_params'] = Button(panel, 'Update Model with Best Fit Values',
+        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
                                           size=(250, -1), action=self.onCopyParams)
 
         sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LCEN)
 
-        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=dvstyle)
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         self.wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',         width=150)
         pview.AppendTextColumn('Best-Fit Value',    width=100)
@@ -197,14 +229,14 @@ class FitResultFrame(wx.Frame):
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((650, 200))
+        pview.SetMinSize((675, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
         sizer.Add(pview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(550, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
@@ -225,7 +257,7 @@ class FitResultFrame(wx.Frame):
 
         irow += 1
 
-        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=dvstyle)
+        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
@@ -266,6 +298,12 @@ class FitResultFrame(wx.Frame):
             self.nfit = 0
         return fhist[self.nfit]
 
+    def onSelectFit(self, evt=None):
+        if self.wids['stats'] is None:
+            return
+        item = self.wids['stats'].GetSelectedRow()
+        if item > -1:
+            self.show_fitresult(nfit=item)
 
     def onSelectParameter(self, evt=None):
         if self.wids['params'] is None:
@@ -316,31 +354,32 @@ class FitResultFrame(wx.Frame):
         result = self.get_fitresult()
         self.peakframe.update_start_values(result.params)
 
-    def show_fitresult(self, datagroup=None, fit_number=1):
+    def show_results(self):
+        _ = self.get_fitresult()
+        wids = self.wids
+        wids['stats'].DeleteAllItems()
+        for i, res in enumerate(self.fit_history):
+            args = ['%2.2d' % (i+1)]
+            for attr in ('ndata', 'nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
+                val = getattr(res.result, attr)
+                if isinstance(val, int):
+                    val = '%d' % val
+                else:
+                    val = gformat(val, 11)
+                args.append(val)
+            wids['stats'].AppendItem(tuple(args))
+        wids['data_title'].SetLabel(self.datagroup.filename)
+        self.show_fitresult(nfit=0)
+
+
+    def show_fitresult(self, nfit=0, datagroup=None):
         if datagroup is not None:
             self.datagroup = datagroup
 
-        result = self.get_fitresult(nfit=fit_number-1)
+        result = self.get_fitresult(nfit=nfit)
         wids = self.wids
-        wids['method'].SetLabel(result.method)
-        wids['ndata'].SetLabel("%d" % result.ndata)
-        wids['nvarys'].SetLabel("%d" % result.nvarys)
-        wids['nfree'].SetLabel("%d" % result.nfree)
-        wids['nfev'].SetLabel("%d" % result.nfev)
-
-        if abs(result.redchi) < 1.e-3:
-            wids['redchi'].SetLabel("%.5g" % result.redchi)
-        else:
-            wids['redchi'].SetLabel("%f" % result.redchi)
-        if abs(result.chisqr) < 1.e-3:
-            wids['chisqr'].SetLabel("%.5g" % result.chisqr)
-        else:
-            wids['chisqr'].SetLabel("%f" % result.chisqr)
-        wids['aic'].SetLabel("%f" % result.aic)
-        wids['bic'].SetLabel("%f" % result.bic)
-        wids['hist_info'].SetLabel("Fit #%d of %d" % (fit_number, len(self.fit_history)))
-
         wids['data_title'].SetLabel(self.datagroup.filename)
+        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
 
         desc = result.model_repr
         parts = []
@@ -362,19 +401,17 @@ class FitResultFrame(wx.Frame):
 
             serr = ' N/A '
             if param.stderr is not None:
-                serr = gformat(param.stderr, length=9)
-
+                serr = gformat(param.stderr, 10)
             extra = ' '
             if param.expr is not None:
                 extra = ' = %s ' % param.expr
             elif param.init_value is not None:
-                extra = ' (init=% .7g)' % param.init_value
+                extra = ' (init=%s)' % gformat(param.init_value, 11)
             elif not param.vary:
                 extra = ' (fixed)'
 
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
-
         self.Refresh()
 
 class PrePeakPanel(TaskPanel):
@@ -1274,7 +1311,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
 
-        self.parent.subframes['prepeak_result_frame'].show_fitresult()
+        self.parent.subframes['prepeak_result_frame'].show_results()
         [m.Enable(True) for m in self.parent.afterfit_menus]
 
     def update_start_values(self, params):
