@@ -138,7 +138,7 @@ class FitResultFrame(wx.Frame):
         wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
                                        colour=self.colors.title, style=LCEN)
 
-        wids['hist_hint'] = SimpleText(panel, '  (fit #01 is most recent)',
+        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
                                        font=Font(12), colour=self.colors.title,
                                        style=LCEN)
 
@@ -381,14 +381,14 @@ class FitResultFrame(wx.Frame):
         wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
 
 
-        dwords = []
+        parts = []
         for word in result.model_repr.split('Model('):
             if ',' in word:
                 pref, suff = word.split(', ')
-                dwords.append( ("%sModel(%s" % (pref.title(), suff) ))
+                parts.append( ("%sModel(%s" % (pref.title(), suff) ))
             else:
-                dwords.append(word)
-        desc = ''.join(dwords)
+                parts.append(word)
+        desc = ''.join(parts)
         parts = []
         tlen = 85
         while len(desc) >= tlen:
@@ -396,7 +396,7 @@ class FitResultFrame(wx.Frame):
             parts.append(desc[:tlen+i])
             desc = desc[tlen+i:]
         parts.append(desc)
-        wids['model_desc'].SetLabel('\n'.join(desc))
+        wids['model_desc'].SetLabel('\n'.join(parts))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for i, param in enumerate(result.params.values()):
