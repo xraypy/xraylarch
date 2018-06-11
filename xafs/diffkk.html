@@ -10,7 +10,7 @@
     <title>9.8. XAFS: Computing anomalous scattering factors from XAFS data &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -130,22 +130,22 @@ ReflEXAFS).</p>
 <p>This performs the same algorithm as the venerable DIFFKK program
 described in :cite::<cite>diffkk</cite>.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
-data and the tabulated <span class="math notranslate">\(f''(E)\)</span>) Kramers-Kronig transform.  This
+data and the tabulated <span class="math notranslate nohighlight">\(f''(E)\)</span>) Kramers-Kronig transform.  This
 algorithm is described in :cite::<cite>Ohta:88</cite>.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast – not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.</p>
-<p>The input <span class="math notranslate">\(\mu(E)\)</span> data are first matched to the tabulated
-<span class="math notranslate">\(f''(E)\)</span> using the MBACK algorithm of :cite::<cite>Weng</cite> with an
+<p>The input <span class="math notranslate nohighlight">\(\mu(E)\)</span> data are first matched to the tabulated
+<span class="math notranslate nohighlight">\(f''(E)\)</span> using the MBACK algorithm of :cite::<cite>Weng</cite> with an
 option of using the modification proposed by :cite::<cite>lee-xiang</cite>.
-This scales the measured <span class="math notranslate">\(\mu(E)\)</span> to the size of the tabulated
+This scales the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
 <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 9.8.1</span></a>.</p>
-<p>The difference between the scaled <span class="math notranslate">\(\mu(E)\)</span> and the tabulated
-<span class="math notranslate">\(f''(E)\)</span> is then subjected to the KK transform.  The result is
-added to the tabulated <span class="math notranslate">\(f'(E)\)</span> spectrum to produce the resulting
+<p>The difference between the scaled <span class="math notranslate nohighlight">\(\mu(E)\)</span> and the tabulated
+<span class="math notranslate nohighlight">\(f''(E)\)</span> is then subjected to the KK transform.  The result is
+added to the tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span> spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
 shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 9.8.1</span></a>.</p>
 <div class="figure align-center" id="id1">
@@ -163,7 +163,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> – an array containing the measured <span class="math notranslate">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – an array containing the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span></li>
 <li><strong>z</strong> – the Z number of the absorber element</li>
 <li><strong>edge</strong> – the edge measured, usually K or L3</li>
 <li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
@@ -187,7 +187,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> – an array containing the energy axis of the measurement</li>
-<li><strong>mu</strong> – an array containing the measured <span class="math notranslate">\(\mu(E)\)</span></li>
+<li><strong>mu</strong> – an array containing the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span></li>
 <li><strong>z</strong> – the Z number of the absorber element</li>
 <li><strong>edge</strong> – the edge measured, usually K or L3</li>
 <li><strong>mback_kws</strong> – arguments passed to the MBACK algorithm</li>
@@ -215,16 +215,16 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>f2</td>
-<td>array of tabulated <span class="math notranslate">\(f''(E)\)</span></td>
+<td>array of tabulated <span class="math notranslate nohighlight">\(f''(E)\)</span></td>
 </tr>
 <tr class="row-odd"><td>f1</td>
-<td>array of tabulated <span class="math notranslate">\(f'(E)\)</span></td>
+<td>array of tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span></td>
 </tr>
 <tr class="row-even"><td>fpp</td>
-<td>array of normalized <span class="math notranslate">\(f''(E)\)</span></td>
+<td>array of normalized <span class="math notranslate nohighlight">\(f''(E)\)</span></td>
 </tr>
 <tr class="row-odd"><td>fp</td>
-<td>array of KK transformed <span class="math notranslate">\(f'(E)\)</span></td>
+<td>array of KK transformed <span class="math notranslate nohighlight">\(f'(E)\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -249,16 +249,16 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span></p>
 <div class="section" id="diffkk-on-l-edge-data">
 <h2>9.8.2. diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Permalink to this headline">¶</a></h2>
 <p>The diffKK method is fairly straightforward for K edge data.  The
-algorithm for matching the measured <span class="math notranslate">\(\mu(E)\)</span> to the tabulated
-<span class="math notranslate">\(f''(E)\)</span> works quite well over the entire data range, resulting
-in a relatively unambiguous determination of <span class="math notranslate">\(f'(E)\)</span>.  The
+algorithm for matching the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the tabulated
+<span class="math notranslate nohighlight">\(f''(E)\)</span> works quite well over the entire data range, resulting
+in a relatively unambiguous determination of <span class="math notranslate nohighlight">\(f'(E)\)</span>.  The
 situation for L edge data is a bit more complicated.</p>
 <p>Consider the CeO<sub>2</sub>L edge data shown on the right on
 <a class="reference internal" href="#fig-ceo2-diffkk"><span class="std std-numref">Figure 9.8.4</span></a>.  For these data, the matching algorithm is
 quite a bit more challenging, in part due to the very large spectral
 weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
-tabulated <span class="math notranslate">\(f'(E)\)</span>.</p>
+tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span>.</p>
 <div class="figure compound align-center" id="fig-ceo2-diffkkcomp">
 <div style="width: 32%" class="subfigure" id="id2">
 <span id="fig-ceo2-xafs"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_xafs.png"><img alt="../_images/diffkk_ceo2_xafs.png" src="../_images/diffkk_ceo2_xafs.png" style="width: 100%;" /></a>
@@ -281,7 +281,7 @@ tabulated <span class="math notranslate">\(f'(E)\)</span>.</p>
 </div>
 <p>The large white lines of the L<sub>3</sub>and L<sub>2</sub>edges cause an
 upwards slope in the function used to match the measured data to the
-tabulated data.  This results in a suspicious <span class="math notranslate">\(f'(E)\)</span>.  The
+tabulated data.  This results in a suspicious <span class="math notranslate nohighlight">\(f'(E)\)</span>.  The
 situation is even worse when a higher order polynomial is used for
 the normalization.</p>
 <p>The situation is improved somewhat by a simple trick.</p>
@@ -295,7 +295,7 @@ the L<sub>3</sub>and L<sub>2</sub>white lines.  The data from the white
 line energies to 20 eV above are excluded when determining the matching
 parameters.  This does a somewhat nicer job of forcing the flat parts of
 measured data to match the tabulated data.</p>
-<p>This seems to do a decent job of producing the <span class="math notranslate">\(f'(E)\)</span> data.
+<p>This seems to do a decent job of producing the <span class="math notranslate nohighlight">\(f'(E)\)</span> data.
 Still, this exposes a shortcoming of the diffKK algorithm for L edge
 data.  This might be addressed by calculations of bare-atom scattering
 factors that better estimate the step ratios of real material.
@@ -338,7 +338,7 @@ algorithm would be more appropriate for L edge data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

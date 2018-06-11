@@ -10,7 +10,7 @@
     <title>9.5. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -113,7 +113,7 @@
 <span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1>9.5. XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
-<span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(R\)</span>).  A variety of mathematical kernels can be used
+<span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
 applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
 Munoz <em>et al</em> <a class="reference internal" href="#munoz-wavelet" id="id1">[Wavelets_1]</a> being one early application.   The
@@ -126,18 +126,18 @@ is implemented as the function <a class="reference internal" href="#_xafs.cauchy
 <dl class="function">
 <dt id="_xafs.cauchy_wavelet">
 <code class="descclassname">_xafs.</code><code class="descname">cauchy_wavelet</code><span class="sig-paren">(</span><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>kweight=0</em>, <em>rmax_out=10</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate">\(\chi(k)\)</span>.</p>
+<dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate">\(\rm\AA^{-1}\)</span></li>
-<li><strong>chi</strong> – 1-d array of <span class="math notranslate">\(\chi\)</span></li>
+<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></li>
+<li><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></li>
 <li><strong>group</strong> – output Group</li>
-<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate">\(\rm\AA\)</span>)</li>
-<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate">\(k^{\rm kweight}\)</span></li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate nohighlight">\(\rm\AA\)</span>)</li>
+<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(k^{\rm kweight}\)</span></li>
+<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
 </ul>
 </td>
 </tr>
@@ -161,10 +161,10 @@ Group, the following data arrays are put into it:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>r</td>
-<td>uniform array of <span class="math notranslate">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</td>
+<td>uniform array of <span class="math notranslate nohighlight">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</td>
 </tr>
 <tr class="row-odd"><td>wcauchy</td>
-<td>complex array cauchy transform of <span class="math notranslate">\(R\)</span> and <span class="math notranslate">\(k\)</span></td>
+<td>complex array cauchy transform of <span class="math notranslate nohighlight">\(R\)</span> and <span class="math notranslate nohighlight">\(k\)</span></td>
 </tr>
 <tr class="row-even"><td>wcaychy_mag</td>
 <td>magnitude of cauchy transform</td>
@@ -220,10 +220,10 @@ straightforward:</p>
 
 </pre></div>
 </div>
-<p>With results for the Cauchy transforms looking like (here, <span class="math notranslate">\(k\)</span>is
-along the horizontal axis extending to 16 <span class="math notranslate">\(\rm\AA^{-1}\)</span>, and with
-<span class="math notranslate">\(R\)</span> along the vertical axis, increasing from 0 at the bottom to 10
-<span class="math notranslate">\(\rm\AA\)</span> at the top.</p>
+<p>With results for the Cauchy transforms looking like (here, <span class="math notranslate nohighlight">\(k\)</span>is
+along the horizontal axis extending to 16 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>, and with
+<span class="math notranslate nohighlight">\(R\)</span> along the vertical axis, increasing from 0 at the bottom to 10
+<span class="math notranslate nohighlight">\(\rm\AA\)</span> at the top.</p>
 <div class="figure compound align-center" id="fig_xafswft">
 <div style="width: 45%" class="subfigure" id="fig-xafswt-1">
 <a class="reference external image-reference" href="../_images/xwt_mag.png"><img alt="../_images/xwt_mag.png" src="../_images/xwt_mag.png" style="width: 100%;" /></a>
@@ -233,7 +233,7 @@ along the horizontal axis extending to 16 <span class="math notranslate">\(\rm\A
 </div>
 <p class="caption"><span class="caption-text">The Cauchy Wavelet transforms, with magnitude on the left hand panel
 and real part on the right hand panel.</span></p>
-</div><p id="fig_xafswft">The projection of the wavelets to <span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(R\)</span> space looks like:</p>
+</div><p id="fig_xafswft">The projection of the wavelets to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span> space looks like:</p>
 <div class="figure compound align-center" id="fig_xafswft_proj">
 <div style="width: 45%" class="subfigure" id="fig-xafswt-3">
 <a class="reference external image-reference" href="../_images/xwt_ksp.png"><img alt="../_images/xwt_ksp.png" src="../_images/xwt_ksp.png" style="width: 100%;" /></a>
@@ -241,8 +241,8 @@ and real part on the right hand panel.</span></p>
 <div style="width: 45%" class="subfigure" id="fig-xafswt-4">
 <a class="reference external image-reference" href="../_images/xwt_rsp.png"><img alt="../_images/xwt_rsp.png" src="../_images/xwt_rsp.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><span class="caption-text">The Cauchy Wavelet transform projected to <span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(R\)</span>
-space.  In the left hand panel, the original EXAFS <span class="math notranslate">\(k^2\chi(k)\)</span>
+<p class="caption"><span class="caption-text">The Cauchy Wavelet transform projected to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
+space.  In the left hand panel, the original EXAFS <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span>
 is shown for comparison.</span></p>
 </div><p class="rubric" id="fig_xafswft_proj">References</p>
 <p id="bibtex-bibliography-xafs/wavelets-0"><table class="docutils citation" frame="void" id="munoz-wavelet" rules="none">
@@ -285,7 +285,7 @@ is shown for comparison.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

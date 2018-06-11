@@ -10,7 +10,7 @@
     <title>9.4. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -71,8 +71,8 @@
   <ul>
 <li><a class="reference internal" href="#">9.4. XAFS: Fourier Transforms for XAFS</a><ul>
 <li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">9.4.1. Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms">9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate">\(k{\rightarrow}R\)</span>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate">\(R{\rightarrow}q\)</span>)</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms">9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
 <li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">9.4.4. <code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
 <li><a class="reference internal" href="#catalog-of-fourier-transform-window">9.4.5. Catalog of Fourier transform window</a></li>
 <li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">9.4.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -125,55 +125,55 @@ throughout the XAFS functionality of Larch.  For example, both
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
 <h2>9.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>The standard Fourier transform of a signal <span class="math notranslate">\(f(t)\)</span> can be written as</p>
-<div class="math notranslate">
+<p>The standard Fourier transform of a signal <span class="math notranslate nohighlight">\(f(t)\)</span> can be written as</p>
+<div class="math notranslate nohighlight">
 \begin{eqnarray*}
       {\tilde{f}}(\omega) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     f(t) e^{-i{\omega}t} dt \\
     f(t) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
 \end{eqnarray*}</div><p>where the symmetric normalization is one of the more common choices of
-conventions.  This gives conjugate variables of <span class="math notranslate">\(\omega\)</span> and
-<span class="math notranslate">\(t\)</span>. Because XAFS goes as</p>
-<div class="math notranslate">
+conventions.  This gives conjugate variables of <span class="math notranslate nohighlight">\(\omega\)</span> and
+<span class="math notranslate nohighlight">\(t\)</span>. Because XAFS goes as</p>
+<div class="math notranslate nohighlight">
 \[\chi(k) \sim \sin[2kR + \delta(k)]\]</div>
-<p>the conjugate variables in XAFS are generally taken to be <span class="math notranslate">\(k\)</span> and
-<span class="math notranslate">\(2R\)</span>.  The normalization of <span class="math notranslate">\(\tilde\chi(R)\)</span> from a Fourier
-transform of <span class="math notranslate">\(\chi(k)\)</span> is a matter of convention, but we follow the
-symmetric case above (with <span class="math notranslate">\(t\)</span> replaced by <span class="math notranslate">\(k\)</span> and
-<span class="math notranslate">\(\omega\)</span> replaced by <span class="math notranslate">\(2R\)</span>, and of course <span class="math notranslate">\(f\)</span> by
-<span class="math notranslate">\(\chi\)</span>).</p>
+<p>the conjugate variables in XAFS are generally taken to be <span class="math notranslate nohighlight">\(k\)</span> and
+<span class="math notranslate nohighlight">\(2R\)</span>.  The normalization of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span> from a Fourier
+transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span> is a matter of convention, but we follow the
+symmetric case above (with <span class="math notranslate nohighlight">\(t\)</span> replaced by <span class="math notranslate nohighlight">\(k\)</span> and
+<span class="math notranslate nohighlight">\(\omega\)</span> replaced by <span class="math notranslate nohighlight">\(2R\)</span>, and of course <span class="math notranslate nohighlight">\(f\)</span> by
+<span class="math notranslate nohighlight">\(\chi\)</span>).</p>
 <p>But there are two more important issues to mention.  First, an XAFS Fourier
-transform multiplies <span class="math notranslate">\(\chi(k)\)</span> by a power of <span class="math notranslate">\(k\)</span>, <span class="math notranslate">\(k^n\)</span>
-and by a window function <span class="math notranslate">\(\Omega(k)\)</span> before doing the Fourier
-transform.  The power-law weighting allow the oscillations in <span class="math notranslate">\(k\)</span> to
+transform multiplies <span class="math notranslate nohighlight">\(\chi(k)\)</span> by a power of <span class="math notranslate nohighlight">\(k\)</span>, <span class="math notranslate nohighlight">\(k^n\)</span>
+and by a window function <span class="math notranslate nohighlight">\(\Omega(k)\)</span> before doing the Fourier
+transform.  The power-law weighting allow the oscillations in <span class="math notranslate nohighlight">\(k\)</span> to
 emphasize different portions of the spectra, or to give a uniform intensity
 to the oscillations.  The window function acts to smooth the resulting
 Fourier transform and remove ripple and ringing in it that would result
-from a sudden truncation of <span class="math notranslate">\(\chi(k)\)</span> at the end of the data range.</p>
+from a sudden truncation of <span class="math notranslate nohighlight">\(\chi(k)\)</span> at the end of the data range.</p>
 <p>The second important issue is that the continuous Fourier transform
 described above is replaced by a discrete transform.  This better matches
-the discrete sampling of energy and <span class="math notranslate">\(k\)</span> values of the data, and
+the discrete sampling of energy and <span class="math notranslate nohighlight">\(k\)</span> values of the data, and
 allows Fast Fourier Transform techniques to be used.  It does change the
-definitions of the transforms used somewhat. First, the <span class="math notranslate">\(\chi(k)\)</span>
-data must be on <em>uniformly spaced</em> set of <span class="math notranslate">\(k\)</span> values.  The default
-<span class="math notranslate">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>)
-is <span class="math notranslate">\(\delta k\)</span> = 0.05 <span class="math notranslate">\(\rm\AA^{-1}\)</span>.  Second, the array size for
-<span class="math notranslate">\(\chi(k)\)</span> used in the Fourier transform should be a power of 2. The
-default used in Larch is <span class="math notranslate">\(N_{\rm fft}\)</span> = 2048.   Together, these
-allow <span class="math notranslate">\(\chi(k)\)</span> data to 102.4 <span class="math notranslate">\(\rm\AA^{-1}\)</span>.  Of course, real
+definitions of the transforms used somewhat. First, the <span class="math notranslate nohighlight">\(\chi(k)\)</span>
+data must be on <em>uniformly spaced</em> set of <span class="math notranslate nohighlight">\(k\)</span> values.  The default
+<span class="math notranslate nohighlight">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>)
+is <span class="math notranslate nohighlight">\(\delta k\)</span> = 0.05 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>.  Second, the array size for
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> used in the Fourier transform should be a power of 2. The
+default used in Larch is <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> = 2048.   Together, these
+allow <span class="math notranslate nohighlight">\(\chi(k)\)</span> data to 102.4 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>.  Of course, real
 data doesn’t extend that far, so the array to be transformed is
-<em>zero-padded</em> to the end of the range.  Since the spacing <span class="math notranslate">\(\delta R\)</span>
-of the resulting discrete <span class="math notranslate">\(\chi(R)\)</span> is given as
-<span class="math notranslate">\(\pi/{(N_{\rm fft} \delta k )}\)</span>, the extended range and zero-padding
-will increase the density of points in <span class="math notranslate">\(\chi(R)\)</span>, smoothly
-interpolating the values.   For <span class="math notranslate">\(N_{\rm fft}\)</span> = 2048 and
-<span class="math notranslate">\(\delta k\)</span> =  0.05 <span class="math notranslate">\(\rm\AA^{-1}\)</span>, the <span class="math notranslate">\(R\)</span> spacing is
-approximately <span class="math notranslate">\(\delta R\)</span> =  0.0307 <span class="math notranslate">\(\rm\AA\)</span>.</p>
-<p>For the discrete Fourier transforms with samples of <span class="math notranslate">\(\chi(k)\)</span> at the
-points <span class="math notranslate">\(k_n = n \, \delta k\)</span>, and samples of <span class="math notranslate">\(\chi(R)\)</span> at the
-points <span class="math notranslate">\(R_m = m \, \delta R\)</span>, the definitions become:</p>
-<div class="math notranslate">
+<em>zero-padded</em> to the end of the range.  Since the spacing <span class="math notranslate nohighlight">\(\delta R\)</span>
+of the resulting discrete <span class="math notranslate nohighlight">\(\chi(R)\)</span> is given as
+<span class="math notranslate nohighlight">\(\pi/{(N_{\rm fft} \delta k )}\)</span>, the extended range and zero-padding
+will increase the density of points in <span class="math notranslate nohighlight">\(\chi(R)\)</span>, smoothly
+interpolating the values.   For <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> = 2048 and
+<span class="math notranslate nohighlight">\(\delta k\)</span> =  0.05 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>, the <span class="math notranslate nohighlight">\(R\)</span> spacing is
+approximately <span class="math notranslate nohighlight">\(\delta R\)</span> =  0.0307 <span class="math notranslate nohighlight">\(\rm\AA\)</span>.</p>
+<p>For the discrete Fourier transforms with samples of <span class="math notranslate nohighlight">\(\chi(k)\)</span> at the
+points <span class="math notranslate nohighlight">\(k_n = n \, \delta k\)</span>, and samples of <span class="math notranslate nohighlight">\(\chi(R)\)</span> at the
+points <span class="math notranslate nohighlight">\(R_m = m \, \delta R\)</span>, the definitions become:</p>
+<div class="math notranslate nohighlight">
 \begin{eqnarray*}
 \tilde\chi(R_m) &amp;=&amp; \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
@@ -182,52 +182,52 @@ points <span class="math notranslate">\(R_m = m \, \delta R\)</span>, the defini
                     \sum_{m=1}^{N_{\rm fft}} \tilde\chi(R_m) \,
                     \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
 \end{eqnarray*}</div><p>These normalizations preserve the symmetry properties of the Fourier
-Transforms with conjugate variables <span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(2R\)</span>.
-Though the reverse transform converts the complex <span class="math notranslate">\(\chi(R)\)</span> to the
-complex <span class="math notranslate">\(\chi(k)\)</span> on the same <span class="math notranslate">\(k\)</span> spacing as the starting
-data, we often refer to the filtered <span class="math notranslate">\(\chi(k)\)</span> as <em>q</em> space.</p>
+Transforms with conjugate variables <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(2R\)</span>.
+Though the reverse transform converts the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> to the
+complex <span class="math notranslate nohighlight">\(\chi(k)\)</span> on the same <span class="math notranslate nohighlight">\(k\)</span> spacing as the starting
+data, we often refer to the filtered <span class="math notranslate nohighlight">\(\chi(k)\)</span> as <em>q</em> space.</p>
 <p>A final complication in using Fourier transforms for XAFS is that the
-measured <span class="math notranslate">\(\mu(E)\)</span> and <span class="math notranslate">\(\chi(k)\)</span> are a strictly real values,
-while the Fourier transform inherently treats <span class="math notranslate">\(\chi(k)\)</span> and
-<span class="math notranslate">\(\chi(R)\)</span> as complex values. This leads to an ambiguity about how to
-construct the complex <span class="math notranslate">\(\tilde\chi(k)\)</span>.  In many formal treatments,
+measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> and <span class="math notranslate nohighlight">\(\chi(k)\)</span> are a strictly real values,
+while the Fourier transform inherently treats <span class="math notranslate nohighlight">\(\chi(k)\)</span> and
+<span class="math notranslate nohighlight">\(\chi(R)\)</span> as complex values. This leads to an ambiguity about how to
+construct the complex <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.  In many formal treatments,
 XAFS is written as the imaginary part of a complex function.  This might
-lead one to assume that constructing <span class="math notranslate">\(\tilde\chi(k)\)</span> as <span class="math notranslate">\(0 +
+lead one to assume that constructing <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span> as <span class="math notranslate nohighlight">\(0 +
 i\chi(k)\)</span> would be the natural choice.  For historical reasons, Larch uses
-the opposite convention, constructing <span class="math notranslate">\(\tilde\chi(k)\)</span> as
-<span class="math notranslate">\(\chi(k) + 0i\)</span>.   As we’ll see below, you can easily change this
+the opposite convention, constructing <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span> as
+<span class="math notranslate nohighlight">\(\chi(k) + 0i\)</span>.   As we’ll see below, you can easily change this
 convention.  The effect of this choice is minor unless one is
 concerned about the differences of the real and imaginary parts of
-<span class="math notranslate">\(\chi(R)\)</span> or one is intending to filter and back-transform the
-<span class="math notranslate">\(\chi(R)\)</span> and compare the filtered and unfiltered data.</p>
+<span class="math notranslate nohighlight">\(\chi(R)\)</span> or one is intending to filter and back-transform the
+<span class="math notranslate nohighlight">\(\chi(R)\)</span> and compare the filtered and unfiltered data.</p>
 </div>
 <div class="section" id="forward-xafs-fourier-transforms">
-<h2>9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>The forward Fourier transform converts <span class="math notranslate">\(\chi(k)\)</span> to <span class="math notranslate">\(\chi(R)\)</span>
+<h2>9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<p>The forward Fourier transform converts <span class="math notranslate nohighlight">\(\chi(k)\)</span> to <span class="math notranslate nohighlight">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_xafs.xftf">
 <code class="descclassname">_xafs.</code><code class="descname">xftf</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate">\(\chi(k)\)</span> to
-<span class="math notranslate">\(\chi(R)\)</span>, using common XAFS conventions.</p>
+<dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
+<span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate">\(\rm\AA^{-1}\)</span></li>
-<li><strong>chi</strong> – 1-d array of <span class="math notranslate">\(\chi\)</span></li>
+<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></li>
+<li><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></li>
 <li><strong>group</strong> – output Group</li>
-<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate">\(\rm\AA\)</span>)</li>
-<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate">\(k^{\rm kweight}\)</span></li>
+<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate nohighlight">\(\rm\AA\)</span>)</li>
+<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(k^{\rm kweight}\)</span></li>
 <li><strong>kmin</strong> – starting <em>k</em> for FT Window</li>
 <li><strong>kmax</strong> – ending <em>k</em> for FT Window</li>
 <li><strong>dk</strong> – tapering parameter for FT Window</li>
 <li><strong>dk2</strong> – second tapering parameter for FT Window</li>
 <li><strong>window</strong> – name of window type</li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> – value to use for <span class="math notranslate">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -251,25 +251,25 @@ The following data is put into the output group:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>kwin</td>
-<td>window <span class="math notranslate">\(\Omega(k)\)</span> (length of input chi(k)).</td>
+<td>window <span class="math notranslate nohighlight">\(\Omega(k)\)</span> (length of input chi(k)).</td>
 </tr>
 <tr class="row-odd"><td>r</td>
-<td>uniform array of <span class="math notranslate">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</td>
+<td>uniform array of <span class="math notranslate nohighlight">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</td>
 </tr>
 <tr class="row-even"><td>chir</td>
-<td>complex array of <span class="math notranslate">\(\tilde\chi(R)\)</span>.</td>
+<td>complex array of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chir_mag</td>
-<td>magnitude of <span class="math notranslate">\(\tilde\chi(R)\)</span>.</td>
+<td>magnitude of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chir_pha</td>
-<td>phase of <span class="math notranslate">\(\tilde\chi(R)\)</span>.</td>
+<td>phase of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chir_re</td>
-<td>real part of <span class="math notranslate">\(\tilde\chi(R)\)</span>.</td>
+<td>real part of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chir_im</td>
-<td>imaginary part of <span class="math notranslate">\(\tilde\chi(R)\)</span>.</td>
+<td>imaginary part of <span class="math notranslate nohighlight">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 </tbody>
 </table>
@@ -284,23 +284,23 @@ and <code class="docutils literal notranslate"><span class="pre">chi</span></cod
 <dl class="function">
 <dt id="_xafs.xftf_fast">
 <code class="descclassname">_xafs.</code><code class="descname">xftf_fast</code><span class="sig-paren">(</span><em>chi</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf_fast" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate">\(\chi(k)\)</span> to
-<span class="math notranslate">\(\chi(R)\)</span>, using common XAFS conventions.  This version demands
+<dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
+<span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.  This version demands
 <code class="docutils literal notranslate"><span class="pre">chi</span></code> to include any weighting and windowing, and so to represent
-<span class="math notranslate">\(\chi(k)k^w\Omega(k)\)</span> on a uniform <span class="math notranslate">\(k\)</span> grid. It returns
-the complex array of <span class="math notranslate">\(\chi(R)\)</span>.</p>
+<span class="math notranslate nohighlight">\(\chi(k)k^w\Omega(k)\)</span> on a uniform <span class="math notranslate nohighlight">\(k\)</span> grid. It returns
+the complex array of <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chi</strong> – 1-d array of <span class="math notranslate">\(\chi\)</span> to be transformed</li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> – value to use for <span class="math notranslate">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span> to be transformed</li>
+<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <span class="math notranslate">\(\chi(R)\)</span>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</p>
 </td>
 </tr>
 </tbody>
@@ -309,34 +309,34 @@ the complex array of <span class="math notranslate">\(\chi(R)\)</span>.</p>
 
 </div>
 <div class="section" id="reverse-xafs-fourier-transforms">
-<h2>9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>Reverse Fourier transforms convert <span class="math notranslate">\(\chi(R)\)</span> back to filtered
-<span class="math notranslate">\(\chi(k)\)</span>.  We refer to the filtered <span class="math notranslate">\(k\)</span> space as <span class="math notranslate">\(q\)</span> to
-emphasize the distinction between the two.  The filtered <span class="math notranslate">\(\chi(q)\)</span> is
-complex.  By convention, the real part of <span class="math notranslate">\(\chi(q)\)</span> corresponds to
-the explicitly real <span class="math notranslate">\(\chi(k)\)</span>.</p>
+<h2>9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<p>Reverse Fourier transforms convert <span class="math notranslate nohighlight">\(\chi(R)\)</span> back to filtered
+<span class="math notranslate nohighlight">\(\chi(k)\)</span>.  We refer to the filtered <span class="math notranslate nohighlight">\(k\)</span> space as <span class="math notranslate nohighlight">\(q\)</span> to
+emphasize the distinction between the two.  The filtered <span class="math notranslate nohighlight">\(\chi(q)\)</span> is
+complex.  By convention, the real part of <span class="math notranslate nohighlight">\(\chi(q)\)</span> corresponds to
+the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="function">
 <dt id="_xafs.xftr">
 <code class="descclassname">_xafs.</code><code class="descname">xftr</code><span class="sig-paren">(</span><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate">\(\chi(R)\)</span> to
-<span class="math notranslate">\(\chi(q)\)</span>.</p>
+<dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
+<span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>r</strong> – 1-d array of distance.</li>
-<li><strong>chir</strong> – 1-d array of <span class="math notranslate">\(\chi(R)\)</span></li>
+<li><strong>chir</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi(R)\)</span></li>
 <li><strong>group</strong> – output Group</li>
-<li><strong>qmax_out</strong> – highest <em>k</em> for output data (30 <span class="math notranslate">\(\rm\AA^{-1}\)</span>)</li>
-<li><strong>rweight</strong> – exponent for weighting spectra by <span class="math notranslate">\(r^{\rm rweight}\)</span> (0)</li>
+<li><strong>qmax_out</strong> – highest <em>k</em> for output data (30 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>)</li>
+<li><strong>rweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(r^{\rm rweight}\)</span> (0)</li>
 <li><strong>rmin</strong> – starting <em>R</em> for FT Window</li>
 <li><strong>rmax</strong> – ending <em>R</em> for FT Window</li>
 <li><strong>dr</strong> – tapering parameter for FT Window</li>
 <li><strong>dr2</strong> – second tapering parameter for FT Window</li>
 <li><strong>window</strong> – name of window type</li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> – value to use for <span class="math notranslate">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -360,34 +360,34 @@ The following data is put into the output group:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>rwin</td>
-<td>window <span class="math notranslate">\(\Omega(R)\)</span> (length of input chi(R)).</td>
+<td>window <span class="math notranslate nohighlight">\(\Omega(R)\)</span> (length of input chi(R)).</td>
 </tr>
 <tr class="row-odd"><td>q</td>
-<td>uniform array of <span class="math notranslate">\(k\)</span>, out to <code class="docutils literal notranslate"><span class="pre">qmax_out</span></code>.</td>
+<td>uniform array of <span class="math notranslate nohighlight">\(k\)</span>, out to <code class="docutils literal notranslate"><span class="pre">qmax_out</span></code>.</td>
 </tr>
 <tr class="row-even"><td>chiq</td>
-<td>complex array of <span class="math notranslate">\(\tilde\chi(k)\)</span>.</td>
+<td>complex array of <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chiq_mag</td>
-<td>magnitude of <span class="math notranslate">\(\tilde\chi(k)\)</span>.</td>
+<td>magnitude of <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chiq_pha</td>
-<td>phase of <span class="math notranslate">\(\tilde\chi(k)\)</span>.</td>
+<td>phase of <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chiq_re</td>
-<td>real part of <span class="math notranslate">\(\tilde\chi(k)\)</span>.</td>
+<td>real part of <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chiq_im</td>
-<td>imaginary part of <span class="math notranslate">\(\tilde\chi(k)\)</span>.</td>
+<td>imaginary part of <span class="math notranslate nohighlight">\(\tilde\chi(k)\)</span>.</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>In analogy with <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, it is expected that the input <code class="docutils literal notranslate"><span class="pre">r</span></code> be a
 uniformly spaced array of values starting a 0.</p>
-<p>The input <code class="docutils literal notranslate"><span class="pre">chir</span></code> array can be either the complex <span class="math notranslate">\(\chi(R)\)</span> array
+<p>The input <code class="docutils literal notranslate"><span class="pre">chir</span></code> array can be either the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> array
 as output to <code class="docutils literal notranslate"><span class="pre">Group.chir</span></code> from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, or one of the real or
-imaginary parts of the <span class="math notranslate">\(\chi(R)\)</span> as output to <code class="docutils literal notranslate"><span class="pre">Group.chir_re</span></code> or
+imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</span> as output to <code class="docutils literal notranslate"><span class="pre">Group.chir_re</span></code> or
 <code class="docutils literal notranslate"><span class="pre">Group.chir_im</span></code>.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
 <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>.</p>
@@ -396,23 +396,23 @@ imaginary parts of the <span class="math notranslate">\(\chi(R)\)</span> as outp
 <dl class="function">
 <dt id="_xafs.xftr_fast">
 <code class="descclassname">_xafs.</code><code class="descname">xftr_fast</code><span class="sig-paren">(</span><em>chir</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr_fast" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate">\(\chi(R)\)</span> to
-<span class="math notranslate">\(\chi(q)\)</span>, using common XAFS conventions.  This version demands
-<code class="docutils literal notranslate"><span class="pre">chir</span></code> be  the complex <span class="math notranslate">\(\chi(R)\)</span> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.
-It returns the complex array of <span class="math notranslate">\(\chi(q)\)</span> without putting any
+<dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
+<span class="math notranslate nohighlight">\(\chi(q)\)</span>, using common XAFS conventions.  This version demands
+<code class="docutils literal notranslate"><span class="pre">chir</span></code> be  the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.
+It returns the complex array of <span class="math notranslate nohighlight">\(\chi(q)\)</span> without putting any
 values into a group.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chir</strong> – 1-d array of <span class="math notranslate">\(\chi(R)\)</span> to be transformed</li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate">\(N_{\rm fft}\)</span> (2048).</li>
-<li><strong>kstep</strong> – value to use for <span class="math notranslate">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>chir</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi(R)\)</span> to be transformed</li>
+<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> – value to use for <span class="math notranslate nohighlight">\(\delta{k}\)</span> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <span class="math notranslate">\(\chi(q)\)</span>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 </td>
 </tr>
 </tbody>
@@ -502,22 +502,22 @@ convention that the windows taper up from 0 to 1 between <code class="docutils l
 <code class="docutils literal notranslate"><span class="pre">xmax+dx2/2</span></code>.</p>
 <p>The conventions for the Kaiser, Gaussian, and Sine window types is a bit
 more complicated, and is best given explicitly.  In the formulas below,
-<code class="docutils literal notranslate"><span class="pre">dx</span></code> written as <span class="math notranslate">\(dx\)</span> and <code class="docutils literal notranslate"><span class="pre">dx2</span></code> as <span class="math notranslate">\(dx_2\)</span>.  We
-define <span class="math notranslate">\(x_i = x_{\rm min} - dx/2\)</span>, <span class="math notranslate">\(x_f = x_{\rm max} +
-dx_2/2\)</span>, and <span class="math notranslate">\(x_0 = (x_f + x_i)/2\)</span>, as the beginning, end, and
+<code class="docutils literal notranslate"><span class="pre">dx</span></code> written as <span class="math notranslate nohighlight">\(dx\)</span> and <code class="docutils literal notranslate"><span class="pre">dx2</span></code> as <span class="math notranslate nohighlight">\(dx_2\)</span>.  We
+define <span class="math notranslate nohighlight">\(x_i = x_{\rm min} - dx/2\)</span>, <span class="math notranslate nohighlight">\(x_f = x_{\rm max} +
+dx_2/2\)</span>, and <span class="math notranslate nohighlight">\(x_0 = (x_f + x_i)/2\)</span>, as the beginning, end, and
 center of the widows.  For the Gaussian window, the form is:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2{dx}^2}\bigr]}\]</div>
 <p>The form for the Sine window is</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\Omega(x) = \sin{\bigl[ \frac{ \pi(x_f - x)}{x_f - x_i}\bigr]}\]</div>
-<p>between <span class="math notranslate">\(x_i\)</span>  and  <span class="math notranslate">\(x_f\)</span>, and 0 outside this range.
+<p>between <span class="math notranslate nohighlight">\(x_i\)</span>  and  <span class="math notranslate nohighlight">\(x_f\)</span>, and 0 outside this range.
 The Kaiser-Bessel window is slightly more complicated:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \begin{eqnarray*}
    a       &amp;=&amp; \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
   \Omega(x) &amp;=&amp; \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
-\end{eqnarray*}</div><p>where <span class="math notranslate">\(i_0\)</span> is the modified Bessel function of order 0.</p>
+\end{eqnarray*}</div><p>where <span class="math notranslate nohighlight">\(i_0\)</span> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
 <h2>9.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
@@ -534,7 +534,7 @@ Welch windows, and illustrated in the two following figures.</p>
 </div>
 <p class="caption"><span class="caption-text">Fourier Transform window examples and illustration of parameter meaning
 for the Hanning, Parzen, and Welch windows.  Note that
-<span class="math notranslate">\(\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5\)</span>, and that
+<span class="math notranslate nohighlight">\(\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5\)</span>, and that
 the meaning of <code class="docutils literal notranslate"><span class="pre">dx</span></code> is to control the taper over which the window
 changes from 0 to 1.  Here, <code class="docutils literal notranslate"><span class="pre">xmin=5</span></code> and <code class="docutils literal notranslate"><span class="pre">xmax=15</span></code>.</span></p>
 </div><p id="fig-xafsft1">Some more window functions:</p>
@@ -573,8 +573,8 @@ a closer comparison to a Gaussian window is made.</span></p>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
 <span id="fig-xafsft3"></span><h2>9.4.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
-imaginary parts of the <span class="math notranslate">\(\chi(R)\)</span> as well as the magnitude, the effect
-of different windows types, and Fourier filtering to <span class="math notranslate">\(\chi(q)\)</span>.  We
+imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</span> as well as the magnitude, the effect
+of different windows types, and Fourier filtering to <span class="math notranslate nohighlight">\(\chi(q)\)</span>.  We
 use a single XAFS dataset from FeO for all these examples, with a
 well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
@@ -633,7 +633,7 @@ window types:</p>
 transforms.</span></p>
 </div><p id="fig-xafsft_wins">We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
-Fourier transform.  But, as the transformed <span class="math notranslate">\(\chi(R)\)</span> is complex, it
+Fourier transform.  But, as the transformed <span class="math notranslate nohighlight">\(\chi(R)\)</span> is complex, it
 can be instructive to plot the real and imaginary components, as shown
 below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;chir_mag&#39;</span><span class="p">,</span>
@@ -654,12 +654,12 @@ imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
 <h2>9.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
-<p>A reverse Fourier transform will convert data from <span class="math notranslate">\(\chi(R)\)</span> to
-<span class="math notranslate">\(\chi(q)\)</span>.  This allows a limited range of frequencies (distances) to
-be isolated and turned back into a <span class="math notranslate">\(\chi(k)\)</span> spectrum.  Here, we show
-two different <span class="math notranslate">\(R\)</span> windows to filter either just the first shell of
+<p>A reverse Fourier transform will convert data from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
+<span class="math notranslate nohighlight">\(\chi(q)\)</span>.  This allows a limited range of frequencies (distances) to
+be isolated and turned back into a <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum.  Here, we show
+two different <span class="math notranslate nohighlight">\(R\)</span> windows to filter either just the first shell of
 the spectra, or the first two shells, and compare the resulting filtered
-<span class="math notranslate">\(\chi(q)\)</span>.</p>
+<span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 <div class="figure compound align-center" id="fig_xafsft_filter">
 <div style="width: 45%" class="subfigure" id="fig-xafsft-filtera">
 <a class="reference external image-reference" href="../_images/xft_example6.png"><img alt="../_images/xft_example6.png" src="../_images/xft_example6.png" style="width: 100%;" /></a>
@@ -706,7 +706,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

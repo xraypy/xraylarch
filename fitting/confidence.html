@@ -10,7 +10,7 @@
     <title>8.8. Advanced Confidence Intervals and Chi-square maps &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -246,7 +246,7 @@ section.</p>
 </pre></div>
 </div>
 <p>The automatic error estimates given from <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> are meant to be
-1-<span class="math notranslate">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
+1-<span class="math notranslate nohighlight">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -258,8 +258,8 @@ section.</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<span class="math notranslate">\(\sigma\)</span> value</th>
-<th class="head">Explicit 1-<span class="math notranslate">\(\sigma\)</span> value</th>
+<th class="head">Automatic 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</th>
+<th class="head">Explicit 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -288,11 +288,11 @@ section.</p>
 </div></blockquote>
 <p>which seems to justify the use of the automated method.  The uncertainties
 found from the more thorough exploration shows symmetric uncertainties,
-even out to the 3-<span class="math notranslate">\(\sigma\)</span> level, and of the 4 1-<span class="math notranslate">\(\sigma\)</span>
+even out to the 3-<span class="math notranslate nohighlight">\(\sigma\)</span> level, and of the 4 1-<span class="math notranslate nohighlight">\(\sigma\)</span>
 uncertainties, 3 are within 2%, and the worst agreement, for the smallest
 uncertainty is within 7%.    It also shows that the scaling of
-uncertainties is fairly linear with <span class="math notranslate">\(\sigma\)</span>:  the 3-<span class="math notranslate">\(\sigma\)</span>
-values are approximately 3 times the 1-<span class="math notranslate">\(\sigma\)</span> values.</p>
+uncertainties is fairly linear with <span class="math notranslate nohighlight">\(\sigma\)</span>:  the 3-<span class="math notranslate nohighlight">\(\sigma\)</span>
+values are approximately 3 times the 1-<span class="math notranslate nohighlight">\(\sigma\)</span> values.</p>
 </div>
 <div class="section" id="confidence-interval-example-2">
 <h2>8.8.2. Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
@@ -380,8 +380,8 @@ intervals in these parameters with:</p>
 </pre></div>
 </div>
 <p>Now can see more asymmetric uncertainty values, specifically that the
--n-<span class="math notranslate">\(\sigma\)</span> and +n-<span class="math notranslate">\(\sigma\)</span> are different, and don’t seem to be
-linear in n.  Comparing the 1-<span class="math notranslate">\(\sigma\)</span> levels between the automated
+-n-<span class="math notranslate nohighlight">\(\sigma\)</span> and +n-<span class="math notranslate nohighlight">\(\sigma\)</span> are different, and don’t seem to be
+linear in n.  Comparing the 1-<span class="math notranslate nohighlight">\(\sigma\)</span> levels between the automated
 and explicit methods as we did above, we now have</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -394,8 +394,8 @@ and explicit methods as we did above, we now have</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<span class="math notranslate">\(\sigma\)</span> value</th>
-<th class="head">Explicit 1-<span class="math notranslate">\(\sigma\)</span> value</th>
+<th class="head">Automatic 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</th>
+<th class="head">Explicit 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -429,10 +429,10 @@ correlations, the full report above hints at a less than ideal case.</p>
 <div class="section" id="chi-square-maps">
 <h2>8.8.3. Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
 <p>We can further explore the correlation between pairs of variables by making
-and visualizing a map of the chi-square (<span class="math notranslate">\(\chi^2\)</span>) statistic.  This
+and visualizing a map of the chi-square (<span class="math notranslate nohighlight">\(\chi^2\)</span>) statistic.  This
 can be helpful to determine if the automatically calculated uncertainties
 and correlation are reasonable, and to look for pathological cases.  The
-<a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">chi2_map()</span></code></a> function will calculate a map of <span class="math notranslate">\(\chi^2\)</span> for a pair
+<a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">chi2_map()</span></code></a> function will calculate a map of <span class="math notranslate nohighlight">\(\chi^2\)</span> for a pair
 of variable parameters by brute force.</p>
 <dl class="function">
 <dt id="chi2_map">
@@ -448,7 +448,7 @@ of variable parameters by brute force.</p>
 <li><strong>yname</strong> – name of variable for y-axis</li>
 <li><strong>nx</strong> – number of steps in x [11]</li>
 <li><strong>ny</strong> – number of steps in y [11]</li>
-<li><strong>sigmas</strong> – extent of x, y values to calculate, in <span class="math notranslate">\(\sigma\)</span></li>
+<li><strong>sigmas</strong> – extent of x, y values to calculate, in <span class="math notranslate nohighlight">\(\sigma\)</span></li>
 <li><strong>xrange</strong> – explicit x range of calculations [x.best +/- <code class="docutils literal notranslate"><span class="pre">sigmas</span></code> * x.stderr]</li>
 <li><strong>yrange</strong> – explicit y range of calculations [y.best +/- <code class="docutils literal notranslate"><span class="pre">sigmas</span></code> * y.stderr]</li>
 </ul>
@@ -551,7 +551,7 @@ correlation, or when nearing a final analysis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

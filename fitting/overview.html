@@ -10,7 +10,7 @@
     <title>8.1. Fitting Overview &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -110,16 +110,16 @@ least-squares analysis, in which a parameterized model is adjusted until it
 matches experimental data in the sense that the sum of squares of the
 difference between data and model is as small as possible.  Mathematically,
 this is expressed as</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2\]</div>
-<p>where the experimental data is expressed as <span class="math notranslate">\(y(x)\)</span> that is discretely
-sampled at <span class="math notranslate">\(N\)</span> points, <span class="math notranslate">\(f(x, \vec\beta)\)</span> is a model function of
-some dependent data <span class="math notranslate">\(x\)</span> and <span class="math notranslate">\(\vec\beta\)</span>, a set of parameters in
+<p>where the experimental data is expressed as <span class="math notranslate nohighlight">\(y(x)\)</span> that is discretely
+sampled at <span class="math notranslate nohighlight">\(N\)</span> points, <span class="math notranslate nohighlight">\(f(x, \vec\beta)\)</span> is a model function of
+some dependent data <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(\vec\beta\)</span>, a set of parameters in
 the model.  As a simple example, a linear model of data would be written as
-<span class="math notranslate">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
+<span class="math notranslate nohighlight">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
-minimal values of <span class="math notranslate">\(S\)</span>.  These justifcations are not without criticism
+minimal values of <span class="math notranslate nohighlight">\(S\)</span>.  These justifcations are not without criticism
 or caveats, but we’ll leave those topics aside for now.</p>
 <p>It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
@@ -127,28 +127,28 @@ points) might be given more or less weight.  Again, there are several
 approaches to this, with one of the most common approaches to weight by the
 inverse of the estimated uncertainty in the data value.  This then what is
 generally called the chi-square goodness-of-fit parameter</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
-<p>Here, <span class="math notranslate">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math notranslate">\(y_i\)</span>.
-As mentioned, the model describing <span class="math notranslate">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
+<p>Here, <span class="math notranslate nohighlight">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math notranslate nohighlight">\(y_i\)</span>.
+As mentioned, the model describing <span class="math notranslate nohighlight">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
 <p>There is an extensive literature for the case in which the model function
-<span class="math notranslate">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
-<span class="math notranslate">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
-– a quadratic function <span class="math notranslate">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
+<span class="math notranslate nohighlight">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
+<span class="math notranslate nohighlight">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable
+– a quadratic function <span class="math notranslate nohighlight">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear
 in this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ‘’non-linear
 least-squares optimization’’ in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
-<p>It is convenient to define the <strong>residual array</strong> <span class="math notranslate">\(r\)</span> with <span class="math notranslate">\(N\)</span>
+<p>It is convenient to define the <strong>residual array</strong> <span class="math notranslate nohighlight">\(r\)</span> with <span class="math notranslate nohighlight">\(N\)</span>
 elements:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[r_i = \frac{y_i - f(x_i, \vec\beta)}{\epsilon_i}\]</div>
-<p>so that the sum to be minimized is a simple sum of this function, <span class="math notranslate">\(s
+<p>so that the sum to be minimized is a simple sum of this function, <span class="math notranslate nohighlight">\(s
 = \sum_i^{N} r_i^2\)</span>.  The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are</p>
 <blockquote>
-<div><p>1. A set of Parameters, <span class="math notranslate">\({\vec{\beta}}\)</span>, that are used in the
+<div><p>1. A set of Parameters, <span class="math notranslate nohighlight">\({\vec{\beta}}\)</span>, that are used in the
 model, and are to be adjusted to find the least-square value of the sum
 of squares of the residual.  These must be <strong>parameters</strong> (discussed
 below) that are held in a single <strong>parameter group</strong>.  This can either be
@@ -158,7 +158,7 @@ non-parameter values as well as parameters.</p>
 <p>2. An <strong>objective function</strong> to calculate the residual array.  This
 will be a Larch function that takes the <strong>parameter group</strong> described
 above as its first argument, and an unlimited set of optional arguments.
-This function should return the residual array, <span class="math notranslate">\(r\)</span> that will be
+This function should return the residual array, <span class="math notranslate nohighlight">\(r\)</span> that will be
 minimized in the least-squares sense.   The arrays for the data can
 be passed into this function either by the optional arguments or by
 putting these  data in the <strong>parameter group</strong>.</p>
@@ -236,7 +236,7 @@ of data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

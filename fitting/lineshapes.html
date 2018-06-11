@@ -10,7 +10,7 @@
     <title>8.5. Some Builtin Line-shape Functions &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -116,13 +116,13 @@ scalar or array, depending on the input <code class="docutils literal notranslat
 <dd><p>a Gaussian or normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Normal_distribution">http://en.wikipedia.org/wiki/Normal_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma) = \frac{A}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}\]</div>
-<p>where the parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
-<span class="math notranslate">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate">\(\sigma\)</span>.</p>
-<p>The full width at half maximum is <span class="math notranslate">\(2\sigma\sqrt{2\ln{2}}\)</span>,
-approximately <span class="math notranslate">\(2.3548\sigma\)</span>.   The maximum height is
-<span class="math notranslate">\(A/(\sigma\sqrt{2\pi})\)</span>.</p>
+<p>where the parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate nohighlight">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
+<span class="math notranslate nohighlight">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate nohighlight">\(\sigma\)</span>.</p>
+<p>The full width at half maximum is <span class="math notranslate nohighlight">\(2\sigma\sqrt{2\ln{2}}\)</span>,
+approximately <span class="math notranslate nohighlight">\(2.3548\sigma\)</span>.   The maximum height is
+<span class="math notranslate nohighlight">\(A/(\sigma\sqrt{2\pi})\)</span>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -131,12 +131,12 @@ approximately <span class="math notranslate">\(2.3548\sigma\)</span>.   The maxi
 <dd><p>A Lorentzian or Cauchy-Lorentz distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Cauchy_distribution">http://en.wikipedia.org/wiki/Cauchy_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma) = \frac{A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
-<p>where the parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
-<span class="math notranslate">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate">\(\sigma\)</span>.  The full width at
-half maximum is <span class="math notranslate">\(2\sigma\)</span>.  The maximum height is
-<span class="math notranslate">\(A/(\sigma\pi)\)</span>.</p>
+<p>where the parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate nohighlight">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
+<span class="math notranslate nohighlight">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate nohighlight">\(\sigma\)</span>.  The full width at
+half maximum is <span class="math notranslate nohighlight">\(2\sigma\)</span>.  The maximum height is
+<span class="math notranslate nohighlight">\(A/(\sigma\pi)\)</span>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -145,20 +145,20 @@ half maximum is <span class="math notranslate">\(2\sigma\)</span>.  The maximum 
 <dd><p>A Voigt distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Voigt_profile">http://en.wikipedia.org/wiki/Voigt_profile</a>), with four Parameters:
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, and <code class="docutils literal notranslate"><span class="pre">gamma</span></code> defined as:</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma, \gamma) = \frac{A \textrm{Re}[w(z)]}{\sigma\sqrt{2\pi}}\]</div>
 <p>where</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \begin{eqnarray*}
      z   &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
     w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
 \end{eqnarray*}</div><p>and <code class="xref py py-func docutils literal notranslate"><span class="pre">erfc()</span></code> is the complimentary error function.  As above, the
-parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
-<span class="math notranslate">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate">\(\sigma\)</span>.  With the default value of
-<code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">gamma</span></code> (<span class="math notranslate">\(\gamma\)</span>) is constrained to have value equal
+parameter <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> corresponds to <span class="math notranslate nohighlight">\(A\)</span>, <code class="docutils literal notranslate"><span class="pre">center</span></code> to
+<span class="math notranslate nohighlight">\(\mu\)</span>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code> to <span class="math notranslate nohighlight">\(\sigma\)</span>.  With the default value of
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">gamma</span></code> (<span class="math notranslate nohighlight">\(\gamma\)</span>) is constrained to have value equal
 to <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, though it can be varied independently.  For the case when
-<span class="math notranslate">\(\gamma = \sigma\)</span>, the full width at half maximum is approximately
-<span class="math notranslate">\(3.6013\sigma\)</span>.</p>
+<span class="math notranslate nohighlight">\(\gamma = \sigma\)</span>, the full width at half maximum is approximately
+<span class="math notranslate nohighlight">\(3.6013\sigma\)</span>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -166,12 +166,12 @@ to <code class="docutils literal notranslate"><span class="pre">sigma</span></co
 <code class="descname">pvoigt</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>fraction=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
-<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate">\(A\)</span>) , <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate">\(\mu\)</span>) and the same full
+<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>) , <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and the same full
 width at half maximum (so constrained values of <cite>sigma`</cite>,
-<span class="math notranslate">\(\sigma\)</span>).  A paramater <code class="docutils literal notranslate"><span class="pre">fraction</span></code> (<span class="math notranslate">\(\alpha\)</span>) controls
+<span class="math notranslate nohighlight">\(\sigma\)</span>).  A paramater <code class="docutils literal notranslate"><span class="pre">fraction</span></code> (<span class="math notranslate nohighlight">\(\alpha\)</span>) controls
 controls the relative weight of the Gaussian and Lorentzian components,
 giving the full definition of</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma, \alpha) = \frac{(1-\alpha)A}{\sigma_g\sqrt{2\pi}}
    e^{[{-{(x-\mu)^2}/{{2\sigma_g}^2}}]}
    + \frac{\alpha A}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
@@ -183,14 +183,14 @@ giving the full definition of</p>
 <dd><blockquote>
 <div><p>A Pearson VII distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution">http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution</a>),
-with four parameers: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code>
-(<span class="math notranslate">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate">\(\sigma\)</span>), and <code class="docutils literal notranslate"><span class="pre">exponent</span></code> (<span class="math notranslate">\(m\)</span>)
+with four parameers: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code>
+(<span class="math notranslate nohighlight">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate nohighlight">\(\sigma\)</span>), and <code class="docutils literal notranslate"><span class="pre">exponent</span></code> (<span class="math notranslate nohighlight">\(m\)</span>)
 in</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}\]</div>
 </div></blockquote>
-<p>where <span class="math notranslate">\(\beta\)</span> is the beta function (see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
-in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.0.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
+<p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the beta function (see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
+in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.1.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
 </dd></dl>
 
 <dl class="function">
@@ -198,13 +198,13 @@ in <a class="reference external" href="https://docs.scipy.org/doc/scipy/referenc
 <code class="descname">students_t</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Student’s t distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Student%27s_t-distribution">http://en.wikipedia.org/wiki/Student%27s_t-distribution</a>), with three
-Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate">\(\mu\)</span>) and
-<code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate">\(\sigma\)</span>) in</p>
-<div class="math notranslate">
+Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and
+<code class="docutils literal notranslate"><span class="pre">sigma</span></code> (<span class="math notranslate nohighlight">\(\sigma\)</span>) in</p>
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma) = \frac{A \Gamma(\frac{\sigma+1}{2})}
     {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})}
     \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}\]</div>
-<p>where <span class="math notranslate">\(\Gamma(x)\)</span> is the gamma function.</p>
+<p>where <span class="math notranslate nohighlight">\(\Gamma(x)\)</span> is the gamma function.</p>
 </dd></dl>
 
 <dl class="function">
@@ -212,9 +212,9 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 <code class="descname">breit_wigner</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Breit-Wigner-Fano distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Fano_resonance">http://en.wikipedia.org/wiki/Fano_resonance</a>&gt;), with four Parameters:
-<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
-(<span class="math notranslate">\(\sigma\)</span>), and <code class="docutils literal notranslate"><span class="pre">q</span></code> (<span class="math notranslate">\(q\)</span>) in</p>
-<div class="math notranslate">
+<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
+(<span class="math notranslate nohighlight">\(\sigma\)</span>), and <code class="docutils literal notranslate"><span class="pre">q</span></code> (<span class="math notranslate nohighlight">\(q\)</span>) in</p>
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma, q) = \frac{A (q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}\]</div>
 </dd></dl>
 
@@ -223,9 +223,9 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 <code class="descname">lognormal</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Log-normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Lognormal">http://en.wikipedia.org/wiki/Lognormal</a>), with three Parameters
-<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate">\(\mu\)</span>) and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
-(<span class="math notranslate">\(\sigma\)</span>) in</p>
-<div class="math notranslate">
+<code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
+(<span class="math notranslate nohighlight">\(\sigma\)</span>) in</p>
+<div class="math notranslate nohighlight">
 \[f(x; A, \mu, \sigma) = \frac{A e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
 </dd></dl>
 
@@ -323,7 +323,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

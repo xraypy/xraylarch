@@ -10,7 +10,7 @@
     <title>9.6. XAFS: Reading and using Feff Paths &#8212; larch 0.9.37 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
@@ -76,10 +76,10 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#feffpath-and-feffpath-groups">9.6.2. <code class="docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-for-a-feffpath">9.6.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-for-a-feffpath">9.6.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">9.6.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">9.6.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#models-for-calculating">9.6.6. Models for Calculating <span class="math notranslate">\(\sigma^2\)</span></a></li>
+<li><a class="reference internal" href="#models-for-calculating">9.6.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
 <li><a class="reference internal" href="#example-reading-a-feff-file">9.6.7. Example:  Reading a FEFF file</a></li>
 <li><a class="reference internal" href="#example-adding-feff-files">9.6.8. Example:  Adding FEFF files</a></li>
 <li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">9.6.9. Example: Using Path Parameters when adding FEFF files</a></li>
@@ -287,8 +287,8 @@ data can be read and viewed.  A FeffPath Group has the components listed in
 the <a class="reference internal" href="#xafs-pathparams-table"><span class="std std-ref">Table of Feff Path Parameters</span></a>.  This
 includes the <em>Adjustable Numerical Path Parameters</em> – the values of which
 can be changed to affect the calculated EXAFS for the Path – as well as
-the arrays for <span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(\chi\)</span> and several other attributes.
-Since this Group is used to calculate <span class="math notranslate">\(\chi(k)\)</span> for the path, many of
+the arrays for <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(\chi\)</span> and several other attributes.
+Since this Group is used to calculate <span class="math notranslate nohighlight">\(\chi(k)\)</span> for the path, many of
 the components need to be in place and holding the expected values so that
 the calculation can be done correctly, Due to Larch’s flexibility, it is
 possible to delete, overwrite, or put inappropriate values into the
@@ -301,7 +301,7 @@ The two <em>Numerical</em> attributes <code class="docutils literal notranslate"
 EXAFS equation but are meant to be constants and their values should
 not be changed.  The <em>Adjustable</em> attributes are the standard
 Adjustable, Numerical Path Parameters that can be changed to affect the
-resulting EXAFS <span class="math notranslate">\(\chi(k)\)</span>.  These can be set either as constant
+resulting EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  These can be set either as constant
 values or fitting Parameters as defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code></a>.  The
 <em>Output array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a>.
 Finally, the sub-group <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> contains the low-level data as read
@@ -334,7 +334,7 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 </tr>
 <tr class="row-odd"><td>reff</td>
 <td>Numerical</td>
-<td><span class="math notranslate">\(R_{\rm eff}\)</span>, nominal path length</td>
+<td><span class="math notranslate nohighlight">\(R_{\rm eff}\)</span>, nominal path length</td>
 </tr>
 <tr class="row-even"><td>nleg</td>
 <td>Numerical</td>
@@ -342,51 +342,51 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 </tr>
 <tr class="row-odd"><td>degen</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(N\)</span>, path degeneracy</td>
+<td><span class="math notranslate nohighlight">\(N\)</span>, path degeneracy</td>
 </tr>
 <tr class="row-even"><td>s02</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(S_0^2\)</span>, amplitude reduction factor</td>
+<td><span class="math notranslate nohighlight">\(S_0^2\)</span>, amplitude reduction factor</td>
 </tr>
 <tr class="row-odd"><td>e0</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(E_0\)</span>, energy origin</td>
+<td><span class="math notranslate nohighlight">\(E_0\)</span>, energy origin</td>
 </tr>
 <tr class="row-even"><td>deltar</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(\Delta R\)</span>, shift in path length</td>
+<td><span class="math notranslate nohighlight">\(\Delta R\)</span>, shift in path length</td>
 </tr>
 <tr class="row-odd"><td>sigma2</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(\sigma^2\)</span>, mean-square displacement</td>
+<td><span class="math notranslate nohighlight">\(\sigma^2\)</span>, mean-square displacement</td>
 </tr>
 <tr class="row-even"><td>third</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(c_3\)</span>,  third cumulant</td>
+<td><span class="math notranslate nohighlight">\(c_3\)</span>,  third cumulant</td>
 </tr>
 <tr class="row-odd"><td>fourth</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(c_4\)</span>, the fourth cumulant</td>
+<td><span class="math notranslate nohighlight">\(c_4\)</span>, the fourth cumulant</td>
 </tr>
 <tr class="row-even"><td>ei</td>
 <td>Adjustable</td>
-<td><span class="math notranslate">\(E_i\)</span>, imaginary energy shift.</td>
+<td><span class="math notranslate nohighlight">\(E_i\)</span>, imaginary energy shift.</td>
 </tr>
 <tr class="row-odd"><td>k</td>
 <td>Output array</td>
-<td><span class="math notranslate">\(k\)</span>, photo-electron wavenumber</td>
+<td><span class="math notranslate nohighlight">\(k\)</span>, photo-electron wavenumber</td>
 </tr>
 <tr class="row-even"><td>chi</td>
 <td>Output array</td>
-<td><span class="math notranslate">\(\chi\)</span>, the EXAFS</td>
+<td><span class="math notranslate nohighlight">\(\chi\)</span>, the EXAFS</td>
 </tr>
 <tr class="row-odd"><td>chi_imag</td>
 <td>Output array</td>
-<td><span class="math notranslate">\(\rm{Im}(\chi)\)</span>, imaginary EXAFS</td>
+<td><span class="math notranslate nohighlight">\(\rm{Im}(\chi)\)</span>, imaginary EXAFS</td>
 </tr>
 <tr class="row-even"><td>p</td>
 <td>Output array</td>
-<td><span class="math notranslate">\(p\)</span>, complex photo-electron wavenumber</td>
+<td><span class="math notranslate nohighlight">\(p\)</span>, complex photo-electron wavenumber</td>
 </tr>
 <tr class="row-odd"><td>_feffdat</td>
 <td>Group</td>
@@ -406,14 +406,14 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>filename</strong> – name (full path of) <em>feffNNNN.dat</em> file</li>
 <li><strong>label</strong> – label for path   [file name]</li>
-<li><strong>degen</strong> – path degeneracy, <span class="math notranslate">\(N\)</span> [taken from file]</li>
-<li><strong>s02</strong> – <span class="math notranslate">\(S_0^2\)</span>    value or parameter [1.0]</li>
-<li><strong>e0</strong> – <span class="math notranslate">\(E_0\)</span>      value or parameter [0.0]</li>
-<li><strong>deltar</strong> – <span class="math notranslate">\(\Delta R\)</span> value or parameter [0.0]</li>
-<li><strong>sigma2</strong> – <span class="math notranslate">\(\sigma^2\)</span> value or parameter [0.0]</li>
-<li><strong>third</strong> – <span class="math notranslate">\(c_3\)</span>      value or parameter [0.0]</li>
-<li><strong>fourth</strong> – <span class="math notranslate">\(c_4\)</span>      value or parameter [0.0]</li>
-<li><strong>ei</strong> – <span class="math notranslate">\(E_i\)</span>      value or parameter [0.0]</li>
+<li><strong>degen</strong> – path degeneracy, <span class="math notranslate nohighlight">\(N\)</span> [taken from file]</li>
+<li><strong>s02</strong> – <span class="math notranslate nohighlight">\(S_0^2\)</span>    value or parameter [1.0]</li>
+<li><strong>e0</strong> – <span class="math notranslate nohighlight">\(E_0\)</span>      value or parameter [0.0]</li>
+<li><strong>deltar</strong> – <span class="math notranslate nohighlight">\(\Delta R\)</span> value or parameter [0.0]</li>
+<li><strong>sigma2</strong> – <span class="math notranslate nohighlight">\(\sigma^2\)</span> value or parameter [0.0]</li>
+<li><strong>third</strong> – <span class="math notranslate nohighlight">\(c_3\)</span>      value or parameter [0.0]</li>
+<li><strong>fourth</strong> – <span class="math notranslate nohighlight">\(c_4\)</span>      value or parameter [0.0]</li>
+<li><strong>ei</strong> – <span class="math notranslate nohighlight">\(E_i\)</span>      value or parameter [0.0]</li>
 </ul>
 </td>
 </tr>
@@ -428,11 +428,11 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 numerical value or a Parameter (as created by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code></a>) can be given.</p>
 </div>
 <div class="section" id="path2chi-and-ff2chi-generating-for-a-feffpath">
-<h2>9.6.3. <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
+<h2>9.6.3. <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.path2chi">
 <code class="descclassname">_xafs.</code><code class="descname">path2chi</code><span class="sig-paren">(</span><em>path</em>, <em>paramgroup=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em>, <em>k=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.path2chi" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate <span class="math notranslate">\(\chi(k)\)</span> for a single Feff Path.</p>
+<dd><p>calculate <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a single Feff Path.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -440,9 +440,9 @@ numerical value or a Parameter (as created by <a class="reference internal" href
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>path</strong> – a FeffPath Group</li>
 <li><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
-<li><strong>kmax</strong> – maximum <span class="math notranslate">\(k\)</span> value for <span class="math notranslate">\(\chi\)</span> calculation [20].</li>
-<li><strong>kstep</strong> – step in <span class="math notranslate">\(k\)</span> value for <span class="math notranslate">\(\chi\)</span> calculation [0.05].</li>
-<li><strong>k</strong> – explicit array of <span class="math notranslate">\(k\)</span> values to calculate <span class="math notranslate">\(\chi\)</span>.</li>
+<li><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</li>
+<li><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</li>
+<li><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</li>
 </ul>
 </td>
 </tr>
@@ -453,13 +453,13 @@ numerical value or a Parameter (as created by <a class="reference internal" href
 </table>
 </dd></dl>
 
-<p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is specified, that will be used as the set of <span class="math notranslate">\(k\)</span> values at which
-to calculate <span class="math notranslate">\(\chi\)</span>.  If not given, the values of <code class="docutils literal notranslate"><span class="pre">kstep</span></code> and <code class="docutils literal notranslate"><span class="pre">kmax</span></code>
-will be used to construct a uniformly-spaced array of <span class="math notranslate">\(k\)</span> values starting
+<p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is specified, that will be used as the set of <span class="math notranslate nohighlight">\(k\)</span> values at which
+to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.  If not given, the values of <code class="docutils literal notranslate"><span class="pre">kstep</span></code> and <code class="docutils literal notranslate"><span class="pre">kmax</span></code>
+will be used to construct a uniformly-spaced array of <span class="math notranslate nohighlight">\(k\)</span> values starting
 at 0 and extending to (and including) <code class="docutils literal notranslate"><span class="pre">kmax</span></code>.</p>
-<p>The calculated <span class="math notranslate">\(\chi\)</span> array is placed in the Feff Path Group <code class="docutils literal notranslate"><span class="pre">path</span></code> as
-<code class="docutils literal notranslate"><span class="pre">path.chi</span></code>.  In addition calculated arrays for <span class="math notranslate">\(k\)</span>, <span class="math notranslate">\(p\)</span>, and
-<span class="math notranslate">\(\rm{Im}(\chi)\)</span> are placed in the variables <code class="docutils literal notranslate"><span class="pre">path.k</span></code>, <code class="docutils literal notranslate"><span class="pre">path.p</span></code>, and
+<p>The calculated <span class="math notranslate nohighlight">\(\chi\)</span> array is placed in the Feff Path Group <code class="docutils literal notranslate"><span class="pre">path</span></code> as
+<code class="docutils literal notranslate"><span class="pre">path.chi</span></code>.  In addition calculated arrays for <span class="math notranslate nohighlight">\(k\)</span>, <span class="math notranslate nohighlight">\(p\)</span>, and
+<span class="math notranslate nohighlight">\(\rm{Im}(\chi)\)</span> are placed in the variables <code class="docutils literal notranslate"><span class="pre">path.k</span></code>, <code class="docutils literal notranslate"><span class="pre">path.p</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">path.chi_imag</span></code>, respectively.  See <a class="reference internal" href="#xafs-exafsequation-sec"><span class="std std-ref">9.6.5</span></a> for the
 detailed definitions of the quantities.</p>
 <p>If specified, <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> is used as the Parameter Group – the group
@@ -469,7 +469,7 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-parame
 <dl class="function">
 <dt id="_xafs.ff2chi">
 <code class="descclassname">_xafs.</code><code class="descname">ff2chi</code><span class="sig-paren">(</span><em>pathlist</em>, <em>paramgroup=None</em>, <em>group=None</em>, <em>k=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ff2chi" title="Permalink to this definition">¶</a></dt>
-<dd><p>sum the <span class="math notranslate">\(\chi(k)\)</span> for a list of FeffPath Groups.</p>
+<dd><p>sum the <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a list of FeffPath Groups.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -478,9 +478,9 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-parame
 <li><strong>pathlist</strong> – a list of FeffPath Groups</li>
 <li><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
 <li><strong>group</strong> – a Group to which the outputs are written  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
-<li><strong>kmax</strong> – maximum <span class="math notranslate">\(k\)</span> value for <span class="math notranslate">\(\chi\)</span> calculation [20].</li>
-<li><strong>kstep</strong> – step in <span class="math notranslate">\(k\)</span> value for <span class="math notranslate">\(\chi\)</span> calculation [0.05].</li>
-<li><strong>k</strong> – explicit array of <span class="math notranslate">\(k\)</span> values to calculate <span class="math notranslate">\(\chi\)</span>.</li>
+<li><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</li>
+<li><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</li>
+<li><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</li>
 </ul>
 </td>
 </tr>
@@ -492,15 +492,15 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-parame
 </dd></dl>
 
 <p>This essentially calls <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> for each of the paths in the
-<code class="docutils literal notranslate"><span class="pre">pathlist</span></code> and writes the resulting arrays for <span class="math notranslate">\(k\)</span> and <span class="math notranslate">\(\chi\)</span> the
-sum of <span class="math notranslate">\(\chi\)</span> for all the paths) to <code class="docutils literal notranslate"><span class="pre">group.k</span></code> and <code class="docutils literal notranslate"><span class="pre">group.chi</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">pathlist</span></code> and writes the resulting arrays for <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(\chi\)</span> the
+sum of <span class="math notranslate nohighlight">\(\chi\)</span> for all the paths) to <code class="docutils literal notranslate"><span class="pre">group.k</span></code> and <code class="docutils literal notranslate"><span class="pre">group.chi</span></code>.</p>
 </div>
 <div class="section" id="the-feffdat-group-full-details-of-the-feff-dat-file">
 <span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2>9.6.4. The _feffdat Group: Full Details of the Feff.Dat File<a class="headerlink" href="#the-feffdat-group-full-details-of-the-feff-dat-file" title="Permalink to this headline">¶</a></h2>
 <p>Each FeffPath Group will have a <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> sub-group which contains the
 data from the underlying <em>feffNNNN.dat</em> file for the results of the Feff
 calculation.  Many of the components of this group are used for the
-calculations of <span class="math notranslate">\(\chi(k)\)</span> for that Path, though some (such as
+calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for that Path, though some (such as
 <code class="docutils literal notranslate"><span class="pre">exch</span></code> and <code class="docutils literal notranslate"><span class="pre">edge</span></code>) are kept only for informational purposes.  Some
 components from this sub-group (notably as <code class="docutils literal notranslate"><span class="pre">geom</span></code> and <code class="docutils literal notranslate"><span class="pre">nleg</span></code>) are
 copied into the FeffPath Group.  As with the FeffPath Group, this Group has
@@ -521,7 +521,7 @@ the Feff.dat file and stored in the <code class="docutils literal notranslate"><
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>amp</td>
-<td>array: total amplitude,   <span class="math notranslate">\(F_{\rm eff}(k)\)</span></td>
+<td>array: total amplitude,   <span class="math notranslate nohighlight">\(F_{\rm eff}(k)\)</span></td>
 </tr>
 <tr class="row-odd"><td>degen</td>
 <td>path degeneracy (coordination number)</td>
@@ -542,13 +542,13 @@ the Feff.dat file and stored in the <code class="docutils literal notranslate"><
 <td>path geometry: list of (Symbol, Z, ipot, x, y, z)</td>
 </tr>
 <tr class="row-odd"><td>k</td>
-<td>array: k values, <span class="math notranslate">\(k_{\rm feff}\)</span></td>
+<td>array: k values, <span class="math notranslate nohighlight">\(k_{\rm feff}\)</span></td>
 </tr>
 <tr class="row-even"><td>kf</td>
 <td>k value at Fermi level</td>
 </tr>
 <tr class="row-odd"><td>lam</td>
-<td>array: mean-free path,  <span class="math notranslate">\(\lambda(k)\)</span></td>
+<td>array: mean-free path,  <span class="math notranslate nohighlight">\(\lambda(k)\)</span></td>
 </tr>
 <tr class="row-even"><td>mag_feff</td>
 <td>array: magnitude of Feff</td>
@@ -557,7 +557,7 @@ the Feff.dat file and stored in the <code class="docutils literal notranslate"><
 <td>Fermi level, eV</td>
 </tr>
 <tr class="row-even"><td>pha</td>
-<td>array: total phase shift, <span class="math notranslate">\(\delta(k)\)</span></td>
+<td>array: total phase shift, <span class="math notranslate nohighlight">\(\delta(k)\)</span></td>
 </tr>
 <tr class="row-odd"><td>pha_feff</td>
 <td>array: scattring phase shift</td>
@@ -572,7 +572,7 @@ the Feff.dat file and stored in the <code class="docutils literal notranslate"><
 <td>array: amplitude reduction factor</td>
 </tr>
 <tr class="row-odd"><td>rep</td>
-<td>array: real part of p, <span class="math notranslate">\(p_{\rm real}(k)\)</span></td>
+<td>array: real part of p, <span class="math notranslate nohighlight">\(p_{\rm real}(k)\)</span></td>
 </tr>
 <tr class="row-even"><td>rnorman</td>
 <td>Norman radius</td>
@@ -596,8 +596,8 @@ the Feff.dat file and stored in the <code class="docutils literal notranslate"><
 amplitude and phase into two components (essentially as one for the central
 atom and one for the scattering atoms) that are simply added together.
 Thus <code class="docutils literal notranslate"><span class="pre">amp</span></code> = <code class="docutils literal notranslate"><span class="pre">red_fact</span></code> + <code class="docutils literal notranslate"><span class="pre">mag_feff</span></code> and the sum is used as
-<span class="math notranslate">\(F_{\rm eff}(k)\)</span>.  Similarly, <code class="docutils literal notranslate"><span class="pre">pha</span></code> = <code class="docutils literal notranslate"><span class="pre">real_phc</span></code> + <code class="docutils literal notranslate"><span class="pre">pha_feff</span></code>
-and the sum is used as <span class="math notranslate">\(\delta(k)\)</span>.</p>
+<span class="math notranslate nohighlight">\(F_{\rm eff}(k)\)</span>.  Similarly, <code class="docutils literal notranslate"><span class="pre">pha</span></code> = <code class="docutils literal notranslate"><span class="pre">real_phc</span></code> + <code class="docutils literal notranslate"><span class="pre">pha_feff</span></code>
+and the sum is used as <span class="math notranslate nohighlight">\(\delta(k)\)</span>.</p>
 </div>
 <div class="section" id="the-exafs-equation-using-feff-and-feffpath-groups">
 <span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2>9.6.5. The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
@@ -605,34 +605,34 @@ and the sum is used as <span class="math notranslate">\(\delta(k)\)</span>.</p>
 using the terms defined above in the
 <a class="reference internal" href="#xafs-pathparams-table"><span class="std std-ref">Table of Feff Path Parameters</span></a>
 and the <a class="reference internal" href="#xafs-feffdat-table"><span class="std std-ref">Table of Feff.Dat Components</span></a>.  One of the trickier concepts is that we are
-evaluating at experimental values of <span class="math notranslate">\(k\)</span> while the Feff calculation
-is tabulated on its own set of <span class="math notranslate">\(k\)</span> values and we may need to apply an
-energy shift of <span class="math notranslate">\(E_0\)</span> to the Feff calculation.  Thus, first we find
-<span class="math notranslate">\(k\)</span> as</p>
-<div class="math notranslate">
+evaluating at experimental values of <span class="math notranslate nohighlight">\(k\)</span> while the Feff calculation
+is tabulated on its own set of <span class="math notranslate nohighlight">\(k\)</span> values and we may need to apply an
+energy shift of <span class="math notranslate nohighlight">\(E_0\)</span> to the Feff calculation.  Thus, first we find
+<span class="math notranslate nohighlight">\(k\)</span> as</p>
+<div class="math notranslate nohighlight">
 \[k = \sqrt{k_{\rm feff}^2  - {2m_e E_0}/{\hbar^2} }\]</div>
-<p>where <span class="math notranslate">\(E_0\)</span> is taken from the <code class="docutils literal notranslate"><span class="pre">e0</span></code> parameter and <span class="math notranslate">\(k_{\rm
-feff}\)</span> are the <span class="math notranslate">\(k\)</span> values from Feff (<code class="docutils literal notranslate"><span class="pre">_feffdat.k</span></code>).  This shifted
-<span class="math notranslate">\(k\)</span> will be used to access the <span class="math notranslate">\(k\)</span> dependent values from the
+<p>where <span class="math notranslate nohighlight">\(E_0\)</span> is taken from the <code class="docutils literal notranslate"><span class="pre">e0</span></code> parameter and <span class="math notranslate nohighlight">\(k_{\rm
+feff}\)</span> are the <span class="math notranslate nohighlight">\(k\)</span> values from Feff (<code class="docutils literal notranslate"><span class="pre">_feffdat.k</span></code>).  This shifted
+<span class="math notranslate nohighlight">\(k\)</span> will be used to access the <span class="math notranslate nohighlight">\(k\)</span> dependent values from the
 Feff arrays.  Next, we note that we need the complex wavenumber, defined as</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \[p = p' + i p'' = \sqrt{ \big[ p_{\rm real}(k) - i / \lambda(k) \big]^2 - i \,
      2 m_e E_i /{\hbar^2} }\]</div>
-<p>where <span class="math notranslate">\(p_{\rm real}\)</span> and <span class="math notranslate">\(\lambda\)</span> are the values from Feff
-(<code class="docutils literal notranslate"><span class="pre">_feffdat.rep</span></code> and <code class="docutils literal notranslate"><span class="pre">_feffdat.lam</span></code>) and <span class="math notranslate">\(E_i\)</span> is the complex energy
-shift from the parameter <code class="docutils literal notranslate"><span class="pre">ei</span></code>.  Note that <span class="math notranslate">\(i\)</span> is used as the complex
+<p>where <span class="math notranslate nohighlight">\(p_{\rm real}\)</span> and <span class="math notranslate nohighlight">\(\lambda\)</span> are the values from Feff
+(<code class="docutils literal notranslate"><span class="pre">_feffdat.rep</span></code> and <code class="docutils literal notranslate"><span class="pre">_feffdat.lam</span></code>) and <span class="math notranslate nohighlight">\(E_i\)</span> is the complex energy
+shift from the parameter <code class="docutils literal notranslate"><span class="pre">ei</span></code>.  Note that <span class="math notranslate nohighlight">\(i\)</span> is used as the complex
 number following the physics literature, while within Larch <code class="docutils literal notranslate"><span class="pre">1j</span></code> is used.
-The complex wavenumber <span class="math notranslate">\(p\)</span> includes a self-energy term (due to the
+The complex wavenumber <span class="math notranslate nohighlight">\(p\)</span> includes a self-energy term (due to the
 presence of multiple electrons in the system) and is meant to be referenced
-to the absorption threshod while <span class="math notranslate">\(k\)</span> is meant to be referenced to the
-Fermi level.  Thus <span class="math notranslate">\(p_{\rm real} \approx \Sigma + k\)</span>, where
-<span class="math notranslate">\(\Sigma\)</span> is a small but usually positive offset.  Within the EXAFS
-equation, <span class="math notranslate">\(k\)</span> is used to restore the calculation of <span class="math notranslate">\(\chi(k)\)</span> as
-done by Feff, while <span class="math notranslate">\(p\)</span> is used to apply alterations to <span class="math notranslate">\(\chi(k)\)</span>
+to the absorption threshod while <span class="math notranslate nohighlight">\(k\)</span> is meant to be referenced to the
+Fermi level.  Thus <span class="math notranslate nohighlight">\(p_{\rm real} \approx \Sigma + k\)</span>, where
+<span class="math notranslate nohighlight">\(\Sigma\)</span> is a small but usually positive offset.  Within the EXAFS
+equation, <span class="math notranslate nohighlight">\(k\)</span> is used to restore the calculation of <span class="math notranslate nohighlight">\(\chi(k)\)</span> as
+done by Feff, while <span class="math notranslate nohighlight">\(p\)</span> is used to apply alterations to <span class="math notranslate nohighlight">\(\chi(k)\)</span>
 as for disorder terms.</p>
-<p>The EXAFS equation used for constructing <span class="math notranslate">\(\chi(k)\)</span> from a Feff
+<p>The EXAFS equation used for constructing <span class="math notranslate nohighlight">\(\chi(k)\)</span> from a Feff
 calculation is then</p>
-<div class="math notranslate">
+<div class="math notranslate nohighlight">
 \begin{eqnarray*}
 \chi(k) = &amp; {\rm Im}\Bigl[
    {\displaystyle{
@@ -643,16 +643,16 @@ calculation is then</p>
          + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
          - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
         \Bigr]    \\
-\end{eqnarray*}</div><p>where the terms are all defined above. Again, note that <span class="math notranslate">\(k\)</span> is used to
+\end{eqnarray*}</div><p>where the terms are all defined above. Again, note that <span class="math notranslate nohighlight">\(k\)</span> is used to
 reconstruct the unaltered EXAFS from the Feff.dat file, and the complex
-<span class="math notranslate">\(p\)</span> is used for the terms adding the effects of disorder.  Also note
-that <span class="math notranslate">\(p''\)</span> becomes <span class="math notranslate">\(\lambda(k)\)</span> for <span class="math notranslate">\(E_i = 0\)</span>, and is the
-generalization of the mean-free-path contribution.  The terms <span class="math notranslate">\(\Delta
-R\)</span>, <span class="math notranslate">\(\sigma^2\)</span>, <span class="math notranslate">\(c_3\)</span>, and <span class="math notranslate">\(c_4\)</span> are the first four
+<span class="math notranslate nohighlight">\(p\)</span> is used for the terms adding the effects of disorder.  Also note
+that <span class="math notranslate nohighlight">\(p''\)</span> becomes <span class="math notranslate nohighlight">\(\lambda(k)\)</span> for <span class="math notranslate nohighlight">\(E_i = 0\)</span>, and is the
+generalization of the mean-free-path contribution.  The terms <span class="math notranslate nohighlight">\(\Delta
+R\)</span>, <span class="math notranslate nohighlight">\(\sigma^2\)</span>, <span class="math notranslate nohighlight">\(c_3\)</span>, and <span class="math notranslate nohighlight">\(c_4\)</span> are the first four
 cumulants of the atomic pair distribution for the selected path. The
-additional term <span class="math notranslate">\(-2p(2\sigma^2/R_{\rm eff})\)</span> in the phase is a
+additional term <span class="math notranslate nohighlight">\(-2p(2\sigma^2/R_{\rm eff})\)</span> in the phase is a
 correction to the cumulant expansion due to the averaging over the
-<span class="math notranslate">\(1/R^2\)</span> term in the EXAFS equation.</p>
+<span class="math notranslate nohighlight">\(1/R^2\)</span> term in the EXAFS equation.</p>
 <p>The use of the cumulant expansion here does not necessarily imply that
 systems must be ordered enough for their atomic distributios to modeled by
 the cumulant expansion.  All that is required is that contribution from each
@@ -661,16 +661,16 @@ disordered system can be modeled by applying a more complex weighting to a
 set of paths – that is, a histogram of paths.</p>
 <span class="target" id="index-3"></span></div>
 <div class="section" id="models-for-calculating">
-<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2>9.6.6. Models for Calculating <span class="math notranslate">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating" title="Permalink to this headline">¶</a></h2>
-<p>The value for <span class="math notranslate">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
+<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2>9.6.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating" title="Permalink to this headline">¶</a></h2>
+<p>The value for <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
 up a full EXAFS spectra.  Borrowing from Feff (see <a class="reference internal" href="#feff6-rehr" id="id4">[FeffPaths_1]</a>,
 <a class="reference internal" href="#sevillano" id="id5">[FeffPaths_4]</a> and <a class="reference internal" href="#rehralbers-rmp" id="id6">[FeffPaths_3]</a>) Larch provides two
-functions that use simple models to calculate <span class="math notranslate">\(\sigma^2\)</span> for a Path.
+functions that use simple models to calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> for a Path.
 Both functions, <a class="reference internal" href="#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_eins()</span></code></a> and <a class="reference internal" href="#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_debye()</span></code></a> take arguments
 of sample temperature, a characteristic temperature, and a FeffPath, and
-return a value of <span class="math notranslate">\(\sigma^2\)</span>.  These are known to appy reasonably
+return a value of <span class="math notranslate nohighlight">\(\sigma^2\)</span>.  These are known to appy reasonably
 well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
 organic ligands.</p>
@@ -681,7 +681,7 @@ organic ligands.</p>
 <dl class="function">
 <dt id="_xafs.sigma2_eins">
 <code class="descclassname">_xafs.</code><code class="descname">sigma2_eins</code><span class="sig-paren">(</span><em>t</em>, <em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.sigma2_eins" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate <span class="math notranslate">\(\sigma^2\)</span> in the Einstein model.</p>
+<dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Einstein model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -704,7 +704,7 @@ updated during fits with <a class="reference internal" href="feffit.html#_xafs.f
 <dl class="function">
 <dt id="_xafs.sigma2_debye">
 <code class="descclassname">_xafs.</code><code class="descname">sigma2_debye</code><span class="sig-paren">(</span><em>t</em>, <em>theta</em>, <em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.sigma2_debye" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate <span class="math notranslate">\(\sigma^2\)</span> in the Debye model.</p>
+<dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Debye model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -726,8 +726,8 @@ updated during fits with <a class="reference internal" href="feffit.html#_xafs.f
 <div class="section" id="example-reading-a-feff-file">
 <h2>9.6.7. Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
 <p>Here we simply read a <em>feffNNNN.dat</em> file and display its components, and
-calculate <span class="math notranslate">\(\chi\)</span> for this path with two different values of
-<span class="math notranslate">\(\sigma^2\)</span>.</p>
+calculate <span class="math notranslate nohighlight">\(\chi\)</span> for this path with two different values of
+<span class="math notranslate nohighlight">\(\sigma^2\)</span>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffdat1.lar</span>
 
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;feff0001.dat&#39;</span>
@@ -775,7 +775,7 @@ calculate <span class="math notranslate">\(\chi\)</span> for this path with two 
 <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> is called.</p>
 <div class="figure align-center" id="id7">
 <span id="xafs-fig12"></span><a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.6.1 </span><span class="caption-text">Calculations of <span class="math notranslate">\(\chi(k)\)</span> for a Feff Path.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.6.1 </span><span class="caption-text">Calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a Feff Path.</span></p>
 </div>
 <p>We can also use the data from the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -804,14 +804,14 @@ like this:</p>
 <p class="caption"><span class="caption-number">Figure 9.6.2 </span><span class="caption-text">Components of <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for a Feff Path.</span></p>
 </div>
 <p>You can see here that the arrays in the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group are sampled at
-varying <span class="math notranslate">\(k\)</span> spacing, and that this spacing becomes fairly large at
-high <span class="math notranslate">\(k\)</span>.</p>
+varying <span class="math notranslate nohighlight">\(k\)</span> spacing, and that this spacing becomes fairly large at
+high <span class="math notranslate nohighlight">\(k\)</span>.</p>
 </div>
 <div class="section" id="example-adding-feff-files">
 <h2>9.6.8. Example:  Adding FEFF files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
 <p>Now, we add some FEFF files together, applying some path parameters.  The
 example is actually very similar to the one above except that we use
-<a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a> to create a <span class="math notranslate">\(\chi(k)\)</span> from a list of paths, and put
+<a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a> to create a <span class="math notranslate nohighlight">\(\chi(k)\)</span> from a list of paths, and put
 the result into its own group.  Thus:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/feffit/doc_feffdat3.lar</span>
 
@@ -859,7 +859,7 @@ for each path to be summed, so that the <code class="docutils literal notranslat
 group is up to date.</p>
 <div class="figure align-center" id="id9">
 <span id="xafs-fig14"></span><a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.6.3 </span><span class="caption-text">Results for sum of <span class="math notranslate">\(\chi(k)\)</span> for list of paths.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.6.3 </span><span class="caption-text">Results for sum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for list of paths.</span></p>
 </div>
 </div>
 <div class="section" id="example-using-path-parameters-when-adding-feff-files">
@@ -933,15 +933,15 @@ evaluated.</p>
 </dl>
 <p id="index-5">After plotting the results, we then change the values of the parameters.
 We could re-run <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>, but we can also just run <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a>
-on the paths for which we want to recalculate <span class="math notranslate">\(\chi\)</span>.  Note that we
+on the paths for which we want to recalculate <span class="math notranslate nohighlight">\(\chi\)</span>.  Note that we
 specify the <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> to <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> here.</p>
 <div class="figure align-center" id="id10">
 <span id="xafs-fig15"></span><a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.6.4 </span><span class="caption-text">Results for making 2 different sums of paths using parameterized Path
 Parameters</span></p>
 </div>
-<p>The resulting plot shows the effect of changing <span class="math notranslate">\(E_0\)</span> and
-<span class="math notranslate">\(S_0^2\)</span> for a sum of paths.  The same result could be shown by just
+<p>The resulting plot shows the effect of changing <span class="math notranslate nohighlight">\(E_0\)</span> and
+<span class="math notranslate nohighlight">\(S_0^2\)</span> for a sum of paths.  The same result could be shown by just
 setting the path parameters to the appropriate numerical values, but the
 use of parameters makes this somewhat more general.  As we will see in the
 next section, the use of parameters also allows us to easily refine their
@@ -1005,7 +1005,7 @@ values in a fit of XAFS data to such a sum of paths.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>
