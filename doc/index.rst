@@ -40,10 +40,8 @@ upon which new analysis tools can be built.
 Currently, Larch provides a complete set of XAFS Analysis tools (replacing all
 of the Ifeffit package), has some support for visualizing and analyzing XRF
 and XRD maps, and has many extra tools for X-ray spectral analysis, data
-handling, and general-purpose data modeling.
-
-
-Larch includes a Python several applications.
+handling, and general-purpose data modeling.  Larch includes a full
+scientific Python environment and several applications.
 
 The following table lists the main Larch applications.  New and
 in-development features and application will be explicitly described as
