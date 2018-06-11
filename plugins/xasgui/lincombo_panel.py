@@ -143,11 +143,9 @@ class ResultFrame(wx.Frame):
                                         colour=self.colors.title, style=LCEN)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
-        wids['show_e0']       = Check(panel, label='show E0?',
-                                      size=(125, 30), default=True)
-        wids['show_fitrange'] = Check(panel, label='show fit range?',
-                                      size=(125, 30), default=True)
-
+        copts = dict(size=(125, 30), default=True, action=self.onPlotOne)
+        wids['show_e0'] = Check(panel, label='show E0?', **copts)
+        wids['show_fitrange'] = Check(panel, label='show fit range?', **copts)
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LCEN)
@@ -161,7 +159,6 @@ class ResultFrame(wx.Frame):
         self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',  font=Font(12),
                                               colour=self.colors.title, style=LCEN)
         sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 1), LCEN)
-
 
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
