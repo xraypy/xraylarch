@@ -68,6 +68,10 @@ class TaskPanel(wx.Panel):
         """eval"""
         self.controller.larch.eval(cmd)
 
+    def larch_get(self, sym):
+        """get value from larch symbol table"""
+        return self.controller.larch.symtable.get_symbol(sym)
+
     def build_display(self):
         """build display"""
 
