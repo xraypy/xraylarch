@@ -96,27 +96,6 @@ def extract_athenagroup(pgroup):
 #enddef
 """
 
-"""
-### extract group {group:s} from Athena project _prj
-{group:s} = _prj.{prjgroup:s}
-{group:s}.datatype = 'xas'
-{group:s}.xdat = 1.0*{group:s}.energy
-{group:s}.ydat = 1.0*{group:s}.mu
-{group:s}.yerr = 1.0
-{group:s}.plot_ylabel = 'mu'
-{group:s}.plot_xlabel = 'energy'
-
-### extract group {group:s} from Athena project _prj
-{group:s} = _prj.{prjgroup:s}
-{group:s}.datatype = 'xas'
-{group:s}.xdat = 1.0*{group:s}.energy
-{group:s}.ydat = 1.0*{group:s}.mu
-{group:s}.yerr = 1.0
-{group:s}.plot_ylabel = 'mu'
-{group:s}.plot_xlabel = 'energy'
-"""
-
-
 #############################
 ## Hack System and Startfile on Windows to
 ## try to track down weird error of starting
