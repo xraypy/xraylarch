@@ -9,11 +9,10 @@ Downloading and Installation
 .. _Anaconda Downloads:            http://www.continuum.io/downloads
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Installers (cars.uchicago.edu): http://cars.uchicago.edu/gsecarrs/Data/Larch
-.. _Larch for 64bit Windows:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86_64.exe
-.. _Larch for 32bit Windows:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
-.. _Larch for MacOSX:              http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-MacOSX-x86_64.sh
-.. _Larch for Linux:               http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Linux-x86_64.sh
-.. _Larch Docs and Examples:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-docs-examples.zip
+.. _Larch for 64bit Windows:  http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86_64.exe
+.. _Larch for 32bit Windows:  http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
+.. _Larch for MacOSX :       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-MacOSX-x86_64.sh
+.. _Larch for Linux:          http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Linux-x86_64.sh
 
 The latest release version of Larch is |release|.
 
@@ -43,20 +42,17 @@ space.
 
 **Table of Larch Installers**
 
-  +-------------------------+-------------------------------------+
-  | Operating System        |   installer                         |
-  +=========================+=====================================+
-  | Windows (64 bit)        | `Larch for 64bit Windows`_          |
-  +-------------------------+-------------------------------------+
-  | Windows (32 bit)        | `Larch for 32bit Windows`_          |
-  +-------------------------+-------------------------------------+
-  | Mac OSX (64 bit)        | `Larch for MacOSX`_                 |
-  +-------------------------+-------------------------------------+
-  | Linux (64 bit)          | `Larch for Linux`_                  |
-  +-------------------------+-------------------------------------+
-  | Docs and Examples       | `Larch Docs and Examples`_          |
-  | (all systems)           |                                     |
-  +-------------------------+-------------------------------------+
+  +----------------------+----------------------------------------+
+  | Operating System     |   installer                            |
+  +======================+========================================+
+  | Windows (64bit)      | `Larch for 64bit Windows`_             |
+  +----------------------+----------------------------------------+
+  | Windows (32bit)      | `Larch for 32bit Windows`_             |
+  +----------------------+----------------------------------------+
+  | Mac OSX (64bit)      | `Larch for MacOSX`_                    |
+  +----------------------+----------------------------------------+
+  | Linux (64bit)        | `Larch for Linux`_                     |
+  +----------------------+----------------------------------------+
 
 For Windows, download the appropriate executable installer corresponding to
 the architecture of your OS, and run it.  Most modern computers (including
@@ -220,10 +216,10 @@ into the created xraylarch-VERSION directory, and type::
 Documentation and Examples
 ================================
 
-The source kit includes sources for documentation in the `docs` folder
-and several examples (including all those shown in this documentation)
-in the `examples` folder.  These are also available separately at
-`Larch Docs and Examples`_.
+The source kit includes sources for documentation in the `docs` folder and
+several examples (including all those shown in this documentation) in the
+`examples` folder.
+
 
 
 Citing Larch
