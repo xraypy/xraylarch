@@ -102,8 +102,20 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 MIN_CORREL = 0.0010
 
-defaults = dict(e=None, elo=-10, ehi=-5,
-                emin=-40, emax=0, yarray='norm')
+
+COMMANDS = {'set_yerr_const':  "{group:s}.yerr_fit = {group:s}.yerr*ones(len({group:s}.xdat))",
+            'set_yerr_array': """{group:s}.yerr_fit = 1.0*{group:s}.yerr
+yerr_min = 1.e-9*{group:s}.ydat.mean()
+{group:s}.yerr_fit[where({dgroup:s}.yerr < yerr_min)] = yerr_min""",
+            'dofit': """
+peakresult = peakmodel.fit({group:s}.ydat[{imin:d}:{imax:d}], params=peakpars,
+                           x={group:s}.xdat[{imin:d}:{imax:d}], weights=1.0/{group:s}.yerr_fit[{imin:d}:{imax:d}])
+{group:s}.yfit = peakresult.best_fit
+{group:s}.ycomps = peakmodel.eval_components(params=peakresult.params, x={group:s}.xdat[{imin:d}:{imax:d}])
+"""}
+
+
+defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
 
 class FitResultFrame(wx.Frame):
@@ -370,7 +382,6 @@ class FitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
 
-
     def show_fitresult(self, nfit=0, datagroup=None):
         if datagroup is not None:
             self.datagroup = datagroup
@@ -380,9 +391,9 @@ class FitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
 
-
         parts = []
-        for word in result.model_repr.split('Model('):
+        model_repr = result.model._reprstring(long=True)
+        for word in model_repr.split('Model('):
             if ',' in word:
                 pref, suff = word.split(', ')
                 parts.append( ("%sModel(%s" % (pref.title(), suff) ))
@@ -428,10 +439,7 @@ class PrePeakPanel(TaskPanel):
                            config=defaults, **kws)
 
         self.fit_components = OrderedDict()
-        self.fit_model = None
-        self.fit_params = None
         self.user_added_params = None
-        self.summary = None
 
         self.pick2_timer = wx.Timer(self)
         self.pick2_group = None
@@ -488,10 +496,10 @@ class PrePeakPanel(TaskPanel):
                                     size=(150, 25))
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(150, 25))
-        self.fitsel_btn = Button(pan, 'Fit Selected Groups',
-                                 action=self.onFitSelected,  size=(150, 25))
+        # self.fitsel_btn = Button(pan, 'Fit Selected Groups',
+        #                          action=self.onFitSelected,  size=(150, 25))
         self.fitmodel_btn.Disable()
-        self.fitsel_btn.Disable()
+        # self.fitsel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(150, -1),
                                    choices=list(Array_Choices.keys()))
@@ -550,7 +558,7 @@ class PrePeakPanel(TaskPanel):
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
-        pan.Add(self.fitsel_btn)
+        # pan.Add(self.fitsel_btn)
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         t.SetToolTip('Range used as mask for background')
@@ -659,15 +667,11 @@ class PrePeakPanel(TaskPanel):
         form_opts['show_e0'] = self.show_e0.IsChecked()
         return form_opts
 
-
     def onFitBaseline(self, evt=None):
         opts = self.read_form()
-
         cmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
-pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
-form='{baseline_form:s}', with_line=True,
-elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
-"""
+pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s}, form='{baseline_form:s}',
+                  with_line=True, elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         self.larch_eval(cmd.format(**opts))
 
         dgroup = self.controller.get_group()
@@ -1219,88 +1223,73 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
     def build_fitmodel(self):
         """ use fit components to build model"""
         dgroup = self.controller.get_group()
-        fullmodel = None
-        params = Parameters()
-        self.summary = {'components': [], 'options': {}}
+        # self.summary = {'components': [], 'options': {}}
         peaks = []
+        cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
+        modcmds = ["## define pre-edge peak model"]
+        modop = " ="
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
-                    params.add(parwids.param)
-                    #print(" add param ", parwids.param)
-                    if parwids.param.name.endswith('_center'):
-                        _cen = parwids.param.name
+                    this = parwids.param
+                    if this.expr is not None:
+                        pargs = "expr='%s'" % (this.expr)
+                    else:
+                        pargs = "value=%f, min=%f, max=%f" % (this.value,
+                                                              this.min, this.max)
+                    cmds.append("peakpars.add('%s', %s)" % (this.name, pargs))
+                    if this.name.endswith('_center'):
+                        _cen = this.name
                     elif parwids.param.name.endswith('_amplitude'):
-                        _amp = parwids.param.name
+                        _amp = this.name
 
-                self.summary['components'].append((comp.mclass.__name__, comp.mclass_kws))
-                thismodel = comp.mclass(**comp.mclass_kws)
-                if fullmodel is None:
-                   fullmodel = thismodel
-                else:
-                    fullmodel += thismodel
+                modcmds.append("peakmodel %s %s(prefix='%s')" % (modop, comp.mclass.__name__,
+                                                                 comp.mclass_kws['prefix']))
+                modop = "+="
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     peaks.append((_amp, _cen))
 
         if len(peaks) > 0:
             denom = '+'.join([p[0] for p in peaks])
             numer = '+'.join(["%s*%s "% p for p in peaks])
-            params.add('fit_centroid', expr="(%s)/(%s)" %(numer, denom))
+            cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
 
-        self.fit_model = fullmodel
-        self.fit_params = params
+        cmds.extend(modcmds)
+        gname = dgroup.groupname
 
         if dgroup is not None:
             i1, i2 = self.get_xranges(dgroup.xdat)
-            xsel = dgroup.xdat[i1:i2]
-            dgroup.xfit = xsel
-            dgroup.yfit = self.fit_model.eval(self.fit_params, x=xsel)
-            dgroup.ycomps = self.fit_model.eval_components(params=self.fit_params,
-                                                           x=xsel)
+            cmds.append("%s.xfit = %s.xdat[%i:%i]" % (gname, gname, i1, i2))
+            cmds.append("%s.yfit = peakmodel.eval(peakpars, x=%s.xfit)" % (gname, gname))
+            cmds.append("%s.ycomps = peakmodel.eval_components(params=peakpars, x=%s.xfit)" % (gname, gname))
+
+        self.larch_eval("\n".join(cmds))
+
         return dgroup
 
     def onFitSelected(self, event=None):
         dgroup = self.build_fitmodel()
         opts = self.read_form()
-        print("fitting selected groups in progress")
+        # print("fitting selected groups in progress")
 
     def onFitModel(self, event=None):
         dgroup = self.build_fitmodel()
         opts = self.read_form()
-
         i1, i2 = self.get_xranges(dgroup.xdat)
-        dgroup.xfit = dgroup.xdat[i1:i2]
-        ysel = dgroup.ydat[i1:i2]
-        # print('onFit Model : xrange ', i1, i2, len(dgroup.xfit), len(dgroup.yfit))
-        weights = np.ones(len(ysel))
+        if not hasattr(dgroup, 'yerr'):
+            dgroup.yerr = 1.0
 
-        if hasattr(dgroup, 'yerr'):
-            yerr = 1.0*dgroup.yerr
-            if not isinstance(yerr, np.ndarray):
-                yerr = yerr * np.ones(len(ysel))
-            else:
-                yerr = yerr[i1:i2]
-            yerr_min = 1.e-9*ysel.mean()
-            yerr[np.where(yerr < yerr_min)] = yerr_min
-            weights = 1.0/yerr
+        yerr_type = 'set_yerr_const'
+        if  isinstance(dgroup.yerr, np.ndarray):
+            yerr_type = 'set_yerr_array'
 
-        result = self.fit_model.fit(ysel, params=self.fit_params,
-                                    x=dgroup.xfit, weights=weights,
-                                    method='leastsq')
-        self.summary['xmin'] = dgroup.xdat[i1]
-        self.summary['xmax'] = dgroup.xdat[i2]
-        for attr in ('aic', 'bic', 'chisqr', 'redchi', 'ci_out', 'covar',
-                     'flatchain', 'success', 'nan_policy', 'nfev', 'ndata',
-                     'nfree', 'nvarys', 'init_values'):
-            self.summary[attr] = getattr(result, attr)
-        self.summary['params'] = result.params
-
-        dgroup.yfit = result.best_fit
-        dgroup.ycomps = self.fit_model.eval_components(params=result.params,
-                                                       x=dgroup.xfit)
-
-        result.model_repr = self.fit_model._reprstring(long=True)
+        cmds = ["## do peak fit: ",
+                COMMANDS[yerr_type],
+                COMMANDS['dofit']]
+        cmd = '\n'.join(cmds)
+        self.larch_eval(cmd.format(group=dgroup.groupname, imin=i1, imax=i2))
+        result = self.larch_get("peakresult")
 
         ## hacks to save user options
         result.user_options = opts
@@ -1317,10 +1306,8 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
         dgroup.fit_history.insert(0, result)
         self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
-
         self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
-
         self.parent.subframes['prepeak_result_frame'].show_results()
         [m.Enable(True) for m in self.parent.afterfit_menus]
 
