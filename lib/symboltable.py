@@ -491,15 +491,18 @@ class SymbolTable(Group):
         self._fix_searchGroups(force=True)
 
         for key, val in syms.items():
-            if hasattr(val, '__call__'):
+            if hasattr(val, '__call__') and hasattr(val, '__code__'): # is a function
                 # test whether plugin func has a '_larch' kw arg
                 #    __code__.co_flags & 8 == 'uses **kws'
                 kws.update({'func': val, '_name':key})
-                nvars = val.__code__.co_argcount
-                if ((val.__code__.co_flags &8 != 0) or
-                    '_larch' in val.__code__.co_varnames[:nvars]):
-                    kws.update({'_larch':  self._larch})
-                val = Closure(**kws)
+                try:
+                    nvars = val.__code__.co_argcount
+                    if ((val.__code__.co_flags &8 != 0) or
+                        '_larch' in val.__code__.co_varnames[:nvars]):
+                        kws.update({'_larch':  self._larch})
+                    val = Closure(**kws)
+                except AttributeError: # cannot make a closure
+                    pass
             self.set_symbol("%s.%s" % (groupname, key), val)
 
         plugin_init = getattr(plugin, 'initializeLarchPlugin', None)
