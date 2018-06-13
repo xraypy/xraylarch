@@ -16,14 +16,7 @@ class FileCheckList(wx.CheckListBox):
     A ListBox with pop-up menu to arrange order of
     items and remove items from list
     supply select_action for EVT_LISTBOX selection action
-
     """
-    right_click_actions = ("Move up",
-                           "Move down",
-                           "Move to Top",
-                           "Move to Bottom",
-                           "Remove from List")
-
     def __init__(self, parent, main=None, select_action=None,
                  right_click=True, remove_action=None,
                  custom_actions=None, **kws):
@@ -40,13 +33,18 @@ class FileCheckList(wx.CheckListBox):
         self.rclick_actions = OrderedDict()
         if right_click:
             self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
-            for title in self.right_click_actions:
-                wid = wx.NewId()
-                self.rclick_actions[wid] = (title, None)
-                self.Bind(wx.EVT_MENU, self.onRightEvent, id=wid)
-
-        if custom_actions is not None:
-            for title, action in custom_actions:
+            for title, action in (("Move up", None),
+                                  ("Move down", None),
+                                  ("Move to Top", None),
+                                  ("Move to Bottom", None),
+                                  ("Remove from List", None),
+                                  ("--sep--", None),
+                                  ("Select All",        self.select_all),
+                                  ("Select All above",  self.select_allabove),
+                                  ("Select All below",  self.select_allbelow),
+                                  ("Select None",       self.select_none),
+                                  ("Select None above", self.select_noneabove),
+                                  ("Select None below", self.select_nonebelow)):
                 wid = wx.NewId()
                 self.rclick_actions[wid] = (title, action)
                 self.Bind(wx.EVT_MENU, self.onRightEvent, id=wid)
@@ -54,7 +52,10 @@ class FileCheckList(wx.CheckListBox):
     def onRightClick(self, evt=None):
         menu = wx.Menu()
         for wid, val in self.rclick_actions.items():
-            menu.Append(wid, val[0])
+            if val[0] == '--sep--':
+                menu.AppendSeparator()
+            else:
+                menu.Append(wid, val[0])
 
         self.PopupMenu(menu)
         menu.Destroy()
@@ -74,28 +75,69 @@ class FileCheckList(wx.CheckListBox):
         if idx < 0: # no item selected
             return
         names = self.GetItems()
-        this  = names[idx] # .pop(idx)
+        this  = names[idx]
+        do_relist = False
 
         label, action = self.rclick_actions[event.GetId()]
         if label == "Move up" and idx > 0:
             names.pop(idx)
             names.insert(idx-1, this)
+            do_relist = True
         elif label == "Move down" and idx < len(names):
             names.pop(idx)
             names.insert(idx+1, this)
+            do_relist = True
         elif label == "Move to Top":
             names.pop(idx)
             names.insert(0, this)
+            do_relist = True
         elif label == "Move to Bottom":
             names.pop(idx)
             names.append(this)
+            do_relist = True
         elif label == "Remove from List":
             names.pop(idx)
             if self.remove_action is not None:
                 self.remove_action(this)
+            do_relist = True
         elif action is not None:
-            action(this)
+            action(event=event)
 
-        self.Clear()
-        for name in names:
-            self.Append(name)
+        if do_relist:
+            self.Clear()
+            for name in names:
+                self.Append(name)
+
+    def select_all(self, event=None):
+        self.SetCheckedStrings(self.GetStrings())
+
+    def select_none(self, event=None):
+        self.SetCheckedStrings([])
+
+    def select_allabove(self, event=None, name=None):
+        self._alter_list(select=True, reverse=False)
+
+    def select_allbelow(self, event=None, name=None):
+        self._alter_list(select=True, reverse=True)
+
+    def select_noneabove(self, event=None):
+        self._alter_list(select=False, reverse=False)
+
+    def select_nonebelow(self, event=None):
+        self._alter_list(select=False, reverse=True)
+
+    def _alter_list(self, select=True, reverse=False):
+        all = list(self.GetStrings())
+        if reverse:
+            all.reverse()
+
+        this = self.GetStringSelection()
+        slist = list(self.GetCheckedStrings())
+        for name in all:
+            if select and name not in slist:
+                slist.append(name)
+            elif not select and name in slist:
+                slist.remove(name)
+            if name == this:
+                break
+        self.SetCheckedStrings(slist)
