@@ -415,10 +415,7 @@ class FitResultFrame(wx.Frame):
             desc = desc[tlen+i:]
         parts.append(desc)
         wids['model_desc'].SetLabel('\n'.join(parts))
-        d = wids['model_desc']
-        print("Set Model Desc :" , len(parts))
-        print(parts)
-        print(d.GetBestSize(), d.GetSize())
+
 
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
@@ -872,7 +869,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                 # print(" RESIDUAL PLOT  margins: ")
                 # print(" top : ", pframe.panel.conf.margins)
                 # print(" bot : ", pframe.panel_bot.conf.margins)
-
 
         for etype, x, y, opts in plot_extras:
             if etype == 'marker':
