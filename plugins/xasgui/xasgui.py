@@ -471,16 +471,11 @@ class XASFrame(wx.Frame):
 
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
-        flist_actions = (("Select All above", self.fileselect_allabove),
-                         ("Select None above", self.fileselect_noneabove),
-                         ("Select All below", self.fileselect_allbelow),
-                         ("Select None below", self.fileselect_nonebelow))
 
         self.controller.filelist = FileCheckList(leftpanel,
                                                  # main=self,
                                                  select_action=self.ShowFile,
-                                                 remove_action=self.RemoveFile,
-                                                 custom_actions=flist_actions)
+                                                 remove_action=self.RemoveFile)
 
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
@@ -535,30 +530,10 @@ class XASFrame(wx.Frame):
             callback()
 
     def onSelAll(self, event=None):
-        self.controller.filelist.SetCheckedStrings(self.controller.file_groups.keys())
+        self.controller.filelist.set_all()
 
     def onSelNone(self, event=None):
-        self.controller.filelist.SetCheckedStrings([])
-
-    def fileselect_allabove(self, event=None):
-        print(" filesel all above",
-              self.controller.filelist.GetStringSelection())
-        print(self.controller.file_groups)
-
-    def fileselect_noneabove(self, event=None):
-        print(" filesel none above",
-              self.controller.filelist.GetStringSelection())
-        print(self.controller.file_groups)
-
-    def fileselect_allbelow(self, event=None):
-        print(" filesel all below",
-              self.controller.filelist.GetStringSelection())
-        print(self.controller.file_groups)
-
-    def fileselect_nonebelow(self, event=None):
-        print(" filesel none below",
-              self.controller.filelist.GetStringSelection())
-        print(self.controller.file_groups)
+        self.controller.filelist.set_none()
 
     def init_larch(self):
         self.SetStatusText('initializing Larch')
