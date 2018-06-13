@@ -109,9 +109,14 @@ yerr_min = 1.e-9*{group:s}.ydat.mean()
 {group:s}.yerr_fit[where({dgroup:s}.yerr < yerr_min)] = yerr_min""",
             'dofit': """
 peakresult = peakmodel.fit({group:s}.ydat[{imin:d}:{imax:d}], params=peakpars,
-                           x={group:s}.xdat[{imin:d}:{imax:d}], weights=1.0/{group:s}.yerr_fit[{imin:d}:{imax:d}])
-{group:s}.yfit = peakresult.best_fit
-{group:s}.ycomps = peakmodel.eval_components(params=peakresult.params, x={group:s}.xdat[{imin:d}:{imax:d}])
+                           x={group:s}.xdat[{imin:d}:{imax:d}],
+                           weights=1.0/{group:s}.yerr_fit[{imin:d}:{imax:d}])
+peakresult.xdat = {group:s}.xdat[{imin:d}:{imax:d}]
+peakresult.ydat = {group:s}.ydat[{imin:d}:{imax:d}]
+peakresult.yerr = {group:s}.yerr_fit[{imin:d}:{imax:d}]
+peakresult.ycomps = peakmodel.eval_components(params=peakresult.params, x={group:s}.xdat[{imin:d}:{imax:d}])
+{group:s}.ycomps = peakresult.ycomps
+{group:s}.yfit  = peakresult.best_fit
 """}
 
 
@@ -164,7 +169,7 @@ class FitResultFrame(wx.Frame):
 
         irow += 1
         wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
-                                        size=(625, 50), style=LCEN)
+                                        size=(700, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
         irow += 1
@@ -404,10 +409,17 @@ class FitResultFrame(wx.Frame):
         tlen = 85
         while len(desc) >= tlen:
             i = desc[tlen-1:].find('+')
+            if i < 0:
+                break
             parts.append(desc[:tlen+i])
             desc = desc[tlen+i:]
         parts.append(desc)
         wids['model_desc'].SetLabel('\n'.join(parts))
+        d = wids['model_desc']
+        print("Set Model Desc :" , len(parts))
+        print(parts)
+        print(d.GetBestSize(), d.GetSize())
+
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for i, param in enumerate(result.params.values()):
@@ -493,9 +505,11 @@ class PrePeakPanel(TaskPanel):
         ppeak_emax = FloatSpinWithPin('ppeak_emax', value=0, **opts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                                    size=(150, 25))
+                                    size=(150, -1))
+        self.plotmodel_btn = Button(pan, 'Plot Model',
+                                   action=self.onPlotModel,  size=(150, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
-                                   action=self.onFitModel,  size=(150, 25))
+                                   action=self.onFitModel,  size=(150, -1))
         # self.fitsel_btn = Button(pan, 'Fit Selected Groups',
         #                          action=self.onFitSelected,  size=(150, 25))
         self.fitmodel_btn.Disable()
@@ -516,10 +530,10 @@ class PrePeakPanel(TaskPanel):
         self.models_peaks = models_peaks
         self.models_other = models_other
 
-        self.plot_choice = Choice(pan, size=(150, -1),
-                                  choices=PlotChoices,
-                                  action=self.onPlot)
-
+#         self.plot_choice = Choice(pan, size=(150, -1),
+#                                   choices=PlotChoices,
+#                                   action=self.onPlot)
+#
         self.message = SimpleText(pan,
                                  'first fit baseline, then add peaks to fit model.')
 
@@ -532,7 +546,7 @@ class PrePeakPanel(TaskPanel):
         self.show_e0        = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
+        # self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
 
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
@@ -550,7 +564,7 @@ class PrePeakPanel(TaskPanel):
         pan.Add(ppeak_e0)
         pan.Add((10, 10), dcol=2)
         pan.Add(self.show_e0)
-        pan.Add(self.fitmodel_btn)
+        pan.Add(self.plotmodel_btn)
 
 
         add_text('Fit Energy Range: ')
@@ -558,7 +572,7 @@ class PrePeakPanel(TaskPanel):
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
-        # pan.Add(self.fitsel_btn)
+        pan.Add(self.fitmodel_btn)
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         t.SetToolTip('Range used as mask for background')
@@ -568,19 +582,19 @@ class PrePeakPanel(TaskPanel):
         add_text(' : ', newrow=False)
         pan.Add(ppeak_ehi)
         pan.Add(self.show_peakrange)
+        # pan.Add(self.fitsel_btn)
 
         add_text( 'Peak Centroid: ')
         pan.Add(self.msg_centroid, dcol=3)
         pan.Add(self.show_centroid, dcol=1)
 
-
         #  plot buttons
-        ts = wx.BoxSizer(wx.HORIZONTAL)
-        ts.Add(self.plot_choice)
-        ts.Add(self.plot_sub_bline)
+        # ts = wx.BoxSizer(wx.HORIZONTAL)
+        # ts.Add(self.plot_choice)
+        # ts.Add(self.plot_sub_bline)
 
-        pan.Add(SimpleText(pan, 'Plot: '), newrow=True)
-        pan.Add(ts, dcol=7)
+        # pan.Add(SimpleText(pan, 'Plot: '), newrow=True)
+        # pan.Add(ts, dcol=7)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -643,7 +657,7 @@ class PrePeakPanel(TaskPanel):
             self.show_centroid.Enable(dat['show_centroid'])
             self.show_fitrange.Enable(dat['show_fitrange'])
             self.show_peakrange.Enable(dat['show_peakrange'])
-            self.plot_sub_bline.Enable(dat['plot_sub_bline'])
+            # self.plot_sub_bline.Enable(dat['plot_sub_bline'])
 
     def read_form(self):
         "read for, returning dict of values"
@@ -660,7 +674,7 @@ class PrePeakPanel(TaskPanel):
         form_opts['emax'] = self.wids['ppeak_emax'].GetValue()
         form_opts['elo'] = self.wids['ppeak_elo'].GetValue()
         form_opts['ehi'] = self.wids['ppeak_ehi'].GetValue()
-        form_opts['plot_sub_bline'] = self.plot_sub_bline.IsChecked()
+        form_opts['plot_sub_bline'] = False # self.plot_sub_bline.IsChecked()
         form_opts['show_centroid'] = self.show_centroid.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
@@ -698,8 +712,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
-        self.plot_choice.SetStringSelection(PLOT_BASELINE)
-        self.onPlot()
+        # self.plot_choice.SetStringSelection(PLOT_BASELINE)
+        self.onPlot(choice=PLOT_BASELINE)
 
     def fill_model_params(self, prefix, params):
         comp = self.fit_components[prefix]
@@ -719,8 +733,12 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
 
-    def onPlot(self, evt=None):
-        plot_choice = self.plot_choice.GetStringSelection()
+    def onPlotModel(self, evt=None):
+        g = self.build_fitmodel()
+        self.onPlot(choice=PLOT_FIT)
+
+    def onPlot(self, evt=None, choice=PLOT_FIT):
+        plot_choice = choice # self.plot_choice.GetStringSelection()
 
         opts = self.read_form()
         dgroup = self.controller.get_group()
@@ -742,7 +760,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         baseline = 1.0*dgroup.ydat
         yfit[i1:i2] = dgroup.yfit[:i2-i1]
         baseline[i1:i2] = ppeaks.baseline[:i2-i1]
-
 
         if opts['plot_sub_bline']:
             ydat = ydat - baseline
@@ -1265,7 +1282,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             cmds.append("%s.ycomps = peakmodel.eval_components(params=peakpars, x=%s.xfit)" % (gname, gname))
 
         self.larch_eval("\n".join(cmds))
-
         return dgroup
 
     def onFitSelected(self, event=None):
@@ -1304,7 +1320,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             dgroup.fit_history = []
 
         dgroup.fit_history.insert(0, result)
-        self.plot_choice.SetStringSelection(PLOT_FIT)
+        # self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
         self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
