@@ -159,6 +159,11 @@ class FitResultFrame(wx.Frame):
                                        font=Font(12), colour=self.colors.title,
                                        style=LCEN)
 
+        opts = dict(default=False, size=(200, -1), action=self.onPlot)
+        self.plot_sub_bline = Check(panel, label='Subtract Baseline?', **opts)
+        self.plot_choice = Choice(panel, size=(150, -1),  choices=PlotChoices,
+                                  action=self.onPlot)
+
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
         sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
@@ -171,6 +176,11 @@ class FitResultFrame(wx.Frame):
         wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
                                         size=(700, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.plot_choice,            (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.plot_sub_bline,         (irow, 2), (1, 1), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
@@ -313,6 +323,9 @@ class FitResultFrame(wx.Frame):
         if self.nfit > len(fhist):
             self.nfit = 0
         return fhist[self.nfit]
+
+    def onPlot(self, event=None):
+        self.peakframe.onPlot()
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -527,10 +540,7 @@ class PrePeakPanel(TaskPanel):
         self.models_peaks = models_peaks
         self.models_other = models_other
 
-#         self.plot_choice = Choice(pan, size=(150, -1),
-#                                   choices=PlotChoices,
-#                                   action=self.onPlot)
-#
+
         self.message = SimpleText(pan,
                                  'first fit baseline, then add peaks to fit model.')
 
@@ -544,6 +554,8 @@ class PrePeakPanel(TaskPanel):
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         # self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
+        # self.plot_choice = Choice(pan, size=(150, -1),  choices=PlotChoices,
+        #                                   action=self.onPlot)
 
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
