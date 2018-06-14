@@ -667,18 +667,18 @@ class XASFrame(wx.Frame):
         MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
                  "Read Fit Model from File", self.onLoadFitResult)
 
-        fsave = MenuItem(self, ppeak_menu, "Save Fit Model",
-                            "Save Fit Model to File", self.onSaveFitResult)
-
-        fexport = MenuItem(self, ppeak_menu, "Export Data and Fit",
-                           "Export Data and Fit",
-                           self.onExportFitResult)
-
-
-        self.afterfit_menus = (fsave, fexport)
-
-        for m in self.afterfit_menus:
-            m.Enable(False)
+#         fsave = MenuItem(self, ppeak_menu, "Save Fit Model",
+#                             "Save Fit Model to File", self.onSaveFitResult)
+#
+#         fexport = MenuItem(self, ppeak_menu, "Export Data and Fit",
+#                            "Export Data and Fit",
+#                            self.onExportFitResult)
+#
+#
+#         self.afterfit_menus = (fsave, fexport)
+#
+#         for m in self.afterfit_menus:
+#             m.Enable(False)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
@@ -955,15 +955,15 @@ class XASFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-    def onLoadFitResult(self, event=None):
-        self.nb.SetSelection(1)
-        self.nb_panels[1].onLoadFitResult(event=event)
-
-    def onSaveFitResult(self, event=None):
-        self.nb_panels[1].onSaveFitResult(event=event)
-
-    def onExportFitResult(self, event=None):
-        self.nb_panels[1].onExportFitResult(event=event)
+#     def onLoadFitResult(self, event=None):
+#         self.nb.SetSelection(1)
+#         self.nb_panels[1].onLoadFitResult(event=event)
+#
+#     def onSaveFitResult(self, event=None):
+#         self.nb_panels[1].onSaveFitResult(event=event)
+#
+#     def onExportFitResult(self, event=None):
+#         self.nb_panels[1].onExportFitResult(event=event)
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
