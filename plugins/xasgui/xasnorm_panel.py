@@ -269,8 +269,16 @@ class XASNormPanel(TaskPanel):
             return
         last_id = group_ids[-1]
 
-        yarray_name = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
-        ylabel = getattr(plotlabels, yarray_name)
+        groupname = self.controller.file_groups[str(last_id)]
+        dgroup = self.controller.get_group(groupname)
+
+        plot_choices = PlotSel_Choices
+        if dgroup.datatype != 'xas':
+            plot_choices = PlotSel_Choices_nonxas
+
+        ytitle = self.plotsel_op.GetStringSelection()
+        yarray_name = plot_choices[ytitle]
+        ylabel = getattr(plotlabels, yarray_name, ytitle)
 
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
@@ -541,9 +549,16 @@ class XASNormPanel(TaskPanel):
         if getattr(dgroup, 'plot_y2label', None) is not None:
             popts['y2label'] = dgroup.plot_y2label
 
+        plot_choices = PlotSel_Choices
+        if dgroup.datatype != 'xas':
+            plot_choices = PlotSel_Choices_nonxas
+
         if multi:
-            yarray_name = PlotSel_Choices[self.plotsel_op.GetStringSelection()]
-            popts['ylabel'] = getattr(plotlabels, yarray_name)
+            ylabel = self.plotsel_op.GetStringSelection()
+            yarray_name = plot_choices[ylabel]
+            if dgroup.datatype == 'xas':
+                ylabel = getattr(plotlabels, yarray_name, ylabel)
+            popts['ylabel'] = ylabel
 
         plot_extras = None
         if new:
