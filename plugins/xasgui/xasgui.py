@@ -597,7 +597,7 @@ class XASFrame(wx.Frame):
         fmenu = wx.Menu()
         group_menu = wx.Menu()
         data_menu = wx.Menu()
-        ppeak_menu = wx.Menu()
+        # ppeak_menu = wx.Menu()
         m = {}
 
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
@@ -664,8 +664,8 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
-        MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
-                 "Read Fit Model from File", self.onLoadFitResult)
+        # MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
+        #          "Read Fit Model from File", self.onLoadFitResult)
 
 #         fsave = MenuItem(self, ppeak_menu, "Save Fit Model",
 #                             "Save Fit Model to File", self.onSaveFitResult)
@@ -684,7 +684,7 @@ class XASFrame(wx.Frame):
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(data_menu, "Data")
 
-        self.menubar.Append(ppeak_menu, "PreEdgePeaks")
+        # self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -955,9 +955,9 @@ class XASFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-#     def onLoadFitResult(self, event=None):
-#         self.nb.SetSelection(1)
-#         self.nb_panels[1].onLoadFitResult(event=event)
+    def onLoadFitResult(self, event=None):
+        self.nb.SetSelection(1)
+        self.nb_panels[1].onLoadFitResult(event=event)
 #
 #     def onSaveFitResult(self, event=None):
 #         self.nb_panels[1].onSaveFitResult(event=event)
