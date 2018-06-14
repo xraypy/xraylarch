@@ -530,10 +530,10 @@ class XASFrame(wx.Frame):
             callback()
 
     def onSelAll(self, event=None):
-        self.controller.filelist.set_all()
+        self.controller.filelist.select_all()
 
     def onSelNone(self, event=None):
-        self.controller.filelist.set_none()
+        self.controller.filelist.select_none()
 
     def init_larch(self):
         self.SetStatusText('initializing Larch')
