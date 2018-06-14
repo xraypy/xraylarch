@@ -102,26 +102,25 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 MIN_CORREL = 0.0010
 
-
-COMMANDS = {'set_yerr_const':  "{group:s}.yerr_fit = {group:s}.yerr*ones(len({group:s}.xdat))",
-            'set_yerr_array': """{group:s}.yerr_fit = 1.0*{group:s}.yerr
+COMMANDS = {'set_yerr_const':
+            "{group:s}.yerr_fit = {group:s}.yerr*ones(len({group:s}.xdat))",
+            'set_yerr_array':
+            """{group:s}.yerr_fit = 1.0*{group:s}.yerr
 yerr_min = 1.e-9*{group:s}.ydat.mean()
 {group:s}.yerr_fit[where({dgroup:s}.yerr < yerr_min)] = yerr_min""",
             'dofit': """
 peakresult = peakmodel.fit({group:s}.ydat[{imin:d}:{imax:d}], params=peakpars,
                            x={group:s}.xdat[{imin:d}:{imax:d}],
                            weights=1.0/{group:s}.yerr_fit[{imin:d}:{imax:d}])
-peakresult.xdat = {group:s}.xdat[{imin:d}:{imax:d}]
 peakresult.ydat = {group:s}.ydat[{imin:d}:{imax:d}]
 peakresult.yerr = {group:s}.yerr_fit[{imin:d}:{imax:d}]
 peakresult.ycomps = peakmodel.eval_components(params=peakresult.params, x={group:s}.xdat[{imin:d}:{imax:d}])
-{group:s}.ycomps = peakresult.ycomps
-{group:s}.yfit  = peakresult.best_fit
+peakresult.user_options = {user_opts:s}
+if not hasattr({group:s}, 'fit_history'): {group:s}.fit_history = []
+{group:s}.fit_history.insert(0, peakresult)
 """}
 
-
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
-
 
 class FitResultFrame(wx.Frame):
     config_sect = 'prepeak'
@@ -453,6 +452,7 @@ class FitResultFrame(wx.Frame):
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
         self.Refresh()
+
 
 class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
@@ -1300,7 +1300,15 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
     def onFitModel(self, event=None):
         dgroup = self.build_fitmodel()
         opts = self.read_form()
-        i1, i2 = self.get_xranges(dgroup.xdat)
+        # add bkg_component to saved user options
+        bkg_comps = []
+        for label, comp in self.fit_components.items():
+            if comp.bkgbox.IsChecked():
+                bkg_comps.append(label)
+        opts['bkg_components'] = bkg_comps
+
+        imin, imax = self.get_xranges(dgroup.xdat)
+
         if not hasattr(dgroup, 'yerr'):
             dgroup.yerr = 1.0
 
@@ -1311,29 +1319,18 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         cmds = ["## do peak fit: ",
                 COMMANDS[yerr_type],
                 COMMANDS['dofit']]
+
         cmd = '\n'.join(cmds)
-        self.larch_eval(cmd.format(group=dgroup.groupname, imin=i1, imax=i2))
-        result = self.larch_get("peakresult")
+        self.larch_eval(cmd.format(group=dgroup.groupname,
+                                   imin=imin, imax=imax,
+                                   user_opts=repr(opts)))
 
-        ## hacks to save user options
-        result.user_options = opts
-        bkg_comps = []
-        for label, comp in self.fit_components.items():
-            if comp.bkgbox.IsChecked():
-                bkg_comps.append(label)
-        result.user_options['bkg_components'] = bkg_comps
+        self.autosave_modelresult(self.larch_get("peakresult"))
 
-        self.autosave_modelresult(result)
-        if not hasattr(dgroup, 'fit_history'):
-            dgroup.fit_history = []
-
-        dgroup.fit_history.insert(0, result)
-        # self.plot_choice.SetStringSelection(PLOT_FIT)
         self.onPlot()
         self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
         self.parent.subframes['prepeak_result_frame'].show_results()
-        [m.Enable(True) for m in self.parent.afterfit_menus]
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
@@ -1349,10 +1346,10 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
-        xasguidir = os.path.join(site_config.usr_larchdir, 'xasgui')
-        if not os.path.exists(xasguidir):
+        confdir = os.path.join(site_config.usr_larchdir, 'xas_viewer')
+        if not os.path.exists(confdir):
             try:
-                os.makedirs(xasguidir)
+                os.makedirs(confdir)
             except OSError:
                 print("Warning: cannot create XAS GUI user folder")
                 return
@@ -1361,6 +1358,4 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             return
         if fname is None:
             fname = 'autosave.fitresult'
-        fname = os.path.join(xasguidir, fname)
-
-        self.save_fit_result(result, fname)
+        self.save_fit_result(result, os.path.join(confdir, fname))
