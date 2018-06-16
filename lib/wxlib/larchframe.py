@@ -155,7 +155,7 @@ class LarchWxShell(object):
         else:
             if add_history:
                 self.input.AddToHistory(text)
-                self.write(">%s\n" % text)
+                self.write("%s\n" % text)
             ret = self._larch.eval(text, add_history=add_history)
             if self._larch.error:
                 self._larch.input.clear()
