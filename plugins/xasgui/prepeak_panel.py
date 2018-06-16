@@ -102,23 +102,31 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 MIN_CORREL = 0.0010
 
-COMMANDS = {'set_yerr_const':
-            "{group:s}.yerr_fit = {group:s}.yerr*ones(len({group:s}.xdat))",
-            'set_yerr_array':
-            """{group:s}.yerr_fit = 1.0*{group:s}.yerr
-yerr_min = 1.e-9*{group:s}.ydat.mean()
-{group:s}.yerr_fit[where({dgroup:s}.yerr < yerr_min)] = yerr_min""",
-            'dofit': """
-peakresult = peakmodel.fit({group:s}.ydat[{imin:d}:{imax:d}], params=peakpars,
-                           x={group:s}.xdat[{imin:d}:{imax:d}],
-                           weights=1.0/{group:s}.yerr_fit[{imin:d}:{imax:d}])
-peakresult.ydat = {group:s}.ydat[{imin:d}:{imax:d}]
-peakresult.yerr = {group:s}.yerr_fit[{imin:d}:{imax:d}]
-peakresult.ycomps = peakmodel.eval_components(params=peakresult.params, x={group:s}.xdat[{imin:d}:{imax:d}])
+COMMANDS = {}
+COMMANDS['prepfit'] = """
+peakdat = group()
+peakdat.xdat = {group:s}.xdat[{imin:d}:{imax:d}]
+peakdat.ydat = {group:s}.ydat[{imin:d}:{imax:d}]
+peakdat.init_fit = peakmodel.eval(peakpars, x={group:s}.xdat[{imin:d}:{imax:d}])
+peakdat.init_ycomps = peakmodel.eval_components(params=peakpars, x={group:s}.xdat[{imin:d}:{imax:d}])
+if not hasattr({group:s}, 'peakfit_history'): {group:s}.peakfit_history = []"""
+
+COMMANDS['set_yerr_const'] = "peakdat.yerr = {group:s}.yerr*ones(len(peakdat.xdat))"
+COMMANDS['set_yerr_array'] = """peakdat.yerr = 1.0*{group:s}.yerr[{imin:d}:{imax:d}]
+yerr_min = 1.e-9*peakdat.ydat.mean()
+peakdat.yerr[where({group:s}.yerr < yerr_min)] = yerr_min"""
+
+COMMANDS['dofit'] = """
+peakresult = peakmodel.fit(peakdat.ydat, params=peakpars, x=peakdat.xdat, weights=1.0/peakdat.yerr)
+peakresult.xdat = peakdat.xdat[:]
+peakresult.ydat = peakdat.ydat[:]
+peakresult.yerr = peakdat.yerr[:]
+peakresult.init_fit = peakdat.init_fit[:]
+peakresult.init_ycomps = peakdat.init_ycomps
+peakresult.ycomps = peakmodel.eval_components(params=peakresult.params, x=peakdat.xdat)
 peakresult.user_options = {user_opts:s}
-if not hasattr({group:s}, 'fit_history'): {group:s}.fit_history = []
-{group:s}.fit_history.insert(0, peakresult)
-"""}
+{group:s}.peakfit_history.insert(0, peakresult)"""
+
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
@@ -315,9 +323,7 @@ class FitResultFrame(wx.Frame):
         self.Raise()
 
     def get_fitresult(self, nfit=0):
-        fhist = getattr(self.datagroup, 'fit_history', [])
-        self.fit_history = fhist
-        # if confused, get latest fit (ie, nfit=0)
+        fhist = getattr(self.datagroup, 'peakfit_history', [])
         self.nfit = max(0, nfit)
         if self.nfit > len(fhist):
             self.nfit = 0
@@ -386,7 +392,7 @@ class FitResultFrame(wx.Frame):
         _ = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
-        for i, res in enumerate(self.fit_history):
+        for i, res in enumerate(self.peakfit_history):
             args = ['%2.2d' % (i+1)]
             for attr in ('ndata', 'nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
                 val = getattr(res.result, attr)
@@ -406,7 +412,7 @@ class FitResultFrame(wx.Frame):
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
+        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.peakfit_history)))
 
         parts = []
         model_repr = result.model._reprstring(long=True)
@@ -743,7 +749,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                     wids.vary.SetStringSelection(varstr)
 
     def onPlotModel(self, evt=None):
-        g = self.build_fitmodel()
+        g = self.build_fitmodel(dgroup)
         self.onPlot(choice=PLOT_FIT)
 
     def onPlot(self, evt=None, choice=PLOT_FIT):
@@ -861,8 +867,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                 for label, ycomp in dgroup.ycomps.items():
                     icomp +=1
                     fcomp = self.fit_components[label]
-                    # print("ycomp: ", plot_choice, label, len(ycomp), len(dgroup.xfit),
-                    #       fcomp.bkgbox.IsChecked(), opts['plot_sub_bline'], icomp, ncomp)
                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
                         ppanel.oplot(dgroup.xfit, ycomp, label=label,
                                      delay_draw=(icomp!=ncomp), style='short dashed')
@@ -891,8 +895,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                 popts.update(opts)
                 axes.plot([x], [y], **popts)
             elif etype == 'vline':
-                popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888',
-                         'label': '_nolegend_'}
+                popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888'}
                 popts.update(opts)
                 axes.axvline(x, **popts)
         ppanel.canvas.draw()
@@ -1245,9 +1248,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         i2 = index_of(x, opts['emax'] + en_eps) + 1
         return i1, i2
 
-    def build_fitmodel(self):
+    def build_fitmodel(self, dgroup):
         """ use fit components to build model"""
-        dgroup = self.controller.get_group()
         # self.summary = {'components': [], 'options': {}}
         peaks = []
         cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
@@ -1281,24 +1283,23 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
 
         cmds.extend(modcmds)
-        gname = dgroup.groupname
 
-        if dgroup is not None:
-            i1, i2 = self.get_xranges(dgroup.xdat)
-            cmds.append("%s.xfit = %s.xdat[%i:%i]" % (gname, gname, i1, i2))
-            cmds.append("%s.yfit = peakmodel.eval(peakpars, x=%s.xfit)" % (gname, gname))
-            cmds.append("%s.ycomps = peakmodel.eval_components(params=peakpars, x=%s.xfit)" % (gname, gname))
+        imin, imax = self.get_xranges(dgroup.xdat)
+        cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname, imin=imin, imax=imax))
 
         self.larch_eval("\n".join(cmds))
-        return dgroup
 
     def onFitSelected(self, event=None):
-        dgroup = self.build_fitmodel()
+        dgroup = self.controller.get_group()
+        self.build_fitmodel(dgroup)
         opts = self.read_form()
         # print("fitting selected groups in progress")
 
     def onFitModel(self, event=None):
-        dgroup = self.build_fitmodel()
+        dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
+        self.build_fitmodel(dgroup)
         opts = self.read_form()
         # add bkg_component to saved user options
         bkg_comps = []
