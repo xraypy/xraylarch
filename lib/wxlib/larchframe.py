@@ -441,8 +441,7 @@ class LarchFrame(wx.Frame):
             path, fname = os.path.split(fout)
             os.chdir(path)
             text = "run('%s')" % fname
-            self.larchshell.write(">%s\n" % text)
-            # self._larch.input.historAddToHistory(text)
+            self.larchshell.write("%s\n" % text)
             wx.CallAfter(self.larchshell.eval, text)
         dlg.Destroy()
 
@@ -461,8 +460,7 @@ class LarchFrame(wx.Frame):
 
     def onText(self, event=None):
         text =  event.GetString()
-
-        self.larchshell.write(">%s\n" % text)
+        self.larchshell.write("%s\n" % text)
         self.input.Clear()
         if text.lower() in ('quit', 'exit'):
             self.onExit()
