@@ -703,26 +703,29 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
 
 
 @larch.ValidateLarchPlugin
-def _fitplot(x, y, panel='top', win=1, _larch=None, wxparent=None, size=None,
-          force_draw=True,  **kws):
-    """fitplot(x, y, yerr=None, resid=None, win=1, options)
+def _fitplot(x, y, y2=None, panel='top', win=1, _larch=None, wxparent=None, size=None,
+              **kws):
+    """fit_plot(x, y, y2=None, win=1, options)
 
-    Plot x, y values for a fit using a StackedPlot with main plot of data in the top
-    panel, and the residual shown in the bottom panel.   By default, arrays will be
-    plotted in the top panel, and you must specify `panel='bot'` to plot an array in
-    the bottom panel.
+    Plot x, y values in the top of a StackedPlot. If y2 is not None, then x, y2 values
+    will also be plotted in the top frame, and the residual (y-y2) in the bottom panel.
+
+    By default, arrays will be plotted in the top panel, and you must
+    specify `panel='bot'` to plot an array in the bottom panel.
 
     Parameters are the same as for plot() and oplot()
 
     See Also: plot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, stacked=True, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          stacked=True, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
-    plotter.plot(x, y, panel=panel, **kws)
-    if force_draw:
-        wx_update(_larch=_larch)
+    plotter.plot(x, y, panel='top', **kws)
+    if y2 is not None:
+        plotter.oplot(x, y2, panel='top', **kws)
+        plotter.plot(x, y2-y, panel='bot')
 
 @larch.ValidateLarchPlugin
 def _hist(x, bins=10, win=1, new=False,
