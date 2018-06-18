@@ -228,9 +228,8 @@ class TestFrame(wx.Frame):
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
-        wid = wx.NewId()
-        fmenu.Append(wid, "Show Widget Frame\tCtrl+I", "")
-        # wx.EVT_MENU(self, wid, self.onShowInspection)
+        im = fmenu.Append(wid, "Show Widget Frame\tCtrl+I", "")
+        sellf.Bind(wx.EVT_MENU, self.onShowInspection, im.Id)
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
