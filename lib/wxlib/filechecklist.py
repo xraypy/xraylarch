@@ -45,9 +45,8 @@ class FileCheckList(wx.CheckListBox):
                                   ("Select None",       self.select_none),
                                   ("Select None above", self.select_noneabove),
                                   ("Select None below", self.select_nonebelow)):
-                wid = wx.NewId()
                 self.rclick_actions[wid] = (title, action)
-                self.Bind(wx.EVT_MENU, self.onRightEvent, id=wid)
+                self.Bind(wx.EVT_MENU, self.onRightEvent)
 
     def onRightClick(self, evt=None):
         menu = wx.Menu()
