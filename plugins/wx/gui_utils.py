@@ -57,9 +57,8 @@ class wxLarchTimer(wx.MiniFrame):
        wx.MiniFrame.__init__(self, parent, -1, '')
        self.Show(False)
        self.polltime = polltime
-       tid = wx.NewId()
-       self.timer = wx.Timer(self, tid)
-       wx.EVT_TIMER(self, tid, self.OnTimer)
+       self.timer = wx.Timer(self)
+       self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
        self.symtable = _larch.symtable
        self.wxping =self.symtable.get_symbol('_sys.wx.ping')
 
