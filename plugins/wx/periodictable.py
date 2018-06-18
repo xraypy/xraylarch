@@ -91,7 +91,7 @@ class PeriodicTablePanel(wx.Panel):
         if sys.platform.lower().startswith('win'):
             self.elemfont     = wx.Font( 8,  wx.SWISS,   wx.NORMAL, wx.BOLD)
             self.subtitlefont = wx.Font( 8,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
-            
+
         self.BuildPanel()
 
     def onKey(self, event=None, name=None):
@@ -171,7 +171,7 @@ class PeriodicTablePanel(wx.Panel):
                 return
             if textwid is None and label is not None:
                 textwid = self.ctrls[label]
-            
+
             if textwid.GetBackgroundColour() == self.REG_BG:
                 textwid.SetForegroundColour(self.SEL_FG)
                 textwid.SetBackgroundColour(self.SEL_BG)
@@ -181,7 +181,7 @@ class PeriodicTablePanel(wx.Panel):
             elif textwid.GetBackgroundColour() == self.NEG_BG:
                 textwid.SetForegroundColour(self.REG_FG)
                 textwid.SetBackgroundColour(self.REG_BG)
-                        
+
             znum = self.syms.index(label)
             name = self.names[znum]
 
@@ -193,7 +193,7 @@ class PeriodicTablePanel(wx.Panel):
 
 
         else:
-        
+
             textwid = None
             if (label is None and event is not None and
                 event.Id in self.wids):
@@ -224,8 +224,7 @@ class PeriodicTablePanel(wx.Panel):
     def BuildPanel(self):
         sizer = wx.GridBagSizer(9, 20)
         for name, coords in self.elems.items():
-            wid = wx.NewId()
-            tw = wx.StaticText(self, wid, label=name)
+            tw = wx.StaticText(self, -1, label=name)
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
             tw.SetBackgroundColour(self.REG_BG)
@@ -233,7 +232,7 @@ class PeriodicTablePanel(wx.Panel):
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
-            self.wids[wid] = tw
+            self.wids[tw.Id] = tw
             self.ctrls[name] = tw
             sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
         self.title = wx.StaticText(self, -1, label=' Select Element ')
@@ -269,8 +268,8 @@ class PeriodicTablePanel(wx.Panel):
         sizer.Fit(self)
 
     def onLoseFocus(self, event=None):     event.Skip()
-        
-    def onGetFocus(self, event=None):      event.Skip()        
+
+    def onGetFocus(self, event=None):      event.Skip()
 
     def set_subtitle(self, label, index=0):
         if index not in (0, 1): index = 0
