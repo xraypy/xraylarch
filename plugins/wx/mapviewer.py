@@ -62,13 +62,12 @@ import scipy.stats as stats
 
 from wxmplot import PlotFrame
 
-from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
-                     pack, Popup, Button, MenuItem, Choice, Check,
-                     GridPanel, FileSave, HLine)
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.wxlib import LarchPanel, LarchFrame
+from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
+                         FloatCtrl, Font, pack, Popup, Button, MenuItem,
+                         Choice, Check, GridPanel, FileSave, HLine)
 from larch.utils.strutils import bytes2str, version_ge
 
 from larch_plugins.wx.tomoimageframe import TomographyFrame
@@ -1407,8 +1406,10 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         config_grp = ensure_subgroup('config',xrmmap)
         notes_grp =  ensure_subgroup('notes',config_grp)
         for key in notes_grp.attrs.keys():
-            notes[key] = bytes2str(notes_grp.attrs[key])
-
+            try:
+                notes[key] = bytes2str(notes_grp.attrs[key])
+            except:
+                pass
         note_title = ['Facility','Run Cycle','Proposal Number','User group']
         note_str = ['','','','']
         if 'beamline' in notes and 'facility' in notes:
