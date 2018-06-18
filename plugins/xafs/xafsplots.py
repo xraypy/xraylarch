@@ -17,7 +17,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-from numpy import gradient, ndarray
+from numpy import gradient, ndarray, diff
 from larch import Group, ValidateLarchPlugin
 from larch.utils import (index_of, index_nearest)
 
@@ -710,6 +710,103 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
 #enddef
 
 
+@ValidateLarchPlugin
+def plot_prepeak(dgroup, nfit=0, subtract_baseline=False,
+                 with_residual=False, win=1, _larch=None):
+    """plot pre-edge peak fit, as from XAS Viewer
+
+    dgroup must have a 'peakfit_history' attribute
+    """
+    if not hasattr(dgroup, 'peakfit_history'):
+        raise ValueError('Group needs peakfit_history list')
+    #endif
+    result = dgroup.peakfit_history[nfit]
+    opts = result.user_options
+
+    xeps = min(diff(dgroup.xdat)) / 5.
+    xdat = result.xdat
+    ydat = result.ydat
+    yfit = result.best_fit
+
+    i1 = index_of(dgroup.xdat, opts['emin'] + xeps)
+    i2 = index_of(dgroup.xdat, opts['emax'] + xeps) + 1
+
+    # plot a slightly larger range, to show range
+    xspan = dgroup.xdat[i1:i2]
+    xrange = max(xspan) - min(xspan)
+    pxmin = min(xspan) - 0.05 * xrange
+    pxmax = max(xspan) + 0.05 * xrange
+
+    i1 = index_of(dgroup.xdat, pxmin)
+    i2 = index_of(dgroup.xdat, pxmax) + 1
+    yspan = ydat[i1:i2]
+    yrange = max(yspan) - min(yspan)
+    pymin = min(yspan) - 0.05 * yrange
+    pymax = max(yspan) + 0.05 * yrange
+
+    title = "pre_edge peak"
+    if subtract_baseline:
+        title = "pre_edge baesline"
+    #endif
+
+    plotopts = dict(xmin=pxmin, xmax=pxmax, ymin=pymin, ymax=pymax,
+                    title='%s:\n%s' % (opts['filename'], title),
+                    xlabel='Energy (eV)', ylabel=opts['array_desc'],
+                    delay_draw=True, show_legend=True, style='solid',
+                    linewidth=3, marker='None', markersize=4,
+                    win=win, _larch=_larch)
+
+    plot_extras = []
+    if opts['show_fitrange']:
+        popts = {'color': '#DDDDCC'}
+        plot_extras.append(('vline', opts['emin'], None, popts))
+        plot_extras.append(('vline', opts['emax'], None, popts))
+    #endif
+
+    if opts['show_peakrange']:
+        popts = {'marker': '+', 'size': 4}
+        ylo = ydat[index_of(xdat, opts['elo'])]
+        yhi = ydat[index_of(xdat, opts['ehi'])]
+        plot_extras.append(('marker', opts['elo'], ylo, popts))
+        plot_extras.append(('marker', opts['ehi'], yhi, popts))
+    #endif
+    if opts['show_centroid']:
+        popts = {'color': '#EECCCC'}
+        pcen = result.params.get('fit_centroid', None)
+        if pcen is not None:
+            plot_extras.append(('vline', pcen.value, None,  popts))
+        #endif
+    #endif
+    _plot(dgroup.xdat, dgroup.ydat, new=True, label='data', **plotopts)
+
+    _oplot(xdat, yfit, label='best_fit', **plotopts)
+
+    plotopts.update(dict(style='short dashed', linewidth=2, marker='None'))
+    if hasattr(result, 'ycomps'):
+        ncomp = len(result.ycomps)
+        icomp = 0
+        for label, ycomp in result.ycomps.items():
+            # if label in opts['bkg_components']: print("B ", label)
+            _oplot(xdat, ycomp, label=label, delay_draw=True,
+                   style='short dashed', win=win, _larch=_larch)
+        #endfor
+    #endif
+
+    for etype, x, y, popts in plot_extras:
+        popts.update(dict(win=win, _larch=_larch))
+        if etype == 'marker':
+            _plot_marker(x, y, delay_draw=True, **popts)
+        elif etype == 'vline':
+            opts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888',
+                    'label': '_nolegend_'}
+            opts.update(popts)
+            _plot_axvline(x, delay_draw=True,  **opts)
+        #endif
+    #endfor
+    _getDisplay(win=win, _larch=_larch).panel.canvas.draw()
+#enddef
+
+
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs"""
     if _larch is None:
@@ -728,4 +825,5 @@ def registerLarchPlugin():
                       'plot_path_r': plot_path_r,
                       'plot_paths_k': plot_paths_k,
                       'plot_paths_r': plot_paths_r,
+                      'plot_prepeak': plot_prepeak,
                       })
