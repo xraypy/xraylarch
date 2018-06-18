@@ -1492,7 +1492,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                                 action=partial(self.onXRF, as_mca2=True))
         self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
                                                 action=self.onReport)
-#         self.cor = Check(pane, label='Correct Deadtime?')
+        #  self.cor = Check(pane, label='Correct Deadtime?')
         legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
 
         ######################################
@@ -2550,44 +2550,36 @@ class MapViewerFrame(wx.Frame):
                  'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
         fmenu.AppendSeparator()
 
-        mid = wx.NewId()
-        fmenu.Append(mid,  'Correct Deadtime',
-                     'Correct Deadtime',
-                     kind=wx.ITEM_CHECK)
-        fmenu.Check(mid, self.dtcor) ## True
-        self.Bind(wx.EVT_MENU, self.onCorrectDeadtime, id=mid)
+        cmenu = fmenu.Append(-1, 'Correct Deadtime',
+                             'Correct Deadtime',
+                             kind=wx.ITEM_CHECK)
+        fmenu.Check(cmenu.Id, self.dtcor) ## True
+        self.Bind(wx.EVT_MENU, self.onCorrectDeadtime, id=cmenu.Id)
 
-        mid = wx.NewId()
-        fmenu.Append(mid,  'Ignore First/Last Columns',
-                     'Ignore First/Last Columns',
-                     kind=wx.ITEM_CHECK)
-        fmenu.Check(mid, self.hotcols) ## False
-        self.Bind(wx.EVT_MENU, self.onHotColumns, id=mid)
+        cmenu = fmenu.Append(-1, 'Ignore First/Last Columns',
+                             'Ignore First/Last Columns',
+                             kind=wx.ITEM_CHECK)
+        fmenu.Check(cmenu.Id, self.hotcols) ## False
+        self.Bind(wx.EVT_MENU, self.onHotColumns, id=cmenu.Id)
 
-        mid = wx.NewId()
-        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W',
-                     'Watch HDF5 Files',
-                     kind=wx.ITEM_CHECK)
-        fmenu.Check(mid, self.watch_files) ## False
-        self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
+        cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W',
+                             'Watch HDF5 Files',
+                             kind=wx.ITEM_CHECK)
+        fmenu.Check(cmenu.Id, self.watch_files) ## False
+        self.Bind(wx.EVT_MENU, self.onWatchFiles, id=cmenu.Id)
 
-        mid = wx.NewId()
-        fmenu.Append(mid,  'Display 1DXRD for areas',
-                     'Display 1DXRD for areas',
-                     kind=wx.ITEM_CHECK)
-        fmenu.Check(mid, self.showxrd) ## False
-        self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=mid)
+        cmenu = fmenu.Append(-1, 'Display 1DXRD for areas',
+                            'Display 1DXRD for areas',
+                             kind=wx.ITEM_CHECK)
+        fmenu.Check(cmenu.Id, self.showxrd) ## False
+        self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=cmenu.Id)
 
         fmenu.AppendSeparator()
-
-
         MenuItem(self, fmenu, '&Quit\tCtrl+Q',
                   'Quit program', self.onClose)
-
         hmenu = wx.Menu()
-        ID_ABOUT = wx.NewId()
-        hmenu.Append(ID_ABOUT, '&About', 'About GSECARS MapViewer')
-        self.Bind(wx.EVT_MENU, self.onAbout, id=ID_ABOUT)
+        cmenu = hmenu.Append(-1, '&About', 'About GSECARS MapViewer')
+        self.Bind(wx.EVT_MENU, self.onAbout, id=cmenu.Id)
 
         self.menubar.Append(fmenu, '&File')
         self.menubar.Append(hmenu, '&Help')
