@@ -10,7 +10,7 @@ import wx
 from wxmplot import PlotPanel
 
 from wxutils import (SimpleText, pack, Button, Choice, Check, MenuItem,
-                     GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font)
+                     Popup, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 import larch
 from larch import Group
@@ -78,7 +78,7 @@ class AthenaImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-        self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False, 
+        self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False,
                                      _larch=_larch)
         self.allgroups = []
         for item in dir(self.a_project):
@@ -94,7 +94,17 @@ class AthenaImporter(wx.Frame) :
     def onOK(self, event=None):
         """generate script to import groups"""
         namelist = [str(n) for n in self.grouplist.GetCheckedStrings()]
-        if self.read_ok_cb is not None and len(namelist) > 0:
+        if len(namelist) == 0:
+
+            cancel = Popup(self, """No data groups selected.
+        Cancel import from this project?""", 'Cancel Import?',
+                           style=wx.YES_NO)
+            if wx.ID_YES == cancel:
+                self.Destroy()
+            else:
+                return
+
+        if self.read_ok_cb is not None:
             self.read_ok_cb(self.filename, namelist)
 
         self.Destroy()
