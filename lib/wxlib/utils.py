@@ -97,8 +97,7 @@ def MenuItem(parent, menu, label='', longtext='', action=None):
     """Add Item to a Menu, with action
     m = Menu(parent, menu, label, longtext, action=None)
     """
-    wid = wx.NewId()
-    item = menu.Append(wid, label, longtext)
+    item = menu.Append(-1, label, longtext)
     if callable(action):
         parent.Bind(wx.EVT_MENU, action, item)
     return item
