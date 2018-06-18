@@ -32,7 +32,6 @@ WXLARCH_INP = None
 UPDATE_GROUPNAME = '_sys.wx'
 UPDATE_GROUP = None
 UPDATE_VAR = 'force_wxupdate'
-ID_TIMER = wx.NewId()
 
 def update_requested():
     "check if update has been requested"
