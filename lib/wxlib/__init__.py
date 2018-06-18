@@ -18,6 +18,7 @@ from .dates import hms, DateTimeCtrl
 from .dialogs import (OkCancel, FileOpen, FileSave, SelectWorkdir, fix_filename)
 from .text import SimpleText, TextCtrl, LabeledTextCtrl, HyperText
 from .filechecklist import FileCheckList, FileDropTarget
+from .listbox import EditableListBox
 from .gridpanel import GridPanel
 from .icons import get_icon
 from .larchframe import LarchFrame, LarchPanel
