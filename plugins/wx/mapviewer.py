@@ -3203,40 +3203,38 @@ class OpenMapFolder(wx.Dialog):
     def __init__(self):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(350, 750))
+        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(475, 750))
 
         panel = wx.Panel(self)
 
         ################################################################################
-        fldrTtl   = SimpleText(panel,  label='XRM Map Folder:' )
-        self.Fldr = wx.TextCtrl(panel, size=(320, 25)          )
-        fldrBtn   = Button(panel,      label='Browse...'       )
+        fldrTtl   = SimpleText(panel,  label='Map Folder:' )
+        self.Fldr = wx.TextCtrl(panel, size=(300, -1))
+        fldrBtn   = Button(panel,      label='Browse...' , size=(75, -1))
 
         self.Bind(wx.EVT_BUTTON, self.onBROWSE, fldrBtn)
 
-        fldrsizer = wx.BoxSizer(wx.VERTICAL)
-        fldrsizer.Add(fldrTtl,      flag=wx.TOP|wx.LEFT,           border=5)
-        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.TOP|wx.LEFT, border=5)
-        fldrsizer.Add(fldrBtn,      flag=wx.TOP|wx.LEFT,           border=5)
+        fldrsizer = wx.BoxSizer(wx.HORIZONTAL)
+        fldrsizer.Add(fldrTtl,      flag=wx.LEFT|wx.ALIGN_CENTER,  border=2)
+        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.LEFT, border=2)
+        fldrsizer.Add(fldrBtn,      flag=wx.LEFT,           border=2)
         ################################################################################
         ChkTtl        = SimpleText(panel,  label='Build map including data:' )
         self.ChkBx = [ Check(panel, label='XRF'   ),
                        Check(panel, label='2DXRD' ),
                        Check(panel, label='1DXRD (requires calibration file)' )]
 
-        for chkbx in self.ChkBx: chkbx.Bind(wx.EVT_CHECKBOX, self.checkOK)
+        for chkbx in self.ChkBx:
+            chkbx.Bind(wx.EVT_CHECKBOX, self.checkOK)
 
-        ckbxsizer1 = wx.BoxSizer(wx.VERTICAL)
-        ckbxsizer1.Add(self.ChkBx[1], flag=wx.BOTTOM|wx.LEFT, border=5)
-        ckbxsizer1.Add(self.ChkBx[2], flag=wx.BOTTOM|wx.LEFT, border=5)
-
-        ckbxsizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        ckbxsizer2.Add(self.ChkBx[0],  flag=wx.RIGHT, border=15)
-        ckbxsizer2.Add(ckbxsizer1, flag=wx.RIGHT, border=15)
+        cbsizer = wx.BoxSizer(wx.HORIZONTAL)
+        cbsizer.Add(self.ChkBx[0])
+        cbsizer.Add(self.ChkBx[1])
+        cbsizer.Add(self.ChkBx[2])
 
         ckbxsizer = wx.BoxSizer(wx.VERTICAL)
-        ckbxsizer.Add(ChkTtl, flag=wx.BOTTOM|wx.LEFT, border=5)
-        ckbxsizer.Add(ckbxsizer2, flag=wx.BOTTOM|wx.LEFT, border=5)
+        ckbxsizer.Add(ChkTtl, flag=wx.BOTTOM|wx.LEFT)
+        ckbxsizer.Add(cbsizer)
         ################################################################################
         infoTtl =  [ SimpleText(panel,  label='Facility'),
                      SimpleText(panel,  label='Beamline'),
@@ -3337,9 +3335,9 @@ class OpenMapFolder(wx.Dialog):
         h5cmprsizer.Add(self.H5cmprInfo[0], flag=wx.RIGHT, border=5)
         h5cmprsizer.Add(self.H5cmprInfo[1], flag=wx.RIGHT, border=5)
         ################################################################################
-        hlpBtn       = wx.Button(panel,   wx.ID_HELP   )
-        okBtn        = wx.Button(panel,   wx.ID_OK     )
-        canBtn       = wx.Button(panel,   wx.ID_CANCEL )
+        hlpBtn       = wx.Button(panel, wx.ID_HELP)
+        okBtn        = wx.Button(panel, wx.ID_OK)
+        canBtn       = wx.Button(panel, wx.ID_CANCEL)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
         minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
@@ -3347,26 +3345,25 @@ class OpenMapFolder(wx.Dialog):
         minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
         ################################################################################
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((-1, 10))
         sizer.Add(fldrsizer,   flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 15))
         sizer.Add(ckbxsizer,   flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
+
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
         sizer.Add(infosizer,   flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
         sizer.Add(xrdsizer,   flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 4))
         sizer.Add(h5cmprsizer, flag=wx.TOP|wx.LEFT, border=5)
-        sizer.Add((-1, 25))
         sizer.Add(minisizer,   flag=wx.ALIGN_RIGHT, border=5)
 
-        panel.SetSizer(sizer)
+
+        pack(panel, sizer)
+        w, h = panel.GetBestSize()
+        w = 25*(2 + int(w*0.04))
+        h = 25*(2 + int(h*0.04))
+        panel.SetSize((w, h))
+
+        # HX
         ################################################################################
 
         ## Set defaults
