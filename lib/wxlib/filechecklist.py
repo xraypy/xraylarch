@@ -45,17 +45,18 @@ class FileCheckList(wx.CheckListBox):
                                   ("Select None",       self.select_none),
                                   ("Select None above", self.select_noneabove),
                                   ("Select None below", self.select_nonebelow)):
-                self.rclick_actions[wid] = (title, action)
+                self.rclick_actions[title] = action
                 self.Bind(wx.EVT_MENU, self.onRightEvent)
 
     def onRightClick(self, evt=None):
         menu = wx.Menu()
-        for wid, val in self.rclick_actions.items():
-            if val[0] == '--sep--':
+        self.rclick_wids = {}
+        for label, action in self.rclick_actions.items():
+            if label == '--sep--':
                 menu.AppendSeparator()
             else:
-                menu.Append(wid, val[0])
-
+                wid = menu.Append(-1, label)
+                self.rclick_wids[wid.Id] = (label, action)
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -77,7 +78,7 @@ class FileCheckList(wx.CheckListBox):
         this  = names[idx]
         do_relist = False
 
-        label, action = self.rclick_actions[event.GetId()]
+        label, action = self.rclick_wids[event.GetId()]
         if label == "Move up" and idx > 0:
             names.pop(idx)
             names.insert(idx-1, this)
