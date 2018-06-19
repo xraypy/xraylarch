@@ -334,7 +334,7 @@ class XASNormPanel(TaskPanel):
         self.wids['autostep'].SetValue(0)
         self.onReprocess()
 
-    def onSelPoint(self, evt=None, opt='__', win=None):
+    def onSelPoint(self, evt=None, opt='__', relative_e0=True, win=None):
         """
         get last selected point from a specified plot window
         and fill in the value for the widget defined by `opt`.
