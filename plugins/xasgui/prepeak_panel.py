@@ -139,6 +139,7 @@ class FitResultFrame(wx.Frame):
         self.parent = parent
         self.peakframe = peakframe
         self.datagroup = datagroup
+        self.peakfit_history = getattr(datagroup, 'peakfit_history', [])
         self.nfit = 0
         self.build()
 
@@ -180,7 +181,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
 
         irow += 1
-        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(12),
+        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(11),
                                         size=(700, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
@@ -323,11 +324,13 @@ class FitResultFrame(wx.Frame):
         self.Raise()
 
     def get_fitresult(self, nfit=0):
-        fhist = getattr(self.datagroup, 'peakfit_history', [])
+        if len(self.peakfit_history) < 1:
+            pfhist = getattr(self.datagroup, 'peakfit_history', [])
+            self.peakfit_history = pfhist
         self.nfit = max(0, nfit)
-        if self.nfit > len(fhist):
+        if self.nfit > len(self.peakfit_history):
             self.nfit = 0
-        return fhist[self.nfit]
+        return self.peakfit_history[self.nfit]
 
     def onPlot(self, event=None):
         self.peakframe.onPlot()
@@ -389,7 +392,7 @@ class FitResultFrame(wx.Frame):
         self.peakframe.update_start_values(result.params)
 
     def show_results(self):
-        _ = self.get_fitresult()
+        cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.peakfit_history):
@@ -424,7 +427,7 @@ class FitResultFrame(wx.Frame):
                 parts.append(word)
         desc = ''.join(parts)
         parts = []
-        tlen = 85
+        tlen = 90
         while len(desc) >= tlen:
             i = desc[tlen-1:].find('+')
             if i < 0:
@@ -757,148 +760,164 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         opts = self.read_form()
         dgroup = self.controller.get_group()
-
-        ppeaks = getattr(dgroup, 'prepeaks', None)
-        if ppeaks is None:
-            return
-
-        i1, i2 = self.get_xranges(dgroup.xdat)
-        # i2 = len(ppeaks.baseline) + i1
-
-        if len(dgroup.yfit) > len(ppeaks.baseline):
-            i2 = i1 + len(ppeaks.baseline)
-        # print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
-
-        xdat = 1.0*dgroup.energy
-        ydat = 1.0*dgroup.ydat
-        yfit = 1.0*dgroup.ydat
-        baseline = 1.0*dgroup.ydat
-        yfit[i1:i2] = dgroup.yfit[:i2-i1]
-        baseline[i1:i2] = ppeaks.baseline[:i2-i1]
-
-        if opts['plot_sub_bline']:
-            ydat = ydat - baseline
-            if plot_choice in (PLOT_FIT, PLOT_RESID):
-                yfit = yfit - baseline
-        if plot_choice == PLOT_RESID:
-            resid = ydat - yfit
-
-        _xs = dgroup.energy[i1:i2]
-        xrange = max(_xs) - min(_xs)
-        pxmin = min(_xs) - 0.05 * xrange
-        pxmax = max(_xs) + 0.05 * xrange
-
-        jmin = index_of(dgroup.energy, pxmin)
-        jmax = index_of(dgroup.energy, pxmax) + 1
-
-        _ys = ydat[jmin:jmax]
-        yrange = max(_ys) - min(_ys)
-        pymin = min(_ys) - 0.05 * yrange
-        pymax = max(_ys) + 0.05 * yrange
-
-        title = ' pre-edge fit'
-        if plot_choice == PLOT_BASELINE:
-            title = ' pre-edge baseline'
-            if opts['plot_sub_bline']:
-                title = ' pre-edge peaks'
-
-        array_desc = self.array_choice.GetStringSelection()
-
-        plotopts = {'xmin': pxmin, 'xmax': pxmax,
-                    'ymin': pymin, 'ymax': pymax,
-                    'title': '%s:\n%s' % (opts['filename'], title),
-                    'xlabel': 'Energy (eV)',
-                    'ylabel': opts['array_desc'],
-                    'label': opts['array_desc'],
-                    'delay_draw': True,
-                    'show_legend': True}
-
-        plot_extras = []
-        if opts['show_fitrange']:
-            popts = {'color': '#DDDDCC'}
-            emin = opts['emin']
-            emax = opts['emax']
-            imin = index_of(dgroup.energy, emin)
-            imax = index_of(dgroup.energy, emax)
-
-            plot_extras.append(('vline', emin, None, popts))
-            plot_extras.append(('vline', emax, None, popts))
-
-        if opts['show_peakrange']:
-            popts = {'marker': '+', 'markersize': 6}
-            elo = opts['elo']
-            ehi = opts['ehi']
-            ilo = index_of(dgroup.xdat, elo)
-            ihi = index_of(dgroup.xdat, ehi)
-
-            plot_extras.append(('marker', elo, ydat[ilo], popts))
-            plot_extras.append(('marker', ehi, ydat[ihi], popts))
-
-        if opts['show_centroid']:
-            popts = {'color': '#EECCCC'}
-            ecen = getattr(dgroup.prepeaks, 'centroid', -1)
-            if ecen > min(dgroup.energy):
-                plot_extras.append(('vline', ecen, None,  popts))
-
-        if plot_choice == PLOT_RESID:
-            pframe = self.controller.get_display(win=2, stacked=True)
+        gname = dgroup.groupname
+        if choice == PLOT_BASELINE:
+            cmd = ["newplot({group:s}.xdat, {group:s}.ydat)",
+                   "plot({group:s}.prepeaks.energy, {group:s}.prepeaks.baseline)"]
+            cmd = '\n'.join(cmd)
         else:
-            pframe = self.controller.get_display(win=1)
+            cmd = "plot_prepeak({group:s})"
+        self.larch_eval(cmd.format(group=gname))
 
-        ppanel = pframe.panel
-        axes = ppanel.axes
 
-        plotopts.update(PLOTOPTS_1)
+            #         ppanel.plot(xdat, ydat, **plotopts)
+#         if plot_choice == PLOT_BASELINE:
+#             if not opts['plot_sub_bline']:
+#                 ppanel.oplot(dgroup.prepeaks.energy,
+#                              dgroup.prepeaks.baseline,
+#                              label='baseline', **PLOTOPTS_2)
 
-        ppanel.plot(xdat, ydat, **plotopts)
-        if plot_choice == PLOT_BASELINE:
-            if not opts['plot_sub_bline']:
-                ppanel.oplot(dgroup.prepeaks.energy,
-                             dgroup.prepeaks.baseline,
-                             label='baseline', **PLOTOPTS_2)
-
-        elif plot_choice in (PLOT_FIT, PLOT_RESID):
-            ppanel.oplot(dgroup.energy, yfit,
-                         label='fit', **PLOTOPTS_1)
-
-            if hasattr(dgroup, 'ycomps'):
-                ncomp = len(dgroup.ycomps)
-                icomp = 0
-                for label, ycomp in dgroup.ycomps.items():
-                    icomp +=1
-                    fcomp = self.fit_components[label]
-                    if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
-                        ppanel.oplot(dgroup.xfit, ycomp, label=label,
-                                     delay_draw=(icomp!=ncomp), style='short dashed')
-
-            if plot_choice == PLOT_RESID:
-                _ys = resid
-                yrange = max(_ys) - min(_ys)
-                plotopts['ymin'] = min(_ys) - 0.05 * yrange
-                plotopts['ymax'] = max(_ys) + 0.05 * yrange
-                plotopts['delay_draw'] = False
-                plotopts['ylabel'] = 'data-fit'
-                plotopts['label'] = '_nolegend_'
-
-                pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
-                pframe.Show()
-                # print(" RESIDUAL PLOT  margins: ")
-                # print(" top : ", pframe.panel.conf.margins)
-                # print(" bot : ", pframe.panel_bot.conf.margins)
-
-        for etype, x, y, opts in plot_extras:
-            if etype == 'marker':
-                popts = {'marker': 'o', 'markersize': 4,
-                         'label': '_nolegend_',
-                         'markerfacecolor': 'red',
-                         'markeredgecolor': '#884444'}
-                popts.update(opts)
-                axes.plot([x], [y], **popts)
-            elif etype == 'vline':
-                popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888'}
-                popts.update(opts)
-                axes.axvline(x, **popts)
-        ppanel.canvas.draw()
+#         ppeaks = getattr(dgroup, 'prepeaks', None)
+#         if ppeaks is None:
+#             return
+#
+#         i1, i2 = self.get_xranges(dgroup.xdat)
+#         # i2 = len(ppeaks.baseline) + i1
+#
+#         if len(dgroup.yfit) > len(ppeaks.baseline):
+#             i2 = i1 + len(ppeaks.baseline)
+#         # print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
+#
+#         xdat = 1.0*dgroup.energy
+#         ydat = 1.0*dgroup.ydat
+#         yfit = 1.0*dgroup.ydat
+#         baseline = 1.0*dgroup.ydat
+#         yfit[i1:i2] = dgroup.yfit[:i2-i1]
+#         baseline[i1:i2] = ppeaks.baseline[:i2-i1]
+#
+#         if opts['plot_sub_bline']:
+#             ydat = ydat - baseline
+#             if plot_choice in (PLOT_FIT, PLOT_RESID):
+#                 yfit = yfit - baseline
+#         if plot_choice == PLOT_RESID:
+#             resid = ydat - yfit
+#
+#         _xs = dgroup.energy[i1:i2]
+#         xrange = max(_xs) - min(_xs)
+#         pxmin = min(_xs) - 0.05 * xrange
+#         pxmax = max(_xs) + 0.05 * xrange
+#
+#         jmin = index_of(dgroup.energy, pxmin)
+#         jmax = index_of(dgroup.energy, pxmax) + 1
+#
+#         _ys = ydat[jmin:jmax]
+#         yrange = max(_ys) - min(_ys)
+#         pymin = min(_ys) - 0.05 * yrange
+#         pymax = max(_ys) + 0.05 * yrange
+#
+#         title = ' pre-edge fit'
+#         if plot_choice == PLOT_BASELINE:
+#             title = ' pre-edge baseline'
+#             if opts['plot_sub_bline']:
+#                 title = ' pre-edge peaks'
+#
+#         array_desc = self.array_choice.GetStringSelection()
+#
+#         plotopts = {'xmin': pxmin, 'xmax': pxmax,
+#                     'ymin': pymin, 'ymax': pymax,
+#                     'title': '%s:\n%s' % (opts['filename'], title),
+#                     'xlabel': 'Energy (eV)',
+#                     'ylabel': opts['array_desc'],
+#                     'label': opts['array_desc'],
+#                     'delay_draw': True,
+#                     'show_legend': True}
+#
+#         plot_extras = []
+#         if opts['show_fitrange']:
+#             popts = {'color': '#DDDDCC'}
+#             emin = opts['emin']
+#             emax = opts['emax']
+#             imin = index_of(dgroup.energy, emin)
+#             imax = index_of(dgroup.energy, emax)
+#
+#             plot_extras.append(('vline', emin, None, popts))
+#             plot_extras.append(('vline', emax, None, popts))
+#
+#         if opts['show_peakrange']:
+#             popts = {'marker': '+', 'markersize': 6}
+#             elo = opts['elo']
+#             ehi = opts['ehi']
+#             ilo = index_of(dgroup.xdat, elo)
+#             ihi = index_of(dgroup.xdat, ehi)
+#
+#             plot_extras.append(('marker', elo, ydat[ilo], popts))
+#             plot_extras.append(('marker', ehi, ydat[ihi], popts))
+#
+#         if opts['show_centroid']:
+#             popts = {'color': '#EECCCC'}
+#             ecen = getattr(dgroup.prepeaks, 'centroid', -1)
+#             if ecen > min(dgroup.energy):
+#                 plot_extras.append(('vline', ecen, None,  popts))
+#
+#         if plot_choice == PLOT_RESID:
+#             pframe = self.controller.get_display(win=2, stacked=True)
+#         else:
+#             pframe = self.controller.get_display(win=1)
+#
+#         ppanel = pframe.panel
+#         axes = ppanel.axes
+#
+#         plotopts.update(PLOTOPTS_1)
+#
+#         ppanel.plot(xdat, ydat, **plotopts)
+#         if plot_choice == PLOT_BASELINE:
+#             if not opts['plot_sub_bline']:
+#                 ppanel.oplot(dgroup.prepeaks.energy,
+#                              dgroup.prepeaks.baseline,
+#                              label='baseline', **PLOTOPTS_2)
+#
+#         elif plot_choice in (PLOT_FIT, PLOT_RESID):
+#             ppanel.oplot(dgroup.energy, yfit,
+#                          label='fit', **PLOTOPTS_1)
+#
+#             if hasattr(dgroup, 'ycomps'):
+#                 ncomp = len(dgroup.ycomps)
+#                 icomp = 0
+#                 for label, ycomp in dgroup.ycomps.items():
+#                     icomp +=1
+#                     fcomp = self.fit_components[label]
+#                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
+#                         ppanel.oplot(dgroup.xfit, ycomp, label=label,
+#                                      delay_draw=(icomp!=ncomp), style='short dashed')
+#
+#             if plot_choice == PLOT_RESID:
+#                 _ys = resid
+#                 yrange = max(_ys) - min(_ys)
+#                 plotopts['ymin'] = min(_ys) - 0.05 * yrange
+#                 plotopts['ymax'] = max(_ys) + 0.05 * yrange
+#                 plotopts['delay_draw'] = False
+#                 plotopts['ylabel'] = 'data-fit'
+#                 plotopts['label'] = '_nolegend_'
+#
+#                 pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
+#                 pframe.Show()
+#                 # print(" RESIDUAL PLOT  margins: ")
+#                 # print(" top : ", pframe.panel.conf.margins)
+#                 # print(" bot : ", pframe.panel_bot.conf.margins)
+#
+#         for etype, x, y, opts in plot_extras:
+#             if etype == 'marker':
+#                 popts = {'marker': 'o', 'markersize': 4,
+#                          'label': '_nolegend_',
+#                          'markerfacecolor': 'red',
+#                          'markeredgecolor': '#884444'}
+#                 popts.update(opts)
+#                 axes.plot([x], [y], **popts)
+#             elif etype == 'vline':
+#                 popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888'}
+#                 popts.update(opts)
+#                 axes.axvline(x, **popts)
+#         ppanel.canvas.draw()
 
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
