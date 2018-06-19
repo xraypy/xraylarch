@@ -2,7 +2,7 @@ from lmfit import Parameters, Parameter, minimize, models
 
 lmobjs = {'Parameters': Parameters,
           'Parameter': Parameter,
-          'minimize': minimize}
+          'lm_minimize': minimize}
 
 for name in ('BreitWignerModel', 'ComplexConstantModel',
              'ConstantModel', 'DampedHarmonicOscillatorModel',
