@@ -1,5 +1,4 @@
 from __future__ import print_function
-import re
 import os
 import sys
 import socket
@@ -14,7 +13,7 @@ import multiprocessing as mp
 from functools import partial
 import larch
 from larch.utils.debugtime import debugtime
-from larch.utils.strutils import fix_filename, bytes2str, version_ge
+from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
@@ -47,6 +46,11 @@ def isotime(xtime):
     if type(xtime) is not float:
         xtime = time.mktime(time.strptime(xtime))
     return time.strftime("%Y-%m-%d %H:%M:%S" , time.localtime(xtime))
+
+
+def parse_sisnames(text):
+    return [fix_varname(s.strip()) for s in text.replace('#', '').split('|')]
+
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
@@ -1243,7 +1247,7 @@ class GSEXRM_MapFile(object):
 
             dt.add(" resized ")
             sclrgrp = self.xrmmap['scalars']
-            for ai,aname in enumerate(re.findall(r"[\w']+", row.sishead[-1])):
+            for ai, aname in enumerate(parse_sisnames(row.sishead[-1])):
                 sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
             dt.add(" add scaler group")
             if self.flag_xrf:
@@ -1435,7 +1439,7 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             sismap = xrmmap['scalars']
             sismap.attrs['type'] = 'scalar detectors'
-            for aname in re.findall(r"[\w']+", row.sishead[-1]):
+            for aname in parse_sisnames(row.sishead[-1]):
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
