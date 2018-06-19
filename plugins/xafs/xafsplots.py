@@ -791,7 +791,6 @@ def plot_prepeak(dgroup, nfit=0, subtract_baseline=False,
                    style='short dashed', win=win, _larch=_larch)
         #endfor
     #endif
-
     for etype, x, y, popts in plot_extras:
         popts.update(dict(win=win, _larch=_larch))
         if etype == 'marker':
@@ -803,7 +802,7 @@ def plot_prepeak(dgroup, nfit=0, subtract_baseline=False,
             _plot_axvline(x, delay_draw=True,  **opts)
         #endif
     #endfor
-    _getDisplay(win=win, _larch=_larch).panel.canvas.draw()
+    redraw(win=win, show_legend=True, _larch=_larch)
 #enddef
 
 
