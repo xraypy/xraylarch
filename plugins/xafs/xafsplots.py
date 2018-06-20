@@ -26,6 +26,9 @@ from larch_plugins.wx.plotter import (_getDisplay, _plot, _oplot, _newplot,
                                       _plot_arrow, _plot_axvline,
                                       _plot_axhline)
 
+LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
+              '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+
 # common XAFS plot labels
 def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
     """generate chi(R) label for a kweight
@@ -710,51 +713,132 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
 #enddef
 
 
+def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.05):
+    """return plot limits to extend a plot range for x, y pairs"""
+    xeps = min(diff(x)) / 5.
+    if xmin is None:
+        xmin = min(x)
+    if xmax is None:
+        xmax = max(x)
+    i0 = index_of(x, xmin + xeps)
+    i1 = index_of(x, xmax + xeps) + 1
+
+    xspan = x[i0:i1]
+    xrange = max(xspan) - min(xspan)
+    yspan = y[i0:i1]
+    yrange = max(yspan) - min(yspan)
+
+    return  (min(xspan) - extend * xrange,
+             max(xspan) + extend * xrange,
+             min(yspan) - extend * yrange,
+             max(yspan) + extend * yrange)
+
 @ValidateLarchPlugin
-def plot_prepeak(dgroup, nfit=0, subtract_baseline=False,
-                 with_residual=False, win=1, _larch=None):
+def plot_prepeaks_baseline(dgroup, subtract_baseline=False, win=1, _larch=None):
+    """plot pre-edge peak baseline fit, as from XAS Viewer
+
+    dgroup must have a 'prepeaks' attribute
+    """
+    if not hasattr(dgroup, 'prepeaks'):
+        raise ValueError('Group needs prepeaks')
+    #endif
+    ppeak = dgroup.prepeaks
+
+    px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
+                                          xmin=ppeak.emin, xmax=ppeak.emax)
+    title = "pre_edge baesline\n %s" % dgroup.filename
+
+    popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
+                 xlabel='Energy (eV)', ylabel='mu', delay_draw=True,
+                 show_legend=True, style='solid', linewidth=3,
+                 marker='None', markersize=4, win=win, _larch=_larch)
+
+    ydat = dgroup.ydat
+    xdat = dgroup.xdat
+    if subtract_baseline:
+        xdat = ppeak.energy
+        ydat = ppeak.baseline
+        _pplot(xdat, ydat, label='baseline', **popts)
+    else:
+        _plot(xdat, ydat, new=True, label='data', **popts)
+        _oplot(ppeak.energy, ppeak.baseline, label='baseline', **popts)
+
+    popts = dict(win=win, _larch=_larch, delay_draw=True,
+                 label='_nolegend_')
+    for x in (ppeak.emin, ppeak.emax):
+        _plot_axvline(x, ymin=0, ymax=1, color='#DDDDCC', **popts)
+    _plot_axvline(ppeak.centroid, ymin=0, ymax=1, color='#EECCCC', **popts)
+
+    for x in (ppeak.elo, ppeak.ehi):
+        y = ydat[index_of(xdat, x)]
+        _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
+    redraw(win=win, show_legend=True, _larch=_larch)
+#enddef
+
+@ValidateLarchPlugin
+def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
+                      with_residual=False, win=1, _larch=None):
     """plot pre-edge peak fit, as from XAS Viewer
 
     dgroup must have a 'peakfit_history' attribute
     """
-    if not hasattr(dgroup, 'peakfit_history'):
-        raise ValueError('Group needs peakfit_history list')
+    if not hasattr(dgroup, 'prepeaks'):
+        raise ValueError('Group needs prepeaks')
     #endif
-    result = dgroup.peakfit_history[nfit]
+    if show_init:
+        result = dgroup.prepeaks
+    else:
+        result = getattr(dgroup.prepeaks, 'fit_history', [None]*(nfit+1))[nfit]
+    #endif
+
+    if result is None:
+        raise ValueError('Group needs prepeaks.fit_history or init_fit')
+    #endif
+
     opts = result.user_options
-
     xeps = min(diff(dgroup.xdat)) / 5.
-    xdat = result.xdat
-    ydat = result.ydat
-    yfit = result.best_fit
+    xdat = result.energy
+    ydat = result.mu
+    if show_init:
+        yfit = result.init_fit
+        ycomps = None
+        ylabel = 'baseline'
+    else:
+        ycomps = result.ycomps
+        yfit = result.best_fit
+        ylabel = 'best fit'
 
-    i1 = index_of(dgroup.xdat, opts['emin'] + xeps)
-    i2 = index_of(dgroup.xdat, opts['emax'] + xeps) + 1
-
-    # plot a slightly larger range, to show range
-    xspan = dgroup.xdat[i1:i2]
-    xrange = max(xspan) - min(xspan)
-    pxmin = min(xspan) - 0.05 * xrange
-    pxmax = max(xspan) + 0.05 * xrange
-
-    i1 = index_of(dgroup.xdat, pxmin)
-    i2 = index_of(dgroup.xdat, pxmax) + 1
-    yspan = ydat[i1:i2]
-    yrange = max(yspan) - min(yspan)
-    pymin = min(yspan) - 0.05 * yrange
-    pymax = max(yspan) + 0.05 * yrange
-
+    px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
+                                          xmin=opts['emin'], xmax=opts['emax'])
     title = "pre_edge peak"
-    if subtract_baseline:
-        title = "pre_edge baesline"
-    #endif
-
-    plotopts = dict(xmin=pxmin, xmax=pxmax, ymin=pymin, ymax=pymax,
-                    title='%s:\n%s' % (opts['filename'], title),
+    plotopts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1,
+                    title='%s:\n%s' % (dgroup.filename, title),
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
                     linewidth=3, marker='None', markersize=4,
                     win=win, _larch=_larch)
+
+    _plot(dgroup.xdat, dgroup.ydat, new=True, label='data', color=LineColors[0], **plotopts)
+    _oplot(xdat, yfit, label=ylabel, color=LineColors[1], **plotopts)
+    plotopts.update(dict(style='short dashed', linewidth=2, marker='None'))
+
+    if ycomps is not None:
+        ncolor = 2
+        baseline = 0.*ydat
+        for label, ycomp in ycomps.items():
+            if label in opts['bkg_components']:
+                baseline += ycomp
+        _oplot(xdat, baseline, label='baseline', delay_draw=True,
+               style='short dashed', marker=None, markersize=5,
+               color=LineColors[ncolor], win=win, _larch=_larch)
+
+        for label, ycomp in ycomps.items():
+            if label in opts['bkg_components']:
+                continue
+            ncolor =  (ncolor+1) % 10
+            _oplot(xdat, ycomp, label=label, delay_draw=True,
+                   style='short dashed', marker=None, markersize=5,
+                   color=LineColors[ncolor], win=win, _larch=_larch)
 
     plot_extras = []
     if opts['show_fitrange']:
@@ -772,25 +856,14 @@ def plot_prepeak(dgroup, nfit=0, subtract_baseline=False,
     #endif
     if opts['show_centroid']:
         popts = {'color': '#EECCCC'}
-        pcen = result.params.get('fit_centroid', None)
+        pcen = result.get('centroid', None)
+        if hasattr(result, 'params'):
+            pcen = result.params.get('fit_centroid', None)
         if pcen is not None:
             plot_extras.append(('vline', pcen.value, None,  popts))
         #endif
     #endif
-    _plot(dgroup.xdat, dgroup.ydat, new=True, label='data', **plotopts)
 
-    _oplot(xdat, yfit, label='best_fit', **plotopts)
-
-    plotopts.update(dict(style='short dashed', linewidth=2, marker='None'))
-    if hasattr(result, 'ycomps'):
-        ncomp = len(result.ycomps)
-        icomp = 0
-        for label, ycomp in result.ycomps.items():
-            # if label in opts['bkg_components']: print("B ", label)
-            _oplot(xdat, ycomp, label=label, delay_draw=True,
-                   style='short dashed', win=win, _larch=_larch)
-        #endfor
-    #endif
     for etype, x, y, popts in plot_extras:
         popts.update(dict(win=win, _larch=_larch))
         if etype == 'marker':
@@ -824,5 +897,6 @@ def registerLarchPlugin():
                       'plot_path_r': plot_path_r,
                       'plot_paths_k': plot_paths_k,
                       'plot_paths_r': plot_paths_r,
-                      'plot_prepeak': plot_prepeak,
+                      'plot_prepeaks_fit': plot_prepeaks_fit,
+                      'plot_prepeaks_baseline': plot_prepeaks_baseline,
                       })
