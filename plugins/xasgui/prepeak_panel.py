@@ -104,29 +104,27 @@ MIN_CORREL = 0.0010
 
 COMMANDS = {}
 COMMANDS['prepfit'] = """
-peakdat = group()
-peakdat.xdat = {group:s}.xdat[{imin:d}:{imax:d}]
-peakdat.ydat = {group:s}.ydat[{imin:d}:{imax:d}]
-peakdat.init_fit = peakmodel.eval(peakpars, x={group:s}.xdat[{imin:d}:{imax:d}])
-peakdat.init_ycomps = peakmodel.eval_components(params=peakpars, x={group:s}.xdat[{imin:d}:{imax:d}])
-if not hasattr({group:s}, 'peakfit_history'): {group:s}.peakfit_history = []"""
+{group}.prepeaks.user_options = {user_opts:s}
+{group}.prepeaks.init_fit = peakmodel.eval(peakpars, x={group}.prepeaks.energy)
+{group}.prepeaks.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
+if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = []
+"""
 
-COMMANDS['set_yerr_const'] = "peakdat.yerr = {group:s}.yerr*ones(len(peakdat.xdat))"
-COMMANDS['set_yerr_array'] = """peakdat.yerr = 1.0*{group:s}.yerr[{imin:d}:{imax:d}]
-yerr_min = 1.e-9*peakdat.ydat.mean()
-peakdat.yerr[where({group:s}.yerr < yerr_min)] = yerr_min"""
+COMMANDS['set_yerr_const'] = "{group}.prepeaks.yerr = {group}.yerr*ones(len({group}.prepeaks.mu))"
+COMMANDS['set_yerr_array'] = """{group}.prepeaks.yerr = 1.0*{group}.yerr[{imin:d}:{imax:d}]
+yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
+{group}.prepeaks.yerr[where({group}.yerr < yerr_min)] = yerr_min"""
 
 COMMANDS['dofit'] = """
-peakresult = peakmodel.fit(peakdat.ydat, params=peakpars, x=peakdat.xdat, weights=1.0/peakdat.yerr)
-peakresult.xdat = peakdat.xdat[:]
-peakresult.ydat = peakdat.ydat[:]
-peakresult.yerr = peakdat.yerr[:]
-peakresult.init_fit = peakdat.init_fit[:]
-peakresult.init_ycomps = peakdat.init_ycomps
-peakresult.ycomps = peakmodel.eval_components(params=peakresult.params, x=peakdat.xdat)
+peakresult = peakmodel.fit({group}.prepeaks.mu, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.yerr)
+peakresult.energy   = {group}.prepeaks.energy[:]
+peakresult.mu       = {group}.prepeaks.mu[:]
+peakresult.dmu      = {group}.prepeaks.dmu[:]
+peakresult.ycomps   = peakmodel.eval_components(params=peakresult.params, x={group}.prepeaks.energy)
+peakresult.init_fit = {group}.prepeaks.init_fit[:]
+peakresult.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
 peakresult.user_options = {user_opts:s}
-{group:s}.peakfit_history.insert(0, peakresult)"""
-
+{group}.prepeaks.fit_history.insert(0, peakresult)"""
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
@@ -139,7 +137,7 @@ class FitResultFrame(wx.Frame):
         self.parent = parent
         self.peakframe = peakframe
         self.datagroup = datagroup
-        self.peakfit_history = getattr(datagroup, 'peakfit_history', [])
+        self.peakfit_history = getattr(datagroup.prepeaks, 'fit_history', [])
         self.nfit = 0
         self.build()
 
@@ -325,7 +323,7 @@ class FitResultFrame(wx.Frame):
 
     def get_fitresult(self, nfit=0):
         if len(self.peakfit_history) < 1:
-            pfhist = getattr(self.datagroup, 'peakfit_history', [])
+            pfhist = getattr(datagroup.prepeaks, 'fit_history', [])
             self.peakfit_history = pfhist
         self.nfit = max(0, nfit)
         if self.nfit > len(self.peakfit_history):
@@ -685,7 +683,8 @@ class PrePeakPanel(TaskPanel):
                      'filename': dgroup.filename,
                      'array_desc': array_desc.lower(),
                      'array_name': Array_Choices[array_desc],
-                     'baseline_form': 'lorentzian'}
+                     'baseline_form': 'lorentzian',
+                     'bkg_components': []}
 
         form_opts['e0'] = self.wids['ppeak_e0'].GetValue()
         form_opts['emin'] = self.wids['ppeak_emin'].GetValue()
@@ -752,6 +751,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                     wids.vary.SetStringSelection(varstr)
 
     def onPlotModel(self, evt=None):
+        dgroup = self.controller.get_group()
         g = self.build_fitmodel(dgroup)
         self.onPlot(choice=PLOT_FIT)
 
@@ -761,13 +761,15 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         opts = self.read_form()
         dgroup = self.controller.get_group()
         gname = dgroup.groupname
+
+        print(" Plot ", choice,  gname)
+
+
         if choice == PLOT_BASELINE:
-            cmd = ["newplot({group:s}.xdat, {group:s}.ydat)",
-                   "plot({group:s}.prepeaks.energy, {group:s}.prepeaks.baseline)"]
-            cmd = '\n'.join(cmd)
+            cmd = "plot_prepeaks_baseline({gname}, subtract_baseline={plot_sub_bline})"
         else:
-            cmd = "plot_prepeak({group:s})"
-        self.larch_eval(cmd.format(group=gname))
+            cmd = "plot_prepeaks_fit({gname})"
+        self.larch_eval(cmd.format(**opts))
 
 
             #         ppanel.plot(xdat, ydat, **plotopts)
@@ -1274,6 +1276,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
         modcmds = ["## define pre-edge peak model"]
         modop = " ="
+        opts = self.read_form()
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1303,15 +1306,14 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         cmds.extend(modcmds)
 
-        imin, imax = self.get_xranges(dgroup.xdat)
-        cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname, imin=imin, imax=imax))
+        cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
+                                               user_opts=repr(opts)))
 
         self.larch_eval("\n".join(cmds))
 
     def onFitSelected(self, event=None):
         dgroup = self.controller.get_group()
         self.build_fitmodel(dgroup)
-        opts = self.read_form()
         # print("fitting selected groups in progress")
 
     def onFitModel(self, event=None):
