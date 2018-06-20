@@ -358,7 +358,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
 
     A group named 'prepeaks' will be created in the output group, with the following
     attributes:
-        energy        energy array for pre-edge peaks = energy[emin-eneg:emax+epos]
+        energy        energy array for pre-edge peaks = energy[emin:emax]
         baseline      fitted baseline array over pre-edge peak energies
         mu            baseline-subtraced spectrum over pre-edge peak energies
         dmu           estimated uncertainty in mu from fit
