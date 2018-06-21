@@ -88,6 +88,7 @@ Array_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
+PLOT_INIT     = 'Data+Init Fit'
 PLOT_RESID    = 'Data+Residual'
 PlotChoices = [PLOT_BASELINE, PLOT_FIT, PLOT_RESID]
 
@@ -110,13 +111,13 @@ COMMANDS['prepfit'] = """
 if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = []
 """
 
-COMMANDS['set_yerr_const'] = "{group}.prepeaks.yerr = {group}.yerr*ones(len({group}.prepeaks.mu))"
-COMMANDS['set_yerr_array'] = """{group}.prepeaks.yerr = 1.0*{group}.yerr[{imin:d}:{imax:d}]
+COMMANDS['set_yerr_const'] = "{group}.prepeaks.dmu = {group}.yerr*ones(len({group}.prepeaks.mu))"
+COMMANDS['set_yerr_array'] = """{group}.prepeaks.dmu = 1.0*{group}.yerr[{imin:d}:{imax:d}]
 yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
-{group}.prepeaks.yerr[where({group}.yerr < yerr_min)] = yerr_min"""
+{group}.prepeaks.dmu[where({group}.yerr < yerr_min)] = yerr_min"""
 
 COMMANDS['dofit'] = """
-peakresult = peakmodel.fit({group}.prepeaks.mu, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.yerr)
+peakresult = peakmodel.fit({group}.prepeaks.mu, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.dmu)
 peakresult.energy   = {group}.prepeaks.energy[:]
 peakresult.mu       = {group}.prepeaks.mu[:]
 peakresult.dmu      = {group}.prepeaks.dmu[:]
@@ -753,22 +754,23 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
         g = self.build_fitmodel(dgroup)
-        self.onPlot(choice=PLOT_FIT)
+        self.onPlot(choice=PLOT_INIT)
 
     def onPlot(self, evt=None, choice=PLOT_FIT):
-        plot_choice = choice # self.plot_choice.GetStringSelection()
-
         opts = self.read_form()
-        dgroup = self.controller.get_group()
-        gname = dgroup.groupname
 
-        print(" Plot ", choice,  gname)
-
-
+        cmd = "plot_prepeaks_fit"
+        args = ["{gname}"]
         if choice == PLOT_BASELINE:
-            cmd = "plot_prepeaks_baseline({gname}, subtract_baseline={plot_sub_bline})"
-        else:
-            cmd = "plot_prepeaks_fit({gname})"
+            cmd = "plot_prepeaks_baseline"
+            args.append("subtract_baseline={plot_sub_bline}")
+        elif choice == PLOT_INIT:
+            args.append("show_init=True")
+        elif choice == PLOT_RESID:
+            args.append("show_residual=True")
+
+        cmd = "%s(%s)" % (cmd, ','.join(args))
+        print(" Plot ", choice,  cmd)
         self.larch_eval(cmd.format(**opts))
 
 
