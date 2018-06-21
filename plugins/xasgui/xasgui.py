@@ -87,6 +87,7 @@ def extract_athenagroup(pgroup):
     '''extract xas group from athena group'''
     g = pgroup
     g.datatype = 'xas'
+    g.filename = g.label
     g.xdat = 1.0*g.energy
     g.ydat = 1.0*g.mu
     g.yerr = 1.0
