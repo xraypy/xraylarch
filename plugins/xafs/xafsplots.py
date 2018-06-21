@@ -788,7 +788,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if show_init:
         result = dgroup.prepeaks
     else:
-        print("plot prepeak fit ", nfit, result)
         result = getattr(dgroup.prepeaks, 'fit_history', None)
         if nfit > len(result):
             nfit = 0
@@ -833,7 +832,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if label in opts['bkg_components']:
                 baseline += ycomp
         _oplot(xdat, baseline, label='baseline', delay_draw=True,
-               style='short dashed', marker=None, markersize=5,
+               style='short dashed', marker='None', markersize=5,
                color=LineColors[ncolor], win=win, _larch=_larch)
 
         for label, ycomp in ycomps.items():
@@ -841,7 +840,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                 continue
             ncolor =  (ncolor+1) % 10
             _oplot(xdat, ycomp, label=label, delay_draw=True,
-                   style='short dashed', marker=None, markersize=5,
+                   style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], win=win, _larch=_larch)
 
     plot_extras = []
@@ -860,7 +859,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
     if opts['show_centroid']:
         popts = {'color': '#EECCCC'}
-        pcen = result.get('centroid', None)
+        pcen = getattr(dgroup.prepeaks, 'centroid', None)
         if hasattr(result, 'params'):
             pcen = result.params.get('fit_centroid', None)
         if pcen is not None:
