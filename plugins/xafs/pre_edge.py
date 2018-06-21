@@ -360,8 +360,9 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     attributes:
         energy        energy array for pre-edge peaks = energy[emin:emax]
         baseline      fitted baseline array over pre-edge peak energies
-        mu            baseline-subtraced spectrum over pre-edge peak energies
-        dmu           estimated uncertainty in mu from fit
+        mu            spectrum over pre-edge peak energies
+        peaks         baseline-subtraced spectrum over pre-edge peak energies
+        dmu           estimated uncertainty in peaks from fit
         centroid      estimated centroid of pre-edge peaks (see note 3)
         peak_energies list of predicted peak energies (see note 4)
         fit_details   details of fit to extract pre-edge peaks.
@@ -382,9 +383,9 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
        argument can be used to add a line to this baseline function.
 
      3 The value calculated for `prepeaks.centroid`  will be found as
-         (prepeaks.energy*prepeaks.mu).sum() / prepeaks.mu.sum()
+         (prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()
      4 The values in the `peak_energies` list will be predicted energies
-       of the peaks in `prepeaks.mu` as found by peakutils.
+       of the peaks in `prepeaks.peaks` as found by peakutils.
 
     """
     energy, norm, group = parse_group_args(energy, members=('energy', 'norm'),
@@ -470,26 +471,27 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
 
     # get baseline and resulting mu over edat range
     bline = result.eval(result.params, x=edat)
-    mu  = norm[imin:imax+1]-bline
+    mu  = norm[imin:imax+1]
+    peaks = mu-bline
 
     # uncertainty in mu includes only uncertainties in baseline fit
-    dmu = result.eval_uncertainty(result.params, x=edat)
+    dpeaks = result.eval_uncertainty(result.params, x=edat)
 
     # estimate centroid and its uncertainty
-    cen = (edat*mu).sum() / mu.sum()
-    cen_plus = (edat*(mu+dmu)).sum()/ (mu+dmu).sum()
-    cen_minus = (edat*(mu-dmu)).sum()/ (mu-dmu).sum()
+    cen = (edat*peaks).sum() / peaks.sum()
+    cen_plus = (edat*(peaks+dpeaks)).sum()/ (peaks+dpeaks).sum()
+    cen_minus = (edat*(peaks-dpeaks)).sum()/ (peaks-dpeaks).sum()
     dcen = abs(cen_minus - cen_plus) / 2.0
 
     # locate peak positions
     peak_energies = []
     if HAS_PEAKUTILS:
-        peak_ids = peakutils.peak.indexes(mu, thres=0.05, min_dist=2)
+        peak_ids = peakutils.peak.indexes(peaks, thres=0.05, min_dist=2)
         peak_energies = [edat[pid] for pid in peak_ids]
 
     group = set_xafsGroup(group, _larch=_larch)
-    group.prepeaks = Group(energy=edat, mu=mu, delta_mu=dmu,
-                           baseline=bline,
+    group.prepeaks = Group(energy=edat, mu=mu, baseline=bline,
+                           peaks=peaks, delta_peaks=dpeaks,
                            centroid=cen, delta_centroid=dcen,
                            peak_energies=peak_energies,
                            fit_details=result,
