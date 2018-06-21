@@ -851,7 +851,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
 
     if opts['show_peakrange']:
-        popts = {'marker': '+', 'size': 4}
+        popts = {'marker': 'o', 'size': 6, 'color': '#333377'}
         ylo = ydat[index_of(xdat, opts['elo'])]
         yhi = ydat[index_of(xdat, opts['ehi'])]
         plot_extras.append(('marker', opts['elo'], ylo, popts))
