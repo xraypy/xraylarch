@@ -1043,10 +1043,12 @@ class XASFrame(wx.Frame):
         if abort_read:
             return
         self.larch.eval(script.format(group=groupname, path=path))
+        self.larch.eval("did_evalx1 = 1")
+        print(" onRead_OK ", script)
         if array_sel is not None:
             self.last_array_sel = array_sel
         self.install_group(groupname, filename, overwrite=overwrite)
-
+        self.larch.eval("did_install = 1")
         for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, filename = os.path.split(path)

@@ -1,5 +1,6 @@
 import time
 import os
+import six
 import numpy as np
 np.seterr(all='ignore')
 
@@ -81,10 +82,10 @@ ModelFuncs = {'constant': 'ConstantModel',
               'step': 'StepModel',
               'rectangle': 'RectangleModel'}
 
-Array_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
-                             (u'Normalized \u03BC(E)', 'norm'),
-                             (u'Deconvolved \u03BC(E)', 'deconv'),
-                             (u'Derivative \u03BC(E)', 'dmude')))
+Array_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
+                             (six.u('Normalized \u03BC(E)'), 'norm'),
+                             (six.u('Deconvolved \u03BC(E)'), 'deconv'),
+                             (six.u('Derivative \u03BC(E)'), 'dmude')))
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
@@ -205,8 +206,8 @@ class FitResultFrame(wx.Frame):
         sview.AppendTextColumn(' N_data', width=50)
         sview.AppendTextColumn(' N_vary', width=50)
         sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(u' \u03c7\u00B2', width=110)
-        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(six.u(' \u03c7\u00B2'), width=110)
+        sview.AppendTextColumn(six.u(' \u03c7\u00B2_reduced'), width=110)
         sview.AppendTextColumn(' Akaike Info', width=110)
         sview.AppendTextColumn(' Bayesian Info', width=110)
 

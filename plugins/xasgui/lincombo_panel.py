@@ -4,6 +4,7 @@ Linear Combination panel
 """
 import os
 import time
+import six
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
@@ -30,9 +31,9 @@ from larch_plugins.io.columnfile import write_ascii
 np.seterr(all='ignore')
 
 # plot options:
-norm   = u'Normalized \u03bC(E)'
-dmude  = u'd\u03bC(E)/dE'
-chik   = u'\u03c7(k)'
+norm   = six.u('Normalized \u03bC(E)')
+dmude  = six.u('d\u03bC(E)/dE')
+chik   = six.u('\u03c7(k)')
 noplot = '<no plot>'
 noname = '<none>'
 
@@ -192,8 +193,8 @@ class ResultFrame(wx.Frame):
         sview.AppendTextColumn(' Fit #', width=50)
         sview.AppendTextColumn(' N_vary', width=50)
         sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(u' \u03c7\u00B2', width=110)
-        sview.AppendTextColumn(u' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(six.u(' \u03c7\u00B2'), width=110)
+        sview.AppendTextColumn(six.u(' \u03c7\u00B2_reduced'), width=110)
         sview.AppendTextColumn(' Akaike Info', width=110)
         sview.AppendTextColumn(' Bayesian Info', width=110)
 

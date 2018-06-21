@@ -5,6 +5,7 @@ XANES Normalization panel
 import os
 import time
 import wx
+import six
 import numpy as np
 
 from functools import partial
@@ -31,17 +32,17 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
-                               (u'Normalized \u03BC(E)', 'norm'),
-                               (u'd\u03BC(E)/dE', 'dmude'),
-                               (u'Normalized \u03BC(E) + d\u03BC(E)/dE', 'norm+deriv'),
-                               (u'Flattened \u03BC(E)', 'flat'),
-                               (u'\u03BC(E) + Pre-/Post-edge', 'prelines')))
+PlotOne_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
+                               (six.u('Normalized \u03BC(E)'), 'norm'),
+                               (six.u('d\u03BC(E)/dE'), 'dmude'),
+                               (six.u('Normalized \u03BC(E) + d\u03BC(E)/dE'), 'norm+deriv'),
+                               (six.u('Flattened \u03BC(E)'), 'flat'),
+                               (six.u('\u03BC(E) + Pre-/Post-edge'), 'prelines')))
 
-PlotSel_Choices = OrderedDict(((u'Raw \u03BC(E)', 'mu'),
-                               (u'Normalized \u03BC(E)', 'norm'),
-                               (u'Flattened \u03BC(E)', 'flat'),
-                               (u'd\u03BC(E)/dE (normalized)', 'dnormde')))
+PlotSel_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
+                               (six.u('Normalized \u03BC(E)'), 'norm'),
+                               (six.u('Flattened \u03BC(E)'), 'flat'),
+                               (six.u('d\u03BC(E)/dE (normalized)'), 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
