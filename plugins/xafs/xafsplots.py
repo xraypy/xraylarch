@@ -777,7 +777,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, win=1, _larch=None):
 
 @ValidateLarchPlugin
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
-                      with_residual=False, win=1, _larch=None):
+                      show_residual=False, win=1, _larch=None):
     """plot pre-edge peak fit, as from XAS Viewer
 
     dgroup must have a 'peakfit_history' attribute
@@ -788,7 +788,11 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if show_init:
         result = dgroup.prepeaks
     else:
-        result = getattr(dgroup.prepeaks, 'fit_history', [None]*(nfit+1))[nfit]
+        print("plot prepeak fit ", nfit, result)
+        result = getattr(dgroup.prepeaks, 'fit_history', None)
+        if nfit > len(result):
+            nfit = 0
+        result = result[nfit]
     #endif
 
     if result is None:
