@@ -167,9 +167,10 @@ class FitResultFrame(wx.Frame):
                                        style=LCEN)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        self.plot_sub_bline = Check(panel, label='Subtract Baseline?', **opts)
-        self.plot_choice = Choice(panel, size=(150, -1),  choices=PlotChoices,
-                                  action=self.onPlot)
+        wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
+        wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
+        self.plot_choice = Button(panel, 'Replot Fit',
+                                  size=(150, -1), action=self.onPlot)
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
@@ -185,9 +186,10 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
         irow += 1
-        sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.plot_choice,            (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.plot_sub_bline,         (irow, 2), (1, 1), LCEN)
+        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['plot_bline'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
@@ -279,7 +281,7 @@ class FitResultFrame(wx.Frame):
                                           size=(100, -1), action=self.onAllCorrel)
 
         self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
-                                            min_val=0, size=(60, -1),
+                                            min_val=0, size=(100, -1),
                                             digits=3, increment=0.1)
 
         ctitle = SimpleText(panel, 'minimum correlation: ')
@@ -332,7 +334,10 @@ class FitResultFrame(wx.Frame):
         return self.peakfit_history[self.nfit]
 
     def onPlot(self, event=None):
-        self.peakframe.onPlot()
+        show_resid = self.wids['plot_resid'].IsChecked()
+        subtract_baseline = self.wids['plot_bline'].IsChecked()
+        self.peakframe.onPlot(show_residual=show_resid,
+                              subtract_baseline=subtract_baseline)
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -561,9 +566,6 @@ class PrePeakPanel(TaskPanel):
         self.show_e0        = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        # self.plot_sub_bline = Check(pan, label='Subtract Baseline?', **opts)
-        # self.plot_choice = Choice(pan, size=(150, -1),  choices=PlotChoices,
-        #                                   action=self.onPlot)
 
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
@@ -604,14 +606,6 @@ class PrePeakPanel(TaskPanel):
         add_text( 'Peak Centroid: ')
         pan.Add(self.msg_centroid, dcol=3)
         pan.Add(self.show_centroid, dcol=1)
-
-        #  plot buttons
-        # ts = wx.BoxSizer(wx.HORIZONTAL)
-        # ts.Add(self.plot_choice)
-        # ts.Add(self.plot_sub_bline)
-
-        # pan.Add(SimpleText(pan, 'Plot: '), newrow=True)
-        # pan.Add(ts, dcol=7)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -674,7 +668,6 @@ class PrePeakPanel(TaskPanel):
             self.show_centroid.Enable(dat['show_centroid'])
             self.show_fitrange.Enable(dat['show_fitrange'])
             self.show_peakrange.Enable(dat['show_peakrange'])
-            # self.plot_sub_bline.Enable(dat['plot_sub_bline'])
 
     def read_form(self):
         "read for, returning dict of values"
@@ -731,7 +724,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
         # self.plot_choice.SetStringSelection(PLOT_BASELINE)
-        self.onPlot(choice=PLOT_BASELINE)
+        self.onPlot(baseline_only=True)
 
     def fill_model_params(self, prefix, params):
         comp = self.fit_components[prefix]
@@ -754,27 +747,26 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
         g = self.build_fitmodel(dgroup)
-        self.onPlot(choice=PLOT_INIT)
+        self.onPlot(show_init=True)
 
-    def onPlot(self, evt=None, choice=PLOT_FIT):
+    def onPlot(self, evt=None, baseline_only=False, show_init=False,
+               subtract_baseline=False, show_residual=False):
         opts = self.read_form()
-
         cmd = "plot_prepeaks_fit"
-        args = ["{gname}"]
-        if choice == PLOT_BASELINE:
+        args = ['{gname}',
+                "subtract_baseline=%s" % (subtract_baseline)]
+        if baseline_only:
             cmd = "plot_prepeaks_baseline"
-            args.append("subtract_baseline={plot_sub_bline}")
-        elif choice == PLOT_INIT:
-            args.append("show_init=True")
-        elif choice == PLOT_RESID:
-            args.append("show_residual=True")
+        else:
+            args.append("show_residual=%s" % (show_residual))
+            args.append("show_init=%s" % (show_init))
 
-        cmd = "%s(%s)" % (cmd, ','.join(args))
-        print(" Plot ", choice,  cmd)
+        cmd = "%s(%s)" % (cmd, ', '.join(args))
+        print(" Plot ",  cmd)
         self.larch_eval(cmd.format(**opts))
 
 
-            #         ppanel.plot(xdat, ydat, **plotopts)
+#         ppanel.plot(xdat, ydat, **plotopts)
 #         if plot_choice == PLOT_BASELINE:
 #             if not opts['plot_sub_bline']:
 #                 ppanel.oplot(dgroup.prepeaks.energy,
