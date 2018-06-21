@@ -73,7 +73,7 @@ NB_PANELS = (('XAS Normalization', XASNormPanel),
              ('Pre-edge Peaks', PrePeakPanel),
              ('Linear Combos', LinearComboPanel),
              ('PCA',  PCAPanel),
-             ('LASSO', LASSOPanel),
+             # ('LASSO', LASSOPanel),
              ('EXAFS', EXAFSPanel) )
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
