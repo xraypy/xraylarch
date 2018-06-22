@@ -806,13 +806,14 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     xdat_full = 1.0*dgroup.xdat
     ydat_full = 1.0*dgroup.ydat
 
-    yfit   = 1.0*result.best_fit
-    ycomps = result.ycomps
-    ylabel = 'best fit'
     if show_init:
         yfit   = 1.0*result.init_fit
         ycomps = None
         ylabel = 'model'
+    else:
+        yfit   = 1.0*result.best_fit
+        ycomps = result.ycomps
+        ylabel = 'best fit'
 
     baseline = 0.*ydat
     if ycomps is not None:
@@ -820,7 +821,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if label in opts['bkg_components']:
                 baseline += ycomp
 
-    plotopts = dict(title='%s:\ns pre-edge peak' % dgroup.filename,
+    plotopts = dict(title='%s:\npre-edge peak' % dgroup.filename,
                     xlabel='Energy (eV)', ylabel=opts['array_desc'],
                     delay_draw=True, show_legend=True, style='solid',
                     linewidth=3, marker='None', markersize=4)
