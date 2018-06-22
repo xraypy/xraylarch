@@ -805,7 +805,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     if show_init:
         yfit = result.init_fit
         ycomps = None
-        ylabel = 'baseline'
+        ylabel = 'model'
     else:
         ycomps = result.ycomps
         yfit = result.best_fit
@@ -851,7 +851,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     #endif
 
     if opts['show_peakrange']:
-        popts = {'marker': 'o', 'size': 6, 'color': '#333377'}
+        popts = {'marker': 'o', 'size': 6, 'color': '#111177'}
         ylo = ydat[index_of(xdat, opts['elo'])]
         yhi = ydat[index_of(xdat, opts['ehi'])]
         plot_extras.append(('marker', opts['elo'], ylo, popts))
@@ -862,8 +862,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
         if hasattr(result, 'params'):
             pcen = result.params.get('fit_centroid', None)
+            if pcen is not None:
+                pcen = pcen.value
         if pcen is not None:
-            plot_extras.append(('vline', pcen.value, None,  popts))
+            plot_extras.append(('vline', pcen, None,  popts))
         #endif
     #endif
 
