@@ -1125,12 +1125,16 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     this = parwids.param
-                    if this.expr is not None:
-                        pargs = "expr='%s'" % (this.expr)
+                    pargs = ["'%s'" % this.name, 'value=%f' % (this.value)]
+                    if not this.vary:
+                        pargs.append("vary=False")
                     else:
-                        pargs = "value=%f, min=%f, max=%f" % (this.value,
-                                                              this.min, this.max)
-                    cmds.append("peakpars.add('%s', %s)" % (this.name, pargs))
+                        if this.expr is not None:
+                            pargs.append("expr='%s'" % (this.expr))
+                        pargs.append('min=%f' % this.min)
+                        pargs.append('max=%f' % this.max)
+
+                    cmds.append("peakpars.add(%s)" % (', '.join(pargs)))
                     if this.name.endswith('_center'):
                         _cen = this.name
                     elif parwids.param.name.endswith('_amplitude'):
