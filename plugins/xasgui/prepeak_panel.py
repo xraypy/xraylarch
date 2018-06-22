@@ -325,9 +325,11 @@ class FitResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def get_fitresult(self, nfit=0):
+    def get_fitresult(self, nfit=None):
+        if nfit is None:
+            nfit = self.nfit
         if len(self.peakfit_history) < 1:
-            pfhist = getattr(datagroup.prepeaks, 'fit_history', [])
+            pfhist = getattr(self.datagroup.prepeaks, 'fit_history', [])
             self.peakfit_history = pfhist
         self.nfit = max(0, nfit)
         if self.nfit > len(self.peakfit_history):
@@ -336,9 +338,11 @@ class FitResultFrame(wx.Frame):
 
     def onPlot(self, event=None):
         show_resid = self.wids['plot_resid'].IsChecked()
-        subtract_baseline = self.wids['plot_bline'].IsChecked()
-        self.peakframe.onPlot(show_residual=show_resid,
-                              subtract_baseline=subtract_baseline)
+        sub_bline = self.wids['plot_bline'].IsChecked()
+        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
+        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
+
+        self.peakframe.larch_eval(cmd)
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -442,10 +446,9 @@ class FitResultFrame(wx.Frame):
         parts.append(desc)
         wids['model_desc'].SetLabel('\n'.join(parts))
 
-
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
-        for i, param in enumerate(result.params.values()):
+        for param in reversed(result.params.values()):
             pname = param.name
             try:
                 val = gformat(param.value)
@@ -750,171 +753,16 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         g = self.build_fitmodel(dgroup)
         self.onPlot(show_init=True)
 
-    def onPlot(self, evt=None, baseline_only=False, show_init=False,
-               subtract_baseline=False, show_residual=False):
+    def onPlot(self, evt=None, baseline_only=False, show_init=False):
         opts = self.read_form()
         cmd = "plot_prepeaks_fit"
-        args = ['{gname}',
-                "subtract_baseline=%s" % (subtract_baseline)]
+        args = ['{gname}']
         if baseline_only:
             cmd = "plot_prepeaks_baseline"
         else:
-            args.append("show_residual=%s" % (show_residual))
             args.append("show_init=%s" % (show_init))
-
         cmd = "%s(%s)" % (cmd, ', '.join(args))
-        print(" Plot ",  cmd)
         self.larch_eval(cmd.format(**opts))
-
-
-#         ppanel.plot(xdat, ydat, **plotopts)
-#         if plot_choice == PLOT_BASELINE:
-#             if not opts['plot_sub_bline']:
-#                 ppanel.oplot(dgroup.prepeaks.energy,
-#                              dgroup.prepeaks.baseline,
-#                              label='baseline', **PLOTOPTS_2)
-
-#         ppeaks = getattr(dgroup, 'prepeaks', None)
-#         if ppeaks is None:
-#             return
-#
-#         i1, i2 = self.get_xranges(dgroup.xdat)
-#         # i2 = len(ppeaks.baseline) + i1
-#
-#         if len(dgroup.yfit) > len(ppeaks.baseline):
-#             i2 = i1 + len(ppeaks.baseline)
-#         # print(" Indexes: ", i1, i2, i2-i1, len(dgroup.yfit), len(ppeaks.baseline))
-#
-#         xdat = 1.0*dgroup.energy
-#         ydat = 1.0*dgroup.ydat
-#         yfit = 1.0*dgroup.ydat
-#         baseline = 1.0*dgroup.ydat
-#         yfit[i1:i2] = dgroup.yfit[:i2-i1]
-#         baseline[i1:i2] = ppeaks.baseline[:i2-i1]
-#
-#         if opts['plot_sub_bline']:
-#             ydat = ydat - baseline
-#             if plot_choice in (PLOT_FIT, PLOT_RESID):
-#                 yfit = yfit - baseline
-#         if plot_choice == PLOT_RESID:
-#             resid = ydat - yfit
-#
-#         _xs = dgroup.energy[i1:i2]
-#         xrange = max(_xs) - min(_xs)
-#         pxmin = min(_xs) - 0.05 * xrange
-#         pxmax = max(_xs) + 0.05 * xrange
-#
-#         jmin = index_of(dgroup.energy, pxmin)
-#         jmax = index_of(dgroup.energy, pxmax) + 1
-#
-#         _ys = ydat[jmin:jmax]
-#         yrange = max(_ys) - min(_ys)
-#         pymin = min(_ys) - 0.05 * yrange
-#         pymax = max(_ys) + 0.05 * yrange
-#
-#         title = ' pre-edge fit'
-#         if plot_choice == PLOT_BASELINE:
-#             title = ' pre-edge baseline'
-#             if opts['plot_sub_bline']:
-#                 title = ' pre-edge peaks'
-#
-#         array_desc = self.array_choice.GetStringSelection()
-#
-#         plotopts = {'xmin': pxmin, 'xmax': pxmax,
-#                     'ymin': pymin, 'ymax': pymax,
-#                     'title': '%s:\n%s' % (opts['filename'], title),
-#                     'xlabel': 'Energy (eV)',
-#                     'ylabel': opts['array_desc'],
-#                     'label': opts['array_desc'],
-#                     'delay_draw': True,
-#                     'show_legend': True}
-#
-#         plot_extras = []
-#         if opts['show_fitrange']:
-#             popts = {'color': '#DDDDCC'}
-#             emin = opts['emin']
-#             emax = opts['emax']
-#             imin = index_of(dgroup.energy, emin)
-#             imax = index_of(dgroup.energy, emax)
-#
-#             plot_extras.append(('vline', emin, None, popts))
-#             plot_extras.append(('vline', emax, None, popts))
-#
-#         if opts['show_peakrange']:
-#             popts = {'marker': '+', 'markersize': 6}
-#             elo = opts['elo']
-#             ehi = opts['ehi']
-#             ilo = index_of(dgroup.xdat, elo)
-#             ihi = index_of(dgroup.xdat, ehi)
-#
-#             plot_extras.append(('marker', elo, ydat[ilo], popts))
-#             plot_extras.append(('marker', ehi, ydat[ihi], popts))
-#
-#         if opts['show_centroid']:
-#             popts = {'color': '#EECCCC'}
-#             ecen = getattr(dgroup.prepeaks, 'centroid', -1)
-#             if ecen > min(dgroup.energy):
-#                 plot_extras.append(('vline', ecen, None,  popts))
-#
-#         if plot_choice == PLOT_RESID:
-#             pframe = self.controller.get_display(win=2, stacked=True)
-#         else:
-#             pframe = self.controller.get_display(win=1)
-#
-#         ppanel = pframe.panel
-#         axes = ppanel.axes
-#
-#         plotopts.update(PLOTOPTS_1)
-#
-#         ppanel.plot(xdat, ydat, **plotopts)
-#         if plot_choice == PLOT_BASELINE:
-#             if not opts['plot_sub_bline']:
-#                 ppanel.oplot(dgroup.prepeaks.energy,
-#                              dgroup.prepeaks.baseline,
-#                              label='baseline', **PLOTOPTS_2)
-#
-#         elif plot_choice in (PLOT_FIT, PLOT_RESID):
-#             ppanel.oplot(dgroup.energy, yfit,
-#                          label='fit', **PLOTOPTS_1)
-#
-#             if hasattr(dgroup, 'ycomps'):
-#                 ncomp = len(dgroup.ycomps)
-#                 icomp = 0
-#                 for label, ycomp in dgroup.ycomps.items():
-#                     icomp +=1
-#                     fcomp = self.fit_components[label]
-#                     if not (fcomp.bkgbox.IsChecked() and opts['plot_sub_bline']):
-#                         ppanel.oplot(dgroup.xfit, ycomp, label=label,
-#                                      delay_draw=(icomp!=ncomp), style='short dashed')
-#
-#             if plot_choice == PLOT_RESID:
-#                 _ys = resid
-#                 yrange = max(_ys) - min(_ys)
-#                 plotopts['ymin'] = min(_ys) - 0.05 * yrange
-#                 plotopts['ymax'] = max(_ys) + 0.05 * yrange
-#                 plotopts['delay_draw'] = False
-#                 plotopts['ylabel'] = 'data-fit'
-#                 plotopts['label'] = '_nolegend_'
-#
-#                 pframe.plot(dgroup.energy, resid, panel='bot', **plotopts)
-#                 pframe.Show()
-#                 # print(" RESIDUAL PLOT  margins: ")
-#                 # print(" top : ", pframe.panel.conf.margins)
-#                 # print(" bot : ", pframe.panel_bot.conf.margins)
-#
-#         for etype, x, y, opts in plot_extras:
-#             if etype == 'marker':
-#                 popts = {'marker': 'o', 'markersize': 4,
-#                          'label': '_nolegend_',
-#                          'markerfacecolor': 'red',
-#                          'markeredgecolor': '#884444'}
-#                 popts.update(opts)
-#                 axes.plot([x], [y], **popts)
-#             elif etype == 'vline':
-#                 popts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888'}
-#                 popts.update(opts)
-#                 axes.axvline(x, **popts)
-#         ppanel.canvas.draw()
 
     def onNBChanged(self, event=None):
         idx = self.mod_nb.GetSelection()
