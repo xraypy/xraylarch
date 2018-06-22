@@ -19,10 +19,10 @@ Plotting macros for XAFS data sets and fits
 
 from numpy import gradient, ndarray, diff
 from larch import Group, ValidateLarchPlugin
-from larch.utils import (index_of, index_nearest)
+from larch.utils import (index_of, index_nearest, interp)
 
 from larch_plugins.wx.plotter import (_getDisplay, _plot, _oplot, _newplot,
-                                      _plot_text, _plot_marker,
+                                      _fitplot, _plot_text, _plot_marker,
                                       _plot_arrow, _plot_axvline,
                                       _plot_axhline)
 
@@ -91,9 +91,9 @@ def _get_title(dgroup, title=None):
 #enddef
 
 @ValidateLarchPlugin
-def redraw(win=1, show_legend=True, _larch=None):
+def redraw(win=1, show_legend=True, stacked=False, _larch=None):
     try:
-        panel = _getDisplay(win=win, _larch=_larch).panel
+        panel = _getDisplay(win=win, stacked=stacked, _larch=_larch).panel
     except AttributeError:
         return
     #endtry
@@ -800,40 +800,61 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 
     opts = result.user_options
     xeps = min(diff(dgroup.xdat)) / 5.
-    xdat = result.energy
-    ydat = result.mu
+    xdat = 1.0*result.energy
+    ydat = 1.0*result.mu
+
+    xdat_full = 1.0*dgroup.xdat
+    ydat_full = 1.0*dgroup.ydat
+
+    yfit   = 1.0*result.best_fit
+    ycomps = result.ycomps
+    ylabel = 'best fit'
     if show_init:
-        yfit = result.init_fit
+        yfit   = 1.0*result.init_fit
         ycomps = None
         ylabel = 'model'
-    else:
-        ycomps = result.ycomps
-        yfit = result.best_fit
-        ylabel = 'best fit'
 
-    px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
-                                          xmin=opts['emin'], xmax=opts['emax'])
-    title = "pre_edge peak"
-    plotopts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1,
-                    title='%s:\n%s' % (dgroup.filename, title),
-                    xlabel='Energy (eV)', ylabel=opts['array_desc'],
-                    delay_draw=True, show_legend=True, style='solid',
-                    linewidth=3, marker='None', markersize=4,
-                    win=win, _larch=_larch)
-
-    _plot(dgroup.xdat, dgroup.ydat, new=True, label='data', color=LineColors[0], **plotopts)
-    _oplot(xdat, yfit, label=ylabel, color=LineColors[1], **plotopts)
-    plotopts.update(dict(style='short dashed', linewidth=2, marker='None'))
-
+    baseline = 0.*ydat
     if ycomps is not None:
-        ncolor = 2
-        baseline = 0.*ydat
         for label, ycomp in ycomps.items():
             if label in opts['bkg_components']:
                 baseline += ycomp
-        _oplot(xdat, baseline, label='baseline', delay_draw=True,
-               style='short dashed', marker='None', markersize=5,
-               color=LineColors[ncolor], win=win, _larch=_larch)
+
+    plotopts = dict(title='%s:\ns pre-edge peak' % dgroup.filename,
+                    xlabel='Energy (eV)', ylabel=opts['array_desc'],
+                    delay_draw=True, show_legend=True, style='solid',
+                    linewidth=3, marker='None', markersize=4)
+
+    if subtract_baseline:
+        ydat -= baseline
+        yfit -= baseline
+        ydat_full = 1.0*ydat
+        xdat_full = 1.0*xdat
+        plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
+
+    px0, px1, py0, py1 = extend_plotrange(xdat_full, ydat_full,
+                                          xmin=opts['emin'], xmax=opts['emax'])
+
+    plotopts.update(dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1))
+
+    ncolor = 0
+    popts = {'win': win, '_larch': _larch}
+    plotopts.update(popts)
+    if show_residual:
+        popts['stacked'] = True
+        _fitplot(xdat, ydat, yfit, label='data', label2=ylabel, **plotopts)
+    else:
+        _plot(xdat_full, ydat_full, new=True, label='data',
+              color=LineColors[0], **plotopts)
+        _oplot(xdat, yfit, label=ylabel, color=LineColors[1], **plotopts)
+        ncolor = 1
+
+    if ycomps is not None:
+        if not subtract_baseline:
+            ncolor += 1
+            _oplot(xdat, baseline, label='baseline', delay_draw=True,
+                   style='short dashed', marker='None', markersize=5,
+                   color=LineColors[ncolor], **popts)
 
         for label, ycomp in ycomps.items():
             if label in opts['bkg_components']:
@@ -841,46 +862,32 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             ncolor =  (ncolor+1) % 10
             _oplot(xdat, ycomp, label=label, delay_draw=True,
                    style='short dashed', marker='None', markersize=5,
-                   color=LineColors[ncolor], win=win, _larch=_larch)
+                   color=LineColors[ncolor], **popts)
 
-    plot_extras = []
     if opts['show_fitrange']:
-        popts = {'color': '#DDDDCC'}
-        plot_extras.append(('vline', opts['emin'], None, popts))
-        plot_extras.append(('vline', opts['emax'], None, popts))
-    #endif
+        for attr in ('emin', 'emax'):
+            _plot_axvline(opts[attr], ymin=0, ymax=1,
+                          delay_draw=True, color='#DDDDCC',
+                          label='_nolegend_', **popts)
 
-    if opts['show_peakrange']:
-        popts = {'marker': 'o', 'size': 6, 'color': '#111177'}
-        ylo = ydat[index_of(xdat, opts['elo'])]
-        yhi = ydat[index_of(xdat, opts['ehi'])]
-        plot_extras.append(('marker', opts['elo'], ylo, popts))
-        plot_extras.append(('marker', opts['ehi'], yhi, popts))
-    #endif
     if opts['show_centroid']:
-        popts = {'color': '#EECCCC'}
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
         if hasattr(result, 'params'):
             pcen = result.params.get('fit_centroid', None)
             if pcen is not None:
                 pcen = pcen.value
         if pcen is not None:
-            plot_extras.append(('vline', pcen, None,  popts))
-        #endif
-    #endif
+            _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
+                          color='#EECCCC', label='_nolegend_', **popts)
 
-    for etype, x, y, popts in plot_extras:
-        popts.update(dict(win=win, _larch=_larch))
-        if etype == 'marker':
-            _plot_marker(x, y, delay_draw=True, **popts)
-        elif etype == 'vline':
-            opts = {'ymin': 0, 'ymax': 1.0, 'color': '#888888',
-                    'label': '_nolegend_'}
-            opts.update(popts)
-            _plot_axvline(x, delay_draw=True,  **opts)
-        #endif
-    #endfor
-    redraw(win=win, show_legend=True, _larch=_larch)
+    if opts['show_peakrange']:
+        for attr in ('elo', 'ehi'):
+            x = opts[attr]
+            y = ydat[index_of(xdat, x)]
+            _plot_marker(x, y, delay_draw=True, marker='o', size=6,
+                         color='#111177', **popts)
+
+    redraw(show_legend=True, **popts)
 #enddef
 
 
