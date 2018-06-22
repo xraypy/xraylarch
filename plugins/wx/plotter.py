@@ -173,7 +173,7 @@ class StackedPlotDisplay(StackedPlotFrame):
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
-        self.symname = '%s.plot%i' % (MODNAME, self.window)
+        self.symname = '%s.fitplot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
         self.panel.canvas.figure.set_facecolor('#FDFDFB')
         self.panel_bot.canvas.figure.set_facecolor('#FDFDFB')
@@ -183,8 +183,8 @@ class StackedPlotDisplay(StackedPlotFrame):
             if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
                 symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
 
-        if window not in PLOT_DISPLAYS:
-            PLOT_DISPLAYS[window] = self
+        if window not in FITPLOT_DISPLAYS:
+            FITPLOT_DISPLAYS[window] = self
 
     def onExit(self, o, **kw):
         try:
@@ -193,8 +193,8 @@ class StackedPlotDisplay(StackedPlotFrame):
                 symtable.del_symbol(self.symname)
         except:
             pass
-        if self.window in PLOT_DISPLAYS:
-            PLOT_DISPLAYS.pop(self.window)
+        if self.window in FITPLOT_DISPLAYS:
+            FITPLOT_DISPLAYS.pop(self.window)
 
         self.Destroy()
 
@@ -282,11 +282,14 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     elif stacked:
         creator = StackedPlotDisplay
         display_dict = FITPLOT_DISPLAYS
+        title   = 'Fit Plot Window %i' % win
+        symname = '%s.fitplot%i' % (MODNAME, win)
 
-    if win in display_dict:
+    cur_disp = _larch.symtable.get_symbol(symname, create=True)
+    if win in display_dict and isinstance(cur_disp, creator):
         display = display_dict[win]
     else:
-        display = _larch.symtable.get_symbol(symname, create=True)
+        display = cur_disp
     if display is None:
         display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
         if wintitle is not None:
@@ -369,7 +372,7 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
 
 @larch.ValidateLarchPlugin
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
-          force_draw=True, side='left', wintitle=None, **kws):
+          xrf=False, stacked=False, force_draw=True, side='left', wintitle=None, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -407,6 +410,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     See Also: oplot, newplot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
     if plotter is None:
         return
@@ -441,7 +445,8 @@ def wx_update(_larch=None, **kws):
 
 
 @larch.ValidateLarchPlugin
-def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
+def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
+           size=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any
@@ -452,9 +457,8 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
 
     See Also: plot, newplot
     """
-    _plot(x, y, win=win, size=size, new=False, _larch=_larch, wxparent=wxparent, **kws)
-
-
+    _plot(x, y, win=win, size=size, new=False, _larch=_larch, xrf=xrf,
+          stacked=stacked, wxparent=wxparent, **kws)
 
 @larch.ValidateLarchPlugin
 def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
@@ -474,7 +478,7 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,
 
 @larch.ValidateLarchPlugin
 def _plot_text(text, x, y, win=1, side='left', size=None,
-               rotation=None, ha='left', va='center',
+               stacked=False, xrf=False, rotation=None, ha='left', va='center',
                _larch=None, wxparent=None,  **kws):
     """plot_text(text, x, y, win=1, options)
 
@@ -493,7 +497,8 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
 
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -505,7 +510,8 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 shape='full', color='black',
                 width=0.00, head_width=0.05, head_length=0.25,
-               _larch=None, wxparent=None,  size=None, **kws):
+               _larch=None, wxparent=None, stacked=False, xrf=False,
+                size=None, **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, **kws)
 
@@ -528,7 +534,8 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
 
     See Also: plot, oplot, plot_text
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -538,7 +545,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
 
 @larch.ValidateLarchPlugin
 def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
-               _larch=None, wxparent=None,  win=1, **kws):
+               _larch=None, wxparent=None, win=1, xrf=False, stacked=False, **kws):
 
     """plot_marker(x, y, marker='o', size=4, color='black')
 
@@ -554,7 +561,8 @@ def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
 
     See Also: plot, oplot, plot_text
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=None, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=None, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -585,8 +593,8 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, size=None,
         plotter.panel.canvas.draw()
 
 @larch.ValidateLarchPlugin
-def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, size=None,
-                  delay_draw=False, _larch=None, **kws):
+def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, xrf=False,
+                  stacked=False, size=None, delay_draw=False, _larch=None, **kws):
     """plot_axvline(y, xmin=None, ymin=None, **kws)
 
     plot a vertical line spanning the plot axes
@@ -597,7 +605,8 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, size=None,
         ymax:   ending y fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
@@ -608,7 +617,8 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, wxparent=None, size=None,
         plotter.panel.canvas.draw()
 
 @larch.ValidateLarchPlugin
-def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
+def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None,
+               xrf=False, stacked=False, **kws):
     """get_cursor(win=1, timeout=30)
 
     waits (up to timeout) for cursor click in selected plot window, and
@@ -622,7 +632,8 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     For a more consistent programmatic approach, this routine can be called
     with timeout <= 0 to read the most recently clicked cursor position.
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     symtable = ensuremod(_larch, MODNAME)
@@ -703,8 +714,8 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
 
 
 @larch.ValidateLarchPlugin
-def _fitplot(x, y, y2=None, panel='top', win=1, _larch=None, wxparent=None, size=None,
-              **kws):
+def _fitplot(x, y, y2=None, panel='top', label=None, label2=None, win=1,
+             _larch=None, wxparent=None, size=None, **kws):
     """fit_plot(x, y, y2=None, win=1, options)
 
     Plot x, y values in the top of a StackedPlot. If y2 is not None, then x, y2 values
@@ -722,10 +733,16 @@ def _fitplot(x, y, y2=None, panel='top', win=1, _larch=None, wxparent=None, size
     if plotter is None:
         return
     plotter.Raise()
-    plotter.plot(x, y, panel='top', **kws)
+    plotter.plot(x, y, panel='top', label=label, **kws)
     if y2 is not None:
+        kws.update({'label': label2})
         plotter.oplot(x, y2, panel='top', **kws)
         plotter.plot(x, y2-y, panel='bot')
+        plotter.panel.conf.set_margins(top=0.15, bottom=0.01,
+                                       left=0.15, right=0.05)
+        plotter.panel_bot.conf.set_margins(top=0.01, bottom=0.35,
+                                           left=0.15, right=0.05)
+
 
 @larch.ValidateLarchPlugin
 def _hist(x, bins=10, win=1, new=False,
