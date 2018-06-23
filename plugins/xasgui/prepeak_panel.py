@@ -14,11 +14,10 @@ import wx.lib.agw.flatnotebook as flat_nb
 
 import wx.dataview as dv
 
-from lmfit import Parameter, Parameters, fit_report
+from lmfit import Parameter
 try:
     from lmfit.model import (save_modelresult, load_modelresult,
                              save_model, load_model)
-
     HAS_MODELSAVE = True
 except ImportError:
     HAS_MODELSAVE = False
@@ -94,7 +93,7 @@ PLOT_RESID    = 'Data+Residual'
 PlotChoices = [PLOT_BASELINE, PLOT_FIT, PLOT_RESID]
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
-ModelWcards = 'Fit Models(*.modl)|*.modl|All files (*.*)|*.*'
+ModelWcards = "Fit Models(*.modl)|*.modl|All files (*.*)|*.*"
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
@@ -102,7 +101,7 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-MIN_CORREL = 0.0010
+MIN_CORREL = 0.10
 
 COMMANDS = {}
 COMMANDS['prepfit'] = """
@@ -129,6 +128,13 @@ peakresult.user_options = {user_opts:s}
 {group}.prepeaks.fit_history.insert(0, peakresult)"""
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
+
+
+def get_xlims(x, xmin, xmax):
+    xeps = min(np.diff(x))/ 5.
+    i1 = index_of(x, xmin + xeps)
+    i2 = index_of(x, xmax + xeps) + 1
+    return i1, i2
 
 class FitResultFrame(wx.Frame):
     config_sect = 'prepeak'
@@ -170,8 +176,17 @@ class FitResultFrame(wx.Frame):
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
         wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
-        self.plot_choice = Button(panel, 'Replot Fit',
-                                  size=(150, -1), action=self.onPlot)
+        self.plot_choice = Button(panel, 'Plot Selected Fit',
+                                  size=(175, -1), action=self.onPlot)
+
+
+        self.save_result = Button(panel, 'Save Selected Model',
+                                  size=(175, -1), action=self.onSaveFitResult)
+        self.save_result.SetToolTip('save model and result to be loaded later')
+
+        self.export_fit  = Button(panel, 'Export Fit',
+                                  size=(175, -1), action=self.onExportFitResult)
+        self.export_fit.SetToolTip('save arrays and results to text file')
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
@@ -185,6 +200,10 @@ class FitResultFrame(wx.Frame):
         wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(11),
                                         size=(700, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+
+        irow += 1
+        sizer.Add(self.save_result, (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LCEN)
 
         irow += 1
         # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LCEN)
@@ -223,20 +242,6 @@ class FitResultFrame(wx.Frame):
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LCEN)
 
-#         for label, attr in (('Fit method', 'method'),
-#                             ('# Fit Evaluations', 'nfev'),
-#                             ('# Data Points', 'ndata'),
-#                             ('# Fit Variables', 'nvarys'),
-#                             ('# Free Points', 'nfree'),
-#                             ('Chi-square', 'chisqr'),
-#                             ('Reduced Chi-square', 'redchi'),
-#                             ('Akaike Info Criteria', 'aic'),
-#                             ('Bayesian Info Criteria', 'bic')):
-#             irow += 1
-#             wids[attr] = SimpleText(panel, '?')
-#             sizer.Add(SimpleText(panel, " %s = " % label),  (irow, 0), (1, 1), LCEN)
-#             sizer.Add(wids[attr],                           (irow, 1), (1, 1), LCEN)
-
         irow += 1
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
@@ -257,12 +262,12 @@ class FitResultFrame(wx.Frame):
         pview.AppendTextColumn('Standard Error',    width=100)
         pview.AppendTextColumn('Info ',             width=275)
 
-        for col in (0, 1, 2, 3):
+        for col in range(4):
             this = pview.Columns[col]
-            isort, align = True, wx.ALIGN_LEFT
+            align = wx.ALIGN_LEFT
             if col in (1, 2):
-                isort, align = False, wx.ALIGN_RIGHT
-            this.Sortable = isort
+                align = wx.ALIGN_RIGHT
+            this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
         pview.SetMinSize((675, 200))
@@ -324,6 +329,42 @@ class FitResultFrame(wx.Frame):
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+
+    def onSaveFitResult(self, event=None):
+        deffile = self.datagroup.filename.replace('.', '_') + 'peak.modl'
+        sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
+                           wildcard=ModelWcards)
+        if sfile is not None:
+            save_modelresult(result, sfile)
+
+
+    def onExportFitResult(self, event=None):
+        dgroup = self.datagroup
+        deffile = dgroup.filename.replace('.', '_') + '.xdi'
+        wcards = 'All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
+
+        result = self.get_fitresult()
+        if outfile is not None:
+            i1, i2 = get_xlims(dgroup.xdat,
+                               result.user_options['emin'],
+                               result.user_options['emax'])
+            x = dgroup.xdat[i1:i2]
+            y = dgroup.ydat[i1:i2]
+            yerr = None
+            if hasattr(dgroup, 'yerr'):
+                yerr = 1.0*dgroup.yerr
+                if not isinstance(yerr, np.ndarray):
+                    yerr = yerr * np.ones(len(y))
+                else:
+                    yerr = yerr[i1:i2]
+
+            export_modelresult(result, filename=outfile,
+                               datafile=dgroup.filename, ydata=y,
+                               yerr=yerr, x=x)
+
 
     def get_fitresult(self, nfit=None):
         if nfit is None:
@@ -461,10 +502,10 @@ class FitResultFrame(wx.Frame):
             extra = ' '
             if param.expr is not None:
                 extra = ' = %s ' % param.expr
-            elif param.init_value is not None:
-                extra = ' (init=%s)' % gformat(param.init_value, 11)
             elif not param.vary:
                 extra = ' (fixed)'
+            elif param.init_value is not None:
+                extra = ' (init=%s)' % gformat(param.init_value, 11)
 
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
@@ -537,10 +578,9 @@ class PrePeakPanel(TaskPanel):
                                    action=self.onPlotModel,  size=(150, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(150, -1))
-        # self.fitsel_btn = Button(pan, 'Fit Selected Groups',
-        #                          action=self.onFitSelected,  size=(150, 25))
+        self.loadmodel_btn = Button(pan, 'Load Saved Model',
+                                    action=self.onLoadFitResult,  size=(150, 25))
         self.fitmodel_btn.Disable()
-        # self.fitsel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(150, -1),
                                    choices=list(Array_Choices.keys()))
@@ -605,11 +645,14 @@ class PrePeakPanel(TaskPanel):
         add_text(' : ', newrow=False)
         pan.Add(ppeak_ehi)
         pan.Add(self.show_peakrange)
+
+
         # pan.Add(self.fitsel_btn)
 
         add_text( 'Peak Centroid: ')
         pan.Add(self.msg_centroid, dcol=3)
         pan.Add(self.show_centroid, dcol=1)
+        pan.Add(self.loadmodel_btn)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -1008,33 +1051,20 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         self.pick2_timer.Start(250)
 
 
-    def onSaveFitResult(self, event=None):
-        dgroup = self.controller.get_group()
-        deffile = dgroup.filename.replace('.', '_') + '.modl'
-
-        outfile = FileSave(self, 'Save Fit Result',
-                           default_file=deffile,
-                           wildcard=ModelWcards)
-
-        if outfile is not None:
-            try:
-                self.save_fit_result(self.get_fitresult(), outfile)
-            except IOError:
-                print('could not write %s' % outfile)
-
     def onLoadFitResult(self, event=None):
-        mfile = FileOpen(self, 'Load Fit Result',
-                         default_file='', wildcard=ModelWcards)
-        if mfile is not None:
-            self.load_modelresult(mfile)
+        dlg = wx.FileDialog(self, message="Load Saved File Model",
+                            wildcard=ModelWcards, style=wx.FD_OPEN)
+        rfile = None
+        if dlg.ShowModal() == wx.ID_OK:
+            rfile = dlg.GetPaths()
+        dlg.Destroy()
 
-    def save_fit_result(self, fitresult, outfile):
-        """saves a customized ModelResult"""
-        save_modelresult(fitresult, outfile)
+        if rfile is None:
+            return
 
-    def load_modelresult(self, inpfile):
-        """read a customized ModelResult"""
-        result = load_modelresult(inpfile)
+        self.larch_eval("# peakmodel = lm_load_modelresult('%s')" %rfile)
+
+        result = load_modelresult(rfile)
 
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(self, prefix=prefix)
@@ -1055,34 +1085,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                         wids.maxval.SetValue(par.max)
                     val = result.init_values.get(pname, par.value)
                     wids.value.SetValue(val)
-
         self.fill_form(result.user_options)
-        return result
-
-    def onExportFitResult(self, event=None):
-        dgroup = self.controller.get_group()
-        deffile = dgroup.filename.replace('.', '_') + '_result.xdi'
-        wcards = 'All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Export Fit Result',
-                           default_file=deffile, wildcard=wcards)
-
-        if outfile is not None:
-            i1, i2 = self.get_xranges(dgroup.xdat)
-            x = dgroup.xdat[i1:i2]
-            y = dgroup.ydat[i1:i2]
-            yerr = None
-            if hasattr(dgroup, 'yerr'):
-                yerr = 1.0*dgroup.yerr
-                if not isinstance(yerr, np.ndarray):
-                    yerr = yerr * np.ones(len(y))
-                else:
-                    yerr = yerr[i1:i2]
-
-            export_modelresult(self.get_fitresult(),
-                               filename=outfile,
-                               datafile=dgroup.filename,
-                               ydata=y, yerr=yerr, x=x)
 
 
     def onSelPoint(self, evt=None, opt='__', relative_e0=False, win=None):
@@ -1125,14 +1128,14 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             if comp.usebox is not None and comp.usebox.IsChecked():
                 for parwids in comp.parwids.values():
                     this = parwids.param
-                    pargs = ["'%s'" % this.name, 'value=%f' % (this.value)]
-                    if not this.vary:
+                    pargs = ["'%s'" % this.name, 'value=%f' % (this.value),
+                             'min=%f' % (this.min), 'max=%f' % (this.max)]
+                    if this.expr is not None:
+                        pargs.append("expr='%s'" % (this.expr))
+                    elif not this.vary:
+                        pargs.pop()
+                        pargs.pop()
                         pargs.append("vary=False")
-                    else:
-                        if this.expr is not None:
-                            pargs.append("expr='%s'" % (this.expr))
-                        pargs.append('min=%f' % this.min)
-                        pargs.append('max=%f' % this.max)
 
                     cmds.append("peakpars.add(%s)" % (', '.join(pargs)))
                     if this.name.endswith('_center'):
@@ -1220,11 +1223,11 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             try:
                 os.makedirs(confdir)
             except OSError:
-                print("Warning: cannot create XAS GUI user folder")
+                print("Warning: cannot create XAS_Viewer user folder")
                 return
         if not HAS_MODELSAVE:
             print("Warning: cannot save model results: upgrade lmfit")
             return
         if fname is None:
-            fname = 'autosave.fitresult'
-        self.save_fit_result(result, os.path.join(confdir, fname))
+            fname = 'autosave.fitmodel'
+        save_modelresult(result, os.path.join(confdir, fname))
