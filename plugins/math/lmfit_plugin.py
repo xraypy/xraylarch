@@ -1,8 +1,16 @@
 from lmfit import Parameters, Parameter, minimize, models
 
+from lmfit.model import (save_model, load_model, save_modelresult,
+                         load_modelresult)
+
 lmobjs = {'Parameters': Parameters,
           'Parameter': Parameter,
-          'lm_minimize': minimize}
+          'lm_minimize': minimize,
+          'lm_save_model': save_model,
+          'lm_load_model': load_model,
+          'lm_save_modelresult': save_modelresult,
+          'lm_load_modelresult': load_modelresult,
+          }
 
 for name in ('BreitWignerModel', 'ComplexConstantModel',
              'ConstantModel', 'DampedHarmonicOscillatorModel',
