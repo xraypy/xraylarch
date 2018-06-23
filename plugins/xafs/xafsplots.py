@@ -833,10 +833,13 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         xdat_full = 1.0*xdat
         plotopts['ylabel'] = '%s-baseline' % plotopts['ylabel']
 
-    px0, px1, py0, py1 = extend_plotrange(xdat_full, ydat_full,
+    dx0, dx1, dy0, dy1 = extend_plotrange(xdat_full, ydat_full,
+                                          xmin=opts['emin'], xmax=opts['emax'])
+    fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-    plotopts.update(dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1))
+    plotopts.update(dict(xmin=dx0, xmax=dx1,
+                         ymin=min(dy0, fy0), ymax=max(dy1, fy1)))
 
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
@@ -881,12 +884,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
                           color='#EECCCC', label='_nolegend_', **popts)
 
-    if opts['show_peakrange']:
-        for attr in ('elo', 'ehi'):
-            x = opts[attr]
-            y = ydat[index_of(xdat, x)]
-            _plot_marker(x, y, delay_draw=True, marker='o', size=6,
-                         color='#111177', **popts)
 
     redraw(show_legend=True, **popts)
 #enddef
