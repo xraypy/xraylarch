@@ -17,11 +17,12 @@ from .choice import Choice
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
+from .athena_importer import AthenaImporter
 from . import inputhook
 
 from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group, fix_varname)
-
+                              gsescan_group, fix_varname,
+                              is_athena_project, AthenaProject)
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
@@ -119,6 +120,8 @@ class LarchWxShell(object):
         sys.stdout.flush()
 
     def write(self, text, **kws):
+        if text is None:
+            return
         if self.output is None:
             self.write_sys(text)
         else:
@@ -300,7 +303,7 @@ class LarchFrame(wx.Frame):
 
     def BuildMenus(self):
         fmenu = wx.Menu()
-        MenuItem(self, fmenu, "&Read ASCII Data File\tCtrl+O",
+        MenuItem(self, fmenu, "&Read Data File\tCtrl+O",
                  "Read Data File", self.onReadData)
         MenuItem(self, fmenu, "&Read and Run Larch Script\tCtrl+R",
                  "Read and Execute a Larch Script", self.onRunScript)
@@ -388,9 +391,19 @@ class LarchFrame(wx.Frame):
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
-        dgroup = None
+        path = None
         if dlg.ShowModal() == wx.ID_OK:
             path = os.path.abspath(dlg.GetPath()).replace('\\', '/')
+        dlg.Destroy()
+
+        if path is None:
+            return
+
+        if is_athena_project(path):
+            self.show_subframe(name='athena_import', filename=path,
+                               creator=AthenaImporter,
+                               read_ok_cb=self.onReadAthenaProject_OK)
+        else:
             filedir, filename = os.path.split(path)
             pref = fix_varname((filename + '_'*8)[:8]).replace('.', '_').lower()
 
@@ -415,13 +428,12 @@ class LarchFrame(wx.Frame):
             dgroup._path = path
             dgroup._filename = filename
             dgroup._groupname = groupname
-        dlg.Destroy()
-        if dgroup is not None:
             self.show_subframe(name='coledit', event=None,
                                creator=ColumnDataFileFrame,
                                filename=path,
                                last_array_sel=self.last_array_sel,
                                read_ok_cb=self.onReadScan_Success)
+
 
     def onReadScan_Success(self, script, path, groupname=None, array_sel=None,
                            overwrite=False):
@@ -429,8 +441,19 @@ class LarchFrame(wx.Frame):
         self.larchshell.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
             self.last_array_sel = array_sel
-
         self.larchshell.flush()
+
+    def onReadAthenaProject_OK(self, path, namelist):
+        """read groups from a list of groups from an athena project file"""
+        read_cmd = "_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)"
+        self.larchshell.eval(read_cmd.format(path=path))
+        dgroup = None
+        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
+        for gname in namelist:
+            this = getattr(self.larchshell.symtable._prj, gname)
+            gid = str(getattr(this, 'athena_id', gname))
+            self.larchshell.eval(script.format(group=gid, prjgroup=gname))
+        self.larchshell.eval("del _prj")
 
     def onRunScript(self, event=None):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
