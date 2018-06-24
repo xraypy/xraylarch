@@ -42,8 +42,9 @@ The :func:`pre_edge` function
     :returns:  None.
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
-    The following data is put into the output group:
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``mu``.  The
+    following data is put into the output group:
 
        ==============   =======================================================
         attribute        meaning
@@ -63,8 +64,9 @@ The :func:`pre_edge` function
         norm_c*          higher power coefficients of normalization polynomial
        ==============   =======================================================
 
-   Notes:
-      nvict gives an exponent to the energy term for the pre-edge fit.
+Notes:
+
+   -  nvict gives an exponent to the energy term for the pre-edge fit.
       That is, a line :math:`(m E + b)` is fit to
       :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
 
@@ -81,8 +83,9 @@ The :func:`pre_edge` function
     :param   mu:    array of :math:`\mu(E)`
     :param group:   output group
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
-    The value of ``e0`` will be written to the output group.
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``mu``.  The value
+    of ``e0`` will be written to the output group.
 
 
 
@@ -187,8 +190,9 @@ Weng :cite:`Weng`.
     :returns:  None.
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
-    The following data is put into the output group:
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``mu``.  The
+    following data is put into the output group:
 
        ==============   ===========================================================
         attribute        meaning
@@ -262,6 +266,81 @@ large features near the edge.
     Using MBACK to match Si K edge data measured on talc.
 
 
+Pre-edge baseline subtraction
+======================================
+
+
+A common application of XAFS is the analysis of "pre-edge peaks" of
+transition metal oxides to determine oxidation state and molecular
+configuration. These peaks sit just below the main absorption edge
+(typically, due to metal *4p* electrons) of a main *K* edge, and are due to
+overlaps of the metal *d*-electrons and oxygen *p*-electrons, and are often
+described in terms of molecular orbital theory.
+
+To analyze the energies and relative strengths of these pre-edge peaks, it
+is necessary to try to remove the contribution of the main edge.  The main
+edge (or at least its low energy side) can be modeled reasonably well as a
+Lorentzian function for these purposes of describing the tail below the
+pre-edge peaks.
+
+.. function:: pre_edge_baseline(energy, norm, group=None, form='lorentzian', ...)
+
+    remove baseline from main edge over pre edge peak region
+
+    This assumes that :func:`pre_edge` has been run successfully on the spectra
+    and that the spectra has decent pre-edge subtraction and normalization.
+
+    :param energy:    array of x-ray energies, in eV, or group (see note 1)
+    :param norm:      array of normalized :math:`\mu(E)`
+    :param group:     output group
+    :param elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
+    :param ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
+    :param emax:      max energy (eV) to use for baesline fit [e0-5]
+    :param emin:      min energy (eV) to use for baesline fit [e0-40]
+    :param form:      form used for baseline (see note 2)  ['lorentzian']
+    :param with_line: whether to include linear component in baseline [``True``]
+
+
+
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``norm``.
+
+    For output, a sub-group name ``prepeaks`` is created in the output
+    group (if the output group is ``None``, ``_sys.xafsGroup`` will be
+    used), with the following attributes:
+
+       ==============   ===========================================================
+        attribute        meaning
+       ==============   ===========================================================
+        energy           energy array for pre-edge peaks = energy[emin:emax]
+        baseline         fitted baseline array over pre-edge peak energies
+        mu               spectrum over pre-edge peak energies
+        peaks            baseline-subtraced spectrum over pre-edge peak energies
+        dmu              estimated uncertainty in peaks from fit
+        centroid         estimated centroid of pre-edge peaks (see note below)
+        peak_energies    list of predicted peak energies (see note belo)
+        fit_details      details of fit to extract pre-edge peaks.
+       ==============   ===========================================================
+
+
+Notes:
+
+     - A function will be fit to the input :math:`\mu(E)` data over the range between
+       [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
+       region [elo:ehi].  The baseline function is specified with the `form`
+       keyword argument, which can be one of 'lorentzian', 'gaussian', or 'voigt',
+       with 'lorentzian' the default.  In addition, the `with_line` keyword
+       argument can be used to add a line to this baseline function.
+
+     - The value calculated for `prepeaks.centroid`  will be found as
+       `(prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()`
+
+     - The values in the `peak_energies` list will be predicted energies
+       of the peaks in `prepeaks.peaks` as found by peakutils.
+
+
+
+
 Over-absorption Corrections
 =================================
 
@@ -305,10 +384,11 @@ For XANES, a common correction method from the FLUO program by D. Haskel
 
     :returns:         None
 
-    Follows the First Argument Group convention, using group members named
-    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will
-    be written to the output group, containing :math:`\mu(E)` and
-    normalized :math:`\mu(E)` corrected for over-absorption.
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``mu``.  The value
+    of ``mu_corr`` and ``norm_corr`` will be written to the output group,
+    containing :math:`\mu(E)` and normalized :math:`\mu(E)` corrected for
+    over-absorption.
 
 
 Spectral deconvolution
@@ -381,9 +461,9 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param eshift:   energy shift (in eV) to apply to result. [0.0]
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.
-
-    The following data is put into the output group:
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``norm``.  The
+    following data is put into the output group:
 
 
        ================= ===============================================================
@@ -420,7 +500,8 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param sgorder:  order for the Savitzky-Golay function [3]
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``norm``.
 
     Smoothing with :func:`savitzky_golay` requires a window and order.  By
     default, ``window = int(esigma / estep)`` where estep is step size for
