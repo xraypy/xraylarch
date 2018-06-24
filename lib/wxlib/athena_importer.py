@@ -8,13 +8,16 @@ np.seterr(all='ignore')
 
 import wx
 
-
 import larch
 from larch import Group
 from larch_plugins.io import fix_varname, read_athena
-from larch.wxlib import (SimpleText, pack, Button, Choice, Check, MenuItem,
-                         FileCheckList, SetTip, Popup, GUIColors, CEN,
-                         RCEN, LCEN, FRAMESTYLE, Font)
+from .text import SimpleText
+from .filechecklist import FileCheckList, FileDropTarget
+from .buttons import Button
+from .choice import Choice
+from .colors import GUIColors
+from .utils import (pack, Check, MenuItem, SetTip, Popup, CEN,
+                    RCEN, LCEN, FRAMESTYLE, Font)
 
 from wxmplot import PlotPanel
 
