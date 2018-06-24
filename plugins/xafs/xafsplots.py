@@ -734,8 +734,9 @@ def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.05):
              max(yspan) + extend * yrange)
 
 @ValidateLarchPlugin
-def plot_prepeaks_baseline(dgroup, subtract_baseline=False, win=1, _larch=None):
-    """plot pre-edge peak baseline fit, as from XAS Viewer
+def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
+                           show_peakrange=True, win=1, _larch=None, **kws):
+    """Plot pre-edge peak baseline fit, as from `pre_edge_baseline` or XAS Viewer
 
     dgroup must have a 'prepeaks' attribute
     """
@@ -751,27 +752,34 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, win=1, _larch=None):
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
                  xlabel='Energy (eV)', ylabel='mu', delay_draw=True,
                  show_legend=True, style='solid', linewidth=3,
+                 label='data', new=True,
                  marker='None', markersize=4, win=win, _larch=_larch)
+    popts.update(kws)
 
     ydat = dgroup.ydat
     xdat = dgroup.xdat
     if subtract_baseline:
         xdat = ppeak.energy
         ydat = ppeak.baseline
-        _pplot(xdat, ydat, label='baseline', **popts)
+        popts['label'] = 'baseline subtracted peaks'
+        _pplot(xdat, ydat, **popts)
     else:
-        _plot(xdat, ydat, new=True, label='data', **popts)
-        _oplot(ppeak.energy, ppeak.baseline, label='baseline', **popts)
+        _plot(xdat, ydat, **popts)
+        popts['new'] = False
+        popts['label'] = 'baseline'
+        _oplot(ppeak.energy, ppeak.baseline, **popts)
 
     popts = dict(win=win, _larch=_larch, delay_draw=True,
                  label='_nolegend_')
-    for x in (ppeak.emin, ppeak.emax):
-        _plot_axvline(x, ymin=0, ymax=1, color='#DDDDCC', **popts)
-    _plot_axvline(ppeak.centroid, ymin=0, ymax=1, color='#EECCCC', **popts)
+    if show_fitrange:
+        for x in (ppeak.emin, ppeak.emax):
+            _plot_axvline(x, color='#DDDDCC', **popts)
+            _plot_axvline(ppeak.centroid, color='#EECCCC', **popts)
 
-    for x in (ppeak.elo, ppeak.ehi):
-        y = ydat[index_of(xdat, x)]
-        _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
+    if show_peakrange:
+        for x in (ppeak.elo, ppeak.ehi):
+            y = ydat[index_of(xdat, x)]
+            _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
     redraw(win=win, show_legend=True, _larch=_larch)
 #enddef
 
