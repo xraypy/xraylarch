@@ -7,15 +7,16 @@ import numpy as np
 np.seterr(all='ignore')
 
 import wx
-from wxmplot import PlotPanel
 
-from wxutils import (SimpleText, pack, Button, Choice, Check, MenuItem,
-                     Popup, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 import larch
 from larch import Group
 from larch_plugins.io import fix_varname, read_athena
-from larch.wxlib import (FileCheckList, SetTip)
+from larch.wxlib import (SimpleText, pack, Button, Choice, Check, MenuItem,
+                         FileCheckList, SetTip, Popup, GUIColors, CEN,
+                         RCEN, LCEN, FRAMESTYLE, Font)
+
+from wxmplot import PlotPanel
 
 CEN |=  wx.ALL
 
