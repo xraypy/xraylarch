@@ -229,9 +229,11 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if sort and sort_column >= 0 and sort_column < ncol:
          data = data[:, np.argsort(data[sort_column])]
 
+    path, fname = os.path.split(filename)
     attrs = {'filename': filename}
     group = Group(name='ascii_file %s' % filename,
-                  filename=filename,
+                  path=filename,
+                  filename=fname,
                   header=headers,
                   data=data)
 

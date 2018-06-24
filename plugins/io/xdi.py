@@ -253,21 +253,25 @@ class XDIFile(object):
                 self.irefer = self.itrans * exp(-self.murefer)
 
 @ValidateLarchPlugin
-def read_xdi(fname, labels=None, _larch=None):
+def read_xdi(filename, labels=None, _larch=None):
     """simple mapping of XDI file to larch groups"""
-    xdif = XDIFile(fname, labels=labels)
+    xdif = XDIFile(filename, labels=labels)
     group = _larch.symtable.create_group()
     for key, val in xdif.__dict__.items():
         if not key.startswith('_'):
             if six.PY3 and key in string_attrs:
                 val = tostr(val)
             setattr(group, key, val)
-    group.__name__ ='XDI file %s' % fname
+    group.__name__ ='XDI file %s' % filename
     doc = ['%i arrays, %i npts' % (xdif.narrays, xdif.npts)]
     arr_labels = getattr(xdif, 'array_labels', None)
     if arr_labels is not None:
         doc.append("Array Labels: %s" % repr(arr_labels))
     group.__doc__ = '\n'.join(doc)
+
+    group.path = filename
+    path, fname = os.path.split(filename)
+    group.filename = fname
     return group
 
 def registerLarchPlugin():

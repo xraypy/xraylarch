@@ -24,7 +24,10 @@ class EscanData:
                   'column labels', 'scan regions','data')
 
     def __init__(self, fname=None, bad=None, **args):
-        self.filename    = fname
+        self.path = suffix = fname
+        if fname is not None:
+            pref, suffix = os.path.split(fname)
+        self.filename    = suffix
         self.bad_channels = bad
         self.clear_data()
 
@@ -35,8 +38,8 @@ class EscanData:
             if (k == 'progress'): self.progress = args[k]
             if (k == 'message'):  self.message  = args[k]
 
-        if self.filename not in ('',None):
-            self.status = self.read_data_file(fname=self.filename)
+        if self.path not in ('',None):
+            self.status = self.read_data_file(fname=self.path)
 
     def clear_data(self):
         self.xdesc       = ''
@@ -108,7 +111,6 @@ class EscanData:
 
         return None
 
-
     def get_map(self,name=None,norm=None):
         return self.get_data(name=name,norm=norm)
 
@@ -161,7 +163,8 @@ class EscanData:
 
     def read_data_file(self,fname=None):
         """generic data file reader"""
-        if fname is None: fname = self.filename
+        if fname is None:
+            fname = self.path
         read_ascii = True
         if read_ascii:
             retval = self.read_ascii(fname=fname)
@@ -214,7 +217,8 @@ class EscanData:
 
     def _open_ascii(self,fname=None):
         """open ascii file, return lines after some checking"""
-        if fname is None: fname = self.filename
+        if fname is None:
+            fname = self.path
         if fname is None: return None
 
         self.ShowProgress(1.0)
@@ -727,7 +731,8 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
 
 
     def save_sums_ascii(self,fname=None, correct=True,extension='dat'):
-        if fname is None: fname = self.filename
+        if fname is None:
+            fname = self.path
 
         map = None
         correct = correct and hasattr(self,'det_corr')

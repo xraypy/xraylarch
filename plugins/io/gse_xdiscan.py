@@ -3,6 +3,7 @@
 import os
 import sys
 import copy
+import os
 import time
 import gc
 
@@ -25,7 +26,9 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     xdi = XDIFile(str(fname))
 
     group._xdi = xdi
-    group.filename = fname
+    group.path = fname
+    path, suffix = os.path.split(fname)
+    group.filename = suffix
     group.npts = xdi.npts
     group.bad_channels = bad
 
@@ -108,7 +111,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         if arrname.lower() == 'data':
             arrname = '_data'
         aname = sumname = rawname = arrname.lower()
-        if ('_mca' in aname and 
+        if ('_mca' in aname and
             'outputcounts' not in aname and
             'dtfactor' not in aname and
             'clock' not in aname):

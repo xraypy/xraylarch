@@ -22,7 +22,7 @@ from .utils import (pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
                     FRAMESTYLE, Font)
 
 import larch
-from larch import Group
+from larch import Group, Interpreter
 from larch.utils.strutils import fix_varname, file2groupname
 
 CEN |=  wx.ALL
@@ -333,15 +333,17 @@ class ColumnDataFileFrame(wx.Frame) :
         tmpname = '_tmp_file_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
-        deeplarch = self._larch._larch
+        _larch = self._larch
+        if (not isinstance(_larch, Interpreter) and
+            hasattr(_larch, '_larch')):
+            _larch = _larch._larch
         try:
-            deeplarch.eval(read_cmd, add_history=False)
+            _larch.eval(read_cmd, add_history=False)
         except:
             pass
-        if deeplarch.error:
-            # self._larch.input.clear()
+        if _larch.error:
             msg = ["Error trying to read '%s':" % path, ""]
-            for err in deeplarch.error:
+            for err in larch_inerp.error:
                 exc_name, errmsg = err.get_error()
                 msg.append(errmsg)
 
@@ -349,8 +351,8 @@ class ColumnDataFileFrame(wx.Frame) :
             r = Popup(self.parent, "\n".join(msg), title)
             return None
 
-        group = self._larch.symtable.get_symbol(tmpname)
-        self._larch.symtable.del_symbol(tmpname)
+        group = _larch.symtable.get_symbol(tmpname)
+        _larch.symtable.del_symbol(tmpname)
 
         group.text = text
         group.path = path
@@ -410,25 +412,25 @@ class ColumnDataFileFrame(wx.Frame) :
 
         # generate script to pass back to calling program:
         labels = ', '.join(self.workgroup.array_labels)
-        read_cmd = "%s('{path:s}', labels='%s')" % (self.reader, labels)
+        read_cmd = "%s('{path}', labels='%s')" % (self.reader, labels)
 
-        buff = ["{group:s} = %s" % read_cmd,
-                "{group:s}.path = '{path:s}'"]
+        buff = ["{group} = %s" % read_cmd,
+                "{group}.path = '{path}'"]
 
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
-            buff.append("{group:s}.%s = '%s'" % (attr, val))
+            buff.append("{group}.%s = '%s'" % (attr, val))
 
         for aname in ('xdat', 'ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
-            buff.append("{group:s}.%s = %s" % (aname, expr))
+            buff.append("{group}.%s = %s" % (aname, expr))
 
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             if self.reader == 'read_gsescan':
-                buff.append("{group:s}.energy = {group:s}.x")
+                buff.append("{group}.energy = {group}.x")
             else:
-                buff.append("{group:s}.energy = {group:s}.xdat")
-            buff.append("{group:s}.mu = {group:s}.ydat")
+                buff.append("{group}.energy = {group}.xdat")
+            buff.append("{group}.mu = {group}.ydat")
 
         script = "\n".join(buff)
 
