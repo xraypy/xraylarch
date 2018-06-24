@@ -4001,8 +4001,8 @@ class diFFit1D(wx.App):
         self.createApp()
         return True
 
-def registerLarchPlugin():
-    return ('_diFFit', {})
+# def registerLarchPlugin():
+#     return ('_diFFit', {})
 
 class DebugViewer(diFFit1D):
     def __init__(self, **kws):

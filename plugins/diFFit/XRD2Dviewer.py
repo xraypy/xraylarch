@@ -1404,8 +1404,8 @@ class XRDImg(Group):
         self.maxval = int(maxval)
 
 
-def registerLarchPlugin():
-    return ('_diFFit', {})
+## def registerLarchPlugin():
+##     return ('_diFFit', {})
 
 class DebugViewer(diFFit2D):
     def __init__(self, **kws):
