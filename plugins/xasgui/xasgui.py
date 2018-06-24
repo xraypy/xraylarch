@@ -1103,7 +1103,7 @@ def initializeLarchPlugin(_larch=None):
         _sys = _larch.symtable._sys
         if not hasattr(_sys, 'gui_apps'):
             _sys.gui_apps = {}
-        _sys.gui_apps['xas_viewer'] = ('XAS Visualization and Analysis', XASFrame)
+        _sys.gui_apps['xas_viewer'] = ('XAS Viewer', XASFrame)
 
 def registerLarchPlugin():
     return ('_sys.wx', {})
