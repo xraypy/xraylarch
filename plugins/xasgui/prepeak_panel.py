@@ -336,8 +336,8 @@ class FitResultFrame(wx.Frame):
         sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
                            wildcard=ModelWcards)
         if sfile is not None:
+            result = self.get_fitresult()
             save_modelresult(result, sfile)
-
 
     def onExportFitResult(self, event=None):
         dgroup = self.datagroup
@@ -702,8 +702,7 @@ class PrePeakPanel(TaskPanel):
                 self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
                 self.wids['ppeak_elo'].SetValue(dat.prepeaks.elo)
                 self.wids['ppeak_ehi'].SetValue(dat.prepeaks.ehi)
-
-        elif instance(dat, dict):
+        elif isinstance(dat, dict):
             self.wids['ppeak_e0'].SetValue(dat['e0'])
             self.wids['ppeak_emin'].SetValue(dat['emin'])
             self.wids['ppeak_emax'].SetValue(dat['emax'])
@@ -1056,7 +1055,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                             wildcard=ModelWcards, style=wx.FD_OPEN)
         rfile = None
         if dlg.ShowModal() == wx.ID_OK:
-            rfile = dlg.GetPaths()
+            rfile = dlg.GetPath()
         dlg.Destroy()
 
         if rfile is None:
@@ -1064,8 +1063,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         self.larch_eval("# peakmodel = lm_load_modelresult('%s')" %rfile)
 
-        result = load_modelresult(rfile)
-
+        result = load_modelresult(str(rfile))
         for prefix in list(self.fit_components.keys()):
             self.onDeleteComponent(self, prefix=prefix)
 
