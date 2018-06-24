@@ -346,7 +346,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     group:     output group
     elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
     ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
-    emax       max energy (eV) to use for baesline fit [e0-5]
+    emax:      max energy (eV) to use for baesline fit [e0-5]
     emin:      min energy (eV) to use for baesline fit [e0-40]
     form:      form used for baseline (see note 2)  ['lorentzian']
     with_line: whether to include linear component in baseline ['True']
