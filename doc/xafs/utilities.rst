@@ -116,27 +116,47 @@ does not need to be typed repeatedly.
 
 .. index:: First Argument Group convention
 
+.. _first_argument_group:
+
 First Argument Group convention
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to the ``_sys.xafsGroup`` convention above, there is an even simpler approach when
-working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
-generally meant to take arrays of data as the first two arguments, they allow the first argument to
-be a Group if that Group has the expected named arrays.  This convention, known as the **First
-Argument Group** convention is worth understanding and using.  For example, the :func:`autobk`
-function generally expects the first argument to be an array of energy values and the second to be
-an array of absorbance values.  But a normal use case would look like::
+This convention gives a simple approach when working with data Groups
+follow the XAFS naming conventions.  It is built on the ``_sys.xafsGroup``
+convention above but is even easier to use.  That is, while the XAFS
+functions can take arrays of data as the first two arguments, they also
+allow the first argument to be a Group, as long as it has the expected
+named arrays.  This convention is called the **First
+Argument Group** convention, and is worth understanding and using because
+all the XAFS functions in Larch follow it.
+
+As an example, the most general use of the :func:`autobk` function would
+mean giving an array of energy as the first argument, an array of mu as the
+second argument, and supplyng an output group for placing all the arrays
+and data calculated within the function.  That is, the most general use
+would look like::
+
+     autobk(energy, mu, group=dat, rbkg=1, ....)
+
+but most usage will actually want to use `energy` and `mu` arrays from the
+same group, and use that group as the output group, so that all data stays
+contained within the same group.  Following the most general case, that
+would mean the call would look like::
 
      autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
 
-This can be abbreviated as::
+The First argument convention allows this to be abbreviated as::
 
      autobk(dat, rbkg=1, ....)
 
-That is, as long as the Group ``dat`` follows the XAFS naming conventions (for :func:`autobk` that
-it has an energy array named ``energy`` and absorbance array named ``mu``) the two forms above are
-equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or in this case,
-**Group oriented**.
+That is, as long as the Group `dat` follows the XAFS naming conventions
+(for :func:`autobk` that it has an energy array named `energy` and
+absorbance array named `mu`) the two forms above are equivalent.  All the
+XAFS functions follow this convention and use a consistent set of attribute
+names (see :ref:`Table of Conventional Names for an XAFS Group
+<xafsnames_table>`).  This convention nearly makes the Larch XAFS routines
+into object-oriented, or in this case **Group oriented**, set of functions
+that interact in a coherent and predictable way on an XAFS dataset.
 
 
 
@@ -280,7 +300,7 @@ examples in the following sections in this chapter make use of these macros.
 
     Plot :math:`\chi(R)` for a single Path of a feffit dataset
 
-    :param  dataset:    feffit dataset, after running :func:`feffit`
+    :param  dataset:      feffit dataset, after running :func:`feffit`
     :param  ipath:        index of path, starting count at 0 [0]
     :param  kmax:         max k to show [None, end of data]
     :param  offset:       vertical offset to use for plot [0]
@@ -327,6 +347,47 @@ examples in the following sections in this chapter make use of these macros.
     :param new:          bool whether to start a new plot [``True``]
     :param win:          integer plot window to use [1]
     :param kws:          additional keyword arguments are passed to plot()
+
+
+
+:func:`plot_prepeaks_baseline`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: plot_prepeaks_baseline(dataset, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):
+
+    Plot pre-edge peaks and baseline fit, as from :func:`pre_edge_baseline`
+    or XAS Viewer GUI
+
+
+    :param dataset:      data group, after running :func:`pre_edge_baseline`
+    :param subtract_baseline:  bool whether to subtract baseline for plot
+    :param show_fitrange:  bool whether to show fit range as vertical bars
+    :param show_peakrange:  bool whether to show pre-edge peak range with markers
+    :param win:          integer plot window to use [1]
+    :param kws:          additional keyword arguments are passed to plot()
+
+    The `dataset` group must have a `prepeaks` subgroup.
+
+
+:func:`plot_prepeaks_fit`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: plot_prepeaks_fit(dataset, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):
+
+    Plot pre-edge peaks and fit, as XAS Viewer GUI
+
+
+    :param dataset:      data group, after running pre-edge peak fit.
+    :param show_init:    bool whether to show initial model, before fitting
+    :param subtract_baseline:  bool whether to subtract baseline for plot
+    :param show_residual:  bool whether to show residual as a stacked plot.
+    :param win:          integer plot window to use [1]
+    :param kws:          additional keyword arguments are passed to plot()
+
+    The `dataset` group must have a `peakfit_history` subgroup. Currently,
+    this is automatically generated only using the XAS Viewer GUI or
+    scripts written (and possibly altered) by it.
+
 
 Utility Functions for XAFS
 =============================================
