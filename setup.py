@@ -11,6 +11,7 @@ import sys
 import site
 import platform
 from glob import glob
+import shutil
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
@@ -108,10 +109,9 @@ if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
 
 
-##
-
 isdir = os.path.isdir
 pjoin = os.path.join
+psplit = os.path.split
 pexists = os.path.exists
 
 
@@ -172,7 +172,7 @@ plugin_dir = pjoin(larchdir, 'plugins')
 pluginfiles = []
 pluginpaths = []
 for fname in glob('plugins/*'):
-    if os.path.isdir(fname):
+    if isdir(fname):
         pluginpaths.append(fname)
     else:
         pluginfiles.append(fname)
@@ -186,7 +186,7 @@ for pdir in pluginpaths:
                 'dll', 'dylib', 'so'):
         filelist.extend(glob('%s/*.%s' % (pdir, ext)))
     for fname in filelist:
-        if os.path.isdir(fname):
+        if isdir(fname):
             print('Warning -- not walking subdirectories for Plugins!!')
         else:
             pfiles.append(fname)
@@ -221,7 +221,7 @@ def remove_cruft(basedir, filelist):
     """remove files from base directory"""
     def remove_file(base, fname):
         fullname = pjoin(base, fname)
-        if os.path.exists(fullname):
+        if pexists(fullname):
             print( " removing %s " %  fullname)
             try:
                 os.unlink(fullname)
@@ -235,24 +235,6 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'o')
 
 
-def fix_permissions(dirname, stat=None):
-    """
-    set permissions on a list of directories to match
-    those of the HOME directory
-    """
-    if stat is None:
-        return
-    def set_perms(fname):
-        try:
-            os.chown(fname, stat.st_uid, stat.st_gid)
-            os.chmod(fname, stat.st_mode)
-        except(AttributeError, OSError):
-            pass
-
-    for top, dirs, files in os.walk(dirname):
-        set_perms(top)
-        for d in dirs+files:
-            set_perms(pjoin(top, d))
 
 def fix_darwin_dylibs():
     """
@@ -291,6 +273,12 @@ def fix_darwin_dylibs():
 
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
+    scriptdir = pjoin(sys.exec_prefix, bindir)
+    for src in scripts:
+        _, fname = psplit(src)
+        dest = pjoin(scriptdir, fname)
+        shutil.copy(src, dest)
+        os.chmod(dest, 493) # mode=755
 
 # final install:
 #   create desktop icons
