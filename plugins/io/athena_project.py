@@ -610,6 +610,22 @@ def create_athena(filename=None, _larch=None):
     """create athena project file"""
     return AthenaProject(filename=filename, _larch=_larch)
 
+
+def extract_athenagroup(dgroup, _larch=None):
+    '''extract xas group from athena group'''
+    g = dgroup
+    g.datatype = 'xas'
+    g.filename = g.label
+    g.xdat = 1.0*g.energy
+    g.ydat = 1.0*g.mu
+    g.yerr = 1.0
+    g.plot_xlabel = 'energy'
+    g.plot_ylabel = 'mu'
+    return g
+#enddef
+
 def registerLarchPlugin():
     return ('_io', {'read_athena': read_athena,
-                    'create_athena': create_athena})
+                    'create_athena': create_athena,
+                    'extract_athenagroup': extract_athenagroup,
+                    })
