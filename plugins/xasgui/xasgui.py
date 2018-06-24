@@ -22,8 +22,6 @@ from wx.richtext import RichTextCtrl
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 
-
-
 from larch import Interpreter, Group
 from larch.utils import index_of
 from larch.utils.strutils import file2groupname, unique_name
@@ -31,13 +29,12 @@ from larch.utils.strutils import file2groupname, unique_name
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
-                         ReportFrame, BitmapButton, FileCheckList,
-                         FloatCtrl, SetTip, get_icon)
+                         AthenaImporter, ReportFrame, BitmapButton,
+                         FileCheckList, FloatCtrl, SetTip, get_icon)
 
 from larch.wxlib import (SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
                          LCEN, FRAMESTYLE, Font)
-
 
 from larch.fitting import fit_report
 
@@ -81,7 +78,9 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
 
 WX_DEBUG = False
 
-XASGUI_STARTUP = """
+XASGUI_STARTUP = ''
+
+OLDXASGUI_STARTUP = """
 # Larch startup for XAS Viewer
 def extract_athenagroup(pgroup):
     '''extract xas group from athena group'''
@@ -204,25 +203,6 @@ class XASController():
 
     def set_workdir(self):
         self.larch.symtable._sys.xas_viewer.workdir = os.getcwd()
-
-    def show_report(self, fitresult, evt=None):
-        shown = False
-        try:
-            self.report_frame.Raise()
-            shown = True
-        except:
-            del self.report_frame
-        if not shown:
-            self.report_frame = ReportFrame(self.wxparent)
-
-        model_repr = fitresult.model._reprstring(long=True)
-        report = fit_report(fitresult, show_correl=True,
-                            min_correl=0.25, sort_pars=True)
-
-        self.report_frame.SetFont(Font(FONTSIZE-1))
-        self.report_frame.set_text(report)
-        self.report_frame.SetFont(Font(FONTSIZE-1))
-        self.report_frame.Raise()
 
     def get_iconfile(self):
         larchdir = self.symtable._sys.config.larchdir
