@@ -584,10 +584,10 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=True,
            using '*' to match 'all', '?' to match any single character,
            or [sequence] to match any of a sequence of letters.  The match
            will always be insensitive to case.
-        3. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
+        2. do_preedge,  do_bkg, and do_fft will attempt to reproduce the
            pre-edge, background subtraction, and FFT from Athena by using
            the parameters saved in the project file.
-        2. use_hashkey=True will name groups from the internal 5 character
+        3. use_hashkey=True will name groups from the internal 5 character
            string used by Athena, instead of the group label.
 
     Example:
