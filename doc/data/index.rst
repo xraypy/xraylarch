@@ -140,6 +140,9 @@ to store many XAFS spectra and processing parameters.  Larch can read and
 extract the data from these project files, and can also write Athena
 Project files from existing groups of data.
 
+Reading Athena Project Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. warning::
 
   Larch can read Athena Project Files from Athena version 0.9.21 or later.
@@ -156,7 +159,7 @@ Project files from existing groups of data.
    :param do_preedge: bool, whether to do pre-edge subtraction
    :param do_bkg:     bool, whether to do XAFS background subtraction
    :param do_fft:     bool, whether to do XAFS Fast Fourier transform
-   :param use_hashey: bool, whether to use Athena's hash key as the group name, instead of the Athena label.
+   :param use_hashkey: bool, whether to use Athena's hash key as the group name, instead of the Athena label.
    :return:  group of groups.
 
 Notes:
@@ -171,9 +174,6 @@ Notes:
         string used by Athena, instead of the group label.
 
 A simple example of reading an Athena Project file::
-
-    larch> fe_prj = read_athena('FeOxides.prj')
-    larch> show(fe_prj)
 
     larch> hg_prj = read_athena('Hg.prj')
     larch> show(hg_prj)
@@ -190,14 +190,92 @@ A simple example of reading an Athena Project file::
    extracts a group out of an Athena Project File, allowing the file to be
    closed.
 
-   :param group:  group from athena project
+   :param datagroup:  group from athena project
    :return:  group with copy of data, allowing safe closing of project file
 
+An example using this function to allow extracting 1 group from an Athena
+Project would be::
+
+    larch> hg_prj = read_athena('Hg.prj')
+    larch> hgo = extract_athenagroup(hg_prj.HgO)
+    larch> del hg_prj
+
+Creating and Writing to Athena Project Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create an Athena Project File with :func:`create_athena` and then
+add a group of XAFS data to that project with the :meth:`add_group`
+method of that project file.  The group is expected to have array names of
+`energy` and `i0`, and one of `mu`, `mutrans`, or `mufluor`.
+
+.. function:: create_athena(filename)
+
+   Open a new or existing Athena Project File, returning an
+   :class:`AthenaProject` object.  That is, a new project file will be
+   created if it does not exist, or an existing project will be opened for
+   reading and writing.
+
+   :param filename:   name of Athena Project file
+
+.. class:: AthenaProject(filename)
+
+   A representation of an Athena Project File
+
+.. module:: _io.AthenaProject
+
+.. method:: add_group(group, signal=None)
+
+   add a group of XAFS data to an Athena Project
+
+   :param group:   group to be added. See note
+   :param signal:  string or ``None`` name of array to use as main signal
+
+   if `signal` is not specified, it will be chosen as `mu`, `mutrans`, or
+   `mufluor` (in that order).
+
+.. method:: save(use_gzip=True)
+
+   save project to file
+
+   :param use_gzip:  bool, whether to use gzip compression for file.
+
+.. method:: read(filename=None, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
+
+   read from project.
+
+   :param filename:   name of Athena Project file
+   :param match:      string pattern used to limit the imported groups (see Note)
+   :param do_preedge: bool, whether to do pre-edge subtraction
+   :param do_bkg:     bool, whether to do XAFS background subtraction
+   :param do_fft:     bool, whether to do XAFS Fast Fourier transform
+   :param use_hashkey: bool, whether to use Athena's hash key as the group name, instead of the Athena label.
+
+The function :func:`read_athena` above is a wrapper around this method, and
+the notes there apply here as well. An important difference is that for
+this method the data is retained in the `groups` attribute which is a
+Python list of groups for each group in the Athena Project.
+
+.. method:: as_group()
+
+     Return the Athena Project `groups` attribute (as read by
+     :meth:`read`) to a larch Group of groups.
+
+As an example creating and saving an Athena Project file::
+
+    larch> feo = read_ascii('feo_rt1.dat', label='energy mu i0')
+    larch> autobk(feo, rbkg=1.0, kweight=1)
+    larch> fe2o3 = read_ascii('fe2o3_rt1.xmu')
+    larch> autobk(fe2o3, rbkg=1.0, kweight=1)
+    larch> fe_project = create_athena('FeOxides.prj')
+    larch> fe_project.add_group(feo)
+    larch> fe_project.add_group(fe2o3)
+    larch> fe_project.save()
 
 
 Using HDF5 Files
 ========================
 
+.. module:: _io
 
 HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
