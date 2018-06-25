@@ -366,7 +366,7 @@ class AthenaProject(object):
             if os.path.exists(filename) and is_athena_project(filename):
                 self.read(filename)
 
-    def add_group(self, group, label=None, signal=None):
+    def add_group(self, group, signal=None):
         """add Larch group (presumably XAFS data) to Athena project"""
         from larch_plugins.xafs import pre_edge
         from larch_plugins.xray.xraydb_plugin import guess_edge
