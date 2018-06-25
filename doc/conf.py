@@ -97,7 +97,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'larch'
 author = 'Matthew Newville'
-copyright = 'Matthew Newville, The University of Chicago, 2012'
+copyright = 'Matthew Newville, The University of Chicago, 2018'
 
 numfig = True
 numfig_secnum_depth = 2
