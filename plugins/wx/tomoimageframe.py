@@ -105,7 +105,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=None, 
+                 lasso_callback=None,
                  output_title='Tomography Display Frame', subtitles=None,
                  user_menus=None, **kws):
 
@@ -149,13 +149,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.config_panel = wx.Panel(splitter)
         self.main_panel   = wx.Panel(splitter)
-        
+
         img_opts = dict(size = (700, 525),
                         dpi  = 100,
                         data_callback  = self.onDataChange,
                         lasso_callback = self.onLasso,
                         output_title   = self.output_title)
-        
+
         self.tomo_frame = [TomoFrameClass(panel=ImagePanel(self.main_panel, **img_opts),
                                           label='Sinogram'),
                            TomoFrameClass(panel=ImagePanel(self.main_panel, **img_opts),
@@ -180,7 +180,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         for iframe in self.tomo_frame:
             kwargs = {'frame':iframe}
-            iframe.panel.add_cursor_mode('prof', 
+            iframe.panel.add_cursor_mode('prof',
                                          motion   = partial(self.prof_motion,   **kwargs),
                                          leftdown = partial(self.prof_leftdown, **kwargs),
                                          leftup   = partial(self.prof_leftup,   **kwargs))
@@ -217,10 +217,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         '''plot after clearing current plot
         '''
-        
+
         map1 = np.array(map1)
         map2 = np.array(map2)
-        
+
         if len(map1.shape) != len(map2.shape):
             return
 
@@ -436,7 +436,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         else:
 
-            self.prof_plotter.plot(x, z, color='blue', title=self.title.split(':')[-1], #title=self.title, 
+            self.prof_plotter.plot(x, z, color='blue', title=self.title.split(':')[-1], #title=self.title,
                                    zorder=20, xmin=min(x)-3, xmax=max(x)+3,
                                    ylabel='counts', label='counts', **opts)
 
@@ -492,7 +492,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             return
         if frame is None:
             frame = self.tomo_frame[0]
-        
+
         ix, iy = int(round(event.xdata)), int(round(event.ydata))
 
         if (ix >= 0 and ix < frame.map.shape[1] and
@@ -537,7 +537,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
     def unzoom_all(self):
         self.tomo_frame[0].panel.unzoom()
         self.tomo_frame[1].panel.unzoom()
-    
+
     def BuildMenu(self):
         # file menu
         mfile = self.Build_FileMenu(extras=(('Save Image of Colormap',
@@ -598,9 +598,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         # smoothing
         msmoo = wx.Menu()
         for itype in Interp_List:
-            wid = wx.NewId()
-            msmoo.AppendRadioItem(wid, itype, itype)
-            self.Bind(wx.EVT_MENU, partial(self.onInterp, name=itype), id=wid)
+            wid = msmoo.AppendRadioItem(-1, itype, itype)
+            self.Bind(wx.EVT_MENU, partial(self.onInterp, name=itype), id=wid.id)
 
         # help
         mhelp = wx.Menu()
@@ -693,7 +692,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def Build_ConfigPanel(self):
         '''config panel for left-hand-side of frame: RGB Maps'''
-        
+
         csizer = wx.BoxSizer(wx.VERTICAL)
         lsty = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
 
@@ -733,7 +732,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         pack(self.config_panel, csizer)
 
     def clear_highlight_area(self):
-    
+
         for iframe in self.tomo_frame:
             for area in iframe.panel.conf.highlight_areas:
                 for w in area.collections + area.labelTexts:
@@ -750,7 +749,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         This takes a mask, which should be a boolean array of the
         same shape as the image.
         """
-        
+
         panel = None
 
         for iframe in self.tomo_frame:
@@ -788,7 +787,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         '''
 
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-        
+
         if self.lasso_callback is None:
             zoom_opts = ('Zoom to Rectangle',
                          'Show Line Profile')
@@ -796,7 +795,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             zoom_opts = ('Zoom to Rectangle',
                          'Pick Area for XRM Spectra',
                          'Show Line Profile')
-                         
+
         if self.wxmplot_version > 0.921:
             cpanel = wx.Panel(panel)
             if sizer is None:
@@ -822,7 +821,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
     def onContrastConfig(self, event=None):
-        
+
         for iframe in self.tomo_frame:
             dlg = AutoContrastDialog(parent=self, conf=iframe.panel.conf)
             dlg.CenterOnScreen()
@@ -899,7 +898,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         ## orients mask correctly to match with raw data shape
         ## mkak 2018.01.24
         mask = np.swapaxes(mask,0,1)
-        
+
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
 
@@ -934,7 +933,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onEnhanceContrast(self, event=None):
         '''change image contrast, using scikit-image exposure routines'''
-        
+
         for iframe in self.tomo_frame:
             iframe.panel.conf.auto_contrast = event.IsChecked()
         self.set_contrast_levels()
@@ -971,7 +970,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             conf.cmap_hi[ix] = xhi = (jmax-imin)*conf.cmap_range/(imax-imin)
             self.cmap_panels[icol].cmap_hi.SetValue(xhi)
             self.cmap_panels[icol].cmap_lo.SetValue(xlo)
-            
+
             str = 'Shown: [ %.4g :  %.4g ]' % (jmin, jmax)
             self.cmap_panels[icol].islider_range.SetLabel(str)
             self.cmap_panels[icol].redraw_cmap()
@@ -989,7 +988,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             iframe.panel.redraw()
 
     def onLogScale(self, event=None):
-        
+
         for iframe in self.tomo_frame:
             iframe.panel.conf.log_scale = not iframe.panel.conf.log_scale
             iframe.panel.redraw()

@@ -75,23 +75,6 @@ def txt(panel, label, size=75, colour=None, font=None, style=None):
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
     return wx.StaticLine(panel, size=(len, wid), style=style)
 
-class Menu_IDs:
-    def __init__(self):
-        self.EXIT   = wx.NewId()
-        self.SAVE   = wx.NewId()
-        self.CONFIG = wx.NewId()
-        self.UNZOOM = wx.NewId()
-        self.HELP   = wx.NewId()
-        self.ABOUT  = wx.NewId()
-        self.PRINT  = wx.NewId()
-        self.PSETUP = wx.NewId()
-        self.PREVIEW= wx.NewId()
-        self.CLIPB  = wx.NewId()
-        self.SELECT_COLOR = wx.NewId()
-        self.SELECT_SMOOTH= wx.NewId()
-        self.TOGGLE_LEGEND = wx.NewId()
-        self.TOGGLE_GRID = wx.NewId()
-
 
 class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
