@@ -38,26 +38,27 @@ at the top of the list of files can be used to "Select All" or "Select
 None".  In addition, right-clicking on the file list will pop up a menu
 that allows more detailed selecting of data sets.
 
-The right-hand portion of the XAS Viewer window shows multiple forms for
-data processing, each on a separate Notebook tab.  The main tab shown is
-labeled "XAS Normalization" with a form for normalizing XAS data, and
-choices for how to plot the data for the current group or the selected
-groups. This form is provides a graphical interface to the :func:`pre_edge`
-and related functions, and will be described in more detail below
-(:ref:`xasviewer_preedge`).
-
-
 
 .. _fig_xasviewer_1:
 
 .. figure:: ../_images/XAS_Viewer_xasnorm.png
     :target: ../_images/XAS_Viewer_xasnorm.png
-    :width: 60%
+    :width: 55%
     :align: center
 
     XAS_Viewer showing the File/Group list on the left-hand side and the
     the XAFS pre-edge subtraction and normalization panel on the right.
 
+
+The right-hand portion of the XAS Viewer window shows multiple forms for
+more specialized XAFS data processing tasks, each on a separate Notebook
+tab.  These will be covered in more detail in sections below. The main
+panel is for pre-edge subtraction and Normalization
+(:ref:`xasviewer_preedge`), with other available tabs for fitting pre-edge
+peaks (:ref:`xasviewer_peakfit`), Linear Combinaton Analysis
+(:ref:`xasviewer_lincombo`), Principal Component Analysis
+(:ref:`xasviewer_pca`), and EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
+:ref:`xasviewer_exafs_fft`).
 
 
 There are a few important general notes to mention about XAS Viewer before
@@ -67,44 +68,38 @@ unexpected or missing functionality, please let us know.  Second, XAS
 Viewer has many features and functionality in common with Athena and
 Sixpack.  This is partly intentional, as we expect that XAS Viewer may be a
 useful alternative to these that may be better supported and maintained,
-especially on macOS.
+especially on macOS. That also means that if you find things that you think
+are missing or different from how Athena or Sixpack work, let us know.
 
-XAS Viewer is a GUI for Larch, and is intended not only to make data
-processing analysis easier and more intuitive, but also to enable more
-complex analysis, batch processing, and scripting of analysis.  To enable
-this, essentially all the work done in XAS Viewer is done through the Larch
-Buffer (as shown in :ref:`guis-larch_gui`) with commands that can be saved,
-copied, and modified for batch processing.  If, at any point you want to
-see what XAS Viewer is "really doing", you can open the Larch Buffer and
-see.
+As a GUI, XAS Viewer is intended to make data processing analysis easy and
+intuitive. As a Larch application it is also intended to enable more
+complex analysis, batch processing, and scripting of analysis.  To do this,
+essentially all the real processing work in XAS Viewer is done through the
+Larch Buffer (as shown in :ref:`guis-larch_gui`) which records the commands
+that it executes.  If, at any point you want to know exactly what XAS
+Viewer is "really doing", you can open the Larch Buffer and see.  You can
+also copy the code from the Larch buffer to reproduce the analysis steps,
+or modify into procedures for batch processing.
 
 XAS Viewer will display many different datasets as 2-d line plots.  As with
-all such plots made with Larch and wxmplot (see :ref:`plotting-chapter`),
-the plots are meant to be highly interactive, customizable, and also
-produce high-quality (and even publication-quality) plots.  Larch plots can
-be zoomed in an out, and configured to change the colors, linestyles, text
-for labels for any plot. From any plot window you can use Ctrl-C to copy
-the image to the clipboard, Ctrl-S to Save the image (as PNG) to a file, or
-Ctrl-P to print the image. Ctrl-K will bring up a window to configure the
-colors, text, and so on.  These and a few other common options are
-available from the File and Options menu.
-
+all such plots made with Larch (see :ref:`plotting-chapter`), these are
+highly interactive, customizable, and can produce publication-quality
+images.  Larch plots can be zoomed in an out, and configured to change the
+colors, linestyles, margins, text for labels, and more. From any plot
+window you can use Ctrl-C to copy the image to the clipboard, Ctrl-S to
+Save the image (as PNG) to a file, or Ctrl-P to print the image. Ctrl-K
+will bring up a window to configure the colors, text, and so on.  These and
+a few other common options are available from the File and Options menu.
 
 In particular for XAS Viewer, clicking on the legend for any labeled curve
 on a plot will toggle whether that curve is displayed.  This allows us to
-draw many optional plot components as you can turn them on or off
-interactively.  Also, note that many of the entries for numbers on the form
-panels in XAS Viewer have a button with a 'pin' icon |pin|.  Clicking
-anywhere on the plot window will remember the energy value of the last
-point clicked. Then, clicking on one of these 'pin' buttons will insert
-that "last-clicked energy" value into the corresponding field.
-
-The XAS Viewer program has notebook tabs or more specialized XANES and XAFS
-analysis.  These will be covered in more detail below, and include XAFS
-pre-edge subtraction and Normalization (:ref:`xasviewer_preedge`), Pre-edge
-peak fitting (:ref:`xasviewer_peakfit`), Linear Combinaton Analysis
-(:ref:`xasviewer_lincombo`), and EXAFS Analysis (:ref:`xasviewer_exafs_bkg`
-and :ref:`xasviewer_exafs_fft`).
+draw plot components as you can turn them on or off interactively.  Also,
+note that many of the entries for numbers on the form panels in XAS Viewer
+have a button with a 'pin' icon |pin|.  Clicking anywhere on the plot
+window will remember the energy value of the last point clicked, and show
+the value in the middle section of the status bar, just below the plot
+itself. Clicking on any of these 'pin' buttons will insert that "most
+recent energy" value into the corresponding field.
 
 
 .. _xasviewer_io:
@@ -319,10 +314,34 @@ and each of the components of the model.
 Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+Linear Combination Analysis is useful for modeling a XANES spectrum as a
+combination of other spectra.
+
 .. _xasviewer_pca:
 
 Principal Component and Non-negative Factor Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Principal Component Analysis (PCA) is one of a family of numerical
+techniques to reduce the number of variable components in a set of data.
+There are many related techniques and procedures, and quite a bit of
+nomeclature and jargon around the methods.
+
+In essence, all these methods are aimed at taking a large set of similar
+data and trying to determine how many independent components make up that
+larger dataset.    That is, the only question PCA and related methods can
+ever really answer is::
+
+    how many indepedent spectra make up my collection of spectra?
+
+It is important to note that PCA cannot tell you what those independent
+spectra represent or even what they look like.  However, you can also use
+the results of PCA to ask::
+
+    is this *other* spectrum made up of the same components as make up my collection?
+
+
 
 .. _xasviewer_exafs_bkg:
 
