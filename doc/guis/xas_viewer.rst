@@ -1,81 +1,123 @@
 .. _guis-xas_viewer:
 
+.. _lmfit:    http://lmfit.github.io/lmfit-py
+
+
+.. |pin| image:: ../_images/pin_icon.png
+    :width: 18pt
+    :height: 18pt
 
 XAS_Viewer
 =======================
 
-The XAS_Viewer GUI uses Larch to read and display XAFS spectra.  This is
-still in active development, with more features planned with special
-emphasis on helping users with XANES analysis.  Current features (as of
-March, 2018, Larch version 0.9.36) include:
+The XAS_Viewer GUI uses Larch to read and display XAFS spectra.  This
+application is still in active development, with more features planned with
+special emphasis on helping users with XANES analysis.  Current features
+(as of June, 2018, Larch version 0.9.38) include:
 
-   * read XAFS spectra from simple data column files.
-   * read XAFS spectra from Athena Project files.
+   * read XAFS spectra from simple data column files or Athena Project Files.
    * XAFS pre-edge removal and normalization.
    * visualization of normalization steps.
-   * fitting of pre-edge peaks.
+   * data merging
+   * data deglitching, and energy recalibration
+   * data smoothing, rebinning, and deconvolution.
+   * over-absorption corrections (for XANES)
+   * linear combination analysis of spectra.
+   * pre-edge peak fitting.
    * saving of data to Athena Project files.
    * saving of data to CSV files.
 
-
-.. _lmfit:    http://lmfit.github.io/lmfit-py
-
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
-normalization, and de-convolution of XAFS spectra.
-:numref:`fig_xasviewer_1a` shows the main window for the XAS Viewer
-program.  The left-hand portion contains a s list of files (or data groups)
-that have been read into the program. Clicking on the file or group name
-makes that "the current data group", while checking the boxes next to each
-name will select multiple files or group.  Buttons at the top of the list
-of files can be used to "Select All" or "Select None".
+and normalization of XAFS spectra. :numref:`fig_xasviewer_1a` shows the
+main window for the XAS Viewer program.  The left-hand portion contains a
+list of files (or data groups) that have been read into the program either
+from individual ASCII column files or Athena Project files.  Clicking on
+the file or group name makes that "the current data group", while checking
+the boxes next to each name will select multiple files or group.  Buttons
+at the top of the list of files can be used to "Select All" or "Select
+None".  In addition, right-clicking on the file list will pop up a menu
+that allows more detailed selecting of data sets.
 
 The right-hand portion of the XAS Viewer window shows multiple forms for
 data processing, each on a separate Notebook tab.  The main tab shown is
 labeled "XAS Normalization" with a form for normalizing XAS data, and
 choices for how to plot the data for the current group or the selected
 groups. This form is provides a graphical interface to the :func:`pre_edge`
-and related functions.  A separate window (:numref:`fig_xasviewer_1b`) will
-show an interactive plot of the chosen data to be plotted. As with all
-Larch plots, the plot can be zoomed in an out, and configured to change
-colors, linestyles, text for labels, and so on.  For example, clicking on
-the legend for each spectra will toggle the display of that spectra.
-
-Note that many of the entries for numbers on the form panels have a button
-with a fancy '+' sign.  Clicking anywhere on the plot window will remember
-the energy value of the last point clicked. Then, clicking on one of
-these buttons will insert that "last-clicked energy" value into the
-corresponding field.
-
-The XAS Viewer program has notebook tabs or more specialized XANES and XAFS
-analysis.  Currently (March 2018), the only additional functionality is for
-fitting pre-edge peaks, which is under the "Pre-edge Peak Fit" tab as shown
-below, but we will be adding more functionality soon.
+and related functions, and will be described in more detail below (
+:ref:`xasviewer_preedge`).
 
 
-.. subfigstart::
+There are a few important general notes to mention about XAS Viewer before
+going into more detail about how to use it.  First, XAS Viewer is still
+very new and in active development.  If you find problems with it or
+unexpected or missing functionality, please let us know.  Second, XAS
+Viewer has many features and functionality in common with Athena and
+Sixpack.  This is partly intentional, as we expect that XAS Viewer may be a
+useful alternative to these that may be better supported and maintained,
+especially on macOS.
+
+XAS Viewer is a GUI for Larch, and is intended not only to make data
+processing analysis easier and more intuitive, but also to enable more
+complex analysis, batch processing, and scripting of analysis.  To enable
+this, essentially all the work done in XAS Viewer is done through the Larch
+Buffer (as shown in :ref:`guis-larch_gui`) with commands that can be saved,
+copied, and modified for batch processing.  If, at any point you want to
+see what XAS Viewer is "really doing", you can open the Larch Buffer and
+see.
+
+XAS Viewer will display many different datasets as 2-d line plots.  As with
+all such plots made with Larch and wxmplot (see :ref:`plotting-chapter`),
+the plots are meant to be highly interactive, customizable, and also
+produce high-quality (and even publication-quality) plots.  Larch plots can
+be zoomed in an out, and configured to change the colors, linestyles, text
+for labels for any plot. From any plot window you can use Ctrl-C to copy
+the image to the clipboard, Ctrl-S to Save the image (as PNG) to a file, or
+Ctrl-P to print the image. Ctrl-K will bring up a window to configure the
+colors, text, and so on.  These and a few other common options are
+available from the File and Options menu.
+
+
+In particular for XAS Viewer, clicking on the legend for any labeled curve
+on a plot will toggle whether that curve is displayed.  This allows us to
+draw many optional plot components as you can turn them on or off
+interactively.  Also, note that many of the entries for numbers on the form
+panels in XAS Viewer have a button with a 'pin' icon |pin|.  Clicking
+anywhere on the plot window will remember the energy value of the last
+point clicked. Then, clicking on one of these 'pin' buttons will insert
+that "last-clicked energy" value into the corresponding field.
+
 
 .. _fig_xasviewer_1a:
 
 .. figure:: ../_images/XAS_Viewer_xasnorm.png
     :target: ../_images/XAS_Viewer_xasnorm.png
-    :width: 100%
+    :width: 60%
     :align: center
 
-    Main XAFS pre-edge subtraction and normalization form.
+    XAS_Viewer showing the File/Group list on the left-hand side and the
+    the XAFS pre-edge subtraction and normalization panel on the right.
+
+
+
+The XAS Viewer program has notebook tabs or more specialized XANES and XAFS
+analysis.  Currently, the only additional functionality is for
+fitting pre-edge peaks, which is under the "Pre-edge Peak Fit" tab as shown
+below, but we will be adding more functionality soon.
+
 
 .. _fig_xasviewer_1b:
 
 .. figure:: ../_images/XAS_Viewer_xas_plot.png
     :target: ../_images/XAS_Viewer_xas_plot.png
-    :width: 62%
+    :width: 30%
     :align: center
 
     An example of an interactive plot of XANES data.
 
-.. subfigend::
-    :width: 0.48
-    :alt: main xasviewer
-    :label: fig_xasviewer_1
+.. _xasviewer_io:
+
+Reading Data into XAS Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Data groups can be read from plain ASCII data files using a GUI form to
 help build :math:`\mu(E)`, or from Athena Project files, as shown in
@@ -108,6 +150,19 @@ exported to Athena Project files, or to CSV files.
     :width: 0.48
     :alt: data importers
     :label: fig_xasviewer_2
+
+
+.. _xasviewer_preedge:
+
+Pre-edge subtraction and Normalization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. _xasviewer_peakfit:
+
+Pre-edge peak fitting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 The "Pre-edge Peak Fit" tab (show in :numref:`fig_xasviewer_3a`) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
@@ -265,3 +320,25 @@ read in and used with the `lmfit`_ python module for complete scripting
 control.  Secondly, a fit can be *exported* to an ASCII file that will
 include the text of the fit report and columns including data, best-fit,
 and each of the components of the model.
+
+.. _xasviewer_lincombo:
+
+Linear Combination Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _xasviewer_pca:
+
+Principal Component and Non-negative Factor Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+
+.. _xasviewer_exafs_autobk:
+
+
+EXAFS Processing: Background Subtraction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _xasviewer_exafs_fft:
+
+
+EXAFS Processing:  Fourier Transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
