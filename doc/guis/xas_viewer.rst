@@ -28,7 +28,7 @@ special emphasis on helping users with XANES analysis.  Current features
    * saving of data to CSV files.
 
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
-and normalization of XAFS spectra. :numref:`fig_xasviewer_1a` shows the
+and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the
 main window for the XAS Viewer program.  The left-hand portion contains a
 list of files (or data groups) that have been read into the program either
 from individual ASCII column files or Athena Project files.  Clicking on
@@ -43,8 +43,21 @@ data processing, each on a separate Notebook tab.  The main tab shown is
 labeled "XAS Normalization" with a form for normalizing XAS data, and
 choices for how to plot the data for the current group or the selected
 groups. This form is provides a graphical interface to the :func:`pre_edge`
-and related functions, and will be described in more detail below (
-:ref:`xasviewer_preedge`).
+and related functions, and will be described in more detail below
+(:ref:`xasviewer_preedge`).
+
+
+
+.. _fig_xasviewer_1:
+
+.. figure:: ../_images/XAS_Viewer_xasnorm.png
+    :target: ../_images/XAS_Viewer_xasnorm.png
+    :width: 60%
+    :align: center
+
+    XAS_Viewer showing the File/Group list on the left-hand side and the
+    the XAFS pre-edge subtraction and normalization panel on the right.
+
 
 
 There are a few important general notes to mention about XAS Viewer before
@@ -86,33 +99,13 @@ anywhere on the plot window will remember the energy value of the last
 point clicked. Then, clicking on one of these 'pin' buttons will insert
 that "last-clicked energy" value into the corresponding field.
 
-
-.. _fig_xasviewer_1a:
-
-.. figure:: ../_images/XAS_Viewer_xasnorm.png
-    :target: ../_images/XAS_Viewer_xasnorm.png
-    :width: 60%
-    :align: center
-
-    XAS_Viewer showing the File/Group list on the left-hand side and the
-    the XAFS pre-edge subtraction and normalization panel on the right.
-
-
-
 The XAS Viewer program has notebook tabs or more specialized XANES and XAFS
-analysis.  Currently, the only additional functionality is for
-fitting pre-edge peaks, which is under the "Pre-edge Peak Fit" tab as shown
-below, but we will be adding more functionality soon.
+analysis.  These will be covered in more detail below, and include XAFS
+pre-edge subtraction and Normalization (:ref:`xasviewer_preedge`), Pre-edge
+peak fitting (:ref:`xasviewer_peakfit`), Linear Combinaton Analysis
+(:ref:`xasviewer_lincombo`), and EXAFS Analysis (:ref:`xasviewer_exafs_bkg`
+and :ref:`xasviewer_exafs_fft`).
 
-
-.. _fig_xasviewer_1b:
-
-.. figure:: ../_images/XAS_Viewer_xas_plot.png
-    :target: ../_images/XAS_Viewer_xas_plot.png
-    :width: 30%
-    :align: center
-
-    An example of an interactive plot of XANES data.
 
 .. _xasviewer_io:
 
@@ -331,7 +324,7 @@ Linear Combination Analysis
 Principal Component and Non-negative Factor Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 
-.. _xasviewer_exafs_autobk:
+.. _xasviewer_exafs_bkg:
 
 
 EXAFS Processing: Background Subtraction
