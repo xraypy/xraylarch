@@ -7,11 +7,11 @@ from larch.utils import index_of
 from larch_plugins.xafs.xafsutils import ktoe, etok
 
 @ValidateLarchPlugin
-@Make_CallArgs(["energy","mu"])
-def rebin_xafs(energy, mu, group=None, e0=None, pre1=None, pre2=-30,
+@Make_CallArgs(["energy", "mu"])
+def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
                exafs_kstep=0.05, _larch=None):
-   """rebin XAFS energy and ydata to a 'standard 3 region XAFS scan'
+    """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
     ---------
@@ -54,53 +54,61 @@ def rebin_xafs(energy, mu, group=None, e0=None, pre1=None, pre2=-30,
        centroid of the input mu in each segment will be used for mu.
 
     """
-
-   energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
-                                        defaults=(mu,), group=group,
+    energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
+                                         defaults=(mu,), group=group,
                                         fcn_name='rebin_xafs')
 
-   if pre1 is None:
-       pre1 = pre_step*int((min(energy) - e0)/pre_step)
+    if e0 is None:
+        e0 = getattr(group, 'e0', None)
+    if e0 is None:
+        raise ValueError("need e0")
 
-   if exafs2 is None:
-       exafs2 = max(energy) - e0
 
-   # this is all for xanes step size:
-   #  find mean of energy difference, ignoring first/last 1% of energies
-   npts = len(energy)
-   n1 = max(2, int(npts/100.0))
-   de_mean = np.diff(energy[n1:-n1]).mean()
-   xanes_step_def = max(0.1, 0.05 * (1 + int(de_mean/0.05)))
-   if xanes_step is None:
-       xanes_step = xanes_step_def
-   else:
-       xanes_step = max(xanes_step, xanes_step_def)
+    if pre1 is None:
+        pre1 = pre_step*int((min(energy) - e0)/pre_step)
 
-   en = []
-   for start, stop, step, isk in ((pre1, pre2, pre_step, False),
-                                  (pre2, exafs1, xanes_step, False),
-                                  (exafs1, exafs2, exafs_kstep, True)):
-       if isk:
-           start = etok(start)
-           stop = etok(stop)
-       reg = np.linspace(start+step, stop, int(0.1 + abs(stop-start)/step))
-       if isk:
-           reg = ktoe(reg)
-       en.extend(e0 + reg)
+    if exafs2 is None:
+        exafs2 = max(energy) - e0
 
-   bounds = [index_of(energy, e) for e in en]
-   mout = []
-   j0 = 0
-   for i in range(len(en)):
-       if i == len(en) - 1:
-           j1 = len(energy) - 1
-       else:
-           j1 = int((bounds[i] + bounds[i+1] + 1)/2.0)
-       cen = (ydata[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
-       mout.append(cen)
-       j0 = j1
-   group.rebinned = Group(energy=array(enout), mu=array(mount), e0=e0)
-   return
+    # this is all for xanes step size:
+    #  find mean of energy difference, ignoring first/last 1% of energies
+    npts = len(energy)
+    n1 = max(2, int(npts/100.0))
+    de_mean = np.diff(energy[n1:-n1]).mean()
+    xanes_step_def = max(0.1, 0.05 * (1 + int(de_mean/0.05)))
+    if xanes_step is None:
+        xanes_step = xanes_step_def
+    else:
+        xanes_step = max(xanes_step, xanes_step_def)
+
+    en = []
+    for start, stop, step, isk in ((pre1, pre2, pre_step, False),
+                                   (pre2, exafs1, xanes_step, False),
+                                   (exafs1, exafs2, exafs_kstep, True)):
+        if isk:
+            start = etok(start)
+            stop = etok(stop)
+        reg = np.linspace(start+step, stop, int(0.1 + abs(stop-start)/step))
+        if isk:
+            reg = ktoe(reg)
+        en.extend(e0 + reg)
+
+    bounds = [index_of(energy, e) for e in en]
+    mout = []
+    j0 = 0
+    for i in range(len(en)):
+        if i == len(en) - 1:
+            j1 = len(energy) - 1
+        else:
+            j1 = int((bounds[i] + bounds[i+1] + 1)/2.0)
+        cen = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
+        cen = mu[j0:j1].mean()
+        mout.append(cen)
+        j0 = j1
+    # print("Calc done ", group, Group, type(en), type(mout), e0)
+
+    group.rebinned = Group(energy=np.array(en), mu=np.array(mout), e0=e0)
+    return
 
 
 def registerLarchPlugin():
