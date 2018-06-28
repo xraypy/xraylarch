@@ -443,7 +443,6 @@ def wx_update(_larch=None, **kws):
     except:
         pass
 
-
 @larch.ValidateLarchPlugin
 def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
            size=None, **kws):
@@ -457,8 +456,9 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
 
     See Also: plot, newplot
     """
-    _plot(x, y, win=win, size=size, new=False, _larch=_larch, xrf=xrf,
-          stacked=stacked, wxparent=wxparent, **kws)
+    kws['new'] = False
+    _plot(x, y, win=win, size=size, xrf=xrf, stacked=stacked,
+          wxparent=wxparent, _larch=_larch, **kws)
 
 @larch.ValidateLarchPlugin
 def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, wintitle=None,

@@ -151,11 +151,18 @@ class LarchExceptionHolder:
         if len(tblist) > 0:
             out.append(''.join(traceback.format_list(tblist)))
 
-        if self.msg not in ('',  None):
-            ex_msg = getattr(e_val, 'message', '')
-            if ex_msg is '':
-                ex_msg = str(self.msg)
-            out.append("%s: %s" % (exc_name, ex_msg))
+        # try to get last error message, as from e_val.args
+        ex_msg = getattr(e_val, 'args', None)
+        try:
+            ex_msg = ' '.join(ex_msg)
+        except TypeError:
+            pass
+
+        if ex_msg is None:
+            ex_msg = getattr(e_val, 'message', None)
+        if ex_msg is None:
+            ex_msg = self.msg
+        out.append("%s: %s" % (exc_name, ex_msg))
 
         out.append("")
         return (exc_name, '\n'.join(out))
