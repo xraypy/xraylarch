@@ -10,7 +10,7 @@ from larch_plugins.xafs.xafsutils import ktoe, etok
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, _larch=None):
+               exafs_kstep=0.05, method='centroid', _larch=None):
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments
@@ -26,6 +26,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     exafs1       end of XANES region, start of EXAFS region [15]
     exafs2       end of EXAFS region [last energy point]
     exafs_kstep  k-step for EXAFS region [0.05]
+    method       one of 'boxcar', 'centroid' ['centroid']
 
     Returns
     -------
@@ -50,8 +51,11 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
      3 The EXAFS region will be spaced in k-space
 
      4 The rebinned data is found by determining which segments of the
-       input energy correspond to each bin in the new energy array. the
-       centroid of the input mu in each segment will be used for mu.
+       input energy correspond to each bin in the new energy array. That
+       is, each input energy is assigned to exactly one bin in the new
+       array.  For each new energy bin, either the mean value ('boxcar') or
+       centroid ('centroid') of the corresponding segment of the input mu data
+       will be used for the new values of mu.
 
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -63,6 +67,10 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     if e0 is None:
         raise ValueError("need e0")
 
+    if method.startswith('box'):
+        method = 'boxcar'
+    else:
+        method = 'centroid'
 
     if pre1 is None:
         pre1 = pre_step*int((min(energy) - e0)/pre_step)
@@ -81,6 +89,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     else:
         xanes_step = max(xanes_step, xanes_step_def)
 
+    # create new energy array from the 3 segments (pre, xanes, exafs)
     en = []
     for start, stop, step, isk in ((pre1, pre2, pre_step, False),
                                    (pre2, exafs1, xanes_step, False),
@@ -101,13 +110,16 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
             j1 = len(energy) - 1
         else:
             j1 = int((bounds[i] + bounds[i+1] + 1)/2.0)
-        cen = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
-        cen = mu[j0:j1].mean()
+        if method.startswith('box'):
+            cen = mu[j0:j1].mean()
+        else:
+            cen = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
         mout.append(cen)
         j0 = j1
     # print("Calc done ", group, Group, type(en), type(mout), e0)
 
-    group.rebinned = Group(energy=np.array(en), mu=np.array(mout), e0=e0)
+    group.rebinned = Group(energy=np.array(en), mu=np.array(mout), e0=e0,
+                           __name__ = group.__name__ + '_rebinned')
     return
 
 
