@@ -3,7 +3,7 @@ import numpy as np
 from larch import (Group, Make_CallArgs, ValidateLarchPlugin,
                    parse_group_args)
 
-from larch.utils import index_of
+from larch.utils import index_of, interp1d
 from larch_plugins.xafs.xafsutils import ktoe, etok
 
 @ValidateLarchPlugin
@@ -53,9 +53,11 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
      4 The rebinned data is found by determining which segments of the
        input energy correspond to each bin in the new energy array. That
        is, each input energy is assigned to exactly one bin in the new
-       array.  For each new energy bin, either the mean value ('boxcar') or
-       centroid ('centroid') of the corresponding segment of the input mu data
-       will be used for the new values of mu.
+       array.  For each new energy bin, the new value is selected from the
+       data in the segment as either
+         a) linear interpolation if there are fewer than 3 points in the segment.
+         b) mean value ('boxcar')
+         c) centroid ('centroid')
 
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -64,13 +66,9 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
 
     if e0 is None:
         e0 = getattr(group, 'e0', None)
+
     if e0 is None:
         raise ValueError("need e0")
-
-    if method.startswith('box'):
-        method = 'boxcar'
-    else:
-        method = 'centroid'
 
     if pre1 is None:
         pre1 = pre_step*int((min(energy) - e0)/pre_step)
@@ -78,7 +76,7 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
     if exafs2 is None:
         exafs2 = max(energy) - e0
 
-    # this is all for xanes step size:
+    # determine xanes step size:
     #  find mean of energy difference, ignoring first/last 1% of energies
     npts = len(energy)
     n1 = max(2, int(npts/100.0))
@@ -102,26 +100,37 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
             reg = ktoe(reg)
         en.extend(e0 + reg)
 
+    # find the segment boundaries of the old energy array
     bounds = [index_of(energy, e) for e in en]
-    mout = []
+    mu_out = []
+    err_out = []
     j0 = 0
     for i in range(len(en)):
         if i == len(en) - 1:
             j1 = len(energy) - 1
         else:
             j1 = int((bounds[i] + bounds[i+1] + 1)/2.0)
-        if method.startswith('box'):
-            cen = mu[j0:j1].mean()
+        # if not enough points in segment, do interpolation
+        if (j1 - j0) < 3:
+            jx = j1 + 1
+            if (jx - j0) < 2:
+                jx += 1
+            val = interp1d(energy[j0:jx], mu[j0:jx], en[i])
+            err = mu[j0:j1].std()
         else:
-            cen = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
-        mout.append(cen)
+            if method.startswith('box'):
+                val =  mu[j0:j1].mean()
+            else:
+                val = (mu[j0:j1]*energy[j0:j1]).mean()/energy[j0:j1].mean()
+        mu_out.append(val)
+        err_out.append(mu[j0:j1].std())
         j0 = j1
-    # print("Calc done ", group, Group, type(en), type(mout), e0)
 
-    group.rebinned = Group(energy=np.array(en), mu=np.array(mout), e0=e0,
-                           __name__ = group.__name__ + '_rebinned')
+    newname = group.__name__ + '_rebinned'
+    group.rebinned = Group(energy=np.array(en), mu=np.array(mu_out),
+                           delta_mu=np.array(err_out), e0=e0,
+                           __name__=newname)
     return
-
 
 def registerLarchPlugin():
     return ('_xafs', {'rebin_xafs': rebin_xafs})
