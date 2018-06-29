@@ -55,6 +55,13 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
+    e0 = _finde0(energy, mu)
+    if group is not None:
+        group = set_xafsGroup(group, _larch=_larch)
+        group.e0 = e0
+    return e0
+
+def _finde0(energy, mu):
     if len(energy.shape) > 1:
         energy = energy.squeeze()
     if len(mu.shape) > 1:
@@ -77,11 +84,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
 
-    e0 = energy[idmu_max]
-    if group is not None:
-        group = set_xafsGroup(group, _larch=_larch)
-        group.e0 = e0
-    return e0
+    return energy[idmu_max]
 
 def flat_resid(pars, en, mu):
     return (pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu)
@@ -131,19 +134,9 @@ def preedge(energy, mu, e0=None, step=None,
 
     """
     energy = remove_dups(energy)
-    if e0 is None or e0 < energy[0] or e0 > energy[-1]:
-        energy = remove_dups(energy)
-        dmu = np.gradient(mu)/np.gradient(energy)
-        # find points of high derivative
-        high_deriv_pts = np.where(dmu >  max(dmu)*0.05)[0]
-        idmu_max, dmu_max = 0, 0
-        for i in high_deriv_pts:
-            if (dmu[i] > dmu_max and
-                (i+1 in high_deriv_pts) and
-                (i-1 in high_deriv_pts)):
-                idmu_max, dmu_max = i, dmu[i]
+    if e0 is None or e0 < energy[1] or e0 > energy[-2]:
+        e0 = _finde0(energy, mu)
 
-        e0 = energy[idmu_max]
     nnorm = max(min(nnorm, MAX_NNORM), 0)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
