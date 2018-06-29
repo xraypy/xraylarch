@@ -51,7 +51,7 @@ class OverAbsorptionDialog(wx.Dialog):
 
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(425, 275),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Correct Over-absorption")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
@@ -205,7 +205,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Calibrate / Align Energy")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
@@ -450,7 +450,7 @@ class RebinDataDialog(wx.Dialog):
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:],
                      self.dgroup.mu*0, e0val]
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Rebin mu(E) Data")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
@@ -635,7 +635,7 @@ class SmoothDataDialog(wx.Dialog):
         self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
 
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 200),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Smooth mu(E) Data")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
@@ -809,7 +809,7 @@ class DeconvolutionDialog(wx.Dialog):
         self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
 
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 200),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Deconvolve mu(E) Data")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
@@ -936,7 +936,7 @@ class DeglitchDialog(wx.Dialog):
         if lastx is None:
             lastx = max(xdat)
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(500, 225),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Select Points to Remove")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
