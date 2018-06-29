@@ -7,7 +7,6 @@ from lmfit import Parameters, minimize
 
 import wx
 
-
 from larch.utils import index_of, index_nearest, interp
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
@@ -444,11 +443,12 @@ class RebinDataDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        self.data = [self.dgroup.energy[:], self.dgroup.mu[:]]
         xmin = min(self.dgroup.energy)
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
+        self.data = [self.dgroup.energy[:], self.dgroup.mu[:],
+                     self.dgroup.mu*0, e0val]
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(450, 250),
                            title="Rebin mu(E) Data")
@@ -466,14 +466,14 @@ class RebinDataDialog(wx.Dialog):
 
         wids['e0'] = FloatCtrl(panel, value=e0val, minval=xmin, maxval=xmax,
                              **opts)
-
-        wids['pre1'] = FloatCtrl(panel, value=xmin-e0val,  **opts)
+        pre1 = 10.0*(1+int((xmin-e0val)/10.0))
+        wids['pre1'] = FloatCtrl(panel, value=pre1,  **opts)
         wids['pre2'] = FloatCtrl(panel, value=-20, **opts)
 
-        wids['xanes1'] = FloatCtrl(panel, value=-20,  **opts)
-        wids['xanes2'] = FloatCtrl(panel, value=30, **opts)
+        wids['xanes1'] = FloatCtrl(panel, value=-15,  **opts)
+        wids['xanes2'] = FloatCtrl(panel, value=15, **opts)
 
-        wids['exafs1'] = FloatCtrl(panel, value=etok(30),  **opts)
+        wids['exafs1'] = FloatCtrl(panel, value=etok(15),  **opts)
         wids['exafs2'] = FloatCtrl(panel, value=etok(xmax-e0val), **opts)
 
         wids['pre_step'] = FloatCtrl(panel, value=5.0,  **opts)
@@ -536,18 +536,17 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
         panel.pack()
-
         self.plot_results()
-
 
     def on_saveas(self, event=None):
         wids = self.wids
         fname = wids['grouplist'].GetStringSelection()
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.data
+        xdat, ydat, yerr, de0 = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
+        ngroup.delta_mu = ngroup.yerr
         self.parent.nb_panels[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
@@ -572,26 +571,28 @@ class RebinDataDialog(wx.Dialog):
             wids['xanes2'].SetValue(ktoe(val), act=False)
 
         e0 = wids['e0'].GetValue()
+        args = dict(group=self.dgroup.groupname, e0=e0,
+                    pre1=wids['pre1'].GetValue(),
+                    pre2=wids['pre2'].GetValue(),
+                    pre_step=wids['pre_step'].GetValue(),
+                    exafs1=ktoe(wids['exafs1'].GetValue()),
+                    exafs2=ktoe(wids['exafs2'].GetValue()),
+                    exafs_kstep=wids['exafs_step'].GetValue(),
+                    xanes_step=wids['xanes_step'].GetValue())
 
-        xarr = []
-        for prefix in ('pre', 'xanes', 'exafs'):
-            start= wids['%s1' % prefix].GetValue()
-            stop = wids['%s2' % prefix].GetValue()
-            step = wids['%s_step' % prefix].GetValue()
-
-            npts = 1 + int(0.1  + abs(stop-start)/step)
-            a = np.linspace(start, stop, npts)
-            if prefix == 'exafs':
-                a = ktoe(a)
-            xarr.append(a+e0)
-
-        xnew = np.concatenate((xarr[0], xarr[1], xarr[2]))
-        ynew = interp(self.dgroup.energy, self.dgroup.mu, xnew, kind='cubic')
-        self.data = xnew, ynew
+        # do rebin:
+        cmd = """rebin_xafs({group}, e0={e0:f}, pre1={pre1:f}, pre2={pre2:f},
+        pre_step={pre_step:f}, xanes_step={xanes_step:f}, exafs1={exafs1:f},
+        exafs2={exafs2:f}, exafs_kstep={exafs_kstep:f})""".format(**args)
+        self.controller.larch.eval(cmd)
+        xnew = self.dgroup.rebinned.energy
+        ynew = self.dgroup.rebinned.mu
+        yerr = self.dgroup.rebinned.delta_mu
+        self.data = xnew, ynew, yerr, e0
         self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.data
+        xdat, ydat, yerr, e0 = self.data
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
@@ -604,7 +605,7 @@ class RebinDataDialog(wx.Dialog):
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.oplot
-        xnew, ynew = self.data
+        xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
