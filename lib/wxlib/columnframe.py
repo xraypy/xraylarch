@@ -431,6 +431,7 @@ class ColumnDataFileFrame(wx.Frame) :
             else:
                 buff.append("{group}.energy = {group}.xdat")
             buff.append("{group}.mu = {group}.ydat")
+            buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
 
         script = "\n".join(buff)
 
