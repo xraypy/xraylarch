@@ -149,22 +149,19 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
     return out
 
 
-def remove_dups(arr, tiny=1.e-8, frac=0.02):
+def remove_dups(arr, tiny=1.e-7, frac=1.e-6):
     """avoid repeated successive values of an array that is expected
     to be monotonically increasing.
 
-    For repeated values, the first encountered occurance (at index i)
-    will be reduced by an amount that is the largest of these:
-
-    [tiny, frac*abs(arr[i]-arr[i-1]), frac*abs(arr[i+1]-arr[i])]
-
-    where tiny and frac are optional arguments.
+    For repeated values, the second encountered occurance (at index i)
+    will be increased by an amount that is the largest of:
+      (tiny, frac*abs(arr[i]-arr[i-1]))
 
     Parameters
     ----------
     arr :  array of values expected to be monotonically increasing
-    tiny : smallest expected absolute value of interval [1.e-8]
-    frac : smallest expected fractional interval   [0.02]
+    tiny : smallest expected absolute value of interval [1.e-7]
+    frac : smallest expected fractional interval   [1.e-6]
 
     Returns
     -------
@@ -172,10 +169,9 @@ def remove_dups(arr, tiny=1.e-8, frac=0.02):
 
     Example
     -------
-    >>> x = array([0, 1.1, 2.2, 2.2, 3.3])
+    >>> x = np.array([0, 1.1, 2.2, 2.2, 3.3])
     >>> print remove_dups(x)
-    >>> array([ 0.   ,  1.1  ,  2.178,  2.2  ,  3.3  ])
-
+    >>> array([ 0.   ,  1.1  ,  2.2,  2.2000001,  3.3  ])
     """
     if not isinstance(arr, np.ndarray):
         try:
@@ -186,18 +182,21 @@ def remove_dups(arr, tiny=1.e-8, frac=0.02):
         shape = arr.shape
         arr   = arr.flatten()
         npts  = len(arr)
+        dups = []
         try:
-            dups = np.where(abs(arr[:-1] - arr[1:]) < tiny)[0].tolist()
+            reps = np.where(abs(arr[1:-1] - arr[:-2]) < tiny)[0].tolist()
+            dups.extend([i+1 for i in reps])
         except ValueError:
-            dups = []
+            pass
+        if abs(arr[-1] - arr[-2]) < tiny:
+            dups.append(npts-1)
         for i in dups:
-            t = [tiny]
+            t = tiny
             if i > 0:
-                t.append(frac*abs(arr[i]-arr[i-1]))
-            if i < len(arr)-1:
-                t.append(frac*abs(arr[i+1]-arr[i]))
-            dx = max(t)
-            arr[i] = arr[i] - dx
+                t = max(tiny, frac*abs(arr[i]-arr[i-1]))
+            arr[i] += t
+            if i > 0 and arr[i] == arr[i-1]:
+                arr[i]  += t
         arr.shape = shape
     return arr
 
