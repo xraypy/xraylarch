@@ -178,26 +178,29 @@ def remove_dups(arr, tiny=1.e-7, frac=1.e-6):
             arr = np.array(arr)
         except:
             print( 'remove_dups: argument is not an array')
-    if isinstance(arr, np.ndarray):
-        shape = arr.shape
-        arr   = arr.flatten()
-        npts  = len(arr)
-        dups = []
-        try:
-            reps = np.where(abs(arr[1:-1] - arr[:-2]) < tiny)[0].tolist()
-            dups.extend([i+1 for i in reps])
-        except ValueError:
-            pass
-        if abs(arr[-1] - arr[-2]) < tiny:
-            dups.append(npts-1)
-        for i in dups:
-            t = tiny
-            if i > 0:
-                t = max(tiny, frac*abs(arr[i]-arr[i-1]))
-            arr[i] += t
-            if i > 0 and arr[i] == arr[i-1]:
-                arr[i]  += t
-        arr.shape = shape
+
+    shape = arr.shape
+    arr   = arr.flatten()
+    npts  = len(arr)
+    dups = []
+    try:
+        reps = np.where(abs(arr[1:-1] - arr[:-2]) < tiny)[0].tolist()
+        dups.extend([i+1 for i in reps])
+    except ValueError:
+        pass
+    if abs(arr[-1] - arr[-2]) < tiny:
+        dups.append(npts-1)
+    arr = arr.tolist()
+    for i in range(1, len(arr)):
+        t = tiny
+        if i > 0:
+            t = max(tiny, frac*abs(arr[i]-arr[i-1]))
+        if arr[i] - arr[i-1] < tiny:
+            arr[i] = arr[i-1] + t
+    if abs(arr[-1] - arr[-2]) < tiny:
+        arr[-1] = arr[-2] + tiny
+    arr = np.array(arr)
+    arr.shape = shape
     return arr
 
 
