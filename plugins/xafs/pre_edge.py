@@ -55,18 +55,23 @@ def find_e0(energy, mu=None, group=None, _larch=None):
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
-
     if len(energy.shape) > 1:
         energy = energy.squeeze()
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    energy = remove_dups(energy)
     dmu = np.gradient(mu)/np.gradient(energy)
     # find points of high derivative
-    high_deriv_pts = np.where(dmu >  max(dmu)*0.05)[0]
+    dmu[np.where(~np.isfinite(dmu))] = -1.0
+    nmin = max(3, int(len(dmu)*0.05))
+    maxdmu = max(dmu[nmin:-nmin])
+
+    high_deriv_pts = np.where(dmu >  maxdmu*0.1)[0]
     idmu_max, dmu_max = 0, 0
+
     for i in high_deriv_pts:
+        if i < nmin or i > len(energy) - nmin:
+            continue
         if (dmu[i] > dmu_max and
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
