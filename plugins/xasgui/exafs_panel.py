@@ -306,7 +306,7 @@ class EXAFSPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            self.set_config(dgroup, out)
+            self.update_config(out, dgroup=dgroup)
 
     def onProcess(self, event=None):
         """ handle process events"""
@@ -346,7 +346,7 @@ class EXAFSPanel(TaskPanel):
             self.larch_eval(autobk_cmd.format(**opts))
             self.larch_eval(xftf_cmd.format(**opts))
             dgroup.exafs_formvals = pars
-            self.set_config(dgroup, opts)
+            self.update_config(opts, dgroup=dgroup)
 
     def plot(self, dgroup=None):
         self.onPlotOne(dgroup=dgroup)

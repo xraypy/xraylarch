@@ -106,7 +106,7 @@ class TaskPanel(wx.Panel):
         setattr(dgroup, self.configname, conf)
         return conf
 
-    def set_config(self, dgroup, config):
+    def update_config(self, config, dgroup=None):
         """set/update processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
