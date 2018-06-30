@@ -127,7 +127,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.subframes = {}
         self.workgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype',
-                     'array_labels'):
+                     'array_labels', 'data'):
             setattr(self.workgroup, attr, getattr(group, attr, None))
 
         arr_labels = [l.lower() for l in self.initgroup.array_labels]
@@ -466,7 +466,6 @@ class ColumnDataFileFrame(wx.Frame) :
         workgroup = self.workgroup
         rdata = self.initgroup.data
 
-        # print("onUpdate ", dir(rawgroup))
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
 
