@@ -86,7 +86,6 @@ class OverAbsorptionDialog(wx.Dialog):
 
         wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_abscorr',
                                            size=(250, -1))
-
         wids['correct'] = Button(panel, 'Do Correction',
                                  size=(150, -1), action=self.on_correct)
         wids['correct'].SetToolTip('Calculate Correction')
@@ -117,7 +116,12 @@ class OverAbsorptionDialog(wx.Dialog):
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def set_default_elem_edge(self, dgroup):
         elem, edge = guess_edge(dgroup.e0, _larch=self.controller.larch)
@@ -285,9 +289,13 @@ overwriting current arrays''')
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
-
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
         self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
@@ -480,11 +488,9 @@ class RebinDataDialog(wx.Dialog):
         wids['xanes_step'] = FloatCtrl(panel, value=0.25,  **opts)
         wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
 
-
         for wname, wid in wids.items():
             if wname != 'grouplist':
                 wid.SetAction(partial(self.on_rebin, name=wname))
-
 
         wids['apply'] = Button(panel, 'Save / Overwrite', size=(150, -1),
                                action=self.on_apply)
@@ -496,7 +502,6 @@ class RebinDataDialog(wx.Dialog):
 
         wids['save_as_name'] = wx.TextCtrl(panel, -1, self.dgroup.filename + '_rebin',
                                            size=(250, -1))
-
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -535,8 +540,14 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(wids['apply'], dcol=2, newrow=True)
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
+        self.on_rebin()
         self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -594,8 +605,8 @@ class RebinDataDialog(wx.Dialog):
     def on_apply(self, event=None):
         xdat, ydat, yerr, e0 = self.data
         dgroup = self.dgroup
-        dgroup.energy = xdat
-        dgroup.mu     = ydat
+        dgroup.energy = dgroup.xdat = xdat
+        dgroup.mu     = dgroup.ydat = ydat
         self.parent.nb_panels[0].process(dgroup)
         self.plot_results()
 
@@ -706,9 +717,13 @@ class SmoothDataDialog(wx.Dialog):
 
         panel.Add(wids['save_as'],  newrow=True)
         panel.Add(wids['save_as_name'], dcol=5)
-
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
         self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -856,8 +871,13 @@ class DeconvolutionDialog(wx.Dialog):
         panel.Add(wids['apply'], newrow=True)
         panel.Add(wids['save_as'],  newrow=True)
         panel.Add(wids['save_as_name'], dcol=5)
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
         self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -1017,9 +1037,13 @@ clear undo history''')
 
         panel.Add(wids['save_as'], dcol=2, newrow=True)
         panel.Add(wids['save_as_name'], dcol=4)
-
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
         panel.pack()
         self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
 
     def on_saveas(self, event=None):
         wids = self.wids
