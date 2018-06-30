@@ -224,7 +224,7 @@ def b64hash(s):
     _hash.update(str2bytes(s))
     return bytes2str(b64encode(_hash.digest()))
 
-def file2groupname(filename, slen=4, symtable=None):
+def file2groupname(filename, slen=5, symtable=None):
     """create a group name based of filename
     the group name will have a string component of
     length slen followed by a 4 digit number
@@ -240,11 +240,12 @@ def file2groupname(filename, slen=4, symtable=None):
         return ''.join([chr(random.randint(97, 122)) for i in range(n)])
 
     gname = fix_varname(filename).lower() +  randstr(slen)
-    for k in (',', '.', '_', ',', ' ', '0'):
-        gname = gname.replace(k, '')
+    if '_' in gname:
+        gname = gname.replace('_', '')
+        gname = fix_varname(gname)
 
     fmt, count, maxcount = "%s{:04d}", 1, 999
-    fstr = fmt % (gname[:4])
+    fstr = fmt % (gname[:slen])
     gname = fstr.format(count)
     if symtable is not None:
         scount = 0
@@ -255,6 +256,6 @@ def file2groupname(filename, slen=4, symtable=None):
                 count = 1
                 fstr = fmt % randstr(slen)
             gname = fstr.format(count)
-            if scount > 1e6:
+            if scount > 1000:
                 raise ValueError("exhausted unique group names")
     return gname
