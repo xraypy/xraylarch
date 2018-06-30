@@ -139,11 +139,36 @@ exported to Athena Project files, or to CSV files.
     :alt: data importers
     :label: fig_xasviewer_2
 
+When reading in raw data, the data importer shown in
+:numref:`fig_xasviewer_2a` will help you build XAFS :math:`\mu(E)` from the
+various columns in your data file. This form wraps some of the routines
+described in Chapter :ref:`data-io_chapter`.  Currently, this form is
+somewhat limited in being able to process all data formats, but should be
+useful for many data sets.  If you have trouble reading in your data with
+XAS Viewer, contact us and we will try to help.
 
 .. _xasviewer_preedge:
 
 Pre-edge subtraction and Normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As above, :numref:`fig_xasviewer_1` shows the main window for the XAS
+Viewer program with the right hand side showing the "XAS Normalization"
+Panel.  This panel helps you do pre-edge subtraction and normalization of
+XAFS data using the :func:`pre_edge` function.   This processing step is
+important for getting normalized XAFS spectra that is used for further
+analysis of both XANES and EXAFS.
+
+From the form, you can plot the data for the current selected group in
+several ways: Raw :math:`\mu(E)`, normalized :math:`\mu(E)`, the derivative
+:math:`d\mu(E)/dE`, flattened :math:`\mu(E)`, or the raw :math:`\mu(E)`
+with the pre-edge line and post-edge normalization curve.  You can also set
+the parameters like :math:`E_0` and the edge step and ranges for the
+pre-edge line and normalization curve.  Consult with :func:`pre_edge`
+function for more details on these parameters.  You can also plot several
+selected groups together, and copy processing parameters from one group to
+another.
+
 
 
 .. _xasviewer_peakfit:
