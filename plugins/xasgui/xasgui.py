@@ -938,12 +938,6 @@ class XASFrame(wx.Frame):
     def onLoadFitResult(self, event=None):
         self.nb.SetSelection(1)
         self.nb_panels[1].onLoadFitResult(event=event)
-#
-#     def onSaveFitResult(self, event=None):
-#         self.nb_panels[1].onSaveFitResult(event=event)
-#
-#     def onExportFitResult(self, event=None):
-#         self.nb_panels[1].onExportFitResult(event=event)
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
@@ -1009,15 +1003,7 @@ class XASFrame(wx.Frame):
         abort_read = False
         filedir, filename = os.path.split(path)
         if not overwrite and hasattr(self.larch.symtable, groupname):
-            newname = file2groupname(filename, symtable=self.larch.symtable)
-            msg = """Warning: groupname '%s' already used.
-            Will use groupname '%s' instead """  % (groupname, newname)
-            dlg = wx.MessageDialog(self, msg, 'Warning',
-                                   wx.OK | wx.CANCEL )
-
-            abort_read = (wx.ID_OK != dlg.ShowModal())
-            dlg.Destroy()
-            groupname = newname
+            groupname = file2groupname(filename, symtable=self.larch.symtable)
 
         if abort_read:
             return
@@ -1026,6 +1012,20 @@ class XASFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel = array_sel
         self.install_group(groupname, filename, overwrite=overwrite)
+
+        # check if rebin is needed
+        thisgroup = getattr(self.larch.symtable, groupname)
+        en = thisgroup.energy
+        do_rebin = False
+        if len(en) > 1000 or ((max(en)-min(en)) > 300 and
+                              (np.diff(en).mean() < 1.0)):
+            msg = """This dataset may need to be rebinned.
+            Rebin now?"""
+            dlg = wx.MessageDialog(self, msg, 'Warning',
+                                   wx.YES | wx.NO )
+            do_rebin = (wx.ID_YES == dlg.ShowModal())
+            dlg.Destroy()
+
         for path in self.paths2read:
             path = path.replace('\\', '/')
             filedir, filename = os.path.split(path)
@@ -1033,8 +1033,11 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path))
             self.install_group(gname, filename, overwrite=True)
 
+        if do_rebin:
+            RebinDataDialog(self, self.controller).Show()
+
     def install_group(self, groupname, filename, overwrite=False,
-                      process=True, plot=True):
+                      process=True, rebin=False, plot=True):
         """add groupname / filename to list of available data groups"""
         thisgroup = getattr(self.larch.symtable, groupname)
         thisgroup.groupname = groupname
@@ -1052,6 +1055,7 @@ class XASFrame(wx.Frame):
         if filename not in self.controller.file_groups:
             self.controller.filelist.Append(filename)
             self.controller.file_groups[filename] = groupname
+
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, process=process, plot=plot)
         self.controller.filelist.SetStringSelection(filename)
