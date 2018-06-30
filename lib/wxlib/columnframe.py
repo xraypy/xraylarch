@@ -39,34 +39,6 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 DATATYPES = ('raw', 'xas')
 
 
-class RebinFrame(wx.Frame) :
-    """Rebin Data """
-    def __init__(self, parent, group, on_ok=None):
-        self.group = group
-        self.on_ok = on_ok
-        wx.Frame.__init__(self, None, -1, 'Rebin Arrays',
-                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
-
-        self.SetFont(Font(10))
-        sizer = wx.GridBagSizer(4, 4)
-        cind = SimpleText(self, label='Rebin')
-        ir = 0
-        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-
-        sizer.Add(Button(self, 'OK', action=self.onOK), (ir+1, 1), (1, 2), LCEN, 3)
-        pack(self, sizer)
-        self.Show()
-        self.Raise()
-
-    def onOK(self, evt=None):
-        group = self.group
-
-        if callable(self.on_ok):
-            print(' -> on_ok ', self.on_ok)
-            self.on_ok()
-        self.Destroy()
-
-
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
     def __init__(self, parent, group, on_ok=None):
@@ -233,6 +205,8 @@ class ColumnDataFileFrame(wx.Frame) :
         yerr_lab = SimpleText(panel, 'Yerror = ')
         self.xsuf = SimpleText(panel, '')
         self.ysuf = SimpleText(panel, '')
+        self.message = SimpleText(panel, '', font=Font(13),
+                           colour=self.colors.title, style=LCEN)
 
         self.xpop.SetStringSelection(self.array_sel['xpop'])
         self.ypop.SetStringSelection(self.array_sel['ypop'])
@@ -256,12 +230,10 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
-        _rebin  = Button(bpanel, 'Rebin', action=self.onRebin)
 
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
-        bsizer.Add(_rebin)
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
@@ -302,6 +274,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
         sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LCEN, 0)
+        sizer.Add(self.message,                     (ir, 3), (1, 2), LCEN, 0)
 
 
         ir += 1
@@ -409,14 +382,6 @@ class ColumnDataFileFrame(wx.Frame) :
                            group=self.workgroup,
                            on_ok=self.set_array_labels)
 
-
-    def onRebin(self, evt=None):
-        self.show_subframe('rebin', RebinFrame,
-                           group=self.workgroup,
-                           on_ok=self.accept_rebin)
-
-    def accept_rebin(self):
-        print(" Accept rebin!")
 
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
@@ -579,6 +544,7 @@ class ColumnDataFileFrame(wx.Frame) :
             yexpr2 = '%%s.data[%i, : ]' % iy2
 
         workgroup.ydat = yarr1
+
         exprs['ydat'] = yexpr1
         if yop in ('+', '-', '*', '/'):
             exprs['ydat'] = "%s %s %s" % (yexpr1, yop, yexpr2)
@@ -627,6 +593,12 @@ class ColumnDataFileFrame(wx.Frame) :
             npts = min(len(workgroup.xdat), len(workgroup.ydat))
         except AttributeError:
             return
+
+        if npts > 1000 or ((max(workgroup.xdat)-min(workgroup.xdat)) > 300 and
+                           (np.diff(workgroup.xdat).mean() < 1.0)):
+            self.message.SetLabel("Warning: data may need to be rebinned!")
+        else:
+            self.message.SetLabel("")
 
         workgroup.filename    = rawgroup.filename
         workgroup.npts        = npts
