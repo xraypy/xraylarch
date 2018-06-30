@@ -38,6 +38,35 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
 
+
+class RebinFrame(wx.Frame) :
+    """Rebin Data """
+    def __init__(self, parent, group, on_ok=None):
+        self.group = group
+        self.on_ok = on_ok
+        wx.Frame.__init__(self, None, -1, 'Rebin Arrays',
+                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
+        self.SetFont(Font(10))
+        sizer = wx.GridBagSizer(4, 4)
+        cind = SimpleText(self, label='Rebin')
+        ir = 0
+        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
+
+        sizer.Add(Button(self, 'OK', action=self.onOK), (ir+1, 1), (1, 2), LCEN, 3)
+        pack(self, sizer)
+        self.Show()
+        self.Raise()
+
+    def onOK(self, evt=None):
+        group = self.group
+
+        if callable(self.on_ok):
+            print(' -> on_ok ', self.on_ok)
+            self.on_ok()
+        self.Destroy()
+
+
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
     def __init__(self, parent, group, on_ok=None):
@@ -227,9 +256,12 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
+        _rebin  = Button(bpanel, 'Rebin', action=self.onRebin)
+
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
+        bsizer.Add(_rebin)
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
@@ -264,7 +296,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
-                                         size=(240, -1))
+                                         size=(200, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
@@ -376,6 +408,15 @@ class ColumnDataFileFrame(wx.Frame) :
         self.show_subframe('editcol', EditColumnFrame,
                            group=self.workgroup,
                            on_ok=self.set_array_labels)
+
+
+    def onRebin(self, evt=None):
+        self.show_subframe('rebin', RebinFrame,
+                           group=self.workgroup,
+                           on_ok=self.accept_rebin)
+
+    def accept_rebin(self):
+        print(" Accept rebin!")
 
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
