@@ -103,7 +103,8 @@ class XASNormPanel(TaskPanel):
         self.wids['vict'].SetSelection(1)
         self.wids['nnor'].SetSelection(1)
 
-        opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0})
+        opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0,
+                     'action': self.onSet_Ranges})
 
         xas_pre1 = self.add_floatspin('pre1', value=-1000, **opts)
         xas_pre2 = self.add_floatspin('pre2', value=-30, **opts)
@@ -300,7 +301,11 @@ class XASNormPanel(TaskPanel):
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
-        conf.update(self.read_form())
+        form = self.read_form()
+        conf.update(form)
+        dgroup = self.controller.get_group()
+        self.update_config(conf)
+        self.fill_form(dgroup)
         opts = {}
         name = str(name)
         def copy_attrs(*args):
@@ -321,18 +326,30 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group:
-                self.set_config(grp, opts)
+                self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
                 self.process(grp)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
         self.wids['autoe0'].SetValue(0)
+        self.update_config({'e0': self.wids['e0'].GetValue(),
+                           'auto_e0': False})
+
         self.onReprocess()
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
         self.wids['autostep'].SetValue(0)
+        self.update_config({'edge_step': self.wids['step'].GetValue(),
+                            'auto_step': False})
+        self.onReprocess()
+
+    def onSet_Ranges(self, evt=None, **kws):
+        conf = {}
+        for attr in ('pre1', 'pre2', 'nor1', 'nor2'):
+            conf[attr] = self.wids[attr].GetValue()
+        self.update_config(conf)
         self.onReprocess()
 
     def onSelPoint(self, evt=None, opt='__', relative_e0=True, win=None):
@@ -445,7 +462,7 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
             conf[attr] = getattr(dgroup.pre_edge_details, attr)
 
-        self.set_config(dgroup, conf)
+        self.update_config(conf, dgroup=dgroup)
         self.skip_process = False
 
     def get_plot_arrays(self, dgroup):
