@@ -18,7 +18,6 @@ from numpy.random import randint
 import lmfit
 
 from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
-from larch.utils.strutils import fix_varname
 from larch.utils.mathutils import interp, index_of
 
 def get_arrays(group, arrayname):
@@ -55,7 +54,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     Arguments
     ---------
       group       Group to be fitted
-      components  List of groups to use as components (see Note 1)
+      components  List of groups to use as components (see Note 1) ['norm']
       weights     array of starting  weights (or None to use basic linear alg solution)
       minvals     array of min weights (or None to mean -inf)
       maxvals     array of max weights (or None to mean +inf)
@@ -74,7 +73,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
          group to be fitted.
      2.  arrayname can be one of '
               `norm`    norm v. energy
-              'dmude'   dmude v energy
+              'dmude'   dmude v. energy
     """
 
     # first, generate arrays and interpolate components onto the unknown x array
