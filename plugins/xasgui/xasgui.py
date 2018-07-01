@@ -77,23 +77,7 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
 
 WX_DEBUG = False
 
-XASGUI_STARTUP = ''
 
-OLDXASGUI_STARTUP = """
-# Larch startup for XAS Viewer
-def extract_athenagroup(pgroup):
-    '''extract xas group from athena group'''
-    g = pgroup
-    g.datatype = 'xas'
-    g.filename = g.label
-    g.xdat = 1.0*g.energy
-    g.ydat = 1.0*g.mu
-    g.yerr = 1.0
-    g.plot_xlabel = 'energy'
-    g.plot_ylabel = 'mu'
-    return g
-#enddef
-"""
 
 #############################
 ## Hack System and Startfile on Windows to
@@ -167,7 +151,6 @@ class XASController():
         fico = self.get_iconfile()
 
         _larch = self.larch
-        _larch.eval(XASGUI_STARTUP)
         old_config = read_config(self.config_file)
 
         config = self.make_default_config()
