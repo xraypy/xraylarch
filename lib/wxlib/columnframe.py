@@ -348,7 +348,7 @@ class ColumnDataFileFrame(wx.Frame) :
             pass
         if _larch.error:
             msg = ["Error trying to read '%s':" % path, ""]
-            for err in larch_inerp.error:
+            for err in _larch.error:
                 exc_name, errmsg = err.get_error()
                 msg.append(errmsg)
 
