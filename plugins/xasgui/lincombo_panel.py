@@ -622,7 +622,7 @@ class LinearComboPanel(TaskPanel):
                 sgrid.Add(wids[("%%s%s%%s" % cname) % si])
         sgrid.pack()
         panel.Add(sgrid, dcol=5, newrow=True)
-        panel.Add(HLine(panel, size=(400, 2)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(500, 2)), dcol=5, newrow=True)
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
 
