@@ -39,7 +39,7 @@ Plot_Choices = ['PCA Components', 'Component Weights',
                 'Data + Fit + Compononents']
 
 defaults = dict(e0=0, xmin=-30, xmax=70, fitspace=norm, weight_min=0.01,
-                show_e0=True, show_fitrange=True)
+                max_components=500, show_e0=True, show_fitrange=True)
 
 class PCAPanel(TaskPanel):
     """PCA Panel"""
@@ -81,6 +81,9 @@ class PCAPanel(TaskPanel):
         w_wmin = self.add_floatspin('weight_min', value=0.010, digits=3,
                                     increment=0.001, with_pin=False, min_val=0, max_val=0.5)
 
+        w_mcomps = self.add_floatspin('max_components', value=500, digits=0,
+                                    increment=5, with_pin=False, min_val=0)
+
         b_build_model = Button(panel, 'Use Selected Groups to Build PCA Model',
                                      size=(250, -1),  action=self.onBuildPCAModel)
 
@@ -120,6 +123,9 @@ class PCAPanel(TaskPanel):
 
         add_text('Min Weight: ')
         panel.Add(w_wmin)
+
+        add_text('Max Components: ')
+        panel.Add(w_mcomps)
 
         add_text('Status: ')
         panel.Add(wids['status'], dcol=4)
@@ -180,6 +186,8 @@ class PCAPanel(TaskPanel):
 
         if self.result is None:
             print("need result first!")
+
+        form = self.read_form()
 
     def onBuildPCAModel(self, event=None):
         print("on build!")
