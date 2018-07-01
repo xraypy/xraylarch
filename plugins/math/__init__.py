@@ -11,3 +11,4 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, pearson7,
 from .fitpeak import fit_peak
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall
+from .pca import pca_train, pca_fit

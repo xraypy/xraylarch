@@ -4,11 +4,12 @@ numpy>=1.10
 matplotlib>=2.0
 sqlalchemy>=0.9
 h5py>=2.4
+scikit-learn>=0.18
 pillow>=3.4
 peakutils>=1.0.0
 requests>=2.1
 asteval>=0.9.12
-lmfit>=0.9.9
+lmfit>=0.9.11
 uncertainties>=3.0
 pyyaml
 psutil
