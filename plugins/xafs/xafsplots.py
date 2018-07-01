@@ -17,7 +17,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-from numpy import gradient, ndarray, diff
+from numpy import gradient, ndarray, diff, where, arange
 from larch import Group, ValidateLarchPlugin
 from larch.utils import (index_of, index_nearest, interp)
 
@@ -762,7 +762,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         xdat = ppeak.energy
         ydat = ppeak.baseline
         popts['label'] = 'baseline subtracted peaks'
-        _pplot(xdat, ydat, **popts)
+        _plot(xdat, ydat, **popts)
     else:
         _plot(xdat, ydat, **popts)
         popts['new'] = False
@@ -897,6 +897,69 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
 #enddef
 
 
+@ValidateLarchPlugin
+def plot_pca_components(result, max_components=None, min_weight=0,
+                        win=1, _larch=None, **kws):
+    """Plot components from PCA result
+
+    result must be output of `pca_fit
+    """
+
+    if max_components is None:
+        max_components = len(result.components)
+    else:
+        max_components = max(1, min(len(result.components), max_components))
+
+    title = "PCA model components"
+
+    popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
+                 xlabel=plotlabels.energy, ylabel=plotlabels.norm,
+                 delay_draw=True, show_legend=True, style='solid',
+                 linewidth=3, new=True, marker='None', markersize=4,
+                 win=win, _larch=_larch)
+
+    popts.update(kws)
+
+    _plot(result.x, result.mean, label='Mean', **popts)
+    for i, comp in enumerate(result.components[:max_components]):
+        label = 'Comp #%d' % (i+1)
+        if result.variances[i] > min_weight:
+            _oplot(result.x, comp, label=label, **popts)
+
+    redraw(win=win, show_legend=True, _larch=_larch)
+#enddef
+
+@ValidateLarchPlugin
+def plot_pca_weights(result, max_components=None, min_weight=0,
+                        win=1, _larch=None, **kws):
+    """Plot component weights from PCA result
+
+    result must be output of pca_fit
+    """
+    if max_components is None:
+        max_components = len(result.components)
+    else:
+        max_components = max(1, min(len(result.components), max_components))
+
+    title = "PCA model weights"
+
+    popts = dict(xmin=0, xmax=1+max_components, title=title,
+                 xlabel='Component #', ylabel='weight', style='solid',
+                 linewidth=1, new=True, marker='o', markersize=4, win=win,
+                 _larch=_larch)
+
+    popts.update(kws)
+
+    nsig = len(where(result.variances > min_weight)[0])
+    nsig = min(nsig, max_components)
+
+    x = 1 + arange(nsig)
+    y = result.variances[:nsig]
+    _plot(x, y, label='weights', **popts)
+#enddef
+
+
+
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs"""
     if _larch is None:
@@ -917,4 +980,6 @@ def registerLarchPlugin():
                       'plot_paths_r': plot_paths_r,
                       'plot_prepeaks_fit': plot_prepeaks_fit,
                       'plot_prepeaks_baseline': plot_prepeaks_baseline,
+                      'plot_pca_components': plot_pca_components,
+                      'plot_pca_weights': plot_pca_weights,
                       })
