@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#o!/usr/bin/env python
 """
 XANES Normalization panel
 """
@@ -106,10 +106,10 @@ class XASNormPanel(TaskPanel):
         opts.update({'size': (100, -1), 'digits': 2, 'increment': 5.0,
                      'action': self.onSet_Ranges})
 
-        xas_pre1 = self.add_floatspin('pre1', value=-1000, **opts)
-        xas_pre2 = self.add_floatspin('pre2', value=-30, **opts)
-        xas_nor1 = self.add_floatspin('nor1', value=50, **opts)
-        xas_nor2 = self.add_floatspin('nor2', value=5000, **opts)
+        xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], **opts)
+        xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], **opts)
+        xas_nor1 = self.add_floatspin('nor1', value=defaults['norm1'], **opts)
+        xas_nor2 = self.add_floatspin('nor2', value=defaults['norm2'], **opts)
 
         opts = {'digits': 2, 'increment': 0.1, 'value': 0}
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
