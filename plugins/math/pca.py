@@ -112,7 +112,7 @@ def pca_fit(group, pca_model, ncomps=None, _larch=None):
     yfit = (weights * comps).sum(axis=1) + pca_model.mean
 
     group.pca_result = Group(x=pca_model.x, ydat=ydat, yfit=yfit,
-                             pca_model=pca_model, chi_square=chi2,
+                             pca_model=pca_model, chi_square=chi2[0],
                              weights=weights)
 
     return
