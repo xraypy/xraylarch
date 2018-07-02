@@ -127,20 +127,18 @@ class TaskPanel(wx.Panel):
         dgroup = self.controller.get_group()
         form_opts = {'groupname': dgroup.groupname}
         for name, wid in self.wids.items():
-            if hasattr(wid, 'GetStringSelection'):
-                form_opts[name] = wid.GetStringSelection()
-            elif hasattr(wid, 'IsChecked'):
-                form_opts[name] = wid.IsChecked()
-            elif hasattr(wid, 'GetValue'):
-                form_opts[name] = wid.GetValue()
-            elif hasattr(wid, 'GetLabel'):
-                form_opts[name] = wid.GetLabel()
-            else:
-                try:
-                    form_opts[name] = wid.GetValue()
-                except:
-                    form_opts[name] = None
-
+            val = None
+            for method in ('GetStringSelection', 'IsChecked',
+                           'GetValue', 'GetLabel'):
+                meth = getattr(wid, method, None)
+                if callable(meth):
+                    try:
+                        val = meth()
+                    except TypeError:
+                        pass
+                if val is not None:
+                    break
+            form_opts[name] = val
         return form_opts
 
     def process(self, dgroup=None, **kws):
