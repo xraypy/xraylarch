@@ -15,6 +15,8 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
+from lmfit.printfuncs import gformat
+
 from larch import Group
 from larch.utils import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
@@ -33,6 +35,7 @@ chik   = six.u('\u03c7(k)')
 noplot = '<no plot>'
 noname = '<none>'
 
+DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['PCA Components', 'Component Weights',
@@ -78,7 +81,7 @@ class PCAPanel(TaskPanel):
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
 
-        w_wmin = self.add_floatspin('weight_min', digits=3,
+        w_wmin = self.add_floatspin('weight_min', digits=4,
                                     value=defaults['weight_min'],
                                     increment=0.001, with_pin=False,
                                     min_val=0, max_val=0.5)
@@ -87,32 +90,48 @@ class PCAPanel(TaskPanel):
                                     value=defaults['max_components'],
                                     increment=1, with_pin=False, min_val=0)
 
-        b_build_model = Button(panel, 'Use Selected Groups to Build PCA Model',
-                                     size=(250, -1),  action=self.onBuildPCAModel)
+        b_build_model = Button(panel, 'Build Model With Selected Groups',
+                                     size=(225, -1),  action=self.onBuildPCAModel)
 
-        wids['fit_group'] = Button(panel, 'Test Current Group with PCA Model', size=(250, -1),
+        wids['fit_group'] = Button(panel, 'Test Current Group with Model', size=(225, -1),
                                    action=self.onFitGroup)
 
-        wids['save_model'] = Button(panel, 'Save PCA Model', size=(250, -1),
+        wids['save_model'] = Button(panel, 'Save PCA Model', size=(150, -1),
                                     action=self.onSavePCAModel)
+        wids['load_model'] = Button(panel, 'Load PCA Model', size=(150, -1),
+                                    action=self.onLoadPCAModel)
 
         wids['fit_group'].Disable()
+        wids['load_model'].Disable()
         wids['save_model'].Disable()
 
-        opts = dict(default=True, size=(75, -1), action=self.onPlot)
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.AppendTextColumn(' Component',    width=75)
+        sview.AppendTextColumn(' Weight',       width=100)
+        sview.AppendTextColumn(' Significant?', width=75)
 
-        # wids['show_e0'] = Check(panel, label='show?', **opts)
-        # wids['show_fitrange'] = Check(panel, label='show?', **opts)
+        for col in range(sview.ColumnCount):
+            this = sview.Columns[col]
+            align = wx.ALIGN_LEFT if col == 0 else wx.ALIGN_RIGHT
+            this.Sortable = False
+            this.Alignment = this.Renderer.Alignment = align
+        sview.SetMinSize((275, 250))
 
         wids['status'] = SimpleText(panel, ' ')
+
+        wids['fit_chi2'] = SimpleText(panel, '--')
+
 
         panel.Add(SimpleText(panel, ' Principal Component Analysis', **titleopts), dcol=4)
 
         add_text('Array to Use: ', newrow=True)
-        panel.Add(wids['fitspace'], dcol=3)
+        panel.Add(wids['fitspace'], dcol=2)
+        panel.Add(wids['load_model'], dcol=2)
 
         add_text('Plot : ', newrow=True)
-        panel.Add(wids['plotchoice'], dcol=3)
+        panel.Add(wids['plotchoice'], dcol=2)
+
+        panel.Add(wids['save_model'], dcol=2)
 
         add_text('E0: ')
         panel.Add(w_e0, dcol=3)
@@ -124,21 +143,24 @@ class PCAPanel(TaskPanel):
         panel.Add(w_xmax)
         #panel.Add(wids['show_fitrange'])
 
-        add_text('Min Weight: ')
+        add_text('Minimum Weight: ')
         panel.Add(w_wmin)
-        add_text('Max Components: ', dcol=2, newrow=False)
+        add_text('Max Components:', dcol=1, newrow=True)
         panel.Add(w_mcomps)
 
         add_text('Status: ')
-        panel.Add(wids['status'], dcol=4)
+        panel.Add(wids['status'], dcol=3)
 
-        panel.Add(HLine(panel, size=(500, 2)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
 
-        panel.Add(b_build_model, dcol=4, newrow=True)
-        panel.Add(wids['fit_group'], dcol=4, newrow=True)
+        panel.Add(b_build_model, dcol=3, newrow=True)
+        panel.Add(wids['fit_group'], dcol=3)
 
-        panel.Add(HLine(panel, size=(400, 2)), dcol=5, newrow=True)
-        panel.Add(wids['save_model'], dcol=4, newrow=True)
+        panel.Add(wids['stats'], dcol=3, drow=4, newrow=True)
+        panel.Add(SimpleText(panel, 'chi-square = '))
+        panel.Add(wids['fit_chi2'])
+
+
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -194,6 +216,14 @@ class PCAPanel(TaskPanel):
         min_weight = form['weight_min']
         self.larch_eval(cmd % (max_comps, min_weight, win))
 
+    def plot_pca_fit(self, win=1):
+        if self.result is None:
+            return
+        form = self.read_form()
+        dgroup = self.controller.get_group()
+        if hasattr(dgroup, 'pca_result'):
+            self.larch_eval("plot_pca_fit(%s)" % dgroup.groupname)
+
     def onPlot(self, event=None):
         form = self.read_form()
         pchoice = form['plotchoice'].lower()
@@ -201,11 +231,22 @@ class PCAPanel(TaskPanel):
             self.plot_pca_components()
         elif pchoice.startswith('component w'):
             self.plot_pca_weights()
+        else:
+            self.plot_pca_fit()
 
     def onFitGroup(self, event=None):
         form = self.read_form()
         if self.result is None:
             print("need result first!")
+        ncomps = int(form['max_components'])
+        gname = form['groupname']
+        cmd = "pca_fit(%s, pca_result, ncomps=%d)" % (gname, ncomps)
+        self.larch_eval(cmd)
+        dgroup = self.controller.get_group()
+        pca_chisquare = dgroup.pca_result.chi_square
+        self.wids['fit_chi2'].SetLabel(gformat(pca_chisquare))
+        self.plot_pca_fit()
+
 
     def onBuildPCAModel(self, event=None):
         self.wids['status'].SetLabel(" training model...")
@@ -219,7 +260,6 @@ class PCAPanel(TaskPanel):
 
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
-
         cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
 
         self.larch_eval(cmd.format(**opts))
@@ -232,11 +272,20 @@ class PCAPanel(TaskPanel):
         self.wids['status'].SetLabel(status %  (ncomps, nsig, wmin))
         self.wids['max_components'].SetValue(min(ncomps, 1+nsig))
 
-        for b in ('fit_group', ): # 'save_model'):
+        for b in ('fit_group'): # , 'save_model'):
             self.wids[b].Enable()
+
+        self.wids['stats'].DeleteAllItems()
+        for i, val in enumerate(r.variances):
+            sig = {True: 'Yes', False: 'No'}[val > wmin]
+            self.wids['stats'].AppendItem((' #%d' % (i+1), gformat(val), sig))
+
         self.plot_pca_components()
         self.plot_pca_weights()
 
     def onSavePCAModel(self, event=None):
         form = self.read_form()
-        print("SAVE form: ", form)
+        print("SAVE model: form: ", form)
+
+    def onLoadPCAModel(self, event=None):
+        form = self.read_form()
