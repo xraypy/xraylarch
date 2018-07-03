@@ -969,18 +969,11 @@ def plot_pca_fit(dgroup, win=1, _larch=None, **kws):
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
                  linewidth=3, new=True, marker='None', markersize=4,
-                 win=win, _larch=_larch)
-
+                 stacked=True, win=win, _larch=_larch)
     popts.update(kws)
-
-    _plot(result.x, result.ydat, label='data', **popts)
-    _oplot(result.x, result.yfit, label='fit', **popts)
-#     for i, comp in enumerate(result.components[:max_components]):
-#         label = 'Comp #%d' % (i+1)
-#         if result.variances[i] > min_weight:
-#             _oplot(result.x, comp, label=label, **popts)
-
-    redraw(win=win, show_legend=True, _larch=_larch)
+    _fitplot(result.x, result.ydat, result.yfit,
+             label='data', label2='PCA fit', **popts)
+    redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
 
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs"""
