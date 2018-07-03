@@ -356,6 +356,11 @@ class GSEXRM_MapRow:
                      (sisfile, len(sdata), xpsfile, len(gdata)) )
             return
 
+        # extrapolate gathering data by in case final end-point trigger was missed
+        gather_extra = (2*gdata[-1] - gdata[-2]).reshape((1, gdata.shape[1]))
+        gdata = np.concatenate((gdata, gather_extra))
+        gnpts, ngather  = gdata.shape
+
         self.sishead = shead
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
@@ -451,17 +456,18 @@ class GSEXRM_MapRow:
                     self.xrdq_wdg  = np.einsum('kij->ijk', self.xrdq_wdg)
                     self.xrd1d_wdg = np.einsum('kij->ijk', self.xrd1d_wdg)
 
-        gnpts, ngather  = gdata.shape
-        snpts, nscalers = sdata.shape
 
-        xnpts,nmca = gnpts,1
+        xnpts, nmca = gnpts, 1
         if FLAGxrf:
             xnpts, nmca, nchan = self.counts.shape
 
+        snpts, nscalers = sdata.shape
+
+        # print("Row npts=%s, gather=%d, sis=%d, xrf=%d" %
+        #            (repr(self.npts), gnpts, snpts, xnpts))
+
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
-
-        # print("Row ", sisfile, snpts, self.npts)
 
         if snpts < self.npts:  # extend struck data if needed
             print('     extending SIS data from %i to %i !' % (snpts, self.npts))
