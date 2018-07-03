@@ -1,17 +1,17 @@
 ## examples/pca/pca_aucyano.lar
 # note that this is similar to examples/fitting/doc_example3
 
-_prj = read_athena('../fitting/doc_example3/cyanobacteria.prj', do_fft=False, do_bkg=False)
+auproject = read_athena('cyanobacteria.prj', do_fft=False, do_bkg=False)
 
+d_720       = extract_athenagroup(auproject.d_720)
+au_foil     = extract_athenagroup(auproject.Au_foil)
+au_cl3aq    = extract_athenagroup(auproject.Au3_Cl_aq)
+au_hydrox   = extract_athenagroup(auproject.Au_hydroxide)
+au_sulfide  = extract_athenagroup(auproject.Au_sulphide)
+au_thiocyan = extract_athenagroup(auproject.Au_thiocyanide)
+au_thiosulf = extract_athenagroup(auproject.Au_thiosulphate_aq)
 
-d_720 = extract_athenagroup(_prj.d_720)
-au_foil = extract_athenagroup(_prj.Au_foil)
-au_cl3aq = extract_athenagroup(_prj.Au3_Cl_aq)
-au_hydrox = extract_athenagroup(_prj.Au_hydroxide)
-au_sulfide = extract_athenagroup(_prj.Au_sulphide)
-au_thiocyan = extract_athenagroup(_prj.Au_thiocyanide)
-au_thiosulf = extract_athenagroup(_prj.Au_thiosulphate_aq)
-
+# make sure pre_edge() is run with the same params for all groups
 for g in (d_720, au_foil, au_cl3aq, au_hydrox, au_sulfide, au_thiocyan, au_thiosulf):
     pre_edge(g, pre1=-150, pre2=-30, nnorm=1, norm1=150, norm2=850)
 #endfor
@@ -35,6 +35,7 @@ for i, weight in enumerate(au_pcamodel.variances):
 # fit unknown data to model
 pca_fit(d_720, au_pcamodel)
 
+# plot
 plot_pca_fit(d_720, win=3)
 
 
