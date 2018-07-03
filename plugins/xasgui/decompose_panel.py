@@ -272,7 +272,7 @@ class PCAPanel(TaskPanel):
         self.wids['status'].SetLabel(status %  (ncomps, nsig, wmin))
         self.wids['max_components'].SetValue(min(ncomps, 1+nsig))
 
-        for b in ('fit_group'): # , 'save_model'):
+        for b in ('fit_group',): # , 'save_model'):
             self.wids[b].Enable()
 
         self.wids['stats'].DeleteAllItems()
