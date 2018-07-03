@@ -28,7 +28,7 @@ else:
 alist2json = maketrans("();'\n", "[] \" ")
 
 def plarray2json(text):
-    return json.loads(text.split('=')[1].strip().translate(alist2json))
+    return json.loads(text.split('=', 1)[1].strip().translate(alist2json))
 
 def asfloat(x):
     """try to convert value to float, or fail gracefully"""
