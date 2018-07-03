@@ -10,7 +10,6 @@ np.seterr(all='ignore')
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 
-
 from larch import Group
 
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
@@ -75,7 +74,7 @@ class TaskPanel(wx.Panel):
     def build_display(self):
         """build display"""
 
-        titleopts = dict(font=Font(11), colour='#AA0000')
+        titleopts = dict(font=Font(FONTSIZE+1), colour='#AA0000')
         self.panel.Add(SimpleText(self.panel, self.title, **titleopts),
                        dcol=7)
         self.panel.Add(SimpleText(self.panel, ' coming soon....'),

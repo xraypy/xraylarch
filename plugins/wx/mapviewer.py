@@ -7,6 +7,7 @@ GUI for displaying maps from HDF5 files
 VERSION = '10 (14-March-2018)'
 
 import os
+import platform
 import sys
 import time
 import json
@@ -81,6 +82,10 @@ from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensur
 from larch_plugins.tomo import (tomo_reconstruction, reshape_sinogram, trim_sinogram,
                                 return_methods)
 
+
+FONTSIZE = 8
+if platform.system() in ('Windows', 'Darwin'):
+    FONTSIZE = 10
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -2095,7 +2100,8 @@ class MapViewerFrame(wx.Frame):
 
         self.createMainPanel()
 
-        self.SetFont(Font(10))
+        print(" Font size ", FONTSIZE)
+        self.SetFont(Font(FONTSIZE))
 
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
