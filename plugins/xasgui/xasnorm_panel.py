@@ -35,18 +35,20 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 PlotOne_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
                                (six.u('Normalized \u03BC(E)'), 'norm'),
                                (six.u('d\u03BC(E)/dE'), 'dmude'),
-                               (six.u('Normalized \u03BC(E) + d\u03BC(E)/dE'), 'norm+deriv'),
+                               (six.u('Raw \u03BC(E) + d\u03BC(E)/dE'), 'mu+dmude'),
+                               (six.u('Normalized \u03BC(E) + d\u03BC(E)/dE'), 'norm+dnormde'),
                                (six.u('Flattened \u03BC(E)'), 'flat'),
                                (six.u('\u03BC(E) + Pre-/Post-edge'), 'prelines')))
 
 PlotSel_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
                                (six.u('Normalized \u03BC(E)'), 'norm'),
                                (six.u('Flattened \u03BC(E)'), 'flat'),
+                               (six.u('d\u03BC(E)/dE (raw)'), 'dmude'),
                                (six.u('d\u03BC(E)/dE (normalized)'), 'dnormde')))
 
 PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude'),
-                                      ('Data + Derivative', 'norm+deriv')))
+                                      ('Data + Derivative', 'norm+dmude')))
 
 PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
@@ -485,14 +487,15 @@ class XASNormPanel(TaskPanel):
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
-            elif pchoice == 'norm+deriv':
+            elif pchoice == 'norm+dnormde':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'dy/dx'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
-                                       ('dmude', PLOTOPTS_D, 'dy/dx')]
+                                       ('dnormde', PLOTOPTS_D, 'dy/dx')]
             return
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
+        # print("=== PLOT CHOICE ", pchoice)
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
@@ -507,11 +510,18 @@ class XASNormPanel(TaskPanel):
                                     r'pre-edge subtracted $\mu$')]
             lab = r'pre-edge subtracted $\mu$'
 
-        elif pchoice == 'norm+deriv':
-            lab = plotlabels.norm
+        elif pchoice == 'mu+dmude':
+            lab = plotlabels.mu
             lab2 = plotlabels.dmude
-            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('dmude', PLOTOPTS_D, lab2)]
+            dgroup.plot_y2label = lab2
+
+        elif pchoice == 'norm+dnormde':
+            lab = plotlabels.norm
+            lab2 = plotlabels.dmude + ' (normalized)'
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
+                                   ('dnormde', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
 
@@ -591,6 +601,7 @@ class XASNormPanel(TaskPanel):
 
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
+            # print("PLOT ", i, pydat)
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
