@@ -19,7 +19,7 @@ If you are familiar with Python and want to use Larch as a library, see the
 :ref:`Downloading and Installation <install-chapter>` chapter.
 
 
-Second, use GSEMapViewer, XAS_Viewer, or Larch_GUI
+Second, use GSEMapViewer, XASViewer, or Larch_GUI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are a user of the GSECARS microprobe, you'll want to start using the
@@ -28,12 +28,11 @@ fluorescence maps.   Much of the documentation here discusses commands you
 can type in the "Larch Buffer", available from the Mapviewer program for
 scripting and more detailed access to the data in the XRF map HDF5 files.
 
-
 If you are mostly interested in using Larch as a backend for the Athena and
 Artemis programs for XAFS Analysis, just install Larch and the latest
 version of Demeter, and Demeter should find and use Larch for EXAFS
 Analysis, replacing the older Ifeffit library and its many limitations.
-You may also be interested in the XAS_Viewer program for XANES
+You may also be interested in the XASViewer program for XANES
 visualization and peak fitting, and aiming for more XANES analysis tools.
 
 If you are a general-purpose user or ready for more control over data

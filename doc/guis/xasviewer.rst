@@ -7,10 +7,10 @@
     :width: 18pt
     :height: 18pt
 
-XAS_Viewer
+XASViewer
 =======================
 
-The XAS_Viewer GUI uses Larch to read and display XAFS spectra.  This
+The XASViewer GUI uses Larch to read and display XAFS spectra.  This
 application is still in active development, with more features planned with
 special emphasis on helping users with XANES analysis.  Current features
 (as of June, 2018, Larch version 0.9.38) include:
@@ -41,12 +41,12 @@ that allows more detailed selecting of data sets.
 
 .. _fig_xasviewer_1:
 
-.. figure:: ../_images/XAS_Viewer_xasnorm.png
-    :target: ../_images/XAS_Viewer_xasnorm.png
+.. figure:: ../_images/XASViewer_norm_panel.png
+    :target: ../_images/XASViewer_norm_panel.png
     :width: 55%
     :align: center
 
-    XAS_Viewer showing the File/Group list on the left-hand side and the
+    XASViewer showing the File/Group list on the left-hand side and the
     the XAFS pre-edge subtraction and normalization panel on the right.
 
 
@@ -202,19 +202,19 @@ peaks and fit range and may require some adjustment.
 
 .. _fig_xasviewer_3a:
 
-.. figure:: ../_images/XAS_Viewer_prepeak_baseline.png
-    :target: ../_images/XAS_Viewer_prepeak_baseline.png
+.. figure:: ../_images/XASViewer_prepeak_baseline.png
+    :target: ../_images/XASViewer_prepeak_baseline.png
     :width: 100%
     :align: center
 
-    Pre-edge peak Window of XAS_Viewer, showing how select regions of
+    Pre-edge peak Window of XASViewer, showing how select regions of
     pre-edge peaks for fitting a baseline.
 
 
 .. _fig_xasviewer_3b:
 
-.. figure:: ../_images/XAS_Viewer_plot_baseline.png
-    :target: ../_images/XAS_Viewer_plot_baseline.png
+.. figure:: ../_images/XASViewer_plot_baseline.png
+    :target: ../_images/XASViewer_plot_baseline.png
     :width: 60%
     :align: center
 
@@ -252,23 +252,23 @@ energy bounds for the `center` of each peak, so that they do not overlap.
 
 .. _fig_xasviewer_4a:
 
-.. figure:: ../_images/XAS_Viewer_prepeak_1gaussian.png
-    :target: ../_images/XAS_Viewer_prepeak_1gaussian.png
+.. figure:: ../_images/XASViewer_prepeak_1gaussian.png
+    :target: ../_images/XASViewer_prepeak_1gaussian.png
     :width: 100%
     :align: center
 
-    Pre-edge peak Window of XAS_Viewer, showing how select regions of
+    Pre-edge peak Window of XASViewer, showing how select regions of
     pre-edge peaks for fitting a baseline.
 
 
 .. _fig_xasviewer_4b:
 
-.. figure:: ../_images/XAS_Viewer_plot_1gaussian.png
-    :target: ../_images/XAS_Viewer_plot_1gaussian.png
+.. figure:: ../_images/XASViewer_plot_1gaussian.png
+    :target: ../_images/XASViewer_plot_1gaussian.png
     :width: 60%
     :align: center
 
-    Pre-edge peak Window of XAS_Viewer, showing how select regions of
+    Pre-edge peak Window of XASViewer, showing how select regions of
     pre-edge peaks for fitting a baseline.
 
 .. subfigend::
@@ -293,8 +293,8 @@ half the maximum height) and `height` (the maximum height of the peak).
 
 .. _fig_xasviewer_5a:
 
-.. figure:: ../_images/XAS_Viewer_prepeak_fitresult.png
-    :target: ../_images/XAS_Viewer_prepeak_fitresult.png
+.. figure:: ../_images/XASViewer_prepeak_fitresult.png
+    :target: ../_images/XASViewer_prepeak_fitresult.png
     :width: 75%
     :align: left
 
@@ -303,8 +303,8 @@ half the maximum height) and `height` (the maximum height of the peak).
 
 .. _fig_xasviewer_5b:
 
-.. figure:: ../_images/XAS_Viewer_plot_1residual.png
-    :target: ../_images/XAS_Viewer_plot_1residual.png
+.. figure:: ../_images/XASViewer_plot_1residual.png
+    :target: ../_images/XASViewer_plot_1residual.png
     :width: 60%
     :align: center
 
