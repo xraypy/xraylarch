@@ -1,11 +1,11 @@
-.. _guis-xas_viewer:
-
 .. _lmfit:    http://lmfit.github.io/lmfit-py
 
 
 .. |pin| image:: ../_images/pin_icon.png
     :width: 18pt
     :height: 18pt
+
+.. _guis-xas_viewer:
 
 XASViewer
 =======================
