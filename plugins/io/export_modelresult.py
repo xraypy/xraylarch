@@ -113,14 +113,15 @@ def export_modelresult(result, filename='fitresult.xdi',
     hadd("".join(clabel)[1:])
     header[0] = "XDI/1.1  Lmfit Result File  %i header lines" % (len(header))
     dtable = []
-    for dat in columns.values():
+    for key, dat in columns.items():
         dtable.append(dat)
 
     dtable = np.array(dtable).transpose()
     datatable = []
     for i in range(ndata):
+        col = dtable[i, :]*1.0
         row = []
-        for cval in dtable[i, :]:
+        for cval in col:
             try:
                 val = gformat(cval, length=15)
             except:
