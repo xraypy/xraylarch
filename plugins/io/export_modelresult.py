@@ -119,7 +119,13 @@ def export_modelresult(result, filename='fitresult.xdi',
     dtable = np.array(dtable).transpose()
     datatable = []
     for i in range(ndata):
-        row = [gformat(col, length=15) for col in dtable[i, :]]
+        row = []
+        for col in dtable[i, :]:
+            try:
+                col = gformat(col, length=15)
+            except:
+                val = repr(col)
+            row.append(val)
         datatable.append(" ".join(row))
 
     datatable.append('')
