@@ -205,7 +205,7 @@ class ColumnDataFileFrame(wx.Frame) :
         yerr_lab = SimpleText(panel, 'Yerror = ')
         self.xsuf = SimpleText(panel, '')
         self.ysuf = SimpleText(panel, '')
-        self.message = SimpleText(panel, '', font=Font(13),
+        self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LCEN)
 
         self.xpop.SetStringSelection(self.array_sel['xpop'])
@@ -274,7 +274,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
         sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LCEN, 0)
-        sizer.Add(self.message,                     (ir, 3), (1, 2), LCEN, 0)
+        sizer.Add(self.message,                     (ir, 3), (1, 4), LCEN, 0)
 
 
         ir += 1
