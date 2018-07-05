@@ -41,6 +41,7 @@ is in the default search path.
 
    utilities
    preedge
+   xanes
    autobk
    xafsft
    wavelets
