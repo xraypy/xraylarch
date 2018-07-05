@@ -120,11 +120,11 @@ def export_modelresult(result, filename='fitresult.xdi',
     datatable = []
     for i in range(ndata):
         row = []
-        for col in dtable[i, :]:
+        for cval in dtable[i, :]:
             try:
-                col = gformat(col, length=15)
+                val = gformat(cval, length=15)
             except:
-                val = repr(col)
+                val = repr(cval)
             row.append(val)
         datatable.append(" ".join(row))
 
