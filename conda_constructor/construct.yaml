@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.37
+version: 0.9.38
 
 channels:
     - http://repo.continuum.io/pkgs/main
@@ -31,6 +31,7 @@ specs:
     - yaml
     - requests
     - scikit-image
+    - scikit-learn
     - pycifrw
     - peakutils
     - psutil
@@ -41,7 +42,7 @@ specs:
     - wxpython=4.0.1
     - wxmplot=0.9.30
     - pyepics=3.3.1
-    - lmfit=0.9.9
+    - lmfit=0.9.11
     - asteval=0.9.12
     - wxutils=0.1.3
     - xraylarch
