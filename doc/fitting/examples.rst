@@ -340,6 +340,8 @@ but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.
 
 
+.. _fit_example3_sec:
+
 Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra
 ==========================================================================
 
