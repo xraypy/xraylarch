@@ -138,7 +138,7 @@ elif os.name == 'nt':
     root = sys.prefix
     def make_shortcut(name, script, desc, icon, isgui):
         """create windows shortcut"""
-       
+
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
         pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
@@ -157,13 +157,12 @@ elif os.name == 'nt':
             fbat.write("""@echo off
 
 %s %%~dp0%%~n0 %%1 %%2 %%3 %%4 %%5
-			
+
 			""" % (pyexe))
             fbat.close()
             target = target_bat
 
         icon = os.path.join(root, 'share', 'larch', 'icons', icon + '.ico')
-  
         shell = Dispatch('WScript.Shell')
         shortcut = shell.CreateShortCut(path)
         shortcut.Targetpath = target
@@ -172,7 +171,6 @@ elif os.name == 'nt':
         shortcut.Description = desc
         shortcut.IconLocation = icon
         shortcut.save()
-
 
 for name, script, icon, desc, isgui  in apps:
     make_shortcut(name, script, desc, icon, isgui)
