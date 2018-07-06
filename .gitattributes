@@ -12,6 +12,7 @@ dlls/*/* -text
 *.so.* -text
 *.dylib -text
 *.ico -text
+*.prj -text
 *.a -text
 *.icns -text
 *.db -text
