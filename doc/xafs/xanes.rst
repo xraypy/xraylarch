@@ -108,29 +108,24 @@ makeup of the unknown sample is an important analysis method.
 
     perform linear combination fitting for a group
 
-    Arguments
-    ---------
-      group       Group to be fitted
-      components  List of groups to use as components (see Note 1) ['norm']
-      weights     array of starting  weights (or None to use basic linear alg solution)
-      minvals     array of min weights (or None to mean -inf)
-      maxvals     array of max weights (or None to mean +inf)
-      arrayname   string of array name to be fit (see Note 2)
-      xmin        x-value for start of fit range [-inf]
-      xmax        x-value for end of fit range [+inf]
-      sum_to_one  bool, whether to force weights to sum to 1.0 [True]
+    :param  group:       Group to be fitted
+    :param  components:  List of groups to use as components (see Note 1)
+    :param  weights:     array of starting  weights (see Note)
+    :param  minvals:     array of min weights (or None to mean -inf)
+    :param  maxvals:     array of max weights (or None to mean +inf)
+    :param  arrayname:   string of array name to be fit  ['norm'] (see Note 2)
+    :param  xmin:        x-value for start of fit range [-inf]
+    :param  xmax:        x-value for end of fit range [+inf]
+    :param  sum_to_one:  bool, whether to force weights to sum to 1.0 [True]
 
-    Returns
-    -------
-      group with resulting weights and fit statistics
+    :returns:  group with resulting weights and fit statistics
 
-    Notes
-    -----
+    Notes:
+
      1.  The names of Group members for the components must match those of the
          group to be fitted.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v. energy
+     2.  use ``None`` to use basic linear alg solution)
+     3.  arrayname can be one of  `norm` or `dmude`
 
 
 ..  function:: lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf, sum_to_one=True)
@@ -139,79 +134,62 @@ makeup of the unknown sample is an important analysis method.
     perform linear combination fittings for a group with all combinations
     of 2 or more of the components given
 
-    Arguments
-    ---------
-      group       Group to be fitted
-      components  List of groups to use as components (see Note 1)
-      weights     array of starting  weights (or None to use basic linear alg solution)
-      minvals     array of min weights (or None to mean -inf)
-      maxvals     array of max weights (or None to mean +inf)
-      arrayname   string of array name to be fit (see Note 2)
-      xmin        x-value for start of fit range [-inf]
-      xmax        x-value for end of fit range [+inf]
-      sum_to_one  bool, whether to force weights to sum to 1.0 [True]
+    :param  group: Group to be fitted
+    :param  components: List of groups to use as components (see Note)
+    :param  weights: array of starting  weights (see Note)
+    :param  minvals: array of min weights (or None to mean -inf)
+    :param  maxvals: array of max weights (or None to mean +inf)
+    :param  arrayname: string of array name to be fit (see Note 2)
+    :param  xmin: x-value for start of fit range [-inf]
+    :param  xmax: x-value for end of fit range [+inf]
+    :param  sum_to_one: bool, whether to force weights to sum to 1.0 [True]
 
-    Returns
-    -------
-     list of group with resulting weights and fit statistics,
+    :return: list of groups with resulting weights and fit statistics,
      ordered by reduced chi-square (best first)
 
-    Notes
-    -----
-     1.  The names of Group members for the components must match those of the
-         group to be fitted.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v energy
-    """
+    See notes for :func:`lincombo_fit`.
 
 
 Principal Component Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ..  function:: pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, sum_to_one=True)
 
     use a list of data groups to train a Principal Component Analysis model
 
-    Arguments
-    ---------
-      groups      list of groups to use as components
-      arrayname   string of array name to be fit (see Note 2) ['norm']
-      xmin        x-value for start of fit range [-inf]
-      xmax        x-value for end of fit range [+inf]
+    :param  groups:      list of groups to use as components
+    :param  arrayname:   string of array name to be fit (see Note) ['norm']
+    :param  xmin:        x-value for start of fit range [-inf]
+    :param  xmax:        x-value for end of fit range [+inf]
 
-    Returns
-    -------
-      group with trained PCA model, to be used with pca_fit
+    :return: group with trained PCA model, to be used with :func:`pca_fit`
 
-    Notes
-    -----
      1.  The group members for the components must match each other
          in data content and array names.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v. energy
+     2.  arrayname can be one of  `norm` or `dmude`
 
 
 .. function:: pca_fit(group, pca_model, ncomps=None, _larch=None)
 
     fit a spectrum from a group to a pca training model from pca_train()
 
-    Arguments
-    ---------
-      group       group with data to fit
-      pca_model   PCA model as found from pca_train()
-      ncomps      number of components to included
+    :param  group:       group with data to fit
+    :param  pca_model:   PCA model as found from :func:`pca_train`
+    :param  ncomps:      number of components to included
 
-    Returns
-    -------
-      None, the group will have a subgroup name `pca_result` created
-            with the following members:
+    :return: `None`.
 
-          x          x or energy value from model
-          ydat       input data interpolated onto `x`
-          yfit       linear least-squares fit using model components
-          weights    weights for PCA components
-          chi_square goodness-of-fit measure
-          pca_model  the input PCA model
+
+    On success, the input group will have a subgroup name `pca_result`
+    created with the following members:
+
+          ============ ==================================================
+           name             meaning
+          ============ ==================================================
+	  x              x or energy value from model
+          ydat           input data interpolated onto `x`
+          yfit           linear least-squares fit using model components
+          weights        weights for PCA components
+          chi_square     goodness-of-fit measure
+          pca_model      the input PCA model
+          ============ ==================================================
