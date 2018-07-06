@@ -234,8 +234,6 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
 
-
-
 def fix_darwin_dylibs():
     """
     fix dynamic libs on Darwin with install_name_tool
@@ -271,6 +269,28 @@ def fix_darwin_dylibs():
     for cmd in cmds:
         os.system(cmd)
 
+def fix_linux_dylibs():
+    """
+    fix dynamic libs on Linux with patchelf
+    """
+    prefix = sys.prefix
+    larchdlls = os.path.join(prefix, 'share/larch/dlls/linux64')
+
+    fixcmd = "%s/bin/patchelf --set-rpath "  % prefix
+
+    dylibs = ('libgcc_s.so.1','libquadmath.so.0', 'libgfortran.so.3',
+              'libfeff6.so', 'libcldata.so', 'libfeff8lpath.so',
+              'libfeff8lpotph.so')
+
+    exes = ('feff6l', 'feff8l_ff2x', 'feff8l_genfmt', 'feff8l_pathfinder',
+            'feff8l_pot', 'feff8l_rdinp', 'feff8l_xsph')
+
+    for lname in dylibs:
+        os.system("%s '$ORIGIN' %s" % (fixcmd, os.path.join(larchdlls, lname)))
+
+    for ename in exes:
+        os.system("%s %s %s/bin/%s" % (fixcmd, larchdlls, prefix, ename))
+
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
     scriptdir = pjoin(sys.exec_prefix, bindir)
@@ -290,6 +310,9 @@ if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
 
     if uname.startswith('darwin'):
         fix_darwin_dylibs()
+
+elif uname.startswith('linux'):
+    fix_linux_dylibs()
 
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
