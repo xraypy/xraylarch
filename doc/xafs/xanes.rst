@@ -90,8 +90,10 @@ pre-edge peak fitting.  These challenges include
  * making sure that the peaks overlap but do not exchange or become
    coincident.
 
-The XAS Viewer application helps with many of the tasks, and it is highly
+The XAS Viewer application helps with each of the tasks, and it is highly
 recommended that you start with this GUI.
+
+
 
 Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,6 +155,12 @@ makeup of the unknown sample is an important analysis method.
 Principal Component Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+To use Principal Component Analysis, you must first use a collection of
+spectra to build or "train" the model.  With a trained model, you can ask
+how many independent components are needed to describe the variation in the
+collection.
+
 ..  function:: pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, sum_to_one=True)
 
     use a list of data groups to train a Principal Component Analysis model
@@ -167,6 +175,23 @@ Principal Component Analysis
      1.  The group members for the components must match each other
          in data content and array names.
      2.  arrayname can be one of  `norm` or `dmude`
+
+The trained PCA group returned will have the following members:
+
+          ============ ==================================================
+           name             meaning
+          ============ ==================================================
+	  x              x or energy value from model
+          arrayname      array name used to train model
+          labels         list of labels (filenames for each input group)
+	  ydat           2D array of input components, interpolated to `x`
+	  xmin           minimum `x` value used.
+	  xmax           maximum `x` value used.
+	  pcamodel       raw return value from scikit-learn :meth:`PCA.fit`.
+	  mean           mean value of `ydat`.
+	  components     list of components, ordered by variance score
+          variances      list of weights for each component.
+          ============ ==================================================
 
 
 .. function:: pca_fit(group, pca_model, ncomps=None, _larch=None)
@@ -193,3 +218,94 @@ Principal Component Analysis
           chi_square     goodness-of-fit measure
           pca_model      the input PCA model
           ============ ==================================================
+
+
+PCA example
+~~~~~~~~~~~~~~~
+
+
+A simple example of using these PCA functions is given below, building on
+the dataset from Lengke, et al shown in section :ref:`fit_example3_sec`.  Here,
+we'll first read in six "standards" and one unknown spectra from an Athena
+project file and extract the desired groups.  We then make sure that all
+the spectra have pre-edge subtraction and normalization done consistently.
+This may not be necessary if care was taken in the steps that generated the
+project file, but we include it here for completeness.
+
+.. literalinclude:: ../../examples/pca/pca_aucyano.lar
+
+Next, we're ready to train the PCA model with the collection of standard
+spectra, so we make a list of groups `standards` and create a training
+model that we store in `au_pcamodel`.
+
+With this PCA model, we can investigate the components and their weights.
+To be clear, the PCA process first calculates and removes the mean of all
+the components and then focuses on the variations in the spectra.  This is
+especially helpful for XANES spectra as the mean normalized :math:`mu(E)`
+is almost always larger than the variations.  We can then plot the mean and
+the principal components themselves (in :numref:`fig_xanes_pca1a`), and the
+weight of each component (in :numref:`fig_xanes_pca1b`) to explain the
+variations in the training set (note that this does not include the mean,
+and is on a log scale).
+
+.. subfigstart::
+
+.. _fig_xanes_pca1a:
+
+.. figure::  ../_images/PCA_model_components.png
+    :target: ../_images/PCA_model_components.png
+    :width: 100%
+    :align: center
+
+    Mean and 4 most important components.
+
+.. _fig_xanes_pca1b:
+
+.. figure::  ../_images/PCA_model_weights.png
+    :target: ../_images/PCA_model_weights.png
+    :width: 100%
+    :align: center
+
+    Fractional weights or variances for the 4 most important components of
+    the Au XANES spectra -- not including the mean spectrum.
+
+.. subfigend::
+    :width: 0.45
+    :alt: PCA figure
+    :label: fig_xanes_pca1
+
+    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
+
+We also print out the weights of the components which will give::
+
+ Comp #  |  Weight   |  Cumulative Total
+    1    |  0.91834  |  0.91834
+    2    |  0.04938  |  0.96772
+    3    |  0.02321  |  0.99093
+    4    |  0.00850  |  0.99942
+    5    |  0.00058  |  1.00000
+    6    |  0.00000  |  1.00000
+
+which shows the values for the weights plotted in :numref:`fig_xanes_pca1b`
+for the principal components.  This shows that the first 2 components
+explain 95% of the variation, and that using 4 components will explain
+99.9% of the variation in the data.
+
+Finally, we finish the example script by seeing if the unknown spectrum can
+be explained by the 4 principal components from the training set.  This is
+shown in :numref:`fig_xanes_pcafit` and gives good confidence that the data
+should be able to be explained by 4 components.  This is consistent with
+the findings using linear combination analysis in section :ref:`fit_example3_sec`,
+but gives a slightly firmer foundation for using that number of components.
+
+.. _fig_xanes_pcafit:
+
+.. figure::  ../_images/PCA_model_fit.png
+    :target: ../_images/PCA_model_fit.png
+    :width: 50%
+    :align: center
+
+    Fit to unknown Au :math:`L_{III}` XANES spectrum to a linear combination
+    of the mean and 4 principle components of the training set.  The fit
+    looks good enough to conclude that this spectrum probably is explained
+    by the variances seen in the main 4 components from the training set.
