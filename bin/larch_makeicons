@@ -135,9 +135,10 @@ elif os.name == 'nt':
 
     from win32com.client import Dispatch
     from win32com.shell import shell
-
+    root = sys.prefix
     def make_shortcut(name, script, desc, icon, isgui):
         """create windows shortcut"""
+       
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
         pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
@@ -149,16 +150,20 @@ elif os.name == 'nt':
 
         if os.path.exists(target_exe):
             target = target_exe
-        elif os.path.exists(target):
-            if os.path.exists(target_bat):
-                target = target_bat
-            else:
-                target = "%s %s" % (pyexe, target)
         elif os.path.exists(target_spy):
             target = "%s %s" % (pyexe, target_spy)
+        elif os.path.exists(target):
+            fbat = open(target_bat, 'w')
+            fbat.write("""@echo off
+
+%s %%~dp0%%~n0 %%1 %%2 %%3 %%4 %%5
+			
+			""" % (pyexe))
+            fbat.close()
+            target = target_bat
 
         icon = os.path.join(root, 'share', 'larch', 'icons', icon + '.ico')
-
+  
         shell = Dispatch('WScript.Shell')
         shortcut = shell.CreateShortCut(path)
         shortcut.Targetpath = target
