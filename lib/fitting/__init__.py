@@ -194,7 +194,7 @@ def params2group(params, paramgroup):
                 setattr(this, attr, getattr(param, attr, None))
             if this.stderr is not None:
                 try:
-                    this.uvalue = ufloat((this.value, this.stderr))
+                    this.uvalue = ufloat(this.value, this.stderr)
                 except:
                     pass
 
