@@ -39,9 +39,7 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, _larch=None):
     -----
      1.  The group members for the components must match each other
          in data content and array names.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v. energy
+     2.  arrayname can be one of `norm` or `dmude`
     """
 
     # get first nerate arrays and interpolate components onto the unknown x array
@@ -67,7 +65,6 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, _larch=None):
 
     ret = PCA().fit(ydat)
     labels = [get_label(g) for g  in groups]
-
     return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
                  xmin=xmin, xmax=xmax, pcamodel=ret, mean=ret.mean_,
                  components=ret.components_,

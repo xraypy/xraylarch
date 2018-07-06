@@ -54,11 +54,11 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     Arguments
     ---------
       group       Group to be fitted
-      components  List of groups to use as components (see Note 1) ['norm']
-      weights     array of starting  weights (or None to use basic linear alg solution)
+      components  List of groups to use as components (see Note 1)
+      weights     array of starting  weights (see Note 2)
       minvals     array of min weights (or None to mean -inf)
       maxvals     array of max weights (or None to mean +inf)
-      arrayname   string of array name to be fit (see Note 2)
+      arrayname   string of array name to be fit (see Note 2) ['norm']
       xmin        x-value for start of fit range [-inf]
       xmax        x-value for end of fit range [+inf]
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
@@ -71,9 +71,8 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     -----
      1.  The names of Group members for the components must match those of the
          group to be fitted.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v. energy
+     2.  use `None` to use basic linear algebra solution.
+     3.  arrayname can be one of `norm` or `dmude`.
     """
 
     # first, generate arrays and interpolate components onto the unknown x array
@@ -170,16 +169,14 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
 
     Returns
     -------
-     list of group with resulting weights and fit statistics,
+     list of groups with resulting weights and fit statistics,
      ordered by reduced chi-square (best first)
 
     Notes
     -----
      1.  The names of Group members for the components must match those of the
          group to be fitted.
-     2.  arrayname can be one of '
-              `norm`    norm v. energy
-              'dmude'   dmude v energy
+     2.  arrayname can be one of `norm` or `dmude`
     """
 
     ncomps = len(components)
