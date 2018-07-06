@@ -1,27 +1,36 @@
 #!/usr/bin/env python
-__date__    = '2018-Mar-26'
-__version__ = '0.9.37'
+__date__    = '2018-July-06'
+__version__ = '0.9.38'
 
 import sys
 import numpy
 import scipy
 import matplotlib
+import lmfit
 
 try:
     import wx
-    wxversion = wx.__version__
 except:
-    wxversion = 'not available'
+    wx = None
 
 def make_banner():
-    lines = '=' * 78
-    banner = """%s
-Larch %s (%s) M. Newville, M. Koker, B. Ravel, and others
-Python %s,
-numpy %s, scipy %s, matplotlib %s, wxpython %s
-%s
-"""
+    authors = "M. Newville, M. Koker, B. Ravel, and others"
+    sysvers = sys.version.replace('\n', ' ')
 
-    return banner % (lines, __version__, __date__, sys.version,
-                    numpy.__version__, scipy.__version__,
-                    matplotlib.__version__, wxversion, lines)
+    lines = ["Larch %s (%s) %s" % (__version__, __date__, authors),
+             "Python: %s" % (sysvers)]
+
+    reqs = []
+    for mod in (numpy, scipy, matplotlib, lmfit, wx):
+        try:
+            vers = "%s %s" % (mod.__name__, mod.__version__)
+        except:
+            vers = "%s not available" % (mod.__name__)
+        reqs.append(vers)
+    lines.append(', '.join(reqs))
+
+    border = '='*max([len(line) for line in lines])
+    lines.insert(0, border)
+    lines.append(border)
+
+    return '\n'.join(lines)
