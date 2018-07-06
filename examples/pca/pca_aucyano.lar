@@ -27,13 +27,15 @@ plot_pca_components(au_pcamodel, min_weight=0.005)
 plot_pca_weights(au_pcamodel, win=2, min_weight=0.005, ylog_scale=True)
 
 # print out weights
-print(" Comp #    |  Weight")
+total = 0
+print(" Comp #  |  Weight   |  Cumulative Total")
 for i, weight in enumerate(au_pcamodel.variances):
-    print("  %3i      |  %.5g " % (i+1, weight))
+    total = total + weight
+    print("  %3i    | %8.5f  | %8.5f " % (i+1, weight, total))
 #endfor
 
 # fit unknown data to model
-pca_fit(d_720, au_pcamodel)
+pca_fit(d_720, au_pcamodel, ncomps=4)
 
 # plot
 plot_pca_fit(d_720, win=3)
