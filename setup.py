@@ -234,6 +234,15 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'c')
             remove_file(basedir, fname+'o')
 
+def remove_distutils_sitepackage():
+    """rename site-packages/larch folder that may be
+    left over from earlier installs using distutils"""
+    for spath in site.getsitepackages():
+        lpath = os.path.join(spath, 'larch')
+        if os.path.exists(lpath) and os.path.isdir(lpath):
+            dest = lpath + '_outdated'
+            shutil.move(lpath, dest)
+
 def fix_darwin_dylibs():
     """
     fix dynamic libs on Darwin with install_name_tool
@@ -293,6 +302,8 @@ def fix_linux_dylibs():
 
 if INSTALL:
     remove_cruft(larchdir, historical_cruft)
+    remove_distutils_sitepackage()
+
     scriptdir = pjoin(sys.exec_prefix, bindir)
     for src in scripts:
         _, fname = psplit(src)
