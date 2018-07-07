@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; larch 0.9.37 documentation</title>
+    <title>9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="next" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting" href="xanes.html" />
     <link rel="prev" title="9.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
@@ -49,7 +49,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
+          <a href="xanes.html" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
@@ -73,11 +73,12 @@
 <li><a class="reference internal" href="#the-pre-edge-function">9.2.1. The <code class="docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
 <li><a class="reference internal" href="#pre-edge-subtraction-example">9.2.2. Pre-Edge Subtraction Example</a></li>
 <li><a class="reference internal" href="#the-mback-algorithm">9.2.3. The MBACK algorithm</a></li>
-<li><a class="reference internal" href="#over-absorption-corrections">9.2.4. Over-absorption Corrections</a></li>
-<li><a class="reference internal" href="#spectral-deconvolution">9.2.5. Spectral deconvolution</a><ul>
-<li><a class="reference internal" href="#xas-convolve">9.2.5.1. <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
-<li><a class="reference internal" href="#xas-deconvolve">9.2.5.2. <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
-<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">9.2.5.3. Examples using <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#pre-edge-baseline-subtraction">9.2.4. Pre-edge baseline subtraction</a></li>
+<li><a class="reference internal" href="#over-absorption-corrections">9.2.5. Over-absorption Corrections</a></li>
+<li><a class="reference internal" href="#spectral-deconvolution">9.2.6. Spectral deconvolution</a><ul>
+<li><a class="reference internal" href="#xas-convolve">9.2.6.1. <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-deconvolve">9.2.6.2. <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
+<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">9.2.6.3. Examples using <code class="docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -88,8 +89,8 @@
   <p class="topless"><a href="utilities.html"
                         title="previous chapter">9.1. XAFS Functions: Overview and Naming Conventions</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="autobk.html"
-                        title="next chapter">9.3. XAFS: Post-edge Background Subtraction</a></p>
+  <p class="topless"><a href="xanes.html"
+                        title="next chapter">9.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -133,8 +134,7 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <dl class="function">
 <dt id="pre_edge">
 <code class="descname">pre_edge</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><dl class="docutils">
+<dd><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
 <li>determine <span class="math notranslate nohighlight">\(E_0\)</span> (if not supplied) from max of deriv(mu)</li>
@@ -148,35 +148,30 @@ called <em>self-absorption</em>) and for spectral convolution and de-convolution
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">param energy:</th><td class="field-body">1-d array of x-ray energies, in eV</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>energy</strong> – 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>e0</strong> – edge energy, <span class="math notranslate nohighlight">\(E_0\)</span> in eV.  If None, it will be determined here.</li>
+<li><strong>step</strong> – edge jump.  If None, it will be determined here.</li>
+<li><strong>pre1</strong> – low E range (relative to E0) for pre-edge fit</li>
+<li><strong>pre2</strong> – high E range (relative to E0) for pre-edge fit</li>
+<li><strong>nvict</strong> – energy exponent to use for pre-edge fit.  See Note below.</li>
+<li><strong>norm1</strong> – low E range (relative to E0) for post-edge fit</li>
+<li><strong>norm2</strong> – high E range (relative to E0) for post-edge fit</li>
+<li><strong>nnorm</strong> – number of terms in polynomial (that is, 1+degree) for
+post-edge, normalization curve. Default=3 (quadratic)</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">param mu:</th><td class="field-body">1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">param group:</th><td class="field-body">output group</td>
-</tr>
-<tr class="field-even field"><th class="field-name">param e0:</th><td class="field-body">edge energy, <span class="math notranslate nohighlight">\(E_0\)</span> in eV.  If None, it will be determined here.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">param step:</th><td class="field-body">edge jump.  If None, it will be determined here.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">param pre1:</th><td class="field-body">low E range (relative to E0) for pre-edge fit</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">param pre2:</th><td class="field-body">high E range (relative to E0) for pre-edge fit</td>
-</tr>
-<tr class="field-even field"><th class="field-name">param nvict:</th><td class="field-body">energy exponent to use for pre-edge fit.  See Note below.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">param norm1:</th><td class="field-body">low E range (relative to E0) for post-edge fit</td>
-</tr>
-<tr class="field-even field"><th class="field-name">param norm2:</th><td class="field-body">high E range (relative to E0) for post-edge fit</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">param nnorm:</th><td class="field-body">number of terms in polynomial (that is, 1+degree) for
-post-edge, normalization curve. Default=3 (quadratic)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">returns:</th><td class="field-body">None.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
+</td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
-The following data is put into the output group:</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The
+following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -231,15 +226,16 @@ The following data is put into the output group:</p>
 </tbody>
 </table>
 </div></blockquote>
-</div></blockquote>
-<dl class="docutils">
-<dt>Notes:</dt>
-<dd>nvict gives an exponent to the energy term for the pre-edge fit.
-That is, a line <span class="math notranslate nohighlight">\((m E + b)\)</span> is fit to
-<span class="math notranslate nohighlight">\(\mu(E) E^{nvict}\)</span>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
-</dl>
 </dd></dl>
 
+<p>Notes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>nvict gives an exponent to the energy term for the pre-edge fit.
+That is, a line <span class="math notranslate nohighlight">\((m E + b)\)</span> is fit to
+<span class="math notranslate nohighlight">\(\mu(E) E^{nvict}\)</span>   over the pr-edge region, E= [E0+pre1, E0+pre2].</li>
+</ul>
+</div></blockquote>
 <dl class="function">
 <dt id="find_e0">
 <code class="descname">find_e0</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
@@ -260,8 +256,9 @@ checks to avoid spurious glitches.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
-The value of <code class="docutils literal notranslate"><span class="pre">e0</span></code> will be written to the output group.</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The value
+of <code class="docutils literal notranslate"><span class="pre">e0</span></code> will be written to the output group.</p>
 </dd></dl>
 
 </div>
@@ -358,8 +355,9 @@ Weng <a class="reference internal" href="#weng" id="id3">[Preedge_1]</a>.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
-The following data is put into the output group:</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The
+following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -438,8 +436,108 @@ large features near the edge.</p>
 <p class="caption"><span class="caption-number">Figure 9.2.3 </span><span class="caption-text">Using MBACK to match Si K edge data measured on talc.</span></p>
 </div>
 </div>
+<div class="section" id="pre-edge-baseline-subtraction">
+<h2>9.2.4. Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this headline">¶</a></h2>
+<p>A common application of XAFS is the analysis of “pre-edge peaks” of
+transition metal oxides to determine oxidation state and molecular
+configuration. These peaks sit just below the main absorption edge
+(typically, due to metal <em>4p</em> electrons) of a main <em>K</em> edge, and are due to
+overlaps of the metal <em>d</em>-electrons and oxygen <em>p</em>-electrons, and are often
+described in terms of molecular orbital theory.</p>
+<p>To analyze the energies and relative strengths of these pre-edge peaks, it
+is necessary to try to remove the contribution of the main edge.  The main
+edge (or at least its low energy side) can be modeled reasonably well as a
+Lorentzian function for these purposes of describing the tail below the
+pre-edge peaks.</p>
+<dl class="function">
+<dt id="pre_edge_baseline">
+<code class="descname">pre_edge_baseline</code><span class="sig-paren">(</span><em>energy</em>, <em>norm</em>, <em>group=None</em>, <em>form='lorentzian'</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge_baseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove baseline from main edge over pre edge peak region</p>
+<p>This assumes that <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> has been run successfully on the spectra
+and that the spectra has decent pre-edge subtraction and normalization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>energy</strong> – array of x-ray energies, in eV, or group (see note 1)</li>
+<li><strong>norm</strong> – array of normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span></li>
+<li><strong>group</strong> – output group</li>
+<li><strong>elo</strong> – low energy of pre-edge peak region to not fit baseline [e0-20]</li>
+<li><strong>ehi</strong> – high energy of pre-edge peak region ot not fit baseline [e0-10]</li>
+<li><strong>emax</strong> – max energy (eV) to use for baesline fit [e0-5]</li>
+<li><strong>emin</strong> – min energy (eV) to use for baesline fit [e0-40]</li>
+<li><strong>form</strong> – form used for baseline (see note 2)  [‘lorentzian’]</li>
+<li><strong>with_line</strong> – whether to include linear component in baseline [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
+<p>For output, a sub-group name <code class="docutils literal notranslate"><span class="pre">prepeaks</span></code> is created in the output
+group (if the output group is <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code> will be
+used), with the following attributes:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="81%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>energy</td>
+<td>energy array for pre-edge peaks = energy[emin:emax]</td>
+</tr>
+<tr class="row-odd"><td>baseline</td>
+<td>fitted baseline array over pre-edge peak energies</td>
+</tr>
+<tr class="row-even"><td>mu</td>
+<td>spectrum over pre-edge peak energies</td>
+</tr>
+<tr class="row-odd"><td>peaks</td>
+<td>baseline-subtraced spectrum over pre-edge peak energies</td>
+</tr>
+<tr class="row-even"><td>dmu</td>
+<td>estimated uncertainty in peaks from fit</td>
+</tr>
+<tr class="row-odd"><td>centroid</td>
+<td>estimated centroid of pre-edge peaks (see note below)</td>
+</tr>
+<tr class="row-even"><td>peak_energies</td>
+<td>list of predicted peak energies (see note belo)</td>
+</tr>
+<tr class="row-odd"><td>fit_details</td>
+<td>details of fit to extract pre-edge peaks.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+<p>Notes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A function will be fit to the input <span class="math notranslate nohighlight">\(\mu(E)\)</span> data over the range between
+[emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
+region [elo:ehi].  The baseline function is specified with the <cite>form</cite>
+keyword argument, which can be one of ‘lorentzian’, ‘gaussian’, or ‘voigt’,
+with ‘lorentzian’ the default.  In addition, the <cite>with_line</cite> keyword
+argument can be used to add a line to this baseline function.</li>
+<li>The value calculated for <cite>prepeaks.centroid</cite>  will be found as
+<cite>(prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()</cite></li>
+<li>The values in the <cite>peak_energies</cite> list will be predicted energies
+of the peaks in <cite>prepeaks.peaks</cite> as found by peakutils.</li>
+</ul>
+</div></blockquote>
+</div>
 <div class="section" id="over-absorption-corrections">
-<h2>9.2.4. Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.5. Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
 <p>For XAFS data measured in fluorescence, a common problem of
 <em>over-absorption</em> in which too much of the total X-ray absorption
 coefficient is from the absorbing element.  In such cases, the implicit
@@ -486,15 +584,16 @@ EXAFS).</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named
-<code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The value of <code class="docutils literal notranslate"><span class="pre">mu_corr</span></code> and <code class="docutils literal notranslate"><span class="pre">norm_corr</span></code> will
-be written to the output group, containing <span class="math notranslate nohighlight">\(\mu(E)\)</span> and
-normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> corrected for over-absorption.</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.  The value
+of <code class="docutils literal notranslate"><span class="pre">mu_corr</span></code> and <code class="docutils literal notranslate"><span class="pre">norm_corr</span></code> will be written to the output group,
+containing <span class="math notranslate nohighlight">\(\mu(E)\)</span> and normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> corrected for
+over-absorption.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="spectral-deconvolution">
-<h2>9.2.5. Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
+<h2>9.2.6. Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
 <p>In order to readily compare XAFS data from different sources, it is
 sometimes necessary to considert the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
@@ -535,7 +634,7 @@ is better described by a Lorenztian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
 fluorescence data, deconvolving with a Lorenztian is often better.</p>
 <div class="section" id="xas-convolve">
-<h3>9.2.5.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3>9.2.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
 <code class="descname">xas_convolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0):</code></dt>
@@ -561,8 +660,9 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
-<p>The following data is put into the output group:</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.  The
+following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -585,7 +685,7 @@ broaden spectra to compare with spectra measured at lower resolution.</p>
 
 </div>
 <div class="section" id="xas-deconvolve">
-<h3>9.2.5.2. <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
+<h3>9.2.6.2. <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="xas_deconvolve">
 <code class="descname">xas_deconvolve</code><span class="sig-paren">(</span><em>energy</em>, <em>norm=None</em>, <em>group=None</em>, <em>form='lorentzian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em>, <em>smooth=True</em>, <em>sgwindow=None</em>, <em>sgorder=3</em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
@@ -616,7 +716,8 @@ method [<code class="docutils literal notranslate"><span class="pre">True</span>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
+<p>Follows the <a class="reference internal" href="utilities.html#first-argument-group"><span class="std std-ref">First Argument Group</span></a>
+convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code>.</p>
 <p>Smoothing with <code class="xref py py-func docutils literal notranslate"><span class="pre">savitzky_golay()</span></code> requires a window and order.  By
 default, <code class="docutils literal notranslate"><span class="pre">window</span> <span class="pre">=</span> <span class="pre">int(esigma</span> <span class="pre">/</span> <span class="pre">estep)</span></code> where estep is step size for
 the gridded data, approximately the finest energy step in the data.</p>
@@ -643,7 +744,7 @@ the gridded data, approximately the finest energy step in the data.</p>
 
 </div>
 <div class="section" id="examples-using-xas-deconvolve-and-xas-convolve">
-<h3>9.2.5.3. Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3>9.2.6.3. Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
 <p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
 be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
@@ -791,7 +892,7 @@ the spectrum deconvolved by the energy of its core level.</span></p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
+          <a href="xanes.html" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              >next</a> |</li>
         <li class="right" >
           <a href="utilities.html" title="9.1. XAFS Functions: Overview and Naming Conventions"
@@ -807,7 +908,7 @@ the spectrum deconvolved by the energy of its core level.</span></p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

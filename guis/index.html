@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>4. Larch GUIs &#8212; larch 0.9.37 documentation</title>
+    <title>4. Larch GUIs &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -104,11 +104,11 @@
 <span class="target" id="module-guis"></span><p>Larch provides several Graphical User Interfaces for easier manipulating,
 viewing, and processing of data.  Many of the GUI displays are
 inter-related, so that they can bring up the other windows for displaying,
-interacting, and processing data.  The main window views are</p>
+interacting, and processing data.  The main GUIs for Larch are</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>GSE_Mapviewer</cite>: viewing XRF maps from  X-ray microprobes.</li>
-<li><cite>xas_viewer</cite>: read and view XAS data, do simple normalization, and pre-edge peak fitting.</li>
+<li><cite>XAS_Viewer</cite>: read and view XAS data, do simple normalization, and pre-edge peak fitting.</li>
 <li><cite>larch_gui</cite>: simple command-line + data browser for Larch.</li>
 </ul>
 </div></blockquote>
@@ -117,7 +117,16 @@ interacting, and processing data.  The main window views are</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="larch_gui.html">4.1. Basic Larch GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mapviewer.html">4.2. GSECARS Mapviewr</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xas_viewer.html">4.3. XAS_Viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer.html">4.3. XASViewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#reading-data-into-xas-viewer">4.3.1. Reading Data into XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#pre-edge-subtraction-and-normalization">4.3.2. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#pre-edge-peak-fitting">4.3.3. Pre-edge peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#linear-combination-analysis">4.3.4. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#principal-component-and-non-negative-factor-analysis">4.3.5. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#exafs-processing-background-subtraction">4.3.6. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer.html#exafs-processing-fourier-transforms">4.3.7. EXAFS Processing:  Fourier Transforms</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -150,7 +159,7 @@ interacting, and processing data.  The main window views are</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

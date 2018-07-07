@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.37 documentation</title>
+    <title>9.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -85,6 +85,8 @@
 <li><a class="reference internal" href="#plot-path-r">9.1.2.7. <code class="docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
 <li><a class="reference internal" href="#plot-paths-k">9.1.2.8. <code class="docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
 <li><a class="reference internal" href="#plot-paths-r">9.1.2.9. <code class="docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-baseline">9.1.2.10. <code class="docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-fit">9.1.2.11. <code class="docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#utility-functions-for-xafs">9.1.3. Utility Functions for XAFS</a><ul>
@@ -317,25 +319,41 @@ contained within a single group (which is expected to be the normal case), the <
 does not need to be typed repeatedly.</p>
 </div>
 <div class="section" id="first-argument-group-convention">
-<span id="index-0"></span><h3>9.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
-<p>In addition to the <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code> convention above, there is an even simpler approach when
-working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
-generally meant to take arrays of data as the first two arguments, they allow the first argument to
-be a Group if that Group has the expected named arrays.  This convention, known as the <strong>First
-Argument Group</strong> convention is worth understanding and using.  For example, the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>
-function generally expects the first argument to be an array of energy values and the second to be
-an array of absorbance values.  But a normal use case would look like:</p>
+<span id="first-argument-group"></span><span id="index-0"></span><h3>9.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
+<p>This convention gives a simple approach when working with data Groups
+follow the XAFS naming conventions.  It is built on the <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code>
+convention above but is even easier to use.  That is, while the XAFS
+functions can take arrays of data as the first two arguments, they also
+allow the first argument to be a Group, as long as it has the expected
+named arrays.  This convention is called the <strong>First
+Argument Group</strong> convention, and is worth understanding and using because
+all the XAFS functions in Larch follow it.</p>
+<p>As an example, the most general use of the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function would
+mean giving an array of energy as the first argument, an array of mu as the
+second argument, and supplyng an output group for placing all the arrays
+and data calculated within the function.  That is, the most general use
+would look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autobk</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">....</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>but most usage will actually want to use <cite>energy</cite> and <cite>mu</cite> arrays from the
+same group, and use that group as the output group, so that all data stays
+contained within the same group.  Following the most general case, that
+would mean the call would look like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">....</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This can be abbreviated as:</p>
+<p>The First argument convention allows this to be abbreviated as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">....</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That is, as long as the Group <code class="docutils literal notranslate"><span class="pre">dat</span></code> follows the XAFS naming conventions (for <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> that
-it has an energy array named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and absorbance array named <code class="docutils literal notranslate"><span class="pre">mu</span></code>) the two forms above are
-equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or in this case,
-<strong>Group oriented</strong>.</p>
+<p>That is, as long as the Group <cite>dat</cite> follows the XAFS naming conventions
+(for <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> that it has an energy array named <cite>energy</cite> and
+absorbance array named <cite>mu</cite>) the two forms above are equivalent.  All the
+XAFS functions follow this convention and use a consistent set of attribute
+names (see <a class="reference internal" href="#xafsnames-table"><span class="std std-ref">Table of Conventional Names for an XAFS Group</span></a>).  This convention nearly makes the Larch XAFS routines
+into object-oriented, or in this case <strong>Group oriented</strong>, set of functions
+that interact in a coherent and predictable way on an XAFS dataset.</p>
 </div>
 </div>
 <div class="section" id="plotting-macros-for-xafs">
@@ -612,6 +630,61 @@ examples in the following sections in this chapter make use of these macros.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="plot-prepeaks-baseline">
+<h3>9.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code><a class="headerlink" href="#plot-prepeaks-baseline" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt>
+<code class="descname">plot_prepeaks_baseline(dataset, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):</code></dt>
+<dd><p>Plot pre-edge peaks and baseline fit, as from <a class="reference internal" href="preedge.html#pre_edge_baseline" title="pre_edge_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a>
+or XAS Viewer GUI</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – data group, after running <a class="reference internal" href="preedge.html#pre_edge_baseline" title="pre_edge_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a></li>
+<li><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</li>
+<li><strong>show_fitrange</strong> – bool whether to show fit range as vertical bars</li>
+<li><strong>show_peakrange</strong> – bool whether to show pre-edge peak range with markers</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <cite>dataset</cite> group must have a <cite>prepeaks</cite> subgroup.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="plot-prepeaks-fit">
+<h3>9.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code><a class="headerlink" href="#plot-prepeaks-fit" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt>
+<code class="descname">plot_prepeaks_fit(dataset, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):</code></dt>
+<dd><p>Plot pre-edge peaks and fit, as XAS Viewer GUI</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataset</strong> – data group, after running pre-edge peak fit.</li>
+<li><strong>show_init</strong> – bool whether to show initial model, before fitting</li>
+<li><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</li>
+<li><strong>show_residual</strong> – bool whether to show residual as a stacked plot.</li>
+<li><strong>win</strong> – integer plot window to use [1]</li>
+<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <cite>dataset</cite> group must have a <cite>peakfit_history</cite> subgroup. Currently,
+this is automatically generated only using the XAS Viewer GUI or
+scripts written (and possibly altered) by it.</p>
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="utility-functions-for-xafs">
 <h2>9.1.3. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
@@ -777,7 +850,7 @@ small, the estimate may not be that bad.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

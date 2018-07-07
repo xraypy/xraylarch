@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.5. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.37 documentation</title>
+    <title>9.6. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -17,8 +17,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
-    <link rel="prev" title="9.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="next" title="9.7. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="prev" title="9.5. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="9.6. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="9.7. XAFS: Reading and using Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="xafsft.html" title="9.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="9.5. XAFS: Fourier Transforms for XAFS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,19 +69,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.5. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#cauchy-wavelet">9.5.1. <code class="docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
-<li><a class="reference internal" href="#wavelet-example">9.5.2. Wavelet Example</a></li>
+<li><a class="reference internal" href="#">9.6. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#cauchy-wavelet">9.6.1. <code class="docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
+<li><a class="reference internal" href="#wavelet-example">9.6.2. Wavelet Example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="xafsft.html"
-                        title="previous chapter">9.4. XAFS: Fourier Transforms for XAFS</a></p>
+                        title="previous chapter">9.5. XAFS: Fourier Transforms for XAFS</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="feffpaths.html"
-                        title="next chapter">9.6. XAFS: Reading and using Feff Paths</a></p>
+                        title="next chapter">9.7. XAFS: Reading and using Feff Paths</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -110,7 +110,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1>9.5. XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1>9.6. XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
 <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
@@ -120,7 +120,7 @@ Munoz <em>et al</em> <a class="reference internal" href="#munoz-wavelet" id="id1
 <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
-<h2>9.5.1. <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
+<h2>9.6.1. <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
 <p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <a class="reference internal" href="#munoz-wavelet" id="id2">[Wavelets_1]</a>
 is implemented as the function <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
 <dl class="function">
@@ -184,7 +184,7 @@ values with spacing <code class="docutils literal notranslate"><span class="pre"
 
 </div>
 <div class="section" id="wavelet-example">
-<h2>9.5.2. Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
+<h2>9.6.2. Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
 <p>Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
 straightforward:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># wavelet transform in larch</span>
@@ -268,10 +268,10 @@ is shown for comparison.</span></p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="9.6. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="9.7. XAFS: Reading and using Feff Paths"
              >next</a> |</li>
         <li class="right" >
-          <a href="xafsft.html" title="9.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="9.5. XAFS: Fourier Transforms for XAFS"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -284,7 +284,7 @@ is shown for comparison.</span></p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

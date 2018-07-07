@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>4.1. Basic Larch GUI &#8212; larch 0.9.37 documentation</title>
+    <title>4.1. Basic Larch GUI &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -104,14 +104,31 @@
 <span id="guis-larch-gui"></span><h1>4.1. Basic Larch GUI<a class="headerlink" href="#basic-larch-gui" title="Permalink to this headline">¶</a></h1>
 <p>The main Larch GUI gives a simple view of a Larch session.</p>
 <a class="reference external image-reference" href="../_images/LarchGUI.png"><img alt="../_images/LarchGUI.png" src="../_images/LarchGUI.png" style="width: 45%;" /></a>
-<p>GUI for interactive Larch session, with command-line interface and data
-browser.</p>
+<p>This GUI enables an interactive Larch session, with a command-line
+interface at the bottom of the screen.  In this window, you can copy or
+type Larch commands.  When you hit Enter or Return, the command will be
+executed.  The history of the commands and any outputs written by the
+command will be displayed in the output panel taking up most of the bottom
+half of the main window.  The top part of the window shows a Data Browser,
+from which you can browse through the various groups for modules and
+datasets, and examine their contents, view function documentation and so
+on.x</p>
+<p>This Graphical User Interface is deliberately basic, giving a low-level
+interface to Larch commands and data.  This is mainly intended for
+scripting analysis and debugging.  From the File Menu you can read in data
+from text column files (using one of <a class="reference internal" href="../data/index.html#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">_io.read_ascii()</span></code></a>, <a class="reference internal" href="../data/index.html#_io.read_xdi" title="_io.read_xdi"><code class="xref py py-func docutils literal notranslate"><span class="pre">_io.read_xdi()</span></code></a>,
+or <code class="xref py py-func docutils literal notranslate"><span class="pre">_io.read_gsexdi()</span></code> as appropriate) or from Athena Project files (using
+<a class="reference internal" href="../data/index.html#_io.read_athena" title="_io.read_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">_io.read_athena()</span></code></a> and <a class="reference internal" href="../data/index.html#_io.extract_athenagroup" title="_io.extract_athenagroup"><code class="xref py py-func docutils literal notranslate"><span class="pre">_io.extract_athenagroup()</span></code></a>).  You can also load
+and run a text file of commands or save the commands run in a session to a file.</p>
+<p>The main Larch GUI also provides simple launchers for several of the main
+Larch Applications, including XAS Viewer.</p>
+<p>From the Larch GUI, one can browse and act on data.  This includes the
+ability make Simple plot of 1-D data, using <a class="reference external" href="http://newville.github.io/wxmplot">wxmplot</a>.  This wraps
+<a class="reference external" href="http://matplotlib.org/">matplotlib</a>, and gives a fully interactive with point selection,
+rubber-band zoom, and a configuration frame (right) for the user to select
+colors and line properties, and so forth.</p>
 <a class="reference external image-reference" href="../_images/Larch_LinePlot.png"><img alt="../_images/Larch_LinePlot.png" src="../_images/Larch_LinePlot.png" style="width: 45%;" /></a>
 <a class="reference external image-reference" href="../_images/Larch_LinePlot_Config.png"><img alt="../_images/Larch_LinePlot_Config.png" src="../_images/Larch_LinePlot_Config.png" style="width: 50%;" /></a>
-<p>Simple plot of 1-D data, using <a class="reference external" href="http://newville.github.io/wxmplot">wxmplot</a>.  This wraps <a class="reference external" href="http://matplotlib.org/">matplotlib</a>, and
-gives a fully interactive with point selection, rubber-band zoom, and a
-configuration frame (right) for the user to select colors and line
-properties, and so forth.</p>
 </div>
 
 
@@ -143,7 +160,7 @@ properties, and so forth.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

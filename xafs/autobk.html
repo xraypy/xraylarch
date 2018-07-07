@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.3. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.37 documentation</title>
+    <title>9.4. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -17,8 +17,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
-    <link rel="prev" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
+    <link rel="next" title="9.5. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="prev" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting" href="xanes.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="9.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="9.5. XAFS: Fourier Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="xanes.html" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,20 +69,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.3. XAFS: Post-edge Background Subtraction</a><ul>
-<li><a class="reference internal" href="#the-autobk-function">9.3.1. The <code class="docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
-<li><a class="reference internal" href="#the-autobk-algorithm">9.3.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#and-spline-for">9.3.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
-<li><a class="reference internal" href="#selecting-fourier-transform-parameters">9.3.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard">9.3.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
-<li><a class="reference internal" href="#end-point-clamps-for-the-spline">9.3.2.4. End-point clamps for the spline</a></li>
-<li><a class="reference internal" href="#recommendations">9.3.2.5. Recommendations</a></li>
+<li><a class="reference internal" href="#">9.4. XAFS: Post-edge Background Subtraction</a><ul>
+<li><a class="reference internal" href="#the-autobk-function">9.4.1. The <code class="docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-autobk-algorithm">9.4.2. The AUTOBK Algorithm</a><ul>
+<li><a class="reference internal" href="#and-spline-for">9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
+<li><a class="reference internal" href="#selecting-fourier-transform-parameters">9.4.2.2. Selecting Fourier transform parameters</a></li>
+<li><a class="reference internal" href="#using-a-standard">9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#end-point-clamps-for-the-spline">9.4.2.4. End-point clamps for the spline</a></li>
+<li><a class="reference internal" href="#recommendations">9.4.2.5. Recommendations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">9.3.3. Examples</a><ul>
-<li><a class="reference internal" href="#basic-example">9.3.3.1. Basic example</a></li>
-<li><a class="reference internal" href="#adjusting-spline-clamps">9.3.3.2. Adjusting spline clamps</a></li>
-<li><a class="reference internal" href="#id2">9.3.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#examples">9.4.3. Examples</a><ul>
+<li><a class="reference internal" href="#basic-example">9.4.3.1. Basic example</a></li>
+<li><a class="reference internal" href="#adjusting-spline-clamps">9.4.3.2. Adjusting spline clamps</a></li>
+<li><a class="reference internal" href="#id2">9.4.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
 </ul>
 </li>
 </ul>
@@ -90,11 +90,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="preedge.html"
-                        title="previous chapter">9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
+  <p class="topless"><a href="xanes.html"
+                        title="previous chapter">9.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xafsft.html"
-                        title="next chapter">9.4. XAFS: Fourier Transforms for XAFS</a></p>
+                        title="next chapter">9.5. XAFS: Fourier Transforms for XAFS</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -123,7 +123,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-post-edge-background-subtraction"></span><h1>9.3. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-post-edge-background-subtraction"></span><h1>9.4. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Background subtraction is one of the most important data processing steps
 in EXAFS analysis, converting the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> into the
 <span class="math notranslate nohighlight">\(\chi(k)\)</span> ready for quantitative analysis.  In Larch, this step is
@@ -131,7 +131,7 @@ performed by the <a class="reference internal" href="#_xafs.autobk" title="_xafs
 subtleties.  This section is devoted to background subtraction with the
 <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function and the underlying algorithm it uses.</p>
 <div class="section" id="the-autobk-function">
-<h2>9.3.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.autobk">
 <code class="descclassname">_xafs.</code><code class="descname">autobk</code><span class="sig-paren">(</span><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
@@ -267,7 +267,7 @@ determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <spa
 
 </div>
 <div class="section" id="the-autobk-algorithm">
-<h2>9.3.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
 (see <a class="reference internal" href="#autobk" id="id1">[Autobk_1]</a>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
@@ -297,7 +297,7 @@ essentially the same – so that we do not need to carefully take care of
 slow energy drifts in the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> or worry about having an
 absolute measure of <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
 <div class="section" id="and-spline-for">
-<h3>9.3.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
 <span class="math notranslate nohighlight">\(\mu(E)\)</span> that we will subtract from the same <span class="math notranslate nohighlight">\(\mu(E)\)</span> could
 easily match <em>too</em> well, and erase much of the data we’re interested in.
@@ -346,7 +346,7 @@ even try to match those frequencies.  Thus, we are ensured of a
 <span class="math notranslate nohighlight">\(\chi\)</span>.</p>
 </div>
 <div class="section" id="selecting-fourier-transform-parameters">
-<h3>9.3.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
 <p>In order to determine <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, we must do a Fourier transform.
 These are discussed in more detail in the next section, but here we give
 the parameters affecting the Fourier transform used, and their default
@@ -416,7 +416,7 @@ parameter values for <a class="reference internal" href="#_xafs.autobk" title="_
 minor adjustments except in unusual cases.</p>
 </div>
 <div class="section" id="using-a-standard">
-<h3>9.3.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
 <p>We said above that we want to minimize the low-<span class="math notranslate nohighlight">\(R\)</span> components of
 <span class="math notranslate nohighlight">\(\chi\)</span>.  In principle, there should be some leakage of the first
 shell to fairly low-<span class="math notranslate nohighlight">\(R\)</span>.  This is especially noticeable for a short
@@ -433,7 +433,7 @@ be those that minimize the Fourier transorm of the difference of
 to give more consistent background for a set of related spectra.</p>
 </div>
 <div class="section" id="end-point-clamps-for-the-spline">
-<h3>9.3.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
 <p>Because the spline is chosen to match the low-<span class="math notranslate nohighlight">\(R\)</span> components of
 <span class="math notranslate nohighlight">\(\chi\)</span>, the process does not even look at how the resulting
 <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> looks.  This can lead to some unstable behavior at the
@@ -457,7 +457,7 @@ strong clamp that will almost certainly force <span class="math notranslate nohi
 the end-points.</p>
 </div>
 <div class="section" id="recommendations">
-<h3>9.3.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
 <p>Here, we give a few recommendations on what parameters most affect the
 background subtraction.  These parameters are (in roughly increasing
 order):</p>
@@ -477,11 +477,11 @@ the endpoints too much, increasing these values can help greatly.</p>
 </div>
 </div>
 <div class="section" id="examples">
-<h2>9.3.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>9.4.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a few examples using <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>, and outline some of its
 features.</p>
 <div class="section" id="basic-example">
-<h3>9.3.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
 <p>The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk1.lar</span>
@@ -500,11 +500,11 @@ using all the default inputs would be:</p>
 <div class="figure compound align-center" id="fig_xafs2">
 <div style="width: 45%" class="subfigure align-center" id="id3">
 <span id="fig-xafs2a"></span><a class="reference external image-reference" href="../_images/xafs_autobk1a.png"><img alt="../_images/xafs_autobk1a.png" src="../_images/xafs_autobk1a.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.3.1 </span><span class="caption-text">Cu metal: <span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span></p>
+<p class="caption"><span class="caption-number">Figure 9.4.1 </span><span class="caption-text">Cu metal: <span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span></p>
 </div>
 <div style="width: 45%" class="subfigure align-center" id="id4">
 <span id="fig-xafs2b"></span><a class="reference external image-reference" href="../_images/xafs_autobk1b.png"><img alt="../_images/xafs_autobk1b.png" src="../_images/xafs_autobk1b.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span></p>
+<p class="caption"><span class="caption-number">Figure 9.4.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span></p>
 </div>
 <p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for Cu metal.</span></p>
 </div><p id="fig_xafs2">Thus demonstrating that we can process data on Cu metal.</p>
@@ -545,7 +545,7 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 better, which brings us to the next section.</p>
 </div>
 <div class="section" id="adjusting-spline-clamps">
-<h3>9.3.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
 <p>For the scorodite example above, the XAFS diverges from 0 at the
 high-<span class="math notranslate nohighlight">\(k\)</span> end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
@@ -582,11 +582,11 @@ clamp:</p>
 <p>results in the following comparison:</p>
 <div class="figure" id="id5">
 <span id="xafs-fig4"></span><a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.3.5 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span></p>
+<p class="caption"><span class="caption-number">Figure 9.4.5 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span></p>
 </div>
 </div>
 <div class="section" id="id2">
-<h3>9.3.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>9.4.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Since the EXAFS contribution from the first shell is not perfectly isolated
 in <span class="math notranslate nohighlight">\(R\)</span>, it can leak into portion of <span class="math notranslate nohighlight">\(\chi(R)\)</span> below
 <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span>.  It may be desirable to not simply reduce the portion
@@ -644,10 +644,10 @@ function.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="9.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="9.5. XAFS: Fourier Transforms for XAFS"
              >next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="9.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="xanes.html" title="9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -660,7 +660,7 @@ function.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

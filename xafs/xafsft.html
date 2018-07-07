@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.4. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.37 documentation</title>
+    <title>9.5. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -17,8 +17,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9.5. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
-    <link rel="prev" title="9.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="next" title="9.6. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
+    <link rel="prev" title="9.4. XAFS: Post-edge Background Subtraction" href="autobk.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="wavelets.html" title="9.5. XAFS: Wavelet Transforms for XAFS"
+          <a href="wavelets.html" title="9.6. XAFS: Wavelet Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="9.4. XAFS: Post-edge Background Subtraction"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,24 +69,24 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.4. XAFS: Fourier Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">9.4.1. Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms">9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
-<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">9.4.4. <code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
-<li><a class="reference internal" href="#catalog-of-fourier-transform-window">9.4.5. Catalog of Fourier transform window</a></li>
-<li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">9.4.6. Examples: Forward XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">9.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
+<li><a class="reference internal" href="#">9.5. XAFS: Fourier Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">9.5.1. Overview of XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms">9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
+<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">9.5.4. <code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
+<li><a class="reference internal" href="#catalog-of-fourier-transform-window">9.5.5. Catalog of Fourier transform window</a></li>
+<li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">9.5.6. Examples: Forward XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">9.5.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="previous chapter">9.3. XAFS: Post-edge Background Subtraction</a></p>
+                        title="previous chapter">9.4. XAFS: Post-edge Background Subtraction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="wavelets.html"
-                        title="next chapter">9.5. XAFS: Wavelet Transforms for XAFS</a></p>
+                        title="next chapter">9.6. XAFS: Wavelet Transforms for XAFS</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -115,7 +115,7 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1>9.4. XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1>9.5. XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
@@ -124,7 +124,7 @@ throughout the XAFS functionality of Larch.  For example, both
 <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> and <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a> rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
-<h2>9.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The standard Fourier transform of a signal <span class="math notranslate nohighlight">\(f(t)\)</span> can be written as</p>
 <div class="math notranslate nohighlight">
 \begin{eqnarray*}
@@ -202,7 +202,7 @@ concerned about the differences of the real and imaginary parts of
 <span class="math notranslate nohighlight">\(\chi(R)\)</span> and compare the filtered and unfiltered data.</p>
 </div>
 <div class="section" id="forward-xafs-fourier-transforms">
-<h2>9.4.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The forward Fourier transform converts <span class="math notranslate nohighlight">\(\chi(k)\)</span> to <span class="math notranslate nohighlight">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
@@ -309,7 +309,7 @@ the complex array of <span class="math notranslate nohighlight">\(\chi(R)\)</spa
 
 </div>
 <div class="section" id="reverse-xafs-fourier-transforms">
-<h2>9.4.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Reverse Fourier transforms convert <span class="math notranslate nohighlight">\(\chi(R)\)</span> back to filtered
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  We refer to the filtered <span class="math notranslate nohighlight">\(k\)</span> space as <span class="math notranslate nohighlight">\(q\)</span> to
 emphasize the distinction between the two.  The filtered <span class="math notranslate nohighlight">\(\chi(q)\)</span> is
@@ -421,7 +421,7 @@ values into a group.</p>
 
 </div>
 <div class="section" id="ftwindow-generating-fourier-transform-windows">
-<h2>9.4.4. <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.4. <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
 <p>As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
 result from a sudden truncation data at the end of it range.  There is an
@@ -520,7 +520,7 @@ The Kaiser-Bessel window is slightly more complicated:</p>
 \end{eqnarray*}</div><p>where <span class="math notranslate nohighlight">\(i_0\)</span> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
-<h2>9.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
 <code class="docutils literal notranslate"><span class="pre">xmin</span></code>, <code class="docutils literal notranslate"><span class="pre">xmax</span></code>, <code class="docutils literal notranslate"><span class="pre">dx</span></code> and <code class="docutils literal notranslate"><span class="pre">dx2</span></code> are identical for the Hanning, Parzen and
@@ -571,7 +571,7 @@ right, the effect of <code class="docutils literal notranslate"><span class="pre
 a closer comparison to a Gaussian window is made.</span></p>
 </div></div>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
-<span id="fig-xafsft3"></span><h2>9.4.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<span id="fig-xafsft3"></span><h2>9.5.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
 imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</span> as well as the magnitude, the effect
 of different windows types, and Fourier filtering to <span class="math notranslate nohighlight">\(\chi(q)\)</span>.  We
@@ -647,13 +647,13 @@ below:</p>
 <p>which results in</p>
 <div class="figure align-center" id="id1">
 <span id="fig-xafsft-ri"></span><a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.4.11 </span><span class="caption-text">The real and imaginary components of the XAFS Fourier transform.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.5.11 </span><span class="caption-text">The real and imaginary components of the XAFS Fourier transform.</span></p>
 </div>
 <p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>, the real and
 imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
-<h2>9.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
+<h2>9.5.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
 <p>A reverse Fourier transform will convert data from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>.  This allows a limited range of frequencies (distances) to
 be isolated and turned back into a <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum.  Here, we show
@@ -689,10 +689,10 @@ array.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="wavelets.html" title="9.5. XAFS: Wavelet Transforms for XAFS"
+          <a href="wavelets.html" title="9.6. XAFS: Wavelet Transforms for XAFS"
              >next</a> |</li>
         <li class="right" >
-          <a href="autobk.html" title="9.3. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="9.4. XAFS: Post-edge Background Subtraction"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch Home</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -705,7 +705,7 @@ array.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>

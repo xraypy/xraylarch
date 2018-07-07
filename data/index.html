@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>6. Reading and Writing Data &#8212; larch 0.9.37 documentation</title>
+    <title>6. Reading and Writing Data &#8212; larch 0.9.38 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -70,13 +70,18 @@
   <ul>
 <li><a class="reference internal" href="#">6. Reading and Writing Data</a><ul>
 <li><a class="reference internal" href="#simple-ascii-column-files">6.1. Simple ASCII Column Files</a></li>
-<li><a class="reference internal" href="#using-hdf5-files">6.2. Using HDF5 Files</a></li>
-<li><a class="reference internal" href="#reading-netcdf-files">6.3. Reading NetCDF Files</a></li>
-<li><a class="reference internal" href="#reading-tiff-images">6.4. Reading TIFF Images</a></li>
-<li><a class="reference internal" href="#working-with-epics-channel-access">6.5. Working with Epics Channel Access</a></li>
-<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">6.6. Reading Scan Data from APS Beamlines</a></li>
-<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">6.7. Reading XAFS Data Interchange (XDI) Files</a></li>
-<li><a class="reference internal" href="#saving-and-restoring-larch-groups">6.8. Saving and Restoring Larch Groups</a></li>
+<li><a class="reference internal" href="#athena-project-files">6.2. Athena Project Files</a><ul>
+<li><a class="reference internal" href="#reading-athena-project-files">6.2.1. Reading Athena Project Files</a></li>
+<li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">6.2.2. Creating and Writing to Athena Project Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-_io">6.3. Using HDF5 Files</a></li>
+<li><a class="reference internal" href="#reading-netcdf-files">6.4. Reading NetCDF Files</a></li>
+<li><a class="reference internal" href="#reading-tiff-images">6.5. Reading TIFF Images</a></li>
+<li><a class="reference internal" href="#working-with-epics-channel-access">6.6. Working with Epics Channel Access</a></li>
+<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">6.7. Reading Scan Data from APS Beamlines</a></li>
+<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">6.8. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li><a class="reference internal" href="#saving-and-restoring-larch-groups">6.9. Saving and Restoring Larch Groups</a></li>
 </ul>
 </li>
 </ul>
@@ -130,13 +135,16 @@ encoded) data files, with whitespace delimited numbers layed out as a
 table, with a fix number of columns and rows indicated by newlines.
 Typically a comment character such as “#” is used to signify header
 information.  For instance:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># room temperature FeO</span>
 <span class="c1"># data from 20-BM, 2001, as part of NXS school</span>
+<span class="c1"># powder on tape, 4 layers</span>
+<span class="c1"># 2001-08-10T11:10:00</span>
+<span class="c1"># Si(111), d_spacing: 3.13553</span>
 <span class="c1">#------------------------</span>
-<span class="c1">#   energy     xmu       i0</span>
-  <span class="mf">6911.7671</span>  <span class="o">-</span><span class="mf">0.35992590E-01</span>  <span class="mf">280101.00</span>
-  <span class="mf">6916.8730</span>  <span class="o">-</span><span class="mf">0.39081634E-01</span>  <span class="mf">278863.00</span>
-  <span class="mf">6921.7030</span>  <span class="o">-</span><span class="mf">0.42193483E-01</span>  <span class="mf">278149.00</span>
+<span class="c1">#   energy        xmu               i0</span>
+  <span class="mf">6911.7671</span>      <span class="o">-</span><span class="mf">0.35992590E-01</span>    <span class="mf">280101.00</span>
+  <span class="mf">6916.8730</span>      <span class="o">-</span><span class="mf">0.39081634E-01</span>    <span class="mf">278863.00</span>
+  <span class="mf">6921.7030</span>      <span class="o">-</span><span class="mf">0.42193483E-01</span>    <span class="mf">278149.00</span>
   <span class="mf">6926.8344</span>  <span class="o">-</span><span class="mf">0.45165576E-01</span>  <span class="mf">277292.00</span>
   <span class="mf">6931.7399</span>  <span class="o">-</span><span class="mf">0.47365589E-01</span>  <span class="mf">265707.00</span>
 </pre></div>
@@ -164,43 +172,36 @@ the data.</p>
 </dd></dl>
 
 <p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;feo_rt1.dat&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
-  <span class="n">column_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;i0&#39;</span><span class="p">]</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">feo_rt1</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">0</span> <span class="n">methods</span><span class="p">,</span> <span class="mi">8</span> <span class="n">attributes</span> <span class="o">==</span>
+  <span class="n">array_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;xmu&#39;</span><span class="p">,</span> <span class="s1">&#39;i0&#39;</span><span class="p">]</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">feo_rt1.dat</span><span class="o">&gt;</span>
+  <span class="n">data</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">412</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
   <span class="n">energy</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
+  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;feo_rt1.dat&#39;</span>
+  <span class="n">header</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;# room temperature FeO&#39;</span><span class="p">,</span> <span class="s1">&#39;# data from 20-BM, 2001, as part of NXS school&#39;</span><span class="p">,</span> <span class="o">...</span> <span class="s1">&#39;#------------------------&#39;</span><span class="p">,</span> <span class="s1">&#39;#   energy        xmu               i0&#39;</span><span class="p">]</span>
   <span class="n">i0</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
   <span class="n">xmu</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-<span class="n">larch</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>which reads the data file and sets array names according to the column
 labels in the file.   You can be explicit:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;e mutrans monitor&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;feo_rt1.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;a b c&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">6</span> <span class="n">symbols</span> <span class="o">==</span>
-  <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
-  <span class="n">column_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;mutrans&#39;</span><span class="p">,</span> <span class="s1">&#39;monitor&#39;</span><span class="p">]</span>
-  <span class="n">e</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
-  <span class="n">monitor</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-  <span class="n">mutrans</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-<span class="n">larch</span><span class="o">&gt;</span>
+   <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">feo_rt1</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">0</span> <span class="n">methods</span><span class="p">,</span> <span class="mi">8</span> <span class="n">attributes</span> <span class="o">==</span>
+  <span class="n">a</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">array_labels</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+  <span class="n">attrs</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">feo_rt1.dat</span><span class="o">&gt;</span>
+  <span class="n">b</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">c</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">412</span><span class="p">,),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">data</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">412</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
+  <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;feo_rt1.dat&#39;</span>
+  <span class="n">header</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;# room temperature FeO&#39;</span><span class="p">,</span> <span class="s1">&#39;# data from 20-BM, 2001, as part of NXS school&#39;</span><span class="p">,</span> <span class="o">...</span> <span class="s1">&#39;#------------------------&#39;</span><span class="p">,</span> <span class="s1">&#39;#   energy        xmu               i0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>and to get the data as a 2-D array:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span>  <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;mydata.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
- <span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
- <span class="o">==</span> <span class="n">Group</span> <span class="n">ascii_file</span> <span class="n">mydata</span><span class="o">.</span><span class="n">dat</span><span class="p">:</span> <span class="mi">4</span> <span class="n">symbols</span> <span class="o">==</span>
-   <span class="n">attributes</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="n">header</span> <span class="n">attributes</span> <span class="kn">from</span> <span class="nn">mydata.dat</span><span class="o">&gt;</span>
-   <span class="n">column_labels</span><span class="p">:</span> <span class="p">[]</span>
-   <span class="n">data</span><span class="p">:</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">412</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span><span class="o">&gt;</span>
-   <span class="n">filename</span><span class="p">:</span> <span class="s1">&#39;mydata.dat&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span>
-</pre></div>
-</div>
+<p>Note that the <cite>data</cite> attribute holds the raw 2D array of numbers read
+in from the file, which can also be useful to rename arrays.</p>
 <dl class="function">
 <dt id="_io.write_ascii">
 <code class="descclassname">_io.</code><code class="descname">write_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
@@ -229,8 +230,208 @@ data.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="using-hdf5-files">
-<h2>6.2. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="athena-project-files">
+<h2>6.2. Athena Project Files<a class="headerlink" href="#athena-project-files" title="Permalink to this headline">¶</a></h2>
+<p>The popular Athena program for XAFS Analysis uses an “Athena Project File”
+to store many XAFS spectra and processing parameters.  Larch can read and
+extract the data from these project files, and can also write Athena
+Project files from existing groups of data.</p>
+<div class="section" id="reading-athena-project-files">
+<h3>6.2.1. Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Larch can read Athena Project Files from Athena version 0.9.21 or later.
+If you have a project file older than that, you should be able to open it
+with Athena and re-save it into a newer version.</p>
+</div>
+<dl class="function">
+<dt id="_io.read_athena">
+<code class="descclassname">_io.</code><code class="descname">read_athena</code><span class="sig-paren">(</span><em>filename</em>, <em>match=None</em>, <em>do_preedge=True</em>, <em>do_bkg=True</em>, <em>do_fft=True</em>, <em>use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_athena" title="Permalink to this definition">¶</a></dt>
+<dd><p>open and read an Athena Project File, returning a group of groups, each
+subgroup corresponding to an Athena Group from the project file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> – name of Athena Project file</li>
+<li><strong>match</strong> – string pattern used to limit the imported groups (see Note)</li>
+<li><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</li>
+<li><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</li>
+<li><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</li>
+<li><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">group of groups.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="docutils">
+<dt>Notes:</dt>
+<dd><ol class="first last arabic simple">
+<li>To limit the imported groups, use the pattern in <cite>match</cite>,
+using ‘*’ to match ‘all’, ‘?’ to match any single character,
+or [sequence] to match any of a sequence of letters.  The match
+will always be insensitive to case.</li>
+<li><cite>do_preedge</cite>, <cite>do_bkg</cite>, and <cite>do_fft</cite> will attempt to reproduce the
+pre-edge, background subtraction, and FFT from Athena by using
+the parameters saved in the project file.</li>
+<li><cite>use_hashkey=True</cite> will name groups from the internal 5 character
+string used by Athena, instead of the group label.</li>
+</ol>
+</dd>
+</dl>
+<p>A simple example of reading an Athena Project file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">hg_prj</span> <span class="o">=</span> <span class="n">read_athena</span><span class="p">(</span><span class="s1">&#39;Hg.prj&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">show</span><span class="p">(</span><span class="n">hg_prj</span><span class="p">)</span>
+<span class="o">==</span> <span class="n">Group</span> <span class="mh">0x11b001e50</span><span class="p">:</span> <span class="mi">0</span> <span class="n">methods</span><span class="p">,</span> <span class="mi">5</span> <span class="n">attributes</span> <span class="o">==</span>
+  <span class="n">HgO</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="mh">0x1c2e6f48d0</span><span class="o">&gt;</span>
+  <span class="n">HgS_black</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="mh">0x1c2e6f49d0</span><span class="o">&gt;</span>
+  <span class="n">HgS_red</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">Group</span> <span class="mh">0x1c2e6f4ad0</span><span class="o">&gt;</span>
+  <span class="n">_athena_header</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;# Athena project file -- Demeter version 0.9.26</span><span class="se">\n</span><span class="s1"># This file created at 2018-06-24T21:55:31</span><span class="se">\n</span><span class="s1"># Using Demeter 0.9.26 with perl 5.026001 and using Larch X.xx on darwin&#39;</span>
+  <span class="n">_athena_journal</span><span class="p">:</span> <span class="p">[</span><span class="sa">u</span><span class="s1">&#39;Hg 15nM in 50 mM Na Cacodylate (As-containing buffer) &#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;100 mM NaClO4, pH 6.10&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;Hg 15nM in 50 mM Na Cacodylate (As-containing buffer) &#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;100 mM NaClO4, pH 6.10&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="_io.extract_athenagroup">
+<code class="descclassname">_io.</code><code class="descname">extract_athenagroup</code><span class="sig-paren">(</span><em>datagroup</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.extract_athenagroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>extracts a group out of an Athena Project File, allowing the file to be
+closed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datagroup</strong> – group from athena project</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">group with copy of data, allowing safe closing of project file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>An example using this function to allow extracting 1 group from an Athena
+Project would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">hg_prj</span> <span class="o">=</span> <span class="n">read_athena</span><span class="p">(</span><span class="s1">&#39;Hg.prj&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">hgo</span> <span class="o">=</span> <span class="n">extract_athenagroup</span><span class="p">(</span><span class="n">hg_prj</span><span class="o">.</span><span class="n">HgO</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="k">del</span> <span class="n">hg_prj</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-and-writing-to-athena-project-files">
+<h3>6.2.2. Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this headline">¶</a></h3>
+<p>You can create an Athena Project File with <a class="reference internal" href="#_io.create_athena" title="_io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
+add a group of XAFS data to that project with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code>
+method of that project file.  The group is expected to have array names of
+<cite>energy</cite> and <cite>i0</cite>, and one of <cite>mu</cite>, <cite>mutrans</cite>, or <cite>mufluor</cite>.</p>
+<dl class="function">
+<dt id="_io.create_athena">
+<code class="descclassname">_io.</code><code class="descname">create_athena</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.create_athena" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a new or existing Athena Project File, returning an
+<a class="reference internal" href="#module-_io.AthenaProject" title="_io.AthenaProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">AthenaProject</span></code></a> object.  That is, a new project file will be
+created if it does not exist, or an existing project will be opened for
+reading and writing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – name of Athena Project file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="_io.AthenaProject">
+<em class="property">class </em><code class="descclassname">_io.</code><code class="descname">AthenaProject</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of an Athena Project File</p>
+</dd></dl>
+
+<span class="target" id="module-_io.AthenaProject"></span><dl class="method">
+<dt id="_io.AthenaProject.add_group">
+<code class="descclassname">_io.AthenaProject.</code><code class="descname">add_group</code><span class="sig-paren">(</span><em>group</em>, <em>signal=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.add_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a group of XAFS data to an Athena Project</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>group</strong> – group to be added. See note</li>
+<li><strong>signal</strong> – string or <code class="docutils literal notranslate"><span class="pre">None</span></code> name of array to use as main signal</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>if <cite>signal</cite> is not specified, it will be chosen as <cite>mu</cite>, <cite>mutrans</cite>, or
+<cite>mufluor</cite> (in that order).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="_io.AthenaProject.save">
+<code class="descclassname">_io.AthenaProject.</code><code class="descname">save</code><span class="sig-paren">(</span><em>use_gzip=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>save project to file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>use_gzip</strong> – bool, whether to use gzip compression for file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="_io.AthenaProject.read">
+<code class="descclassname">_io.AthenaProject.</code><code class="descname">read</code><span class="sig-paren">(</span><em>filename=None</em>, <em>match=None</em>, <em>do_preedge=True</em>, <em>do_bkg=True</em>, <em>do_fft=True</em>, <em>use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>read from project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> – name of Athena Project file</li>
+<li><strong>match</strong> – string pattern used to limit the imported groups (see Note)</li>
+<li><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</li>
+<li><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</li>
+<li><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</li>
+<li><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>The function <code class="xref py py-func docutils literal notranslate"><span class="pre">read_athena()</span></code> above is a wrapper around this method, and
+the notes there apply here as well. An important difference is that for
+this method the data is retained in the <cite>groups</cite> attribute which is a
+Python list of groups for each group in the Athena Project.</p>
+<dl class="method">
+<dt id="_io.AthenaProject.as_group">
+<code class="descclassname">_io.AthenaProject.</code><code class="descname">as_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.as_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Athena Project <cite>groups</cite> attribute (as read by
+<a class="reference internal" href="#_io.AthenaProject.read" title="_io.AthenaProject.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
+</dd></dl>
+
+<p>As an example creating and saving an Athena Project file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">feo</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;feo_rt1.dat&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;energy mu i0&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">autobk</span><span class="p">(</span><span class="n">feo</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">fe2o3</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;fe2o3_rt1.xmu&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">autobk</span><span class="p">(</span><span class="n">fe2o3</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">fe_project</span> <span class="o">=</span> <span class="n">create_athena</span><span class="p">(</span><span class="s1">&#39;FeOxides.prj&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">fe_project</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="n">feo</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">fe_project</span><span class="o">.</span><span class="n">add_group</span><span class="p">(</span><span class="n">fe2o3</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">fe_project</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="module-_io">
+<span id="using-hdf5-files"></span><h2>6.3. Using HDF5 Files<a class="headerlink" href="#module-_io" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -276,7 +477,7 @@ and schemas become standardized, better interfaces can easily be made on
 top of this approach.</p>
 </div>
 <div class="section" id="reading-netcdf-files">
-<h2>6.3. Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
+<h2>6.4. Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
 <p>NetCDF4 is an older and less flexible file format than HDF5, but is
 efficient for storing array data and still in wide use.</p>
 <dl class="function">
@@ -293,7 +494,7 @@ efficient for storing array data and still in wide use.</p>
 
 </div>
 <div class="section" id="reading-tiff-images">
-<h2>6.4. Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
+<h2>6.5. Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
 <p>TIFF is a popular image format used by many cameras and detectors. The
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="function">
@@ -312,7 +513,7 @@ and multiple series.</p>
 
 </div>
 <div class="section" id="working-with-epics-channel-access">
-<h2>6.5. Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
+<h2>6.6. Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
 <p>Many synchrotron facilities use the Epics control system.  If the Epics
 Channel Access layer, which requires network access and configuration
 discussed elsewhere, are set correcty, then Larch can read and write data
@@ -346,7 +547,7 @@ which will be run with new values everytime the PV value changes.</p>
 
 </div>
 <div class="section" id="reading-scan-data-from-aps-beamlines">
-<h2>6.6. Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
+<h2>6.7. Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="function">
@@ -371,7 +572,7 @@ very well tested – use with caution!</p>
 
 </div>
 <div class="section" id="reading-xafs-data-interchange-xdi-files">
-<h2>6.7. Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
+<h2>6.8. Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
 <p>The X-ray Data Interchange Format has been developed as part of an effort
 to standardize the format of XAFS data files (see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange">xdi</a>.)</p>
 <dl class="function">
@@ -382,7 +583,7 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 
 </div>
 <div class="section" id="saving-and-restoring-larch-groups">
-<h2>6.8. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
+<h2>6.9. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to save groups of data and be able to open them again
 later.  The <a class="reference internal" href="#_io.save" title="_io.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore()</span></code></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
@@ -438,7 +639,7 @@ the save file will be put inside that group, and will not be returned.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2012.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
