@@ -147,6 +147,109 @@ somewhat limited in being able to process all data formats, but should be
 useful for many data sets.  If you have trouble reading in your data with
 XAS Viewer, contact us and we will try to help.
 
+.. _xasviewer_dialogs:
+
+Common XAS Processing Dialogs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several dialogs for interacting with data groups and for doing
+data corrections.  These include speciality dialogs for:
+
+  * copying, removing, and renaming data grouos.
+  * merging of data groups -- summing spectra.
+  * de-glitching spectra.
+  * recalibrating spectra.
+  * smoothing of noisy spectra.
+  * rebinning of spectra onto a "normal" XAFS energy grid.
+  * de-convolving spectra.
+  * correcting over-absorption in fluorescence XANES spectra.
+
+Screenshots of some of these dialogs are shown in the images below.
+
+
+
+
+.. subfigstart::
+
+.. _fig_xasviewer_dialog_cal:
+
+.. figure:: ../_images/XASViewer_calibrate_dialog.png
+    :target: ../_images/XASViewer_calibrate_dialog.png
+    :width: 75%
+    :align: center
+
+    Energy calibration dialog.
+
+.. _fig_xasviewer_dialog_deglitch:
+
+.. figure:: ../_images/XASViewer_deglitch_dialog.png
+    :target: ../_images/XASViewer_deglitch_dialog.png
+    :width: 75%
+    :align: center
+
+    Deglitching dialog
+
+
+.. subfigend::
+    :width: 0.48
+    :alt: xasviewer dialogs 1
+    :label: fig_xasviewer_dialogs1
+
+
+.. subfigstart::
+
+.. _fig_xasviewer_dialog_smooth:
+
+.. figure:: ../_images/XASViewer_smooth_dialog.png
+    :target: ../_images/XASViewer_smooth_dialog.png
+    :width: 75%
+    :align: center
+
+    Energy smoothing dialog.
+
+.. _fig_xasviewer_dialog_deconv:
+
+.. figure:: ../_images/XASViewer_deconvolve_dialog.png
+    :target: ../_images/XASViewer_deconvolve_dialog.png
+    :width: 75%
+    :align: center
+
+    Deglitching dialog
+
+
+.. subfigend::
+    :width: 0.48
+    :alt: xasviewer dialogs 2
+    :label: fig_xasviewer_dialogs2
+
+
+.. subfigstart::
+
+.. _fig_xasviewer_dialog_rebin:
+
+.. figure:: ../_images/XASViewer_rebin_dialog.png
+    :target: ../_images/XASViewer_rebin_dialog.png
+    :width: 75%
+    :align: center
+
+    Energy rebinning dialog.
+
+.. _fig_xasviewer_dialog_overabs:
+
+.. figure:: ../_images/XASViewer_overabsorption_dialog.png
+    :target: ../_images/XASViewer_overabsorption_dialog.png
+    :width: 75%
+    :align: center
+
+    Over-absortion correction dialog
+
+
+.. subfigend::
+    :width: 0.48
+    :alt: xasviewer dialogs 3
+    :label: fig_xasviewer_dialogs3
+
+
 .. _xasviewer_preedge:
 
 Pre-edge subtraction and Normalization
@@ -168,6 +271,7 @@ pre-edge line and normalization curve.  Consult with :func:`pre_edge`
 function for more details on these parameters.  You can also plot several
 selected groups together, and copy processing parameters from one group to
 another.
+
 
 
 
