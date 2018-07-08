@@ -273,8 +273,6 @@ selected groups together, and copy processing parameters from one group to
 another.
 
 
-
-
 .. _xasviewer_peakfit:
 
 Pre-edge peak fitting
@@ -287,45 +285,56 @@ or Voigt functions.  This provides an easy-to-use wrapper around `lmfit`_
 and the :func:`minimize` function for curve-fitting with the ability to
 constrain fitting Parameters.
 
-To do fitting of pre-edge peaks with the interface, one begins by fitting a
-"baseline" to account for the main absorption edge.  This baseline is
-modeled as a Lorentzian curve plus a line.  Fitting a baseline requires
-identifying energy ranges for both the main spectrum to be fitted and the
-pre-edge peaks -- the part of the spectrum where the baseline should *not*
-be fitted.  This is illustrated in :numref:`fig_xasviewer_3a` and
-:numref:`fig_xasviewer_3b`.  Note that there are separate ranges for the
-"fit range" and the "pre-edge peak" range (illustrated with grey lines and
-blue '+' signs on the plot).  The "pre-edge peak" range should be inside
-the fit range.
+Fitting of pre-edge peaks with this panel is a two step process.
 
-Clicking "Fit baseline" will fit a baseline function and display the
-results.  The initial fit may have poorly guessed ranges for the pre-edge
-peaks and fit range and may require some adjustment.
+First, one fits a "baseline" curve to account for the main absorption edge.
+This baseline is modeled as a Lorentzian curve plus a line which should be
+a reasonable enough approximation of the main absorption edge (say,
+:math:`4p`) so that its tail represents the background of the main edge
+underneath the pre-edge peaks.
+
+
+Fitting the baseline requires identifying energy ranges for both the main
+spectrum to be fitted and the pre-edge peaks -- the part of the spectrum
+which should be ignored when fitting the baseline.  This is illustrated in
+:numref:`fig_xasviewer_3a` and :numref:`fig_xasviewer_3b`.  Note that there
+are separate ranges for the "fit range" and the "pre-edge peak" range
+(illustrated with grey lines and blue circles on the plot).  The "pre-edge
+peak" range should be inside the fit range so that the baseline can fit
+part of the pre-edge region, at energies below the pre-edge peaks, and part
+of the main absorption edge region above the pre-edge peaks.
+
+Clicking "Fit baseline" will fit a baseline function and display the plot
+as shown below.  The initial fit may have poorly guessed ranges for the
+pre-edge peaks and fit range and may require some adjustment.  As mentioned
+above, clicking on the plot will select an energy that can then be
+transferred to any of the bounds energy using the corresponding pin icon
+|pin| on the form.
 
 .. subfigstart::
 
 .. _fig_xasviewer_3a:
 
-.. figure:: ../_images/XASViewer_prepeak_baseline.png
-    :target: ../_images/XASViewer_prepeak_baseline.png
+.. figure:: ../_images/XASViewer_prepeaks_baseline_form.png
+    :target: ../_images/XASViewer_prepeaks_baseline_form.png
     :width: 100%
     :align: center
 
-    Pre-edge peak Window of XASViewer, showing how select regions of
+    Pre-edge peak Panel of XASViewer, showing how select regions of
     pre-edge peaks for fitting a baseline.
 
 
 .. _fig_xasviewer_3b:
 
-.. figure:: ../_images/XASViewer_plot_baseline.png
-    :target: ../_images/XASViewer_plot_baseline.png
+.. figure:: ../_images/XASViewer_prepeaks_baseline_plot.png
+    :target: ../_images/XASViewer_prepeaks_baseline_plot.png
     :width: 60%
     :align: center
 
-    Plot of pre-edge peaks with baseline.  Note that the grey vertical
-    lines show the fit range, the blue crosses show the pre-edge peak
-    range, and the pink line shows the centroid of the pre-edge peaks after
-    removal of the baseline.
+    Plot of pre-edge peaks with baseline.  The grey vertical lines show the
+    fit range and blue cicrles show the boundaries of the pre-edge peak
+    range ignored in the baseline fit. The pink line shows the centroid of
+    the pre-edge peaks after removal of the baseline.
 
 
 .. subfigend::
