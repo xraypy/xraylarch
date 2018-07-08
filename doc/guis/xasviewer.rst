@@ -343,14 +343,16 @@ transferred to any of the bounds energy using the corresponding pin icon
     :label: fig_xasviewer_3
 
 Once the pre-edge baseline is satisfactory, you can add functions to model
-the pre-edge peaks themselves.  Select one of the "Peak Models" (typically
-Gaussian, Lorentzian, or Voigt), which will show a new tab in the "model
-components area" in the lower part of the form.  Note that the baseline
-will consist of a Lorentzian and linear model component, so that there will
-be at least 3 tabs for the 3 or more components of the pre-edge peak model.
-This is shown in :numref:`fig_xasviewer_4a`, which shows the form for 1
-Gaussian peak, and the baseline.  You can include multiple peaks by
-repeatedly selecting the peak type from the drop-down menu.
+the pre-edge peaks themselves.  Selecting one of the "Peak Models"
+(typically Gaussian, Lorentzian, or Voigt) will show a new tab in the
+"model components area" in the lower part of the form.  Since the baseline
+consists of a Lorentzian curve and a line, there will now be 3 tabs for the
+3 or more components of the pre-edge peak model.  The background peak and
+the background line will have tabs labeled `bp_` and `bl_`, respectively,
+and the added Gaussian curve will be labeled `gauss1_`, as shown in
+:numref:`fig_xasviewer_4a`, which shows the form for 1 Gaussian peak, and
+the baseline.  You can add multiple peaks by repeatedly selecting the peak
+type from the drop-down menu labeled *Add Component*.
 
 After selecting a peak type, click on the "Pick Values from Data" button,
 and then pick two points on the plot to help give initial ranges for that
@@ -365,8 +367,8 @@ energy bounds for the `center` of each peak, so that they do not overlap.
 
 .. _fig_xasviewer_4a:
 
-.. figure:: ../_images/XASViewer_prepeak_1gaussian.png
-    :target: ../_images/XASViewer_prepeak_1gaussian.png
+.. figure:: ../_images/XASViewer_prepeaks_1gaussian_form.png
+    :target: ../_images/XASViewer_prepeaks_1gaussian_form.png
     :width: 100%
     :align: center
 
@@ -376,8 +378,8 @@ energy bounds for the `center` of each peak, so that they do not overlap.
 
 .. _fig_xasviewer_4b:
 
-.. figure:: ../_images/XASViewer_plot_1gaussian.png
-    :target: ../_images/XASViewer_plot_1gaussian.png
+.. figure:: ../_images/XASViewer_prepeaks_1gaussian_plot.png
+    :target: ../_images/XASViewer_prepeaks_1gaussian_plot.png
     :width: 60%
     :align: center
 
@@ -406,8 +408,8 @@ half the maximum height) and `height` (the maximum height of the peak).
 
 .. _fig_xasviewer_5a:
 
-.. figure:: ../_images/XASViewer_prepeak_fitresult.png
-    :target: ../_images/XASViewer_prepeak_fitresult.png
+.. figure:: ../_images/XASViewer_prepeaks_fitresult1_form.png
+    :target: ../_images/XASViewer_prepeaks_fitresult1_form.png
     :width: 75%
     :align: left
 
@@ -416,8 +418,8 @@ half the maximum height) and `height` (the maximum height of the peak).
 
 .. _fig_xasviewer_5b:
 
-.. figure:: ../_images/XASViewer_plot_1residual.png
-    :target: ../_images/XASViewer_plot_1residual.png
+.. figure:: ../_images/XASViewer_prepeaks_fitresult1_plot.png
+    :target: ../_images/XASViewer_prepeaks_fitresult1_plot.png
     :width: 60%
     :align: center
 
