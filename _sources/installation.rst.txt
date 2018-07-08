@@ -4,16 +4,18 @@
 Downloading and Installation
 ====================================
 
+
 .. _Larch Repository (github.com): http://github.com/xraypy/xraylarch
 .. _Anaconda Python:               http://www.continuum.io/
 .. _Anaconda Downloads:            http://www.continuum.io/downloads
+.. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
-.. _Larch Installers (cars.uchicago.edu): http://cars.uchicago.edu/gsecarrs/Data/Larch
-.. _Larch for 64bit Windows:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86_64.exe
-.. _Larch for 32bit Windows:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
-.. _Larch for MacOSX:              http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-MacOSX-x86_64.sh
-.. _Larch for Linux:               http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-Linux-x86_64.sh
-.. _Larch Docs and Examples:       http://cars.uchicago.edu/gsecars/Data/Larch/xraylarch-0.9.37-docs-examples.zip
+.. _Larch Binary Installers:       https:/millenia.cars.aps.anl.gov/gsecarrs/Data/Larch
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-Windows-x86_64.exe
+.. _Larch for 32bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-MacOSX-x86_64.sh
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-docs-examples.zip
 
 The latest release version of Larch is |release|.
 
@@ -28,16 +30,17 @@ Single-File Installers
 =========================
 
 For Windows, MacOSX, and Linux, Larch now comes with simple installers,
-available at `Larch Installers (cars.uchicago.edu)`_.  These are
-self-contained files that will install a complete Python environment from
-Anaconda Python and all of X-rayLarch onto your computer.  Installing Larch
-this way will be create a folder in your home folder called `xraylarch` by
-default (you can change it).  This does not require administrative
-privilege and will not interfere with anything on your system -- you can
-uninstall simply by removing this folder.  The installers are fairly large
-(300 to 500 Mb), but includes an entire scientific python environment.
-Installing by the other means described below will not take less disk
-space.
+available at `Larch Binary Installers`_.  These are self-contained files
+that will install a complete Python environment from Anaconda Python and
+all of X-rayLarch onto your computer.  Installing Larch this way will be
+create a folder in your home folder called `xraylarch` by default (you can
+change it).  This does not require administrative privilege and will not
+interfere with anything on your system -- you can uninstall simply by
+removing this folder.  The installers are fairly large (300 to 600 Mb), but
+includes an entire scientific python environment.  Installing by the other
+means described below will not actually take less disk space, but will
+involve downloading many more smaller files, which may be an advantage for
+some people with poor connectivity.
 
 .. _installers_table:
 
@@ -48,8 +51,6 @@ space.
   +=========================+=====================================+
   | Windows (64 bit)        | `Larch for 64bit Windows`_          |
   +-------------------------+-------------------------------------+
-  | Windows (32 bit)        | `Larch for 32bit Windows`_          |
-  +-------------------------+-------------------------------------+
   | Mac OSX (64 bit)        | `Larch for MacOSX`_                 |
   +-------------------------+-------------------------------------+
   | Linux (64 bit)          | `Larch for Linux`_                  |
@@ -58,20 +59,19 @@ space.
   | (all systems)           |                                     |
   +-------------------------+-------------------------------------+
 
-For Windows, download the appropriate executable installer corresponding to
-the architecture of your OS, and run it.  Most modern computers (including
-Windows 10) will be running 64-bit Windows. A 32-bit version is provided
-for older systems, but support for this may be dropped in late 2018.
+A 32-bit installer for Windows may be created to support older systems, but
+is not available at this writing.
+
 
 For Mac OSX or Linux, download the appropriate file then open a Terminal
 (Applications->Utilities->Terminal on Mac OSX), use `cd` to move to the
 download folder (typically `cd Downloads`) and run::
 
-    bash xraylarch-0.9.37-MacOSX-x86_64.sh
+    bash xraylarch-0.9.38-MacOSX-x86_64.sh
 
 or::
 
-    bash xraylarch-0.9.37-Linux-x86_64.sh
+    bash xraylarch-0.9.38-Linux-x86_64.sh
 
 Once installed, you will be able to upgrade to future versions of Larch using::
 
@@ -105,19 +105,19 @@ versions of Python, Anaconda Python makes getting and installing the many
 packages needed for Larch.
 
 `Anaconda Python`_ provides a free and well-supported version of Python for
-scientific work with many useful packages included.  By default, Anaconda Python
-installs into your own home folder (on Windows, this will be the `APPDATA`
-location, which is typically something like
-`C:\\Users\\YourName\\AppData\\Local\\Continuum\\Anaconda2`).  As with the
-single-file installers above, installing Anaconda Python does not require extra
-permissions to install, upgrade, or remove components.  Anaconda includes a
-robust package manager called *conda* that makes it easy to update the packages
-it manages, including Larch.
+scientific work with many useful packages included.  By default, Anaconda
+Python installs into your own home folder (on Windows, this will be the
+`APPDATA` location, which is typically something like
+`C:\\Users\\YourName\\AppData\\Local\\Continuum\\Anaconda3`).  As with the
+single-file installers above, installing Anaconda Python does not require
+extra permissions to install, upgrade, or remove components.  Anaconda
+includes a robust package manager called *conda* that makes it easy to
+update the packages it manages, including Larch.
 
-Begin by installing the latest version of Anaconda Python -- either Python 2.7
-or 3.6 should work (though Python 3.6 may have undiscovered bugs) from the
-`Anaconda Downloads`_ site.  Once that is installed, you can open a Terminal (on
-Linux or Mac OSX) or the Anaconda prompt (on Windows) and type::
+Begin by installing the latest version of Anaconda Python from the
+`Anaconda Downloads`_ site.  Python 3.6 is recommended, but Python 2.7
+should work too.  Once that is installed, you can open a Terminal (on Linux
+or Mac OSX) or the Anaconda prompt (on Windows) and type::
 
     conda install -yc GSECARS xraylarch
 
@@ -138,17 +138,12 @@ latest versions with::
 Python Versions: 2.7 or 3.6?
 ================================
 
-As of this writing (March, 2018) there are two main supported versions of
-Python: Version 2.7 and Version 3.6.  Larch works with both versions of
-Python.  We invite Python-savvy users to try out Larch with Python 3.6.  We
-believe most things are working with Python 3.6, and are actively using
-Larch with Python 3.6, but there may be some undiscovered bugs.  We are
-eager to migrate Larch so that it works only with Python 3.6 and higher so
-that we can take advantage of many language features not available in
-earlier versions.  Following the schedule of many scientific Python
-libraries and tools, we expect to make this transition in early 2019.
+As of this writing (June, 2018) there are two main supported versions of
+Python: Version 2.7 and Version 3.6.  We have moved to using Python 3.6 by
+default and the installers above use Python 3.6, Larch still works with
+Python 2.7, and we will maintain support for Python 2.7 through the end of
+2018.  We intend to drop support for Python 2.7 in early 2019.
 
-Currently, the installers above are built with Python 2.7.  We
 
 Source Installation
 =========================
@@ -164,7 +159,7 @@ version of the source code::
 Prerequisites
 ~~~~~~~~~~~~~~~~~~~
 
-Larch requires Python version 2.7 or 3.6. In addiion, the following Python
+Larch requires Python version 3.6 or 2.7. In addiion, the following Python
 packages are all required for Larch to work:
 
     numpy, scipy, matplotlib, h5py, peakutils, pillow, psutil, requests,
@@ -249,29 +244,35 @@ Acknowledgements
 ==================
 
 Larch was mostly written by and is maintained by Matt Newville
-<newville@cars.uchicago.edu>.  Bruce Ravel has had an incalculable influence on
-the design and implementation of this code and has provided countless fixes for
-serious problems in design and execution in the early stages.  More than that,
-Larch would simply not exist without the long and fruitful collaboration we've
-enjoyed.  Margaret Koker wrote most of the X-ray diffraction analysis code, and
-much of the advanced functionality of the GSECARS XRF Map Viewer.  Tom Trainor
-had a very strong influence on the original design of Larch, and helped with the
-initial version of the python implementation.  Yong Choi wrote the code for
-X-ray standing wave and reflectivity analysis and graciously allowed it to be
-included and modified for Larch.
+<newville@cars.uchicago.edu>.  Bruce Ravel has an incalculable influence on
+the design and implementation of this code and has provided countless fixes
+for serious problems in design and execution in the early stages.  More
+importantly, Larch would simply not exist without the long and fruitful
+collaboration we've enjoyed.  Margaret Koker wrote most of the X-ray
+diffraction analysis code, and much of the advanced functionality of the
+GSECARS XRF Map Viewer.  Mauro Rovezzi has provided the spec-data reading
+interface.  Tom Trainor had a very strong influence on the original design
+of Larch, and helped with the initial version of the python implementation.
+Yong Choi wrote the code for X-ray standing wave and reflectivity analysis
+and graciously allowed it to be included and modified for Larch.  Tony
+Lanzirotti and Steve Sutton have provided wonderful and patient feedback on
+many parts of Larch, espcially for XANES processing and testing of the XAS
+Viewer GUI.
 
-Having begun as a rewrite of the Ifeffit XAFS Analysis Package, Larch also
-references and builds on quite a bit of code developed for XAFS over many
-years at the University of Chicago and the University of Washington.  The
-existence of the code and a great deal of its initial design therefore owes
-a great thanks to Edward Stern, Yizhak Yacoby, Peter Livens, Steve
+Because Larch began as a rewrite of the Ifeffit XAFS Analysis Package, it
+also references and builds on quite a bit of code developed for XAFS over
+many years at the University of Chicago and the University of Washington.
+The existence of the code and a great deal of its initial design therefore
+owes a great thanks to Edward Stern, Yizhak Yacoby, Peter Livens, Steve
 Zabinsky, and John Rehr.  More specifically, code written by Steve Zabinsky
 and John Rehr for the manipulation of results from FEFF and for the
 calculation of thermal disorder parameters for XAFS are included in Larch
-with little modification.  A great many people have provided excellent bug
-reports, feedback, in depth conversations, and suggestions for making
-Ifeffit better, including on the ifeffit mailing list.  Many of these
-contributions have found their way into Larch.
+with little modification.  Both Feff6l and Feff8l, the product of many man
+years of effort by the Feff group led by John Rehr, are included in Larch.
+A great many people have provided excellent bug reports, feedback, in depth
+conversations, and suggestions for making Ifeffit better, including on the
+ifeffit mailing list.  Many of these contributions have found their way
+into Larch.
 
 Larch includes calculations for anomalous cross-sections based on the work
 of Cromer and Libermann, as implemented by Sean Brennan and Paul L. Cowen.
@@ -285,13 +286,11 @@ given in :ref:`xraydb-chapter`.
 As Larch depends on the fantastic scientific librarie written and
 maintained in python, especially the numpy, scipy, and matplotlib, the
 entire scientific python community deserves a hearty thanks.  In
-particular, Larch includes code from Jonathan J. Helmus to implement robust
-setting of Parameter bounds as described in the MINUIT User's guide.  Till
-Stensitzki wrote the code for improved, brute-force estimates of confidence
-intervals, and Christopher Deil provided many valuable suggestions for
-improving the parameterized fitting used in Larch.  Eric O. Lebigot's
-uncertainty package for automated calculation and propagation of
-uncertainties is also included in Larch, with slight modification.
+particular, Larch uses the `lmfit`_ library, which began as part of Larch
+but was spun off into a standalone, general purpose fitting library that
+became useful for application areas other than XAFS, and has benefited
+greatly from numerous collaborators and added many features that Larch, in
+turn, has been able to depend on.
 
 
 License
