@@ -10,7 +10,8 @@ Downloading and Installation
 .. _Anaconda Downloads:            http://www.continuum.io/downloads
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
-.. _Larch Binary Installers:       https:/millenia.cars.aps.anl.gov/gsecarrs/Data/Larch
+.. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch/xraylarch-0.9.38.tar.gz
 .. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-Windows-x86_64.exe
 .. _Larch for 32bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
 .. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-MacOSX-x86_64.sh
@@ -30,17 +31,17 @@ Single-File Installers
 =========================
 
 For Windows, MacOSX, and Linux, Larch now comes with simple installers,
-available at `Larch Binary Installers`_.  These are self-contained files
-that will install a complete Python environment from Anaconda Python and
-all of X-rayLarch onto your computer.  Installing Larch this way will be
-create a folder in your home folder called `xraylarch` by default (you can
-change it).  This does not require administrative privilege and will not
-interfere with anything on your system -- you can uninstall simply by
-removing this folder.  The installers are fairly large (300 to 600 Mb), but
-includes an entire scientific python environment.  Installing by the other
-means described below will not actually take less disk space, but will
-involve downloading many more smaller files, which may be an advantage for
-some people with poor connectivity.
+available at `Larch Binary Installers`_.
+These are self-contained files that will install a complete Python environment
+from Anaconda Python and all of X-rayLarch onto your computer.  Installing
+Larch this way will be create a folder in your home folder called `xraylarch`
+by default (you can change it).  This does not require administrative
+privilege and will not interfere with anything on your system -- you can
+uninstall simply by removing this folder.  The installers are fairly large
+(300 to 600 Mb), but includes an entire scientific python environment.
+Installing by the other means described below will not actually take less disk
+space, but will involve downloading many more smaller files, which may be an
+advantage for some people with poor connectivity.
 
 .. _installers_table:
 
@@ -54,6 +55,8 @@ some people with poor connectivity.
   | Mac OSX (64 bit)        | `Larch for MacOSX`_                 |
   +-------------------------+-------------------------------------+
   | Linux (64 bit)          | `Larch for Linux`_                  |
+  +-------------------------+-------------------------------------+
+  | Source Code             | `source code (tar.gz)`_             |
   +-------------------------+-------------------------------------+
   | Docs and Examples       | `Larch Docs and Examples`_          |
   | (all systems)           |                                     |
@@ -148,22 +151,100 @@ Python 2.7, and we will maintain support for Python 2.7 through the end of
 Source Installation
 =========================
 
-For Python-savvy users, Larch can be installed from source code.  The latest
-releases of the source code will be available from `Larch releases
-(github.com)`_.  In addition, you can use `git` to grab the latest development
-version of the source code::
+For Python-savvy users, Larch can be installed from source. You can use either
+the `source code (tar.gz)`_ or from `Larch releases (github.com)`_.  In
+addition, you can use `git` to grab the latest development version of the
+source code::
 
    git clone http://github.com/xraypy/xraylarch.git
+
+
+With the source kit unpacked using `tar` or `zip`, you should be able to
+install Larch using `python setup.py install`.  This should automatically use
+`pip` to install any required dependencies as well as Larch itself.  Depending
+on your platform and version of Python, you may need elevated permissions as
+from `sudo` to install Larch to a system folder.
+
+There are several required packages and a few "highly recommended" packages
+for Larch.  These are listed in the next section.
+
 
 
 Prerequisites
 ~~~~~~~~~~~~~~~~~~~
 
-Larch requires Python version 3.6 or 2.7. In addiion, the following Python
-packages are all required for Larch to work:
+Larch requires Python version 3.6 or 2.7. In addiion, many Python
+packages are required for Larch to work.  These are listed in the table below.
 
-    numpy, scipy, matplotlib, h5py, peakutils, pillow, psutil, requests,
-    sqlalchemy, six, termcolor, wxPython, lmfit, asteval, wxmplot, wxutils.
+
+.. _dependencies_table:
+
+**Table of Larch Dependencies** This lists the packages that are either
+required for Larch or required for some portion of Larch functionality to
+work. The required packages and several of the recommended packages will
+normally be installed by default or are easily available from with `conda` or
+`pip`.
+
+  +----------------+-------------+-----------------------------+
+  | Package name   | min version | status, notes               |
+  +================+=============+=============================+
+  | numpy          | 1.10        | required                    |
+  +----------------+-------------+-----------------------------+
+  | scipy          | 0.17        | required                    |
+  +----------------+-------------+-----------------------------+
+  | six            | 1.10        | required                    |
+  +----------------+-------------+-----------------------------+
+  | matplotlib     | 2.0         | required                    |
+  +----------------+-------------+-----------------------------+
+  | sqlalchemy     | 0.9         | required                    |
+  +----------------+-------------+-----------------------------+
+  | h5py           | 2.4         | required                    |
+  +----------------+-------------+-----------------------------+
+  | scikit-learn   | 0.18        | required                    |
+  +----------------+-------------+-----------------------------+
+  | pillow         | 3.4         | required                    |
+  +----------------+-------------+-----------------------------+
+  | peakutils      | 1.0.0       | required                    |
+  +----------------+-------------+-----------------------------+
+  | requests       | 2.1         | required                    |
+  +----------------+-------------+-----------------------------+
+  | asteval        | 0.9.12      | required                    |
+  +----------------+-------------+-----------------------------+
+  | lmfit          | 0.9.11      | required                    |
+  +----------------+-------------+-----------------------------+
+  | uncertainties  | 3.0         | required                    |
+  +----------------+-------------+-----------------------------+
+  | pyyaml         |             | required                    |
+  +----------------+-------------+-----------------------------+
+  | psutil         |             | required                    |
+  +----------------+-------------+-----------------------------+
+  | termcolor      |             | required                    |
+  +----------------+-------------+-----------------------------+
+  | wxpython       | 4.0.0       | required for GUIs, plotting |
+  +----------------+-------------+-----------------------------+
+  | wxmplot        | 0.9.30      | required for plotting       |
+  +----------------+-------------+-----------------------------+
+  | wxutils        | 0.1.3       | required for GUIs           |
+  +----------------+-------------+-----------------------------+
+  | pyepics        | 3.3.0       | needed for using Epics      |
+  +----------------+-------------+-----------------------------+
+  |scikit-image    |             | needed for tomography maps  |
+  +----------------+-------------+-----------------------------+
+  |tomopy          |             | recommended for tomography  |
+  +----------------+-------------+-----------------------------+
+  |pyFAI           |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
+  |fabio           |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
+  |PyCifRW         |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
+  |epicsscan       |             | needed for epics scanning   |
+  +----------------+-------------+-----------------------------+
+  |psycopg2        |             | needed for epics scanning   |
+  +----------------+-------------+-----------------------------+
+  |silx            |             | needed to read Spec files   |
+  +----------------+-------------+-----------------------------+
+
 
 These are all available from PyPI (the Python Package Index), and for
 Anaconda Python 2.7 and 3.6.  The packages not included with core Anaconda
