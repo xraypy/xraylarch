@@ -342,26 +342,44 @@ transferred to any of the bounds energy using the corresponding pin icon
     :alt: pre-edge peak baseline
     :label: fig_xasviewer_3
 
-Once the pre-edge baseline is satisfactory, you can add functions to model
-the pre-edge peaks themselves.  Selecting one of the "Peak Models"
-(typically Gaussian, Lorentzian, or Voigt) will show a new tab in the
-"model components area" in the lower part of the form.  Since the baseline
-consists of a Lorentzian curve and a line, there will now be 3 tabs for the
-3 or more components of the pre-edge peak model.  The background peak and
-the background line will have tabs labeled `bp_` and `bl_`, respectively,
-and the added Gaussian curve will be labeled `gauss1_`, as shown in
-:numref:`fig_xasviewer_4a`, which shows the form for 1 Gaussian peak, and
-the baseline.  You can add multiple peaks by repeatedly selecting the peak
-type from the drop-down menu labeled *Add Component*.
+We will allow the baseline to be refined when fitting the peaks, so it does
+not need to be modeled perfectly, but it is helpful to get a decent fit to
+the baseline.  Once this baseline is satisfactorally modeled, you can add
+functions to model the pre-edge peaks themselves.  Selecting one of the
+"Peak Models" (typically Gaussian, Lorentzian, or Voigt) will show a new
+tab in the "model components area" in the lower part of the form.  Since
+the baseline consists of a Lorentzian curve and a line, there will now be 3
+tabs for the 3 components of the pre-edge peak model.  The background peak
+and the background line will have tabs labeled `bp_` and `bl_`,
+respectively, and the added Gaussian curve will be labeled `gauss1_`, as
+shown in :numref:`fig_xasviewer_4a`, which shows the form with 1 Gaussian
+peak, and the two-component baseline.  You can add more peaks by repeatedly
+selecting the peak type from the drop-down menu labeled *Add Component*.
 
-After selecting a peak type, click on the "Pick Values from Data" button,
-and then pick two points on the plot to help give initial ranges for that
-peak.  The points you pick do not have to be very accurate, and the initial
-values selected for the `amplitude`, `center`, and `sigma` parameters can
-be modified.  Note that you can place bounds on any of these parameters --
-it is probably a good idea to enforce the `amplitude` and `sigma` to be
-positive.  If using multiple peaks, it is often helpful to give realistic
-energy bounds for the `center` of each peak, so that they do not overlap.
+Each of the tab for each functional component of the model will include a
+table of the Parameters for that peak.  For example, a line will have an
+*intercept* and a *slope* parameter, and most peak functions will have an
+*amplitude*, *center*, and *sigma* parameters (and perhaps more).  Each of
+these parameters will have a name and a value, and also have a Type
+drop-down list to allow it to *vary* or stay *fixed* in the fit.  You can
+also set it to be *constrained* by a simple mathematical expression of
+other parameter values.  If varied, you can also set bounds on the
+parameter values by using the Bounds drop-down list (to select *positive*,
+*negative*, or *custom*) and/or set Min and Max values.
+
+After selecting a functional form for the peak, clicking on the "Pick
+Values from Data" button, and then clicking two points on the plot near the
+peak of interest will fill in the form with initial values for the
+parameters for that peak.  This is shown in :numref:`fig_xasviewer_4a`
+which has values filled in from the "two click method", and in
+:numref:`fig_xasviewer_4b` which shows the initial Gaussian peak.  The
+points you pick do not have to be very accurate, and the initial values
+selected for the `amplitude`, `center`, and `sigma` parameters can be
+modified.  You can also set bounds on any of these parameters -- it is
+probably a good idea to enforce the `amplitude` and `sigma` to be positive,
+for example.  If using multiple peaks, it is often helpful to give
+realistic energy bounds for the `center` of each peak, so that the peaks
+don't try to exchange.
 
 .. subfigstart::
 
@@ -372,8 +390,8 @@ energy bounds for the `center` of each peak, so that they do not overlap.
     :width: 100%
     :align: center
 
-    Pre-edge peak Window of XASViewer, showing how select regions of
-    pre-edge peaks for fitting a baseline.
+    Pre-edge peak Window of XASViewer, showing 3 components of a Gaussian
+    and a baseline that includes a line and Lorentzian.
 
 
 .. _fig_xasviewer_4b:
@@ -383,26 +401,40 @@ energy bounds for the `center` of each peak, so that they do not overlap.
     :width: 60%
     :align: center
 
-    Pre-edge peak Window of XASViewer, showing how select regions of
-    pre-edge peaks for fitting a baseline.
+    Plot of initial Gaussian guessed from the "two click method" for
+    modeling pre-edge peaks.
 
 .. subfigend::
     :width: 0.49
-    :alt: pre-edge peak fit
+    :alt: pre-edge peak model1
     :label: fig_xasviewer_4
 
-Upon doing a fit, the plot is updated to show the data, best-fit, and each
-of the components used in the fit (:numref:`fig_xasviewer_4b`). Fit
-statistics and best-fit parameter values, their uncertainties, and
-correlations are shown as a report in a separate window, with an example
-shown in :numref:`fig_xasviewer_5a`.  Note that for peaks such as Gaussian,
-Lorentzian, and Voigt, not only are `amplitude` (that is, area under the
-peak), `sigma`, and `center` shown but so are `fwhm` (full width of peak at
-half the maximum height) and `height` (the maximum height of the peak).
+Once the model function is defined and initial parameters values set,
+clicking the Fit Model button will perform the fit. This will bring up
+a Fit Result form shown in :numref:`fig_xasviewer_5a` and an
+initial plot of the data and fit as shown in :numref:`fig_xasviewer_5b`.
 
+The Fit Result panel contains goodness-of-fit statistics and parameter
+values and uncertainties (or standard error).  At the top portion of the
+form, you can save a model to be read in and used later or export the data
+and fit components to a simple column-based data file.  You can also view
+the fit goodness-of-fit statistics for the fit.  There are also some
+options and a button for the plot of data and fit.
+
+In the lower portion of the form, you can read the values and uncertainties
+for the fitting parameters and for a number of *derived* parameters,
+including `fit_centroid` that is the (area-weighted) centroid of the
+functions that comprise the pre-edge peaks (not including the baseline) and
+the full-width-at-half-maximumn and height of each of the peaks (note that
+`amplitude` represents the area of the unit-normalized peak and `height`
+represents the maximum height for a peak).  You can click on the button
+labeled "Update Model with these Values" to put these best-fit values back
+into the starting values on the main form.  In addition, clicking on any
+variable parameter to show it correlations with other variables.  Note that
+the baseline parameters *are* refined (by default) in the fit to the
+pre-edge peaks.
 
 .. _fig_xasviewer_5:
-
 
 .. subfigstart::
 
@@ -413,8 +445,7 @@ half the maximum height) and `height` (the maximum height of the peak).
     :width: 75%
     :align: left
 
-    Fit result frame for Pre-edge peak fit.
-
+    Fit result frame for Pre-edge peak fit for a fit with 1 Gaussian.
 
 .. _fig_xasviewer_5b:
 
@@ -423,31 +454,74 @@ half the maximum height) and `height` (the maximum height of the peak).
     :width: 60%
     :align: center
 
-    Pre-edge Peak fit with residual.
+    Pre-edge Peak data and best-fit with 1 Gaussian and baseline.
 
 .. subfigend::
-    :width: 0.49
-    :alt: pre-edge peak results
+    :width: 0.48
+    :alt: pre-edge peak results1
     :label: fig_xasviewer_5
 
-Though the plot of the fit in :numref:`fig_xasviewer_4b` looks good,
-plotting the fit along with the residual (by selecting "Data+Residual" in
-the drop-down menu of "Plot:" choices) as shown in
-:numref:`fig_xasviewer_5b` reveals a systematic mis-fit.  That is, the
-`data-fit` for this model clearly shows some spectral structure beyond just
-the noise in the data.  Adding a second Gaussian (and maybe even a third)
-will greatly help this fit.  To do that, add another Gaussian peak
-component to the fit model using the drop-down menu of "Add component:",
-select initial values for that Gaussian, and re-fit the model.  We'll leave
-that as an exercise for the reader.
+Though the plot of the fit in :numref:`fig_xasviewer_5b` does not look too
+bad, we can see the fit is not perfect. Checking the "Plot with residual?"
+box we get the plot in :numref:`fit_xasviewer6` that shows the data and fit
+and also the residual.  From this, we can see systematic oscillations in
+the fit residual that is well above the noise level and suggests that
+another peak may be needed to explain this data.  This is not too
+surprising here -- there are obviously two peaks in the pre-edge -- but it
+is does illustrate a useful way to determine when it is useful to add more
+peaks.
 
-Fit results can be saved in two different ways, using the "PreEdge Peaks"
-menu.  First, the model to set up the fit can be saved to a `.modl` file
-and then re-read later and used for other fits. This model file can also be
-read in and used with the `lmfit`_ python module for complete scripting
-control.  Secondly, a fit can be *exported* to an ASCII file that will
-include the text of the fit report and columns including data, best-fit,
-and each of the components of the model.
+.. _fig_xasviewer_6:
+
+.. figure:: ../_images/XASViewer_prepeaks_fitresult1_residual_plot.png
+    :target: ../_images/XASViewer_prepeaks_fitresult1_residual_plot.png
+    :width: 55%
+    :align: center
+
+    Pre-edge Peak plot of data, fit and residual.
+
+
+Adding a second Gaussian (and maybe even a third) will greatly help this
+fit.  If we add another Gaussian peak component to the fit model using the
+drop-down menu of "Add component:", select initial values for that second
+Gaussian before, and re-run the fit, we'll see the Fit Results form and
+plot as shown in :numref:`fig_xasviewer_7a` and :numref:`fig_xasviewer_7b`.
+
+
+.. _fig_xasviewer_7:
+
+.. subfigstart::
+
+.. _fig_xasviewer_7a:
+
+.. figure:: ../_images/XASViewer_prepeaks_fitresult2_form.png
+    :target: ../_images/XASViewer_prepeaks_fitresult2_form.png
+    :width: 75%
+    :align: left
+
+    Fit result frame for Pre-edge peak fit for a fit with 2 Gaussians.
+
+.. _fig_xasviewer_7b:
+
+.. figure:: ../_images/XASViewer_prepeaks_fitresult2_plot.png
+    :target: ../_images/XASViewer_prepeaks_fitresult2_plot.png
+    :width: 60%
+    :align: center
+
+    Pre-edge Peak data and best-fit with 2 Gaussians and baseline.
+
+.. subfigend::
+    :width: 0.48
+    :alt: pre-edge peak results2
+    :label: fig_xasviewer_7
+
+As mentioned above, fit results can be saved in two different ways, using
+the "PreEdge Peaks" menu.  First, the model to set up the fit can be saved
+to a `.modl` file and then re-read later and used for other fits. This
+model file can also be read in and used with the `lmfit`_ python module for
+complete scripting control.  Secondly, a fit can be *exported* to an ASCII
+file that will include the text of the fit report and columns including
+data, best-fit, and each of the components of the model.
 
 .. _xasviewer_lincombo:
 
