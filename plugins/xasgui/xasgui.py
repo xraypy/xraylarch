@@ -726,7 +726,7 @@ class XASFrame(wx.Frame):
 
         aprj = AthenaProject(filename=outfile, _larch=self.larch)
         for label, grp in zip(grouplist, savegroups):
-            aprj.add_group(grp, label=label)
+            aprj.add_group(grp)
 
         aprj.save(use_gzip=True)
 
