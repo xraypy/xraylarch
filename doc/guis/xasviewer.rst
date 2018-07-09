@@ -463,7 +463,7 @@ pre-edge peaks.
 
 Though the plot of the fit in :numref:`fig_xasviewer_5b` does not look too
 bad, we can see the fit is not perfect. Checking the "Plot with residual?"
-box we get the plot in :numref:`fit_xasviewer6` that shows the data and fit
+box we get the plot in :numref:`fig_xasviewer_6` that shows the data and fit
 and also the residual.  From this, we can see systematic oscillations in
 the fit residual that is well above the noise level and suggests that
 another peak may be needed to explain this data.  This is not too
