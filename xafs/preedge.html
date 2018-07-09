@@ -293,8 +293,8 @@ of <code class="docutils literal notranslate"><span class="pre">e0</span></code>
 <div class="section" id="the-mback-algorithm">
 <h2>9.2.3. The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
-Weng <a class="reference internal" href="#weng" id="id1">[Larch_13]</a> with an option of using the modification proposed by
-Lee <em>et al</em> <a class="reference internal" href="#lee-xiang" id="id2">[Larch_14]</a>.  In MBACK, the data are matched to the tabulated
+Weng <a class="reference internal" href="#weng" id="id1">[Preedge_1]</a> with an option of using the modification proposed by
+Lee <em>et al</em> <a class="reference internal" href="#lee-xiang" id="id2">[Preedge_2]</a>.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, <span class="math notranslate nohighlight">\(f''(E)\)</span>.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
@@ -323,7 +323,7 @@ adjusted by breaking the minimization function into two regions: the
 data points above the absorption edge.  <span class="math notranslate nohighlight">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
 <p>If this is used in publication, a citation should be given to
-Weng <a class="reference internal" href="#weng" id="id3">[Larch_13]</a>.</p>
+Weng <a class="reference internal" href="#weng" id="id3">[Preedge_1]</a>.</p>
 <dl class="function">
 <dt id="mback">
 <code class="descname">mback</code><span class="sig-paren">(</span><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
@@ -554,7 +554,7 @@ coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
-(<a class="reference internal" href="#fluo" id="id4">[Larch_15]</a>) can be used.  The algorithm is contained in the
+(<a class="reference internal" href="#fluo" id="id4">[Preedge_3]</a>) can be used.  The algorithm is contained in the
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
@@ -859,19 +859,19 @@ the spectrum deconvolved by the energy of its core level.</span></p>
 <p id="bibtex-bibliography-xafs/preedge-0"><table class="docutils citation" frame="void" id="weng" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[Larch_13]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id3">2</a>)</em> Tsu-Chien Weng, Geoffrey&nbsp;S. Waldo, and James&nbsp;E. Penner-Hahn. A method for normalization of X-ray absorption spectra. <em>Journal of Synchrotron Radiation</em>, 12(4):506–510, Jul 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049504034193">doi:10.1107/S0909049504034193</a>.</td></tr>
+<tr><td class="label">[Preedge_1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id3">2</a>)</em> Tsu-Chien Weng, Geoffrey&nbsp;S. Waldo, and James&nbsp;E. Penner-Hahn. A method for normalization of X-ray absorption spectra. <em>Journal of Synchrotron Radiation</em>, 12(4):506–510, Jul 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049504034193">doi:10.1107/S0909049504034193</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="lee-xiang" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Larch_14]</a></td><td>Julia&nbsp;C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. <em>The Astrophysical Journal</em>, 702(2):970, 2009. URL: <a class="reference external" href="http://stacks.iop.org/0004-637X/702/i=2/a=970">http://stacks.iop.org/0004-637X/702/i=2/a=970</a>, <a class="reference external" href="https://doi.org/0004-637X/702/i=2/a=970">doi:0004-637X/702/i=2/a=970</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id2">[Preedge_2]</a></td><td>Julia&nbsp;C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. <em>The Astrophysical Journal</em>, 702(2):970, 2009. URL: <a class="reference external" href="http://stacks.iop.org/0004-637X/702/i=2/a=970">http://stacks.iop.org/0004-637X/702/i=2/a=970</a>, <a class="reference external" href="https://doi.org/0004-637X/702/i=2/a=970">doi:0004-637X/702/i=2/a=970</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="fluo" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[Larch_15]</a></td><td>D.&nbsp;Haskel. Fluo. <span><a class="reference external" href="#"></a></span>http://www.aps.anl.gov/~haskel/fluo.html, 1999.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id4">[Preedge_3]</a></td><td>D.&nbsp;Haskel. Fluo. <span><a class="reference external" href="#"></a></span>http://www.aps.anl.gov/~haskel/fluo.html, 1999.</td></tr>
 </tbody>
 </table>
 </p>

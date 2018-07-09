@@ -290,94 +290,152 @@ form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a>
 and the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function for curve-fitting with the ability to
 constrain fitting Parameters.</p>
-<p>To do fitting of pre-edge peaks with the interface, one begins by fitting a
-“baseline” to account for the main absorption edge.  This baseline is
-modeled as a Lorentzian curve plus a line.  Fitting a baseline requires
-identifying energy ranges for both the main spectrum to be fitted and the
-pre-edge peaks – the part of the spectrum where the baseline should <em>not</em>
-be fitted.  This is illustrated in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 4.3.10</span></a> and
-<a class="reference internal" href="#fig-xasviewer-3b"><span class="std std-numref">Figure 4.3.11</span></a>.  Note that there are separate ranges for the
-“fit range” and the “pre-edge peak” range (illustrated with grey lines and
-blue ‘+’ signs on the plot).  The “pre-edge peak” range should be inside
-the fit range.</p>
-<p>Clicking “Fit baseline” will fit a baseline function and display the
-results.  The initial fit may have poorly guessed ranges for the pre-edge
-peaks and fit range and may require some adjustment.</p>
+<p>Fitting of pre-edge peaks with this panel is a two step process.</p>
+<p>First, one fits a “baseline” curve to account for the main absorption edge.
+This baseline is modeled as a Lorentzian curve plus a line which should be
+a reasonable enough approximation of the main absorption edge (say,
+<span class="math notranslate nohighlight">\(4p\)</span>) so that its tail represents the background of the main edge
+underneath the pre-edge peaks.</p>
+<p>Fitting the baseline requires identifying energy ranges for both the main
+spectrum to be fitted and the pre-edge peaks – the part of the spectrum
+which should be ignored when fitting the baseline.  This is illustrated in
+<a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 4.3.10</span></a> and <a class="reference internal" href="#fig-xasviewer-3b"><span class="std std-numref">Figure 4.3.11</span></a>.  Note that there
+are separate ranges for the “fit range” and the “pre-edge peak” range
+(illustrated with grey lines and blue circles on the plot).  The “pre-edge
+peak” range should be inside the fit range so that the baseline can fit
+part of the pre-edge region, at energies below the pre-edge peaks, and part
+of the main absorption edge region above the pre-edge peaks.</p>
+<p>Clicking “Fit baseline” will fit a baseline function and display the plot
+as shown below.  The initial fit may have poorly guessed ranges for the
+pre-edge peaks and fit range and may require some adjustment.  As mentioned
+above, clicking on the plot will select an energy that can then be
+transferred to any of the bounds energy using the corresponding pin icon
+<a class="reference internal" href="../_images/pin_icon.png"><img alt="pin" src="../_images/pin_icon.png" style="width: 18pt; height: 18pt;" /></a> on the form.</p>
 <div class="figure compound align-center" id="fig_xasviewer_3">
 <div style="width: 48%" class="subfigure align-center" id="id10">
-<span id="fig-xasviewer-3a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeak_baseline.png"><img alt="../_images/XASViewer_prepeak_baseline.png" src="../_images/XASViewer_prepeak_baseline.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.10 </span><span class="caption-text">Pre-edge peak Window of XASViewer, showing how select regions of
+<span id="fig-xasviewer-3a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_baseline_form.png"><img alt="../_images/XASViewer_prepeaks_baseline_form.png" src="../_images/XASViewer_prepeaks_baseline_form.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.10 </span><span class="caption-text">Pre-edge peak Panel of XASViewer, showing how select regions of
 pre-edge peaks for fitting a baseline.</span></p>
 </div>
 <div style="width: 48%" class="subfigure align-center" id="id11">
-<span id="fig-xasviewer-3b"></span><a class="reference external image-reference" href="../_images/XASViewer_plot_baseline.png"><img alt="../_images/XASViewer_plot_baseline.png" src="../_images/XASViewer_plot_baseline.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.11 </span><span class="caption-text">Plot of pre-edge peaks with baseline.  Note that the grey vertical
-lines show the fit range, the blue crosses show the pre-edge peak
-range, and the pink line shows the centroid of the pre-edge peaks after
-removal of the baseline.</span></p>
+<span id="fig-xasviewer-3b"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_baseline_plot.png"><img alt="../_images/XASViewer_prepeaks_baseline_plot.png" src="../_images/XASViewer_prepeaks_baseline_plot.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.11 </span><span class="caption-text">Plot of pre-edge peaks with baseline.  The grey vertical lines show the
+fit range and blue cicrles show the boundaries of the pre-edge peak
+range ignored in the baseline fit. The pink line shows the centroid of
+the pre-edge peaks after removal of the baseline.</span></p>
 </div>
-</div><p id="fig_xasviewer_3">Once the pre-edge baseline is satisfactory, you can add functions to model
-the pre-edge peaks themselves.  Select one of the “Peak Models” (typically
-Gaussian, Lorentzian, or Voigt), which will show a new tab in the “model
-components area” in the lower part of the form.  Note that the baseline
-will consist of a Lorentzian and linear model component, so that there will
-be at least 3 tabs for the 3 or more components of the pre-edge peak model.
-This is shown in <a class="reference internal" href="#fig-xasviewer-4a"><span class="std std-numref">Figure 4.3.12</span></a>, which shows the form for 1
-Gaussian peak, and the baseline.  You can include multiple peaks by
-repeatedly selecting the peak type from the drop-down menu.</p>
-<p>After selecting a peak type, click on the “Pick Values from Data” button,
-and then pick two points on the plot to help give initial ranges for that
-peak.  The points you pick do not have to be very accurate, and the initial
-values selected for the <cite>amplitude</cite>, <cite>center</cite>, and <cite>sigma</cite> parameters can
-be modified.  Note that you can place bounds on any of these parameters –
-it is probably a good idea to enforce the <cite>amplitude</cite> and <cite>sigma</cite> to be
-positive.  If using multiple peaks, it is often helpful to give realistic
-energy bounds for the <cite>center</cite> of each peak, so that they do not overlap.</p>
+</div><p id="fig_xasviewer_3">We will allow the baseline to be refined when fitting the peaks, so it does
+not need to be modeled perfectly, but it is helpful to get a decent fit to
+the baseline.  Once this baseline is satisfactorally modeled, you can add
+functions to model the pre-edge peaks themselves.  Selecting one of the
+“Peak Models” (typically Gaussian, Lorentzian, or Voigt) will show a new
+tab in the “model components area” in the lower part of the form.  Since
+the baseline consists of a Lorentzian curve and a line, there will now be 3
+tabs for the 3 components of the pre-edge peak model.  The background peak
+and the background line will have tabs labeled <cite>bp_</cite> and <cite>bl_</cite>,
+respectively, and the added Gaussian curve will be labeled <cite>gauss1_</cite>, as
+shown in <a class="reference internal" href="#fig-xasviewer-4a"><span class="std std-numref">Figure 4.3.12</span></a>, which shows the form with 1 Gaussian
+peak, and the two-component baseline.  You can add more peaks by repeatedly
+selecting the peak type from the drop-down menu labeled <em>Add Component</em>.</p>
+<p>Each of the tab for each functional component of the model will include a
+table of the Parameters for that peak.  For example, a line will have an
+<em>intercept</em> and a <em>slope</em> parameter, and most peak functions will have an
+<em>amplitude</em>, <em>center</em>, and <em>sigma</em> parameters (and perhaps more).  Each of
+these parameters will have a name and a value, and also have a Type
+drop-down list to allow it to <em>vary</em> or stay <em>fixed</em> in the fit.  You can
+also set it to be <em>constrained</em> by a simple mathematical expression of
+other parameter values.  If varied, you can also set bounds on the
+parameter values by using the Bounds drop-down list (to select <em>positive</em>,
+<em>negative</em>, or <em>custom</em>) and/or set Min and Max values.</p>
+<p>After selecting a functional form for the peak, clicking on the “Pick
+Values from Data” button, and then clicking two points on the plot near the
+peak of interest will fill in the form with initial values for the
+parameters for that peak.  This is shown in <a class="reference internal" href="#fig-xasviewer-4a"><span class="std std-numref">Figure 4.3.12</span></a>
+which has values filled in from the “two click method”, and in
+<a class="reference internal" href="#fig-xasviewer-4b"><span class="std std-numref">Figure 4.3.13</span></a> which shows the initial Gaussian peak.  The
+points you pick do not have to be very accurate, and the initial values
+selected for the <cite>amplitude</cite>, <cite>center</cite>, and <cite>sigma</cite> parameters can be
+modified.  You can also set bounds on any of these parameters – it is
+probably a good idea to enforce the <cite>amplitude</cite> and <cite>sigma</cite> to be positive,
+for example.  If using multiple peaks, it is often helpful to give
+realistic energy bounds for the <cite>center</cite> of each peak, so that the peaks
+don’t try to exchange.</p>
 <div class="figure compound align-center" id="fig_xasviewer_4">
 <div style="width: 49%" class="subfigure align-center" id="id12">
-<span id="fig-xasviewer-4a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeak_1gaussian.png"><img alt="../_images/XASViewer_prepeak_1gaussian.png" src="../_images/XASViewer_prepeak_1gaussian.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.12 </span><span class="caption-text">Pre-edge peak Window of XASViewer, showing how select regions of
-pre-edge peaks for fitting a baseline.</span></p>
+<span id="fig-xasviewer-4a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_1gaussian_form.png"><img alt="../_images/XASViewer_prepeaks_1gaussian_form.png" src="../_images/XASViewer_prepeaks_1gaussian_form.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.12 </span><span class="caption-text">Pre-edge peak Window of XASViewer, showing 3 components of a Gaussian
+and a baseline that includes a line and Lorentzian.</span></p>
 </div>
 <div style="width: 49%" class="subfigure align-center" id="id13">
-<span id="fig-xasviewer-4b"></span><a class="reference external image-reference" href="../_images/XASViewer_plot_1gaussian.png"><img alt="../_images/XASViewer_plot_1gaussian.png" src="../_images/XASViewer_plot_1gaussian.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.13 </span><span class="caption-text">Pre-edge peak Window of XASViewer, showing how select regions of
-pre-edge peaks for fitting a baseline.</span></p>
+<span id="fig-xasviewer-4b"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_1gaussian_plot.png"><img alt="../_images/XASViewer_prepeaks_1gaussian_plot.png" src="../_images/XASViewer_prepeaks_1gaussian_plot.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.13 </span><span class="caption-text">Plot of initial Gaussian guessed from the “two click method” for
+modeling pre-edge peaks.</span></p>
 </div>
-</div><p id="fig_xasviewer_4">Upon doing a fit, the plot is updated to show the data, best-fit, and each
-of the components used in the fit (<a class="reference internal" href="#fig-xasviewer-4b"><span class="std std-numref">Figure 4.3.13</span></a>). Fit
-statistics and best-fit parameter values, their uncertainties, and
-correlations are shown as a report in a separate window, with an example
-shown in <a class="reference internal" href="#fig-xasviewer-5a"><span class="std std-numref">Figure 4.3.14</span></a>.  Note that for peaks such as Gaussian,
-Lorentzian, and Voigt, not only are <cite>amplitude</cite> (that is, area under the
-peak), <cite>sigma</cite>, and <cite>center</cite> shown but so are <cite>fwhm</cite> (full width of peak at
-half the maximum height) and <cite>height</cite> (the maximum height of the peak).</p>
+</div><p id="fig_xasviewer_4">Once the model function is defined and initial parameters values set,
+clicking the Fit Model button will perform the fit. This will bring up
+a Fit Result form shown in <a class="reference internal" href="#fig-xasviewer-5a"><span class="std std-numref">Figure 4.3.14</span></a> and an
+initial plot of the data and fit as shown in <a class="reference internal" href="#fig-xasviewer-5b"><span class="std std-numref">Figure 4.3.15</span></a>.</p>
+<p>The Fit Result panel contains goodness-of-fit statistics and parameter
+values and uncertainties (or standard error).  At the top portion of the
+form, you can save a model to be read in and used later or export the data
+and fit components to a simple column-based data file.  You can also view
+the fit goodness-of-fit statistics for the fit.  There are also some
+options and a button for the plot of data and fit.</p>
+<p>In the lower portion of the form, you can read the values and uncertainties
+for the fitting parameters and for a number of <em>derived</em> parameters,
+including <cite>fit_centroid</cite> that is the (area-weighted) centroid of the
+functions that comprise the pre-edge peaks (not including the baseline) and
+the full-width-at-half-maximumn and height of each of the peaks (note that
+<cite>amplitude</cite> represents the area of the unit-normalized peak and <cite>height</cite>
+represents the maximum height for a peak).  You can click on the button
+labeled “Update Model with these Values” to put these best-fit values back
+into the starting values on the main form.  In addition, clicking on any
+variable parameter to show it correlations with other variables.  Note that
+the baseline parameters <em>are</em> refined (by default) in the fit to the
+pre-edge peaks.</p>
 <div class="figure compound align-center" id="fig_xasviewer_5">
-<div style="width: 49%" class="subfigure align-left" id="id14">
-<span id="fig-xasviewer-5a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeak_fitresult.png"><img alt="../_images/XASViewer_prepeak_fitresult.png" src="../_images/XASViewer_prepeak_fitresult.png" style="width: 75%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.14 </span><span class="caption-text">Fit result frame for Pre-edge peak fit.</span></p>
+<div style="width: 48%" class="subfigure align-left" id="id14">
+<span id="fig-xasviewer-5a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_fitresult1_form.png"><img alt="../_images/XASViewer_prepeaks_fitresult1_form.png" src="../_images/XASViewer_prepeaks_fitresult1_form.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.14 </span><span class="caption-text">Fit result frame for Pre-edge peak fit for a fit with 1 Gaussian.</span></p>
 </div>
-<div style="width: 49%" class="subfigure align-center" id="id15">
-<span id="fig-xasviewer-5b"></span><a class="reference external image-reference" href="../_images/XASViewer_plot_1residual.png"><img alt="../_images/XASViewer_plot_1residual.png" src="../_images/XASViewer_plot_1residual.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 4.3.15 </span><span class="caption-text">Pre-edge Peak fit with residual.</span></p>
+<div style="width: 48%" class="subfigure align-center" id="id15">
+<span id="fig-xasviewer-5b"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_fitresult1_plot.png"><img alt="../_images/XASViewer_prepeaks_fitresult1_plot.png" src="../_images/XASViewer_prepeaks_fitresult1_plot.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.15 </span><span class="caption-text">Pre-edge Peak data and best-fit with 1 Gaussian and baseline.</span></p>
 </div>
-</div><p id="fig_xasviewer_5">Though the plot of the fit in <a class="reference internal" href="#fig-xasviewer-4b"><span class="std std-numref">Figure 4.3.13</span></a> looks good,
-plotting the fit along with the residual (by selecting “Data+Residual” in
-the drop-down menu of “Plot:” choices) as shown in
-<a class="reference internal" href="#fig-xasviewer-5b"><span class="std std-numref">Figure 4.3.15</span></a> reveals a systematic mis-fit.  That is, the
-<cite>data-fit</cite> for this model clearly shows some spectral structure beyond just
-the noise in the data.  Adding a second Gaussian (and maybe even a third)
-will greatly help this fit.  To do that, add another Gaussian peak
-component to the fit model using the drop-down menu of “Add component:”,
-select initial values for that Gaussian, and re-fit the model.  We’ll leave
-that as an exercise for the reader.</p>
-<p>Fit results can be saved in two different ways, using the “PreEdge Peaks”
-menu.  First, the model to set up the fit can be saved to a <cite>.modl</cite> file
-and then re-read later and used for other fits. This model file can also be
-read in and used with the <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a> python module for complete scripting
-control.  Secondly, a fit can be <em>exported</em> to an ASCII file that will
-include the text of the fit report and columns including data, best-fit,
-and each of the components of the model.</p>
+</div><p id="fig_xasviewer_5">Though the plot of the fit in <a class="reference internal" href="#fig-xasviewer-5b"><span class="std std-numref">Figure 4.3.15</span></a> does not look too
+bad, we can see the fit is not perfect. Checking the “Plot with residual?”
+box we get the plot in <a class="reference internal" href="#fig-xasviewer-6"><span class="std std-numref">Figure 4.3.16</span></a> that shows the data and fit
+and also the residual.  From this, we can see systematic oscillations in
+the fit residual that is well above the noise level and suggests that
+another peak may be needed to explain this data.  This is not too
+surprising here – there are obviously two peaks in the pre-edge – but it
+is does illustrate a useful way to determine when it is useful to add more
+peaks.</p>
+<div class="figure align-center" id="id16">
+<span id="fig-xasviewer-6"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_fitresult1_residual_plot.png"><img alt="../_images/XASViewer_prepeaks_fitresult1_residual_plot.png" src="../_images/XASViewer_prepeaks_fitresult1_residual_plot.png" style="width: 55%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.16 </span><span class="caption-text">Pre-edge Peak plot of data, fit and residual.</span></p>
+</div>
+<p>Adding a second Gaussian (and maybe even a third) will greatly help this
+fit.  If we add another Gaussian peak component to the fit model using the
+drop-down menu of “Add component:”, select initial values for that second
+Gaussian before, and re-run the fit, we’ll see the Fit Results form and
+plot as shown in <a class="reference internal" href="#fig-xasviewer-7a"><span class="std std-numref">Figure 4.3.17</span></a> and <a class="reference internal" href="#fig-xasviewer-7b"><span class="std std-numref">Figure 4.3.18</span></a>.</p>
+<div class="figure compound align-center" id="fig_xasviewer_7">
+<div style="width: 48%" class="subfigure align-left" id="id17">
+<span id="fig-xasviewer-7a"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_fitresult2_form.png"><img alt="../_images/XASViewer_prepeaks_fitresult2_form.png" src="../_images/XASViewer_prepeaks_fitresult2_form.png" style="width: 75%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.17 </span><span class="caption-text">Fit result frame for Pre-edge peak fit for a fit with 2 Gaussians.</span></p>
+</div>
+<div style="width: 48%" class="subfigure align-center" id="id18">
+<span id="fig-xasviewer-7b"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_fitresult2_plot.png"><img alt="../_images/XASViewer_prepeaks_fitresult2_plot.png" src="../_images/XASViewer_prepeaks_fitresult2_plot.png" style="width: 60%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.3.18 </span><span class="caption-text">Pre-edge Peak data and best-fit with 2 Gaussians and baseline.</span></p>
+</div>
+</div><p id="fig_xasviewer_7">As mentioned above, fit results can be saved in two different ways, using
+the “PreEdge Peaks” menu.  First, the model to set up the fit can be saved
+to a <cite>.modl</cite> file and then re-read later and used for other fits. This
+model file can also be read in and used with the <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a> python module for
+complete scripting control.  Secondly, a fit can be <em>exported</em> to an ASCII
+file that will include the text of the fit report and columns including
+data, best-fit, and each of the components of the model.</p>
 </div>
 <div class="section" id="linear-combination-analysis">
 <span id="xasviewer-lincombo"></span><h2>4.3.5. Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this headline">¶</a></h2>

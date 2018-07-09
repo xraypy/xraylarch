@@ -132,17 +132,17 @@ working and ready for use.</p>
 <div class="section" id="single-file-installers">
 <h2>1.1. Single-File Installers<a class="headerlink" href="#single-file-installers" title="Permalink to this headline">¶</a></h2>
 <p>For Windows, MacOSX, and Linux, Larch now comes with simple installers,
-available at <a class="reference external" href="https:/millenia.cars.aps.anl.gov/gsecarrs/Data/Larch">Larch Binary Installers</a>.  These are self-contained files
-that will install a complete Python environment from Anaconda Python and
-all of X-rayLarch onto your computer.  Installing Larch this way will be
-create a folder in your home folder called <cite>xraylarch</cite> by default (you can
-change it).  This does not require administrative privilege and will not
-interfere with anything on your system – you can uninstall simply by
-removing this folder.  The installers are fairly large (300 to 600 Mb), but
-includes an entire scientific python environment.  Installing by the other
-means described below will not actually take less disk space, but will
-involve downloading many more smaller files, which may be an advantage for
-some people with poor connectivity.</p>
+available at <a class="reference external" href="https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch">Larch Binary Installers</a>.
+These are self-contained files that will install a complete Python environment
+from Anaconda Python and all of X-rayLarch onto your computer.  Installing
+Larch this way will be create a folder in your home folder called <cite>xraylarch</cite>
+by default (you can change it).  This does not require administrative
+privilege and will not interfere with anything on your system – you can
+uninstall simply by removing this folder.  The installers are fairly large
+(300 to 600 Mb), but includes an entire scientific python environment.
+Installing by the other means described below will not actually take less disk
+space, but will involve downloading many more smaller files, which may be an
+advantage for some people with poor connectivity.</p>
 <p id="installers-table"><strong>Table of Larch Installers</strong></p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -165,7 +165,10 @@ some people with poor connectivity.</p>
 <tr class="row-even"><td>Linux (64 bit)</td>
 <td><a class="reference external" href="https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-Linux-x86_64.sh">Larch for Linux</a></td>
 </tr>
-<tr class="row-odd"><td>Docs and Examples
+<tr class="row-odd"><td>Source Code</td>
+<td><a class="reference external" href="https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch/xraylarch-0.9.38.tar.gz">source code (tar.gz)</a></td>
+</tr>
+<tr class="row-even"><td>Docs and Examples
 (all systems)</td>
 <td><a class="reference external" href="https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.38-docs-examples.zip">Larch Docs and Examples</a></td>
 </tr>
@@ -249,20 +252,158 @@ Python 2.7, and we will maintain support for Python 2.7 through the end of
 </div>
 <div class="section" id="source-installation">
 <h2>1.4. Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
-<p>For Python-savvy users, Larch can be installed from source code.  The latest
-releases of the source code will be available from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases
-(github.com)</a>.  In addition, you can use <cite>git</cite> to grab the latest development
-version of the source code:</p>
+<p>For Python-savvy users, Larch can be installed from source. You can use either
+the <a class="reference external" href="https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch/xraylarch-0.9.38.tar.gz">source code (tar.gz)</a> or from <a class="reference external" href="https://github.com/xraypy/xraylarch/releases">Larch releases (github.com)</a>.  In
+addition, you can use <cite>git</cite> to grab the latest development version of the
+source code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xraypy</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
+<p>With the source kit unpacked using <cite>tar</cite> or <cite>zip</cite>, you should be able to
+install Larch using <cite>python setup.py install</cite>.  This should automatically use
+<cite>pip</cite> to install any required dependencies as well as Larch itself.  Depending
+on your platform and version of Python, you may need elevated permissions as
+from <cite>sudo</cite> to install Larch to a system folder.</p>
+<p>There are several required packages and a few “highly recommended” packages
+for Larch.  These are listed in the next section.</p>
 <div class="section" id="prerequisites">
 <h3>1.4.1. Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
-<p>Larch requires Python version 3.6 or 2.7. In addiion, the following Python
-packages are all required for Larch to work:</p>
+<p>Larch requires Python version 3.6 or 2.7. In addiion, many Python
+packages are required for Larch to work.  These are listed in the table below.</p>
+<p id="dependencies-table"><strong>Table of Larch Dependencies</strong> This lists the packages that are either
+required for Larch or required for some portion of Larch functionality to
+work. The required packages and several of the recommended packages will
+normally be installed by default or are easily available from with <cite>conda</cite> or
+<cite>pip</cite>.</p>
 <blockquote>
-<div>numpy, scipy, matplotlib, h5py, peakutils, pillow, psutil, requests,
-sqlalchemy, six, termcolor, wxPython, lmfit, asteval, wxmplot, wxutils.</div></blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="22%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Package name</th>
+<th class="head">min version</th>
+<th class="head">status, notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>numpy</td>
+<td>1.10</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>scipy</td>
+<td>0.17</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>six</td>
+<td>1.10</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>matplotlib</td>
+<td>2.0</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>sqlalchemy</td>
+<td>0.9</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>h5py</td>
+<td>2.4</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>scikit-learn</td>
+<td>0.18</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>pillow</td>
+<td>3.4</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>peakutils</td>
+<td>1.0.0</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>requests</td>
+<td>2.1</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>asteval</td>
+<td>0.9.12</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>lmfit</td>
+<td>0.9.11</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>uncertainties</td>
+<td>3.0</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>pyyaml</td>
+<td>&#160;</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>psutil</td>
+<td>&#160;</td>
+<td>required</td>
+</tr>
+<tr class="row-odd"><td>termcolor</td>
+<td>&#160;</td>
+<td>required</td>
+</tr>
+<tr class="row-even"><td>wxpython</td>
+<td>4.0.0</td>
+<td>required for GUIs, plotting</td>
+</tr>
+<tr class="row-odd"><td>wxmplot</td>
+<td>0.9.30</td>
+<td>required for plotting</td>
+</tr>
+<tr class="row-even"><td>wxutils</td>
+<td>0.1.3</td>
+<td>required for GUIs</td>
+</tr>
+<tr class="row-odd"><td>pyepics</td>
+<td>3.3.0</td>
+<td>needed for using Epics</td>
+</tr>
+<tr class="row-even"><td>scikit-image</td>
+<td>&#160;</td>
+<td>needed for tomography maps</td>
+</tr>
+<tr class="row-odd"><td>tomopy</td>
+<td>&#160;</td>
+<td>recommended for tomography</td>
+</tr>
+<tr class="row-even"><td>pyFAI</td>
+<td>&#160;</td>
+<td>needed for XRD</td>
+</tr>
+<tr class="row-odd"><td>fabio</td>
+<td>&#160;</td>
+<td>needed for XRD</td>
+</tr>
+<tr class="row-even"><td>PyCifRW</td>
+<td>&#160;</td>
+<td>needed for XRD</td>
+</tr>
+<tr class="row-odd"><td>epicsscan</td>
+<td>&#160;</td>
+<td>needed for epics scanning</td>
+</tr>
+<tr class="row-even"><td>psycopg2</td>
+<td>&#160;</td>
+<td>needed for epics scanning</td>
+</tr>
+<tr class="row-odd"><td>silx</td>
+<td>&#160;</td>
+<td>needed to read Spec files</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <p>These are all available from PyPI (the Python Package Index), and for
 Anaconda Python 2.7 and 3.6.  The packages not included with core Anaconda
 packages are available on the GSECARS conda channel, and will be installed
@@ -314,7 +455,7 @@ in the <cite>examples</cite> folder.  These are also available separately at
 <h2>1.6. Citing Larch<a class="headerlink" href="#citing-larch" title="Permalink to this headline">¶</a></h2>
 <p>Currently, the best citation for Larch is M. Newville, <em>Larch: An Analysis
 Package For XAFS And Related Spectroscopies</em>. Journal of Physics:
-Conference Series, 430:012007 (2013).  <a class="reference internal" href="#larch2013" id="id1">[Larch_2]</a></p>
+Conference Series, 430:012007 (2013).  <a class="reference internal" href="#larch2013" id="id1">[Install_1]</a></p>
 </div>
 <div class="section" id="funding-and-support">
 <h2>1.7. Funding and Support<a class="headerlink" href="#funding-and-support" title="Permalink to this headline">¶</a></h2>
@@ -415,7 +556,7 @@ the BSD License:</p>
 <p id="bibtex-bibliography-installation-0"><table class="docutils citation" frame="void" id="larch2013" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Larch_2]</a></td><td>M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. <em>Journal of Physics: Conference Series</em>, 430:012007, 2013. <a class="reference external" href="https://doi.org/10.1088/1742-6596/430/1/012007">doi:10.1088/1742-6596/430/1/012007</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[Install_1]</a></td><td>M. Newville. Larch: An Analysis Package For XAFS And Related Spectroscopies. <em>Journal of Physics: Conference Series</em>, 430:012007, 2013. <a class="reference external" href="https://doi.org/10.1088/1742-6596/430/1/012007">doi:10.1088/1742-6596/430/1/012007</a>.</td></tr>
 </tbody>
 </table>
 </p>
