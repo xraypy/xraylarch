@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2018-July-06'
-__version__ = '0.9.38'
+__date__    = '2018-July-10'
+__version__ = '0.9.39'
 
 import sys
 import numpy
@@ -15,7 +15,10 @@ except:
 
 def make_banner():
     authors = "M. Newville, M. Koker, B. Ravel, and others"
-    sysvers = sys.version.replace('\n', ' ')
+    sysvers = sys.version
+    if '\n' in sysvers:
+        sysvers = sysvers.split('\n')[0]
+
 
     lines = ["Larch %s (%s) %s" % (__version__, __date__, authors),
              "Python: %s" % (sysvers)]
@@ -29,7 +32,8 @@ def make_banner():
         reqs.append(vers)
     lines.append(', '.join(reqs))
 
-    border = '='*max([len(line) for line in lines])
+    linelen = max([len(line) for line in lines])
+    border = '='*min(linelen, 75)
     lines.insert(0, border)
     lines.append(border)
 
