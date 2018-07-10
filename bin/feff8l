@@ -2,7 +2,6 @@
 """
 Feff85L monolithic main program.
 
-
 This runs all (or selected) modules of Feff85L in order:
      feff8l_rdinp
      feff8l_pot
@@ -21,6 +20,16 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 from optparse import OptionParser
 import pkg_resources
+
+bytes2str = str
+if sys.version[0] == '3':
+    def bytes2str(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode(sys.stdout.encoding)
+        return str(s, sys.stdout.encoding)
+
 
 usage = """usage: %prog [options] folder(s)
 
@@ -66,6 +75,7 @@ class Feff8LRunner(object):
             self.run()
 
     def write(self, msg, verbose=True):
+        msg = bytes2str(msg)
         if verbose:
             sys.stdout.write(msg)
         self.logfile.write(msg)
@@ -97,12 +107,12 @@ class Feff8LRunner(object):
             cmd = [os.path.join(TOP_DIR, "feff8l_{:s}".format(module))]
             proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
             while True:
-                msg = proc.stdout.read(1)
+                msg = bytes2str(proc.stdout.read())
                 if msg == '':
                     break
                 self.write(msg, verbose=verbose)
             while True:
-                msg = proc.stdout.read(1)
+                msg = bytes2str(proc.stdout.read())
                 if msg == '':
                     break
                 self.write("#ERROR %s" % msg, verbose=True)
