@@ -523,6 +523,57 @@ complete scripting control.  Secondly, a fit can be *exported* to an ASCII
 file that will include the text of the fit report and columns including
 data, best-fit, and each of the components of the model.
 
+To continue with the analysis of the data in this example,
+:numref:`fig_xasviewer_7b` shows that the fit residual still has
+significant structure, indicating that either another peak should be
+included or that the Gaussian peak shape is not a good model for these
+peaks.  In fact, using 2 Voigt functions significantly improves the fit, as
+shown in :numref:`fig_xasviewer_8a`, with reduced :math:`\chi^2` dropping
+from 4.4e-6 to 3.2e-6 and similar improvements in the AIC and BIC
+statistics.  To do this, the two Gaussian peaks were deleted and two Voigt
+peaks added, with initial values selected with the "two click method".
+
+The fit of the pre-edge peaks is visibly improved but a systematic
+variation in the residual is still seen at the high energy side of the
+pre-edge peaks.  Adding a third Voigt function at around 7117 eV improves
+the fit even more as shown in :numref:`fig_xasviewer_8b`.  As shown, the
+scale of the residual is now 0.001, ten times better than the scale of the
+fit with 1 peak shown in :numref:`fig_xasviewer_6`, and shows much less
+systematic structure.  In addition, all the fit statistics are improved
+despite now using 14 variables: reduced :math:`\chi^2` becomes from 5.1e-7,
+AIC is -1957 and BIC is -1917.
+
+.. _fig_xasviewer_8:
+
+.. subfigstart::
+
+.. _fig_xasviewer_8a:
+
+.. figure:: ../_images/XASViewer_prepeaks_fitresult3_plot.png
+    :target: ../_images/XASViewer_prepeaks_fitresult3_plot.png
+    :width: 50%
+    :align: left
+
+    Fit result frame for Pre-edge peak fit
+    for a fit with 2 Voigt functions
+    plus the baseline.
+
+.. _fig_xasviewer_8b:
+
+.. figure:: ../_images/XASViewer_prepeaks_fitresult4_plot.png
+    :target: ../_images/XASViewer_prepeaks_fitresult4_plot.png
+    :width: 50%
+    :align: center
+
+    Pre-edge Peak data and best-fit for a fit with 3 Voigt functions plus
+    the baseline.
+
+.. subfigend::
+    :width: 0.48
+    :alt: pre-edge peak results3
+    :label: fig_xasviewer_8
+
+
 .. _xasviewer_lincombo:
 
 Linear Combination Analysis

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.38 documentation</title>
+    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.39 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -125,8 +125,8 @@
 <p>For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of FEFF (<a class="reference internal" href="#feff6-rehr" id="id1">[FeffPaths_1]</a>,
-<a class="reference internal" href="#feff6-siz" id="id2">[FeffPaths_2]</a>, <a class="reference internal" href="#rehralbers-rmp" id="id3">[FeffPaths_3]</a>) is beyond the scope of
+spectra.  While a complete description of FEFF (<a class="reference internal" href="#feff6-rehr" id="id1">[Larch_7]</a>,
+<a class="reference internal" href="#feff6-siz" id="id2">[Larch_8]</a>, <a class="reference internal" href="#rehralbers-rmp" id="id3">[Larch_9]</a>) is beyond the scope of
 this documentation, here we describe how to read the results from FEFF into
 Larch.  The main interface for this is the <a class="reference internal" href="#_xafs.feffpath" title="_xafs.feffpath"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code></a> function that
 reads FEFF <em>feffNNNN.dat</em> file and creates a FeffPath Group.</p>
@@ -665,8 +665,8 @@ set of paths – that is, a histogram of paths.</p>
 <p>The value for <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff (see <a class="reference internal" href="#feff6-rehr" id="id4">[FeffPaths_1]</a>,
-<a class="reference internal" href="#sevillano" id="id5">[FeffPaths_4]</a> and <a class="reference internal" href="#rehralbers-rmp" id="id6">[FeffPaths_3]</a>) Larch provides two
+up a full EXAFS spectra.  Borrowing from Feff (see <a class="reference internal" href="#feff6-rehr" id="id4">[Larch_7]</a>,
+<a class="reference internal" href="#sevillano" id="id5">[Larch_10]</a> and <a class="reference internal" href="#rehralbers-rmp" id="id6">[Larch_9]</a>) Larch provides two
 functions that use simple models to calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> for a Path.
 Both functions, <a class="reference internal" href="#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_eins()</span></code></a> and <a class="reference internal" href="#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_debye()</span></code></a> take arguments
 of sample temperature, a characteristic temperature, and a FeffPath, and
@@ -950,25 +950,25 @@ values in a fit of XAFS data to such a sum of paths.</p>
 <p id="bibtex-bibliography-xafs/feffpaths-0"><table class="docutils citation" frame="void" id="feff6-rehr" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[FeffPaths_1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id4">2</a>)</em> J.&nbsp;J. Rehr, J.&nbsp;Mustre~de~Leon, S.&nbsp;I. Zabinsky, and R.&nbsp;C. Albers. Theoretical x-ray absorption fine structure standards. <em>Journal of the American Chemical Society</em>, 113(14):5135–5140, 1991. <a class="reference external" href="https://doi.org/10.1021/ja00014a001">doi:10.1021/ja00014a001</a>.</td></tr>
+<tr><td class="label">[Larch_7]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id4">2</a>)</em> J.&nbsp;J. Rehr, J.&nbsp;Mustre~de~Leon, S.&nbsp;I. Zabinsky, and R.&nbsp;C. Albers. Theoretical x-ray absorption fine structure standards. <em>Journal of the American Chemical Society</em>, 113(14):5135–5140, 1991. <a class="reference external" href="https://doi.org/10.1021/ja00014a001">doi:10.1021/ja00014a001</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="feff6-siz" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[FeffPaths_2]</a></td><td>S.&nbsp;I. Zabinsky, J.&nbsp;J. Rehr, A.&nbsp;Ankudinov, R.&nbsp;C. Albers, and M.&nbsp;J. Eller. Multiple-scattering calculations of x-ray-absorption spectra. <em>Physical Rev. B</em>, 52(4):2995–3009, 1995. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.52.2995">doi:10.1103/PhysRevB.52.2995</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id2">[Larch_8]</a></td><td>S.&nbsp;I. Zabinsky, J.&nbsp;J. Rehr, A.&nbsp;Ankudinov, R.&nbsp;C. Albers, and M.&nbsp;J. Eller. Multiple-scattering calculations of x-ray-absorption spectra. <em>Physical Rev. B</em>, 52(4):2995–3009, 1995. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.52.2995">doi:10.1103/PhysRevB.52.2995</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="rehralbers-rmp" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[FeffPaths_3]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id6">2</a>)</em> J.&nbsp;J. Rehr and R.&nbsp;C. Albers. Theoretical approaches to x-ray absorption fine-structure. <em>Reviews of Modern Physics</em>, 72(3):621–654, 2000. <a class="reference external" href="https://doi.org/10.1103/RevModPhys.72.621">doi:10.1103/RevModPhys.72.621</a>.</td></tr>
+<tr><td class="label">[Larch_9]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id6">2</a>)</em> J.&nbsp;J. Rehr and R.&nbsp;C. Albers. Theoretical approaches to x-ray absorption fine-structure. <em>Reviews of Modern Physics</em>, 72(3):621–654, 2000. <a class="reference external" href="https://doi.org/10.1103/RevModPhys.72.621">doi:10.1103/RevModPhys.72.621</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="sevillano" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[FeffPaths_4]</a></td><td>E.&nbsp;Sevillano, H.&nbsp;Meuth, and J.&nbsp;J. Rehr. Extended x-ray absorption fine structure Debye-Waller factors. I. Monatomic crystals. <em>Physical Review B</em>, 20(12):4908–4911, 1979. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.20.4908">doi:10.1103/PhysRevB.20.4908</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id5">[Larch_10]</a></td><td>E.&nbsp;Sevillano, H.&nbsp;Meuth, and J.&nbsp;J. Rehr. Extended x-ray absorption fine structure Debye-Waller factors. I. Monatomic crystals. <em>Physical Review B</em>, 20(12):4908–4911, 1979. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.20.4908">doi:10.1103/PhysRevB.20.4908</a>.</td></tr>
 </tbody>
 </table>
 </p>
