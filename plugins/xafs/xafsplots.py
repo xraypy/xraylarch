@@ -204,9 +204,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
                       _larch=_larch)
         _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -272,9 +270,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
                       color=plotlabels.e0color, win=win, _larch=_larch)
         _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -377,9 +373,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
             kwin = kwin*max(abs(chi))
         _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 
@@ -438,9 +432,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_imag:
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -491,21 +483,21 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
             xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
             label='data', new=new, **opts)
     _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
-
+    redraw(win=win, _larch=_larch)
     # show chi(R) in next plot window
-    opts['win'] = win+1
+    opts['win'] = win = win+1
 
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
-    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
-                 'xmax': rmax, 'new': new})
+    opts.update(dict(xlabel=plotlabels.r, ylabel=ylabel,
+                     xmax=rmax, new=True, show_legend=True))
 
     if show_mag:
         _plot(dataset.data.r,  dataset.data.chir_mag+offset,
              label='|data|', **opts)
         opts['new'] = False
         _plot(dataset.model.r, dataset.model.chir_mag+offset,
-             label='|fit|',  **opts)
+             label='|fit|', **opts)
     #endif
     if show_real:
         _plot(dataset.data.r, dataset.data.chir_re+offset, label='Re[data]', **opts)
@@ -517,9 +509,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         opts['new'] = False
         plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -546,7 +536,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     """
     kweight = dataset.transform.kweight
     path = dataset.pathlist[ipath]
-    if label is None: label = 'path %i' % (ipath)
+    if label is None: label = 'path %i' % (1+ipath)
 
     chi_kw = offset + path.chi * path.k**kweight
 
@@ -584,18 +574,18 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     """
     path = dataset.pathlist[ipath]
     if label is None:
-        label = 'path %i' % (ipath)
+        label = 'path %i' % (1+ipath)
     #endif
     kweight =dataset.transform.kweight
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
 
-    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
-                 'xmax': rmax, 'new': new, 'delay_draw': True,
-                 '_larch': _larch})
+    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
+                delay_draw=True, _larch=_larch)
+
     opts.update(kws)
     if show_mag:
-        _plot(path.r,  offest+path.chir_mag, label=label, **opts)
+        _plot(path.r,  offset+path.chir_mag, label=label, **opts)
         opts['new'] = False
     #endif
     if show_real:
@@ -606,9 +596,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
         _plot(path.r,  offset+path.chir_im, label=label, **opts)
         opts['new'] = False
     #endif
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -642,7 +630,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
 
     _plot(model.k, model_chi_kw, title=title, label='sum', new=new,
           xlabel=plotlabels.r, ylabel=plotlabels.chikw.format(kweight),
-          xmin=xmin, xmax=kmax, win=win, delay_draw=True,_larch=_larch,
+          xmin=kmin, xmax=kmax, win=win, delay_draw=True,_larch=_larch,
           **kws)
 
     for ipath in range(len(dataset.pathlist)):
@@ -650,13 +638,11 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                     kmin=kmin, kmax=kmax, new=False, delay_draw=True,
                     win=win, _larch=_larch)
     #endfor
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
-def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
+def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                  show_real=False, show_imag=False, title=None, new=True,
                  win=1, delay_draw=False, _larch=None, **kws):
     """
@@ -685,20 +671,19 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
     ylabel = plotlabels.chirlab(kweight, show_mag=show_mag,
                                 show_real=show_real, show_imag=show_imag)
     title = _get_title(dataset, title=title)
-    opts.update({'xlabel': plotlabels.r, 'ylabel': ylabel,
-                 'xmax': rmax, 'new': new, 'delay_draw': True,
-                 'title': title, '_larch': _larch})
+    opts = dict(xlabel=plotlabels.r, ylabel=ylabel, xmax=rmax, new=new,
+                delay_draw=True, title=title, _larch=_larch)
     opts.update(kws)
     if show_mag:
-        _plot(path.r,  model.chir_mag, label=label, **opts)
+        _plot(model.r,  model.chir_mag, label='|sum|', **opts)
         opts['new'] = False
     #endif
     if show_real:
-        _plot(path.r,  model.chir_re, label=label, **opts)
+        _plot(model.r,  model.chir_re, label='Re[sum]', **opts)
         opts['new'] = False
     #endif
     if show_imag:
-        _plot(path.r,  model.chir_im, label=label, **opts)
+        _plot(model.r,  model.chir_im, label='Im[sum]', **opts)
         opts['new'] = False
     #endif
 
@@ -707,9 +692,7 @@ def plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True,
                     show_mag=show_mag, show_real=show_real,
                     show_imag=show_imag, **opts)
     #endfor
-    if not delay_draw:
-        redraw(win=win, _larch=_larch)
-    #endif
+    redraw(win=win, _larch=_larch)
 #enddef
 
 
