@@ -11,6 +11,16 @@ import re
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter)
 
+bytes2str = str
+if sys.version[0] == '3':
+    def bytes2str(s):
+        if isinstance(s, str):
+            return s
+        elif isinstance(s, bytes):
+            return s.decode(sys.stdout.encoding)
+        return str(s, sys.stdout.encoding)
+
+
 def find_exe(exename):
     bindir = 'bin'
     if os.name == 'nt':
@@ -174,7 +184,9 @@ class FeffRunner(Group):
 
         f = open(log, 'a')
         header = "\n======== running Feff module %s ========\n" % exe
+
         def write(msg):
+            msg = bytes2str(msg)
             msg = " : {:s}\n".format(msg.strip().rstrip())
             self._larch.writer.write(msg)
 
@@ -190,7 +202,7 @@ class FeffRunner(Group):
             if  process.returncode is None:
                 process.poll()
             time.sleep(0.01)
-            line = process.stdout.readline()
+            line = bytes2str(process.stdout.readline())
             if not line:
                 break
             if self.verbose:
