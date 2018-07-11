@@ -472,11 +472,16 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     mu  = norm[imin:imax+1]
     peaks = mu-bline
 
-    # uncertainty in mu includes only uncertainties in baseline fit
-    dpeaks = result.eval_uncertainty(result.params, x=edat)
-
-    # estimate centroid and its uncertainty
+    # estimate centroid
     cen = (edat*peaks).sum() / peaks.sum()
+
+    # uncertainty in mu includes only uncertainties in baseline fit
+    # and uncertainty in centroid:
+    try:
+        dpeaks = result.eval_uncertainty(result.params, x=edat)
+    except:
+        dbpeaks = 0.0
+
     cen_plus = (edat*(peaks+dpeaks)).sum()/ (peaks+dpeaks).sum()
     cen_minus = (edat*(peaks-dpeaks)).sum()/ (peaks-dpeaks).sum()
     dcen = abs(cen_minus - cen_plus) / 2.0
