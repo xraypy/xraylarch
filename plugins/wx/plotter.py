@@ -285,17 +285,16 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         title   = 'Fit Plot Window %i' % win
         symname = '%s.fitplot%i' % (MODNAME, win)
 
-    cur_disp = _larch.symtable.get_symbol(symname, create=True)
-    if win in display_dict and isinstance(cur_disp, creator):
+    if win in display_dict:
         display = display_dict[win]
     else:
-        display = cur_disp
-    if display is None:
-        display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
-        if wintitle is not None:
-            title = wintitle
-        display.SetTitle(title)
-
+        display = _larch.symtable.get_symbol(symname, create=True)
+        if display is None:
+            display = creator(window=win, wxparent=wxparent,
+                              size=size, _larch=_larch)
+    if wintitle is not None:
+        title = wintitle
+    display.SetTitle(title)
     _larch.symtable.set_symbol(symname, display)
     return display
 
@@ -409,9 +408,12 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
 
     See Also: oplot, newplot
     """
+    print("_plot :A: ", win)
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
+    print("_plot :B: ", plotter, new)
+
     if plotter is None:
         return
     plotter.Raise()
