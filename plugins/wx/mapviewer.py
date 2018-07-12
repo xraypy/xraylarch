@@ -1315,7 +1315,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids['User Comments %i' %(i+1)].SetLabel(comm)
 
         pos_addrs = [str(x) for x in xrmmap['config/positioners'].keys()]
-        pos_label = [str(x.value) for x in xrmmap['config/positioners'].values()]
+        pos_label = [h5str(x.value) for x in xrmmap['config/positioners'].values()]
 
         scan_pos1 = h5str(xrmmap['config/scan/pos1'].value)
         scan_pos2 = h5str(xrmmap['config/scan/pos2'].value)
@@ -1356,7 +1356,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         cur_energy = ''
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
-            name = str(name).lower()
+            name = bytes2str(name).lower()
+            val = h5str(val)
 
             if 'ring_current' in name or 'ring current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
@@ -2288,6 +2289,11 @@ class MapViewerFrame(wx.Frame):
 
     def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, xrmfile=None):
         'save pixel as area, and perhaps to scandb'
+        if x is None:
+            x = float(xrmfile.get_pos(0, mean=True)[ix])
+        if y is None:
+            y = float(xrmfile.get_pos(1, mean=True)[iy])
+
         if len(name) < 1:
             return
         if xrmfile is None:
@@ -2305,37 +2311,34 @@ class MapViewerFrame(wx.Frame):
         # show position on map
         self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
 
-        # next, save file into database
-        if self.use_scandb and self.instdb is not None:
-            pvn  = pv_fullname
-            conf = xrmfile.xrmmap['config']
-            pos_addrs = [pvn(tval) for tval in conf['positioners']]
-            env_addrs = [pvn(tval) for tval in conf['environ/address']]
-            env_vals  = [str(tval) for tval in conf['environ/value']]
+        # make sure we can save position into database
+        if not self.use_scandb or self.instdb is None:
+            return
 
-            position = {}
-            for p in pos_addrs:
-                position[p] = None
+        samplestage = self.instdb.get_instrument(self.inst_name)
+        if samplestage is None:
+            return
+        allpvs = [pv.name for pv in samplestage.pv]
 
-            if x is None:
-                x = float(xrmfile.get_pos(0, mean=True)[ix])
-            if y is None:
-                y = float(xrmfile.get_pos(1, mean=True)[iy])
+        pvn  = pv_fullname
+        conf = xrmfile.xrmmap['config']
+        pos_addrs = [pvn(h5str(tval)) for tval in conf['positioners']]
+        env_addrs = [pvn(h5str(tval)) for tval in conf['environ/address']]
+        env_vals  = [h5str(tval) for tval in conf['environ/value']]
+        
+        position = {}
+        for pv in allpvs:
+            position[pv] = None
 
-            position[pvn(conf['scan/pos1'].value)] = x
-            position[pvn(conf['scan/pos2'].value)] = y
-
-            for addr, val in zip(env_addrs, env_vals):
-                if addr in pos_addrs and position[addr] is None:
-                    position[addr] = float(val)
-
-            if title is None:
-                title = '%s: %s' % (xrmfile.filename, name)
-
-            notes = {'source': title}
-
-            self.instdb.save_position(self.inst_name, name, position,
-                                      notes=json.dumps(notes))
+        for addr, val in zip(env_addrs, env_vals):
+            if addr in allpvs:
+                position[addr] = float(val)
+        position[pvn(h5str(conf['scan/pos1'].value))] = x
+        position[pvn(h5str(conf['scan/pos2'].value))] = y
+        
+        notes = {'source': '%s: %s' % (xrmfile.filename, name)}
+        self.instdb.save_position(self.inst_name, name, position,
+                                  notes=json.dumps(notes))
 
 
     def add_tomodisplay(self, title, det=None, _lassocallback=True):
