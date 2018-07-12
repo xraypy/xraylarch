@@ -197,24 +197,25 @@ with open('requirements.txt', 'r') as f:
     requirements = f.readlines()
 
 # now we have all the data files, so we can run setup
-setup(name = 'xraylarch',
-      version = __version__,
-      author = 'Matthew Newville and the X-rayLarch Development Team',
-      author_email = 'newville@cars.uchicago.edu',
-      url          = 'http://xraypy.github.io/xraylarch/',
-      download_url = 'http://xraypy.github.io/xraylarch/',
-      license = 'BSD',
-      description = 'Synchrotron X-ray data analysis in python',
-      package_dir = {'larch': 'lib'},
-      packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
-      install_requires=requirements,
-      data_files  = data_files,
-      platforms = ['Windows', 'Linux', 'Mac OS X'],
-      classifiers=['Intended Audience :: Science/Research',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Topic :: Scientific/Engineering'],
-     )
+_setup = setup(
+    name = 'xraylarch',
+    version = __version__,
+    author = 'Matthew Newville and the X-rayLarch Development Team',
+    author_email = 'newville@cars.uchicago.edu',
+    url          = 'http://xraypy.github.io/xraylarch/',
+    download_url = 'http://xraypy.github.io/xraylarch/',
+    license = 'BSD',
+    description = 'Synchrotron X-ray data analysis in python',
+    package_dir = {'larch': 'lib'},
+    packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
+    install_requires=requirements,
+    data_files  = data_files,
+    platforms = ['Windows', 'Linux', 'Mac OS X'],
+    classifiers=['Intended Audience :: Science/Research',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python',
+                 'Topic :: Scientific/Engineering'],
+)
 
 
 def remove_cruft(basedir, filelist):
@@ -305,6 +306,10 @@ if INSTALL:
     remove_distutils_sitepackage()
 
     scriptdir = pjoin(sys.exec_prefix, bindir)
+    install_prefix = _setup.get_command_obj('install').root
+    if install_prefix is not None:
+        scriptdir = pjoin(install_prefix, scriptdir)
+
     for src in scripts:
         _, fname = psplit(src)
         dest = pjoin(scriptdir, fname)
