@@ -235,6 +235,7 @@ class LarchPanel(wx.Panel):
         self.objtree.SetRootObject(self.larchshell.symtable)
         self.larchshell.set_textstyle('text2')
         self.larchshell.write(larch.make_banner())
+        self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
         root = self.objtree.tree.GetRootItem()
         self.objtree.tree.Expand(root)
