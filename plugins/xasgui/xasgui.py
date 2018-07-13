@@ -998,10 +998,21 @@ class XASFrame(wx.Frame):
 
         # check if rebin is needed
         thisgroup = getattr(self.larch.symtable, groupname)
-        en = thisgroup.energy
+
         do_rebin = False
-        if len(en) > 1000 or ((max(en)-min(en)) > 300 and
-                              (np.diff(en).mean() < 1.0)):
+        try:
+            en = thisgroup.energy
+        except:
+            do_rebin = True
+            en = thisgroup.energy = thisgroup.xdat
+        # test for rebinning:
+        #  too many data points
+        #  unsorted energy data or data in angle
+        #  too fine a step size at the end of the data range
+        if (len(en) > 1000 or
+            any(np.diff(en) < 0) or
+            ((max(en)-min(en)) > 350 and
+             (np.diff(en[:100]).mean() < 1.0))):
             msg = """This dataset may need to be rebinned.
             Rebin now?"""
             dlg = wx.MessageDialog(self, msg, 'Warning',
