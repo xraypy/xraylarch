@@ -351,10 +351,13 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      1. The input data group must have the following attributes:
          k, chi, kwin, filename
     """
-    if kweight is None and hasattr(group, 'xftf_details'):
-        kweight = dgroup.xftf_details.call_args['kweight']
+    if kweight is None:
+        kweight = 0
+        xft = getattr(dgroup, 'xftf_details', None)
+        if xft is not None:
+            kweight = xft.call_args.get('kweight', 0)
+        #endif
     #endif
-    if kweight is None: kweight = 0
 
     chi = dgroup.chi * dgroup.k ** kweight
     opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3,
