@@ -408,12 +408,9 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
 
     See Also: oplot, newplot
     """
-    print("_plot :A: ", win)
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
                           xrf=xrf, stacked=stacked,
                           wintitle=wintitle,  _larch=_larch)
-    print("_plot :B: ", plotter, new)
-
     if plotter is None:
         return
     plotter.Raise()
