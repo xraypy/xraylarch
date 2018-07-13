@@ -19,7 +19,7 @@ from .colors import GUIColors
 from .buttons import Button
 from .choice import Choice
 from .utils import (pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
-                    FRAMESTYLE, Font)
+                    FRAMESTYLE, HLine, Font)
 
 import larch
 from larch import Group, Interpreter
@@ -42,25 +42,36 @@ DATATYPES = ('raw', 'xas')
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
     def __init__(self, parent, group, on_ok=None):
-
+        self.parent = parent
         self.group = group
         self.on_ok = on_ok
         wx.Frame.__init__(self, None, -1, 'Edit Array Names',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
         self.SetFont(Font(10))
-        sizer = wx.GridBagSizer(4, 4)
+        sizer = wx.GridBagSizer(2, 2)
+        panel = scrolled.ScrolledPanel(self)
 
-        self.SetMinSize((600, 600))
+        self.SetMinSize((675, 450))
 
         self.wids = {}
-        cind = SimpleText(self, label='Column')
-        cold = SimpleText(self, label='Current Name')
-        cnew = SimpleText(self, label='Enter New Name')
-        cret = SimpleText(self, label='  Result   ', size=(150, -1))
-        cinfo = SimpleText(self, label='   Data Range')
-
         ir = 0
+        sizer.Add(Button(panel, 'Apply Changes', size=(200, -1),
+                         action=self.onOK),
+                  (0, 1), (1, 2), LCEN, 3)
+        sizer.Add(Button(panel, 'Use Column Number', size=(200, -1),
+                         action=self.onColNumber),
+                  (0, 3), (1, 2), LCEN, 3)
+        sizer.Add(HLine(panel, size=(550, 2)),
+                  (1, 1), (1, 5), LCEN, 3)
+
+        cind = SimpleText(panel, label='Column')
+        cold = SimpleText(panel, label='Current Name')
+        cnew = SimpleText(panel, label='Enter New Name')
+        cret = SimpleText(panel, label='  Result   ', size=(150, -1))
+        cinfo = SimpleText(panel, label='   Data Range')
+
+        ir = 2
         sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
         sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
         sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
@@ -69,19 +80,20 @@ class EditColumnFrame(wx.Frame) :
 
         for i, name in enumerate(group.array_labels):
             ir += 1
-            cind = SimpleText(self, label='  %i ' % (i+1))
-            cold = SimpleText(self, label=' %s ' % name)
-            cret = SimpleText(self, label=fix_varname(name), size=(150, -1))
-            cnew = wx.TextCtrl(self,  value=name, size=(150, -1))
+            cind = SimpleText(panel, label='  %i ' % (i+1))
+            cold = SimpleText(panel, label=' %s ' % name)
+            cret = SimpleText(panel, label=fix_varname(name), size=(150, -1))
+            cnew = wx.TextCtrl(panel,  value=name, size=(150, -1))
+
             cnew.Bind(wx.EVT_KILL_FOCUS, partial(self.update, index=i))
             cnew.Bind(wx.EVT_CHAR, partial(self.update_char, index=i))
             cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
 
             arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
-            cinfo = SimpleText(self, label=info_str)
-            self.wids[i] = cnew
-            self.wids["ret_%i" % i] = cret
+            cinfo = SimpleText(panel, label=info_str)
+            self.wids["%d" % i] = cnew
+            self.wids["ret_%d" % i] = cret
 
             sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
             sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
@@ -89,13 +101,28 @@ class EditColumnFrame(wx.Frame) :
             sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
             sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
 
-        sizer.Add(Button(self, 'OK', action=self.onOK), (ir+1, 1), (1, 2), LCEN, 3)
-        pack(self, sizer)
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
         self.Show()
         self.Raise()
 
+    def onColNumber(self, evt=None, index=-1):
+        for name, wid in self.wids.items():
+            val = name
+            if name.startswith('ret_'):
+                val = name[4:]
+                setter = wid.SetLabel
+            else:
+                setter = wid.SetValue
+            setter("col_%d" % (int(val) +1))
+
     def update(self, evt=None, index=-1):
-        newval = fix_varname(self.wids[index].GetValue())
+        newval = fix_varname(self.wids["%d" % index].GetValue())
         self.wids["ret_%i" % index].SetLabel(newval)
 
     def update_char(self, evt=None, index=-1):
@@ -134,9 +161,9 @@ class ColumnDataFileFrame(wx.Frame) :
         arr_labels = [l.lower() for l in self.initgroup.array_labels]
 
         if self.workgroup.datatype is None:
-            self.workgroup.datatype = 'raw'
-            if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
-                self.workgroup.datatype = 'xas'
+            self.workgroup.datatype = 'xas'
+            # self.workgroup.datatype = 'raw'
+            ## if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
 
         self.read_ok_cb = read_ok_cb
         self.array_sel = {'xpop': '',  'xarr': None,
@@ -186,7 +213,7 @@ class ColumnDataFileFrame(wx.Frame) :
         opts['size'] = (50, -1)
         self.yop =  Choice(panel, choices=ARR_OPS, **opts)
 
-        opts['size'] = (120, -1)
+        opts['size'] = (150, -1)
 
         self.use_deriv = Check(panel, label='use derivative',
                                default=self.array_sel['use_deriv'], **opts)
@@ -593,9 +620,14 @@ class ColumnDataFileFrame(wx.Frame) :
             npts = min(len(workgroup.xdat), len(workgroup.ydat))
         except AttributeError:
             return
+        except ValueError:
+            return
 
-        if npts > 1000 or ((max(workgroup.xdat)-min(workgroup.xdat)) > 300 and
-                           (np.diff(workgroup.xdat).mean() < 1.0)):
+        en = workgroup.xdat
+        if (len(en) > 1000 or
+            any(np.diff(en) < 0) or
+            ((max(en)-min(en)) > 350 and
+             (np.diff(en[:100]).mean() < 1.0))):
             self.message.SetLabel("Warning: data may need to be rebinned!")
         else:
             self.message.SetLabel("")
