@@ -38,6 +38,16 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
 
+class AddColumnsFrame(wx.Frame) :
+    """Add Column Labels for a larch grouop"""
+    def __init__(self, parent, group, data, on_ok=None):
+        self.parent = parent
+        self.group = group
+        self.data = data
+        self.on_ok = on_ok
+        wx.Frame.__init__(self, None, -1, 'Add Columns',
+                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
 
 class EditColumnFrame(wx.Frame) :
     """Edit Column Labels for a larch grouop"""
@@ -257,10 +267,12 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
+        _add    = Button(bpanel, 'Add Columns', action=self.onAddColumns)
 
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
         bsizer.Add(_edit)
+        bsizer.Add(_add)
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
@@ -404,10 +416,24 @@ class ColumnDataFileFrame(wx.Frame) :
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
 
+    def onAddColumns(self, event=None):
+        self.show_subframe('addcol', AddColumnsFrame,
+                           group=self.workgroup,
+                           data=self.initgroup.data,
+                           on_ok=self.add_columns)
+
+    def add_columns(self, data, columns):
+        print("Add Columns")
+        # x.shape = (20, 5)
+        # col6 = (calc_some(x)).reshape(20, 1)
+        # newx = np.append(x, col6, axis=1)
+        pass
+
     def onEditNames(self, evt=None):
         self.show_subframe('editcol', EditColumnFrame,
                            group=self.workgroup,
                            on_ok=self.set_array_labels)
+
 
 
     def set_array_labels(self, arr_labels):
@@ -487,6 +513,7 @@ class ColumnDataFileFrame(wx.Frame) :
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
         self.onUpdate()
+
 
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
