@@ -3,6 +3,7 @@
 
 """
 import os
+import re
 import numpy as np
 np.seterr(all='ignore')
 
@@ -40,13 +41,167 @@ DATATYPES = ('raw', 'xas')
 
 class AddColumnsFrame(wx.Frame) :
     """Add Column Labels for a larch grouop"""
-    def __init__(self, parent, group, data, on_ok=None):
+    def __init__(self, parent, group, on_ok=None):
         self.parent = parent
         self.group = group
-        self.data = data
         self.on_ok = on_ok
-        wx.Frame.__init__(self, None, -1, 'Add Columns',
+        wx.Frame.__init__(self, None, -1, 'Add Selected Columns',
                           style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
+        self.SetFont(Font(10))
+        sizer = wx.GridBagSizer(2, 2)
+        panel = scrolled.ScrolledPanel(self)
+
+        self.SetMinSize((525, 500))
+
+        self.wids = {}
+
+        lab_aname = SimpleText(panel, label='Save Array Name:')
+        lab_range = SimpleText(panel, label='Use column numbers:')
+        lab_regex = SimpleText(panel, label='Use column labels:')
+
+        wids = self.wids = {}
+
+        wids['arrayname'] = wx.TextCtrl(panel, value='sum',   size=(200, -1))
+        wids['tc_nums']  = wx.TextCtrl(panel, value='1,3-10', size=(200, -1))
+        wids['tc_regex']    = wx.TextCtrl(panel, value='*fe*',  size=(200, -1))
+
+        savebtn   = Button(panel, 'Save',   action=self.onOK)
+        plotbtn   = Button(panel, 'Plot Current Sum',   action=self.onPlot)
+        sel_nums  = Button(panel, 'Select Column Numbers',
+                           action=self.onSelColumns)
+        sel_re    = Button(panel, 'Select Name Pattern',
+                           action=self.onSelRegex)
+
+
+        sizer.Add(lab_aname,         (0, 0), (1, 1), LCEN, 3)
+        sizer.Add(wids['arrayname'], (0, 1), (1, 2), LCEN, 3)
+
+        sizer.Add(plotbtn,         (0, 3), (1, 1), LCEN, 3)
+        sizer.Add(savebtn,         (0, 4), (1, 1), LCEN, 3)
+
+        sizer.Add(lab_range,       (1, 0), (1, 1), LCEN, 3)
+        sizer.Add(wids['tc_nums'], (1, 1), (1, 2), LCEN, 3)
+        sizer.Add(sel_nums,        (1, 3), (1, 1), LCEN, 3)
+
+        sizer.Add(lab_regex,        (2, 0), (1, 1), LCEN, 3)
+        sizer.Add(wids['tc_regex'], (2, 1), (1, 2), LCEN, 3)
+        sizer.Add(sel_re,           (2, 3), (1, 1), LCEN, 3)
+
+        sizer.Add(HLine(panel, size=(550, 2)),
+                  (3, 0), (1, 5), LCEN, 3)
+
+        ir = 4
+
+        cind  = SimpleText(panel, label='Column Number')
+        cname = SimpleText(panel, label='Column Name')
+        csel = SimpleText(panel, label='Select')
+
+        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
+        sizer.Add(cname,  (ir, 1), (1, 1), LCEN, 3)
+        sizer.Add(csel,  (ir, 2), (1, 1), LCEN, 3)
+
+        for i, name in enumerate(group.array_labels):
+            ir += 1
+            cind = SimpleText(panel, label='  %i ' % (i+1))
+            cname = SimpleText(panel, label=' %s ' % name)
+            csel = Check(panel, label='', default=False)
+
+            self.wids["col_%d" % i] = csel
+
+            sizer.Add(cind,   (ir, 0), (1, 1), LCEN, 3)
+            sizer.Add(cname,  (ir, 1), (1, 1), LCEN, 3)
+            sizer.Add(csel,   (ir, 2), (1, 1), LCEN, 3)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def make_sum(self):
+        sel =[]
+        for name, wid in self.wids.items():
+            if name.startswith('col_') and wid.IsChecked():
+                sel.append(int(name[4:]))
+        self.selected_columns = np.array(sel)
+        narr, npts = self.group.raw.data.shape
+        ydat = np.zeros(npts, dtype=np.float)
+        for i in sel:
+            ydat += self.group.raw.data[i, :]
+        return ydat
+
+    def get_label(self):
+        label_in = self.wids["arrayname"].GetValue()
+        label = fix_varname(label_in)
+        if label in self.group.array_labels:
+            count = 1
+            while label in self.group.array_labels and count < 1000:
+                label = "%s_%d" % (label, count)
+                count +=1
+        if label != label_in:
+            self.wids["arrayname"].SetValue(label)
+        return label
+
+    def onOK(self, event=None):
+        ydat = self.make_sum()
+        npts = len(ydat)
+        label = self.get_label()
+
+        self.group.array_labels.append(label)
+        new = np.append(self.group.raw.data, ydat.reshape(1, npts), axis=0)
+        self.group.raw.data = new
+        self.on_ok(label, self.selected_columns)
+
+    def onPlot(self, event=None):
+        ydat = self.make_sum()
+        xdat = self.group.xdat
+        label = self.get_label()
+        label = "%s (not saved)" % label
+        popts = dict(marker='o', markersize=4, linewidth=1.5, ylabel=label,
+                     label=label, xlabel=self.group.plot_xlabel)
+        self.parent.plotpanel.plot(xdat, ydat, **popts)
+
+
+    def onSelColumns(self, event=None):
+        pattern = self.wids['tc_nums'].GetValue().split(',')
+        sel = []
+        for part in pattern:
+            if '-' in part:
+                start, stop = part.split('-')
+                try:
+                    istart = int(start)
+                except ValueError:
+                    istart = 1
+                try:
+                    istop = int(stop)
+                except ValueError:
+                    istop = len(self.group.array_labels) + 1
+
+                sel.extend(range(istart-1, istop))
+            else:
+                try:
+                    sel.append(int(part)-1)
+                except:
+                    pass
+
+        for name, wid in self.wids.items():
+            if name.startswith('col_'):
+                wid.SetValue(int(name[4:]) in sel)
+
+    def onSelRegex(self, event=None):
+        pattern = self.wids['tc_regex'].GetValue().replace('*', '.*')
+        pattern = pattern.replace('..*', '.*')
+        sel =[]
+        for i, name in enumerate(self.group.array_labels):
+            sel = re.search(pattern, name, flags=re.IGNORECASE) is not None
+            self.wids["col_%d" % i].SetValue(sel)
+
+
 
 
 class EditColumnFrame(wx.Frame) :
@@ -80,6 +235,7 @@ class EditColumnFrame(wx.Frame) :
         cnew = SimpleText(panel, label='Enter New Name')
         cret = SimpleText(panel, label='  Result   ', size=(150, -1))
         cinfo = SimpleText(panel, label='   Data Range')
+        cplot = SimpleText(panel, label='   Plot')
 
         ir = 2
         sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
@@ -87,6 +243,7 @@ class EditColumnFrame(wx.Frame) :
         sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
         sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
         sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
+        sizer.Add(cplot, (ir, 5), (1, 1), LCEN, 3)
 
         for i, name in enumerate(group.array_labels):
             ir += 1
@@ -102,6 +259,9 @@ class EditColumnFrame(wx.Frame) :
             arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
             cinfo = SimpleText(panel, label=info_str)
+            cplot = Button(panel, 'Plot', action=partial(self.onPlot, index=i))
+
+
             self.wids["%d" % i] = cnew
             self.wids["ret_%d" % i] = cret
 
@@ -110,6 +270,7 @@ class EditColumnFrame(wx.Frame) :
             sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
             sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
             sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
+            sizer.Add(cplot, (ir, 5), (1, 1), LCEN, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -120,6 +281,16 @@ class EditColumnFrame(wx.Frame) :
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+    def onPlot(self, event=None, index=None):
+        if index is not None:
+            x = self.parent.workgroup.index
+            y = self.parent.workgroup.data[index, :]
+            label = self.wids["ret_%i" % index].GetLabel()
+            popts = dict(marker='o', markersize=4, linewidth=1.5,
+                         ylabel=label, xlabel='data point', label=label)
+
+            self.parent.plotpanel.plot(x, y, **popts)
 
     def onColNumber(self, evt=None, index=-1):
         for name, wid in self.wids.items():
@@ -148,7 +319,6 @@ class EditColumnFrame(wx.Frame) :
             array_labels.append(newname)
 
         if callable(self.on_ok):
-            # print(' -> on_ok ', self.on_ok, array_labels)
             self.on_ok(array_labels)
         self.Destroy()
 
@@ -160,8 +330,10 @@ class ColumnDataFileFrame(wx.Frame) :
         self.parent = parent
         self._larch = _larch
         self.path = filename
+        self.extra_sums = {}
 
         group = self.initgroup = self.read_column_file(self.path)
+
         self.subframes = {}
         self.workgroup  = Group(raw=group)
         for attr in ('path', 'filename', 'groupname', 'datatype',
@@ -267,7 +439,7 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok    = Button(bpanel, 'OK', action=self.onOK)
         _cancel = Button(bpanel, 'Cancel', action=self.onCancel)
         _edit   = Button(bpanel, 'Edit Array Names', action=self.onEditNames)
-        _add    = Button(bpanel, 'Add Columns', action=self.onAddColumns)
+        _add    = Button(bpanel, 'Select Columns to Sum', action=self.onAddColumns)
 
         bsizer.Add(_ok)
         bsizer.Add(_cancel)
@@ -419,15 +591,14 @@ class ColumnDataFileFrame(wx.Frame) :
     def onAddColumns(self, event=None):
         self.show_subframe('addcol', AddColumnsFrame,
                            group=self.workgroup,
-                           data=self.initgroup.data,
                            on_ok=self.add_columns)
 
-    def add_columns(self, data, columns):
-        print("Add Columns")
-        # x.shape = (20, 5)
-        # col6 = (calc_some(x)).reshape(20, 1)
-        # newx = np.append(x, col6, axis=1)
-        pass
+    def add_columns(self, label, selection):
+        new_labels = self.workgroup.array_labels
+        self.set_array_labels(new_labels)
+        self.yarr1.SetStringSelection(new_labels[-1])
+        self.extra_sums[label] = selection
+        self.onUpdate()
 
     def onEditNames(self, evt=None):
         self.show_subframe('editcol', EditColumnFrame,
@@ -476,6 +647,14 @@ class ColumnDataFileFrame(wx.Frame) :
         buff = ["{group} = %s" % read_cmd,
                 "{group}.path = '{path}'"]
 
+        for label, selection in self.extra_sums.items():
+            buff.append("{group}.array_labels.append('%s')" % label)
+            buff.append("_tmparr = {group}.data[%s, :].sum(axis=0)" % repr(selection))
+            buff.append("_tmpn   = len(_tmparr)")
+            buff.append("{group}.data = append({group}.data, _tmparr.reshape(1, _tmpn), axis=0)")
+            buff.append("del _tmparr, _tmpn")
+
+
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
@@ -498,10 +677,20 @@ class ColumnDataFileFrame(wx.Frame) :
             self.read_ok_cb(script, self.path, groupname=groupname,
                             array_sel=self.array_sel)
 
+        for f in self.subframes.values():
+            try:
+                f.Destroy()
+            except:
+                pass
         self.Destroy()
 
     def onCancel(self, event=None):
         self.workgroup.import_ok = False
+        for f in self.subframes.values():
+            try:
+                f.Destroy()
+            except:
+                pass
         self.Destroy()
 
     def onYerrChoice(self, evt=None):
@@ -532,6 +721,7 @@ class ColumnDataFileFrame(wx.Frame) :
         exprs = dict(xdat=None, ydat=None, yerr=None)
 
         ncol, npts = rdata.shape
+        workgroup.index = 1.0*np.arange(npts)
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
             xname = '_index'
