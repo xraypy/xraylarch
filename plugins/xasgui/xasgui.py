@@ -983,6 +983,8 @@ class XASFrame(wx.Frame):
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
+        if groupname is None:
+            return
         abort_read = False
         filedir, filename = os.path.split(path)
         if not overwrite and hasattr(self.larch.symtable, groupname):
