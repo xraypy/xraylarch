@@ -278,10 +278,7 @@ class FloatCtrl(wx.TextCtrl):
                 elif self.even_only and (val %2 == 1):
                     self.is_valid = False
                     val = val + 1
-
         except:
-            print(" float invalid exception!")
-            print(sys.exc_info)
             self.is_valid = False
         self.__bound_val = self.__val = val
         fgcol, bgcol = self.fgcol_valid, self.bgcol_valid
