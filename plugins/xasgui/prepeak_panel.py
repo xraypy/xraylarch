@@ -212,7 +212,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
@@ -237,13 +237,13 @@ class FitResultFrame(wx.Frame):
                 align = wx.ALIGN_CENTER
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((675, 125))
+        sview.SetMinSize((700, 125))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(12),
@@ -258,8 +258,8 @@ class FitResultFrame(wx.Frame):
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         self.wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',         width=150)
-        pview.AppendTextColumn('Best-Fit Value',    width=100)
-        pview.AppendTextColumn('Standard Error',    width=100)
+        pview.AppendTextColumn('Best-Fit Value',    width=125)
+        pview.AppendTextColumn('Standard Error',    width=125)
         pview.AppendTextColumn('Info ',             width=275)
 
         for col in range(4):
@@ -270,14 +270,14 @@ class FitResultFrame(wx.Frame):
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((675, 200))
+        pview.SetMinSize((700, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
         sizer.Add(pview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
@@ -369,9 +369,7 @@ class FitResultFrame(wx.Frame):
     def get_fitresult(self, nfit=None):
         if nfit is None:
             nfit = self.nfit
-        if len(self.peakfit_history) < 1:
-            pfhist = getattr(self.datagroup.prepeaks, 'fit_history', [])
-            self.peakfit_history = pfhist
+        self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
         self.nfit = max(0, nfit)
         if self.nfit > len(self.peakfit_history):
             self.nfit = 0
@@ -537,7 +535,6 @@ class PrePeakPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
-            # print(" Fill prepeak panel from group ", fname, gname, dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
