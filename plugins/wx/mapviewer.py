@@ -2101,7 +2101,6 @@ class MapViewerFrame(wx.Frame):
 
         self.createMainPanel()
 
-        print(" Font size ", FONTSIZE)
         self.SetFont(Font(FONTSIZE))
 
         self.createMenus()
