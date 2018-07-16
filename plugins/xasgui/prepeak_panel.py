@@ -302,18 +302,16 @@ class FitResultFrame(wx.Frame):
 
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
-        cview.AppendTextColumn('Correlation',    width=100)
+        cview.AppendTextColumn('Correlation',    width=150)
 
         for col in (0, 1, 2):
             this = cview.Columns[col]
-            isort, align = True, wx.ALIGN_LEFT
-            if col == 1:
-                isort = False
+            this.Sortable = False
+            align = wx.ALIGN_LEFT
             if col == 2:
                 align = wx.ALIGN_RIGHT
-            this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((450, 200))
+        cview.SetMinSize((475, 200))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
