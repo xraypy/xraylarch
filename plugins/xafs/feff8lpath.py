@@ -155,6 +155,10 @@ class Feff8L_XAFSPath(object):
         self.rat[0, 0] = x
         self.rat[1, 0] = y
         self.rat[2, 0] = z
+        self.rat[0, self.nleg] = self.rat[0, 0]
+        self.rat[1, self.nleg] = self.rat[1, 0]
+        self.rat[2, self.nleg] = self.rat[2, 0]
+        self.ipot[self.nleg]   = self.ipot[0]
 
     @with_phase_file
     def add_scatterer(self, x=0., y=0., z=0., ipot=1, phase_file=None):
@@ -200,15 +204,20 @@ class Feff8L_XAFSPath(object):
         args.iz = self.iz.ctypes.data_as(POINTER(self.iz.size*c_int))
 
         # double arrays
-        self.rat = self.rat/BOHR
-        for attr in ('evec', 'xivec', 'rat', 'ri', 'beta', 'eta',
+        # print(" Rat 0  ", self.rat)
+        for attr in ('evec', 'xivec', 'ri', 'beta', 'eta',
                      'k', 'real_phc', 'mag_feff', 'pha_feff',
                      'red_fact', 'lam', 'rep'):
             arr = getattr(self, attr)
             cdata = arr.ctypes.data_as(POINTER(arr.size*c_double))
             setattr(args, attr, cdata)
+        # handle rat (in atomic units)
+        rat_atomic = self.rat/BOHR
+        args.rat = (rat_atomic).ctypes.data_as(POINTER(rat_atomic.size*c_double))
 
         onepath = F8LIB.onepath_
+        # print(" Calc with onepath ", onepath, rat_atomic)
+        # print(" args rat = ", args.rat.contents[:])
         x = onepath(args.phase_file, args.index, args.nleg, args.degen,
                     args.genfmt_order, args.exch_label, args.rs_int, args.vint,
                     args.mu, args.edge, args.kf, args.rnorman,
@@ -221,7 +230,7 @@ class Feff8L_XAFSPath(object):
 
         self.exch   = args.exch_label.strip()
         self.version = args.genfmt_version.strip()
-
+        # print(" Calc with onepath done")
         # unpack integers/floats
         for attr in ('index', 'nleg', 'genfmt_order', 'degen', 'rs_int',
                      'vint', 'mu', 'edge', 'kf', 'rnorman', 'gam_ch',
@@ -253,21 +262,21 @@ class Feff8L_XAFSPath(object):
 
         # unpack arrays of length 'nleg':
         for attr in ('ipot', 'beta', 'eta', 'ri'):
-            cdata = getattr(args, attr).contents[:nleg]
+            cdata = getattr(args, attr).contents[:]
             setattr(self, attr, np.array(cdata))
 
         # rat is sort of special, and calculate reff too:
-        rat = getattr(args, 'rat').contents[:]
+        rat = args.rat.contents[:]
         rat = np.array(rat).reshape(2+FEFF_maxleg, 3).transpose()
-        self.rat = BOHR*self.rat[:, :nleg+1].transpose()
+        self.rat = BOHR*rat
 
+        _rat = self.rat.T
         reff = 0.
-        for i, atom in enumerate(self.rat[1:]):
-            prev = self.rat[i,:]
+        for i, atom in enumerate(_rat[1:]):
+            prev = _rat[i,:]
             reff += np.sqrt( (prev[0]-atom[0])**2 +
                              (prev[1]-atom[1])**2 +
                              (prev[2]-atom[2])**2 )
-
         self.reff = reff /2.0
 
         self.geom = []
@@ -277,7 +286,7 @@ class Feff8L_XAFSPath(object):
             iz, sym = self.atoms[ipot]
             mass = atomic_mass(iz, _larch=self._larch)
 
-            x, y, z = self.rat[i][0], self.rat[i][1], self.rat[i][2]
+            x, y, z = _rat[i][0], _rat[i][1], _rat[i][2]
             self.geom.append((str(sym), iz, ipot, x, y, z))
             rmass += 1.0/max(1.0, mass)
 
