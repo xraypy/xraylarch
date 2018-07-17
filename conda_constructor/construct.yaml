@@ -36,7 +36,7 @@ specs:
     - pycifrw
     - peakutils
     - psutil
-    - silx=0.8.0
+    - silx=0.8.0 # [linux64 or osx]
     - fabio=0.6.0 # [linux64 or osx]
     - pyfai=0.15.0  # [linux64 or osx]
     - tomopy  # [linux64 or osx]
