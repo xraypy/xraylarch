@@ -4,25 +4,46 @@
 XAFS: Reading and using Feff Paths
 ==============================================
 
+.. _feff85exafs: https://github.com/xraypy/feff85exafs
+.. _feff85exafs unit tests: https://github.com/xraypy/feff85exafs/tree/master/tests
+
 .. module:: _xafs
 
 For modeling EXAFS data, Larch relies heavily on calculations of
-theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
+theoretical XAFS spectra using Feff.  Being able to run Feff and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of FEFF (:cite:`feff6_Rehr`,
-:cite:`feff6_siz`, :cite:`RehrAlbers_RMP`) is beyond the scope of
-this documentation, here we describe how to read the results from FEFF into
-Larch.  The main interface for this is the :func:`feffpath` function that
-reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
+spectra.  While a complete description of Feff
+(:cite:`feffpaths-feff6_Rehr`, :cite:`feffpaths-feff6_siz`,
+:cite:`feffpaths-RehrAlbers_RMP`) is beyond the scope of this
+documentation, here we describe how to read the results from Feff into
+Larch.
+
+The funcionality of Feff within Larch has been evolving to better
+incorporate Feff8l into Larch.  Feff8L provideds a free version of Feff
+Version 8.5 for EXAFS calculations (not XANES or other spectroscopies), and
+is being developed in parallel to Larch at `feff85exafs`_
+[#onfeff8_names]_. Part of the goal for this project is to replace Feff
+Version 6l as a robust and easy-to-use EXAFS calculation engine for EXAFS
+Analysis.  A larger goal for `feff85exafs`_ and Larch is to be able to
+create the potentials and scattering factors needed for the EXAFS
+calculation, and then to be able to use that to *dynamically* create EXAFS
+scatternig paths with changing geometries.  This is a work-in-progress.  If
+you're interested in exploring or helping with this, contact us!
+
+
+
+The main interface for this is the :func:`feffpath` function that
+reads *feffNNNN.dat* file and creates a FeffPath Group.
 
 Running Feff
 =====================
 
-.. _feff85exafs: https://github.com/xraypy/feff85exafs
-.. _feff85exafs unit tests: https://github.com/xraypy/feff85exafs/tree/master/tests
+Larch comes with external programs for Feff6l and Feff8l, and provides two
+simple functions for running the external Feff6l andFeff8l programs from
+within Larch: :func:`feff6l` and :func:`feff8l`.  Note that the input files
+for these two programs are similar but have important differences in syntax
+such that the input for one cannot be used for running the other.
 
-Larch provides functions for running Feff6l and Feff85l as an external
-programs.
 
 Running Feff6l with :func:`feff6l`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,11 +60,27 @@ Running Feff6l with :func:`feff6l`
 This will generate a number of outputs, including the *feffNNNN.dat* files
 containing the data for each scattering path.
 
-Running Feff85l with :func:`feffrunner`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Running Feff8l with :func:`feff8l`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: feff8l(folder='.', feffinp='feff.inp', verbose=True)
+
+    run Feff8L in the supplied folder.
+
+    :param folder:   name of folder containing the Feff6 input file, and where to put the output files ['.', the current working directory]
+    :param feffinp:   name of *feff.inp* file within the supplied folder ['feff.inp']
+    :param verbose:   flag controlling screen output from Feff [True]
+    :returns: a FeffRunner Group.
+
+As with :func:`feff6l`, this will generate a number of outputs, including the *feffNNNN.dat* files
+containing the data for each scattering path.
 
 
-The incorporation of Feff85Lite in Larch is still in development, but is
+Running Feff8l with :func:`feffrunner`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The incorporation of Feff8l in Larch is still in development, but is
 ntended to make the executables from the `feff85exafs`_ package easy to use
 and a seamless drop-in replacement for Feff6l. The FeffRunner tool is quite
 flexible and can be used to run specific modules from `feff85exafs`_ or
@@ -56,14 +93,14 @@ other versions of Feff that you might have on your computer.
 
     :param feffinp:   name (full path of) *feff.inp* file
     :param verbose:   flag controlling screen output from Feff [True]
-    :param repo:      full path of the location of the feff85exafs repository [None]
+    :param repo:      full path of the location of the Feff8l repository [None]
     :returns: a FeffRunner Group.
 
 ..  function:: feffrunner.run(exe)
 
     run Feff for FeffRunner Group.
 
-    :param exe:   the name of the Feff program to be run [run all of feff85exafs]
+    :param exe:   the name of the Feff program to be run [run all of Feff8l]
     :returns: None when Feff is run successfully or an Exception when a problem in encoiuntered
 
 The simplest example of its use is
@@ -90,7 +127,7 @@ The `feff85exafs`_ modules (*rdinp*, *pot*, *xsph*, *pathfinder*,
    ## and so on ...
 
 To specifically use the `feff85exafs`_ modules from a local copy of
-the feff85exafs repository, do
+the feff8l repository, do
 
 .. code:: python
 
@@ -445,8 +482,8 @@ Models for Calculating :math:`\sigma^2`
 The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff (see :cite:`feff6_Rehr`,
-:cite:`Sevillano` and :cite:`RehrAlbers_RMP`) Larch provides two
+up a full EXAFS spectra.  Borrowing from Feff (see :cite:`feffpaths-feff6_Rehr`,
+:cite:`feffpaths-Sevillano` and :cite:`feffpaths-RehrAlbers_RMP`) Larch provides two
 functions that use simple models to calculate :math:`\sigma^2` for a Path.
 Both functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments
 of sample temperature, a characteristic temperature, and a FeffPath, and
@@ -482,7 +519,7 @@ updated during fits with :func:`feffit` and when summing paths with
 As with :func:`sigma2_eins, the `path` argument can be left ``None``, and the
 ''current FeffData group", (`_sys.fiteval.symtable._feffdat`), will be used.
 
-Example:  Reading a FEFF file
+Example:  Reading a Feff file
 ===========================================================
 
 Here we simply read a *feffNNNN.dat* file and display its components, and
@@ -546,10 +583,10 @@ You can see here that the arrays in the ``_feffdat`` group are sampled at
 varying :math:`k` spacing, and that this spacing becomes fairly large at
 high :math:`k`.
 
-Example:  Adding FEFF files
+Example:  Adding Feff files
 ===========================================================
 
-Now, we add some FEFF files together, applying some path parameters.  The
+Now, we add some Feff files together, applying some path parameters.  The
 example is actually very similar to the one above except that we use
 :func:`ff2chi` to create a :math:`\chi(k)` from a list of paths, and put
 the result into its own group.  Thus:
@@ -572,7 +609,7 @@ group is up to date.
     Results for sum of :math:`\chi(k)` for list of paths.
 
 
-Example: Using Path Parameters when adding FEFF files
+Example: Using Path Parameters when adding Feff files
 ===========================================================
 
 Using :ref:`Parameters <fitting-parameters_sec>` for modelling data is a
@@ -626,9 +663,17 @@ next section, the use of parameters also allows us to easily refine their
 values in a fit of XAFS data to such a sum of paths.
 
 
+.. rubric:: Footnotes
+
+.. [#onfeff8_names] There have been several names used for "Free version of
+   Feff Version 8.5 for EXAFS only", including `Feff8l`, `Feff8lite`,
+   `Feff85exafs`.  These all refer to the same project and code, which is
+   based on but distinct from the Feff 8 and 9 from the University of
+   Washington group in that the free version can calculate only EXAFS.
+
 .. rubric:: References
 
 .. bibliography:: ../larch.bib
    :style: unsrt
-   :labelprefix: FeffPaths_
-   :filter: docname in docnames
+   :labelprefix: Feff_
+   :keyprefix: feffpaths-

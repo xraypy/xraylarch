@@ -13,7 +13,7 @@ XASViewer
 The XASViewer GUI uses Larch to read and display XAFS spectra.  This
 application is still in active development, with more features planned with
 special emphasis on helping users with XANES analysis.  Current features
-(as of June, 2018, Larch version 0.9.38) include:
+(as of July, 2018, Larch version 0.9.40) include:
 
    * read XAFS spectra from simple data column files or Athena Project Files.
    * XAFS pre-edge removal and normalization.
