@@ -11,12 +11,12 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch/xraylarch-0.9.39.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.39-Windows-x86_64.exe
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/gsecarrs/Data/Larch/xraylarch-0.9.40.tar.gz
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.40-Windows-x86_64.exe
 .. _Larch for 32bit Windows:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.37-Windows-x86.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.39-MacOSX-x86_64.sh
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.39-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.39-docs-examples.zip
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.40-MacOSX-x86_64.sh
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.40-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/gsecars/Data/Larch/xraylarch-0.9.40-docs-examples.zip
 
 The latest release version of Larch is |release|.
 
@@ -70,11 +70,11 @@ For Mac OSX or Linux, download the appropriate file then open a Terminal
 (Applications->Utilities->Terminal on Mac OSX), use `cd` to move to the
 download folder (typically `cd Downloads`) and run::
 
-    bash xraylarch-0.9.39-MacOSX-x86_64.sh
+    bash xraylarch-0.9.40-MacOSX-x86_64.sh
 
 or::
 
-    bash xraylarch-0.9.39-Linux-x86_64.sh
+    bash xraylarch-0.9.40-Linux-x86_64.sh
 
 Once installed, you will be able to upgrade to future versions of Larch using::
 
