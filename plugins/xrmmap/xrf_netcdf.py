@@ -105,7 +105,7 @@ def read_xrf_netcdf(fname, npixels=None, verbose=False):
         array_data.shape = (1, shape[0], shape[1])
 
     narrays, nmodules, buffersize = array_data.shape
-    modpixs    = max(124, array_data[0, 0, 8])
+    modpixs    = int(max(124, array_data[0, 0, 8]))
     npix_total = 0
     # real / live times are returned in microseconds.
     for array in range(narrays):
@@ -113,7 +113,7 @@ def read_xrf_netcdf(fname, npixels=None, verbose=False):
             d   = array_data[array,module, :]
             bh  = xMAPBufferHeader(d)
             #if verbose and array==0:
-            dat = d[256:].reshape(modpixs, (d.size-256)/modpixs )
+            dat = d[256:].reshape(modpixs, int((d.size-256)/modpixs ))
 
             npix = bh.numPixels
             if module == 0:
