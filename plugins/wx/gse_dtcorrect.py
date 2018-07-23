@@ -128,7 +128,7 @@ class DTCorrectFrame(wx.Frame):
 
             aprj = AthenaProject(filename=athena_name, _larch=self.larch)
             for grp, label in groups:
-                aprj.add_group(grp, label=label, signal='mu')
+                aprj.add_group(grp, signal='mu')
             aprj.save(use_gzip=True)
             self.write_message("Corrected %i files, wrote %s" % (len(groups), aname))
 
