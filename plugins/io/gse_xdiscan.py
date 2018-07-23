@@ -10,6 +10,7 @@ import gc
 import numpy as np
 from larch import Group, ValidateLarchPlugin, use_plugin_path
 from larch.utils import OrderedDict
+from larch.utils.strutils import bytes2str
 
 from larch_plugins.io import XDIFile, XDIFileException, iso8601_time
 
@@ -308,7 +309,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
 
 
     buff.append("# ///")
-    for comment in xdi._xdi.comments.split('\n'):
+    for comment in bytes2str(xdi._xdi.comments).split('\n'):
         c = comment.strip()
         if len(c) > 0:
             buff.append('# %s' % c)
