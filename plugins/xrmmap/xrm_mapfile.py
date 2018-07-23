@@ -984,7 +984,11 @@ class GSEXRM_MapFile(object):
 
             for iroi, label, lims in roidat:
                 roi_desc.append(label)
-                roi_addr.append("%smca%%i.R%i" % (config['xrf']['prefix'], iroi))
+                try:
+                    xrf_prefix = config['xrf']['prefix']
+                except KeyError: # very old map files
+                    xrf_prefix = config['general']['xmap']
+                roi_addr.append("%smca%%i.R%i" % (xrf_prefix, iroi))
                 roi_lim.append([lims[i] for i in range(self.ndet)])
                 roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
             roi_lim = np.array(roi_lim)
@@ -997,7 +1001,10 @@ class GSEXRM_MapFile(object):
                 self.add_data(group['mca_calib'], key, val)
 
             for key, val in extra.items():
-                self.add_data(group['mca_settings'], key, val)
+                try:
+                    self.add_data(group['mca_settings'], key, val)
+                except TypeError:
+                    pass
 
             self.roi_desc = roi_desc
             self.roi_addr = roi_addr
@@ -1471,6 +1478,7 @@ class GSEXRM_MapFile(object):
 
                 en_index = np.arange(nchan)
 
+                if self.nrows_expected is None: self.nrows_expected = -1
                 if verbose:
                     prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
                     print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
