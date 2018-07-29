@@ -102,7 +102,7 @@ def chantler_data(element, energy, column, _larch=None, **kws):
     column:   one of 'f1', 'f2', 'mu_photo', 'mu_incoh', 'mu_total'
     """
     xdb = get_xraydb(_larch)
-    return xdb._getChantler(element, energy, column=column, **kws)
+    return xdb._from_chantler(element, energy, column=column, **kws)
 
 @ValidateLarchPlugin
 def f1_chantler(element, energy, _larch=None, **kws):
@@ -118,7 +118,7 @@ def f1_chantler(element, energy, _larch=None, **kws):
     energy:   energy or array of energies in eV
     """
     xdb = get_xraydb(_larch)
-    return xdb._getChantler(element, energy, column='f1', **kws)
+    return xdb._from_chantler(element, energy, column='f1', **kws)
 
 @ValidateLarchPlugin
 def f2_chantler(element, energy, _larch=None):
@@ -134,7 +134,7 @@ def f2_chantler(element, energy, _larch=None):
     energy:   energy or array of energies in eV
     """
     xdb = get_xraydb(_larch)
-    return xdb._getChantler(element, energy, column='f2')
+    return xdb._from_chantler(element, energy, column='f2')
 
 @ValidateLarchPlugin
 def mu_chantler(element, energy, incoh=False, photo=False, _larch=None):
@@ -157,7 +157,7 @@ def mu_chantler(element, energy, incoh=False, photo=False, _larch=None):
     col = 'mu_total'
     if photo: col = 'mu_photo'
     if incoh: col = 'mu_incoh'
-    return xdb._getChantler(element, energy, column=col)
+    return xdb._from_chantler(element, energy, column=col)
 
 @ValidateLarchPlugin
 def mu_elam(element, energy, kind='total', _larch=None):
