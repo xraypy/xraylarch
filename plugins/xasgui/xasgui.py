@@ -269,7 +269,7 @@ class XASController():
                         'energy', 'mu'):
                 val = getattr(ogroup, attr)*1.0
             elif attr in ('norm', 'flat', 'deriv', 'deconv',
-                        'post_edge', 'pre_edge'):
+                          'post_edge', 'pre_edge'):
                 do_copy = False
             else:
                 try:
@@ -857,9 +857,10 @@ class XASFrame(wx.Frame):
 
     def onClose(self, event):
         dlg = QuitDialog(self)
+        dlg.Raise()
+        dlg.SetWindowStyle(wx.STAY_ON_TOP)
         res = dlg.GetResponse()
         dlg.Destroy()
-
         if not res.ok:
             return
 
