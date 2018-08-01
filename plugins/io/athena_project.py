@@ -114,7 +114,8 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '2'), ('bkg_nvict', '1'),
+                 ('bkg_nnorm', '2'),
+                 # ('bkg_nvict', '1'),
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
@@ -166,7 +167,7 @@ def make_athena_args(group, hashkey=None, **kws):
     args['bkg_step'] = args['bkg_fitted_step'] = group.edge_step
 
     args['bkg_nnorm'] = int(group.pre_edge_details.nnorm)
-    args['bkg_nvict'] = int(group.pre_edge_details.nvict)
+    # args['bkg_nvict'] = int(group.pre_edge_details.nvict)
     args['bkg_nor1'] = group.pre_edge_details.norm1
     args['bkg_nor2'] = group.pre_edge_details.norm2
     args['bkg_pre1'] = group.pre_edge_details.pre1
