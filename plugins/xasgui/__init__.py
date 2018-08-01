@@ -10,6 +10,6 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, RebinDataDialog,
                           EnergyCalibrateDialog, SmoothDataDialog,
                           DeconvolutionDialog, OverAbsorptionDialog,
-                          QuitDialog)
+                          QuitDialog, ExportCSVDialog)
 
 from .xasgui import XASFrame, XASViewer

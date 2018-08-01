@@ -47,6 +47,7 @@ from larch_plugins.xasgui import (FONTSIZE, FNB_STYLE,
                                   LinearComboPanel, PCAPanel, LASSOPanel,
                                   EXAFSPanel, MergeDialog, RenameDialog,
                                   RemoveDialog, DeglitchDialog,
+                                  ExportCSVDialog,
                                   RebinDataDialog, EnergyCalibrateDialog,
                                   SmoothDataDialog, OverAbsorptionDialog,
                                   DeconvolutionDialog, QuitDialog)
@@ -224,6 +225,10 @@ class XASController():
             dgroup = getattr(self.symtable, groupname, None)
         return dgroup
 
+    def filename2group(self, filename):
+        "convert filename (as displayed) to larch group"
+        return self.get_group(self.file_groups[str(filename)])
+
     def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
         """merge groups"""
         cmd = """%s = merge_groups(%s, master=%s,
@@ -269,7 +274,8 @@ class XASController():
                         'energy', 'mu'):
                 val = getattr(ogroup, attr)*1.0
             elif attr in ('norm', 'flat', 'deriv', 'deconv',
-                          'post_edge', 'pre_edge'):
+                          'post_edge', 'pre_edge', 'norm_mback',
+                          'norm_vict', 'norm_poly'):
                 do_copy = False
             else:
                 try:
@@ -667,29 +673,23 @@ class XASFrame(wx.Frame):
             self.SetStatusText("Wrote %s" % path, 0)
 
     def onExportCSV(self, evt=None):
-        group_ids = self.controller.filelist.GetCheckedStrings()
-        savegroups = []
-        groupnames = []
-        for checked in group_ids:
-            groupname = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(groupname)
-            savegroups.append(dgroup)
-            groupnames.append(groupname)
-        if len(savegroups) < 1:
+        filenames = self.controller.filelist.GetCheckedStrings()
+        if len(filenames) < 1:
              Popup(self, "No files selected to export to CSV",
                    "No files selected")
              return
 
-        deffile = "%s_%i.csv" % (groupname, len(groupnames))
-        wcards  = 'CSV Files (*.csv)|*.cvs|All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Export Selected Groups to CSV File',
-                           default_file=deffile, wildcard=wcards)
-
-        if outfile is None:
-            return
-
-        groups2csv(savegroups, outfile, x='energy', y='norm', _larch=self.larch)
+        dlg = ExportCSVDialog(self, filenames)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+        if res.ok:
+            savegroups = [self.controller.filename2group(res.master)]
+            for fname in filenames:
+                dgroup = self.controller.filename2group(fname)
+                if dgroup not in savegroups:
+                    savegroups.append(dgroup)
+            groups2csv(savegroups, res.filename, x='energy', y=res.yarray,
+                       _larch=self.larch)
 
     def onExportAthena(self, evt=None):
         groups = []
