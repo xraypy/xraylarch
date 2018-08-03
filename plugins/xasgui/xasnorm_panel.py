@@ -23,7 +23,7 @@ from larch_plugins.xasgui.taskpanel import TaskPanel
 
 from larch_plugins.xafs.xafsutils import guess_energy_units
 from larch_plugins.xafs.xafsplots import plotlabels
-
+from larch_plugins.xray import guess_edge, atomic_number
 np.seterr(all='ignore')
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
@@ -53,9 +53,9 @@ PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
 PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
 
-
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=-200, pre2=-25, norm1=75, norm2=-10,
+                norm_method='polynomial', mback_edge='K', mback_elem='H',
                 nvict=1, nnorm=1, plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
 
@@ -99,7 +99,7 @@ class XASNormPanel(TaskPanel):
         self.wids['autostep'] = Check(xas, default=True, label='auto?', **opts)
 
 
-        opts['size'] = (50, -1)
+        opts['size'] = (60, -1)
         self.wids['vict'] = Choice(xas, choices=('0', '1', '2', '3'), **opts)
         self.wids['nnor'] = Choice(xas, choices=('0', '1', '2', '3'), **opts)
         self.wids['vict'].SetSelection(1)
@@ -117,6 +117,15 @@ class XASNormPanel(TaskPanel):
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
+
+        self.wids['norm_method'] = Choice(xas, choices=('polynomial', 'mback'),
+                                          size=(150, -1), action=self.onNormMethod)
+        self.wids['norm_method'].SetSelection(0)
+        atsyms = self.larch.symtable._xray._xraydb.atomic_symbols
+        mback_edges = ('K', 'L3', 'L2', 'L1', 'M5')
+
+        self.wids['mback_elem'] = Choice(xas, choices=atsyms, size=(75, -1))
+        self.wids['mback_edge'] = Choice(xas, choices=mback_edges, size=(60, -1))
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -159,13 +168,27 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['vict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
 
-        add_text('Normalization range: ')
+        add_text('Normalization method: ')
+        xas.Add(self.wids['norm_method'])
+
+        add_text('  Polynomial range: ')
         xas.Add(xas_nor1)
         add_text(' : ', newrow=False)
         xas.Add(xas_nor2)
         xas.Add(SimpleText(xas, 'Poly Order:'))
         xas.Add(self.wids['nnor'])
         xas.Add(CopyBtn('xas_norm'), style=RCEN)
+
+        add_text('  Mback Options: ')
+        add_text('      Element : ', newrow=False, dcol=2)
+        xas.Add(self.wids['mback_elem'])
+        add_text(' Edge : ', newrow=False)
+        xas.Add(self.wids['mback_edge'])
+        xas.Add(CopyBtn('xas_mback'), style=RCEN)
+
+        # self.wids['norm_method']
+        self.wids['mback_elem'].Disable()
+        self.wids['mback_edge'].Disable()
 
         xas.Add(saveconf, dcol=6, newrow=True)
         xas.pack()
@@ -233,6 +256,10 @@ class XASNormPanel(TaskPanel):
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['autoe0'].SetValue(opts['auto_e0'])
             self.wids['autostep'].SetValue(opts['auto_step'])
+            self.wids['mback_edge'].SetStringSelection(opts['mback_edge'].title())
+            self.wids['mback_elem'].SetStringSelection(opts['mback_elem'].title())
+            self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
+
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
@@ -261,7 +288,29 @@ class XASNormPanel(TaskPanel):
         form_opts['auto_e0'] = self.wids['autoe0'].IsChecked()
         form_opts['auto_step'] = self.wids['autostep'].IsChecked()
 
+        form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
+        form_opts['mback_edge'] = self.wids['mback_edge'].GetStringSelection().title()
+        form_opts['mback_elem'] = self.wids['mback_elem'].GetStringSelection().title()
+
         return form_opts
+
+    def onNormMethod(self, evt=None):
+        method = self.wids['norm_method'].GetStringSelection().lower()
+        if method.startswith('mback'):
+            self.wids['nor1'].Disable()
+            self.wids['nor2'].Disable()
+            self.wids['mback_edge'].Enable()
+            self.wids['mback_elem'].Enable()
+            dgroup = self.controller.get_group()
+            atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+            self.wids['mback_edge'].SetStringSelection(edge)
+            self.wids['mback_elem'].SetStringSelection(atsym)
+        else:
+            self.wids['nor1'].Enable()
+            self.wids['nor2'].Enable()
+            self.wids['mback_edge'].Disable()
+            self.wids['mback_elem'].Disable()
+        self.process()
 
     def onPlotOne(self, evt=None):
         self.plot(self.controller.get_group())
@@ -447,6 +496,19 @@ class XASNormPanel(TaskPanel):
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.make_dnormde(dgroup)
+
+        if form['norm_method'].lower().startswith('mback'):
+            print('MBACK !  ', form)
+
+
+            self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
+            copts = [dgroup.groupname]
+            copts.append("e0=%.2f" % form['e0'])
+            copts.append("z=%d" % atomic_number(form['mback_elem'], _larch=self.larch))
+            copts.append("edge='%s'" % form['mback_edge'])
+            copts.append("fit_erfc=True")
+            self.larch_eval("mback(%s)" % (', '.join(copts)))
+            self.larch_eval("{group:s}.norm_mback = 1.0*{group:s}.norm".format(**form))
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
