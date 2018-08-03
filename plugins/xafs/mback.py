@@ -126,12 +126,13 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     em = xray_line(z, edge.upper(), _larch=_larch)[0] # erfc centroid
 
     params = Parameters()
-    params.add(name='s',  value=1,  vary=True)  # scale of data
-    params.add(name='xi', value=50, vary=fit_erfc, min=0) # width of erfc
-    params.add(name='a',  value=0,   vary=False)  # amplitude of erfc
+    params.add(name='s',  value=1.0,  vary=True)  # scale of data
+    params.add(name='xi', value=50.0, vary=fit_erfc, min=0) # width of erfc
+    params.add(name='a',  value=0.0, vary=False)  # amplitude of erfc
     if fit_erfc:
         params['a'].value = 1
         params['a'].vary  = True
+        params['xi'].vary  = True
 
     for i in range(order): # polynomial coefficients
         params.add(name='c%d' % i, value=0, vary=True)
