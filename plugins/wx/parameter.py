@@ -15,7 +15,7 @@ from wxutils import Choice, pack, HLine, LEFT
 from larch import Parameter, Group
 from larch.larchlib import Empty
 
-from larch.wxlib import (FloatCtrl, GridPanel)
+from larch.wxlib import (FloatCtrl, GridPanel, SetTip)
 
 infoicon = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACzElEQVR42m2TW0gUURjHv3Nm"
@@ -33,9 +33,6 @@ infoicon = PyEmbeddedImage(
     "mrquLPe85PwATX61TKbNbeIAXxeeMto1JiCqSRO87cySqWyl475z3zDxS51bU0yFHqmnNAkZ"
     "/MX65Mz6rHlz9PMzxm5+4V2b2zpwGgMziiQoSBODQ6KPEa2EpS0WzuWwkMg/fjB3pv4HvQJH"
     "bUDKnS4AAAAASUVORK5CYII=")
-
-def SetTip(wid, msg):
-    wid.SetToolTip(wx.ToolTip(msg))
 
 PAR_FIX = 'fix'
 PAR_VAR = 'vary'
@@ -146,7 +143,7 @@ class ParameterPanel(wx.Panel):
         self.wids.name = None
         self.wids.edit = wx.Button(self, label='edit', size=(45, 25))
         self.wids.edit.Bind(wx.EVT_BUTTON, self.onConfigure)
-        self.wids.edit.SetToolTip(wx.ToolTip("Configure Parameter"))
+        SetTip(self.wids.edit, "Configure Parameter")
 
         self.wids.vary = Choice(self, choices=VARY_CHOICES,
                                 action=self.onVaryChoice, size=(80, -1))

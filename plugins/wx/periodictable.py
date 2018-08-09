@@ -2,6 +2,8 @@ import sys
 import wx
 import wx.lib.mixins.inspection
 
+from larch.wxlib import SetTip
+
 class PeriodicTablePanel(wx.Panel):
     """periodic table of the elements"""
     elems = {'H':  ( 0,  0), 'He': ( 0, 17), 'Li': ( 1,  0), 'Be': ( 1,  1),
@@ -231,7 +233,7 @@ class PeriodicTablePanel(wx.Panel):
             tw.SetMinSize((18, 18))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
-                tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
+                SetTip(tw, self.tooltip_msg)
             self.wids[tw.Id] = tw
             self.ctrls[name] = tw
             sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
