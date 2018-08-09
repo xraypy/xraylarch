@@ -20,16 +20,15 @@ def match_f2(p, en=0, mu=1, f2=1, e0=0, em=0, weight=1, theta=1, order=None,
     pars = p.valuesdict()
     eoff  = en - e0
 
-    norm = p['a']*erfc((en-em)/p['xi']) + p['c0'] # erfc function + constant term of polynomial
+    bkg = p['a']*erfc((en-em)/p['xi'])  # erfc function + constant term of polynomial
     for i in range(order):        # successive orders of polynomial
-        j = i+1
-        attr = 'c%d' % j
+        attr = 'c%d' % i
         if attr in p:
-            norm += p[attr] * eoff**j
-    func = (f2 + norm - p['s']*mu) * theta / weight
+            bkg += p[attr] * eoff**i
+    resid = (mu - (p['s']*f2 + bkg)) * theta # / weight
     if leexiang:
-        func = func / p['s']*mu
-    return func
+        resid /= p['s']*mu
+    return resid
 
 
 def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
@@ -92,8 +91,10 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     ### theta is an array used to exclude the regions <emin, >emax, and
     ### around white lines, theta=0.0 in excluded regions, theta=1.0 elsewhere
     (i1, i2) = (0, len(energy)-1)
-    if emin is not None: i1 = index_of(energy, emin)
-    if emax is not None: i2 = index_of(energy, emax)
+    if emin is not None:
+        i1 = index_of(energy, emin)
+    if emax is not None:
+        i2 = index_of(energy, emax)
     theta = np.ones(len(energy)) # default: 1 throughout
     theta[0:i1]  = 0
     theta[i2:-1] = 0
@@ -112,7 +113,7 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     ## defined in the MBACK paper
     weight1 = 1*(energy<e0)
     weight2 = 1*(energy>e0)
-    weight  = np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
+    weight  = 1 # np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
     ## get the f'' function from CL or Chantler
     if tables.lower() == 'chantler':
         f1 = f1_chantler(z, energy, _larch=_larch)
@@ -127,10 +128,9 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
 
     params = Parameters()
     params.add(name='s',  value=1.0,  vary=True)  # scale of data
-    params.add(name='xi', value=50.0, vary=fit_erfc, min=0) # width of erfc
-    params.add(name='a',  value=0.0, vary=False)  # amplitude of erfc
+    params.add(name='xi', value=50.0, vary=False, min=0) # width of erfc
+    params.add(name='a',  value=1.0, vary=False)  # amplitude of erfc
     if fit_erfc:
-        params['a'].value = 1
         params['a'].vary  = True
         params['xi'].vary  = True
 
@@ -145,21 +145,19 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     opars = out.params.valuesdict()
     eoff = energy - e0
 
-    norm_function = opars['a']*erfc((energy-em)/opars['xi']) + opars['c0']
+    bkg_pre = opars['a']*erfc((energy-em)/opars['xi'])
     for i in range(order):
-        j = i+1
-        attr = 'c%d' % j
+        attr = 'c%d' % i
         if attr in opars:
-            norm_function  += opars[attr]* eoff**j
+            bkg_pre += opars[attr]* eoff**i
 
     group.e0 = e0
-    group.fpp = opars['s']*mu - norm_function
-    group.mback_params = opars
-    tmp = Group(energy=energy, mu=group.f2-norm_function, e0=0)
+    group.mback_details = Group(params=opars, bkg_pre=bkg_pre,
+                                f2_scaled=opars['s']*f2)
 
     # calculate edge step from f2 + norm_function: should be very smooth
-    pre_f2 = preedge(energy, group.f2+norm_function, e0=e0, nnorm=2, nvict=0)
-    group.edge_step = pre_f2['edge_step'] / opars['s']
+    pre_f2 = preedge(energy, opars['s']*f2 + bkg_pre, e0=e0, nnorm=2, nvict=0)
+    group.edge_step = pre_f2['edge_step']
 
     pre_fpp = preedge(energy, mu, e0=e0, nnorm=2, nvict=0)
 
