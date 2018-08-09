@@ -18,6 +18,12 @@ CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
+def SetTip(wid, tip=''):
+    if is_wxPhoenix:
+        wid.SetToolTip(tip)
+    else:
+        wid.SetToolTipString(tip)
+
 def set_sizer(panel, sizer=None, style=wx.VERTICAL, fit=False):
     """ utility for setting wx Sizer  """
     if sizer is None:
@@ -75,11 +81,6 @@ def HLineText(panel, text, colour='#222288'):
     s.Add(SimpleText(p, text,  **kws),  0, LCEN, 5)
     pack(p, s)
     return p
-
-
-def SetTip(wid, msg):
-    "set tooltip message"
-    wid.SetToolTip(wx.ToolTip(msg))
 
 class Check(wx.CheckBox):
     """Simple Checkbox
