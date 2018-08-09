@@ -171,7 +171,8 @@ class XASNormPanel(TaskPanel):
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
 
         add_text('Normalization method: ')
-        xas.Add(self.wids['norm_method'])
+        xas.Add(self.wids['norm_method'], dcol=5)
+        xas.Add(CopyBtn('norm_method'))
 
         add_text('  Polynomial range: ')
         xas.Add(xas_nor1)
@@ -179,7 +180,7 @@ class XASNormPanel(TaskPanel):
         xas.Add(xas_nor2)
         xas.Add(SimpleText(xas, 'Poly Order:'))
         xas.Add(self.wids['nnor'])
-        xas.Add(CopyBtn('xas_norm'), style=RCEN)
+        xas.Add(CopyBtn('xas_normpoly'), style=RCEN)
 
         add_text('  Mback Options: ')
         add_text('      Element : ', newrow=False, dcol=2)
@@ -381,10 +382,12 @@ class XASNormPanel(TaskPanel):
             copy_attrs('edge_step', 'auto_step')
         elif name == 'xas_pre':
             copy_attrs('pre1', 'pre2', 'nvict')
-        elif name == 'xas_norm':
+        elif name == 'xas_normpoly':
             copy_attrs('nnorm', 'norm1', 'norm2')
         elif name == 'xas_mback':
             copy_attrs('mback_elem', 'mback_edge', 'mback_wline')
+        elif name == 'norm_method':
+            copy_attrs('norm_method')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
