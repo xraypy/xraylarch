@@ -187,7 +187,7 @@ class XASNormPanel(TaskPanel):
         add_text(' Edge : ', newrow=False)
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
-        add_text('        mask white line energy range: ', dcol=3)
+        add_text('        MBACK  white line energy range: ', dcol=3)
         xas.Add(mback_wline, dcol=2)
 
         # self.wids['norm_method']
@@ -383,6 +383,8 @@ class XASNormPanel(TaskPanel):
             copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'xas_norm':
             copy_attrs('nnorm', 'norm1', 'norm2')
+        elif name == 'xas_mback':
+            copy_attrs('mback_elem', 'mback_edge', 'mback_wline')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
