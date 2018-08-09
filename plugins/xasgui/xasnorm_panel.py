@@ -56,8 +56,8 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=-200, pre2=-25, norm1=75, norm2=-10,
                 norm_method='polynomial', mback_edge='K', mback_elem='H',
-                nvict=1, nnorm=1, plotone_op='Normalized \u03BC(E)',
-                plotsel_op='Normalized \u03BC(E)')
+                mback_wline=50, nvict=1, nnorm=1,
+                plotone_op='Normalized \u03BC(E)', plotsel_op='Normalized \u03BC(E)')
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
@@ -126,6 +126,8 @@ class XASNormPanel(TaskPanel):
 
         self.wids['mback_elem'] = Choice(xas, choices=atsyms, size=(75, -1))
         self.wids['mback_edge'] = Choice(xas, choices=mback_edges, size=(60, -1))
+        mback_wline = self.add_floatspin('mback_wline', value=defaults['mback_wline'],
+                                         size=(100, -1), digits=1, increment=5.0)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -185,8 +187,11 @@ class XASNormPanel(TaskPanel):
         add_text(' Edge : ', newrow=False)
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
+        add_text('        mask white line energy range: ', dcol=3)
+        xas.Add(mback_wline, dcol=2)
 
         # self.wids['norm_method']
+        self.wids['mback_wline'].Disable()
         self.wids['mback_elem'].Disable()
         self.wids['mback_edge'].Disable()
 
@@ -258,6 +263,7 @@ class XASNormPanel(TaskPanel):
             self.wids['autostep'].SetValue(opts['auto_step'])
             self.wids['mback_edge'].SetStringSelection(opts['mback_edge'].title())
             self.wids['mback_elem'].SetStringSelection(opts['mback_elem'].title())
+            self.wids['mback_wline'].SetValue(opts['mback_wline'])
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
 
         else:
@@ -291,6 +297,7 @@ class XASNormPanel(TaskPanel):
         form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
         form_opts['mback_edge'] = self.wids['mback_edge'].GetStringSelection().title()
         form_opts['mback_elem'] = self.wids['mback_elem'].GetStringSelection().title()
+        form_opts['mback_wline'] = self.wids['mback_wline'].GetValue()
 
         return form_opts
 
@@ -301,15 +308,19 @@ class XASNormPanel(TaskPanel):
             self.wids['nor2'].Disable()
             self.wids['mback_edge'].Enable()
             self.wids['mback_elem'].Enable()
+            self.wids['mback_wline'].Enable()
             dgroup = self.controller.get_group()
-            atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
-            self.wids['mback_edge'].SetStringSelection(edge)
-            self.wids['mback_elem'].SetStringSelection(atsym)
+            if hasattr(dgroup, 'e0'):
+                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+                self.wids['mback_edge'].SetStringSelection(edge)
+                self.wids['mback_elem'].SetStringSelection(atsym)
+                self.wids['mback_wline'].SetValue(int(dgroup.e0/200))
         else:
             self.wids['nor1'].Enable()
             self.wids['nor2'].Enable()
             self.wids['mback_edge'].Disable()
             self.wids['mback_elem'].Disable()
+            self.wids['mback_wline'].Disable()
         self.process()
 
     def onPlotOne(self, evt=None):
@@ -498,15 +509,13 @@ class XASNormPanel(TaskPanel):
         self.make_dnormde(dgroup)
 
         if form['norm_method'].lower().startswith('mback'):
-            print('MBACK !  ', form)
-
 
             self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
             copts = [dgroup.groupname]
-            copts.append("e0=%.2f" % form['e0'])
+            # copts.append("e0=%.2f" % form['e0'])
             copts.append("z=%d" % atomic_number(form['mback_elem'], _larch=self.larch))
             copts.append("edge='%s'" % form['mback_edge'])
-            copts.append("fit_erfc=True")
+            copts.append("whiteline=%d" % form['mback_wline'])
             self.larch_eval("mback(%s)" % (', '.join(copts)))
             self.larch_eval("{group:s}.norm_mback = 1.0*{group:s}.norm".format(**form))
 
