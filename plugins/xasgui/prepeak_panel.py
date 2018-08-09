@@ -182,11 +182,11 @@ class FitResultFrame(wx.Frame):
 
         self.save_result = Button(panel, 'Save Selected Model',
                                   size=(175, -1), action=self.onSaveFitResult)
-        self.save_result.SetToolTip('save model and result to be loaded later')
+        SetTip(self.save_result, 'save model and result to be loaded later')
 
         self.export_fit  = Button(panel, 'Export Fit',
                                   size=(175, -1), action=self.onExportFitResult)
-        self.export_fit.SetToolTip('save arrays and results to text file')
+        SetTip(self.export_fit, 'save arrays and results to text file')
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
@@ -633,7 +633,7 @@ class PrePeakPanel(TaskPanel):
         pan.Add(self.fitmodel_btn)
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
-        t.SetToolTip('Range used as mask for background')
+        SetTip(t, 'Range used as mask for background')
 
         pan.Add(t, newrow=True)
         pan.Add(ppeak_elo)
