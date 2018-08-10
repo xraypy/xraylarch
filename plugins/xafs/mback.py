@@ -3,7 +3,9 @@ from lmfit import Parameter, Parameters, minimize
 from larch import Group, isgroup, parse_group_args
 
 from larch.utils import index_of
-from larch_plugins.xray import xray_edge, xray_line, f1_chantler, f2_chantler, f1f2
+from larch_plugins.xray import (xray_edge, xray_line, f1_chantler, f2_chantler, f1f2,
+                                guess_edge, atomic_number)
+
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
 import numpy as np
@@ -175,7 +177,8 @@ def f2norm(params, en=1, mu=1, f2=1, weights=1):
 
 
 def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
-               pre1=None, pre2=-50, norm1=100, norm2=None, nnorm=1, _larch=None):
+               pre1=None, pre2=-50, norm1=100, norm2=None, nnorm=1, nvict=1,
+               _larch=None):
     """
     simplified version of MBACK to Match mu(E) data for tabulated f''(E)
     for normalization
@@ -222,12 +225,14 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
             find_e0(energy, mu, group=group)
             e0 = group.e0
 
+    if z is None or z < 2:
+        atsym, edge = guess_edge(dgroup.e0, _larch=_larch)
+        z = atomic_number(atsym, _larch=_larch)
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
-        preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=1,
+        preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=nvict,
                 norm1=norm1, norm2=norm2, e0=e0, nnorm=2)
 
     mu_pre = mu - group.pre_edge
-
     f2 = f2_chantler(z, energy, _larch=_larch)
 
     weights = np.ones(len(energy))*1.0
@@ -256,8 +261,9 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     model = (p['offset'] + p['slope']*energy + f2) * p['scale']
     group.f2_scaled = model
 
-    pre_f2 = preedge(energy, model, nnorm=nnorm, nvict=1)
-
+    pre_f2 = preedge(energy, model, nnorm=nnorm, nvict=nvict, e0=e0,
+                     pre1=pre1, pre2=pre2, norm1=norm1, norm2=norm2)
+    # print("mback 2, mback edge step ", pre_f2['edge_step'], p)
     group.edge_step = pre_f2['edge_step']
     group.norm_poly = group.norm
     group.norm_mback = mu_pre / group.edge_step
