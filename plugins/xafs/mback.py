@@ -164,5 +164,108 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     group.norm = (mu -  pre_fpp['pre_edge']) / group.edge_step
 
 
+def f2norm(params, en=1, mu=1, f2=1, weights=1):
+
+    """
+    Objective function for matching mu(E) data to tabulated f''(E)
+    """
+    p = params.valuesdict()
+    model = (p['offset'] + p['slope']*en + f2) * p['scale']
+    return weights * (model - mu)
+
+
+def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
+               pre1=None, pre2=-50, norm1=100, norm2=None, nnorm=1, _larch=None):
+    """
+    simplified version of MBACK to Match mu(E) data for tabulated f''(E)
+    for normalization
+
+    Arguments:
+      energy, mu:  arrays of energy and mu(E)
+      group:       output group (and input group for e0)
+      z:           Z number of absorber
+      e0:          edge energy
+      pre1:        low E range (relative to E0) for pre-edge fit
+      pre2:        high E range (relative to E0) for pre-edge fit
+      norm1:       low E range (relative to E0) for post-edge fit
+      norm2:       high E range (relative to E0) for post-edge fit
+      nnorm:       degree of polynomial (ie, nnorm+1 coefficients will be
+                   found) for post-edge normalization curve fit to the
+                   scaled f2. Default=1 (linear)
+
+    Returns:
+      group.norm_poly:     normalized mu(E) from pre_edge()
+      group.norm:          normalized mu(E) from this method
+      group.f2_scaled:     f2 scaled to match pre-edge subtracted mu(E)
+      group.mback_params:  Group of parameters for the minimization
+
+    References:
+      * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
+      * Chantler: http://dx.doi.org/10.1063/1.555974
+    """
+    ### implement the First Argument Group convention
+    energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
+                                         defaults=(mu,), group=group,
+                                         fcn_name='mback')
+    if len(energy.shape) > 1:
+        energy = energy.squeeze()
+    if len(mu.shape) > 1:
+        mu = mu.squeeze()
+
+    group = set_xafsGroup(group, _larch=_larch)
+
+    if z is not None:              # need to run find_e0:
+        e0_nominal = xray_edge(z, edge, _larch=_larch)[0]
+    if e0 is None:
+        e0 = getattr(group, 'e0', None)
+        if e0 is None:
+            find_e0(energy, mu, group=group)
+            e0 = group.e0
+
+    if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
+        preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=1,
+                norm1=norm1, norm2=norm2, e0=e0, nnorm=2)
+
+    mu_pre = mu - group.pre_edge
+
+    f2 = f2_chantler(z, energy, _larch=_larch)
+
+    weights = np.ones(len(energy))*1.0
+
+    if norm2 is None:
+        norm2 = max(energy) - e0
+
+    ipre2 = index_of(energy, e0+pre2)
+    inor1 = index_of(energy, e0+norm1)
+    inor2 = index_of(energy, e0+norm2) + 1
+
+    weights[ipre2:] = 0.0
+    weights[inor1:inor2] = np.linspace(0.1, 1.0, inor2-inor1)
+
+    params = Parameters()
+    params.add(name='slope',   value=0.0,    vary=True)
+    params.add(name='offset',  value=-f2[0], vary=True)
+    params.add(name='scale',   value=f2[-1], vary=True)
+
+    out = minimize(f2norm, params, method='leastsq',
+                   gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                   kws = dict(en=energy, mu=mu_pre, f2=f2, weights=weights))
+
+    p = out.params.valuesdict()
+
+    model = (p['offset'] + p['slope']*energy + f2) * p['scale']
+    group.f2_scaled = model
+
+    pre_f2 = preedge(energy, model, nnorm=nnorm, nvict=1)
+
+    group.edge_step = pre_f2['edge_step']
+    group.norm_poly = group.norm
+    group.norm_mback = mu_pre / group.edge_step
+    group.norm       = group.norm_mback
+    group.mback_params = Group(e0=e0, pre1=pre1, pre2=pre2, norm1=norm1,
+                               norm2=norm2, nnorm=nnorm, fit_params=p,
+                               fit_weights=weights)
+
+
 def registerLarchPlugin(): # must have a function with this name!
-    return ('_xafs', { 'mback': mback })
+    return ('_xafs', { 'mback': mback, 'mback_norm': mback_norm})
