@@ -264,13 +264,22 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     pre_f2 = preedge(energy, model, nnorm=nnorm, nvict=nvict, e0=e0,
                      pre1=pre1, pre2=pre2, norm1=norm1, norm2=norm2)
     # print("mback 2, mback edge step ", pre_f2['edge_step'], p)
-    group.edge_step = pre_f2['edge_step']
+    step_new = pre_f2['edge_step']
+
+    group.edge_step_poly  = group.edge_step
+    group.edge_step_mback = step_new
     group.norm_poly = group.norm
-    group.norm_mback = mu_pre / group.edge_step
-    group.norm       = group.norm_mback
+    group.norm_mback = mu_pre / step_new
+
     group.mback_params = Group(e0=e0, pre1=pre1, pre2=pre2, norm1=norm1,
                                norm2=norm2, nnorm=nnorm, fit_params=p,
                                fit_weights=weights)
+
+    if (abs(step_new - group.edge_step)/(1.e-13+group.edge_step)) > 0.75:
+        print("Warning: mback edge step failed....")
+    else:
+        group.edge_step = step_new
+        group.norm       = group.norm_mback
 
 
 def registerLarchPlugin(): # must have a function with this name!
