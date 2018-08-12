@@ -38,7 +38,10 @@ PlotOne_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
                                (six.u('Raw \u03BC(E) + d\u03BC(E)/dE'), 'mu+dmude'),
                                (six.u('Normalized \u03BC(E) + d\u03BC(E)/dE'), 'norm+dnormde'),
                                (six.u('Flattened \u03BC(E)'), 'flat'),
-                               (six.u('\u03BC(E) + Pre-/Post-edge'), 'prelines')))
+                               (six.u('\u03BC(E) + Pre-/Post-edge'), 'prelines'),
+                               (six.u('\u03BC(E) + MBACK tabulated \u03BC(E)'), 'mback_norm'),
+                               (six.u('MBACK v. Poly Normalized \u03BC(E)'), 'mback_poly'),
+                              ))
 
 PlotSel_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
                                (six.u('Normalized \u03BC(E)'), 'norm'),
@@ -169,7 +172,7 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['vict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
 
-        add_text('  Polynomial range: ')
+        add_text('Normalization range: ')
         xas.Add(xas_nor1)
         add_text(' : ', newrow=False)
         xas.Add(xas_nor2)
@@ -309,7 +312,7 @@ class XASNormPanel(TaskPanel):
         else:
             self.wids['mback_edge'].Disable()
             self.wids['mback_elem'].Disable()
-        self.process()
+        self.onReprocess()
 
     def onPlotOne(self, evt=None):
         self.plot(self.controller.get_group())
@@ -498,20 +501,23 @@ class XASNormPanel(TaskPanel):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
+
+        self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
+        copts = [dgroup.groupname]
+        # copts.append("e0=%.2f" % form['e0'])
+        copts.append("z=%d" % atomic_number(form['mback_elem'], _larch=self.larch))
+        copts.append("edge='%s'" % form['mback_edge'])
+        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+            copts.append("%s=%.2f" % (attr, form[attr]))
+        self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
+
+        norm_expr = "{group:s}.norm = 1.0*{group:s}.norm_poly"
+        if form['norm_method'].lower().startswith('mback'):
+            norm_expr = "{group:s}.norm = 1.0*{group:s}.norm_mback"
+
+        self.larch_eval(norm_expr.format(**form))
         self.make_dnormde(dgroup)
 
-        if form['norm_method'].lower().startswith('mback'):
-
-            self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
-            copts = [dgroup.groupname]
-            # copts.append("e0=%.2f" % form['e0'])
-            copts.append("z=%d" % atomic_number(form['mback_elem'], _larch=self.larch))
-            copts.append("edge='%s'" % form['mback_edge'])
-            for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                copts.append("%s=%.2f" % (attr, form[attr]))
-
-            self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
-            self.larch_eval("{group:s}.norm_mback = 1.0*{group:s}.norm".format(**form))
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0) # , act=False)
@@ -570,10 +576,9 @@ class XASNormPanel(TaskPanel):
                                    ('pre_edge', PLOTOPTS_2, 'pre edge'),
                                    ('post_edge', PLOTOPTS_2, 'post edge')]
         elif pchoice == 'preedge':
-            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
-            dgroup.plot_yarrays = [('pre_edge_sub', PLOTOPTS_1,
-                                    r'pre-edge subtracted $\mu$')]
             lab = r'pre-edge subtracted $\mu$'
+            dgroup.pre_edge_sub = dgroup.norm * dgroup.edge_step
+            dgroup.plot_yarrays = [('pre_edge_sub', PLOTOPTS_1, lab)]
 
         elif pchoice == 'mu+dmude':
             lab = plotlabels.mu
@@ -589,6 +594,21 @@ class XASNormPanel(TaskPanel):
                                    ('dnormde', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
+        elif pchoice == 'mback_norm':
+            lab = r'$\mu$'
+            if not hasattr(dgroup, 'mback_mu'):
+                self.process(dgroup=dgroup)
+                print(" processs... ")
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
+                                   ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
+
+        elif pchoice == 'mback_poly':
+            lab = plotlabels.norm
+            if not hasattr(dgroup, 'mback_mu'):
+                self.process(dgroup=dgroup)
+                print(" processs... ")
+            dgroup.plot_yarrays = [('norm_mback', PLOTOPTS_1, 'mback'),
+                                   ('norm_poly', PLOTOPTS_2, 'polynomial')]
 
         dgroup.plot_ylabel = lab
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
@@ -666,7 +686,7 @@ class XASNormPanel(TaskPanel):
 
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
-            # print("PLOT ", i, pydat)
+            # print("PLOT ", dgroup, i, pydat)
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
