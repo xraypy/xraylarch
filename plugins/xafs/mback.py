@@ -199,7 +199,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     Returns:
       group.norm_poly:     normalized mu(E) from pre_edge()
       group.norm:          normalized mu(E) from this method
-      group.f2_scaled:     f2 scaled to match pre-edge subtracted mu(E)
+      group.mback_mu:      tabulated f2 scaled and pre_edge added to match mu(E)
       group.mback_params:  Group of parameters for the minimization
 
     References:
@@ -216,6 +216,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
         mu = mu.squeeze()
 
     group = set_xafsGroup(group, _larch=_larch)
+    group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
         e0_nominal = xray_edge(z, edge, _larch=_larch)[0]
@@ -226,7 +227,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
             e0 = group.e0
 
     if z is None or z < 2:
-        atsym, edge = guess_edge(dgroup.e0, _larch=_larch)
+        atsym, edge = guess_edge(group.e0, _larch=_larch)
         z = atomic_number(atsym, _larch=_larch)
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
         preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=nvict,
@@ -259,17 +260,18 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     p = out.params.valuesdict()
 
     model = (p['offset'] + p['slope']*energy + f2) * p['scale']
-    group.f2_scaled = model
+
+    group.mback_mu = model + group.pre_edge
 
     pre_f2 = preedge(energy, model, nnorm=nnorm, nvict=nvict, e0=e0,
                      pre1=pre1, pre2=pre2, norm1=norm1, norm2=norm2)
-    # print("mback 2, mback edge step ", pre_f2['edge_step'], p)
+
     step_new = pre_f2['edge_step']
 
     group.edge_step_poly  = group.edge_step
     group.edge_step_mback = step_new
-    group.norm_poly = group.norm
     group.norm_mback = mu_pre / step_new
+
 
     group.mback_params = Group(e0=e0, pre1=pre1, pre2=pre2, norm1=norm1,
                                norm2=norm2, nnorm=nnorm, fit_params=p,
