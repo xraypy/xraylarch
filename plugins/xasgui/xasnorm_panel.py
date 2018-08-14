@@ -312,6 +312,7 @@ class XASNormPanel(TaskPanel):
         else:
             self.wids['mback_edge'].Disable()
             self.wids['mback_elem'].Disable()
+
         self.onReprocess()
 
     def onPlotOne(self, evt=None):
@@ -430,7 +431,6 @@ class XASNormPanel(TaskPanel):
             self.wids['autoe0'].SetValue(0)
         elif opt in ('pre1', 'pre2', 'nor1', 'nor2'):
             self.wids[opt].SetValue(_x-e0)
-
         self.onReprocess()
 
     def onReprocess(self, evt=None, value=None, **kws):
@@ -458,7 +458,6 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
 
         self.skip_process = True
-        # print("process ", dgroup, dgroup.filename)
         self.get_config(dgroup)
 
         dgroup.custom_plotopts = {}
@@ -518,11 +517,10 @@ class XASNormPanel(TaskPanel):
         self.larch_eval(norm_expr.format(**form))
         self.make_dnormde(dgroup)
 
-
         if form['auto_e0']:
-            self.wids['e0'].SetValue(dgroup.e0) # , act=False)
+            self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step']:
-            self.wids['step'].SetValue(dgroup.edge_step) # , act=False)
+            self.wids['step'].SetValue(dgroup.edge_step)
 
         self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
@@ -598,7 +596,6 @@ class XASNormPanel(TaskPanel):
             lab = r'$\mu$'
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
-                print(" processs... ")
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
 
@@ -606,7 +603,6 @@ class XASNormPanel(TaskPanel):
             lab = plotlabels.norm
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
-                print(" processs... ")
             dgroup.plot_yarrays = [('norm_mback', PLOTOPTS_1, 'mback'),
                                    ('norm_poly', PLOTOPTS_2, 'polynomial')]
 
@@ -619,6 +615,8 @@ class XASNormPanel(TaskPanel):
 
     def plot(self, dgroup, title=None, plot_yarrays=None, delay_draw=False,
              multi=False, new=True, zoom_out=True, with_extras=True, **kws):
+        if self.skip_plotting:
+            return
 
         self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
@@ -686,7 +684,7 @@ class XASNormPanel(TaskPanel):
 
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
-            # print("PLOT ", dgroup, i, pydat)
+            # print("PLOT ", dgroup, dgroup.filename, i, pydat)
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:

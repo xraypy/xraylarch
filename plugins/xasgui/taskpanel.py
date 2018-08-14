@@ -51,6 +51,7 @@ class TaskPanel(wx.Panel):
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
         self.skip_process = True
+        self.skip_plotting = False
         self.build_display()
         self.skip_process = False
 
