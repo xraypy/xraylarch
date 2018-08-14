@@ -184,7 +184,7 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['norm_method'], dcol=5)
         xas.Add(CopyBtn('norm_method'))
 
-        add_text('  Mback Options: ')
+        add_text('    mback options: ')
         add_text('      Element : ', newrow=False, dcol=2)
         xas.Add(self.wids['mback_elem'])
         add_text(' Edge : ', newrow=False)
@@ -210,6 +210,8 @@ class XASNormPanel(TaskPanel):
         """custom get_config to possibly inherit from Athena settings"""
         if dgroup is None:
             dgroup = self.controller.get_group()
+        if dgroup is None:
+            return self.get_defaultconfig()
 
         if hasattr(dgroup, self.configname):
             conf = getattr(dgroup, self.configname)
@@ -224,6 +226,9 @@ class XASNormPanel(TaskPanel):
                 conf['nnorm'] = getattr(dgroup.bkg_params, 'nnor', conf['nnorm'])
                 conf['nvict'] = getattr(dgroup.bkg_params, 'nvic', conf['nvict'])
                 conf['autostep'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
+            if hasattr(dgroup, 'mback_params'): # from mback
+                conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', conf['mback_elem'])
+                conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', conf['mback_edge'])
 
         setattr(dgroup, self.configname, conf)
         return conf
