@@ -208,7 +208,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd % (max_comps, min_weight, win))
 
     def plot_pca_components(self, win=1):
-        if self.result is None self.skip_plotting:
+        if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
         cmd = "plot_pca_components(pca_result, max_components=%d, min_weight=%.3f, win=%d)"
