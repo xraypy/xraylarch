@@ -4,7 +4,7 @@ from larch import Group, isgroup, parse_group_args
 
 from larch.utils import index_of
 from larch_plugins.xray import (xray_edge, xray_line, f1_chantler, f2_chantler, f1f2,
-                                guess_edge, atomic_number)
+                                guess_edge, atomic_number, atomic_symbol)
 
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
@@ -226,9 +226,13 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
             find_e0(energy, mu, group=group)
             e0 = group.e0
 
+    atsym = None
     if z is None or z < 2:
         atsym, edge = guess_edge(group.e0, _larch=_larch)
         z = atomic_number(atsym, _larch=_larch)
+    if atsym is None and z is not None:
+        atsym = atomic_symbol(z, _larch=_larch)
+
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
         preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=nvict,
                 norm1=norm1, norm2=norm2, e0=e0, nnorm=2)
@@ -241,9 +245,13 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     if norm2 is None:
         norm2 = max(energy) - e0
 
+    if norm2 < 0:
+        norm2 = max(energy) - e0  - norm2
+
     ipre2 = index_of(energy, e0+pre2)
     inor1 = index_of(energy, e0+norm1)
     inor2 = index_of(energy, e0+norm2) + 1
+
 
     weights[ipre2:] = 0.0
     weights[inor1:inor2] = np.linspace(0.1, 1.0, inor2-inor1)
@@ -275,7 +283,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     group.mback_params = Group(e0=e0, pre1=pre1, pre2=pre2, norm1=norm1,
                                norm2=norm2, nnorm=nnorm, fit_params=p,
-                               fit_weights=weights)
+                               fit_weights=weights, atsym=atsym, edge=edge)
 
     if (abs(step_new - group.edge_step)/(1.e-13+group.edge_step)) > 0.75:
         print("Warning: mback edge step failed....")
