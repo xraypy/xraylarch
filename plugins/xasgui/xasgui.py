@@ -558,6 +558,8 @@ class XASFrame(wx.Frame):
             cur_panel.process(dgroup=dgroup)
             if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
+            cur_panel.skip_process = False
+
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -971,12 +973,18 @@ class XASFrame(wx.Frame):
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
         script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
+
+        cur_panel = self.nb_panels[self.nb.GetSelection()]
+        cur_panel.skip_plotting = True
         for gname in namelist:
+            cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
             gid = str(getattr(this, 'athena_id', gname))
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
+        cur_panel.skip_plotting = False
+
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
                   overwrite=False):
