@@ -199,7 +199,7 @@ class PCAPanel(TaskPanel):
         self.skip_process = False
 
     def plot_pca_weights(self, win=2):
-        if self.result is None:
+        if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
         cmd = "plot_pca_weights(pca_result, max_components=%d, min_weight=%.3f, win=%d)"
@@ -208,7 +208,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd % (max_comps, min_weight, win))
 
     def plot_pca_components(self, win=1):
-        if self.result is None:
+        if self.result is None self.skip_plotting:
             return
         form = self.read_form()
         cmd = "plot_pca_components(pca_result, max_components=%d, min_weight=%.3f, win=%d)"
@@ -217,7 +217,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd % (max_comps, min_weight, win))
 
     def plot_pca_fit(self, win=1):
-        if self.result is None:
+        if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
         dgroup = self.controller.get_group()
@@ -226,6 +226,8 @@ class PCAPanel(TaskPanel):
 
     def onPlot(self, event=None):
         form = self.read_form()
+        if self.skip_plotting:
+            return
         pchoice = form['plotchoice'].lower()
         if pchoice.startswith('pca'):
             self.plot_pca_components()

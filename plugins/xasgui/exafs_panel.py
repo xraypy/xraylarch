@@ -349,9 +349,13 @@ class EXAFSPanel(TaskPanel):
             self.update_config(opts, dgroup=dgroup)
 
     def plot(self, dgroup=None):
+        if self.skip_plotting:
+            return
         self.onPlotOne(dgroup=dgroup)
 
     def onPlotOne(self, evt=None, dgroup=None):
+        if self.skip_plotting:
+            return
         form = self.read_form()
         if len(form) == 0:
             return
@@ -375,6 +379,8 @@ class EXAFSPanel(TaskPanel):
 
 
     def onPlotSel(self, evt=None):
+        if self.skip_plotting:
+            return
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
