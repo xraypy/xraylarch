@@ -284,9 +284,10 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         enx, mux = remove_nans2(energy[p1:p2], norm[p1:p2])
         # enx, mux = (energy[p1:p2], norm[p1:p2])
         fpars = Parameters()
+        ncoefs = len(pre_dat['norm_coefs'])
         fpars.add('c0', value=0, vary=True)
-        fpars.add('c1', value=0, vary=True)
-        fpars.add('c2', value=0, vary=True)
+        fpars.add('c1', value=0, vary=(ncoefs>1))
+        fpars.add('c2', value=0, vary=(ncoefs>2))
         fit = Minimizer(flat_resid, fpars, fcn_args=(enx, mux))
         result = fit.leastsq(xtol=1.e-6, ftol=1.e-6)
 
@@ -295,7 +296,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         fc2 = result.params['c2'].value
 
         flat_diff   = fc0 + energy * (fc1 + energy * fc2)
-        flat        = norm - flat_diff  + flat_diff[ie0]
+        flat        = norm - (flat_diff  - flat_diff[ie0])
         flat[:ie0]  = norm[:ie0]
 
 
