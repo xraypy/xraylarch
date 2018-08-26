@@ -2324,7 +2324,7 @@ class MapViewerFrame(wx.Frame):
         pos_addrs = [pvn(h5str(tval)) for tval in conf['positioners']]
         env_addrs = [pvn(h5str(tval)) for tval in conf['environ/address']]
         env_vals  = [h5str(tval) for tval in conf['environ/value']]
-        
+
         position = {}
         for pv in allpvs:
             position[pv] = None
@@ -2334,7 +2334,7 @@ class MapViewerFrame(wx.Frame):
                 position[addr] = float(val)
         position[pvn(h5str(conf['scan/pos1'].value))] = x
         position[pvn(h5str(conf['scan/pos2'].value))] = y
-        
+
         notes = {'source': '%s: %s' % (xrmfile.filename, name)}
         self.instdb.save_position(self.inst_name, name, position,
                                   notes=json.dumps(notes))
@@ -2714,13 +2714,25 @@ class MapViewerFrame(wx.Frame):
             print( 'cannot open file while processing a map folder')
             return
 
-        myDlg = OpenMapFolder()
+
+        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
+                           defaultPath=os.getcwd(),
+                           style=wx.FD_OPEN)
+        folder = None
+        if dlg.ShowModal() != wx.ID_OK:
+            return
+
+        folder = os.path.abspath(dlg.GetPath())
+        dlg.Destroy()
+
+
+        myDlg = OpenMapFolder(folder=folder)
 
         path, read = None, False
         if myDlg.ShowModal() == wx.ID_OK:
             read        = True
 
-            args = {'folder':           myDlg.Fldr.GetValue(),
+            args = {'folder':   folder,
                     'FLAGxrf':          myDlg.ChkBx[0].GetValue(),
                     'FLAGxrd2D':        myDlg.ChkBx[1].GetValue(),
                     'FLAGxrd1D':        myDlg.ChkBx[2].GetValue(),
@@ -3208,25 +3220,17 @@ class OpenMapFolder(wx.Dialog):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
-
+    def __init__(self, folder):
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='XRM Map Folder', size=(475, 750))
+        self.folder = folder
+        pref, f = os.path.split(folder)
+        title = "Read XRM Map Folder: %s" % f
+        dialog = wx.Dialog.__init__(self, None,
+                                    title=title, size=(475, 750))
+
 
         panel = wx.Panel(self)
 
-        ################################################################################
-        fldrTtl   = SimpleText(panel,  label='Map Folder:' )
-        self.Fldr = wx.TextCtrl(panel, size=(300, -1))
-        fldrBtn   = Button(panel,      label='Browse...' , size=(75, -1))
-
-        self.Bind(wx.EVT_BUTTON, self.onBROWSE, fldrBtn)
-
-        fldrsizer = wx.BoxSizer(wx.HORIZONTAL)
-        fldrsizer.Add(fldrTtl,      flag=wx.LEFT|wx.ALIGN_CENTER,  border=2)
-        fldrsizer.Add(self.Fldr,    flag=wx.EXPAND|wx.LEFT, border=2)
-        fldrsizer.Add(fldrBtn,      flag=wx.LEFT,           border=2)
-        ################################################################################
         ChkTtl        = SimpleText(panel,  label='Build map including data:' )
         self.ChkBx = [ Check(panel, label='XRF'   ),
                        Check(panel, label='2DXRD' ),
@@ -3343,17 +3347,15 @@ class OpenMapFolder(wx.Dialog):
         h5cmprsizer.Add(self.H5cmprInfo[0], flag=wx.RIGHT, border=5)
         h5cmprsizer.Add(self.H5cmprInfo[1], flag=wx.RIGHT, border=5)
         ################################################################################
-        hlpBtn       = wx.Button(panel, wx.ID_HELP)
-        okBtn        = wx.Button(panel, wx.ID_OK)
-        canBtn       = wx.Button(panel, wx.ID_CANCEL)
+        self.ok_btn  = wx.Button(panel, wx.ID_OK)
+        self.cancel_btn  = wx.Button(panel, wx.ID_CANCEL)
 
         minisizer = wx.BoxSizer(wx.HORIZONTAL)
-        minisizer.Add(hlpBtn,  flag=wx.RIGHT, border=5)
-        minisizer.Add(canBtn,  flag=wx.RIGHT, border=5)
-        minisizer.Add(okBtn,   flag=wx.RIGHT, border=5)
+        minisizer.Add(self.cancel_btn,  flag=wx.RIGHT, border=5)
+        minisizer.Add(self.ok_btn,   flag=wx.RIGHT, border=5)
         ################################################################################
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(fldrsizer,   flag=wx.TOP|wx.LEFT, border=5)
+
         sizer.Add(ckbxsizer,   flag=wx.TOP|wx.LEFT, border=5)
 
         sizer.Add(HLine(panel, size=(320, 2)),flag=wx.TOP|wx.LEFT, border=5)
@@ -3388,29 +3390,34 @@ class OpenMapFolder(wx.Dialog):
 
         self.XRDInfo[11].SetValue('1.0')
 
-        self.FindWindowById(wx.ID_OK).Disable()
-
-        for poniinfo in self.XRDInfo: poniinfo.Disable()
+        for poniinfo in self.XRDInfo:
+            poniinfo.Disable()
 
         self.info[0].SetValue(FACILITY)
         self.info[1].SetValue(BEAMLINE)
+        for line in open(os.path.join(self.folder, 'Scan.ini'), 'r'):
+            if line.split()[0] == 'basedir':
+                npath = line.split()[-1].split('/')
+                cycle,usr = npath[-2],npath[-1]
+                self.info[2].SetValue(cycle)
+                self.info[4].SetValue(usr)
 
-    def checkOK(self,event=None):
+        self.checkOK()
+
+    def checkOK(self, evt=None):
 
         if self.ChkBx[2].GetValue():
-            for poniinfo in self.XRDInfo: poniinfo.Enable()
+            for poniinfo in self.XRDInfo:
+                poniinfo.Enable()
         elif self.ChkBx[1].GetValue():
-            for poniinfo in self.XRDInfo[8:]: poniinfo.Enable()
-            for poniinfo in self.XRDInfo[:8]: poniinfo.Disable()
+            for poniinfo in self.XRDInfo[8:]:
+                poniinfo.Enable()
+            for poniinfo in self.XRDInfo[:8]:
+                poniinfo.Disable()
             self.XRDInfo[7].SetSelection(0)
         else:
-            for poniinfo in self.XRDInfo: poniinfo.Disable()
-
-        if os.path.exists(self.Fldr.GetValue()):
-            self.FindWindowById(wx.ID_OK).Enable()
-        else:
-            self.Fldr.SetValue('')
-            self.FindWindowById(wx.ID_OK).Disable()
+            for poniinfo in self.XRDInfo:
+                poniinfo.Disable()
 
     def onH5cmpr(self,event=None):
 
@@ -3448,37 +3455,6 @@ class OpenMapFolder(wx.Dialog):
         if read:
             self.XRDInfo[i].Clear()
             self.XRDInfo[i].SetValue(str(path))
-
-    def onBROWSE(self,event=None):
-
-        if os.path.exists(self.Fldr.GetValue()):
-           dfltDIR = self.Fldr.GetValue()
-        else:
-           dfltDIR = os.getcwd()
-
-        dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=dfltDIR,
-                           style=wx.FD_OPEN)
-
-        path, read = None, False
-        if dlg.ShowModal() == wx.ID_OK:
-            read = True
-            path = dlg.GetPath().replace('\\', '/')
-        dlg.Destroy()
-
-        if read:
-            self.Fldr.Clear()
-            self.Fldr.SetValue(str(path))
-
-            for line in open(os.path.join(path, 'Scan.ini'), 'r'):
-                if line.split()[0] == 'basedir':
-                    npath = line.split()[-1].split('/')
-                    cycle,usr = npath[-2],npath[-1]
-                    self.info[2].SetValue(cycle)
-                    self.info[4].SetValue(usr)
-
-        self.checkOK()
-
 
 class MapViewer(wx.App):
     def __init__(self, use_scandb=False, **kws):
