@@ -397,14 +397,22 @@ class GSEXRM_MapRow:
             self.inpcounts = xrf_dat.inputCounts[offslice]
             self.outcounts = xrf_dat.outputCounts[offslice]
 
-            # times are extracted from the netcdf file as floats of ms
-            # here we truncate to nearest ms (clock tick is 0.32 ms)
-            self.livetime  = (xrf_dat.liveTime[offslice]).astype('int')
-            self.realtime  = (xrf_dat.realTime[offslice]).astype('int')
+            if self.inpcounts.max() < 1:
+                self.inpcounts = self.counts.sum(axis=2)
+            if self.outcounts.max() < 1:
+                self.outcounts = self.inpcounts*1.0
 
-            dt_denom = xrf_dat.outputCounts[offslice]*xrf_dat.liveTime[offslice]
+            self.livetime  = xrf_dat.liveTime[offslice]
+            self.realtime  = xrf_dat.realTime[offslice]
+            if self.livetime.max() < 0.01:
+                self.livetime = 0.100 * np.ones(self.livetime.shape)
+            if self.realtime.max() < 0.01:
+                self.realtime = 0.100 * np.ones(self.realtime.shape)
+
+            dt_denom = self.outcounts*self.livetime
             dt_denom[np.where(dt_denom < 1)] = 1.0
-            self.dtfactor  = xrf_dat.inputCounts[offslice]*xrf_dat.realTime[offslice]/dt_denom
+            self.dtfactor  = self.inpcounts*self.realtime/dt_denom
+            self.dtfactor[np.where(self.dtfactor < 0.5)] = 0.5
 
         ## SPECIFIC TO XRD data
         if FLAGxrd2D or FLAGxrd1D:
@@ -2478,7 +2486,6 @@ class GSEXRM_MapFile(object):
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
-
 
 
     def _det_name(self, det=None):
