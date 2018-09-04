@@ -52,7 +52,7 @@ class MapImageFrame(ImageFrame):
         self.move_callback = move_callback
         self.save_callback = save_callback
         self.wxmplot_version = get_wxmplot_version()
-        
+
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -92,19 +92,18 @@ class MapImageFrame(ImageFrame):
         if self.panel.conf.auto_contrast:
             self.set_contrast_levels()
 
-        if self.wxmplot_version > 0.921:
-            sd = kws.get('subtitles', {})
-            if sd is None:
-                return
-            t_red = sd.get('red', None)
-            t_green = sd.get('green', None)
-            t_blue = sd.get('blue', None)
-            if t_red is not None:
-                self.cmap_panels[0].title.SetLabel(t_red)
-            if t_green is not None:
-                self.cmap_panels[1].title.SetLabel(t_green)
-            if t_blue is not None:
-                self.cmap_panels[2].title.SetLabel(t_blue)
+        sd = kws.get('subtitles', {})
+        if sd is None:
+            return
+        t_red = sd.get('red', None)
+        t_green = sd.get('green', None)
+        t_blue = sd.get('blue', None)
+        if t_red is not None:
+            self.cmap_panels[0].title.SetLabel(t_red)
+        if t_green is not None:
+            self.cmap_panels[1].title.SetLabel(t_green)
+        if t_blue is not None:
+            self.cmap_panels[2].title.SetLabel(t_blue)
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -347,7 +346,7 @@ class MapImageFrame(ImageFrame):
         """config panel for left-hand-side of frame"""
 
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-        
+
         if self.lasso_callback is None:
             zoom_opts = ('Zoom to Rectangle',
                          'Show Line Profile')
@@ -356,57 +355,31 @@ class MapImageFrame(ImageFrame):
                          'Pick Area for XRF Spectrum',
                          'Show Line Profile')
 
-        if self.wxmplot_version > 0.921:
-            cpanel = wx.Panel(panel)
-            if sizer is None:
-                sizer = wx.BoxSizer(wx.VERTICAL)
-            sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle), 0, labstyle, 3)
-            self.zoom_mode = wx.RadioBox(cpanel, -1, "",
-                                         wx.DefaultPosition, wx.DefaultSize,
-                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
-            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+        cpanel = wx.Panel(panel)
+        if sizer is None:
+            sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle),
+                  0, labstyle, 3)
+        self.zoom_mode = wx.RadioBox(cpanel, -1, "",
+                                     wx.DefaultPosition, wx.DefaultSize,
+                                     zoom_opts, 1, wx.RA_SPECIFY_COLS)
+        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
 
-            sizer.Add(self.zoom_mode, 1, labstyle, 4)
+        sizer.Add(self.zoom_mode, 1, labstyle, 4)
 
-            if self.save_callback is not None:
-                sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle), 0, labstyle, 3)
-                self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
-                                            style=wx.TE_PROCESS_ENTER)
-                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-                sizer.Add(self.pos_name, 0, labstyle, 3)
+        if self.save_callback is not None:
+            sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle),
+                      0, labstyle, 3)
+            self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
+                                        style=wx.TE_PROCESS_ENTER)
+            self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+            sizer.Add(self.pos_name, 0, labstyle, 3)
 
-            pack(cpanel, sizer)
-            return cpanel
-        else:  # support older versions of wxmplot, will be able to deprecate
-            conf = self.panel.conf
-            lpanel = panel
-            lsizer = sizer
-            self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
-                                         wx.DefaultPosition, wx.DefaultSize,
-                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
-            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-            sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-            if self.save_callback is not None:
-                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
-                                            style=wx.TE_PROCESS_ENTER)
-                self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-                label   = SimpleText(panel, label='Save Position:',
-                                     size=(-1, -1))
-                sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
-                sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
-
-            # if self.move_callback is not None:
-            #    mbutton = Button(panel, 'Move to Position', size=(100, -1),
-            #                     action=self.onMoveToPixel)
-            #    irow  = irow + 2
-            #    sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
+        pack(cpanel, sizer)
+        return cpanel
 
     def onMoveToPixel(self, event=None):
         pass
-        # if self.this_point is not None and self.move_callback is not None:
-        #    p1 = float(self.panel.xdata[self.this_point[0]])
-        #    p2 = float(self.panel.ydata[self.this_point[1]])
-        #    self.move_callback(p1, p2)
 
     def onSavePixel(self, event=None):
         if self.this_point is not None and self.save_callback is not None:
@@ -418,19 +391,17 @@ class MapImageFrame(ImageFrame):
             self.save_callback(name, ix, iy, x=x, y=y,
                                title=self.title, xrmfile=self.xrmfile)
 
-CorrelatedMapFrame = None
-if get_wxmplot_version() > 0.922:
 
-    class CorrelatedMapFrame(wxmplot.ImageMatrixFrame):
-        """
-        wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
-        """
-        def __init__(self, parent=None, xrmfile=None,
-                     title='CorrelatedMaps',  **kws):
+class CorrelatedMapFrame(wxmplot.ImageMatrixFrame):
+    """
+    wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
+    """
+    def __init__(self, parent=None, xrmfile=None,
+                 title='CorrelatedMaps',  **kws):
 
-            self.xrmfile = xrmfile
-            wxmplot.ImageMatrixFrame.__init__(self, parent, size=(900, 625),
-                                              title=title, **kws)
+        self.xrmfile = xrmfile
+        wxmplot.ImageMatrixFrame.__init__(self, parent, size=(900, 625),
+                                          title=title, **kws)
 
-        def CustomConfig(self, parent):
-            pass # print("no custom config yet")
+    def CustomConfig(self, parent):
+        pass
