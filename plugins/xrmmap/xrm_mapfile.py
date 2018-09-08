@@ -33,6 +33,21 @@ DEFAULT_ROOTNAME = 'xrmmap'
 NOT_OWNER = "Not Owner of HDF5 file %s"
 STEPS = 5001
 
+
+H5ATTRS = {'Type': 'XRM 2D Map',
+           'Version': '2.1.0',
+           # 'Version': '2.0.0',
+           # 'Version': '1.0.1',
+           'Title': 'Epics Scan Data',
+           'Beamline': 'GSECARS, 13-IDE / APS',
+           'Start_Time': '',
+           'Stop_Time': '',
+           'Map_Folder': '',
+           'Dimension': 2,
+           'Process_Machine': '',
+           'Process_ID': 0,
+           'Compression': ''}
+
 def h5str(obj):
     '''strings stored in an HDF5 from Python2 may look like
      "b'xxx'", that is containg "b".  strip these out here
@@ -140,18 +155,6 @@ def isGSEXRM_MapFolder(fname):
         pass
     return has_xrmdata
 
-H5ATTRS = {'Type': 'XRM 2D Map',
-           'Version': '2.0.1',
-           # 'Version': '1.0.1',
-           'Title': 'Epics Scan Data',
-           'Beamline': 'GSECARS, 13-IDE / APS',
-           'Start_Time': '',
-           'Stop_Time': '',
-           'Map_Folder': '',
-           'Dimension': 2,
-           'Process_Machine': '',
-           'Process_ID': 0,
-           'Compression': ''}
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     '''creates a skeleton '/xrmmap' group in an open HDF5 file
@@ -1299,30 +1302,66 @@ class GSEXRM_MapFile(object):
                     grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
                     grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
                     grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
-                dt.add(" map xrf 4")
                 self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
-                dt.add(" map xrf 5")
-                roigrp = self.xrmmap['roimap']
 
-                en  = self.xrmmap['mcasum']['energy'][:]
-                for roiname in roigrp['mcasum'].keys():
-                    en_lim = roigrp['mcasum'][roiname]['limits'][:]
-                    roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
-                                      np.abs(en-en_lim[1]).argmin())
-                    sumraw = roigrp['mcasum'][roiname]['raw'][thisrow,]
-                    sumcor = roigrp['mcasum'][roiname]['cor'][thisrow,]
-                    for detname in mca_dets:
-                        mcaraw = self.xrmmap[detname]['counts'][thisrow,][:,roi_slice].sum(axis=1)
-                        mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][thisrow,]
-                        roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
-                        roigrp[detname][roiname]['cor'][thisrow,] = mcacor
-                        sumraw += mcaraw
-                        sumcor += mcacor
-                    roigrp['mcasum'][roiname]['raw'][thisrow,] = sumraw
-                    roigrp['mcasum'][roiname]['cor'][thisrow,] = sumcor
+                if version_ge(self.version, '2.1.0'): # version 2.1
+                    det_raw = self.xrmmap['roimap/det_raw']
+                    det_cor = self.xrmmap['roimap/det_cor']
+                    sum_raw = self.xrmmap['roimap/sum_raw']
+                    sum_cor = self.xrmmap['roimap/sum_cor']
+
+                    detraw = list(row.sisdata[:npts].transpose())
+
+                    detcor = detraw[:]
+                    sumraw = detraw[:]
+                    sumcor = detraw[:]
+
+                    if self.roi_slices is None:
+                        lims = self.xrmmap['config/rois/limits'].value
+                        nrois, nmca, nx = lims.shape
+
+                        self.roi_slices = []
+                        for iroi in range(nrois):
+                            x = [slice(lims[iroi, i, 0],
+                                       lims[iroi, i, 1]) for i in range(nmca)]
+                            self.roi_slices.append(x)
+
+                    for slices in self.roi_slices:
+                        iraw = [row.counts[i, :npts, slices[i]].sum(axis=1)
+                                for i in range(nmca)]
+                        icor = [row.counts[i, :npts, slices[i]].sum(axis=1)*row.dtfactor[i, :npts]
+                                for i in range(nmca)]
+                        detraw.extend(iraw)
+                        detcor.extend(icor)
+                        sumraw.append(np.array(iraw).sum(axis=0))
+                        sumcor.append(np.array(icor).sum(axis=0))
+
+                    det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
+                    det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
+                    sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
+                    sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
+
+
+                else: # version 2.0
+                    roigrp = self.xrmmap['roimap']
+                    en  = self.xrmmap['mcasum']['energy'][:]
+                    for roiname in roigrp['mcasum'].keys():
+                        en_lim = roigrp['mcasum'][roiname]['limits'][:]
+                        roi_slice = slice(np.abs(en-en_lim[0]).argmin(),
+                                          np.abs(en-en_lim[1]).argmin())
+                        sumraw = roigrp['mcasum'][roiname]['raw'][thisrow,]
+                        sumcor = roigrp['mcasum'][roiname]['cor'][thisrow,]
+                        for detname in mca_dets:
+                            mcaraw = self.xrmmap[detname]['counts'][thisrow,][:,roi_slice].sum(axis=1)
+                            mcacor = mcaraw*self.xrmmap[detname]['dtfactor'][thisrow,]
+                            roigrp[detname][roiname]['raw'][thisrow,] = mcaraw
+                            roigrp[detname][roiname]['cor'][thisrow,] = mcacor
+                            sumraw += mcaraw
+                            sumcor += mcacor
+                        roigrp['mcasum'][roiname]['raw'][thisrow,] = sumraw
+                        roigrp['mcasum'][roiname]['cor'][thisrow,] = sumcor
                 dt.add(" map xrf 6")
-
-        else:
+        else:  # version 1.0.1
             if self.flag_xrf:
                 nmca, xnpts, nchan = row.counts.shape
                 xrm_dets = []
@@ -1396,7 +1435,6 @@ class GSEXRM_MapFile(object):
                 sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
-        dt.add("xrf done")
         if self.flag_xrd1d:
             if thisrow == 0:
                 self.xrmmap['xrd1D/q'][:] = row.xrdq[0]
@@ -1457,6 +1495,17 @@ class GSEXRM_MapFile(object):
                 nxm = min(1024, int(65536*1.0/ nxx))
             self.chunksize = (1, nxx, nxm)
 
+        # positions
+        pos = xrmmap['positions']
+        for pname in ('mca realtime', 'mca livetime'):
+            self.pos_desc.append(pname)
+            self.pos_addr.append(pname)
+        npos = len(self.pos_desc)
+        self.add_data(pos, 'name',     [six.b(a) for a in self.pos_desc])
+        self.add_data(pos, 'address',  [six.b(a) for a in self.pos_addr])
+        pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
+                           maxshape=(None, npts, npos), **self.compress_args)
+
         if version_ge(self.version, '2.0.0'):
             sismap = xrmmap['scalars']
             sismap.attrs['type'] = 'scalar detectors'
@@ -1465,153 +1514,91 @@ class GSEXRM_MapFile(object):
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
 
-            # positions
-            pos = xrmmap['positions']
-            for pname in ('mca realtime', 'mca livetime'):
-                self.pos_desc.append(pname)
-                self.pos_addr.append(pname)
-            npos = len(self.pos_desc)
-            self.add_data(pos, 'name',     [six.b(a) for a in self.pos_desc])
-            self.add_data(pos, 'address',  [six.b(a) for a in self.pos_addr])
-            pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
-                               maxshape=(None, npts, npos), **self.compress_args)
+            roi_names = [h5str(s) for s in conf['rois/name']]
+            roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
 
-            if self.flag_xrf:
-                roi_names = [h5str(s) for s in conf['rois/name']]
-                roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
+            offset = conf['mca_calib/offset'].value
+            slope  = conf['mca_calib/slope'].value
+            quad   = conf['mca_calib/quad'].value
 
-                offset = conf['mca_calib/offset'].value
-                slope  = conf['mca_calib/slope'].value
-                quad   = conf['mca_calib/quad'].value
+            en_index = np.arange(nchan)
 
-                en_index = np.arange(nchan)
+            if self.nrows_expected is None: self.nrows_expected = -1
+            if verbose:
+                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
+                print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
 
-                if self.nrows_expected is None: self.nrows_expected = -1
-                if verbose:
-                    prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                    print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
-
-                ## mca1 to mca 4
-                for i,imca in enumerate(('mca1', 'mca2', 'mca3', 'mca4')):
-                    for grp in (xrmmap, xrmmap['roimap']):
-                        dgrp = grp.create_group(imca)
-                        dgrp.attrs['type'] = 'mca detector'
-                        dgrp.attrs['desc'] = imca
-
-                    dgrp = xrmmap[imca]
-                    en  = 1.0*offset[i] + slope[i]*1.0*en_index
-                    self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[i],
-                                                             'cal_slope': slope[i]})
-                    dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
-                                        chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **self.compress_args)
-
-                    for name, dtype in (('realtime',  np.int64),
-                                        ('livetime',  np.int64),
-                                        ('dtfactor',  np.float32),
-                                        ('inpcounts', np.float32),
-                                        ('outcounts', np.float32)):
-                        dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **self.compress_args)
-
-                    dgrp = xrmmap['roimap'][imca]
-                    for rname,rlimit in zip(roi_names,roi_limits[i]):
-                        rgrp = dgrp.create_group(rname)
-                        for aname,dtype in (('raw', np.uint32),
-                                            ('cor', np.float32)):
-                            rgrp.create_dataset(aname, (NINIT, npts), dtype,
-                                                chunks=self.chunksize[:-1],
-                                                maxshape=(None, npts), **self.compress_args)
-                        lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
-                        lmtgrp.attrs['type'] = 'energy'
-                        lmtgrp.attrs['units'] = 'keV'
-
-                ## mcasum
+            ## mca1 to mca 4
+            for i in range(nmca):
+                imca = "mca%d" % (i+1)
                 for grp in (xrmmap, xrmmap['roimap']):
-                    dgrp = grp.create_group('mcasum')
-                    dgrp.attrs['type'] = 'virtual mca detector'
-                    dgrp.attrs['desc'] = 'sum of detectors'
+                    dgrp = grp.create_group(imca)
+                    dgrp.attrs['type'] = 'mca detector'
+                    dgrp.attrs['desc'] = imca
 
-                dgrp = xrmmap['mcasum']
-                en  = 1.0*offset[0] + slope[0]*1.0*en_index
-                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
-                                                         'cal_slope': slope[0]})
+                dgrp = xrmmap[imca]
+                en  = 1.0*offset[i] + slope[i]*1.0*en_index
+                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[i],
+                                                         'cal_slope': slope[i]})
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
                                     chunks=self.chunksize,
                                     maxshape=(None, npts, nchan), **self.compress_args)
 
-                dgrp = xrmmap['roimap']['mcasum']
-                for rname,rlimit in zip(roi_names,roi_limits[0]):
+                for name, dtype in (('realtime',  np.int64),
+                                    ('livetime',  np.int64),
+                                    ('dtfactor',  np.float32),
+                                    ('inpcounts', np.float32),
+                                    ('outcounts', np.float32)):
+                    dgrp.create_dataset(name, (NINIT, npts), dtype,
+                                        maxshape=(None, npts), **self.compress_args)
+
+                dgrp = xrmmap['roimap'][imca]
+                for rname,rlimit in zip(roi_names,roi_limits[i]):
                     rgrp = dgrp.create_group(rname)
                     for aname,dtype in (('raw', np.uint32),
                                         ('cor', np.float32)):
-                        rgrp.create_dataset(aname, (NINIT, npts), dtype,
+                        rgrp.create_dataset(aname, (1, npts), dtype,
                                             chunks=self.chunksize[:-1],
                                             maxshape=(None, npts), **self.compress_args)
-                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
+                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
-        else:
-            if self.flag_xrf:
-                if verbose:
-                    prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                    print(prtxt % (npts, row.npts, nmca, nchan))
 
-                en_index = np.arange(nchan)
+            ## mcasum
+            for grp in (xrmmap, xrmmap['roimap']):
+                dgrp = grp.create_group('mcasum')
+                dgrp.attrs['type'] = 'virtual mca detector'
+                dgrp.attrs['desc'] = 'sum of detectors'
 
-                offset = conf['mca_calib/offset'].value
-                slope  = conf['mca_calib/slope'].value
-                quad   = conf['mca_calib/quad'].value
+            dgrp = xrmmap['mcasum']
+            en  = 1.0*offset[0] + slope[0]*1.0*en_index
+            self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
+                                                     'cal_slope': slope[0]})
+            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+                                chunks=self.chunksize,
+                                maxshape=(None, npts, nchan), **self.compress_args)
 
-                roi_names = [h5str(s) for s in conf['rois/name']]
-                roi_addrs = [h5str(s) for s in conf['rois/address']]
-                roi_limits = conf['rois/limits'].value
-                for imca in range(nmca):
-                    dname = 'det%i' % (imca+1)
-                    dgrp = xrmmap.create_group(dname)
-                    dgrp.attrs['type'] = 'mca detector'
-                    dgrp.attrs['desc'] = 'mca%i' % (imca+1)
-                    en  = 1.0*offset[imca] + slope[imca]*1.0*en_index
-                    self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[imca],
-                                                             'cal_slope': slope[imca]})
-                    self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
-                    self.add_data(dgrp, 'roi_address', [six.b(s % (imca+1)) for s in roi_addrs])
-                    self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
+            dgrp = xrmmap['roimap']['mcasum']
+            for rname,rlimit in zip(roi_names,roi_limits[0]):
+                rgrp = dgrp.create_group(rname)
+                for aname,dtype in (('raw', np.uint32),
+                                    ('cor', np.float32)):
+                    rgrp.create_dataset(aname, (1, npts), dtype,
+                                        chunks=self.chunksize[:-1],
+                                        maxshape=(None, npts), **self.compress_args)
+                lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
+                lmtgrp.attrs['type'] = 'energy'
+                lmtgrp.attrs['units'] = 'keV'
 
-                    dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
-                                        chunks=self.chunksize,
-                                        maxshape=(None, npts, nchan), **self.compress_args)
-                    for name, dtype in (('realtime', np.int64),
-                                        ('livetime', np.int64),
-                                        ('dtfactor', np.float32),
-                                        ('inpcounts', np.float32),
-                                        ('outcounts', np.float32)):
-                        dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                            maxshape=(None, npts), **self.compress_args)
-
-                # add 'virtual detector' for corrected sum:
-                dgrp = xrmmap.create_group('detsum')
-                dgrp.attrs['type'] = 'virtual mca'
-                dgrp.attrs['desc'] = 'deadtime corrected sum of detectors'
-                en = 1.0*offset[0] + slope[0]*1.0*en_index
-                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
-                                                         'cal_slope': slope[0]})
-                self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
-                self.add_data(dgrp, 'roi_address', [six.b(s % 1) for s in roi_addrs])
-                self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
-                dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
-                                    chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **self.compress_args)
-                # roi map data
-                scan = xrmmap['roimap']
+            if version_ge(self.version, '2.1.0'):  # NEW ROI RAW DAT
+                rdat = xrmmap['roimap']
                 det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
                 det_desc = [i.strip() for i in row.sishead[-1][1:].split('|')]
-                for addr in roi_addrs:
-                    det_addr.extend([addr % (i+1) for i in range(nmca)])
+                for addr in conf['rois/address']:
+                    det_addr.extend([h5str(addr) % (i+1) for i in range(nmca)])
 
-                for desc in roi_names:
-                    det_desc.extend(["%s (mca%i)" % (desc, i+1)
-                                     for i in range(nmca)])
+                for nam in roi_names:
+                    det_desc.extend(["%s (mca%i)" % (nam, i+1) for i in range(nmca)])
 
                 sums_map = {}
                 sums_desc = []
@@ -1634,33 +1621,124 @@ class GSEXRM_MapFile(object):
 
                 nsum = len(sums_list)
                 nsca = len(det_desc)
-
                 sums_list = np.array(sums_list)
 
-                self.add_data(scan, 'det_name',    [six.b(a) for a in det_desc])
-                self.add_data(scan, 'det_address', [six.b(a) for a in det_addr])
-                self.add_data(scan, 'sum_name',    [six.b(a) for a in sums_desc])
-                self.add_data(scan, 'sum_list',    sums_list)
+                self.add_data(rdat, 'det_name',    [six.b(a) for a in det_desc])
+                self.add_data(rdat, 'det_address', [six.b(a) for a in det_addr])
+                self.add_data(rdat, 'sum_name',    [six.b(a) for a in sums_desc])
+                self.add_data(rdat, 'sum_list',    sums_list)
 
-                nxx = min(nsca, 8)
                 for name, nx, dtype in (('det_raw', nsca, np.uint32),
                                         ('det_cor', nsca, np.float32),
                                         ('sum_raw', nsum, np.uint32),
-                                        ('sum_cor', nsum, np.float32)):
-                    scan.create_dataset(name, (NINIT, npts, nx), dtype,
+                                        ('sum_cor', nsum, np.float32)
+                                        ):
+                    rdat.create_dataset(name, (NINIT, npts, nx), dtype,
                                         chunks=(2, npts, nx),
                                         maxshape=(None, npts, nx), **self.compress_args)
 
-                # positions
-                pos = xrmmap['positions']
-                for pname in ('mca realtime', 'mca livetime'):
-                    self.pos_desc.append(pname)
-                    self.pos_addr.append(pname)
-                npos = len(self.pos_desc)
-                self.add_data(pos, 'name',     [six.b(a) for a in self.pos_desc])
-                self.add_data(pos, 'address',  [six.b(a) for a in self.pos_addr])
-                pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
-                                   maxshape=(None, npts, npos), **self.compress_args)
+
+
+
+        else:  # version 1.*
+            if verbose:
+                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
+                print(prtxt % (npts, row.npts, nmca, nchan))
+
+            en_index = np.arange(nchan)
+
+            offset = conf['mca_calib/offset'].value
+            slope  = conf['mca_calib/slope'].value
+            quad   = conf['mca_calib/quad'].value
+
+            roi_names = [h5str(s) for s in conf['rois/name']]
+            roi_addrs = [h5str(s) for s in conf['rois/address']]
+            roi_limits = conf['rois/limits'].value
+            for imca in range(nmca):
+                dname = 'det%i' % (imca+1)
+                dgrp = xrmmap.create_group(dname)
+                dgrp.attrs['type'] = 'mca detector'
+                dgrp.attrs['desc'] = 'mca%i' % (imca+1)
+                en  = 1.0*offset[imca] + slope[imca]*1.0*en_index
+                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[imca],
+                                                         'cal_slope': slope[imca]})
+                self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
+                self.add_data(dgrp, 'roi_address', [six.b(s % (imca+1)) for s in roi_addrs])
+                self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
+
+                dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+                                    chunks=self.chunksize,
+                                    maxshape=(None, npts, nchan), **self.compress_args)
+                for name, dtype in (('realtime', np.int64),
+                                    ('livetime', np.int64),
+                                    ('dtfactor', np.float32),
+                                    ('inpcounts', np.float32),
+                                    ('outcounts', np.float32)):
+                    dgrp.create_dataset(name, (NINIT, npts), dtype,
+                                        maxshape=(None, npts), **self.compress_args)
+
+            # add 'virtual detector' for corrected sum:
+            dgrp = xrmmap.create_group('detsum')
+            dgrp.attrs['type'] = 'virtual mca'
+            dgrp.attrs['desc'] = 'deadtime corrected sum of detectors'
+            en = 1.0*offset[0] + slope[0]*1.0*en_index
+            self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
+                                                     'cal_slope': slope[0]})
+            self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
+            self.add_data(dgrp, 'roi_address', [six.b(s % 1) for s in roi_addrs])
+            self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
+            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+                                chunks=self.chunksize,
+                                maxshape=(None, npts, nchan), **self.compress_args)
+            # roi map data
+            scan = xrmmap['roimap']
+            det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
+            det_desc = [i.strip() for i in row.sishead[-1][1:].split('|')]
+            for addr in roi_addrs:
+                det_addr.extend([addr % (i+1) for i in range(nmca)])
+
+            for desc in roi_names:
+                det_desc.extend(["%s (mca%i)" % (desc, i+1)
+                                 for i in range(nmca)])
+
+            sums_map = {}
+            sums_desc = []
+            nsum = 0
+            for idet, addr in enumerate(det_desc):
+                if '(mca' in addr:
+                    addr = addr.split('(mca')[0].strip()
+
+                if addr not in sums_map:
+                    sums_map[addr] = []
+                    sums_desc.append(addr)
+                sums_map[addr].append(idet)
+            nsum = max([len(s) for s in sums_map.values()])
+            sums_list = []
+            for sname in sums_desc:
+                slist = sums_map[sname]
+                if len(slist) < nsum:
+                    slist.extend([-1]*(nsum-len(slist)))
+                sums_list.append(slist)
+
+            nsum = len(sums_list)
+            nsca = len(det_desc)
+
+            sums_list = np.array(sums_list)
+
+            self.add_data(scan, 'det_name',    [six.b(a) for a in det_desc])
+            self.add_data(scan, 'det_address', [six.b(a) for a in det_addr])
+            self.add_data(scan, 'sum_name',    [six.b(a) for a in sums_desc])
+            self.add_data(scan, 'sum_list',    sums_list)
+
+            nxx = min(nsca, 8)
+            for name, nx, dtype in (('det_raw', nsca, np.uint32),
+                                    ('det_cor', nsca, np.float32),
+                                    ('sum_raw', nsum, np.uint32),
+                                    ('sum_cor', nsum, np.float32)):
+                scan.create_dataset(name, (NINIT, npts, nx), dtype,
+                                    chunks=(2, npts, nx),
+                                    maxshape=(None, npts, nx), **self.compress_args)
+
 
         if self.flag_xrd2d or self.flag_xrd1d:
             xrdpts, xpixx, xpixy = row.xrd2d.shape
@@ -1850,7 +1928,6 @@ class GSEXRM_MapFile(object):
 
         if len(det_list) < 1:
             det_list = ['']
-
         return det_list
 
     def reset_flags(self):
@@ -1936,11 +2013,17 @@ class GSEXRM_MapFile(object):
                 for g in self.xrmmap['work/xrdwedge'].values():
                     g['counts'].resize((nrow, npts, qstps))
 
-            for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
-                for h in g.values():  # loop through rois in roimap
-                    for aname in ('raw','cor'):
-                        oldnrow, npts = h[aname].shape
-                        h[aname].resize((nrow, npts))
+            if version_ge(self.version, '2.1.0'):
+                for bname in ('det_raw', 'det_cor', 'sum_raw', 'sum_cor'):
+                    g = self.xrmmap['roimap'][bname]
+                    old, npts, nx = g.shape
+                    g.resize((nrow, npts, nx))
+            else:
+                for g in self.xrmmap['roimap'].values(): # loop through detectors in roimap
+                    for h in g.values():  # loop through rois in roimap
+                        for aname in ('raw','cor'):
+                            oldnrow, npts = h[aname].shape
+                            h[aname].resize((nrow, npts))
 
         else: ## old file format method
 
@@ -3174,7 +3257,9 @@ class GSEXRM_MapFile(object):
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
 
-    def check_roi(self, roiname, det=None):
+    def check_roi(self, roiname, det=None, version=None):
+        if version is None:
+            version = self.version
 
         if (type(det) is str and det.isdigit()) or type(det) is int:
             det = int(det)
@@ -3184,7 +3269,7 @@ class GSEXRM_MapFile(object):
 
         if roiname is not None: roiname = roiname.lower()
 
-        if version_ge(self.version, '2.0.0'):
+        if version_ge(version, '2.0.0'):
             if detname is not None:
                 detname = detname.replace('det','mca')
 
@@ -3258,54 +3343,45 @@ class GSEXRM_MapFile(object):
         ndarray for ROI data
         '''
 
-        #scan_version = getattr(self, 'scan_version', 1.00)
-        #hotcols = hotcols or scan_version < 1.36
+        nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
+        out = np.zeros((nrow, ncol))
 
         if roiname == '1' or roiname == 1:
-            map = np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
-            if hotcols:
-                return map[:, 1:-1]
-            else:
-                return map
+            out = np.ones((nrow, ncol))
+            if hotcolse:
+                out = out[1:-1]
+            return out
 
-        roi,det = self.check_roi(roiname,det)
-
-        if type(roiname) is str:
-            if roiname.endswith('raw'): dtcorrect = False
         ext = 'cor' if dtcorrect else 'raw'
+        roi, detaddr = self.check_roi(roiname, det)
+
+        # print(" Get ROIMAP %s | %s | %s | %s" % (roiname, roi, det, detaddr))
 
         if version_ge(self.version, '2.0.0'):
-            if det.startswith('roimap'):
+            if detaddr.startswith('roimap'):
                 roi_ext = '%s/' + ext
             else:
                 roi_ext = '%s_' + ext if ext is 'raw' else '%s'
 
-            if type(roi) is list:
-                all_roi = []
-                for iroi in roi:
-                    iroi = '%s/%s'
-                    if hotcols:
-                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, 1:-1]]
-                    else:
-                        all_roi += [self.xrmmap[det][roi_ext % iroi][:, :]]
-                return np.array(all_roi)
+            roiaddr =  roi_ext % roi
+            out = self.xrmmap[detaddr][roiaddr][:]
+            if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
+                _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
+                detname = '%s%s' % (_detaddr, ext)
+                out = self.xrmmap[detname][:, :, _roi]
+                # save for next time
+                # print(" cache roimap ", detaddr, roiaddr, nrow, ncol, out.max(), out.mean())
+                self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
+                self.xrmmap[detaddr][roiaddr][:, :] = out
 
-            try:
-                if hotcols:
-                    return self.xrmmap[det][roi_ext % roi][:, 1:-1]
-                else:
-                    return self.xrmmap[det][roi_ext % roi][:, :]
-            except:
-                print('specified ROI not found. returning array of ones.')
-                return np.ones(self.xrmmap['positions']['pos'][:].shape[:-1])
 
-        else:
-            detname = '%s%s' % (det,ext)
+        else:  # version1
+            detname = '%s%s' % (detaddr, ext)
+            out = self.xrmmap[detname][:, :, roi]
 
-            if hotcols:
-                return self.xrmmap[detname][:, 1:-1, roi]
-            else:
-                return self.xrmmap[detname][:, :, roi]
+        if hotcols:
+            out = out[:, 1:-1]
+        return out
 
 
     def get_mca_erange(self, det=None, dtcorrect=True,
@@ -3405,30 +3481,6 @@ class GSEXRM_MapFile(object):
         iroi = roi_name.index(name.lower().strip())
         roi_names = [i in self.xrmmap['config/rois/name']]
         roi_names.pop(iroi)
-
-#
-# def update_xrmmap_file(xrmmap):
-#     '''update dataset names, version, etc. in xrmmap file'''
-#
-#     version = bytes2str(xrmmap.attrs.get('Version','0.0.0'))
-#
-#     if version_ge('2.0.0', version):
-#
-#         xrmmap['mca1'] = xrmmap['det1']
-#         del xrmmap['det1']
-#         xrmmap['mca2'] = xrmmap['det2']
-#         del xrmmap['det2']
-#         xrmmap['mca3'] = xrmmap['det3']
-#         del xrmmap['det3']
-#         xrmmap['mca4'] = xrmmap['det4']
-#         del xrmmap['det4']
-#
-#         xrmmap['mcasum'] = xrmmap['detsum']
-#         del xrmmap['detsum']
-#
-#         xrmmap.attrs['Version'] = '2.0.0'
-#     else:
-#         xrmmap.attrs['Version'] = '1.0.0'
 
 
 def read_xrfmap(filename, root=None):
