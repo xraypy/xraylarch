@@ -6,7 +6,7 @@ import time
 import datetime
 try:
     import hdf5plugin
-except IOError:
+except ImportError:
     pass
 
 import h5py
