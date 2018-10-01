@@ -4,6 +4,11 @@ import sys
 import socket
 import time
 import datetime
+try:
+    import hdf5plugin
+except IOError:
+    pass
+
 import h5py
 import numpy as np
 import six
