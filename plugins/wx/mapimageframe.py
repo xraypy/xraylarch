@@ -89,8 +89,7 @@ class MapImageFrame(ImageFrame):
             self.panel.xdata = kws['x']
         if 'y' in kws:
             self.panel.ydata = kws['y']
-        if self.panel.conf.auto_contrast:
-            self.set_contrast_levels()
+        self.set_contrast_levels()
 
         sd = kws.get('subtitles', {})
         if sd is None:
