@@ -1621,7 +1621,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ## do not calculate yet for tomography areas
         ## will need to calculate each ROI, as well
         ## mkak 2018.03.07
-        tomo_area = area.attrs.get('tomograph',False)
+        tomo_area = area.attrs.get('tomograph', False)
         if tomo_area:
            return
 
@@ -1782,7 +1782,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-        tomo_area = area.attrs.get('tomograph',False)
+        tomo_area = area.attrs.get('tomograph', False)
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
 
@@ -1879,7 +1879,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         area  = self.owner.current_file.xrmmap['areas'][aname]
         label = bytes2str(area.attrs.get('description', aname))
-        tomo_area = bytes2str(area.attrs.get('tomograph', False))
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
@@ -1942,7 +1941,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
-        tomo_area = area.attrs.get('tomograph',False)
+        tomo_area = area.attrs.get('tomograph', False)
+
         label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
 
@@ -2365,13 +2365,15 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
-                tmd.display(sino, tomo, title=title) #, title=title, x=x, y=y)
+                tmd.display(sino, tomo, title=title,
+                            auto_contrast=True)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
                 tmd = TomographyFrame(output_title   = title,
                                       lasso_callback = lasso_cb)
-                tmd.display(sino, tomo, title=title) #title=title
+                tmd.display(sino, tomo, title=title,
+                            auto_contrast=True)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
@@ -2380,58 +2382,38 @@ class MapViewerFrame(wx.Frame):
         tmd.Show()
         tmd.Raise()
 
-
-
-    def add_imdisplay(self, title, det=None, _cursorlabels=True, _savecallback=True):
-
-        cursor_labels = self.cursor_menulabels if _cursorlabels else None
-        lasso_cb = partial(self.lassoHandler, det=det) if _cursorlabels else None
-        save_callback = self.onSavePixel if _savecallback else None
-
-        imframe = MapImageFrame(output_title   = title,
-                                lasso_callback = lasso_cb,
-                                cursor_labels  = cursor_labels,
-                                #move_callback  = self.move_callback,
-                                save_callback  = save_callback)
-
-        self.im_displays.append(imframe)
+    def add_imdisplay(self, title, det=None):
+        imd = MapImageFrame(output_title=title,
+                               lasso_callback=partial(self.lassoHandler, det=det),
+                               cursor_labels=self.cursor_menulabels,
+                               save_callback=self.onSavePixel)
+        self.im_displays.append(imd)
+        return imd
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None,
-                    _cursorlabels=True, _savecallback=True):
+                    det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
+        if x is not None and self.hotcols and map.shape[1] != x.shape[0]:
+            x = x[1:-1]
+
+        dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
+                     det=det, subtitles=subtitles, auto_contrast=True,
+                     xrmfile=xrmfile)
+
         displayed = False
-
-        cursor_labels = self.cursor_menulabels if _cursorlabels else None
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile) if _cursorlabels else None
-        save_callback = self.onSavePixel if _savecallback else None
-
-        if x is not None:
-            if self.hotcols and map.shape[1] != x.shape[0]:
-                x = x[1:-1]
-
         while not displayed:
-            try:
-                imd = self.im_displays.pop()
-                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            det=det, subtitles=subtitles, xrmfile=xrmfile)
-                #for col, wid in imd.wid_subtitles.items():
-                #    wid.SetLabel('%s: %s' % (col.title(), subtitles[col]))
-                imd.lasso_callback = lasso_cb
-                displayed = True
-            except IndexError:
-                imd = MapImageFrame(output_title=title,
-                                    lasso_callback = lasso_cb,
-                                    cursor_labels  = cursor_labels,
-                                    #move_callback  = self.move_callback,
-                                    save_callback  = save_callback)
-
-                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                            det=det, subtitles=subtitles, xrmfile=xrmfile)
-                displayed = True
-            except PyDeadObjectError:
-                displayed = False
-        self.im_displays.append(imd)
+            if len(self.im_displays) == 0:
+                imd = self.add_imdisplay(title=title, det=det)
+                imd.display(map, **dopts)
+            else:
+                try:
+                    imd = self.im_displays[-1]
+                    imd.display(map, **dopts)
+                    displayed = True
+                except PyDeadObjectError:
+                    self.im_displays.pop()
+                except IndexError:
+                    pass
         imd.SetStatusText(info, 1)
         imd.Show()
         imd.Raise()
