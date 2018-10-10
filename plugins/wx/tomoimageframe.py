@@ -28,7 +28,7 @@ from wxmplot.baseframe  import BaseFrame
 from wxmplot import ImageFrame, PlotFrame, PlotPanel, StackedPlotFrame
 from wxmplot.imagepanel import ImagePanel
 
-from wxmplot.imageframe import ColorMapPanel, AutoContrastDialog
+from wxmplot.imageframe import ColorMapPanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex, register_custom_colormaps
 from wxmplot.utils import LabelEntry, MenuItem, pack
@@ -586,14 +586,13 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 #                  'use logarithm to set intensity scale',
 #                  self.onLogScale, kind=wx.ITEM_CHECK)
 
-        MenuItem(self, mint, 'Toggle Contrast Enhancement\tCtrl+E',
-                 'Toggle contrast between auto-scale and full-scale',
-                 self.onEnhanceContrast, kind=wx.ITEM_CHECK)
+        #MenuItem(self, mint, 'Toggle Contrast Enhancement\tCtrl+E',
+        #         'Toggle contrast between auto-scale and full-scale',
+        #         self.onEnhanceContrast, kind=wx.ITEM_CHECK)
 
-
-        MenuItem(self, mint, 'Set Auto-Contrast Level',
-                 'Set auto-contrast scale',
-                 self.onContrastConfig)
+        # MenuItem(self, mint, 'Set Auto-Contrast Level',
+        #         'Set auto-contrast scale',
+        #         self.onContrastConfig)
 
         # smoothing
         msmoo = wx.Menu()
@@ -821,7 +820,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
     def onContrastConfig(self, event=None):
-
+        pass
+        old ="""
         for iframe in self.tomo_frame:
             dlg = AutoContrastDialog(parent=self, conf=iframe.panel.conf)
             dlg.CenterOnScreen()
@@ -829,7 +829,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             if val == wx.ID_OK:
                 pass
             dlg.Destroy()
-
+            """
 
     def onContourConfig(self, event=None):
 
