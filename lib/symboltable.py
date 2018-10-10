@@ -8,8 +8,7 @@ import sys
 import types
 import numpy
 import copy
-from functools import partial
-from .utils import fixName, isValidName
+from .utils import Closure, fixName, isValidName
 from . import site_config
 
 class Group(object):
@@ -495,13 +494,13 @@ class SymbolTable(Group):
             if hasattr(val, '__call__') and hasattr(val, '__code__'): # is a function
                 # test whether plugin func has a '_larch' kw arg
                 #    __code__.co_flags & 8 == 'uses **kws'
-                kws.update({'_name': key})
+                kws.update({'func': val, '_name':key})
                 try:
                     nvars = val.__code__.co_argcount
                     if ((val.__code__.co_flags &8 != 0) or
                         '_larch' in val.__code__.co_varnames[:nvars]):
                         kws.update({'_larch':  self._larch})
-                    val = partial(val, **kws)
+                    val = Closure(**kws)
                 except AttributeError: # cannot make a closure
                     pass
             self.set_symbol("%s.%s" % (groupname, key), val)

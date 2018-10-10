@@ -153,6 +153,7 @@ def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
     if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
+    print("RUN " , filename)
     return _larch.runfile(filename, new_module=new_module)
 
 def _reload(mod, _larch=None, **kws):

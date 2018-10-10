@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from .paths import nativepath, get_homedir
 from .debugtime import debugtime
+from .closure import Closure
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
                       isLiteralStr, strip_comments, find_delims, version_ge)
 

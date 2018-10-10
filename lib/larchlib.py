@@ -8,13 +8,11 @@ import ast
 import numpy as np
 import traceback
 import inspect
-from functools import partial
-
 import six
 from collections import OrderedDict
 import ctypes
 import ctypes.util
-
+from .utils import Closure
 from .symboltable import Group, isgroup
 from .site_config import larchdir, usr_larchdir
 
@@ -121,7 +119,7 @@ class LarchExceptionHolder:
             func = self.func
             fname = self.fname
             if fname is None:
-                if isinstance(func, partial):
+                if isinstance(func, Closure):
                     func = func.func
                     fname = inspect.getmodule(func).__file__
                 try:
@@ -262,10 +260,7 @@ class Procedure(object):
         nargs  = len(args)
         nkws   = len(kwargs)
         nargs_expected = len(self.argnames)
-        # print("LARCHPROCCALL ", self.name)
-        # print(" defn: args, kwargs ", self.argnames, self.kwargs)
-        # print(" defn: vararg, varkws ", self.vararg, self.varkws)
-        # print(" passed args, kws: ", args, kwargs)
+
 
         # case 1: too few arguments, but the correct keyword given
         if (nargs < nargs_expected) and nkws > 0:
