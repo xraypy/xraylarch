@@ -193,13 +193,13 @@ q = xtest(4, out='Q')
     def test_print(self):
         '''print (ints, str, ....)'''
         out, err  = self.trytext("print(31)")
-        self.assert_(out== '31\n')
+        self.assertTrue(out== '31\n')
 
         out, err = self.trytext("print('%s = %.3f' % ('a', 1.2012345))")
-        self.assert_(out== 'a = 1.201\n')
+        self.assertTrue(out== 'a = 1.201\n')
 
         out, err = self.trytext("print('{0:s} = {1:.2f}'.format('a', 1.2012345))")
-        self.assert_(out== 'a = 1.20\n')
+        self.assertTrue(out== 'a = 1.20\n')
 
     def test_repr(self):
         '''repr of dict, list'''

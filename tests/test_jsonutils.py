@@ -7,7 +7,7 @@ from __future__ import print_function
 import unittest
 import nose
 import numpy as np
-from numpy.testing import assert_, assert_allclose
+from numpy.testing import assert_allclose
 
 from larch import isParameter, Parameter, isgroup, Group
 from larch.utils.jsonutils import encode4js, decode4js
