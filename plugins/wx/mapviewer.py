@@ -2473,7 +2473,7 @@ class MapViewerFrame(wx.Frame):
         if isGSECARS_Domain():
             self.move_callback = self.onMoveToPixel
             try:
-                sys.path.insert(0, '//cars5/Data/xas_user/pylib')
+                sys.path.insert(0, '//cars4/xas_user/pylib')
                 from escan_credentials import conn as DBCONN
                 from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch

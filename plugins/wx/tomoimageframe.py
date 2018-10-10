@@ -29,6 +29,7 @@ from wxmplot import ImageFrame, PlotFrame, PlotPanel, StackedPlotFrame
 from wxmplot.imagepanel import ImagePanel
 
 from wxmplot.imageframe import ColorMapPanel
+
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex, register_custom_colormaps
 from wxmplot.utils import LabelEntry, MenuItem, pack
@@ -821,7 +822,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
     def onContrastConfig(self, event=None):
         pass
-        old ="""
+        old = """
         for iframe in self.tomo_frame:
             dlg = AutoContrastDialog(parent=self, conf=iframe.panel.conf)
             dlg.CenterOnScreen()
@@ -829,7 +830,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             if val == wx.ID_OK:
                 pass
             dlg.Destroy()
-            """
+        """
 
     def onContourConfig(self, event=None):
 

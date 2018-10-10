@@ -242,7 +242,10 @@ def remove_distutils_sitepackage():
         lpath = os.path.join(spath, 'larch')
         if os.path.exists(lpath) and os.path.isdir(lpath):
             dest = lpath + '_outdated'
-            shutil.move(lpath, dest)
+            try:
+                shutil.move(lpath, dest)
+            except:
+                pass
 
 def fix_darwin_dylibs():
     """
@@ -313,8 +316,11 @@ if INSTALL:
     for src in scripts:
         _, fname = psplit(src)
         dest = pjoin(scriptdir, fname)
-        shutil.copy(src, dest)
-        os.chmod(dest, 493) # mode=755
+        try:
+            shutil.copy(src, dest)
+            os.chmod(dest, 493) # mode=755
+        except:
+            pass
 
 # final install:
 #   create desktop icons
