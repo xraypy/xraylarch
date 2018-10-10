@@ -14,7 +14,7 @@ import ast
 import math
 import numpy
 import six
-
+from functools import partial
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
@@ -22,7 +22,6 @@ from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
-from .utils import Closure
 
 UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__code__',
                 '__closure__', '__globals__', 'func_code',
@@ -135,7 +134,7 @@ class Interpreter:
             if group is not None:
                 for fname, fcn in list(entries.items()):
                     setattr(group, fname,
-                            Closure(func=fcn, _larch=self, _name=fname))
+                            partial(fcn, _larch=self, _name=fname))
 
         # set valid commands from builtins
         for cmd in builtins.valid_commands:

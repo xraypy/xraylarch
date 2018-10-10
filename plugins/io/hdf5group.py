@@ -5,7 +5,8 @@
 
 import h5py
 import numpy
-from larch.utils import Closure, fixName
+from functools import partial
+from larch.utils import fixName
 from larch import ValidateLarchPlugin
 import scipy.io.netcdf
 
@@ -80,7 +81,7 @@ def h5group(fname, mode='r+', _larch=None):
                 setattr(top, "%s_attrs" % current, dict(val.attrs))
     top = group(name=fname)
     top.h5_file = fh
-    fh.visititems(Closure(func=add_component, top=top))
+    fh.visititems(partial(add_component, top=top))
     return top
 
 def registerLarchPlugin():
@@ -89,5 +90,3 @@ def registerLarchPlugin():
              'netcdf_file': netcdf_file,
              'netcdf_group': netcdf_group}
     return ('_io', meths)
-
-

@@ -22,10 +22,10 @@ from wx.py import dispatcher
 from wx.py import editwindow
 
 import inspect
+from functools import partial
 
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
-from larch.utils import Closure
 from larch.larchlib import Procedure
 from .buttons import Button
 from .utils import pack, is_wxPhoenix
@@ -65,7 +65,7 @@ def call_signature(obj):
 
     # print("CALL SIG1: ", obj,  getattr(obj, '__module__', '<>'))
     # print(dir(obj))
-    if isinstance(obj, Closure):
+    if isinstance(obj, partial):
         obj = obj.func
 
     argspec = None
@@ -261,7 +261,6 @@ class FillingTree(wx.TreeCtrl):
 
         obj = self.GetPyData(item)
         # print("Display: ", item, obj, isinstance(obj, Procedure),
-        # isinstance(obj, Closure))
 
         if self.IsExpanded(item):
             self.addChildren(item)
@@ -313,7 +312,7 @@ class FillingTree(wx.TreeCtrl):
         text.append('\n')
         self.setText('\n'.join(text))
 
-    def getFullName(self, item, partial=''):
+    def getFullName(self, item, part=''):
         """Return a syntactically proper name for item."""
         try:
             name = self.GetItemText(item)
@@ -333,16 +332,16 @@ class FillingTree(wx.TreeCtrl):
              (parent == self.root and not self.rootIsNamespace))):
             name = '[' + name + ']'
         # Apply dot syntax to multipart names.
-        if partial:
-            if partial[0] == '[':
-                name += partial
+        if part:
+            if part[0] == '[':
+                name += part
             else:
-                name += '.' + partial
+                name += '.' + part
         # Repeat for everything but the root item
         # and first level children of a namespace.
         if (item != self.root and parent != self.root) \
         or (parent == self.root and not self.rootIsNamespace):
-            name = self.getFullName(parent, partial=name)
+            name = self.getFullName(parent, part=name)
         return name
 
     def setText(self, text):
