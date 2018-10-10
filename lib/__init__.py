@@ -27,7 +27,7 @@ from .site_config import show_site_config
 from .symboltable import Group, SymbolTable, isgroup
 from .shell import shell
 from .inputText import InputText
-from .utils import Closure, fixName, nativepath, get_homedir
+from .utils import fixName, nativepath, get_homedir
 from .version import __date__, __version__, make_banner
 from .interpreter import Interpreter
 from .fitting import Minimizer, Parameter, isParameter, param_value, param_group, minimize
