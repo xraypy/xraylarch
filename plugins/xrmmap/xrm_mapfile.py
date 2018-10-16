@@ -710,7 +710,8 @@ class GSEXRM_MapFile(object):
                  azwdgs=0, qstps=STEPS, flip=True, bkgdscale=1.,
                  FLAGxrf=True, FLAGxrd1D=False, FLAGxrd2D=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
-                 facility='APS', beamline='13-ID-E',run='',proposal='',user=''):
+                 facility='APS', beamline='13-ID-E', run='', proposal='', user='',
+                 scandb=None, **kws):
 
         self.filename         = filename
         self.folder           = folder
@@ -729,6 +730,7 @@ class GSEXRM_MapFile(object):
         self._pixeltime       = None
         self.masterfile       = None
         self.masterfile_mtime = -1
+        self.scandb = scandb
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
