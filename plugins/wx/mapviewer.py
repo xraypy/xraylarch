@@ -11,6 +11,7 @@ import platform
 import sys
 import time
 import json
+import six
 import socket
 import datetime
 from functools import partial
@@ -131,8 +132,14 @@ PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
 PLOT_OPERS = ('/', '*', '-', '+')
 
 
-def isGSECARS_Domain():
-    return 'cars.aps.anl.gov' in socket.getfqdn().lower()
+GSE_DBCONN = None
+if 'cars.aps.anl.gov' in socket.getfqdn().lower():
+    sys.path.insert(0, '//cars4/xas_user/pylib')
+    try:
+        from escan_credentials import conn as GSE_DBCONN
+        from larch_plugins.epics.scandb_plugin import connect_scandb
+    except ImportError:
+        print("Cannot connect to ScanDB")
 
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
@@ -2063,14 +2070,12 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 550),
-                 use_scandb=False, _larch=None, **kwds):
+    def __init__(self, parent=None,  size=(825, 550), _larch=None, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
 
         self.data = None
-        self.use_scandb = use_scandb
         self.filemap = {}
         self.im_displays = []
         self.tomo_displays = []
@@ -2311,7 +2316,7 @@ class MapViewerFrame(wx.Frame):
         self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
 
         # make sure we can save position into database
-        if not self.use_scandb or self.instdb is None:
+        if not self.scandb is None or self.instdb is None:
             return
 
         samplestage = self.instdb.get_instrument(self.inst_name)
@@ -2470,26 +2475,23 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        if isGSECARS_Domain():
+        if GSE_DBCONN is not None:
             self.move_callback = self.onMoveToPixel
             try:
-                sys.path.insert(0, '//cars4/xas_user/pylib')
-                from escan_credentials import conn as DBCONN
-                from larch_plugins.epics.scandb_plugin import connect_scandb
-                DBCONN['_larch'] = self.larch
-                connect_scandb(**DBCONN)
+                GSE_DBCONN['_larch'] = self.larch
+                connect_scandb(**GSE_DBCONN)
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
                 print(" Connected to scandb='%s' on server at '%s'" %
-                      (DBCONN['dbname'], DBCONN['host']))
+                      (GSE_DBCONN['dbname'], GSE_DBCONN['host']))
             except:
                 etype, emsg, tb = sys.exc_info()
-                try: ## python 2
+                if six.PY2:
                     print('Could not connect to ScanDB: %s' % (emsg.message))
-                except: ## python 3
+                else:
                     print('Could not connect to ScanDB: %s' % (emsg))
-                self.use_scandb = False
+                self.scandb = None
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
@@ -2687,7 +2689,7 @@ class MapViewerFrame(wx.Frame):
                 read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
             if read:
-                xrmfile = GSEXRM_MapFile(filename=str(path))
+                xrmfile = GSEXRM_MapFile(filename=str(path), scandb=self.scandb)
                 self.add_xrmfile(xrmfile)
 
 
@@ -2742,6 +2744,7 @@ class MapViewerFrame(wx.Frame):
         myDlg.Destroy()
 
         if read:
+            args['scandb'] = self.scandb
             xrmfile = GSEXRM_MapFile(**args)
             self.add_xrmfile(xrmfile)
 
@@ -3439,15 +3442,14 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].SetValue(str(path))
 
 class MapViewer(wx.App):
-    def __init__(self, use_scandb=False, **kws):
-        self.use_scandb = use_scandb
+    def __init__(self, **kws):
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = MapViewerFrame(use_scandb=self.use_scandb)
+        frame = MapViewerFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
