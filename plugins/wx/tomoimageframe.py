@@ -37,7 +37,6 @@ from wxmplot.utils import LabelEntry, MenuItem, pack
 from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
 
 import larch
-from larch_plugins.wx.mapimageframe import get_wxmplot_version
 
 from functools import partial
 
@@ -98,12 +97,10 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
      Ctrl-F:     Flip Left/Right
 
   Image Enhancement:
-     Ctrl-L:     Log-Scale Intensity
-     Ctrl-E:     Enhance Contrast
+     Ctrl-+:     Enhance Contrast
 
 
 '''
-
 
     def __init__(self, parent=None, size=None, mode='intensity',
                  lasso_callback=None,
@@ -120,7 +117,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
 
         self.det = None
         self.xrmfile = None
-        self.wxmplot_version = get_wxmplot_version()
 
         BaseFrame.__init__(self, parent=parent,
                            title  = output_title,
@@ -581,25 +577,7 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                      self.onContourConfig)
         self.optional_menus.append((m, False))
 
-        # intensity contrast
-        mint =self.intensity_menu = wx.Menu()
-#         MenuItem(self, mint,  'Log Scale Intensity\tCtrl+L',
-#                  'use logarithm to set intensity scale',
-#                  self.onLogScale, kind=wx.ITEM_CHECK)
 
-        #MenuItem(self, mint, 'Toggle Contrast Enhancement\tCtrl+E',
-        #         'Toggle contrast between auto-scale and full-scale',
-        #         self.onEnhanceContrast, kind=wx.ITEM_CHECK)
-
-        # MenuItem(self, mint, 'Set Auto-Contrast Level',
-        #         'Set auto-contrast scale',
-        #         self.onContrastConfig)
-
-        # smoothing
-        msmoo = wx.Menu()
-        for itype in Interp_List:
-            wid = msmoo.AppendRadioItem(-1, itype, itype)
-            self.Bind(wx.EVT_MENU, partial(self.onInterp, name=itype), id=wid.id)
 
         # help
         mhelp = wx.Menu()
@@ -608,10 +586,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         MenuItem(self, mhelp, 'About', 'About WXMPlot', self.onAbout)
 
         # add all sub-menus, including user-added
-        submenus = [('File', mfile),
-                    ('Image', mview),
-                    ('Contrast', mint),
-                    ('Smoothing', msmoo)]
+        submenus = [('File', mfile),  ('Image', mview)]
+
         if self.user_menus is not None:
             submenus.extend(self.user_menus)
         submenus.append(('&Help', mhelp))
@@ -623,13 +599,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
         self.SetMenuBar(mbar)
         self.Bind(wx.EVT_CLOSE,self.onExit)
 
-    def onInterp(self, evt=None, name=None):
-
-        if name not in Interp_List:
-            name = Interp_List[0]
-        for iframe in self.tomo_frame:
-            iframe.panel.conf.interp = name
-            iframe.panel.redraw()
 
     def onCursorMode(self, event=None, mode='zoom'):
 
@@ -796,41 +765,19 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                          'Pick Area for XRM Spectra',
                          'Show Line Profile')
 
-        if self.wxmplot_version > 0.921:
-            cpanel = wx.Panel(panel)
-            if sizer is None:
-                sizer = wx.BoxSizer(wx.VERTICAL)
-            sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle), 0, labstyle, 3)
-            self.zoom_mode = wx.RadioBox(cpanel, -1, '',
-                                         wx.DefaultPosition, wx.DefaultSize,
-                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
-            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
 
-            sizer.Add(self.zoom_mode, 1, labstyle, 4)
+        cpanel = wx.Panel(panel)
+        if sizer is None:
+            sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle), 0, labstyle, 3)
+        self.zoom_mode = wx.RadioBox(cpanel, -1, '',
+                                     wx.DefaultPosition, wx.DefaultSize,
+                                     zoom_opts, 1, wx.RA_SPECIFY_COLS)
+        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+        sizer.Add(self.zoom_mode, 1, labstyle, 4)
+        pack(cpanel, sizer)
+        return cpanel
 
-            pack(cpanel, sizer)
-            return cpanel
-        else:  # support older versions of wxmplot, will be able to deprecate
-            conf = self.tomo_frame[0].panel.conf # self.panel.conf
-            lpanel = panel
-            lsizer = sizer
-            self.zoom_mode = wx.RadioBox(panel, -1, 'Cursor Mode:',
-                                         wx.DefaultPosition, wx.DefaultSize,
-                                         zoom_opts, 1, wx.RA_SPECIFY_COLS)
-            self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-            sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-
-    def onContrastConfig(self, event=None):
-        pass
-        old = """
-        for iframe in self.tomo_frame:
-            dlg = AutoContrastDialog(parent=self, conf=iframe.panel.conf)
-            dlg.CenterOnScreen()
-            val = dlg.ShowModal()
-            if val == wx.ID_OK:
-                pass
-            dlg.Destroy()
-        """
 
     def onContourConfig(self, event=None):
 

@@ -30,10 +30,6 @@ from wxmplot.colors import rgb2hex, register_custom_colormaps
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
 
-def get_wxmplot_version():
-    wmv = [int(w) for w in wxmplot.__version__ .split('.')]
-    return  wmv[0]*1.0 + wmv[1]*0.1 + wmv[2]*0.001
-
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
@@ -51,7 +47,6 @@ class MapImageFrame(ImageFrame):
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
-        self.wxmplot_version = get_wxmplot_version()
 
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
