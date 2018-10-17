@@ -2325,9 +2325,8 @@ class MapViewerFrame(wx.Frame):
         self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
 
         # make sure we can save position into database
-        if not self.scandb is None or self.instdb is None:
+        if self.scandb is None or self.instdb is None:
             return
-
         samplestage = self.instdb.get_instrument(self.inst_name)
         if samplestage is None:
             return
