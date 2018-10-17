@@ -1076,7 +1076,7 @@ class GSEXRM_MapFile(object):
         row = self.read_rowdata(irow)
 
         if irow == 0:
-            self.build_schema(row,verbose=True)
+            self.build_schema(row, verbose=True)
 
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
@@ -1488,19 +1488,13 @@ class GSEXRM_MapFile(object):
         if self.npts is None:
             self.npts = row.npts
         npts = self.npts
-
         if self.flag_xrf:
             nmca, xnpts, nchan = row.counts.shape
         else:
             nmca, xnpts, nchan = 1, self.npts, 1
 
         if self.chunksize is None:
-            if xnpts < 10: xnpts=10
-            nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
-            nxm = 1024
-            if nxx > 256:
-                nxm = min(1024, int(65536*1.0/ nxx))
-            self.chunksize = (1, nxx, nxm)
+            self.chunksize = (1, min(2048, xnpts), nchan)
 
         # positions
         pos = xrmmap['positions']
