@@ -2070,12 +2070,13 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 550), _larch=None, **kwds):
+    def __init__(self, parent=None,  size=(825, 550), _larch=None, use_scandb=False, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
 
         self.data = None
+        self.use_scandb = use_scandb
         self.filemap = {}
         self.im_displays = []
         self.tomo_displays = []
@@ -3442,14 +3443,15 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].SetValue(str(path))
 
 class MapViewer(wx.App):
-    def __init__(self, **kws):
+    def __init__(self, use_scandb=False, **kws):
+        self.use_scandb = use_scandb
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = MapViewerFrame()
+        frame = MapViewerFrame(use_scandb=self.use_scandb)
         frame.Show()
         self.SetTopWindow(frame)
 
