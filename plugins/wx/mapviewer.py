@@ -133,15 +133,21 @@ PLOT_OPERS = ('/', '*', '-', '+')
 
 
 GSE_DBCONN = None
-if 'cars.aps.anl.gov' in socket.getfqdn().lower():
 
-    try:
-        sys.path.insert(0, '//cars4/home/xas_user/pylib')
-        from escan_credentials import conn as GSE_DBCONN
-        from larch_plugins.epics.scandb_plugin import connect_scandb
-    except ImportError:
-        print("Cannot connect to ScanDB")
-        GSE_DBCONN = None
+if 'cars.aps.anl.gov' in socket.getfqdn().lower():
+    for tpath in ('//cars4/xas_user/pylib', 
+                  '//cars4/home/xas_user/pylib',
+                  'U:/pylib'):
+        sys.path.insert(0, tpath)
+        try:
+            from escan_credentials import conn as GSE_DBCONN
+            from larch_plugins.epics.scandb_plugin import connect_scandb
+        except ImportError:
+            pass
+        sys.path.pop(0)
+        if GSE_DBCONN is not None:
+            break
+
 
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
