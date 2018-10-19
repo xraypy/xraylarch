@@ -8,7 +8,8 @@ site configuration for larch:
 """
 from __future__ import print_function
 
-import platform
+from pyshortcuts import platform, make_shortcut
+
 import sys
 import os
 from os.path import exists, abspath, join
@@ -37,16 +38,16 @@ if 'LARCHDIR' in os.environ:
 
 # on Linux, check for HOME/.local/share,
 # make with mode=711 if needed
-if platform.system() == 'Linux' and os.getuid() > 0:
+if platform in ('linux', 'darwin') and os.getuid() > 0:
     lshare = os.path.join(home_dir, '.local', 'share')
     if not os.path.exists(lshare):
-        os.makedirs(lshare, mode=oct(457)) # 457 = 7,1,1 
+        os.makedirs(lshare, mode=oct(457)) # 457 = 7,1,1
 
 ##
 ## names (and loading order) for core plugin modules
 #core_plugins = ('std', 'math')
 #core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
-core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',  
+core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',
                 'wx', 'xafs', 'xray', 'xrd', 'xrf', 'xrmmap',  'xsw')
 
 
@@ -60,8 +61,7 @@ if hasattr(sys, 'frozen'):
             larchdir = os.path.abspath(toplevel)
         except:
             pass
-
-    elif sys.platform.lower().startswith('darwin'):
+    elif platform.startswith('darwin'):
         tdir, exe = os.path.split(sys.executable)
         toplevel, bindir = os.path.split(tdir)
         larchdir = pjoin(toplevel, 'Resources', 'larch')
@@ -129,6 +129,39 @@ def make_user_larchdirs():
         make_dir(sdir)
         write_file(pjoin(sdir, 'README'), text)
 
+
+
+def make_desktop_shortcuts():
+    """make desktop shortcuts for Larch apps"""
+      ##        Name              py script        icon name         description     inTerminal
+    apps = (('Larch',          'larch',          'larch',      'Larch Command Line', True),
+            ('Larch GUI',      'larch_gui',      'larch',      'Larch GUI',       False),
+            ('XAS Viewer',     'xas_viewer',     'onecone',    'XAS Analysis',  False),
+            ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE XRF Map Viewer', False),
+            ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display',   False),
+            ('2D XRD Viewer',  'diFFit2D',       'larch',      '2D XRD Viewer', False),
+            ('1D XRD Viewer',  'diFFit1D',       'larch',      '1D XRD Viewer', False) )
+
+    icoext = '.ico'
+    bindir = 'bin'
+    if platform.startswith('darwin'):
+        icoext = '.icns'
+    if platform.startswith('win'):
+        bindir = 'Scripts'
+    print(" make shortcuts ", platform)
+
+    for name, pyscript, iconname, desc, interm in apps:
+        icon = os.path.join(larchdir, 'icons', iconname + icoext)
+        script = os.path.join(sys.prefix, bindir, pyscript)
+        make_shortcut(script, name=name, description=desc,
+                      terminal=interm, folder='Larch', icon=icon)
+        print(script)
+        print(name)
+        print(desc)
+        print(icon)
+
+
+
 def show_site_config():
     print( """===  Larch Configuration
   larch version:        %s
@@ -152,7 +185,7 @@ def system_settings():
     that the user larchdirs exist.
     This is run by the interpreter on startup."""
     # ubuntu / unity hack
-    if sys.platform.lower().startswith('linux'):
+    if platform.startswith('linux'):
         if 'ubuntu' in os.uname()[3].lower():
             os.environ['UBUNTU_MENUPROXY'] = '0'
     make_user_larchdirs()

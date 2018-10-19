@@ -80,7 +80,8 @@ all_modules = (('basic analysis', required_modules),
 # files that may be left from earlier install(s) and should be removed
 historical_cruft = ['plugins/xrd/xrd_hkl.py',
                     'plugins/xrd/xrd_util.py',
-                    'plugins/xrd/xrd_xutil.py']
+                    'plugins/xrd/xrd_xutil.py',
+                    'bin/larch_makeicons']
 
 modules_imported = {}
 missing = []
@@ -223,9 +224,10 @@ def remove_cruft(basedir, filelist):
     def remove_file(base, fname):
         fullname = pjoin(base, fname)
         if pexists(fullname):
-            print( " removing %s " %  fullname)
+            print( "should remove %s " %  fullname)
             try:
-                os.unlink(fullname)
+                print(os.stat(fullname))
+                # os.unlink(fullname)
             except:
                 pass
 
@@ -325,16 +327,18 @@ if INSTALL:
 # final install:
 #   create desktop icons
 #   fix dynamic libraries
-if INSTALL and (uname.startswith('darwin') or uname.startswith('win')):
-    cmd ="%s %s" % (pjoin(sys.exec_prefix, pyexe),
-                    pjoin(sys.exec_prefix, bindir, 'larch_makeicons'))
-    os.system(cmd)
-
+if INSTALL:
     if uname.startswith('darwin'):
         fix_darwin_dylibs()
+    elif uname.startswith('linux'):
+        fix_linux_dylibs()
 
-elif uname.startswith('linux'):
-    fix_linux_dylibs()
+    print( " could run larch makeicons")
+    # cmd ="%s %s" % (pjoin(sys.exec_prefix, pyexe),
+    #                 pjoin(sys.exec_prefix, bindir, 'larch_makeicons'))
+    # os.system(cmd)
+
+
 
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)

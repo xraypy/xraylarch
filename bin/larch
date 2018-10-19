@@ -34,6 +34,9 @@ parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
 parser.add_option("-d", "--debug", dest="debug", action="store_true",
                   default=False, help="set debug mode, default = False")
 
+parser.add_option("-m", "--makeicons", dest="makeicons", action="store_true",
+                  default=False, help="create desktop icons")
+
 parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
                   default=False, help="set no wx graphics mode, default = False")
 
@@ -57,9 +60,13 @@ if options.debug:
         larch.site_config.show_site_config()
     except ImportError:
         import larch
-else:
-    import larch
+else:    import larch
 
+if options.makeicons:
+    print("Make desktop icons")
+    from larch.site_config import make_desktop_shortcuts
+    make_desktop_shortcuts()
+    sys.exit()
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
