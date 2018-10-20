@@ -6,18 +6,18 @@
 
 #
 import sys
-## require that numpy be available right away!!
 import numpy
-
+import matplotlib
 try:
-    import matplotlib
     matplotlib.use('WXAgg')
 except:
     pass
 
 major, minor = sys.version_info[0], sys.version_info[1]
-if major < 2 or (major == 2 and minor < 7):
-    raise EnvironmentError('requires python 2.7 or higher')
+if not ((major == 2 and minor == 7) or
+        (major == 3 and minor > 4)):
+    raise EnvironmentError('larch requires python 2.7 or 3.5 or higher')
+
 
 from .larchlib import (plugin_path, use_plugin_path, enable_plugins,
                        isNamedClass, LarchPluginException,
