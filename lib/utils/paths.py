@@ -1,3 +1,4 @@
+import sys
 import os
 
 HAS_PWD = True
@@ -15,15 +16,16 @@ def winpath(d):
     d = d.replace('/','\\')
     return d
 
+uname = sys.platform
 nativepath = unixpath
+
 if os.name == 'nt':
+    uname = 'win'
     nativepath = winpath
 
 def get_homedir():
     "determine home directory"
-
     homedir = None
-
     def check(method, s):
         "check that os.path.expanduser / expandvars gives a useful result"
         try:

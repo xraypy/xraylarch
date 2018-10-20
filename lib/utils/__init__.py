@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from collections import OrderedDict
-from .paths import nativepath, get_homedir
+from .paths import uname, nativepath, get_homedir
 from .debugtime import debugtime
 from .closure import Closure
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
