@@ -11,6 +11,7 @@ requests>=2.1
 asteval>=0.9.12
 lmfit>=0.9.11
 uncertainties>=3.0
+pyshortcuts>=1.1
 pyyaml
 psutil
 termcolor
