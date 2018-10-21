@@ -547,8 +547,17 @@ class LarchFrame(wx.Frame):
             except:
                 pass
 
+
+class LarchApp(wx.App):
+    "simple app to wrap LarchFrame"
+    def __init__(self, **kws):
+        wx.App.__init__(self, **kws)
+
+    def OnInit(self):
+        frame = LarchFrame(exit_on_close=True, with_inspection=False)
+        frame.Show()
+        self.SetTopWindow(frame)
+        return True
+
 if __name__ == '__main__':
-    app = wx.PySimpleApp()
-    f = LarchFrame(None)
-    f.Show()
-    app.MainLoop()
+    LarchApp().MainLoop()
