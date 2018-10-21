@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import time
+from datetime import datetime
 from collections import OrderedDict
 from .paths import uname, nativepath, get_homedir
 from .debugtime import debugtime
@@ -16,3 +18,8 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
                          breit_wigner, damped_oscillator,
                          expgaussian, donaich, skewed_voigt,
                          students_t, logistic, erf, erfc, wofz)
+
+def isotime(t=None):
+    if t is None:
+        t = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
