@@ -18,6 +18,13 @@ if not ((major == 2 and minor == 7) or
         (major == 3 and minor > 4)):
     raise EnvironmentError('larch requires python 2.7 or 3.5 or higher')
 
+# note: for HDF5 File / Filter Plugins to be useful, the
+# hdf5plugin module needs to be imported before h5py
+try:
+    import hdf5plugin
+except ImportError:
+    pass
+import h5py
 
 from .larchlib import (plugin_path, use_plugin_path, enable_plugins,
                        isNamedClass, LarchPluginException,
@@ -31,5 +38,6 @@ from .utils import fixName, nativepath, get_homedir
 from .version import __date__, __version__, make_banner
 from .interpreter import Interpreter
 from .fitting import Minimizer, Parameter, isParameter, param_value, param_group, minimize
+
 
 enable_plugins()
