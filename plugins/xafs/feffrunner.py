@@ -1,25 +1,17 @@
-import os
-from   os.path   import realpath, isdir, isfile, join, basename, dirname
 import sys
-from   distutils.spawn import find_executable
-
+import os
+from os.path import realpath, isdir, isfile, join, basename, dirname
+import glob
 from shutil import copy, move
 import subprocess
 import time
 import re
+from optparse import OptionParser
+from subprocess import Popen, PIPE
 
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter)
-
-bytes2str = str
-if sys.version[0] == '3':
-    def bytes2str(s):
-        if isinstance(s, str):
-            return s
-        elif isinstance(s, bytes):
-            return s.decode(sys.stdout.encoding)
-        return str(s, sys.stdout.encoding)
-
+from larch.utils import isotime, bytes2str
 
 def find_exe(exename):
     bindir = 'bin'
@@ -32,7 +24,6 @@ def find_exe(exename):
 
     if os.path.exists(exefile) and os.access(exefile, os.X_OK):
         return exefile
-    return find_executable(exename)
 
 
 class FeffRunner(Group):
@@ -82,7 +73,8 @@ class FeffRunner(Group):
 
     Attributes:
         feffinp  -- the feff.inp file, absolute or relative to CWD
-        repo     -- when set to the top of the feff85exfas repository, the newly compiled executables will be used
+        repo     -- when set to the top of the feff85exfas repository,
+                    the newly compiled executables will be used
         resolved -- the fully resolved path to the most recently run executable
         verbose  -- write screen messages if True
         mpse     -- run opconsat after pot if True
@@ -91,7 +83,8 @@ class FeffRunner(Group):
 
     Feff8l_modules = ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
-    def __init__(self, feffinp='feff.inp', folder=None, verbose=True, repo=None, _larch=None, **kws):
+    def __init__(self, feffinp='feff.inp', folder=None, verbose=True,
+                 repo=None, _larch=None, **kws):
         kwargs = dict(name='Feff runner')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -299,6 +292,112 @@ def _feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=No
     feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
     feffrunner.run(exe=None)
     return feffrunner
+
+
+def feff8l_cli():
+    """run feff8l as  a command line program to run all or some of
+     feff8l_rdinp
+     feff8l_pot
+     feff8l_xsph
+     feff8l_pathfinder
+     feff8l_genfmt
+     feff8l_ff2x
+    """
+
+    usage = """usage: %prog [options] folder(s)
+
+run feff8l (or selected modules) on one
+or more folders containing feff.inp files.
+
+Example:
+   feff8l --no-ff2chi Structure1 Structure2
+"""
+
+    parser = OptionParser(usage=usage, prog="feff8l",
+                          version="Feff85L for EXAFS version 8.5L, build 001")
+    parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
+                      default=False, help="set quiet mode, default=False")
+    parser.add_option("--no-pot", dest="no_pot", action="store_true",
+                      default=False, help="do not run POT module")
+    parser.add_option("--no-phases", dest="no_phases", action="store_true",
+                      default=False, help="do not run XSPH module")
+    parser.add_option("--no-paths", dest="no_paths", action="store_true",
+                      default=False, help="do not run PATHFINDER module")
+    parser.add_option("--no-genfmt", dest="no_genfmt", action="store_true",
+                      default=False, help="do not run GENFMT module")
+    parser.add_option("--no-ff2chi", dest="no_ff2chi", action="store_true",
+                      default=False, help="do not run FF2CHI module")
+
+
+    FEFFINP = 'feff.inp'
+    (options, args) = parser.parse_args()
+
+    verbose = not options.quiet
+    modules = ['rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x']
+    if options.no_pot:
+        modules.remove('pot')
+    if options.no_phases:
+        modules.remove('xsph')
+    if options.no_paths:
+        modules.remove('pathfinder')
+    if options.no_genfmt:
+        modules.remove('genfmt')
+    if options.no_ff2chi:
+        modules.remove('ff2x')
+
+    if len(args) == 0:
+        args = ['.']
+
+
+    def run_feff8l(modules):
+        """ run selected modules of Feff85L   """
+        try:
+            logfile = open('feff8l.log', 'w+')
+        except:
+            logfile = tempfile.NamedTemporaryFile(prefix='feff8l')
+
+        def write(msg):
+            msg = bytes2str(msg)
+            sys.stdout.write(msg)
+            logfile.write(msg)
+
+        write("#= Feff85l %s\n" % isotime())
+        for mod in modules:
+            write("#= Feff85l %s module\n" % mod)
+            exe = find_exe('feff8l_%s' % mod)
+            proc = Popen(exe, stdout=PIPE, stderr=PIPE)
+            while True:
+                msg = bytes2str(proc.stdout.read())
+                if msg == '':
+                    break
+                write(msg)
+            while True:
+                msg = bytes2str(proc.stderr.read())
+                if msg == '':
+                    break
+                write("#ERROR %s" % msg)
+            logfile.flush()
+        for fname in glob.glob('log*.dat'):
+            try:
+                os.unlink(fname)
+            except IOError:
+                pass
+        write("#= Feff85l done %s\n" % isotime())
+
+    for dirname in args:
+        print(" ARGS ", dirname)
+        if os.path.exists(dirname) and os.path.isdir(dirname):
+            thisdir = os.path.abspath(os.curdir)
+            os.chdir(dirname)
+            if os.path.exists(FEFFINP) and os.path.isfile(FEFFINP):
+                run_feff8l(modules)
+            else:
+                msg = "Could not find feff.inp file in folder '{:s}'"
+                write(msg.forrmat(os.path.abspath(os.curdir)))
+            os.chdir(thisdir)
+        else:
+            print("Could not find folder '{:s}'".format(dirname))
+
 
 def registerLarchGroups():
     return (FeffRunner,)
