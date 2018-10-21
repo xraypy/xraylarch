@@ -102,7 +102,8 @@ def run_gse_dtcorrect():
 
 def run_feff8l():
     "run feff8l"
-    print("run feff8l")
+    from larch_plugins.xafs.feffrunner import feff8l_cli
+    feff8l_cli()
 
 
 def run_larch_server():
