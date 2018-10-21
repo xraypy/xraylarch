@@ -135,7 +135,7 @@ PLOT_OPERS = ('/', '*', '-', '+')
 GSE_DBCONN = None
 
 if 'cars.aps.anl.gov' in socket.getfqdn().lower():
-    for tpath in ('//cars4/xas_user/pylib', 
+    for tpath in ('//cars4/xas_user/pylib',
                   '//cars4/home/xas_user/pylib',
                   'U:/pylib'):
         sys.path.insert(0, tpath)
@@ -2094,9 +2094,10 @@ class MapViewerFrame(wx.Frame):
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch)
 
-        self.larch = self.larch_buffer._larch
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
+        self.larch = self.larch_buffer.larchshell
+        self.larch_buffer.Hide()
 
         self.xrfdisplay = None
         self.xrddisplay1D = None
@@ -2135,10 +2136,6 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
-
-        self.larch_buffer.Hide()
-        self.onFolderSelect()
-
         self.current_energy = None
 
 
@@ -2181,10 +2178,6 @@ class MapViewerFrame(wx.Frame):
             self.nbpanels.append(p)
             p.SetSize((750, 550))
 
-        self.larch_panel = None # LarchPanel(_larch=self.larch, parent=self.nb)
-        # self.nb.AddPage(self.larch_panel, ' Larch Shell ', True)
-        # self.nbpanels.append(self.larch_panel)
-
         self.nb.SetSelection(0)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -2195,8 +2188,7 @@ class MapViewerFrame(wx.Frame):
 
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
-        # if self.nb.GetPage(idx) is self.larch_panel:
-        #     self.larch_panel.update()
+
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
 
@@ -2483,6 +2475,10 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
+        self.Raise()
+
+        self.onFolderSelect()
+
         if GSE_DBCONN is not None:
             self.move_callback = self.onMoveToPixel
             try:
@@ -2500,6 +2496,7 @@ class MapViewerFrame(wx.Frame):
                 else:
                     print('Could not connect to ScanDB: %s' % (emsg))
                 self.scandb = None
+
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
