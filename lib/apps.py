@@ -16,12 +16,11 @@ class LarchApp:
     def __init__(self, name, script, icon='larch', terminal=False):
         self.name = name
         self.script = script
-        self.icon = icon
-        self.terminal = terminal
-        self.icoext = '.ico'
+        icon_ext = 'ico'
         if uname.startswith('darwin'):
-            self.icoext = '.icns'
-
+            icon_ext = 'icns'
+        self.icon = "%s.%s" % (icon, icon_ext)
+        self.terminal = terminal
         bindir = 'bin'
         if uname.startswith('win'):
             bindir = 'Scripts'
@@ -30,11 +29,14 @@ class LarchApp:
         self.icondir = os.path.join(larchdir, 'icons')
 
     def create_shortcut(self):
-        make_shortcut(os.path.join(self.bindir, self.script),
-                      name=self.name,
-                      icon=os.path.join(self.icondir, self.icon+self.icoext),
-                      terminal=self.terminal,
-                      folder='Larch')
+        try:
+            make_shortcut(os.path.join(self.bindir, self.script),
+                          name=self.name,
+                          icon=os.path.join(self.icondir, self.icon),
+                          terminal=self.terminal,
+                          folder='Larch')
+        except:
+            print("Warning: could not create shortcut to ", self.script)
 
 
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
@@ -42,6 +44,7 @@ APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('XAS Viewer',  'xas_viewer',  icon='onecone'),
         LarchApp('GSE Mapviewer', 'gse_mapviewer',  icon='gse_xrfmap'),
         LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
+        LarchApp('Dioptas', 'dioptas', icon='dioptas'),
         LarchApp('2D XRD Viewer', 'diFFit2D'),
         LarchApp('1D XRD Viewer', 'diFFit1D') )
 
