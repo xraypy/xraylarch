@@ -3,12 +3,6 @@ import os
 import sys
 import socket
 import time
-import datetime
-try:
-    import hdf5plugin
-except ImportError:
-    pass
-
 import h5py
 import numpy as np
 import six
@@ -16,8 +10,9 @@ import scipy.stats as stats
 import json
 import multiprocessing as mp
 from functools import partial
+
 import larch
-from larch.utils.debugtime import debugtime
+from larch.utils import debugtime, isotime
 from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
 from larch_plugins.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
@@ -61,11 +56,6 @@ def h5str(obj):
     if out.startswith("b'") and out.endswith("'"):
         out = out[2:-1]
     return out
-
-def isotime(xtime):
-    if type(xtime) is not float:
-        xtime = time.mktime(time.strptime(xtime))
-    return time.strftime("%Y-%m-%d %H:%M:%S" , time.localtime(xtime))
 
 
 def parse_sisnames(text):
@@ -828,7 +818,7 @@ class GSEXRM_MapFile(object):
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
-            self.notes['h5_create_time'] = isotime(time.time())
+            self.notes['h5_create_time'] = isotime()
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
@@ -1117,7 +1107,7 @@ class GSEXRM_MapFile(object):
                 irow  = irow + 1
 
         # self.set_roidata(current_row)
-        print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+        print("End: %s" % isotime())
 
 
     def set_roidata(self, row_start=0, row_end=None):
@@ -1799,7 +1789,7 @@ class GSEXRM_MapFile(object):
 
         try:
             timestr = '\nStart: %Y-%m-%d %H:%M:%S'
-            print(datetime.datetime.fromtimestamp(self.starttime).strftime(timestr))
+            print('\nStart: %s' % isotime(self.starttime))
         except:
             pass
 
@@ -1837,8 +1827,7 @@ class GSEXRM_MapFile(object):
                                        chunks = chunksize_1DXRD)
 
                 attrs = {'steps':self.qstps,'mask':self.xrd2dmaskfile,'flip':self.flip}
-
-                print(datetime.datetime.fromtimestamp(time.time()).strftime('\nStart: %Y-%m-%d %H:%M:%S'))
+                print('\nStart: %s' % isotime())
                 for i in np.arange(nrows):
                     print(' Add row %4i' % (i+1))
                     rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2D/counts'][i],xrdcalfile,**attrs)
@@ -1846,7 +1835,7 @@ class GSEXRM_MapFile(object):
                     self.xrmmap['xrd1D/counts'][i,] = row1D
 
                 self.flag_xrd1d = True
-                print(datetime.datetime.fromtimestamp(time.time()).strftime('End: %Y-%m-%d %H:%M:%S'))
+                print('End: %s' % isotime())
             except:
                 print('1DXRD data already in file.')
                 return
