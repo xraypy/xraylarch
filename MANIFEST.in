@@ -10,5 +10,6 @@ recursive-include examples *
 recursive-exclude plugins *.pyc
 recursive-exclude plugins __pycache__
 recursive-exclude lib __pycache__
+recursive-exclude bin
 recursive-exclude doc/_build *
 recursive-exclude sandbox *

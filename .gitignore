@@ -5,6 +5,7 @@
 *#
 *.bak
 .deps
+bin/
 doc/_build
 doc/*.pdf
 MANIFEST
