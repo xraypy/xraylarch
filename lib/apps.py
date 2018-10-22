@@ -44,6 +44,7 @@ APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('Larch GUI', 'larch --wxgui'),
         LarchApp('XAS Viewer',  'xas_viewer',  icon='onecone'),
         LarchApp('GSE Mapviewer', 'gse_mapviewer',  icon='gse_xrfmap'),
+        LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
         LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
         LarchApp('Dioptas', 'dioptas', icon='dioptas'),
         LarchApp('2D XRD Viewer', 'diFFit2D'),
@@ -62,6 +63,12 @@ def run_gse_mapviewer():
     from larch_plugins.wx import MapViewer
     os.chdir(home_dir)
     MapViewer().MainLoop()
+
+def run_gse_dtcorrect():
+    """GSE DT Correct """
+    from larch_plugins.wx import DTViewer
+    os.chdir(home_dir)
+    DTViewer().MainLoop()
 
 
 def run_xas_viewer():
