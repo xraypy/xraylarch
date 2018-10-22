@@ -8,6 +8,7 @@ from pyshortcuts import make_shortcut
 
 from .site_config import larchdir, home_dir, uname
 from .shell import shell
+from .xmlrpc_server import larch_server_cli
 
 class LarchApp:
     """
@@ -111,8 +112,7 @@ def run_feff8l():
 
 def run_larch_server():
     "run larch XMLRPC server"
-    print("run xmlrpc server")
-
+    larch_server_cli()
 
 ## main larch cli or wxgui
 def run_larch():
