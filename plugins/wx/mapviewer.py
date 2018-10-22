@@ -124,29 +124,18 @@ has already been read.
 """
 
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
-DBCONN = None
 BEAMLINE = '13-ID-E'
 FACILITY = 'APS'
 
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
 PLOT_OPERS = ('/', '*', '-', '+')
 
-
-GSE_DBCONN = None
-
-if 'cars.aps.anl.gov' in socket.getfqdn().lower():
-    for tpath in ('//cars4/xas_user/pylib',
-                  '//cars4/home/xas_user/pylib',
-                  'U:/pylib'):
-        sys.path.insert(0, tpath)
-        try:
-            from escan_credentials import conn as GSE_DBCONN
-            from larch_plugins.epics.scandb_plugin import connect_scandb
-        except ImportError:
-            pass
-        sys.path.pop(0)
-        if GSE_DBCONN is not None:
-            break
+ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
+if ESCAN_CRED is not None:
+    try:
+        from larch_plugins.epics.scandb_plugin import connect_scandb
+    except ImportError:
+        ESCAN_CRED = None
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -2479,16 +2468,15 @@ class MapViewerFrame(wx.Frame):
 
         self.onFolderSelect()
 
-        if GSE_DBCONN is not None:
+        if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
             try:
-                GSE_DBCONN['_larch'] = self.larch
-                connect_scandb(**GSE_DBCONN)
+                connect_scandb(_larch=self.larch)
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
                 print(" Connected to scandb='%s' on server at '%s'" %
-                      (GSE_DBCONN['dbname'], GSE_DBCONN['host']))
+                      (self.scandb.dbname, self.scandb.host))
             except:
                 etype, emsg, tb = sys.exc_info()
                 if six.PY2:
