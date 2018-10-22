@@ -205,7 +205,7 @@ setup(name = 'xraylarch',
       packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
       install_requires=requirements,
       data_files  = data_files,
-      entry_points = {'gui_scripts' : larch_apps},
+      entry_points = {'console_scripts' : larch_apps},
       platforms = ['Windows', 'Linux', 'Mac OS X'],
       classifiers=['Intended Audience :: Science/Research',
                    'Operating System :: OS Independent',
@@ -328,8 +328,6 @@ def fix_linux_dylibs():
     dylibs = ('libgcc_s.so.1','libquadmath.so.0', 'libgfortran.so.3',
               'libfeff6.so', 'libcldata.so', 'libfeff8lpath.so',
               'libfeff8lpotph.so')
-
-
     for lname in dylibs:
         os.system("%s '$ORIGIN' %s" % (fixcmd, os.path.join(larchdlls, lname)))
 
@@ -344,18 +342,17 @@ def fix_linux_dylibs():
 if INSTALL:
     remove_cruft()
     remove_distutils_sitepackage()
-
+    larchbin = 'larch'
     if uname.startswith('darwin'):
         fix_darwin_dylibs()
         if 'Anaconda' in sys.version:
             fix_darwin_exes()
     elif uname.startswith('linux'):
         fix_linux_dylibs()
-
+    elif uname.startswith('win'):
+        larchbin = 'larch-script.py'
     subprocess.check_call((pjoin(sys.exec_prefix, pyexe),
-                           pjoin(sys.exec_prefix, bindir, 'larch'), '-m'))
-
-
+                           pjoin(sys.exec_prefix, bindir, larchbin), '-m'))
 
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
