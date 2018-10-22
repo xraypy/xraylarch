@@ -2475,8 +2475,7 @@ class MapViewerFrame(wx.Frame):
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
-                print(" Connected to scandb='%s' on server at '%s'" %
-                      (self.scandb.dbname, self.scandb.host))
+                print(" ScanDB: %s" % (self.scandb.engine))
             except:
                 etype, emsg, tb = sys.exc_info()
                 if six.PY2:
