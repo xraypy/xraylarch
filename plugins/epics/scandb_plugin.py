@@ -24,13 +24,12 @@ SCANDB_NAME = '%s._scandb' % MODNAME
 INSTDB_NAME = '%s._instdb' % MODNAME
 
 @ValidateLarchPlugin
-def connect_scandb(dbname=None, server='postgresql',
-                   _larch=None, **kwargs):
+def connect_scandb(dbname=None, _larch=None, **kwargs):
     if (_larch.symtable.has_symbol(SCANDB_NAME) and
         _larch.symtable.get_symbol(SCANDB_NAME) is not None):
         scandb = _larch.symtable.get_symbol(SCANDB_NAME)
     else:
-        scandb = ScanDB(dbname=dbname, server=server, **kwargs)
+        scandb = ScanDB(dbname=dbname, **kwargs)
         _larch.symtable.set_symbol(SCANDB_NAME, scandb)
 
     if (_larch.symtable.has_symbol(INSTDB_NAME) and
