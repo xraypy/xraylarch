@@ -1788,7 +1788,6 @@ class GSEXRM_MapFile(object):
                         wdggrp.create_dataset('limits', data=wdg_lmts)
 
         try:
-            timestr = '\nStart: %Y-%m-%d %H:%M:%S'
             print('\nStart: %s' % isotime(self.starttime))
         except:
             pass
@@ -2503,7 +2502,7 @@ class GSEXRM_MapFile(object):
             words = line.split('=')
             if 'scan.starttime' in words[0].lower():
                 self.start_time = words[1].strip()
-                self.notes['scan_start_time'] = isotime(self.start_time)
+                self.notes['scan_start_time'] = self.start_time
             elif 'scan.version' in words[0].lower():
                 self.scan_version = words[1].strip()
             elif 'scan.nrows_expected' in words[0].lower():
@@ -2518,8 +2517,7 @@ class GSEXRM_MapFile(object):
             self.stop_time = time.ctime(os.stat(last_file).st_ctime)
         except:
             pass
-
-        self.notes['scan_end_time'] = isotime(self.stop_time)
+        self.notes['scan_end_time'] = self.stop_time
         self.notes['scan_version'] = self.scan_version
 
         if self.scan_version < 1.35 and (self.flag_xrd2d or self.flag_xrd1d):
