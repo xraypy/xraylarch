@@ -22,6 +22,8 @@ nativepath = unixpath
 if os.name == 'nt':
     uname = 'win'
     nativepath = winpath
+if uname == 'linux2':
+    uname = 'linux'
 
 def get_homedir():
     "determine home directory"
