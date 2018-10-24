@@ -62,7 +62,7 @@ LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 
-ICON_FILE = 'larch.ico'
+ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
@@ -149,8 +149,6 @@ class XASController():
         self.symtable = self.larch.symtable
 
     def init_larch(self):
-        fico = self.get_iconfile()
-
         _larch = self.larch
         old_config = read_config(self.config_file)
 
@@ -166,6 +164,7 @@ class XASController():
         for key, value in config.items():
             setattr(_larch.symtable._sys.xas_viewer, key, value)
         os.chdir(config['workdir'])
+        self.wxparent.SetIcon(wx.Icon(self.get_iconfile(), wx.BITMAP_TYPE_ICO))
 
     def make_default_config(self):
         """ default config, probably called on first run of program"""
