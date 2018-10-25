@@ -361,7 +361,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
                     break
                 lname = "%s_%s" % (tlabels[i], extras[j])
         if lname in labels:
-            lname = cnames[i]
+            lname = clabels[i]
         labels.append(lname)
 
     ####
