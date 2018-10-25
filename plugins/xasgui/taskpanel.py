@@ -103,7 +103,8 @@ class TaskPanel(wx.Panel):
         if dgroup is None:
             dgroup = self.controller.get_group()
         conf = getattr(dgroup, self.configname, self.get_defaultconfig())
-        setattr(dgroup, self.configname, conf)
+        if dgroup is not None:
+            setattr(dgroup, self.configname, conf)
         return conf
 
     def update_config(self, config, dgroup=None):
@@ -112,7 +113,8 @@ class TaskPanel(wx.Panel):
             dgroup = self.controller.get_group()
         conf = getattr(dgroup, self.configname, self.get_defaultconfig())
         conf.update(config)
-        setattr(dgroup, self.configname, conf)
+        if dgroup is not None:
+            setattr(dgroup, self.configname, conf)
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
