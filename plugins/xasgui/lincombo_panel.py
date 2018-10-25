@@ -349,7 +349,7 @@ class ResultFrame(wx.Frame):
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
-        if self.form is None or self.larch_eval is None or self.skip_plotting:
+        if self.form is None or self.larch_eval is None:
             return
 
         for attr in ('show_e0', 'show_fitrange'):
@@ -359,7 +359,7 @@ class ResultFrame(wx.Frame):
                                      self.form, nfit=self.current_fit))
 
     def onPlotSel(self, evt=None):
-        if self.form is None or self.larch_eval is None or self.skip_plottting:
+        if self.form is None or self.larch_eval is None:
             return
         for attr in ('show_e0', 'show_fitrange'):
             self.form[attr] = self.wids[attr].GetValue()

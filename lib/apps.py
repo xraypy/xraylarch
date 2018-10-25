@@ -5,6 +5,7 @@ import pkg_resources
 from optparse import OptionParser
 
 from pyshortcuts import make_shortcut
+from pyshortcuts.shortcut import Shortcut
 
 from .site_config import larchdir, home_dir, uname
 from .shell import shell
@@ -31,11 +32,14 @@ class LarchApp:
 
     def create_shortcut(self):
         try:
-            make_shortcut(os.path.join(self.bindir, self.script),
-                          name=self.name,
+            script =os.path.join(self.bindir, self.script)
+            scut = Shortcut(script, name=self.name, folder='Larch')
+            make_shortcut(script, name=self.name,
                           icon=os.path.join(self.icondir, self.icon),
                           terminal=self.terminal,
                           folder='Larch')
+            if uname.startswith('linux'):
+                os.chmod(scut.target, 493)
         except:
             print("Warning: could not create shortcut to ", self.script)
 

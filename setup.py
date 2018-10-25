@@ -20,9 +20,11 @@ INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 
 
 nbits = platform.architecture()[0].replace('bit', '')
-uname = sys.platform
+uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
+if uname.startswith('linux'): 
+    uname = 'linux'
 
 _version__ = None
 with open(os.path.join('lib', 'version.py'), 'r') as version_file:
