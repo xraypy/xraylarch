@@ -12,6 +12,7 @@ from numpy import array, exp, log, sin, arcsin
 
 from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
+from larch.utils.strutils import bytes2str, str2bytes
 from larch_plugins.xray import RAD2DEG, PLANCK_HC
 
 class XDIFileStruct(Structure):
@@ -57,7 +58,7 @@ def Py3tostr(val):
     if isinstance(val, str):
         return val
     if isinstance(val, bytes):
-        return str(val, 'latin_1')
+        return str(val, 'utf-8')
     return str(val)
 
 def Py3tostrlist(address, nitems):
@@ -131,14 +132,13 @@ class XDIFile(object):
         """
         if filename is None and self.filename is not None:
             filename = self.filename
-        filename = six.b(filename)
         pxdi = pointer(XDIFileStruct())
-        self.status = out = self.xdilib.XDI_readfile(filename, pxdi)
-        if out < 0:
-            msg =  self.xdilib.XDI_errorstring(out)
-            self.xdilib.XDI_cleanup(pxdi, out)
+        self.status = self.xdilib.XDI_readfile(six.b(filename), pxdi)
+        if self.status < 0:
+            msg =  bytes2str(self.xdilib.XDI_errorstring(self.status))
+            self.xdilib.XDI_cleanup(pxdi, self.status)
             msg = 'Error reading XDIFile %s\n%s' % (filename, msg)
-            raise XDIFileException(msg)
+            raise ValueError(msg)
 
         xdi = pxdi.contents
         for attr in dict(xdi._fields_):
