@@ -73,6 +73,8 @@ XDI_errorstring(int errcode) {
     return "non-numeric value for d-spacing";
   } else if (errcode == ERR_NONNUMERIC) {
     return "non-numeric value in data table";
+  } else if (errcode == ERR_ONLY_ONEROW) {
+    return "only one row in data table";
   } else if (errcode == WRN_IGNOREDMETA) {
     return "contains unrecognized header lines";
   }
@@ -131,7 +133,6 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
 
   /* initialize string attributes of thr XDIFile struct */
-
   strcpy(comments, " ");
   xdifile->comments = calloc(1025, sizeof(char));
   strcpy(xdifile->comments, comments);
@@ -178,7 +179,6 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   nheader = 0;
   ndict   = -1;
   maxcol  = 0;
-
   for (i = 0; i < MAX_COLUMNS; i++) {
     sprintf(tlabel, "col%ld", i+1);
     COPY_STRING(col_labels[i], tlabel);
@@ -196,7 +196,6 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
     printf("%s\n", strerror(errno));
     return ilen;
   }
-
   /* check first line for XDI header, get version info */
   if (strncmp(textlines[0], TOK_COMM, 1) == 0)  {
     firstline = textlines[0]; firstline++;
@@ -229,7 +228,6 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       strcpy(xdifile->extra_version, cwords[1]);
     }
   }
-
   /* find number of header lines,
      nheader= index of first line that does not start with '#'
   */
@@ -359,7 +357,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	    strcpy(xdifile->error_message, "non-numeric outer array value: ");
 	    strcat(xdifile->error_message, mkey);
 	    free(mval);
-	    return ERR_NONNUMERIC;
+    	    return ERR_NONNUMERIC;
 	  }
 	  outer_arr0 = dval ;
 
@@ -419,12 +417,15 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   COPY_STRING(line, textlines[i]);
   ncols = make_words(line, words, MAX_WORDS);
-
+  if (ncols < 2) {
+    return ERR_ONLY_ONEROW;
+  }
   strcpy(xdifile->comments, comments);
   COPY_STRING(xdifile->filename, filename);
 
   maxcol++;
   if (ncols < 1) {ncols = 1;}
+
   xdifile->array_labels = calloc(ncols, sizeof(char *));
   xdifile->array_units  = calloc(ncols, sizeof(char *));
   has_energy = 0;
@@ -438,7 +439,6 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       has_angle = 1;
     }
   }
-
 
   /* check for mono d-spacing if angle is given but not energy*/
   if ((has_angle == 1)  && (has_energy == 0) && (xdifile->dspacing < 0)) {
@@ -459,11 +459,11 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       free(outer_pts);
       xdifile->narrays = ncols;
       xdifile->nmetadata = ndict+1;
-      for (j=0; j<=ilen; j++) {
-	free(textlines[j]);
+      for (i=0; i<=ilen; i++) {
+         free(textlines[i]);
       }
       for (i = 0; i < MAX_COLUMNS; i++) {
-	free(col_labels[i]);
+         free(col_labels[i]);
       }
       return ERR_NONNUMERIC;
     }
@@ -570,6 +570,66 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
 }
 
+_EXPORT(void)
+XDI_writefile(XDIFile *xdifile, char *filename) {
+  int i, j, count;
+
+  char quote[1025];
+  const char s[2] = "\n";
+  char *token;
+
+  int regex_status;
+  struct slre_cap caps[3];
+
+  FILE *fp;
+  fp = fopen(filename, "w");
+
+  /* version line */
+  strcpy(quote, xdifile->comments);
+  fprintf(fp, "# XDI/%s %s\n", xdifile->xdi_version, xdifile->extra_version);
+
+  /* metadata section */
+  for (i=0; i < xdifile->nmetadata; i++) {
+        fprintf(fp, "# %s.%s: %s\n",
+		xdifile->meta_families[i],
+		xdifile->meta_keywords[i],
+		xdifile->meta_values[i]);
+  }
+
+  /* user comments */
+  fprintf(fp, "#////////////////////////\n");
+  count = 0;
+  token = strtok(quote, s);   /* get the first token */
+  while( token != NULL ) {    /* walk through other tokens, skipping empty */
+    if (count == 0) {	      /* take care with empty first token */
+      regex_status = slre_match("^\\s*$", token, strlen(token), caps, 2, 0);
+      if (regex_status < 0) {
+	fprintf(fp, "#%s\n", token );
+      }
+    } else {
+      fprintf(fp, "#%s\n", token );
+    }
+    ++count;
+    token = strtok(NULL, s);
+  }
+  fprintf(fp, "#------------------------\n");
+
+  /* column labels */
+  fprintf(fp, "# ");
+  for (i = 0; i < xdifile->narrays; i++) {
+    fprintf(fp, " %s  ", xdifile->array_labels[i]);
+  }
+  fprintf(fp, "\n");
+
+  /* data table */
+  for (i = 0; i < xdifile->npts; i++ ) {
+    for (j = 0; j < xdifile->narrays; j++ ) {
+      fprintf(fp, "  %-12.8g", xdifile->array[j][i]);
+    }
+    fprintf(fp, "\n");
+  }
+
+}
 
 /* ============================================================================ */
 /* array management section                                                     */
@@ -675,7 +735,7 @@ XDI_required_metadata(XDIFile *xdifile) {
 
 
 /* Facility.name:             1 */
-/* Facility.source:           2 */
+/* Facility.xray_source:      2 */
 /* Beamline.name:             4 */
 /* Scan.start_time:           8 */
 /* Column.1: (energy|angle): 16 */
@@ -730,7 +790,7 @@ XDI_validate_item(XDIFile *xdifile, char *family, char *name, char *value) {
   /* printf("======== %s %s %s\n", family, name, value); */
 
   if (strcasecmp(family, "facility") == 0) {
-    err = 0;
+    err = XDI_validate_facility(xdifile, name, value);
 
   } else if (strcasecmp(family, "beamline") == 0) {
     err = 0;
@@ -765,11 +825,41 @@ XDI_validate_item(XDIFile *xdifile, char *family, char *name, char *value) {
   return err;
 }
 
+
+/***************************************************************************/
+/* all tests in the Facility family should return WRN_BAD_FACILITY if the  */
+/* value does not match the definition.  error_message should explain	   */
+/* the problem in a way that is appropruiate to the metadata item	   */
+/***************************************************************************/
+int XDI_validate_facility(XDIFile *xdifile, char *name, char *value) {
+  int err;
+  int regex_status;
+  struct slre_cap caps[3];
+
+  err = 0;
+  strcpy(xdifile->error_message, "");
+
+  if (strcasecmp(name, "current") == 0) {
+    regex_status = slre_match("^\\d+(\\.\\d*)?\\s+m?[aA].*$", value, strlen(value), caps, 2, 0);
+    if (regex_status < 0) {
+      strcpy(xdifile->error_message, "Facility.current not interpretable as a beam current");
+      err = WRN_BAD_FACILITY;
+    }
+  } else if (strcasecmp(name, "energy") == 0) {
+    regex_status = slre_match("^\\d+(\\.\\d*)?\\s+[gmGM][eE][vV].*$", value, strlen(value), caps, 2, 0);
+    if (regex_status < 0) {
+      strcpy(xdifile->error_message, "Facility.energy not interpretable as a storage ring energy");
+      err = WRN_BAD_FACILITY;
+    }
+  }
+
+  return err;
+}
+
+
 int XDI_validate_mono(XDIFile *xdifile, char *name, char *value) {
   int err;
   double dval;
-
-  /* printf("======== >%s< >%s<\n", name, value); */
 
   strcpy(xdifile->error_message, "");
   err = 0;
@@ -790,9 +880,11 @@ int XDI_validate_mono(XDIFile *xdifile, char *name, char *value) {
   return err;
 }
 
-/* all tests in the Sample familty should return WRN_BAD_SAMPLE if the */
+/***********************************************************************/
+/* all tests in the Sample family should return WRN_BAD_SAMPLE if the  */
 /* value does not match the definition.  error_message should explain  */
-/* the problem in a way that is appropruiate to the metadata item */
+/* the problem in a way that is appropruiate to the metadata item      */
+/***********************************************************************/
 int XDI_validate_sample(XDIFile *xdifile, char *name, char *value) {
   int err;
   int regex_status;
@@ -802,27 +894,32 @@ int XDI_validate_sample(XDIFile *xdifile, char *name, char *value) {
   strcpy(xdifile->error_message, "");
 
   if (strcasecmp(name, "temperature") == 0) {
-    regex_status = slre_match("^\\d(\\.\\d)?\\s+[CcFfKk].*$", value, strlen(value), caps, 2, 0);
+    regex_status = slre_match("^\\d+(\\.\\d*)?\\s+[CcFfKk].*$", value, strlen(value), caps, 2, 0);
     if (regex_status < 0) {
       strcpy(xdifile->error_message, "Sample.temperature not interpretable as a temperature");
       err = WRN_BAD_SAMPLE;
     }
+  } else if (strcasecmp(name, "stoichiometry") == 0) {
+    /* TODO */
+    /* need a chemical formula parser to validate Sample.stoichiometry */
+    err = 0;
   }
 
   return err;
 }
 
 
+/**************************************************************/
+/* tests if input string is a valid datetime timestamp.	      */
+/* This uses regular expression to check format and validates */
+/* range of values, though not exhaustively.		      */
+/**************************************************************/
 int xdi_is_datestring(char *inp) {
-  /* tests if input string is a valid datetime timestamp.
-     This uses regular expression to check format and validates
-     range of values, though not exhaustively.
-  */
   int regex_status;
   struct slre_cap caps[6];
   int year, month, day, hour, minute, sec;
   char word[5] = {'\0'};
-  regex_status = slre_match("^(\\d\\d\\d\\d)-(\\d\\d?)-(\\d\\d?)[T ](\\d\\d?):(\\d\\d):(\\d\\d).*$",
+  regex_status = slre_match("^(\\d\\d\\d\\d)-(\\d\\d?)-(\\d\\d?)[Tt ](\\d\\d?):(\\d\\d):(\\d\\d).*$",
 			    inp, strlen(inp), caps, 6, 0);
 			    /* SLRE_INT, sizeof(sec), &year, */
 			    /* SLRE_INT, sizeof(sec), &month, */
@@ -861,8 +958,6 @@ int xdi_is_datestring(char *inp) {
 int XDI_validate_scan(XDIFile *xdifile, char *name, char *value) {
   int err;
 
-  /* printf("======== %s %s\n", name, value); */
-
   err = 0;
   strcpy(xdifile->error_message, "");
 
@@ -876,6 +971,10 @@ int XDI_validate_scan(XDIFile *xdifile, char *name, char *value) {
     if (err==WRN_DATE_FORMAT) { strcpy(xdifile->error_message, "invalid timestamp: format should be ISO 8601 (YYYY-MM-DD HH:MM:SS)"); }
     if (err==WRN_DATE_RANGE)  { strcpy(xdifile->error_message, "invalid timestamp: date out of valid range"); }
 
+  } else if (strcasecmp(name, "edge_energy") == 0) {
+    /* TODO */
+    /* float + units, units can be eV|keV|inverse Angstroms (the last one is kind of tough ...)  */
+    err = 0;
   } else {
     err = 0;
   }

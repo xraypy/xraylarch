@@ -59,12 +59,14 @@ typedef struct {
 } XDIFile;
 
 _EXPORT(int)  XDI_readfile(char *filename, XDIFile *xdifile) ;
+_EXPORT(void) XDI_writefile(XDIFile *xdifile, char *filename) ;
 _EXPORT(int)  XDI_get_array_index(XDIFile *xdifile, long n, double *out);
 _EXPORT(int)  XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
 _EXPORT(int)  XDI_required_metadata(XDIFile *xdifile);
 _EXPORT(int)  XDI_recommended_metadata(XDIFile *xdifile);
 _EXPORT(int)  XDI_defined_family(XDIFile *xdifile, char *family);
 _EXPORT(int)  XDI_validate_item(XDIFile *xdifile, char *family, char *name, char *value);
+int XDI_validate_facility(XDIFile *xdifile, char *name, char *value);
 int XDI_validate_mono(XDIFile *xdifile, char *name, char *value);
 int XDI_validate_sample(XDIFile *xdifile, char *name, char *value);
 int XDI_validate_scan(XDIFile *xdifile, char *name, char *value);
@@ -141,17 +143,18 @@ static char *ValidElems[] =
 #define WRN_NODSPACE          1
 #define WRN_NOMINUSLINE       2
 #define WRN_IGNOREDMETA       4
-/* warnings from metadata value validation */
-#define WRN_NOELEM            8
-#define WRN_NOEDGE           16
-#define WRN_REFELEM          32
-#define WRN_REFEDGE          64
-#define WRN_NOEXTRA         128
-#define WRN_BAD_COL1        256
-#define WRN_DATE_FORMAT     512
-#define WRN_DATE_RANGE     1024
-#define WRN_BAD_DSPACING   2048
-#define WRN_BAD_SAMPLE     4096
+/* warnings from metadata value validation, these are not use bitwise */
+#define WRN_NOELEM          100
+#define WRN_NOEDGE          101
+#define WRN_REFELEM         102
+#define WRN_REFEDGE         103
+#define WRN_NOEXTRA         104
+#define WRN_BAD_COL1        105
+#define WRN_DATE_FORMAT     106
+#define WRN_DATE_RANGE      107
+#define WRN_BAD_DSPACING    108
+#define WRN_BAD_SAMPLE      109
+#define WRN_BAD_FACILITY    110
 
 /* errors reading the XDI file */
 #define ERR_NOTXDI           -1	/* used */
@@ -160,7 +163,8 @@ static char *ValidElems[] =
 #define ERR_META_FORMAT      -8	/* used */
 #define ERR_NCOLS_CHANGE    -16	/* used */
 #define ERR_NONNUMERIC      -32	/* used */
-#define ERR_MEMERROR        -64	/* NOT used */
+#define ERR_ONLY_ONEROW     -64	/* used */
+#define ERR_MEMERROR       -128 /* NOT used */
 
 /* _EXPORT(char*) XDI_errorstring(int errcode); */
 
@@ -168,9 +172,12 @@ static char *ValidElems[] =
 /* List of recommended metadata items */
 static char *RecommendedMetadata[] =
   {                             /* these are the bits of the errorcode returned by XDI_recommended_metadata */
-    "Facility.name",		/* 2^0 */
-    "Facility.xray_source",	/* 2^1 */
-    "Beamline.name",		/* 2^2 */
-    "Scan.start_time",		/* 2^3 */
-    "Column.1",			/* 2^4 */
+    "Element.symbol",		/* 2^0 */
+    "Element.edge",     	/* 2^1 */
+    "Mono.d_spacing",		/* 2^2 */
+    "Facility.name",		/* 2^3 */
+    "Facility.xray_source",	/* 2^4 */
+    "Beamline.name",		/* 2^5 */
+    "Scan.start_time",		/* 2^6 */
+    "Column.1",			/* 2^7 */
   };
