@@ -7,6 +7,9 @@
 #
 import sys
 import numpy
+import warnings
+warnings.simplefilter('ignore')
+
 import matplotlib
 try:
     matplotlib.use('WXAgg')
