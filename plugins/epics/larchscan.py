@@ -211,6 +211,16 @@ def get_dbinfo(key, default=None, as_int=False, as_bool=False,
     return get_info(key, default=default, full_row=full_row,
                     as_int=as_int, as_bool=as_bool, **kws)
 
+@ValidateLarchPlugin
+def set_dbinfo(key, value, notes=None, _larch=None, **kws):
+    """
+    set a value for a keyword in the scan info table.
+    """
+    if _larch.symtable._scan._scandb is None:
+        print('need to connect to scandb!')
+        return
+    return _larch.symtable._scan._scandb.set_info(key, value, notes=notes)
+
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
     if not _larch.symtable.has_group(MODNAME):
