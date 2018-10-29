@@ -234,6 +234,7 @@ def registerLarchPlugin():
         symbols = {'scan_from_db':   scan_from_db,
                    'do_scan': do_scan,
                    'do_slewscan': do_scan,
-                   'get_dbinfo': get_dbinfo}
+                   'get_dbinfo': get_dbinfo,
+                   'set_dbinfo': set_dbinfo}
 
     return (MODNAME, symbols)
