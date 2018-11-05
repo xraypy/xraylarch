@@ -21,16 +21,13 @@ from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
 from larch.utils.mathutils import interp, index_of
 
 def get_arrays(group, arrayname):
-    x, y = None, None
-    if arrayname == 'norm':
-        x = getattr(group, 'energy', None)
-        y = getattr(group, 'norm', None)
-    elif arrayname == 'dmude':
-        x = getattr(group, 'energy', None)
-        y = getattr(group, 'dmude', None)
-    elif arrayname == 'chik':
+    y = None
+    x = getattr(group, 'energy', None)
+    if arrayname == 'chik':
         x = getattr(group, 'k', None)
         y = getattr(group, 'chi', None)
+    else:
+        y = getattr(group, 'norm', None)
     return x, y
 
 def get_label(group):
@@ -58,7 +55,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
       weights     array of starting  weights (see Note 2)
       minvals     array of min weights (or None to mean -inf)
       maxvals     array of max weights (or None to mean +inf)
-      arrayname   string of array name to be fit (see Note 2) ['norm']
+      arrayname   string of array name to be fit (see Note 3) ['norm']
       xmin        x-value for start of fit range [-inf]
       xmax        x-value for end of fit range [+inf]
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
@@ -72,7 +69,9 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
      1.  The names of Group members for the components must match those of the
          group to be fitted.
      2.  use `None` to use basic linear algebra solution.
-     3.  arrayname can be one of `norm` or `dmude`.
+     3.  arrayname is expected to be one of `norm`, `mu`, `dmude`, or `chi`.
+         It can be some other name but such named arrays should exist for all
+         components and groups.
     """
 
     # first, generate arrays and interpolate components onto the unknown x array
@@ -103,7 +102,7 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
     ls_vals = ls_out[0]
     # third use lmfit, imposing bounds and sum_to_one constraint
     if weights in (None, [None]*ncomps):
-        weights = ls_vals
+        weights = ls_
     if minvals in (None, [None]*ncomps):
         minvals = -np.inf * np.ones(ncomps)
     if maxvals in (None, [None]*ncomps):
