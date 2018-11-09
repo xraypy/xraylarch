@@ -306,7 +306,6 @@ class GSEXRM_MapRow:
             for row in header:
                 if row.startswith('#XRF.filetype'): xrftype = row.split()[-1]
                 if row.startswith('#XRD.filetype'): xrdtype = row.split()[-1]
-
         if FLAGxrf:
             if xrftype is None:
                 xrftype = 'netcdf'
@@ -721,6 +720,7 @@ class GSEXRM_MapFile(object):
         self.masterfile       = None
         self.masterfile_mtime = -1
         self.scandb = scandb
+
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
@@ -819,6 +819,7 @@ class GSEXRM_MapFile(object):
                           folder=self.folder, start_time=self.start_time)
 
             self.notes['h5_create_time'] = isotime()
+            print("XRM Map File ", filename, self.folder)
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
@@ -2471,12 +2472,40 @@ class GSEXRM_MapFile(object):
         self.masterfile = os.path.join(nativepath(self.folder),self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
         self.masterfile_mtime = mtime
+        
+        def toppath(pname, n=4):
+            words = []
+            for i in range(n):
+                pname, f = os.path.split(pname)
+                words.append(f)
+            return '/'.join(words)
 
-        try:
-            header, rows = readMasterFile(self.masterfile)
-        except IOError:
-            raise GSEXRM_Exception(
-                "cannot read Master file from '%s'" % self.masterfile)
+        header, rows = [], []
+        if self.scandb is not None:
+            try:
+                db_folder = toppath(self.scandb.get_info('map_folder'))
+            except: 
+                db_folder = None
+            disk_folder = toppath(os.path.abspath(self.folder))
+            
+            if (db_folder == disk_folder):
+                mastertext = self.scandb.get_slewscanstatus()
+                header, rows = [], []
+                for srow in mastertext:
+                    line = str(srow.text.strip())
+                    if line.startswith('#'):
+                        header.append(line)
+                    else:
+                        rows.append(line.split())
+                # print("Read Master from DB: %d rows " % len(rows))
+
+        if len(header) < 1:
+            try:
+                header, rows = readMasterFile(self.masterfile)
+                # print("Read Master from Disk: %d rows " % len(rows))
+            except IOError:
+                raise GSEXRM_Exception(
+                    "cannot read Master file from '%s'" % self.masterfile)
 
         self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)
         self.master_header = header
@@ -2509,6 +2538,7 @@ class GSEXRM_MapFile(object):
                 self.nrows_expected = int(words[1].strip())
         self.scan_version = float(self.scan_version)
 
+        # print("read_master scan version = ", self.scan_version)
 
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
@@ -2545,7 +2575,6 @@ class GSEXRM_MapFile(object):
         step  = mapconf['scan']['step1']
         span = abs(stop-start)
         self.npts = int(abs(abs(step)*1.01 + span)/abs(step))
-        # print("ReadMaster set npts ", self.npts)
 
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]
