@@ -4,10 +4,10 @@ utilities for reading files from raw scan folder
 import os
 import sys
 import numpy
-
-if sys.version[0] == '2':
+import six
+if six.PY2:
     from ConfigParser import  ConfigParser
-elif sys.version[0] == '3':
+else:
     from configparser import  ConfigParser
 
 def readASCII(fname, nskip=0, isnumeric=True):
