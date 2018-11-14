@@ -75,8 +75,8 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch_plugins.wx.tomoimageframe import TomographyFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
-from larch_plugins.diFFit import diFFit1DFrame,diFFit2DFrame
-from larch_plugins.xrd import lambda_from_E,xrd1d,save1D
+from larch_plugins.diFFit import diFFit1DFrame, diFFit2DFrame
+from larch_plugins.xrd import lambda_from_E, xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
@@ -1435,21 +1435,21 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             self.wids[title].SetLabel(note)
 
         xrmfile.reset_flags()
-        if xrmfile.flag_xrf:
-            if xrmfile.flag_xrd2d and xrmfile.flag_xrd1d:
+        if xrmfile.has_xrf:
+            if xrmfile.has_xrd2d and xrmfile.has_xrd1d:
                 datastr = 'XRF, 2D- and 1D-XRD data'
-            elif xrmfile.flag_xrd2d:
+            elif xrmfile.has_xrd2d:
                 datastr = 'XRF, 2D-XRD data'
-            elif xrmfile.flag_xrd1d:
+            elif xrmfile.has_xrd1d:
                 datastr = 'XRF, 1D-XRD data'
             else:
                 datastr = 'XRF data'
         else:
-            if xrmfile.flag_xrd2d and xrmfile.flag_xrd1d:
+            if xrmfile.has_xrd2d and xrmfile.has_xrd1d:
                 datastr = '2D- and 1D-XRD data'
-            elif xrmfile.flag_xrd2d:
+            elif xrmfile.has_xrd2d:
                 datastr = '2D-XRD data'
-            elif xrmfile.flag_xrd1d:
+            elif xrmfile.has_xrd1d:
                 datastr = '1D-XRD data'
             else:
                 datastr = ''
@@ -1714,15 +1714,15 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if xrmfile is None: xrmfile = self.owner.current_file
 
         xrmfile.reset_flags()
-        flag1dxrd = xrmfile.flag_xrd1d
+        flag1dxrd = xrmfile.has_xrd1d
 
         ## checks for calibration file if calibration file provided
-        if xrmfile.flag_xrd2d and not flag1dxrd:
+        if xrmfile.has_xrd2d and not flag1dxrd:
             if os.path.exists(bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))):
                 flag1dxrd = True
 
         ## sets saving/plotting buttons in accordance with available data
-        if xrmfile.flag_xrd2d:
+        if xrmfile.has_xrd2d:
             for btn in (self.xrd2d_save,self.xrd2d_plot):
                 btn.Enable()
         else:
@@ -1986,7 +1986,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         xrmfile.reset_flags()
-        if not xrmfile.flag_xrd1d and not xrmfile.flag_xrd2d:
+        if not xrmfile.has_xrd1d and not xrmfile.has_xrd2d:
             if verbose:
                 print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
@@ -2006,7 +2006,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                       energy = self.owner.current_energy,
                       calfile = ponifile, title = title, xrd = '1D')
 
-        if xrd1d and xrmfile.flag_xrd1d:
+        if xrd1d and xrmfile.has_xrd1d:
             kwargs['xrd'] = '1D'
             self._getxrd_area(aname,**kwargs)
 
@@ -2032,7 +2032,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             xrd1d = False
 
 
-        if xrmfile.flag_xrd2d and (xrd2d or xrd1d):
+        if xrmfile.has_xrd2d and (xrd2d or xrd1d):
             kwargs['xrd'] = '2D'
             self._getxrd_area(aname,**kwargs)
 
@@ -2709,9 +2709,9 @@ class MapViewerFrame(wx.Frame):
             read        = True
 
             args = {'folder':   folder,
-                    'FLAGxrf':          myDlg.ChkBx[0].GetValue(),
-                    'FLAGxrd2D':        myDlg.ChkBx[1].GetValue(),
-                    'FLAGxrd1D':        myDlg.ChkBx[2].GetValue(),
+                    'HAS_xrf':          myDlg.ChkBx[0].GetValue(),
+                    'HAS_xrd2D':        myDlg.ChkBx[1].GetValue(),
+                    'HAS_xrd1D':        myDlg.ChkBx[2].GetValue(),
                     'facility':         myDlg.info[0].GetValue(),
                     'beamline':         myDlg.info[1].GetValue(),
                     'run':              myDlg.info[2].GetValue(),
@@ -3098,12 +3098,12 @@ class ROIPopUp(wx.Dialog):
     def roiTYPE(self,event=None):
         roitype = []
         delroi = []
-        if self.cfile.flag_xrf:
+        if self.cfile.has__xrf:
             roitype += ['XRF']
-        if self.cfile.flag_xrd1d:
+        if self.cfile.has__xrd1d:
             roitype += ['1DXRD']
             delroi  = ['xrd1D']
-        if self.cfile.flag_xrd2d:
+        if self.cfile.has__xrd2d:
             roitype += ['2DXRD']
         if len(roitype) < 1:
             roitype = ['']
