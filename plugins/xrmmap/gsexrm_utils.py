@@ -1,17 +1,17 @@
 import os
 import numpy as np
+import time
+
 # from .xrf_netcdf import read_xrf_netcdf
 # from .xsp3_hhd5 import read_xsp3_hdf5
 # from .asciifiles import readMasterFile
 
-# read_xrf_netcdf = read_xsp3_hdf5 = readMasterFile = None
 import larch
-
-from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf,
-                                  read_xsp3_hdf5, readASCII,
-                                  readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf, read_xrd_hdf5)
+from larch_plugins.xrmmap import (read_xrf_netcdf,
+                                   read_xsp3_hdf5, readASCII,
+                                   readMasterFile, readROIFile,
+                                   readEnvironFile, parseEnviron,
+                                   read_xrd_netcdf, read_xrd_hdf5)
 
 
 class GSEXRM_FileStatus:

@@ -811,6 +811,17 @@ class GSEXRM_MapFile(object):
             self.has_xrd1d = False
             self.has_xrd2d = False
 
+
+        # eiger XRD maps with 1D data
+        print("XRDF :%s: ", xrdf)
+        if xrdf.startswith('eig') and xrdf.endswith('_master.h5'):
+            xrd1d_f = xrdf.replace('_master.h5', '.npy')
+            xrd1d_f = os.path.join(nativepath(self.folder), xrd1d_f)
+            print(" test " , xrd1d_f)
+            if os.path.exists(xrd1d_f):
+                print("Will read 1D xrd from ", xrd1d_f)
+                self.has_xrd1d = True
+
         if '_unused_' in xrff:
             self.has_xrf = False
 
@@ -822,7 +833,7 @@ class GSEXRM_MapFile(object):
         if offset is not None:
             ioffset = offset
         self.has_xrf = self.has_xrf and xrff != '_unused_'
-        print(" read row data ", xrdf, self.has_xrd1d, self.has_xrd2d)
+
 
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
@@ -2076,7 +2087,7 @@ class GSEXRM_MapFile(object):
         "reads master file for toplevel scan info"
         if self.folder is None or not isGSEXRM_MapFolder(self.folder):
             return
-        self.masterfile = os.path.join(nativepath(self.folder),self.MasterFile)
+        self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
         self.masterfile_mtime = mtime
         print("READ MASTER ", self.has_xrd1d, self.has_xrd2d)
