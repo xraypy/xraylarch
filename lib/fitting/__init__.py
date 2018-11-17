@@ -24,11 +24,12 @@ if HAS_WXPYTHON:
 
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
-                   ci_report, conf_interval2d, ufloat, correlated_values)
+                   ci_report, conf_interval2d)
 
 from lmfit.minimizer import eval_stderr, MinimizerResult
 from lmfit.model import ModelResult
 from lmfit.confidence import f_compare
+from uncertainties import ufloat, correlated_values
 
 from ..symboltable import Group, isgroup
 
