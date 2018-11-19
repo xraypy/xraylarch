@@ -13,6 +13,7 @@ from larch_plugins.xrmmap import (read_xrf_netcdf,
                                    readEnvironFile, parseEnviron,
                                    read_xrd_netcdf, read_xrd_hdf5)
 
+from larch_plugins.xrd import integrate_xrd_row
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
@@ -148,6 +149,7 @@ class GSEXRM_MapRow:
                  wdg=0, steps=4096, flip=True,
                  has_xrf=True, has_xrd2d=False, has_xrd1d=False):
 
+
         self.read_ok = False
         self.nrows_expected = nrows_expected
 
@@ -188,14 +190,14 @@ class GSEXRM_MapRow:
                 xrf_reader = read_xsp3_hdf5
 
         if has_xrd2d or has_xrd1d:
-            if xrdtype == 'hdf5':
+            if xrdtype == 'hdf5' or xrdfile.endswith('.h5'):
                 xrd_reader = read_xrd_hdf5
             elif xrdtype == 'netcdf' or xrdfile.endswith('nc'):
                 xrd_reader = read_xrd_netcdf
             else:
                 xrd_reader = read_xrd_netcdf
 
-
+        # print( "xrd_reader ", xrd_reader, xrdfile, ' cal :%s: ' % xrdcal)
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
         t0 = time.time()
@@ -235,8 +237,8 @@ class GSEXRM_MapRow:
 
         atime = -1
 
-        xrf_dat,xrf_file = None,os.path.join(folder, xrffile)
-        xrd_dat,xrd_file = None,os.path.join(folder, xrdfile)
+        xrf_dat, xrf_file = None, os.path.join(folder, xrffile)
+        xrd_dat, xrd_file = None, os.path.join(folder, xrdfile)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
@@ -313,19 +315,25 @@ class GSEXRM_MapRow:
             self.xrd2d[self.xrd2d < 0] = 0
             ############################################################################
 
-            if xrdcal is not None and has_xrd1d:
-                attrs = {'steps':steps, 'flip':flip}
+            if has_xrd1d and xrdcal is not None:
+                # look for pre-integrated data
+                # x1dfile = xrd_file.replace('.h5', '.npy').replace('_master', '')
+                attrs = dict(steps=steps, flip=flip)
+                if 'eig' in xrd_file:
+                    attrs['flip'] = True
+                    self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
+                    maxval = 2**32 - 2**14
+                    self.xrd2d[np.where(self.xrd2d>maxval)] = 0
 
-                self.xrdq,self.xrd1d = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
-
+                self.xrdq, self.xrd1d = integrate_xrd_row(self.xrd2d, xrdcal,
+                                                          **attrs)
                 if wdg > 1:
-                    self.xrdq_wdg,self.xrd1d_wdg = [],[]
+                    self.xrdq_wdg, self.xrd1d_wdg = [], []
                     wdg_sz = 360./int(wdg)
                     for iwdg in range(wdg):
                         wdg_lmts = np.array([iwdg*wdg_sz, (iwdg+1)*wdg_sz]) - 180
-
                         attrs.update({'wedge_limits':wdg_lmts})
-                        q,counts = integrate_xrd_row(self.xrd2d,xrdcal,**attrs)
+                        q, counts = integrate_xrd_row(self.xrd2d, xrdcal, **attrs)
                         self.xrdq_wdg  += [q]
                         self.xrd1d_wdg += [counts]
 
@@ -340,7 +348,7 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
 
         # print("Row npts=%s, gather=%d, sis=%d, xrf=%d" %
-        #            (repr(self.npts), gnpts, snpts, xnpts))
+        #       (repr(self.npts), gnpts, snpts, xnpts))
 
         if self.npts is None:
             self.npts = min(gnpts, xnpts)
