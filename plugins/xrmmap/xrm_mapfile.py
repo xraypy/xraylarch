@@ -1049,7 +1049,10 @@ class GSEXRM_MapFile(object):
 
         if self.has_xrd1d:
             if thisrow == 0:
-                self.xrmmap['xrd1d/q'][:] = row.xrdq[0]
+                if len(row.xrdq.shape) == 1:
+                    self.xrmmap['xrd1d/q'][:] = row.xrdq
+                else:
+                    self.xrmmap['xrd1d/q'][:] = row.xrdq[0]
             if self.bkgd_xrd1d is not None:
                 self.xrmmap['xrd1d/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
             else:
@@ -1443,9 +1446,10 @@ class GSEXRM_MapFile(object):
                 attrs = {'steps':self.qstps,'mask':self.xrd2dmaskfile,'flip':self.flip}
                 print('\nStart: %s' % isotime())
                 for i in np.arange(nrows):
-                    print(' Add row %4i' % (i+1))
+                    print(' Add XRD row %4i' % (i+1))
                     rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2d/counts'][i],xrdcalfile,**attrs)
-                    if i == 0: self.xrmmap['xrd1d/q'][:] = rowq[0]
+                    if i == 0:
+                        self.xrmmap['xrd1d/q'][:] = rowq[0]
                     self.xrmmap['xrd1d/counts'][i,] = row1D
 
                 self.has_xrd1d = True
