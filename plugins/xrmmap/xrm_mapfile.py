@@ -833,10 +833,10 @@ class GSEXRM_MapFile(object):
 
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
-                             ixaddr=self.ixaddr, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse,
-                             ioffset=ioffset, masterfile=self.masterfile,
-                             flip=self.flip, xrdcal=self.xrdcalfile,
+                             ixaddr=0, dimension=self.dimension,
+                             npts=self.npts, reverse=reverse, ioffset=ioffset,
+                             masterfile=self.masterfile, flip=self.flip,
+                             xrdcal=self.xrdcalfile,
                              xrd2dmask=self.mask_xrd2d,
                              xrd2dbkgd=self.bkgd_xrd2d, wdg=self.azwdgs,
                              steps=self.qstps, has_xrf=self.has_xrf,
@@ -1350,12 +1350,11 @@ class GSEXRM_MapFile(object):
 
 
         if self.has_xrd2d or self.has_xrd1d:
-            xrdpts, xpixx, xpixy = row.xrd2d.shape
-            if verbose:
-                prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
-                print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
-
             if self.has_xrd2d:
+                xrdpts, xpixx, xpixy = row.xrd2d.shape
+                if verbose:
+                    prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
+                    print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
 
                 xrdgrp = ensure_subgroup('xrd2d',xrmmap)
 
@@ -2198,7 +2197,6 @@ class GSEXRM_MapFile(object):
         self.pos_addr = [pos1]
         self.pos_desc = [slow_pos[pos1]]
         # note: XPS gathering file now saving ONLY data for the fast axis
-        self.ixaddr = 0
 
         if self.dimension > 1:
             yaddr = scanconf['pos2']

@@ -15,6 +15,17 @@ from larch_plugins.xrmmap import (read_xrf_netcdf,
 
 from larch_plugins.xrd import integrate_xrd_row
 
+
+def eiger_xrd1d_filename(xrd_file):
+    """check for 1D XRD file from Eiger detector --
+    avoids having to read hdf5 file at all
+    """
+    xrd1d_file = xrd_file.replace('.h5', '.npy').replace('_master', '')
+    if 'eig' in xrd_file and os.path.exists(xrd1d_file):
+        return xrd1d_file
+    return None
+
+
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
     no_xrdmap    = 'hdf5 does not have top-level XRD map'
@@ -162,6 +173,9 @@ class GSEXRM_MapRow:
 
         self.npts = npts
         self.irow = irow
+        if self.irow is None:
+            self.irow = 0
+
         self.yvalue  = yvalue
         self.xrffile = xrffile
         self.xpsfile = xpsfile
@@ -173,7 +187,6 @@ class GSEXRM_MapRow:
         self.xrd1d     = None
         self.xrdq_wdg  = None
         self.xrd1d_wdg = None
-
         if masterfile is not None:
             header, rows = readMasterFile(masterfile)
             for row in header:
@@ -240,6 +253,9 @@ class GSEXRM_MapRow:
         xrf_dat, xrf_file = None, os.path.join(folder, xrffile)
         xrd_dat, xrd_file = None, os.path.join(folder, xrdfile)
 
+        xrd1d_file = eiger_xrd1d_filename(xrd_file)
+        # print("xrd files ", xrd_file, xrd1d_file, irow, has_xrd2d, has_xrd1d)
+
         while atime < 0 and time.time()-t0 < 10:
             try:
                 atime = os.stat(os.path.join(folder, sisfile)).st_ctime
@@ -247,7 +263,7 @@ class GSEXRM_MapRow:
                     xrf_dat = xrf_reader(xrf_file, npixels=self.nrows_expected, verbose=False)
                     if xrf_dat is None:
                         print( 'Failed to read XRF data from %s' % self.xrffile)
-                if has_xrd2d or has_xrd1d:
+                if has_xrd2d or (has_xrd1d and xrd1d_file is None):
                     xrd_dat = xrd_reader(xrd_file, verbose=False)
                     if xrd_dat is None:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
@@ -286,44 +302,43 @@ class GSEXRM_MapRow:
 
         ## SPECIFIC TO XRD data
         if has_xrd2d or has_xrd1d:
-            if self.npts == xrd_dat.shape[0]:
-                self.xrd2d = xrd_dat
-            elif self.npts > xrd_dat.shape[0]:
-                self.xrd2d = np.zeros((self.npts,xrd_dat.shape[1],xrd_dat.shape[2]))
-                self.xrd2d[0:xrd_dat.shape[0]] = xrd_dat
-            else:
-                self.xrd2d = xrd_dat[0:self.npts]
-
-            ############################################################################
-            ## subtracts background and applies mask, row by row
-            ## mkak 2018.02.01
-            ## major speed up if no background or mask specified
-            ## updated mkak 2018.03.30
-
-            if xrd2dmask is not None:
-                dir = -1 if flip else 1
-                mask2d = np.ones(self.xrd2d[0].shape)
-                mask2d = mask2d - xrd2dmask[::dir]
-                if xrd2dbkgd is not None:
-                    self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
+            if has_xrd2d:
+                if self.npts == xrd_dat.shape[0]:
+                    self.xrd2d = xrd_dat
+                elif self.npts > xrd_dat.shape[0]:
+                    self.xrd2d = np.zeros((self.npts,xrd_dat.shape[1],xrd_dat.shape[2]))
+                    self.xrd2d[0:xrd_dat.shape[0]] = xrd_dat
                 else:
-                    self.xrd2d = mask2d*(self.xrd2d)
-            elif xrd2dbkgd is not None:
-                self.xrd2d = self.xrd2d-xrd2dbkgd
+                    self.xrd2d = xrd_dat[0:self.npts]
 
-            ## limits all values to positive
-            self.xrd2d[self.xrd2d < 0] = 0
+                ############################################################################
+                ## subtracts background and applies mask, row by row
+                ## mkak 2018.02.01
+                ## major speed up if no background or mask specified
+                ## updated mkak 2018.03.30
+
+                if xrd2dmask is not None:
+                    dir = -1 if flip else 1
+                    mask2d = np.ones(self.xrd2d[0].shape)
+                    mask2d = mask2d - xrd2dmask[::dir]
+                    if xrd2dbkgd is not None:
+                        self.xrd2d = mask2d*(self.xrd2d-xrd2dbkgd)
+                    else:
+                        self.xrd2d = mask2d*(self.xrd2d)
+                elif xrd2dbkgd is not None:
+                    self.xrd2d = self.xrd2d-xrd2dbkgd
+
+                ## limits all values to positive
+                self.xrd2d[self.xrd2d < 0] = 0
             ############################################################################
 
+            # print("read XRD1D file? ", irow, has_xrd1d, xrdcal is not None, xrd1d_file)
             if has_xrd1d and xrdcal is not None:
                 attrs = dict(steps=steps, flip=flip)
-                if 'eig' in xrd_file:
-                    # look for pre-integrated data from eiger
-                    x1dfile = xrd_file.replace('.h5', '.npy').replace('_master', '')
-                    if os.path.exists(x1dfile):
-                        xdat = np.load(x1dfile)
-                        self.xrdq  = xdat[0, :]
-                        self.xrd1d = xdat[1:, :]
+                if xrd1d_file is not None:
+                    xdat = np.load(xrd1d_file)
+                    self.xrdq  = xdat[0, :]
+                    self.xrd1d = xdat[1:, :]
                 if self.xrdq is None: # integrate data if needed.
                     attrs['flip'] = True
                     self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
@@ -377,7 +392,7 @@ class GSEXRM_MapRow:
             if has_xrd2d:
                 self.xrd2d = self.xrd2d[:self.npts]
             if has_xrd1d:
-                self.xrdq,self.xrd1d = self.xrdq[:self.npts],self.xrd1d[:self.npts]
+                self.xrdq, self.xrd1d = self.xrdq[:self.npts], self.xrd1d[:self.npts]
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg    = self.xrdq_wdg[:self.npts]
                     self.xrd1d_wdg   = self.xrd1d_wdg[:self.npts]
@@ -402,7 +417,7 @@ class GSEXRM_MapRow:
             if has_xrd2d:
                 self.xrd2d = self.xrd2d[::-1]
             if has_xrd1d:
-                self.xrdq, self.xrd1d = self.xrdq, self.xrd1d[::-1]
+                self.xrd1d = self.xrd1d[::-1]
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg        = self.xrdq_wdg[::-1]
                     self.xrd1d_wdg       = self.xrd1d_wdg[::-1]
@@ -431,5 +446,4 @@ class GSEXRM_MapRow:
             self.livetime = self.livetime.transpose()
             self.realtime = self.realtime.transpose()
             self.counts   = self.counts.swapaxes(0, 1)
-
         self.read_ok = True
