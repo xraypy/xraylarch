@@ -116,9 +116,10 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=2048,
     if wedge_limits is not None:
         attrs.update({'azimuth_range':wedge_limits})
 
+    # print("Calc XRD 1D for row", ai, steps, attrs)
     q, xrd1d = [], []
     for i, xrd2d in enumerate(rowxrd2d):
-        row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
+        row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:], ai, steps, attrs)
         q     += [row_q]
         xrd1d += [row_xrd1d]
 
@@ -169,7 +170,7 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=2048, file='',  wedge_limits=N
         if verbose:
             print('\nSaving %s data to file: %s' % (unit,file))
         attrs.update({'filename':file})
-    return calcXRD1d(xrd2d,ai,steps,attrs)
+    return calcXRD1d(xrd2d, ai, steps, attrs)
 
 
 def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
@@ -183,7 +184,6 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
             return
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
-
     attrs = {}
     if unit.startswith('2th'):
         attrs.update({'unit':'2th_deg'})
@@ -194,7 +194,7 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
     if dark:
         if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
 
-    return calcXRDcake(xrd2d,ai,xsteps,ysteps,attrs)
+    return calcXRDcake(xrd2d, ai, xsteps, ysteps, attrs)
 
 
 def calcXRD1d(xrd2d ,ai, steps, attrs):
