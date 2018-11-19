@@ -23,9 +23,9 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
                                   GSEXRM_Detector, GSEXRM_Area, GSEXRM_Exception,
                                   GSEXRM_MapRow, GSEXRM_FileStatus)
 
-from larch_plugins.xrd import (XRD,E_from_lambda,integrate_xrd_row,q_from_twth,
-                               q_from_d,lambda_from_E,read_xrd_data)
-from larch_plugins.tomo import tomo_reconstruction,reshape_sinogram,trim_sinogram
+from larch_plugins.xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
+                               q_from_d, lambda_from_E, read_xrd_data)
+from larch_plugins.tomo import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 NINIT = 32
 COMPRESSION_OPTS = 2
@@ -33,7 +33,7 @@ COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
 NOT_OWNER = "Not Owner of HDF5 file %s"
-STEPS = 5001
+STEPS = 4096
 
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -292,6 +292,7 @@ class GSEXRM_MapFile(object):
     ScanFile   = 'Scan.ini'
     EnvFile    = 'Environ.dat'
     ROIFile    = 'ROI.dat'
+    XRDCALFile = 'XRD.poni'
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, root=None, chunksize=None,
@@ -301,8 +302,6 @@ class GSEXRM_MapFile(object):
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E', run='', proposal='', user='',
                  scandb=None, **kws):
-
-        print("Mapfile 1")
 
         self.filename         = filename
         self.folder           = folder
@@ -424,7 +423,7 @@ class GSEXRM_MapFile(object):
                           folder=self.folder, start_time=self.start_time)
 
             self.notes['h5_create_time'] = isotime()
-            print("XRM Map File ", filename, self.folder)
+            # print("XRM Map File>  ", self.filename, self.folder, self.status)
 
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
@@ -522,7 +521,6 @@ class GSEXRM_MapFile(object):
         adds mask file to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2018.02.01
         '''
-
         xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
 
         if xrdcalfile is not None:
@@ -776,18 +774,21 @@ class GSEXRM_MapFile(object):
         '''read a row worth of raw data from the Map Folder
         returns arrays of data
         '''
-        print(" read rowdata ", self.xrdcalfile)
-        if self.xrdcalfile is None:
-            self.xrdcalfile = bytes2str(self.xrmmap['xrd1d'].attrs.get('calfile',''))
-
         if self.dimension is None or irow > len(self.rowdata):
             self.read_master()
 
         if self.folder is None or irow >= len(self.rowdata):
             return
 
+        if self.xrdcalfile is None:
+            self.xrdcalfile = bytes2str(self.xrmmap['xrd1d'].attrs.get('calfile',''))
+
+        if self.xrdcalfile in (None, ''):
+            calfile = os.path.join(nativepath(self.folder), self.XRDCALFile)
+            if os.path.exists(calfile):
+                self.xrdcalfile = calfile
         scan_version = getattr(self, 'scan_version', 1.00)
-        print(" scan version  ", scan_version)
+        # print(" read row data, scan version  ", scan_version, self.xrdcalfile)
 
         # if not self.has_xrf and not self.has_xrd2d and not self.has_xrd1d:
         #    raise IOError('No XRF or XRD flags provided.')
@@ -811,21 +812,16 @@ class GSEXRM_MapFile(object):
             self.has_xrd1d = False
             self.has_xrd2d = False
 
-
         # eiger XRD maps with 1D data
-        print("XRDF :%s: ", xrdf)
+        # print("XRDF :%s: "  % xrdf)
         if xrdf.startswith('eig') and xrdf.endswith('_master.h5'):
-            xrd1d_f = xrdf.replace('_master.h5', '.npy')
-            xrd1d_f = os.path.join(nativepath(self.folder), xrd1d_f)
-            print(" test " , xrd1d_f)
-            if os.path.exists(xrd1d_f):
-                print("Will read 1D xrd from ", xrd1d_f)
-                self.has_xrd1d = True
+            self.has_xrd2d = False
+            self.has_xrd1d = True
 
         if '_unused_' in xrff:
             self.has_xrf = False
 
-        reverse = None # (irow % 2 != 0)
+        reverse = None
 
         ioffset = 0
         if scan_version > 1.35:
@@ -838,18 +834,18 @@ class GSEXRM_MapFile(object):
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse, ioffset=ioffset,
-                             masterfile=self.masterfile, flip=self.flip,
-                             xrdcal=self.xrdcalfile, xrd2dmask=self.mask_xrd2d,
-                             xrd2dbkgd = self.bkgd_xrd2d,
-                             wdg=self.azwdgs, steps=self.qstps,
-                             has_xrf=self.has_xrf, has_xrd2d=self.has_xrd2d,
+                             npts=self.npts, reverse=reverse,
+                             ioffset=ioffset, masterfile=self.masterfile,
+                             flip=self.flip, xrdcal=self.xrdcalfile,
+                             xrd2dmask=self.mask_xrd2d,
+                             xrd2dbkgd=self.bkgd_xrd2d, wdg=self.azwdgs,
+                             steps=self.qstps, has_xrf=self.has_xrf,
+                             has_xrd2d=self.has_xrd2d,
                              has_xrd1d=self.has_xrd1d)
 
 
     def add_rowdata(self, row, callback=None):
         '''adds a row worth of real data'''
-        print(" Add row data ", row)
         dt = debugtime()
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
@@ -1087,7 +1083,7 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
-        print('XRM Map Folder: %s' % self.folder)
+        # print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
 
         conf = xrmmap['config']
@@ -2090,7 +2086,7 @@ class GSEXRM_MapFile(object):
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
         self.masterfile_mtime = mtime
-        print("READ MASTER ", self.has_xrd1d, self.has_xrd2d)
+        # print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
         def toppath(pname, n=4):
             words = []
             for i in range(n):
