@@ -1406,8 +1406,8 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         self.wids['XRD Calibration'].SetLabel('')
         xrd_calibration = ''
-        if 'xrd1D' in xrmmap:
-            xrd_calibration = bytes2str(xrmmap['xrd1D'].attrs.get('calfile',''))
+        if 'xrd1d' in xrmmap:
+            xrd_calibration = bytes2str(xrmmap['xrd1d'].attrs.get('calfile',''))
         if not os.path.exists(xrd_calibration):
             xrd_calibration = ''
         self.wids['XRD Calibration'].SetLabel(os.path.split(xrd_calibration)[-1])
@@ -1718,7 +1718,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         ## checks for calibration file if calibration file provided
         if xrmfile.has_xrd2d and not flag1dxrd:
-            if os.path.exists(bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))):
+            if os.path.exists(bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))):
                 flag1dxrd = True
 
         ## sets saving/plotting buttons in accordance with available data
@@ -1991,7 +1991,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 print('No XRD data in map file: %s' % self.owner.current_file.filename)
             return
 
-        ponifile = bytes2str(xrmfile.xrmmap['xrd1D'].attrs.get('calfile',''))
+        ponifile = bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))
         ponifile = ponifile if os.path.exists(ponifile) else None
 
         if show:
@@ -2418,7 +2418,7 @@ class MapViewerFrame(wx.Frame):
         '''
         flptyp = 'vertical' if flip is True else False
 
-        poni = bytes2str(self.current_file.xrmmap['xrd1D'].attrs.get('calfile',''))
+        poni = bytes2str(self.current_file.xrmmap['xrd1d'].attrs.get('calfile',''))
         if not os.path.exists(poni):
             poni = None
 
@@ -2832,7 +2832,7 @@ class MapViewerFrame(wx.Frame):
     def add1DXRD(self, event=None):
 
         if len(self.filemap) > 0:
-            xrd1Dgrp = ensure_subgroup('xrd1D',self.current_file.xrmmap)
+            xrd1Dgrp = ensure_subgroup('xrd1d',self.current_file.xrmmap)
             poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
 
             if not os.path.exists(poni_path):
@@ -3102,7 +3102,7 @@ class ROIPopUp(wx.Dialog):
             roitype += ['XRF']
         if self.cfile.has__xrd1d:
             roitype += ['1DXRD']
-            delroi  = ['xrd1D']
+            delroi  = ['xrd1d']
         if self.cfile.has__xrd2d:
             roitype += ['2DXRD']
         if len(roitype) < 1:
@@ -3118,7 +3118,7 @@ class ROIPopUp(wx.Dialog):
         detname = self.rm_roi_ch[0].GetStringSelection()
         roiname = self.rm_roi_ch[1].GetStringSelection()
 
-        if detname == 'xrd1D':
+        if detname == 'xrd1d':
             self.cfile.del_xrd1Droi(roiname)
             self.setROI()
 
