@@ -36,16 +36,16 @@ def q_from_xy(x, y, ai=None, calfile=None):
         return ai.qFunction(np.array([y,]),np.array([x,]))[0]
     except:
         return 0
-    
+
 def twth_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
 
     if ai is None: ai = pyFAI.load(calfile)
-     
+
     try:
         twth = ai.tth(np.array([y,]),np.array([x,]))
     except:
         return 0
-    
+
     if ang_units.startswith('rad'):
         return twth[0]
     else:
@@ -54,30 +54,30 @@ def twth_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
 def eta_from_xy(x, y, ai=None, calfile=None, ang_units='degrees'):
 
     if ai is None: ai = pyFAI.load(calfile)
-     
+
     try:
         eta = ai.chi(np.array([y,]),np.array([x,]))
     except:
         return 0
-    
+
     if ang_units.startswith('rad'):
         return eta[0]
     else:
         return np.degrees(eta[0])
 
 def read_lambda(calfile):
-    
+
     ai = pyFAI.load(calfile)
     return ai._wavelength*1e10 ## units A
 
-def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=None,
-                      mask=None, dark=None, flip=True):
-
+def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=2048,
+                      wedge_limits=None, mask=None, dark=None,
+                      flip=True):
     '''
-    Uses pyFAI (poni) calibration file to produce 1D XRD data from a row of 2D XRD images 
+    Uses pyFAI (poni) calibration file to produce 1D XRD data from a row of 2D XRD images
 
     Must provide pyFAI calibration file
-    
+
     rowxrd2d     : 2D diffraction images for integration
     calfile      : poni calibration file
     unit         : unit for integration data ('2th'/'q'); default is 'q'
@@ -88,47 +88,49 @@ def integrate_xrd_row(rowxrd2d, calfile, unit='q', steps=10001, wedge_limits=Non
     flip         : vertically flips image to correspond with Dioptas poni file calibration
     '''
 
-    if HAS_pyFAI:
-        try:
-            ai = pyFAI.load(calfile)
-        except:
-            print('Provided calibration file could not be loaded.')
-            return
-
-        if type(dark) is str:
-            try:
-                dark = np.array(tifffile.imread(xrd2dbkgd))
-            except:
-                dark = None
-        
-        dir = -1 if flip else 1
-        attrs = {'mask':mask,'dark':dark}
-        if unit.startswith('2th'):
-            attrs.update({'unit':'2th_deg'})
-        else:
-            attrs.update({'unit':'q_A^-1'})
-        
-        if wedge_limits is not None:
-            attrs.update({'azimuth_range':wedge_limits})
-            
-        q,xrd1d = [],[]
-
-        for i,xrd2d in enumerate(rowxrd2d):
-            row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
-            q     += [row_q]
-            xrd1d += [row_xrd1d]
-        
-        return np.array(q), np.array(xrd1d)
-    else:
+    if not HAS_pyFAI:
         print('pyFAI not imported. Cannot calculate 1D integration.')
+        return
 
-def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='',  wedge_limits=None,
-                  mask=None, dark=None, save=False, verbose=False):
+    try:
+        ai = pyFAI.load(calfile)
+    except:
+        print('calibration file "%s" could not be loaded.' % calfile)
+        return
+
+    if type(dark) is str:
+        try:
+            dark = np.array(tifffile.imread(xrd2dbkgd))
+        except:
+            dark = None
+
+    dir = -1 if flip else 1
+    attrs = dict(mask=mask, dark=dark, method='csr',
+             polarization_factor=0.999, correctSolidAngle=True)
+
+    if unit.startswith('2th'):
+        attrs.update({'unit':'2th_deg'})
+    else:
+        attrs.update({'unit':'q_A^-1'})
+
+    if wedge_limits is not None:
+        attrs.update({'azimuth_range':wedge_limits})
+
+    q, xrd1d = [], []
+    for i, xrd2d in enumerate(rowxrd2d):
+        row_q,row_xrd1d = calcXRD1d(xrd2d[::dir,:],ai,steps,attrs)
+        q     += [row_q]
+        xrd1d += [row_xrd1d]
+
+    return np.array(q), np.array(xrd1d)
+
+def integrate_xrd(xrd2d, calfile, unit='q', steps=2048, file='',  wedge_limits=None,
+                  mask=None, dark=None, is_eiger=True, save=False, verbose=False):
     '''
     Uses pyFAI (poni) calibration file and 2D XRD image to produce 1D XRD data
 
     Must provide pyFAI calibration file
-    
+
     xrd2d        : 2D diffraction images for integration
     calfile      : poni calibration file
     unit         : unit for integration data ('2th'/'q'); default is 'q'
@@ -138,7 +140,7 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='',  wedge_limits=
     mask         : mask array for image
     dark         : dark image array
     '''
-    
+
     if HAS_pyFAI:
         try:
             ai = pyFAI.load(calfile)
@@ -170,9 +172,9 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=10000, file='',  wedge_limits=
     return calcXRD1d(xrd2d,ai,steps,attrs)
 
 
-def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None, 
+def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
               xsteps=2048, ysteps=2048, verbose=False):
-    
+
     if HAS_pyFAI:
         try:
             ai = pyFAI.load(calfile)
@@ -181,7 +183,7 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
             return
     else:
         print('pyFAI not imported. Cannot calculate 1D integration.')
-        
+
     attrs = {}
     if unit.startswith('2th'):
         attrs.update({'unit':'2th_deg'})
@@ -190,14 +192,13 @@ def calc_cake(xrd2d, calfile, unit='q', mask=None, dark=None,
     if mask:
         if np.shape(mask) == np.shape(xrd2d): attrs.update({'mask':mask})
     if dark:
-        if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})        
+        if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
 
     return calcXRDcake(xrd2d,ai,xsteps,ysteps,attrs)
 
 
-def calcXRD1d(xrd2d,ai,steps,attrs):
-
-    return ai.integrate1d(xrd2d,steps,**attrs)
+def calcXRD1d(xrd2d ,ai, steps, attrs):
+    return ai.integrate1d(xrd2d, steps, **attrs)
 
 def calcXRDcake(xrd2d,ai,xstp,ystp,attrs):
     return ai.integrate2d(xrd2d,xstp,ystp,**attrs) ## returns I,q,eta
@@ -212,7 +213,7 @@ def save1D(filename, xaxis, I, error=None, xaxis_unit=None, calfile=None,
         xaxis_unit = pyFAI.units.Q_A
     elif xaxis_unit.startswith('2th'):
         xaxis_unit = pyFAI.units.TTH_DEG
-            
+
     if calfile is None:
         ai = None
     else:
@@ -291,6 +292,6 @@ def make_headers(hdr='#', has_dark=False, has_flat=False, ai=None,
 
     return '\n'.join([hdr + ' ' + i for i in headerLst])
 
-                    
+
 def registerLarchPlugin():
     return ('_xrd', {'integrate_xrd': integrate_xrd}) #,'calculate_ai': calculate_ai})
