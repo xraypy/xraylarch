@@ -316,17 +316,21 @@ class GSEXRM_MapRow:
             ############################################################################
 
             if has_xrd1d and xrdcal is not None:
-                # look for pre-integrated data
-                # x1dfile = xrd_file.replace('.h5', '.npy').replace('_master', '')
                 attrs = dict(steps=steps, flip=flip)
                 if 'eig' in xrd_file:
+                    # look for pre-integrated data from eiger
+                    x1dfile = xrd_file.replace('.h5', '.npy').replace('_master', '')
+                    if os.path.exists(x1dfile):
+                        xdat = np.load(x1dfile)
+                        self.xrdq  = xdat[0, :]
+                        self.xrd1d = xdat[1:, :]
+                if self.xrdq is None: # integrate data if needed.
                     attrs['flip'] = True
                     self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
                     maxval = 2**32 - 2**14
                     self.xrd2d[np.where(self.xrd2d>maxval)] = 0
-
-                self.xrdq, self.xrd1d = integrate_xrd_row(self.xrd2d, xrdcal,
-                                                          **attrs)
+                    self.xrdq, self.xrd1d = integrate_xrd_row(self.xrd2d, xrdcal,
+                                                              **attrs)
                 if wdg > 1:
                     self.xrdq_wdg, self.xrd1d_wdg = [], []
                     wdg_sz = 360./int(wdg)
@@ -398,7 +402,7 @@ class GSEXRM_MapRow:
             if has_xrd2d:
                 self.xrd2d = self.xrd2d[::-1]
             if has_xrd1d:
-                self.xrdq,self.xrd1d = self.xrdq[::-1],self.xrd1d[::-1]
+                self.xrdq, self.xrd1d = self.xrdq, self.xrd1d[::-1]
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg        = self.xrdq_wdg[::-1]
                     self.xrd1d_wdg       = self.xrd1d_wdg[::-1]
