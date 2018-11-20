@@ -310,20 +310,18 @@ class XRFDisplayFrame(wx.Frame):
                              ('downarrow', 'down')):
             self.wids[wname] = wx.BitmapButton(arrowpanel, -1,
                                                get_icon(wname),
-                                               size=(25, 25),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
                                  partial(ptable.onKey, name=dname))
-
             ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL)
 
+        self.wids['holdbtn'] = wx.ToggleButton(arrowpanel, -1, 'Hold   ',
+                                               size=(85, -1))
+        self.wids['holdbtn'].Bind(wx.EVT_TOGGLEBUTTON, self.onToggleHold)
         self.wids['kseries'] = Check(arrowpanel, ' K ', action=self.onKLM)
         self.wids['lseries'] = Check(arrowpanel, ' L ', action=self.onKLM)
         self.wids['mseries'] = Check(arrowpanel, ' M ', action=self.onKLM)
-        self.wids['holdbtn'] = wx.ToggleButton(arrowpanel, -1, 'Hold   ', size=(65, 25))
-        self.wids['holdbtn'].Bind(wx.EVT_TOGGLEBUTTON, self.onToggleHold)
 
-        ssizer.Add(txt(arrowpanel, '  '),   0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['holdbtn'],    0, wx.EXPAND|wx.ALL, 2)
         ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
@@ -414,15 +412,16 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line  ',         width=55)
-            xlines.AppendTextColumn('Energy(keV)  ',  width=110)
-            xlines.AppendTextColumn('Strength  ',     width=85)
-            xlines.AppendTextColumn('Levels  ',       width=75)
+            xlines.AppendTextColumn(' Line ',         width=60)
+            xlines.AppendTextColumn(' Energy(keV) ',  width=110)
+            xlines.AppendTextColumn(' Strength ',     width=85)
+            xlines.AppendTextColumn(' Levels ',       width=75)
             for col in (0, 1, 2, 3):
                 this = xlines.Columns[col]
                 this.Sortable = True
                 align = RIGHT
-                if col in (0, 3): align = wx.ALIGN_LEFT
+                if col in (0, 3):
+                    align = wx.ALIGN_LEFT
                 this.Alignment = this.Renderer.Alignment = align
 
             xlines.SetMinSize((300, 240))
@@ -964,8 +963,8 @@ class XRFDisplayFrame(wx.Frame):
             for label, eev, frac, ilevel, flevel in self.hold_lines:
                 e = float(eev) * 0.001
                 if (e >= erange[0] and e <= erange[1]):
-                    l = vline(e, color = self.conf.hold_elinecolor,
-                              linewidth=1.5, zorder=-20, dashes=(5, 5))
+                    l = vline(e, color=self.conf.hold_elinecolor,
+                              linewidth=1.5, zorder=-20, dashes=(3, 3))
                     l.set_label(label)
                     self.hold_markers.append(l)
 
