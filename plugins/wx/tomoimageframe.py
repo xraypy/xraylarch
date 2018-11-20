@@ -96,9 +96,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
      Ctrl-T:     Flip Top/Bottom
      Ctrl-F:     Flip Left/Right
 
-  Image Enhancement:
-     Ctrl-+:     Enhance Contrast
-
 
 '''
 
@@ -879,15 +876,6 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
                     self.cmap_panels[icol].imax_val.Enable()
                     icol += 1
 
-    def onEnhanceContrast(self, event=None):
-        '''change image contrast, using scikit-image exposure routines'''
-
-        for iframe in self.tomo_frame:
-            iframe.panel.conf.auto_contrast = event.IsChecked()
-        self.set_contrast_levels()
-        for iframe in self.tomo_frame:
-            iframe.panel.redraw()
-
     def set_contrast_levels(self):
         '''enhance contrast levels, or use full data range
         according to value of iframe.panel.conf.auto_contrast
@@ -909,9 +897,8 @@ Keyboard Shortcuts:   (For Mac OSX, replace 'Ctrl' with 'Apple')
             conf.int_lo[ix] = imin
             conf.int_hi[ix] = imax
 
-            if conf.auto_contrast:
-                jmin, jmax = np.percentile(img, [      conf.auto_contrast_level,
-                                                 100.0-conf.auto_contrast_level])
+            jmin, jmax = np.percentile(img, [conf.contrast_level,
+                                             100.0-conf.contrast_level])
             if imax == imin:
                 imax = imin + 0.5
             conf.cmap_lo[ix] = xlo = (jmin-imin)*conf.cmap_range/(imax-imin)

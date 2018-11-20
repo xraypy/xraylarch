@@ -222,7 +222,7 @@ def build_datapath_list(xrmmap):
         if 'counts' in group.keys():
             sub_list += [group['counts'].name]
         elif 'scal' in group.name:
-            for key,val in dict(group).iteritems():
+            for key, val in dict(group).items():
                 sub_list += [group[key].name]
         return sub_list
 
@@ -1844,7 +1844,7 @@ class GSEXRM_MapFile(object):
         return roidata
 
     def get_translation_axis(self,hotcols=False):
-        posnames = [n.lower() for n in self.xrmmap['positions/name']]
+        posnames = [bytes2str(n.lower()) for n in self.xrmmap['positions/name']]
         # print(" Get Translation axes ", posnames, 'x' in posnames)
         if 'x' in posnames:
             x = self.get_pos('x', mean=True)
@@ -1859,9 +1859,8 @@ class GSEXRM_MapFile(object):
 
         return x
 
-    def get_rotation_axis(self,axis=None,hotcols=False):
-
-        posnames = [n.lower() for n in self.xrmmap['positions/name']]
+    def get_rotation_axis(self, axis=None, hotcols=False):
+        posnames = [bytes2str(n.lower()) for n in self.xrmmap['positions/name']]
         if axis is not None:
             if axis in posnames or type(axis) == int:
                 omega = self.get_pos(axis, mean=True)
@@ -2034,7 +2033,7 @@ class GSEXRM_MapFile(object):
                     del tomogrp[data_tag]
                     tomogrp.create_dataset(data_tag, data=detgroup[data_tag])
 
-        for key,val in dict(detgroup.attrs).iteritems():
+        for key, val in dict(detgroup.attrs).items():
             tomogrp.attrs[key] = val
 
         self.h5root.flush()
@@ -2685,11 +2684,11 @@ class GSEXRM_MapFile(object):
             index = name
         else:
             for ix, nam in enumerate(self.xrmmap['positions/name']):
-                if nam.lower() == name.lower():
+                if bytes2str(nam.lower()) == name.lower():
                     index = ix
                     break
         if index == -1:
-            raise GSEXRM_Exception("Could not find position '%s'" % repr(name))
+            raise GSEXRM_Exception("Could not find position %s" % repr(name))
         pos = self.xrmmap['positions/pos'][:, :, index]
         if index in (0, 1) and mean:
             pos = pos.sum(axis=index)/pos.shape[index]

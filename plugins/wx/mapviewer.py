@@ -26,12 +26,14 @@ try:
 except:
     PyDeadObjectError = Exception
 
-# HAS_tomopy = False
-# try:
-#     import tomopy
-#     HAS_tomopy = True
-# except ImportError:
-#     pass
+HAS_tomopy = False
+try:
+    import tomopy
+    HAS_tomopy = True
+except ImportError:
+    pass
+# print("  has tomopy ", HAS_tomopy)
+
 #
 # HAS_scikit = False
 # try:
@@ -532,11 +534,10 @@ class TomographyPanel(GridPanel):
 
         #################################################################################
         self.pack()
-
-
         self.disable_options()
 
     def disable_options(self):
+        # print(" tomo panel disable options ")
 
         all_choices = [self.plot_choice]+[self.oper]+[self.sino_data]
         all_choices += self.alg_choice+self.det_choice+self.roi_choice
@@ -553,7 +554,7 @@ class TomographyPanel(GridPanel):
 
 
     def enable_options(self):
-
+        # print(" tomo panel enable options ")
         self.plot_choice.Enable()
 
         self.det_choice[0].Enable()
@@ -576,10 +577,13 @@ class TomographyPanel(GridPanel):
 
     def update_xrmmap(self, xrmfile=None):
 
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
+        # print("tomopanel update xrmmap ", xrmfile, self.cfile)
+        # print(" -- " , self.cfile.get_rotation_axis() )
 
         if self.cfile.get_rotation_axis() is None:
             self.center_value.SetValue(0)
@@ -976,14 +980,12 @@ class MapPanel(GridPanel):
         self.disable_options()
 
     def disable_options(self):
-
         all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+[self.oper]
         for chc in all_choices: chc.Disable()
         self.limrange.Disable()
         for btn in self.map_show: btn.Disable()
 
     def enable_options(self):
-
         self.plot_choice.Enable()
 
         self.det_choice[0].Enable()
@@ -997,7 +999,8 @@ class MapPanel(GridPanel):
         for btn in self.map_show: btn.Enable()
 
     def update_xrmmap(self, xrmfile=None):
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
@@ -2160,7 +2163,6 @@ class MapViewerFrame(wx.Frame):
 
         for creator in (MapPanel, TomographyPanel, MapInfoPanel,
                         MapAreaPanel, MapMathPanel):
-
             p = creator(parent, owner=self)
             self.nb.AddPage(p, p.label, True)
             bgcol = p.GetBackgroundColour()
@@ -2360,14 +2362,14 @@ class MapViewerFrame(wx.Frame):
             try:
                 tmd = self.tomo_displays.pop()
                 tmd.display(sino, tomo, title=title,
-                            auto_contrast=True)
+                            contrast_level=0.5)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
                 tmd = TomographyFrame(output_title   = title,
                                       lasso_callback = lasso_cb)
                 tmd.display(sino, tomo, title=title,
-                            auto_contrast=True)
+                            contrast_level=0.5)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
@@ -2391,7 +2393,7 @@ class MapViewerFrame(wx.Frame):
             x = x[1:-1]
 
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                     det=det, subtitles=subtitles, auto_contrast=True,
+                     det=det, subtitles=subtitles, contrast_level=0.5,
                      xrmfile=xrmfile)
 
         displayed = False
