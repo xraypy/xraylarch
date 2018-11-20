@@ -45,6 +45,7 @@ TOMOPY_ALG  = ['gridrec', 'art', 'bart', 'fbp', 'mlem', 'osem', 'ospml_hybrid',
 TOMOPY_FILT = ['shepp', 'ramlak', 'butterworth','parzen', 'cosine', 'hann',
                'hamming', 'None']
 
+
 SCIKIT_FILT = ['shepp-logan', 'ramp','cosine', 'hamming', 'hann', 'None' ]
 SCIKIT_INTR = ['linear', 'nearest', 'cubic']
 
@@ -227,14 +228,18 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
         if refine_center:
             center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
 
+        algorithm =  tomo_alg[1]
         filter_name = tomo_alg[2]
         if filter_name is None:
             filter_name = 'none'
 
         args.update({'center':center,
-                     'algorithm':tomo_alg[1],
-                     'filter_name': filter_name,
+                     'algorithm':algorithm,
                      'sinogram_order':sinogram_order})
+
+        if algorithm.startswith('gridrec'):
+            args['filter_name'] = filter_name
+
         tomo = tomopy.recon(sino, np.radians(omega),**args)
 
     return center,tomo
