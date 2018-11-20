@@ -478,7 +478,7 @@ class TomographyPanel(GridPanel):
                            Choice(self, choices=self.tomo_alg_B[0], size=(125, -1))]
         self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
 
-        self.center_value = wx.SpinCtrlDouble(self, inc=0.1, size=(100, -1),
+        self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.refine_center = wx.CheckBox(self, label='Refine center')
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
@@ -508,26 +508,36 @@ class TomographyPanel(GridPanel):
                                                                style=LEFT,  newrow=True)
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
                                                                style=LEFT,  newrow=True)
+
         self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
-        #################################################################################
+
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
-        self.Add(SimpleText(self,'Algorithm: '),       dcol=1, style=LEFT,  newrow=True)
-        self.AddMany((self.alg_choice[0],self.alg_choice[1],self.alg_choice[2]),
+
+        self.Add(SimpleText(self,' '),         dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self,'Engine'),    dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Algorithm'), dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Filter'),    dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Reconstruct: '), dcol=1, style=LEFT,  newrow=True)
+        self.AddMany((self.alg_choice[0], self.alg_choice[1], self.alg_choice[2]),
                                                        dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Center: '),          dcol=1, style=LEFT,  newrow=True)
-        self.AddMany((self.center_value,self.refine_center,self.center_range),
-                                                       dcol=1, style=LEFT)
-        self.Add(SimpleText(self,''),                  dcol=1, style=LEFT,  newrow=True)
-        #################################################################################
+        self.Add(self.center_value,    dcol=1, style=LEFT)
+        self.Add(self.refine_center,    dcol=1, style=LEFT)
+
+        os = wx.BoxSizer(wx.HORIZONTAL)
+        os.Add(SimpleText(self,' Max Range: '), 0, LEFT)
+        os.Add(self.center_range, 1, LEFT)
+        self.Add(os,    dcol=1, style=LEFT)
+
+
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
+
         self.Add(SimpleText(self,'Display:'),          dcol=1, style=LEFT,  newrow=True)
         self.Add(self.tomo_show[0],                    dcol=1, style=LEFT)
         self.Add(self.tomo_show[1],                    dcol=1, style=LEFT)
-        #################################################################################
+
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
+
         self.Add(SimpleText(self,'Data:'),             dcol=1, style=LEFT,  newrow=True)
         self.Add(self.sino_data,                       dcol=2, style=LEFT)
         self.Add(self.tomo_save,                       dcol=1, style=LEFT)
@@ -565,7 +575,8 @@ class TomographyPanel(GridPanel):
 
         self.oper.Enable()
 
-        for chc in self.alg_choice: chc.Enable()
+        for chc in self.alg_choice:
+            chc.Enable()
 
         if self.tomo_pkg[0] != '':
             for btn in (self.tomo_show+[self.tomo_save]):
@@ -573,7 +584,7 @@ class TomographyPanel(GridPanel):
             self.refine_center.Enable()
             self.center_value.Enable()
             self.center_range.SetValue(10)
-            self.center_range.SetRange(1,20)
+            self.center_range.SetRange(1, 20)
 
     def update_xrmmap(self, xrmfile=None):
 
@@ -620,7 +631,7 @@ class TomographyPanel(GridPanel):
         if self.alg_choice[0].GetStringSelection().startswith('sci'):
             self.center_value.SetIncrement(1)
         else:
-            self.center_value.SetIncrement(0.1)
+            self.center_value.SetIncrement(0.25)
 
     def detSELECT(self,idet,event=None):
         self.set_roi_choices(idet=idet)
@@ -816,6 +827,8 @@ class TomographyPanel(GridPanel):
                 'omega'          : ome,
                 'hotcols'        : self.owner.hotcols}
 
+        # print("On Show Tomo ", tomo_alg, args)
+
         tomo = xrmfile.get_tomograph(sino, **args)
 
         if args['refine_center']:
@@ -838,7 +851,7 @@ class TomographyPanel(GridPanel):
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
 
-        self.owner.display_tomo(sino,tomo,title=title,det=det)
+        self.owner.display_tomo(tomo, title=title, det=det)
 
     def set_center(self,cen):
 
@@ -2015,7 +2028,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,
+                self.owner.display_1Dxrd(self._xrd.data1D, self._xrd.energy,
                                          label=label)
             if save:
                 wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
@@ -2070,7 +2083,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(825, 550), _larch=None, use_scandb=False, **kwds):
+    def __init__(self, parent=None,  size=(925, 650), _larch=None, use_scandb=False, **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
@@ -2123,6 +2136,11 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
         read_workdir('gsemap.dat')
+
+        w0, h0 = self.GetSize()
+        w1, h1 = self.GetBestSize()
+        self.SetSize((max(w0, w1)+5, max(h0, h1)+5))
+        self.SetMinSize((500, 300))
 
         self.scandb = None
         self.instdb = None
@@ -2343,14 +2361,14 @@ class MapViewerFrame(wx.Frame):
         else:
              lasso_cb = None
 
-        imframe = TomographyFrame(output_title   = title,
+        imframe = MapImageFrame(output_title   = title,
                                   lasso_callback = lasso_cb)
 
         self.tomo_displays.append(imframe)
 
-    def display_tomo(self, sino, tomo, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None,
-                    _lassocallback=True):
+    def display_tomo(self, tomo, title='', info='', x=None, y=None, xoff=0,
+                     yoff=0, det=None, subtitles=None, xrmfile=None,
+                     _lassocallback=True):
 
         displayed = False
         if _lassocallback:
@@ -2361,14 +2379,13 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
-                tmd.display(sino, tomo, title=title,
-                            contrast_level=0.5)
+                tmd.display(tomo, title=title, contrast_level=0.5)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
-                tmd = TomographyFrame(output_title   = title,
+                tmd = MapImageFrame(output_title   = title,
                                       lasso_callback = lasso_cb)
-                tmd.display(sino, tomo, title=title,
+                tmd.display(tomo, title=title,
                             contrast_level=0.5)
                 displayed = True
             except PyDeadObjectError:
@@ -3435,7 +3452,7 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].Clear()
             self.XRDInfo[i].SetValue(str(path))
 
-class MapViewer(wx.App):
+class MapViewer_NoDebug(wx.App):
     def __init__(self, use_scandb=False, **kws):
         self.use_scandb = use_scandb
         wx.App.__init__(self, **kws)
@@ -3452,9 +3469,15 @@ class MapViewer(wx.App):
         self.createApp()
         return True
 
-class DebugViewer(MapViewer, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
-        MapViewer.__init__(self, **kws)
+class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, use_scandb=False, **kws):
+        self.use_scandb = use_scandb
+        wx.App.__init__(self, **kws)
+
+    def createApp(self):
+        frame = MapViewerFrame(use_scandb=self.use_scandb)
+        frame.Show()
+        self.SetTopWindow(frame)
 
     def OnInit(self):
         self.Init()
