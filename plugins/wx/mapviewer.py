@@ -74,7 +74,6 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine)
 from larch.utils.strutils import bytes2str, version_ge
 
-from larch_plugins.wx.tomoimageframe import TomographyFrame
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
 from larch_plugins.diFFit import diFFit1DFrame, diFFit2DFrame
