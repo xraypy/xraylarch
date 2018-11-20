@@ -535,7 +535,7 @@ class GSEXRM_MapFile(object):
         if xrd1dbkgdfile is not None:
             self.xrd1dbkgdfile= xrd1dbkgdfile
         if os.path.exists(str(self.xrd1dbkgdfile)):
-            print('1DXRD background file loaded: %s' % self.xrd1dbkgdfile)
+            print('xrd1d background file loaded: %s' % self.xrd1dbkgdfile)
             xrd1dgrp.attrs['1Dbkgdfile'] = '%s' % (self.xrd1dbkgdfile)
             self.bkgd_xrd1d = read_xrd_data(self.xrd1dbkgdfile)*self.bkgdscale
 
@@ -1379,11 +1379,11 @@ class GSEXRM_MapFile(object):
                 xrdgrp.create_dataset('q',          (self.qstps,), np.float32, **self.compress_args)
                 xrdgrp.create_dataset('background', (self.qstps,), np.float32, **self.compress_args)
 
-                chunksize_1DXRD  = (1, npts, self.qstps)
+                chunksize_xrd1d  = (1, npts, self.qstps)
                 xrdgrp.create_dataset('counts',
                                       (NINIT, npts, self.qstps),
                                       np.float32,
-                                      chunks = chunksize_1DXRD,
+                                      chunks = chunksize_xrd1d,
                                       maxshape=(None, npts, self.qstps), **self.compress_args)
 
                 if self.azwdgs > 1:
@@ -1396,7 +1396,7 @@ class GSEXRM_MapFile(object):
                         wdggrp.create_dataset('counts',
                                               (NINIT, npts, self.qstps),
                                               np.float32,
-                                              chunks = chunksize_1DXRD,
+                                              chunks = chunksize_xrd1d,
                                               maxshape=(None, npts, self.qstps), **self.compress_args)
 
                         #wdggrp.create_dataset('limits', (2,), np.float32)
@@ -1411,7 +1411,7 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def add_1DXRD(self, qstps=None):
+    def add_xrd1d(self, qstps=None):
 
         xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
         xrdcalfile = bytes2str(xrd1dgrp.attrs.get('calfile', ''))
@@ -1426,7 +1426,7 @@ class GSEXRM_MapFile(object):
 
             if qstps is not None: self.qstps = qstps
 
-            pform ='\n--- Build 1D XRD Schema (%i, %i, %i) from 2D XRD (%i, %i, %i, %i) ---'
+            pform ='\n--- Build XRD1D Schema (%i, %i, %i) from 2D XRD (%i, %i, %i, %i) ---'
             print(pform % (nrows, npts, self.qstps, nrows, npts, xpixx, xpixy))
 
             try:
@@ -1436,25 +1436,24 @@ class GSEXRM_MapFile(object):
                 xrd1dgrp.create_dataset('q',          (self.qstps,), np.float32)
                 xrd1dgrp.create_dataset('background', (self.qstps,), np.float32)
 
-                chunksize_1DXRD  = (1, npts, self.qstps)
+                chunksize_xrd1d  = (1, npts, self.qstps)
                 xrd1dgrp.create_dataset('counts',
                                        (nrows, npts, self.qstps),
                                        np.float32,
-                                       chunks = chunksize_1DXRD)
+                                       chunks = chunksize_xrd1d)
 
                 attrs = {'steps':self.qstps,'mask':self.xrd2dmaskfile,'flip':self.flip}
                 print('\nStart: %s' % isotime())
                 for i in np.arange(nrows):
-                    print(' Add XRD row %4i' % (i+1))
-                    rowq,row1D = integrate_xrd_row(self.xrmmap['xrd2d/counts'][i],xrdcalfile,**attrs)
+                    rowq, row1d = integrate_xrd_row(self.xrmmap['xrd2d/counts'][i],xrdcalfile,**attrs)
                     if i == 0:
                         self.xrmmap['xrd1d/q'][:] = rowq[0]
-                    self.xrmmap['xrd1d/counts'][i,] = row1D
+                    self.xrmmap['xrd1d/counts'][i,] = row1d
 
                 self.has_xrd1d = True
                 print('End: %s' % isotime())
             except:
-                print('1DXRD data already in file.')
+                print('xrd1d data already in file.')
                 return
 
     def get_slice_y(self):
@@ -1556,7 +1555,7 @@ class GSEXRM_MapFile(object):
                 self.has_xrd1d = self.check_flag(detgrp)
             elif det == 'xrd': ## compatible with old version
                 try:
-                    detgrp['data1D']
+                    detgrp['data1d']
                     self.has_xrd1d = True
                 except:
                     pass
@@ -1567,7 +1566,6 @@ class GSEXRM_MapFile(object):
                     pass
 
     def check_flag(self,detgrp):
-
         try:
             detgrp['counts']
             return True
@@ -1575,11 +1573,9 @@ class GSEXRM_MapFile(object):
             return False
 
     def print_flags(self):
-
-       print('')
-       print('   XRF data: %s' % self.has_xrf)
-       print('2D-XRD data: %s' % self.has_xrd2d)
-       print('1D-XRD data: %s' % self.has_xrd1d)
+        print('   HAS XRF, XRD1D, XRD2D: %s, %s, %s' % (self.has_xrf,
+                                                        self.has_xrd1d,
+                                                        self.has_xrd2d))
 
     def resize_arrays(self, nrow):
         "resize all arrays for new nrow size"
@@ -2695,18 +2691,17 @@ class GSEXRM_MapFile(object):
         return pos
 
 
-    def build_xrd_roimap(self,xrd='1D'):
-
+    def build_xrd_roimap(self, xrd='1d'):
         detname = None
         xrdtype = 'xrd%s detector' % xrd
 
-        roigroup = ensure_subgroup('roimap',self.xrmmap)
-        for det,grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
+        roigroup = ensure_subgroup('roimap', self.xrmmap)
+        for det, grp in self.xrmmap.items():
             if bytes2str(grp.attrs.get('type', '')).startswith(xrdtype):
                 detname = det
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = xrdtype
-        return roigroup,detname
+        return roigroup, detname
 
     def add_xrd2droi(self, xyrange, roiname, unit='pixels'):
 
@@ -2714,7 +2709,7 @@ class GSEXRM_MapFile(object):
             if not self.has_xrd2d:
                 return
 
-            roigroup,detname = self.build_xrd_roimap(xrd='2D')
+            roigroup,detname = self.build_xrd_roimap(xrd='2d')
             xrmdet = self.xrmmap[detname]
 
             if roiname in roigroup[detname]:
@@ -2745,7 +2740,6 @@ class GSEXRM_MapFile(object):
         print('Finished.\n')
 
     def add_xrd1droi(self, xrange, roiname, unit='q'):
-
         if version_ge(self.version, '2.0.0'):
             if not self.has_xrd1d:
                 print('No 1D-XRD data in file')
@@ -2760,13 +2754,13 @@ class GSEXRM_MapFile(object):
                     self.mono_energy = float(val)/1000.
 
             if unit.startswith('2th'): ## 2th to 1/A
-                qrange = q_from_twth(xrange,lambda_from_E(self.mono_energy))
+                qrange = q_from_twth(xrange, lambda_from_E(self.mono_energy))
             elif unit == 'd':           ## A to 1/A
                 qrange = q_from_d(xrange)
             else:
                 qrange = xrange
 
-            roigroup,detname  = self.build_xrd_roimap(xrd='1D')
+            roigroup, detname  = self.build_xrd_roimap(xrd='1d')
             xrmdet = self.xrmmap[detname]
 
             if roiname in roigroup[detname]:

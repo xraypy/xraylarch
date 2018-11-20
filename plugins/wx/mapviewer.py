@@ -2810,7 +2810,6 @@ class MapViewerFrame(wx.Frame):
                         p.update_xrmmap(xrmfile=self.current_file)
 
     def defineROI(self, event=None):
-
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
             return
@@ -2858,10 +2857,9 @@ class MapViewerFrame(wx.Frame):
                 poni_path = bytes2str(xrd1Dgrp.attrs.get('calfile',''))
 
             if os.path.exists(poni_path):
-                self.current_file.add_1DXRD()
+                self.current_file.add_xrd1d()
 
     def onShow1DXRD(self, event=None):
-
         self.showxrd = event.IsChecked()
         if self.showxrd:
             msg = 'Show 1DXRD data for area'
@@ -3045,7 +3043,6 @@ class OpenPoniFile(wx.Dialog):
 ##################
 class ROIPopUp(wx.Dialog):
     """"""
-
     #----------------------------------------------------------------------
     def __init__(self, owner, **kws):
 
@@ -3061,27 +3058,33 @@ class ROIPopUp(wx.Dialog):
         self.cfile   = self.owner.current_file
         self.xrmmap = self.cfile.xrmmap
 
-        self.gp = GridPanel(panel, nrows=8, ncols=4, **kws)
+        self.gp = GridPanel(panel, nrows=8, ncols=4,
+                            itemstyle=LEFT, gap=3, **kws)
 
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
-        self.roi_chc  = [Choice(self, size=(120, -1)),
-                         Choice(self, size=(120, -1))]
+        self.roi_chc  = [Choice(self, size=(150, -1)),
+                         Choice(self, size=(150, -1))]
         fopts = dict(minval=-1, precision=3, size=(100, -1))
         self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
                          FloatCtrl(self, value=-1, **fopts),
                          FloatCtrl(self, value=0,  **fopts),
                          FloatCtrl(self, value=-1, **fopts)]
 
-        self.gp.Add(SimpleText(self, '--    Add new ROI definitions    --'), dcol=4, style=CEN, newrow=True)
+        self.gp.Add(SimpleText(self, ' Add new ROI: '), dcol=2, style=LEFT, newrow=True)
 
-#         self.gp.AddMany((SimpleText(self, 'Name:'),self.roi_name,Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, 'Name:'),self.roi_name), dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, 'Type:'),self.roi_chc[0]), dcol=1, style=LEFT,newrow=True)
-        self.gp.AddMany((SimpleText(self, 'Limits:'),self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]), dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, ''),self.roi_lims[2],self.roi_lims[3]), dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)), dcol=1, style=LEFT, newrow=True)
-        self.gp.Add(SimpleText(self, ''),newrow=True)
+        self.gp.Add(SimpleText(self, ' Name:'),  newrow=True)
+        self.gp.Add(self.roi_name, dcol=2)
+        self.gp.Add(SimpleText(self, ' Type:'), newrow=True)
+        self.gp.Add(self.roi_chc[0], dcol=2)
 
+        self.gp.Add(SimpleText(self, ' Limits:'), newrow=True)
+        self.gp.AddMany((self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]),
+                        dcol=1, style=LEFT)
+        self.gp.AddMany((SimpleText(self, ' '),self.roi_lims[2],self.roi_lims[3]),
+                        dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, ' '),
+                         Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)),
+                        dcol=1, style=LEFT, newrow=True)
 
         ###############################################################################
 
@@ -3090,17 +3093,17 @@ class ROIPopUp(wx.Dialog):
         fopts = dict(minval=-1, precision=3, size=(100, -1))
         self.rm_roi_lims = SimpleText(self, '')
 
-        self.gp.Add(SimpleText(self, ''),newrow=True)
-        self.gp.Add(SimpleText(self, '--    Delete saved ROI    --'), dcol=4, style=CEN, newrow=True)
+        self.gp.Add(SimpleText(self, 'Delete ROI: '), dcol=2, newrow=True)
 
-        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]), dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), dcol=1, style=LEFT,newrow=True)
-        self.gp.Add(SimpleText(self, 'Limits:'), dcol=1, style=LEFT, newrow=True)
-        self.gp.Add(self.rm_roi_lims, dcol=3, style=LEFT)
-        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), dcol=1, style=LEFT, newrow=True)
+        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]),  newrow=True)
+        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), newrow=True)
+        self.gp.Add(SimpleText(self, 'Limits:'), newrow=True)
+        self.gp.Add(self.rm_roi_lims, dcol=3)
+        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), newrow=True)
         self.gp.Add(SimpleText(self, ''),newrow=True)
-#         self.gp.Add(SimpleText(self, ''),newrow=True)
-        self.gp.AddMany((SimpleText(self, ''),SimpleText(self, ''),SimpleText(self, ''),wx.Button(self, wx.ID_OK, label='Close window')), dcol=1, style=LEFT, newrow=True)
+
+        self.gp.AddMany((SimpleText(self, ''),SimpleText(self, ''),
+                         wx.Button(self, wx.ID_OK, label='Done')), newrow=True)
 
         self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.roi_lims[2].Disable()
@@ -3116,12 +3119,12 @@ class ROIPopUp(wx.Dialog):
     def roiTYPE(self,event=None):
         roitype = []
         delroi = []
-        if self.cfile.has__xrf:
+        if self.cfile.has_xrf:
             roitype += ['XRF']
-        if self.cfile.has__xrd1d:
+        if self.cfile.has_xrd1d:
             roitype += ['1DXRD']
             delroi  = ['xrd1d']
-        if self.cfile.has__xrd2d:
+        if self.cfile.has_xrd2d:
             roitype += ['2DXRD']
         if len(roitype) < 1:
             roitype = ['']
@@ -3198,16 +3201,16 @@ class ROIPopUp(wx.Dialog):
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
         if xtyp != '2DXRD': xrange = xrange[:2]
 
-        self.owner.message('Calculating ROI: %s' % xname)
+        self.owner.message('Building ROI data for: %s' % xname)
         if xtyp == 'XRF':
             self.cfile.add_xrfroi(xrange,xname,unit=xunt)
         elif xtyp == '1DXRD':
             xrd = ['q','2th','d']
             unt = xrd[self.roi_chc[1].GetSelection()]
-            self.cfile.add_xrd1Droi(xrange,xname,unit=unt)
+            self.cfile.add_xrd1droi(xrange, xname, unit=unt)
         elif xtyp == '2DXRD':
-            self.cfile.add_xrd2Droi(xrange,xname,unit=xunt)
-        self.owner.message('Ready')
+            self.cfile.add_xrd2droi(xrange,xname,unit=xunt)
+        self.owner.message('Added ROI:  %s' % xname)
 ##################
 
 
@@ -3451,26 +3454,10 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].Clear()
             self.XRDInfo[i].SetValue(str(path))
 
-class MapViewer_NoDebug(wx.App):
-    def __init__(self, use_scandb=False, **kws):
-        self.use_scandb = use_scandb
-        wx.App.__init__(self, **kws)
-
-    def run(self):
-        self.MainLoop()
-
-    def createApp(self):
-        frame = MapViewerFrame(use_scandb=self.use_scandb)
-        frame.Show()
-        self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.createApp()
-        return True
-
 class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, use_scandb=False, **kws):
+    def __init__(self, use_scandb=False, with_inspect=False, **kws):
         self.use_scandb = use_scandb
+        self.with_inspect = with_inspect
         wx.App.__init__(self, **kws)
 
     def createApp(self):
@@ -3481,7 +3468,8 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def OnInit(self):
         self.Init()
         self.createApp()
-        self.ShowInspectionTool()
+        if self.with_inspect:
+            self.ShowInspectionTool()
         return True
 
 def initializeLarchPlugin(_larch=None):
@@ -3496,4 +3484,4 @@ def registerLarchPlugin():
     return ('_sys.wx', {})
 
 if __name__ == '__main__':
-    DebugViewer().run()
+    MapViewer(with_inspect=True).run()
