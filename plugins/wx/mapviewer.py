@@ -3140,7 +3140,7 @@ class ROIPopUp(wx.Dialog):
         roiname = self.rm_roi_ch[1].GetStringSelection()
 
         if detname == 'xrd1d':
-            self.cfile.del_xrd1Droi(roiname)
+            self.cfile.del_xrd1droi(roiname)
             self.setROI()
 
     def setROI(self):
