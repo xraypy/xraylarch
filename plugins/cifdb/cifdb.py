@@ -12,16 +12,17 @@ from itertools import groupby
 from distutils.version import StrictVersion
 
 import larch
-from larch_plugins.xrd import peaklocater,create_cif,SPACEGROUPS,lambda_from_E
+from larch_plugins.xrd import (peaklocater, create_cif, SPACEGROUPS,
+                               lambda_from_E)
 
 import json
 from larch.utils.jsonutils import encode4js, decode4js
 
-from sqlalchemy import (create_engine,MetaData,
-                        Table,Column,Integer,String,Unicode,
-                        PrimaryKeyConstraint,ForeignKeyConstraint,ForeignKey,
-                        Numeric,func,
+from sqlalchemy import (create_engine, MetaData, Table, Column, Integer,
+                        String, Unicode, PrimaryKeyConstraint,
+                        ForeignKeyConstraint, ForeignKey, Numeric, func,
                         and_,or_,not_,tuple_)
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker,mapper,clear_mappers,relationship
 from sqlalchemy.pool import SingletonThreadPool
@@ -149,7 +150,7 @@ class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
 # # class CIFTable(_BaseTable):
-# #     (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma, 
+# #     (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma,
 # #      cif, zstr, qstr, url) = [None]*14
 
 
@@ -173,7 +174,7 @@ class cifDB(object):
             else:
                 if not iscifDB(self.dbname):
                     raise ValueError("'%s' is not a valid cif database file!" % self.dbname)
-        
+
         self.dbname = self.dbname
         self.engine = make_engine(self.dbname)
         self.conn = self.engine.connect()
@@ -202,8 +203,8 @@ class cifDB(object):
         cattbl  = tables['cattbl']
         symref  = tables['symref']
         authref = tables['authref']
-        catref  = tables['catref']        
-        
+        catref  = tables['catref']
+
         try:
             formtbl = tables['formtbl']
             compref = tables['compref']
@@ -265,7 +266,7 @@ class cifDB(object):
         self.session.flush()
         self.session.close()
         clear_mappers()
-            
+
     def create_database(self,name=None,verbose=False):
 
         if name is None:
@@ -276,7 +277,7 @@ class cifDB(object):
             self.dbname = self.dbname % counter
         else:
             self.dbname = name
-    
+
         self.open_database()
 
         ###################################################
@@ -375,7 +376,7 @@ class cifDB(object):
         def_auth = authtbl.insert()
         def_q    = qtbl.insert()
         def_cat  = cattbl.insert()
-        
+
         add_sym  = symref.insert()
         add_comp = compref.insert()
         add_q    = qref.insert()
@@ -457,9 +458,9 @@ class cifDB(object):
         ###################################################
         ## Main table
         self.ciftbl  = Table('ciftbl', self.metadata)
-        
+
     def add_space_groups(self):
-    
+
         ## Add missing space groups
         for spgrp_no in SPACEGROUPS.keys():
             for spgrp_name in SPACEGROUPS[spgrp_no]:
@@ -470,7 +471,7 @@ class cifDB(object):
                 if match is False:
                     print('Adding: %s %s' % (spgrp_no,spgrp_name))
                     self.spgptbl.insert().execute(iuc_id=spgrp_no,hm_notation=spgrp_name)
-        
+
     def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1,file=None):
         '''
             ## Adds cifile into database
@@ -495,7 +496,7 @@ class cifDB(object):
             with open(cifile,'r') as file:
                 cifstr = str(file.read())
         cif = create_cif(cifstr=cifstr)
-        
+
         if cif.id_no is None:
             cif_no = 99999
             search_cif = self.query(self.ciftbl.c.amcsd_id).filter(self.ciftbl.c.amcsd_id == cif_no).all()
@@ -519,14 +520,14 @@ class cifDB(object):
                 if url:
                     print('AMCSD %i already exists in database.\n' % cif.id_no)
                 else:
-                    print('%s: AMCSD %i already exists in database %s.' % 
+                    print('%s: AMCSD %i already exists in database %s.' %
                          (os.path.split(cifile)[-1],cif.id_no,self.dbname))
             return
-        
+
         ## Define q-array for each entry at given energy
         qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY),q_min=QMIN,q_max=QMAX)
         qarr = self.create_q_array(qhkl)
-        
+
         ###################################################
         def_elem = self.elemtbl.insert()
         def_name = self.nametbl.insert()
@@ -554,7 +555,7 @@ class cifDB(object):
             search_mineral = self.nametbl.select(self.nametbl.c.mineral_name == cif.label)
             for row in search_mineral.execute():
                 mineral_id = row.mineral_id
-                
+
         ## Find formula_name
         match = False
         search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
@@ -566,7 +567,7 @@ class cifDB(object):
             search_formula = self.formtbl.select(self.formtbl.c.formula_name == cif.formula)
             for row in search_formula.execute():
                 formula_id = row.formula_id
-                
+
         ## Find composition (loop over all elements)
         z_list = []
         for element in set(cif.atom.label):
@@ -598,7 +599,7 @@ class cifDB(object):
             search_q = self.qtbl.select(self.qtbl.c.q == '%0.2f' % (int(q * 100) / 100.))
             for row in search_q.execute():
                 q_id = row.q_id
-            
+
             try:
                 add_q.execute(q_id=q_id,amcsd_id=cif.id_no)
             except:
@@ -610,7 +611,7 @@ class cifDB(object):
             search_elements = self.elemtbl.select(self.elemtbl.c.element_symbol == element)
             for row in search_elements.execute():
                 z = row.z
-            
+
             try:
                 add_comp.execute(z=z,amcsd_id=cif.id_no)
             except:
@@ -645,10 +646,10 @@ class cifDB(object):
 
     def url_to_cif(self,verbose=False,savecif=False,
                      addDB=True,url=None,all=False,minval=None):
-    
+
         maxi = 20573
         exceptions = [0,7271,10783,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
-        
+
         ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
         ##  7271 : author name doubled in cif
         ## 14748 : has label of amcsd code but no number (or anything) assigned
@@ -659,10 +660,10 @@ class cifDB(object):
         ## 18449 : no first page number provided despite providing field label
         ## 18450 : no first page number provided despite providing field label
         ## 20029 : no volume number provided despite providing field label
-        
+
         if url is None:
             url = 'http://rruff.geo.arizona.edu/AMS/download.php?id=%05d.cif&down=cif'
- 
+
         ## Defines url range for searching and adding to cif database
         if all == True:
             iindex = range(99999) ## trolls whole database online
@@ -724,12 +725,12 @@ class cifDB(object):
     def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
 
         mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
-        
+
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         authors      = self.author_by_amcsd(amcsd_id)
 
         ## ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
-        
+
         if cifile:
             print(' ==== File : %s ====' % os.path.split(cifile)[-1])
         else:
@@ -752,10 +753,10 @@ class cifDB(object):
         print('')
 
     def symm_id(self,iuc_id):
-        
+
         if not isinstance(iuc_id,int):
             iuc_id = int(iuc_id.split(':')[0])
-        
+
         if   iuc_id < 3  : return 'triclinic'    ##   1 -   2 : Triclinic
         elif iuc_id < 16 : return 'monoclinic'   ##   3 -  15 : Monoclinic
         elif iuc_id < 75 : return 'orthorhombic' ##  16 -  74 : Orthorhombic
@@ -763,10 +764,10 @@ class cifDB(object):
         elif iuc_id < 168: return 'trigonal'     ## 143 - 167 : Trigonal
         elif iuc_id < 195: return 'hexagonal'    ## 168 - 194 : Hexagonal
         elif iuc_id < 231: return 'cubic'        ## 195 - 230 : Cubic
-        else: return        
-        
+        else: return
 
-    
+
+
     def return_cif(self,amcsd_id):
 
         search_cif = self.ciftbl.select(self.ciftbl.c.amcsd_id == amcsd_id)
@@ -778,11 +779,11 @@ class cifDB(object):
     def all_by_amcsd(self,amcsd_id,verbose=False):
 
         mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
-        
+
         mineral_name = self.search_for_mineral(mineral_id,id_no=False)[0][0]
         ALLelements  = self.composition_by_amcsd(amcsd_id)
         authors      = self.author_by_amcsd(amcsd_id)
-        
+
         return ALLelements,mineral_name,iuc_id,authors
 
     def q_by_amcsd(self,amcsd_id,qmin=QMIN,qmax=QMAX):
@@ -801,16 +802,16 @@ class cifDB(object):
         return authors
 
     def composition_by_amcsd(self,amcsd_id,string=False):
-    
+
         z_results = self.query(self.ciftbl.c.zstr).filter(self.ciftbl.c.amcsd_id == amcsd_id).all()
         z_list = [z for z,i in enumerate([json.loads(zrow[0]) for zrow in z_results][0]) if i==1]
-        
+
         ALLelements = []
         for z in z_list:
             search_periodic = self.elemtbl.select(self.elemtbl.c.z == z)
             for block in search_periodic.execute():
                 ALLelements.append(block.element_symbol)
-                
+
         if string:
             elementstr = 'Elements: '
             for i,element in enumerate(ALLelements):
@@ -821,7 +822,7 @@ class cifDB(object):
             return elementstr
         else:
             return ALLelements
-        
+
 
     def cif_by_amcsd(self,amcsd_id,only_ids=False):
 
@@ -839,7 +840,7 @@ class cifDB(object):
             cifstr = row.cif
             mineral_id = row.mineral_id
             iuc_id = row.iuc_id
-        
+
         search_mineralname = self.nametbl.select(self.nametbl.c.mineral_id == mineral_id)
         for row in search_mineralname.execute():
             mineral_name = row.mineral_name
@@ -870,7 +871,7 @@ class cifDB(object):
                         new_q_amcsd[m][k] = 1
             qaxis = new_qaxis
             q_amcsd = new_q_amcsd
-        
+
 
         ## Create data array
         peaks_weighting = np.ones(len(qaxis),dtype=int)*-1
@@ -885,7 +886,7 @@ class cifDB(object):
         match_peaks = np.sum((peaks_true*q_amcsd),axis=1)
         miss_peaks = np.sum((peaks_false*q_amcsd),axis=1)
         scores = np.sum((peaks_weighting*q_amcsd),axis=1)
-        
+
         return sorted(zip(scores,amcsd,total_peaks,match_peaks,miss_peaks),reverse=True)
 
 
@@ -895,7 +896,7 @@ class cifDB(object):
         amcsd_excld = []
         z_incld = []
         z_excld = []
-        
+
         if len(include) > 0:
             for element in include:
                 z = self.search_for_element(element)
@@ -913,32 +914,32 @@ class cifDB(object):
                 for element in exclude:
                     z = self.search_for_element(element)
                     if z is not None and z not in z_excld:
-                        z_excld += [z] 
+                        z_excld += [z]
 
         z_list_include = [1 if z in z_incld else 0 for z in np.arange(len(ELEMENTS)+1)]
         z_list_exclude = [1 if z in z_excld else 0 for z in np.arange(len(ELEMENTS)+1)]
-        
+
         amcsd,z_amcsd = self.return_z_matches(list=list)
 
         ## Calculate score/matches/etc.
         match_z = np.sum((np.array(z_list_include)*np.array(z_amcsd)),axis=1)
         miss_z  = np.sum((np.array(z_list_exclude)*np.array(z_amcsd)),axis=1)
-            
+
         for i,amcsd_id in enumerate(amcsd):
             if match_z[i] == np.sum(z_list_include) and miss_z[i] <= 0:
                 amcsd_incld += [amcsd_id]
             else:
                 amcsd_excld += [amcsd_id]
-                
+
         return amcsd_incld
 
 #     def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
-# 
+#
 #         amcsd_incld = []
 #         amcsd_excld = []
 #         z_incld = []
 #         z_excld = []
-#         
+#
 #         if len(include) > 0:
 #             for element in include:
 #                 z = self.search_for_element(element)
@@ -956,19 +957,19 @@ class cifDB(object):
 #                 for element in exclude:
 #                     z = self.search_for_element(element)
 #                     if z is not None and z not in z_excld:
-#                         z_excld += [z] 
-# 
-#         usr_qry = self.query(self.ciftbl)                        
+#                         z_excld += [z]
+#
+#         usr_qry = self.query(self.ciftbl)
 #         if list is not None:
 #             usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
-# 
+#
 #         ##  Searches composition of database entries
 #         if len(z_excld) > 0:
 #             fnl_qry = usr_qry.filter(self.compref.c.z.in_(z_excld))
 #             for row in fnl_qry.all():
 #                 if row.amcsd_id not in amcsd_excld:
 #                     amcsd_excld += [row.amcsd_id]
-# 
+#
 #         if len(z_incld) > 0:
 #             ## more elegant method but overloads query when too many (e.g. all others)
 #             ## used for exclusion
@@ -981,7 +982,7 @@ class cifDB(object):
 #             for row in fnl_qry.all():
 #                 if row.amcsd_id not in amcsd_incld and row.amcsd_id not in amcsd_excld:
 #                     amcsd_incld += [row.amcsd_id]
-#         
+#
 #         return amcsd_incld
 
 
@@ -994,7 +995,7 @@ class cifDB(object):
         if list is not None:
             usr_qry = usr_qry.filter(self.ciftbl.c.amcsd_id.in_(list))
 
- 
+
         ##  Searches mineral name for database entries
         if len(mnrl_id) > 0:
             fnl_qry = usr_qry.filter(self.ciftbl.c.mineral_id.in_(mnrl_id))
@@ -1009,7 +1010,7 @@ class cifDB(object):
 
         amcsd_incld = []
         auth_id = []
-        
+
         for author in include:
             id = self.search_for_author(author)
             auth_id += id
@@ -1032,14 +1033,14 @@ class cifDB(object):
             for row in fnl_qry.all():
                 if row.amcsd_id not in amcsd_incld:
                     amcsd_incld += [row.amcsd_id]
-        
+
         return amcsd_incld
 
 
 ##################################################################################
 ##################################################################################
     def return_z_matches(self,list=None):
-    
+
         if list is not None:
             zqry = self.query(self.ciftbl.c.zstr)\
                        .filter(self.ciftbl.c.amcsd_id.in_(list))\
@@ -1054,7 +1055,7 @@ class cifDB(object):
         return [id[0] for id in idqry],[json.loads(z[0]) for z in zqry]
 
     def create_z_array(self,z):
-    
+
         z_array = np.zeros((len(ELEMENTS)+1),dtype=int) ## + 1 gives index equal to z; z[0]:nothing
         for zn in z:
             z_array[zn] = 1
@@ -1064,7 +1065,7 @@ class cifDB(object):
 ##################################################################################
 ##################################################################################
     def return_q_matches(self,list=None,qmin=QMIN,qmax=QMAX):
-    
+
         if list is not None:
             qqry = self.query(self.ciftbl.c.qstr)\
                        .filter(self.ciftbl.c.amcsd_id.in_(list))\
@@ -1083,7 +1084,7 @@ class cifDB(object):
         return [id[0] for id in idqry],[json.loads(q[0])[imin:imax] for q in qqry]
 
     def create_q_array(self,q):
-    
+
         q_array = np.zeros(len(self.axis),dtype=int)
         for qn in q:
             i = np.abs(self.axis-qn).argmin()
@@ -1095,7 +1096,7 @@ class cifDB(object):
 
     def search_for_element(self,element,id_no=True,verbose=False):
         '''
-        searches elements for match in symbol, name, or atomic number; match must be 
+        searches elements for match in symbol, name, or atomic number; match must be
         exact.
         '''
         element = element.title()
@@ -1128,7 +1129,7 @@ class cifDB(object):
                >>> cif.search_for_author('6',id_no=False)
                     ([u'Chao G Y', u'Geology Team 654'], [6, 7770])
         '''
-    
+
         authname = []
         authid   = []
 
@@ -1142,7 +1143,7 @@ class cifDB(object):
             for row in authrow.all():
                 authname += [row.author_name]
                 authid   += [row.author_id]
-                
+
         if id_no: return authid
         else: return authname,authid
 
@@ -1162,7 +1163,7 @@ class cifDB(object):
                as STRING
                >>> newcif.search_for_mineral('884',id_no=False)
                     ([u'Mg8(Mg2Al2)Al8Si12(O,OH)56', u'Co3 Ge2.884 Tb0.624'], [884, 5973])
-        
+
         '''
         mrlname = []
         mrlid   = []
@@ -1177,35 +1178,35 @@ class cifDB(object):
             for row in mnrlrow.all():
                 mrlname += [row.mineral_name]
                 mrlid   += [row.mineral_id]
-                
+
         if id_no: return mrlid
         else: return mrlname,mrlid
-     
+
     def return_no_of_cif(self):
-        
+
         ##return len(self.query(self.ciftbl).all())
         ##return self.query(func.count(self.ciftbl.c.amcsd_id)).scalar()
         return self.query(self.ciftbl).count()
 
     def return_q(self):
-        
+
         q = [float(row.q) for row in self.query(self.qtbl).all()]
         return np.array(q)
 
     def return_mineral_names(self):
-        
+
         mineralqry = self.query(self.nametbl.c.mineral_name).all()
         names = [name[0] for name in mineralqry if isinstance(name[0], unicode) or isinstance(name[0], str)]
         names += ['']
         return sorted(names)
 
     def return_author_names(self):
-        
+
         authorqry = self.query(self.authtbl)
         names = []
         for row in authorqry.all():
             names += [row.author_name]
-        
+
         return sorted(names)
 
 def filter_int_and_str(s,exact=False):
@@ -1215,7 +1216,7 @@ def filter_int_and_str(s,exact=False):
         if not exact:
             try: s = '%'+s+'%'
             except: pass
-        
+
         return i,s
 
 
@@ -1229,7 +1230,7 @@ class RangeParameter(object):
         self.min   = min
         self.max   = max
         self.unit  = unit
-        
+
     def set_values(self,min=None,max=None,unit=None):
 
         self.__init__(min=min,max=max,unit=unit)
@@ -1239,9 +1240,9 @@ class SearchCIFdb(object):
     interface to the search the cif database
     '''
     def __init__(self, verbose=False):
-    
+
         self.verbose = verbose
-        
+
         ## running list of included amcsd id numbers
         self.amcsd_id = []
 
@@ -1270,12 +1271,12 @@ class SearchCIFdb(object):
 
 
     def print_all(self):
-    
+
         for key in ['authors','mnrlname','keywords','categories','amcsd','qpks']:
              print('%s : %s' % (key,self.print_parameter(key=key)))
         print('chemistry : %s' % self.print_chemistry())
         print('geometry : %s' % self.print_geometry())
-    
+
     def print_parameter(self,key='authors'):
 
         s = ''
@@ -1288,15 +1289,15 @@ class SearchCIFdb(object):
                     s = '%s, %s' % (s,item)
         return s
 
-        
+
     def read_parameter(self,s,clear=True,key='authors'):
         '''
-        This function works for keys: 
+        This function works for keys:
         'authors'
         'mnrlname
         keywords','categories','amcsd','qpks'
         '''
-       
+
         if clear:
             self.__dict__[key] = []
         if len(s) > 0:
@@ -1307,7 +1308,7 @@ class SearchCIFdb(object):
                     pass
 
     def read_chemistry(self,s,clear=True):
-       
+
         if clear:
             self.elem_incl,self.elem_excl = [],[]
         chem_incl,chem_excl = [],[]
@@ -1341,7 +1342,7 @@ class SearchCIFdb(object):
                 self.elem_excl += [elem]
 
     def print_chemistry(self):
-    
+
         s = ''
         for i,elem in enumerate(self.elem_incl):
             if i==0:
@@ -1349,11 +1350,11 @@ class SearchCIFdb(object):
             else:
                 s = '%s,%s' % (s,elem)
         if len(self.elem_incl) > 0:
-            s = '%s) ' % s 
+            s = '%s) ' % s
         if len(self.elem_excl) > 0:
             s = '%s- ' % s
         # if all else excluded, don't list
-        if (len(self.allelem)-20) > (len(self.elem_incl)+len(self.elem_excl)): 
+        if (len(self.allelem)-20) > (len(self.elem_incl)+len(self.elem_excl)):
             for i,elem in enumerate(self.elem_excl):
                 if i==0:
                     s = '%s(%s' % (s,elem)
@@ -1362,7 +1363,7 @@ class SearchCIFdb(object):
             if len(self.elem_excl) > 0:
                 s = '%s)' % s
         return s
-                
+
     def print_geometry(self,unit='A'):
 
         s = ''
@@ -1384,7 +1385,7 @@ class SearchCIFdb(object):
         return s
 
     def read_geometry(self,s):
-        
+
         geostr = s.split(',')
         used = []
         for par in geostr:
@@ -1392,11 +1393,11 @@ class SearchCIFdb(object):
             val = par.split('=')[1]
             if key in 'sg':
                 self.__dict__[key] = val
-                used += [key]            
+                used += [key]
             elif key in self.lattice_keys:
                 values = [''.join(g) for _, g in groupby(val, str.isalpha)]
                 self.__dict__[key].min = values[0]
-                if len(values) > 1: 
+                if len(values) > 1:
                     self.__dict__[key].unit = values[-1]
                 if len(values) > 2:
                     self.__dict__[key].max = values[2]
@@ -1411,7 +1412,7 @@ class SearchCIFdb(object):
         key = 'sg'
         if key not in used:
             self.__dict__[key] = None
-            
+
 def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
     '''
     fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
@@ -1424,11 +1425,11 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
                                                        list=None,verbose=False))
 
     MATCHES = [match for i,match in enumerate(amcsd) if scores[i] > 0]
-    
+
     if verbose:
         print('\n')
         if len(MATCHES) > 100:
-            print('DISPLAYING TOP 100 of %i TOTAL MATCHES FOUND.' % len(MATCHES))        
+            print('DISPLAYING TOP 100 of %i TOTAL MATCHES FOUND.' % len(MATCHES))
         else:
             print('%i TOTAL MATCHES FOUND.' % len(MATCHES))
         j = 0
@@ -1443,3 +1444,19 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
         print('')
 
     return MATCHES
+
+def get_cifdb(_larch):
+    symname = '_xray._cifdb'
+    if _larch.symtable.has_symbol(symname):
+        return _larch.symtable.get_symbol(symname)
+    cifdb = cifDB(dbname='amcsd_cif.db')
+    _larch.symtable.set_symbol(symname, cifdb)
+    return cifdb
+
+def initializeLarchPlugin(_larch=None):
+    """initialize cifdb"""
+    if _larch is not None:
+        cdb = get_cifdb(_larch)
+
+def registerLarchPlugin():
+    return ('_xray', {})
