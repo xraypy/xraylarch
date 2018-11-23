@@ -12,6 +12,7 @@ from itertools import groupby
 from distutils.version import StrictVersion
 
 import larch
+from larch import ValidateLarchPlugin
 from larch_plugins.xrd import (peaklocater, create_cif, SPACEGROUPS,
                                lambda_from_E)
 
@@ -82,9 +83,17 @@ CATEGORIES = ['soil',
 QMIN = 0.2
 QMAX = 10.0
 QSTEP = 0.01
-QAXIS = np.arange(QMIN,QMAX+QSTEP,QSTEP)
+QAXIS = np.arange(QMIN, QMAX+QSTEP, QSTEP)
 
 ENERGY = 19000 ## units eV
+
+def get_cifdb(_larch):
+    symname = '_xray._cifdb'
+    if _larch.symtable.has_symbol(symname):
+        return _larch.symtable.get_symbol(symname)
+    cifdb = cifDB(dbname='amcsd_cif.db')
+    _larch.symtable.set_symbol(symname, cifdb)
+    return cifdb
 
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
@@ -149,9 +158,9 @@ class QTable(_BaseTable):
 class CategoryTable(_BaseTable):
     (id,name) = [None]*2
 
-# # class CIFTable(_BaseTable):
-# #     (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma,
-# #      cif, zstr, qstr, url) = [None]*14
+class CIFTable(_BaseTable):
+    (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma,
+     cif, zstr, qstr, url) = [None]*14
 
 
 class cifDB(object):
@@ -472,28 +481,28 @@ class cifDB(object):
                     print('Adding: %s %s' % (spgrp_no,spgrp_name))
                     self.spgptbl.insert().execute(iuc_id=spgrp_no,hm_notation=spgrp_name)
 
-    def cif_to_database(self,cifile,verbose=True,url=False,ijklm=1,file=None):
+    def add_ciffile(self, ciffile, verbose=True, url=False, ijklm=1, file=None):
         '''
-            ## Adds cifile into database
-            When reading in new CIF:
-            i.   put entire cif into field
-            ii.  read _database_code_amcsd; write 'amcsd_id' to 'cif data'
-            iii. read _chemical_name_mineral; find/add in' minerallist'; write
-                 'mineral_id' to 'cif data'
-            iv.  read _symmetry_space_group_name_H-M - find in 'spacegroup'; write
-                 iuc_id to 'cif data'
-            v.   read author name(s) - find/add in 'authorlist'; write 'author_id',
-                 'amcsd_id' to 'authref'
-            vi.  read _chemical_formula_sum; write 'z' (atomic no.), 'amcsd_id'
-                 to 'compref'
-            vii. calculate q - find each corresponding 'q_id' for all peaks; in write
-                 'q_id','amcsd_id' to 'qpeak'
+        ## Adds ciffile into database
+        When reading in new CIF:
+        i.   put entire cif into field
+        ii.  read _database_code_amcsd; write 'amcsd_id' to 'cif data'
+        iii. read _chemical_name_mineral; find/add in' minerallist'; write
+             'mineral_id' to 'cif data'
+        iv.  read _symmetry_space_group_name_H-M - find in 'spacegroup'; write
+             iuc_id to 'cif data'
+        v.   read author name(s) - find/add in 'authorlist'; write 'author_id',
+             'amcsd_id' to 'authref'
+        vi.  read _chemical_formula_sum; write 'z' (atomic no.), 'amcsd_id'
+             to 'compref'
+        vii. calculate q - find each corresponding 'q_id' for all peaks; in write
+            'q_id','amcsd_id' to 'qpeak'
         '''
 
         if url:
-            cifstr = requests.get(cifile).text
+            cifstr = requests.get(ciffile).text
         else:
-            with open(cifile,'r') as file:
+            with open(ciffile,'r') as file:
                 cifstr = str(file.read())
         cif = create_cif(cifstr=cifstr)
 
@@ -521,11 +530,11 @@ class cifDB(object):
                     print('AMCSD %i already exists in database.\n' % cif.id_no)
                 else:
                     print('%s: AMCSD %i already exists in database %s.' %
-                         (os.path.split(cifile)[-1],cif.id_no,self.dbname))
+                         (os.path.split(ciffile)[-1],cif.id_no,self.dbname))
             return
 
         ## Define q-array for each entry at given energy
-        qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY),q_min=QMIN,q_max=QMAX)
+        qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY), q_min=QMIN, q_max=QMAX)
         qarr = self.create_q_array(qhkl)
 
         ###################################################
@@ -592,7 +601,7 @@ class cifDB(object):
                         cif=cifstr,
                         zstr=json.dumps(zarr.tolist(),default=str),
                         qstr=json.dumps(qarr.tolist(),default=str),
-                        url=str(cifile))
+                        url=str(ciffile))
 
         ## Build q cross-reference table
         for q in qhkl:
@@ -642,15 +651,16 @@ class cifDB(object):
         if url:
             self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr))
         else:
-            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),cifile=cifile)
+            self.print_amcsd_info(cif.id_no,no_qpeaks=np.sum(qarr),ciffile=ciffile)
 
-    def url_to_cif(self,verbose=False,savecif=False,
-                     addDB=True,url=None,all=False,minval=None):
+    def url_to_cif(self, url=None, verbose=False, savecif=False, addDB=True,
+                   all=False, minval=None):
 
         maxi = 20573
-        exceptions = [0,7271,10783,14748,15049,15050,15851,18368,18449,18450,18451,18452,18453,20029]
+        exceptions = [0,7271,10783,14748,15049,15050,15851,18368,
+                      18449,18450,18451,18452,18453,20029]
 
-        ## ALL CAUSE FAILURE IN CIFILE FUNCTION:
+        ## ALL CAUSE FAILURE IN CIFFILE FUNCTION:
         ##  7271 : author name doubled in cif
         ## 14748 : has label of amcsd code but no number (or anything) assigned
         ## 15049 : page number 'L24307 1' could not be parsed as number
@@ -668,9 +678,9 @@ class cifDB(object):
         if all == True:
             iindex = range(99999) ## trolls whole database online
         elif minval is not None:
-            iindex = np.arange(minval,99999) ## starts at given min and counts up
+            iindex = np.arange(minval, 99999) ## starts at given min and counts up
         else:
-            iindex = np.arange(13600,13700) ## specifies small range including CeO2 match
+            iindex = np.arange(13600, 13700) ## specifies small range including CeO2 match
 
         for i in iindex:
             if i not in exceptions and i < maxi:
@@ -691,7 +701,7 @@ class cifDB(object):
                             print('Saved %s' % file)
                     if addDB:
                         try:
-                            self.cif_to_database(url_to_scrape,url=True,verbose=verbose,ijklm=i)
+                            self.add_ciffile(url_to_scrape, url=True, verbose=verbose, ijklm=i)
                         except:
                             pass
 
@@ -722,7 +732,7 @@ class cifDB(object):
 
 ##################################################################################
 
-    def print_amcsd_info(self,amcsd_id,no_qpeaks=None,cifile=None):
+    def print_amcsd_info(self, amcsd_id, no_qpeaks=None, ciffile=None):
 
         mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
 
@@ -731,8 +741,8 @@ class cifDB(object):
 
         ## ALLelements,mineral_name,iuc_id,authors = self.all_by_amcsd(amcsd_id)
 
-        if cifile:
-            print(' ==== File : %s ====' % os.path.split(cifile)[-1])
+        if ciffile:
+            print(' ==== File : %s ====' % os.path.split(ciffile)[-1])
         else:
             print(' ===================== ')
         print(' AMCSD: %i' % amcsd_id)
@@ -750,7 +760,6 @@ class cifDB(object):
              authorstr = '%s %s' % (authorstr,author.split()[0])
         print(authorstr)
         print(' ===================== ')
-        print('')
 
     def symm_id(self,iuc_id):
 
@@ -764,9 +773,8 @@ class cifDB(object):
         elif iuc_id < 168: return 'trigonal'     ## 143 - 167 : Trigonal
         elif iuc_id < 195: return 'hexagonal'    ## 168 - 194 : Hexagonal
         elif iuc_id < 231: return 'cubic'        ## 195 - 230 : Cubic
-        else: return
-
-
+        else:
+            return
 
     def return_cif(self,amcsd_id):
 
@@ -776,7 +784,7 @@ class cifDB(object):
 
 ##################################################################################
 
-    def all_by_amcsd(self,amcsd_id,verbose=False):
+    def all_by_amcsd(self, amcsd_id):
 
         mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
 
@@ -801,7 +809,7 @@ class cifDB(object):
             authors.append(self.search_for_author(row.author_id,id_no=False)[0][0])
         return authors
 
-    def composition_by_amcsd(self,amcsd_id,string=False):
+    def composition_by_amcsd(self, amcsd_id, string=False):
 
         z_results = self.query(self.ciftbl.c.zstr).filter(self.ciftbl.c.amcsd_id == amcsd_id).all()
         z_list = [z for z,i in enumerate([json.loads(zrow[0]) for zrow in z_results][0]) if i==1]
@@ -849,16 +857,23 @@ class cifDB(object):
 ##################################################################################
 ##################################################################################
 
-    def amcsd_by_q(self,peaks,qmin=QMIN,qmax=QMAX,qstep=QSTEP,list=None,verbose=False):
+    def amcsd_by_q(self, peaks, qmin=None, qmax=None, qstep=None, list=None,
+                   verbose=False):
+
+        if qmin is None: qmin = QMIN
+        if qmax is None: qmax = QMAX
+        if qstep is None: qstep = QSTEP
 
         ## Defines min/max limits of q-range
-        imin,imax = 0,len(self.axis)
-        if qmax < np.max(self.axis): imax = abs(self.axis-qmax).argmin()
-        if qmin > np.min(self.axis): imin = abs(self.axis-qmin).argmin()
+        imin, imax = 0, len(self.axis)
+        if qmax < np.max(self.axis):
+            imax = abs(self.axis-qmax).argmin()
+        if qmin > np.min(self.axis):
+            imin = abs(self.axis-qmin).argmin()
         qaxis = self.axis[imin:imax]
         stepq = (qaxis[1]-qaxis[0])
 
-        amcsd,q_amcsd = self.return_q_matches(list=list,qmin=qmin,qmax=qmax)
+        amcsd, q_amcsd = self.match_q(list=list, qmin=qmin, qmax=qmax)
 
         ## Re-bins data if different step size is specified
         if qstep > stepq:
@@ -887,7 +902,7 @@ class cifDB(object):
         miss_peaks = np.sum((peaks_false*q_amcsd),axis=1)
         scores = np.sum((peaks_weighting*q_amcsd),axis=1)
 
-        return sorted(zip(scores,amcsd,total_peaks,match_peaks,miss_peaks),reverse=True)
+        return sorted(zip(scores, amcsd, total_peaks, match_peaks, miss_peaks), reverse=True)
 
 
     def amcsd_by_chemistry(self,include=[],exclude=[],list=None,verbose=False):
@@ -1055,7 +1070,6 @@ class cifDB(object):
         return [id[0] for id in idqry],[json.loads(z[0]) for z in zqry]
 
     def create_z_array(self,z):
-
         z_array = np.zeros((len(ELEMENTS)+1),dtype=int) ## + 1 gives index equal to z; z[0]:nothing
         for zn in z:
             z_array[zn] = 1
@@ -1064,18 +1078,18 @@ class cifDB(object):
 
 ##################################################################################
 ##################################################################################
-    def return_q_matches(self,list=None,qmin=QMIN,qmax=QMAX):
+    def match_qc(self, list=None, qmin=QMIN, qmax=QMAX):
 
-        if list is not None:
-            qqry = self.query(self.ciftbl.c.qstr)\
-                       .filter(self.ciftbl.c.amcsd_id.in_(list))\
-                       .all()
-            idqry = self.query(self.ciftbl.c.amcsd_id)\
-                       .filter(self.ciftbl.c.amcsd_id.in_(list))\
-                       .all()
-        else:
+        if list is None:
             qqry = self.query(self.ciftbl.c.qstr).all()
             idqry = self.query(self.ciftbl.c.amcsd_id).all()
+        else:
+            qqry = self.query(self.ciftbl.c.qstr)\
+                   .filter(self.ciftbl.c.amcsd_id.in_(list))\
+                   .all()
+            idqry = self.query(self.ciftbl.c.amcsd_id)\
+                    .filter(self.ciftbl.c.amcsd_id.in_(list))\
+                    .all()
 
         imin,imax = 0,len(self.axis)
         if qmax < QMAX: imax = abs(self.axis-qmax).argmin()
@@ -1083,9 +1097,9 @@ class cifDB(object):
 
         return [id[0] for id in idqry],[json.loads(q[0])[imin:imax] for q in qqry]
 
-    def create_q_array(self,q):
+    def create_q_array(self, q):
 
-        q_array = np.zeros(len(self.axis),dtype=int)
+        q_array = np.zeros(len(self.axis), dtype=int)
         for qn in q:
             i = np.abs(self.axis-qn).argmin()
             q_array[i] = 1
@@ -1413,14 +1427,13 @@ class SearchCIFdb(object):
         if key not in used:
             self.__dict__[key] = None
 
-def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
-    '''
+def match_database(cifdb, peaks, minq=QMIN, maxq=QMAX, verbose=True):
+    """
     fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
     pk_wid : maximum range in q which qualifies as a match between fitted and ideal
-
-    '''
+    """
     stepq = 0.05
-    scores,amcsd,total_peaks,match_peaks,miss_peaks = zip(*cifdatabase.amcsd_by_q(peaks,
+    scores,amcsd,total_peaks,match_peaks,miss_peaks = zip(*cifdb.amcsd_by_q(peaks,
                                                        qmin=minq,qmax=maxq,qstep=stepq,
                                                        list=None,verbose=False))
 
@@ -1438,20 +1451,51 @@ def match_database(cifdatabase, peaks, minq=QMIN, maxq=QMAX, verbose=True):
                 if scores[i] > 0:
                     j += 1
                     str = 'AMCSD %5d, %s (score of %2d --> %i of %i peaks)' % (id_no,
-                             cifdatabase.mineral_by_amcsd(id_no),scores[i],
+                             cifdb.mineral_by_amcsd(id_no),scores[i],
                              match_peaks[i],total_peaks[i])
                     print(str)
         print('')
 
     return MATCHES
 
-def get_cifdb(_larch):
-    symname = '_xray._cifdb'
-    if _larch.symtable.has_symbol(symname):
-        return _larch.symtable.get_symbol(symname)
-    cifdb = cifDB(dbname='amcsd_cif.db')
-    _larch.symtable.set_symbol(symname, cifdb)
-    return cifdb
+
+@ValidateLarchPlugin
+def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
+    """
+    fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
+    pk_wid : maximum range in q which qualifies as a match between fitted and ideal
+    """
+    cifdb = get_cifdb(_larch)
+    qstep = 0.05
+
+    rows = cifdb.amcsd_by_q(peaks, qmin=qmin,qmax=qmax, qstep=qstep)
+
+    scores, amcsd, total_peaks, match_peaks, miss_peaks = rows
+
+    matches = []
+    for i, cdat in enumerate(amcsd):
+        if score[i] > 0:
+            matches.append(cdat)
+
+    if verbose:
+        print('\n')
+        if len(MATCHES) > 100:
+            print('DISPLAYING TOP 100 of %i TOTAL MATCHES FOUND.' % len(MATCHES))
+        else:
+            print('%i TOTAL MATCHES FOUND.' % len(MATCHES))
+        matches = matches[:100]
+        for i, id_no in enumerate(amcsd):
+            if j < 100:
+                if scores[i] > 0:
+                    j += 1
+                    str = 'AMCSD %5d, %s (score of %2d --> %i of %i peaks)' % (id_no,
+                             cifdb.mineral_by_amcsd(id_no),scores[i],
+                             match_peaks[i],total_peaks[i])
+                    print(str)
+        print('')
+
+    return matches
+
 
 def initializeLarchPlugin(_larch=None):
     """initialize cifdb"""
@@ -1459,4 +1503,4 @@ def initializeLarchPlugin(_larch=None):
         cdb = get_cifdb(_larch)
 
 def registerLarchPlugin():
-    return ('_xray', {})
+    return ('_xray', {'cif_match': cif_match})
