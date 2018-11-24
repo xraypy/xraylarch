@@ -884,11 +884,10 @@ class XRFDisplayFrame(wx.Frame):
     def onShowLines(self, event=None, elem=None):
         if elem is None:
             elem  = event.GetString()
-        try:
-            vline = self.panel.axes.axvline
-            elines = self.larch.symtable._xray.xray_lines(elem)
-        except:
-            return
+
+        vline = self.panel.axes.axvline
+        elines = self.larch.symtable._xray.xray_lines(elem)
+
         self.selected_elem = elem
         self.clear_lines()
         self.energy_for_zoom = None
