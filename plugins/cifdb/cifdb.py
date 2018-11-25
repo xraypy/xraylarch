@@ -14,7 +14,7 @@ from distutils.version import StrictVersion
 import larch
 from larch import ValidateLarchPlugin
 from larch_plugins.xrd import (peaklocater, create_cif, SPACEGROUPS,
-                               lambda_from_E)
+                               lambda_from_E, CIFcls)
 
 import json
 from larch.utils.jsonutils import encode4js, decode4js
@@ -25,7 +25,7 @@ from sqlalchemy import (create_engine, MetaData, Table, Column, Integer,
                         and_,or_,not_,tuple_)
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker,mapper,clear_mappers,relationship
+from sqlalchemy.orm import sessionmaker, mapper, relationship
 from sqlalchemy.pool import SingletonThreadPool
 
 SYMMETRIES = ['triclinic',
@@ -87,7 +87,7 @@ QAXIS = np.arange(QMIN, QMAX+QSTEP, QSTEP)
 
 ENERGY = 19000 ## units eV
 
-def get_cifdb(_larch):
+def get_cifdb(_larch=None):
     symname = '_xray._cifdb'
     if _larch.symtable.has_symbol(symname):
         return _larch.symtable.get_symbol(symname)
@@ -170,8 +170,8 @@ class cifDB(object):
     def __init__(self, dbname=None, read_only=True,verbose=False):
 
         ## This needs to be modified for creating new if does not exist.
-        self.version='0.0.0'
-        self.dbname=dbname
+        self.version = '0.0.2'
+        self.dbname = dbname
         if verbose:
             print('\n\n================ %s ================\n' % self.dbname)
         if not os.path.exists(self.dbname):
@@ -214,48 +214,50 @@ class cifDB(object):
         authref = tables['authref']
         catref  = tables['catref']
 
-        try:
-            formtbl = tables['formtbl']
-            compref = tables['compref']
-            qref    = tables['qref']
-            self.version = '0.0.2'
-        except:
-            self.version = '0.0.1'
-            formtbl, compref, qref = None, None, None
-
-
+        formtbl = tables['formtbl']
+        compref = tables['compref']
+        qref    = tables['qref']
 
         ## Define mappers
-        clear_mappers()
-        mapper(MineralNameTable, nametbl, properties=dict(
-                 a=relationship(MineralNameTable, secondary=ciftbl,
-                 primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-        mapper(SpaceGroupTable, spgptbl, properties=dict(
-                 a=relationship(SpaceGroupTable, secondary=symref,
-                 primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
-                 secondaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
-        mapper(CrystalSymmetryTable, symtbl, properties=dict(
-                 a=relationship(CrystalSymmetryTable, secondary=symref,
-                 primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id),
-                 secondaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
-        mapper(AuthorTable, authtbl, properties=dict(
-                 a=relationship(AuthorTable, secondary=authref,
-                 primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
-        mapper(CategoryTable, cattbl, properties=dict(
-                 a=relationship(CategoryTable, secondary=catref,
-                 primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
-
-        if StrictVersion(self.version) >= StrictVersion('0.0.2'):
-            mapper(ElementTable, elemtbl, properties=dict(
-                     a=relationship(ElementTable, secondary=compref,
-                     primaryjoin=(compref.c.z == elemtbl.c.z),
-                     secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
-            mapper(QTable, qtbl, properties=dict(
-                     a=relationship(QTable, secondary=qref,
-                     primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
-            mapper(ChemicalFormulaTable, nametbl, properties=dict(
-                     a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-                     primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
+        # clear_mappers()
+        mapper(MineralNameTable, nametbl)
+        mapper(SpaceGroupTable, spgptbl)
+        mapper(CrystalSymmetryTable, symtbl)
+        mapper(AuthorTable, authtbl)
+        mapper(CategoryTable, cattbl)
+        mapper(ElementTable, elemtbl)
+        mapper(QTable, qtbl)
+        mapper(ChemicalFormulaTable, nametbl)
+#
+#         mapper(MineralNameTable, nametbl, properties=dict(
+#                  a=relationship(MineralNameTable, secondary=ciftbl,
+#                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
+#         mapper(SpaceGroupTable, spgptbl, properties=dict(
+#                  a=relationship(SpaceGroupTable, secondary=symref,
+#                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
+#                  secondaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
+#         mapper(CrystalSymmetryTable, symtbl, properties=dict(
+#                  a=relationship(CrystalSymmetryTable, secondary=symref,
+#                  primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id),
+#                  secondaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
+#         mapper(AuthorTable, authtbl, properties=dict(
+#                  a=relationship(AuthorTable, secondary=authref,
+#                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
+#         mapper(CategoryTable, cattbl, properties=dict(
+#                  a=relationship(CategoryTable, secondary=catref,
+#                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
+#
+#         if StrictVersion(self.version) >= StrictVersion('0.0.2'):
+#             mapper(ElementTable, elemtbl, properties=dict(
+#                      a=relationship(ElementTable, secondary=compref,
+#                      primaryjoin=(compref.c.z == elemtbl.c.z),
+#                      secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
+#             mapper(QTable, qtbl, properties=dict(
+#                      a=relationship(QTable, secondary=qref,
+#                      primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
+#             mapper(ChemicalFormulaTable, nametbl, properties=dict(
+#                      a=relationship(ChemicalFormulaTable, secondary=ciftbl,
+#                      primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
 
         self.load_database()
         self.axis = np.array([float(q[0]) for q in self.query(self.qtbl.c.q).all()])
@@ -266,15 +268,14 @@ class cifDB(object):
         return self.session.query(*args, **kws)
 
     def open_database(self):
-
-        print('\nAccessing database: %s' % self.dbname)
+        # print('\nAccessing database: %s' % self.dbname)
         self.metadata = MetaData('sqlite:///%s' % self.dbname)
 
     def close_database(self):
         "close session"
         self.session.flush()
         self.session.close()
-        clear_mappers()
+        # clear_mappers()
 
     def create_database(self,name=None,verbose=False):
 
@@ -1497,10 +1498,28 @@ def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
     return matches
 
 
+@ValidateLarchPlugin
+def amcsd_cif(amcsd_id, _larch=None):
+    cifdb = get_cifdb(_larch)
+    ciftext = cifdb.return_cif(amcsd_id)
+    cif = CIFcls()
+    cif.read_ciftext(ciftext)
+    cif.spacegroup()
+    return cif
+
+@ValidateLarchPlugin
+def make_cif(ciffile, _larch=None):
+    cif = CIFcls()
+    cif.read_ciffile(ciffile)
+    return cif
+
 def initializeLarchPlugin(_larch=None):
     """initialize cifdb"""
     if _larch is not None:
         cdb = get_cifdb(_larch)
 
 def registerLarchPlugin():
-    return ('_xray', {'cif_match': cif_match})
+    return ('_xray', {'cif_match': cif_match,
+                      'get_cifdb': get_cifdb,
+                      'amcsd_cif': amcsd_cif,
+                      'make_cif': make_cif})
