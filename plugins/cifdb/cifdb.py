@@ -25,16 +25,12 @@ from sqlalchemy import (create_engine, MetaData, Table, Column, Integer,
                         and_,or_,not_,tuple_)
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, mapper, relationship
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.pool import SingletonThreadPool
 
-SYMMETRIES = ['triclinic',
-              'monoclinic',
-              'orthorhombic',
-              'tetragonal',
-              'trigonal',
-              'hexagonal',
-              'cubic']
+SYMMETRIES = ['triclinic', 'monoclinic', 'orthorhombic', 'tetragonal',
+              'trigonal', 'hexagonal', 'cubic']
+
 ELEMENTS = [['1',  'Hydrogen',  'H'], ['2',  'Helium',  'He'], ['3',  'Lithium',  'Li'],
             ['4',  'Beryllium',  'Be'], ['5',  'Boron',  'B'], ['6',  'Carbon',  'C'],
             ['7',  'Nitrogen',  'N'], ['8',  'Oxygen',  'O'], ['9',  'Fluorine',  'F'],
@@ -128,40 +124,6 @@ def iscifDB(dbname):
         pass
     return result
 
-class _BaseTable(object):
-    "generic class to encapsulate SQLAlchemy table"
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        return "<%s(%s)>" % (self.__class__.__name__, el)
-
-class ElementTable(_BaseTable):
-    (z, name, symbol) = [None]*3
-
-class MineralNameTable(_BaseTable):
-    (id,name) = [None]*2
-
-class ChemicalFormulaTable(_BaseTable):
-    (id,name) = [None]*2
-
-class SpaceGroupTable(_BaseTable):
-    (iuc_id, hm_notation) = [None]*2
-
-class CrystalSymmetryTable(_BaseTable):
-    (id, name) = [None]*2
-
-class AuthorTable(_BaseTable):
-    (id,name) = [None]*2
-
-class QTable(_BaseTable):
-    (id, q) = [None]*2
-
-class CategoryTable(_BaseTable):
-    (id,name) = [None]*2
-
-class CIFTable(_BaseTable):
-    (amcsd_id, mineral_id, formula_id, iuc_id, a, b, c, alpha, beta, gamma,
-     cif, zstr, qstr, url) = [None]*14
-
 
 class cifDB(object):
     '''
@@ -218,47 +180,6 @@ class cifDB(object):
         compref = tables['compref']
         qref    = tables['qref']
 
-        ## Define mappers
-        # clear_mappers()
-        mapper(MineralNameTable, nametbl)
-        mapper(SpaceGroupTable, spgptbl)
-        mapper(CrystalSymmetryTable, symtbl)
-        mapper(AuthorTable, authtbl)
-        mapper(CategoryTable, cattbl)
-        mapper(ElementTable, elemtbl)
-        mapper(QTable, qtbl)
-        mapper(ChemicalFormulaTable, nametbl)
-#
-#         mapper(MineralNameTable, nametbl, properties=dict(
-#                  a=relationship(MineralNameTable, secondary=ciftbl,
-#                  primaryjoin=(ciftbl.c.mineral_id == nametbl.c.mineral_id))))
-#         mapper(SpaceGroupTable, spgptbl, properties=dict(
-#                  a=relationship(SpaceGroupTable, secondary=symref,
-#                  primaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id),
-#                  secondaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id))))
-#         mapper(CrystalSymmetryTable, symtbl, properties=dict(
-#                  a=relationship(CrystalSymmetryTable, secondary=symref,
-#                  primaryjoin=(symref.c.symmetry_id == symtbl.c.symmetry_id),
-#                  secondaryjoin=(symref.c.iuc_id == spgptbl.c.iuc_id))))
-#         mapper(AuthorTable, authtbl, properties=dict(
-#                  a=relationship(AuthorTable, secondary=authref,
-#                  primaryjoin=(authref.c.author_id == authtbl.c.author_id))))
-#         mapper(CategoryTable, cattbl, properties=dict(
-#                  a=relationship(CategoryTable, secondary=catref,
-#                  primaryjoin=(catref.c.category_id == cattbl.c.category_id))))
-#
-#         if StrictVersion(self.version) >= StrictVersion('0.0.2'):
-#             mapper(ElementTable, elemtbl, properties=dict(
-#                      a=relationship(ElementTable, secondary=compref,
-#                      primaryjoin=(compref.c.z == elemtbl.c.z),
-#                      secondaryjoin=(compref.c.amcsd_id == ciftbl.c.amcsd_id))))
-#             mapper(QTable, qtbl, properties=dict(
-#                      a=relationship(QTable, secondary=qref,
-#                      primaryjoin=(qref.c.q_id == qtbl.c.q_id))))
-#             mapper(ChemicalFormulaTable, nametbl, properties=dict(
-#                      a=relationship(ChemicalFormulaTable, secondary=ciftbl,
-#                      primaryjoin=(ciftbl.c.formula_id == formtbl.c.formula_id))))
-
         self.load_database()
         self.axis = np.array([float(q[0]) for q in self.query(self.qtbl.c.q).all()])
 
@@ -275,7 +196,6 @@ class cifDB(object):
         "close session"
         self.session.flush()
         self.session.close()
-        # clear_mappers()
 
     def create_database(self,name=None,verbose=False):
 
