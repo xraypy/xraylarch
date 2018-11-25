@@ -7,28 +7,22 @@ Main Class for full Database:  xrayDB
 """
 
 import os
-import time
 import json
-import six
 from collections import namedtuple
+import six
 import numpy as np
-from scipy.interpolate import interp1d, splrep, UnivariateSpline
+from scipy.interpolate import UnivariateSpline
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import sessionmaker, mapper
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
-
-# needed for py2exe?
-import sqlalchemy.dialects.sqlite
-
 
 XrayEdge = namedtuple('XrayEdge', ('edge', 'fyield', 'jump_ratio'))
 XrayLine = namedtuple('XrayLine', ('energy', 'intensity', 'initial_level',
-                           'final_level'))
-ElementData = namedtuple('ElementData', ('atomic_number', 'symbol', 'mass', 'density'))
+                                   'final_level'))
+ElementData = namedtuple('ElementData', ('atomic_number', 'symbol', 'mass',
+                                         'density'))
 
-
-__version__ = '1.3'
-
+__version__ = '1.4'
 
 def as_ndarray(obj):
     """make sure a float, int, list of floats or ints,
@@ -39,6 +33,7 @@ def as_ndarray(obj):
     return np.asarray(obj)
 
 def make_engine(dbname):
+    "create engine for sqlite connection"
     return create_engine('sqlite:///%s' % (dbname),
                          poolclass=SingletonThreadPool)
 
@@ -94,8 +89,8 @@ def elam_spline(xin, yin, yspl_in, x):
         ndarray: interpolated values
     """
     x = as_ndarray(x)
-    x[np.where(x < min(xin))] =  min(xin)
-    x[np.where(x > max(xin))] =  max(xin)
+    x[np.where(x < min(xin))] = min(xin)
+    x[np.where(x > max(xin))] = max(xin)
 
     lo, hi = np.array([(np.flatnonzero(xin < e)[-1],
                         np.flatnonzero(xin > e)[0])
@@ -108,84 +103,15 @@ def elam_spline(xin, yin, yspl_in, x):
     b = (x - xin[lo]) / diff
     return (a * yin[lo] + b * yin[hi] +
             (diff*diff/6) * ((a*a - 1) * a * yspl_in[lo] +
-                             (b*b - 1) * b * yspl_in[hi] ))
+                             (b*b - 1) * b * yspl_in[hi]))
 
 
 class DBException(Exception):
     """DB Access Exception: General Errors"""
     pass
 
-class _BaseTable(object):
-    "generic class to encapsulate SQLAlchemy table"
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        return "<%s(%s)>" % (self.__class__.__name__, el)
 
-class CosterKronigTable(_BaseTable):
-    (id, element, initial_level, final_level,
-     transition_probability, total_transition_probability) = [None]*6
-
-class ElementsTable(_BaseTable):
-    (atomic_number, element, molar_mass, density) = [None]*4
-
-class PhotoAbsorptionTable(_BaseTable):
-    (id, element, log_energy,
-     log_photoabsorption, log_photoabsorption_spline) = [None]*5
-
-class ScatteringTable(_BaseTable):
-    (id, element, log_energy,
-     log_coherent_scatter, log_coherent_scatter_spline,
-     log_incoherent_scatter, log_incoherent_scatter_spline) = [None]*7
-
-class XrayLevelsTable(_BaseTable):
-    (id, element,  iupac_symbol,
-     absorption_edge, fluorescence_yield, jump_ratio) = [None]*6
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        edge= getattr(self, 'iupac_symbol', '??')
-        return "<%s(%s %s)>" % (self.__class__.__name__, el, edge)
-
-class XrayTransitionsTable(_BaseTable):
-    (id, element, iupac_symbol, siegbahn_symbol, initial_level,
-     final_level, emission_energy, intensity) = [None]*8
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        line = getattr(self, 'siegbahn_symbol', '??')
-        return "<%s(%s %s)>" % (self.__class__.__name__, el, line)
-
-class WaasmaierTable(_BaseTable):
-    (id, atomic_number, element, ion, offset, scale, exponents) = [None]*7
-    def __repr__(self):
-        el = getattr(self, 'ion', '??')
-        return "<%s(%s)>" % (self.__class__.__name__, el)
-
-class KeskiRahkonenKrauseTable(_BaseTable):
-    (id, atomic_number, element, edge, width) = [None]*5
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        edge = getattr(self, 'edge', '??')
-        return "<%s(%s %s)>" % (self.__class__.__name__, el, edge)
-
-class KrauseOliverTable(_BaseTable):
-    (id, atomic_number, element, edge, width) = [None]*5
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        edge = getattr(self, 'edge', '??')
-        return "<%s(%s %s)>" % (self.__class__.__name__, el, edge)
-
-class CoreWidthsTable(_BaseTable):
-    (id, atomic_number, element, edge, width) = [None]*5
-    def __repr__(self):
-        el = getattr(self, 'element', '??')
-        edge = getattr(self, 'edge', '??')
-        return "<%s(%s %s)>" % (self.__class__.__name__, el, edge)
-
-class ChantlerTable(_BaseTable):
-    (id, element, sigma_mu, mue_f2, density,
-     corr_henke, corr_cl35, corr_nucl,
-     energy, f1, f2, mu_photo, mu_incoh, mu_total) = [None]*14
-
-class XrayDB(object):
+class XrayDB():
     """
     Database of Atomic and X-ray Data
 
@@ -201,7 +127,7 @@ class XrayDB(object):
     def __init__(self, dbname='xrayref.db', read_only=True): ##dbname='xraydb.sqlite'
         "connect to an existing database"
         if not os.path.exists(dbname):
-            parent, child = os.path.split(__file__)
+            parent, _ = os.path.split(__file__)
             dbname = os.path.join(parent, dbname)
             if not os.path.exists(dbname):
                 raise IOError("Database '%s' not found!" % dbname)
@@ -222,21 +148,9 @@ class XrayDB(object):
         else:
             self.session = sessionmaker(bind=self.engine, **kwargs)()
 
-        self.metadata =  MetaData(self.engine)
+        self.metadata = MetaData(self.engine)
         self.metadata.reflect()
-        tables = self.tables = self.metadata.tables
-
-        mapper(ChantlerTable,            tables['Chantler'])
-        mapper(WaasmaierTable,           tables['Waasmaier'])
-        mapper(KeskiRahkonenKrauseTable, tables['KeskiRahkonen_Krause'])
-        mapper(KrauseOliverTable,        tables['Krause_Oliver'])
-        mapper(CoreWidthsTable,          tables['corelevel_widths'])
-        mapper(ElementsTable,            tables['elements'])
-        mapper(XrayLevelsTable,          tables['xray_levels'])
-        mapper(XrayTransitionsTable,     tables['xray_transitions'])
-        mapper(CosterKronigTable,        tables['Coster_Kronig'])
-        mapper(PhotoAbsorptionTable,     tables['photoabsorption'])
-        mapper(ScatteringTable,          tables['scattering'])
+        self.tables = self.metadata.tables
 
         self.atomic_symbols = [e.element for e in self.tables['elements'].select(
             ).execute().fetchall()]
@@ -273,9 +187,8 @@ class XrayDB(object):
                                                              row.notes))
             out.append("Python Version: %s" % __version__)
             return "\n".join(out)
-        else:
-            return "XrayDB Version: %s, Python Version: %s" % (rows[0].tag,
-                                                               __version__)
+        return "XrayDB Version: %s, Python Version: %s" % (rows[0].tag,
+                                                           __version__)
 
 
     def f0_ions(self, element=None):
@@ -302,9 +215,11 @@ class XrayDB(object):
         References:
             Waasmaier and Kirfel
         """
-        rows = self.query(WaasmaierTable)
+        wtab = self.tables['Waasmaier']
+        rows = self.query(wtab)
         if element is not None:
-            rows = rows.filter(WaasmaierTable.element==self.symbol(element))
+            elem = self.symbol(element)
+            rows = rows.filter(wtab.c.element == elem)
         return [str(r.ion) for r in rows.all()]
 
     def f0(self, ion, q):
@@ -337,20 +252,16 @@ class XrayDB(object):
         References:
             Waasmaier and Kirfel
         """
-        tab = WaasmaierTable
-        row = self.query(tab)
+        wtab = self.tables['Waasmaier']
         if isinstance(ion, int):
-            row = row.filter(tab.atomic_number==ion).all()
+            row = self.query(wtab).filter(wtab.c.atomic_number == ion).all()[0]
         else:
-            row = row.filter(tab.ion==ion.title()).all()
-        if len(row) > 0:
-            row = row[0]
-        if isinstance(row, tab):
-            q = as_ndarray(q)
-            f0 = row.offset
-            for s, e in zip(json.loads(row.scale), json.loads(row.exponents)):
-                f0 += s * np.exp(-e*q*q)
-            return f0
+            row = self.query(wtab).filter(wtab.c.ion == ion.title()).all()[0]
+        q = as_ndarray(q)
+        f0 = row.offset
+        for s, e in zip(json.loads(row.scale), json.loads(row.exponents)):
+            f0 += s * np.exp(-e*q*q)
+        return f0
 
     def _from_chantler(self, element, energy, column='f1', smoothing=0):
         """
@@ -364,32 +275,30 @@ class XrayDB(object):
         Notes:
            this function is meant for internal use.
         """
-        tab = ChantlerTable
-        row = self.query(tab)
-        row = row.filter(tab.element==self.symbol(element)).all()
-        if len(row) > 0:
-            row = row[0]
-        if isinstance(row, tab):
-            energy = as_ndarray(energy)
-            emin, emax = min(energy), max(energy)
-            # te = self.chantler_energies(element, emin=emin, emax=emax)
-            te = np.array(json.loads(row.energy))
-            nemin = max(0, -5 + max(np.where(te<=emin)[0]))
-            nemax = min(len(te), 6 + max(np.where(te<=emax)[0]))
-            region = np.arange(nemin, nemax)
-            te = te[region]
-            if column == 'mu':
-                column = 'mu_total'
-            ty = np.array(json.loads(getattr(row, column)))[region]
-            if column == 'f1':
-                out = UnivariateSpline(te, ty, s=smoothing)(energy)
-            else:
-                out = np.exp(np.interp(np.log(energy),
-                                       np.log(te),
-                                       np.log(ty)))
-            if isinstance(out, np.ndarray) and len(out) == 1:
-                return out[0]
-            return out
+        ctab = self.tables['Chantler']
+        elem = self.symbol(element)
+        row = self.query(ctab).filter(ctab.c.element == elem).one()
+
+        energy = as_ndarray(energy)
+        emin, emax = min(energy), max(energy)
+
+        te = np.array(json.loads(row.energy))
+        nemin = max(0, -3 + max(np.where(te <= emin)[0]))
+        nemax = min(len(te), 3 + max(np.where(te <= emax)[0]))
+
+        te = te[nemin:nemax+1]
+        if column == 'mu':
+            column = 'mu_total'
+        ty = np.array(json.loads(getattr(row, column)))[nemin:nemax+1]
+        if column == 'f1':
+            out = UnivariateSpline(te, ty, s=smoothing)(energy)
+        else:
+            out = np.exp(np.interp(np.log(energy),
+                                   np.log(te),
+                                   np.log(ty)))
+        if isinstance(out, np.ndarray) and len(out) == 1:
+            out = out[0]
+        return out
 
     def chantler_energies(self, element, emin=0, emax=1.e9):
         """
@@ -406,27 +315,25 @@ class XrayDB(object):
 
         References:
             Chantler
+
+        Notes:
+            returns 2 energies below emin and above emax to better
+            enable interpolation
         """
-        tab = ChantlerTable
-        row = self.query(tab).filter(tab.element==self.symbol(element)).all()
-        if len(row) > 0:
-            row = row[0]
-        if not isinstance(row, tab):
-            return None
+        ctab = self.tables['Chantler']
+        elem = self.symbol(element)
+        row = self.query(ctab).filter(ctab.c.element == elem).one()
         te = np.array(json.loads(row.energy))
-        tf1 = np.array(json.loads(row.f1))
-        tf2 = np.array(json.loads(row.f2))
 
         if emin <= min(te):
             nemin = 0
         else:
-            nemin = max(0,  -2 + max(np.where(te<=emin)[0]))
+            nemin = max(0, -1 + max(np.where(te <= emin)[0]))
         if emax > max(te):
             nemax = len(te)
         else:
-            nemax = min(len(te), 2 + max(np.where(te<=emax)[0]))
-        region = np.arange(nemin, nemax)
-        return te[region] # , tf1[region], tf2[region]
+            nemax = min(len(te), 2 + max(np.where(te <= emax)[0]))
+        return te[nemin:nemax+1]
 
     def f1_chantler(self, element, energy, **kws):
         """
@@ -489,17 +396,15 @@ class XrayDB(object):
 
     def _elem_data(self, element):
         "return data from elements table: internal use"
+        etab = self.tables['elements']
+        row = self.query(etab)
         if isinstance(element, int):
-            elem = ElementsTable.atomic_number
+            row = row.filter(etab.c.atomic_number == element).one()
         else:
-            elem = ElementsTable.element
-            element = element.title()
-            if not element in self.atomic_symbols:
-                raise ValueError("unknown element '%s'" % repr(element))
-
-        row = self.query(ElementsTable).filter(elem==element).all()
-        if len(row) > 0:
-            row = row[0]
+            elem = element.title()
+            if not elem in self.atomic_symbols:
+                raise ValueError("unknown element '%s'" % repr(elem))
+            row = row.filter(etab.c.element == elem).one()
         return ElementData(int(row.atomic_number),
                            row.element.title(),
                            row.molar_mass, row.density)
@@ -567,10 +472,10 @@ class XrayDB(object):
         References:
            Elam, Ravel, and Sieber.
         """
-        element = self.symbol(element)
-        tab = XrayLevelsTable
+        elem = self.symbol(element)
+        ltab = self.tables['xray_levels']
         out = {}
-        for r in self.query(tab).filter(tab.element==element).all():
+        for r in self.query(ltab).filter(ltab.c.element == elem).all():
             out[str(r.iupac_symbol)] = XrayEdge(r.absorption_edge,
                                                 r.fluorescence_yield,
                                                 r.jump_ratio)
@@ -595,10 +500,7 @@ class XrayDB(object):
         References:
            Elam, Ravel, and Sieber.
         """
-        edges = self.xray_edges(element)
-        edge = edge.title()
-        if edge in edges:
-            return edges[edge]
+        return self.xray_edges(element).get(edge.title(), None)
 
     def xray_lines(self, element, initial_level=None, excitation_energy=None):
         """
@@ -621,34 +523,40 @@ class XrayDB(object):
             >>> xdb = XrayDB()
             >>> for key, val in xdb.xray_lines('Ga', 'K').items():
             >>>      print(key, val)
-            'Ka3', XrayLine(energy=9068.0, intensity=0.000326203, initial_level=u'K', final_level=u'L1')
-            'Ka2', XrayLine(energy=9223.8, intensity=0.294438, initial_level=u'K', final_level=u'L2')
-            'Ka1', XrayLine(energy=9250.6, intensity=0.57501, initial_level=u'K', final_level=u'L3')
-            'Kb3', XrayLine(energy=10263.5, intensity=0.0441511, initial_level=u'K', final_level=u'M2')
-            'Kb1', XrayLine(energy=10267.0, intensity=0.0852337, initial_level=u'K', final_level=u'M3')
-            'Kb5', XrayLine(energy=10348.3, intensity=0.000841354, initial_level=u'K', final_level=u'M4,5')
+            'Ka3', XrayLine(energy=9068.0, intensity=0.000326203,
+                            initial_level=u'K', final_level=u'L1')
+            'Ka2', XrayLine(energy=9223.8, intensity=0.294438,
+                            initial_level=u'K', final_level=u'L2')
+            'Ka1', XrayLine(energy=9250.6, intensity=0.57501,
+                            initial_level=u'K', final_level=u'L3')
+            'Kb3', XrayLine(energy=10263.5, intensity=0.0441511,
+                            initial_level=u'K', final_level=u'M2')
+            'Kb1', XrayLine(energy=10267.0, intensity=0.0852337,
+                            initial_level=u'K', final_level=u'M3')
+            'Kb5', XrayLine(energy=10348.3, intensity=0.000841354,
+                            initial_level=u'K', final_level=u'M4,5')
 
         References:
            Elam, Ravel, and Sieber.
         """
-        element = self.symbol(element)
-        tab = XrayTransitionsTable
-        row = self.query(tab).filter(tab.element==element)
+        elem = self.symbol(element)
+        ttab = self.tables['xray_transitions']
+        row = self.query(ttab).filter(ttab.c.element == elem)
         if excitation_energy is not None:
             initial_level = []
-            for ilevel, dat in self.xray_edges(element).items():
+            for ilevel, dat in self.xray_edges(elem).items():
                 if dat[0] < excitation_energy:
                     initial_level.append(ilevel.title())
 
         if initial_level is not None:
             if isinstance(initial_level, (list, tuple)):
-                row = row.filter(tab.initial_level.in_(initial_level))
+                row = row.filter(ttab.c.initial_level.in_(initial_level))
             else:
-                row = row.filter(tab.initial_level==initial_level.title())
+                row = row.filter(ttab.c.initial_level == initial_level.title())
         out = {}
         for r in row.all():
             out[str(r.siegbahn_symbol)] = XrayLine(r.emission_energy, r.intensity,
-                                               r.initial_level, r.final_level)
+                                                   r.initial_level, r.final_level)
         return out
 
     def xray_line_strengths(self, element, excitation_energy=None):
@@ -666,10 +574,11 @@ class XrayDB(object):
            Elam, Ravel, and Sieber.
         """
         out = {}
-        for label, eline in self.xray_lines(element, excitation_energy=excitation_energy).items():
+        lines = self.xray_lines(element, excitation_energy=excitation_energy)
+        for label, eline in lines.items():
             edge = self.xray_edge(element, eline.initial_level)
             if edge is None and ',' in eline.initial_level:
-                ilevel, extra = eline.initial_level.split(',')
+                ilevel, _ = eline.initial_level.split(',')
                 edge = self.xray_edge(element, ilevel)
             if edge is not None:
                 mu = self.mu_elam(element, [edge.edge*(0.999),
@@ -699,19 +608,17 @@ class XrayDB(object):
         References:
            Elam, Ravel, and Sieber.
         """
-        element = self.symbol(element)
-        tab = CosterKronigTable
-        row = self.query(tab).filter(
-            tab.element==element).filter(
-            tab.initial_level==initial.title()).filter(
-            tab.final_level==final.title()).all()
-        if len(row) > 0:
-            row = row[0]
-        if isinstance(row, tab):
-            if total:
-                return row.total_transition_probability
-            else:
-                return row.transition_probability
+        elem = self.symbol(element)
+        ctab = self.tables['Coster_Kronig']
+
+        row = self.query(ctab).filter(ctab.c.element == elem)
+        row = row.filter(ctab.c.initial_level == initial.title())
+        row = row.filter(ctab.c.final_level == final.title()).all()[0]
+
+        out = row.transition_probability
+        if total:
+            out = row.total_transition_probability
+        return out
 
     def corehole_width(self, element, edge=None, use_keski=False):
         """
@@ -737,13 +644,13 @@ class XrayDB(object):
         version_qy = self.tables['Version'].select().order_by('date')
         version_id = version_qy.execute().fetchall()[-1].id
 
-        tab = KeskiRahkonenKrauseTable
-        if not use_keski and version_id > 3:
-            tab = CoreWidthsTable
+        ctab = self.tables['corelevel_widths']
+        if version_id < 4 or use_keski:
+            ctab = self.tables['KeskiRahkonen_Krause']
 
-        rows = self.query(tab).filter(tab.element==self.symbol(element))
+        rows = self.query(ctab).filter(ctab.c.element == self.symbol(element))
         if edge is not None:
-            rows = rows.filter(tab.edge==edge.title())
+            rows = rows.filter(ctab.c.edge == edge.title())
         result = rows.all()
         if len(result) == 1:
             result = result[0].width
@@ -769,22 +676,19 @@ class XrayDB(object):
         References:
             Elam, Ravel, and Sieber.
         """
-        element = self.symbol(element)
-        energies = 1.0 * as_ndarray(energies)
+        elem = self.symbol(element)
+        energies = as_ndarray(energies)
 
         kind = kind.lower()
         if kind not in ('coh', 'incoh', 'photo'):
             raise ValueError('unknown cross section kind=%s' % kind)
 
-        tab = ScatteringTable
+        stab = self.tables['scattering']
         if kind == 'photo':
-            tab = PhotoAbsorptionTable
+            stab = self. tables['photoabsorption']
 
-        row = self.query(tab).filter(tab.element==element).all()
-        if len(row) > 0:
-            row = row[0]
-        if not isinstance(row, tab):
-            return None
+        row = self.query(stab).filter(stab.c.element == elem).all()[0]
+
         tab_lne = np.array(json.loads(row.log_energy))
         if kind.startswith('coh'):
             tab_val = np.array(json.loads(row.log_coherent_scatter))
@@ -833,7 +737,7 @@ class XrayDB(object):
         return xsec
 
     def coherent_cross_section_elam(self, element, energies):
-        """returns coherenet scattering cross section for an element
+        """returns coherenet scattering crossrxr section for an element
         at energies (in eV)
 
         returns values in units of cm^2 / gr
@@ -845,7 +749,7 @@ class XrayDB(object):
 
         Data from Elam, Ravel, and Sieber.
         """
-        return self.Elam_CrossSection(element, energies, kind='coh')
+        return self.cross_section_elam(element, energies, kind='coh')
 
     def incoherent_cross_section_elam(self, element, energies):
         """returns incoherenet scattering cross section for an element
@@ -860,4 +764,4 @@ class XrayDB(object):
 
         Data from Elam, Ravel, and Sieber.
         """
-        return self.Elam_CrossSection(element, energies, kind='incoh')
+        return self.cross_section_elam(element, energies, kind='incoh')
