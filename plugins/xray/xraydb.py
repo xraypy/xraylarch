@@ -14,7 +14,7 @@ from collections import namedtuple
 import numpy as np
 from scipy.interpolate import interp1d, splrep, UnivariateSpline
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import sessionmaker, mapper, clear_mappers
+from sqlalchemy.orm import sessionmaker, mapper
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
@@ -226,7 +226,6 @@ class XrayDB(object):
         self.metadata.reflect()
         tables = self.tables = self.metadata.tables
 
-        clear_mappers()
         mapper(ChantlerTable,            tables['Chantler'])
         mapper(WaasmaierTable,           tables['Waasmaier'])
         mapper(KeskiRahkonenKrauseTable, tables['KeskiRahkonen_Krause'])
