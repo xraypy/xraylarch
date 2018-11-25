@@ -35,7 +35,8 @@ from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
                                lambda_from_E, E_from_lambda,calc_broadening,
                                instrumental_fit_uvw,peaklocater,peakfitter,
-                               xrd1d,peakfinder_methods,SPACEGROUPS,create_cif,save1D)
+                               xrd1d,peakfinder_methods,SPACEGROUPS,
+                               create_cif, save1D)
 
 ###################################
 
@@ -70,15 +71,15 @@ def YesNo(parent, question, caption = 'Yes or no?'):
     return result
 
 def calcFrameSize(x,y):
-    '''
+    """
     Calculates an appropriate frame size based on user's display
-    '''
+    """
     screenSize = wx.DisplaySize()
     if x > screenSize[0] * 0.9:
         x = int(screenSize[0] * 0.9)
         y = int(x*0.6)
 
-    return x,y
+    return x, y
 
 def loadXYfile(event=None,parent=None,xrdviewer=None):
 
@@ -121,11 +122,12 @@ def plot_sticks(x,y):
 
 
 class diFFit1DFrame(wx.Frame):
-    def __init__(self,_larch=None):
+    def __init__(self, _larch=None):
+        self._larch = _larch
 
-        x,y = calcFrameSize(1500, 850)
+        x,y = calcFrameSize(1000, 450)
         label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None,title=label,size=(x,y))
+        wx.Frame.__init__(self, None, title=label, size=(x,y))
 
         read_workdir('gsemap.dat')
 
@@ -160,10 +162,9 @@ class diFFit1DFrame(wx.Frame):
 
     def closeDB(self,event=None):
 
-        self.cifdatabase.close_database()
+        self.cifdb.close_database()
 
     def openDB(self,dbname=None):
-
         try:
             self.closeDB()
         except:
@@ -173,11 +174,11 @@ class diFFit1DFrame(wx.Frame):
             dbname = self.default_cifdb
 
         try:
-            self.cifdatabase = cifDB(dbname=dbname)
+            self.cifdb = cifDB(dbname=dbname)
         except:
             print('Failed to import file as database: %s' % dbname)
             dbname = self.default_cifdb
-            self.cifdatabase = cifDB(dbname=self.default_cifdb)
+            self.cifdb = cifDB(dbname=self.default_cifdb)
         print('Now using database: %s' % os.path.split(dbname)[-1])
 
     def onExit(self, event=None):
@@ -222,7 +223,7 @@ class diFFit1DFrame(wx.Frame):
         diFFitMenu = wx.Menu()
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
-        MenuItem(self, diFFitMenu, 'Open &CIFile', '', self.xrd1Dviewer.chooseCIF)
+        MenuItem(self, diFFitMenu, 'Open &CIFFile', '', self.xrd1Dviewer.chooseCIF)
         MenuItem(self, diFFitMenu, 'Change larch &working folder', '', self.onFolderSelect)
         diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, 'Save 1D dataset to file', '', self.save1Dxrd)
@@ -834,8 +835,8 @@ class Fitting1DXRD(BasePanel):
 
             xi = self.rngpl.ch_xaxis.GetSelection()
 
-            cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
-            cif.structure_factors(wvlgth=wavelength,q_max=maxq)
+            cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
+            cif.structure_factors(wvlgth=wavelength, q_max=maxq)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
@@ -853,7 +854,7 @@ class Fitting1DXRD(BasePanel):
                 self.plt_cif = np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
             self.plot1D.update_line(3,self.plt_cif[xi],self.plt_cif[3],draw=True,update_limits=False)
 
-            elementstr = self.owner.cifdatabase.composition_by_amcsd(amcsd_id,string=True)
+            elementstr = self.owner.cifdb.composition_by_amcsd(amcsd_id,string=True)
 
             self.srchpl.txt_geometry[0].SetLabel(elementstr)
             self.srchpl.txt_geometry[1].SetLabel(geometry_str[0] % (str(cif.symmetry.no),
@@ -1372,7 +1373,7 @@ class Fitting1DXRD(BasePanel):
 
     def filter_database(self,event=None):
 
-        myDlg = XRDSearchGUI(self.owner.cifdatabase,self.owner.srch_cls)
+        myDlg = XRDSearchGUI(self.owner.cifdb, self.owner.srch_cls)
 
         filter = False
 
@@ -1407,7 +1408,7 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
 
         if filter == True:
-            cif = self.owner.cifdatabase
+            cif = self.owner.cifdb
 
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
                 list_amcsd = cif.amcsd_by_chemistry(include=self.elem_include,
@@ -1429,7 +1430,7 @@ class Fitting1DXRD(BasePanel):
 
         q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
         # print('Still need to determine how best to rank these matches')
-        list_amcsd = match_database(self.owner.cifdatabase,q_pks,
+        list_amcsd = match_database(self.owner.cifdb, q_pks,
                                     minq=np.min(self.plt_data[0]),
                                     maxq=np.max(self.plt_data[0]))
         self.displayMATCHES(list_amcsd)
@@ -1444,7 +1445,7 @@ class Fitting1DXRD(BasePanel):
         if list_amcsd is not None and len(list_amcsd) > 0:
             for amcsd in list_amcsd:
                 try:
-                    elem,name,spgp,autr = self.owner.cifdatabase.all_by_amcsd(amcsd)
+                    elem,name,spgp,autr = self.owner.cifdb.all_by_amcsd(amcsd)
                     entry = '%i : %s' % (amcsd,name)
                     self.srchpl.amcsdlistbox.Append(entry)
                 except:
@@ -1700,10 +1701,9 @@ class Viewer1DXRD(wx.Panel):
     Panel for housing 1D XRD viewer
     '''
     label='Viewer'
-    def __init__(self,parent,owner=None,_larch=None):
+    def __init__(self, parent, owner=None, _larch=None):
 
         wx.Panel.__init__(self, parent)
-
         self.parent = parent
         self.owner = owner
 
@@ -1725,55 +1725,46 @@ class Viewer1DXRD(wx.Panel):
         self.cif_scale    = []
         self.icif         = []
 
-        self.Panel1DViewer()
-
-##############################################
-#### PANEL DEFINITIONS
-    def Panel1DViewer(self):
-        '''
-        Frame for housing all 1D XRD viewer widgets
-        '''
-        leftside  = self.LeftSidePanel(self)
-        rightside = self.RightSidePanel(self)
-
-        panel1D = wx.BoxSizer(wx.HORIZONTAL)
-        panel1D.Add(leftside,flag=wx.ALL,border=10)
-        panel1D.Add(rightside,proportion=1,flag=wx.ALL,border=10)
-
-        self.SetSizer(panel1D)
-
-    def LeftSidePanel(self,panel):
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        leftbox = wx.BoxSizer(wx.VERTICAL)
 
         plttools = self.Toolbox(self)
         addbtns = self.AddPanel(self)
         dattools = self.DataBox(self)
         ciftools = self.CIFBox(self)
 
-        vbox.Add(plttools,flag=wx.ALL,border=10)
-        vbox.Add(addbtns,flag=wx.ALL,border=10)
-        vbox.Add(dattools,flag=wx.ALL,border=10)
-        vbox.Add(ciftools,flag=wx.ALL,border=10)
+        leftbox.Add(plttools, flag=wx.ALL,border=10)
+        leftbox.Add(addbtns, flag=wx.ALL,border=10)
+        leftbox.Add(dattools, flag=wx.ALL,border=10)
+        leftbox.Add(ciftools, flag=wx.ALL,border=10)
 
         self.ch_xaxis.SetSelection(0)
         self.ch_yaxis.SetSelection(0)
 
-        return vbox
+        rightbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot1D = PlotPanel(self,size=(800, 400),
+                                messenger=self.owner.write_message)
+        self.plot1D.cursor_mode = 'zoom'
+        rightbox.Add(self.plot1D, proportion=1, flag=wx.ALL|wx.EXPAND, border=10)
 
-    def RightSidePanel(self,panel):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        panel = wx.BoxSizer(wx.HORIZONTAL)
+        panel.Add(leftbox, flag=wx.ALL, border=10)
+        panel.Add(rightbox, proportion=1, flag=wx.ALL,border=10)
 
-        self.plot1DXRD(panel)
+        self.SetSizer(panel)
 
-        btnbox = self.QuickButtons(panel)
 
-        vbox.Add(self.plot1D,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        hbox.Add(btnbox,flag=wx.LEFT,border = 1)
-        vbox.Add(hbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
-        return vbox
+    def onSAVEfig(self,event=None):
+        self.plot1D.save_figure()
 
+    def onPLOTset(self,event=None):
+        self.plot1D.configure()
+
+    def onRESETplot(self,event=None):
+        self.plot1D.reset_config()
+
+    def onLogLinear(self, event=None):
+        self.plot1D.axes.set_yscale(self.ch_yaxis.GetString(self.ch_yaxis.GetSelection()))
+        self.rescale1Daxis(xaxis=False, yaxis=True)
 
     def Toolbox(self,panel):
         '''
@@ -1923,42 +1914,7 @@ class Viewer1DXRD(wx.Panel):
         hbox.Add(btn_cif, flag=wx.ALL, border=8)
         return hbox
 
-    def QuickButtons(self,panel):
-        buttonbox = wx.BoxSizer(wx.HORIZONTAL)
-        btn_img = wx.Button(panel,label='SAVE FIGURE')
-        btn_calib = wx.Button(panel,label='PLOT SETTINGS')
-        btn_integ = wx.Button(panel,label='RESET PLOT')
 
-        btn_img.Bind(wx.EVT_BUTTON,   self.onSAVEfig)
-        btn_calib.Bind(wx.EVT_BUTTON, self.onPLOTset)
-        btn_integ.Bind(wx.EVT_BUTTON, self.onRESETplot)
-
-        buttonbox.Add(btn_img, flag=wx.ALL, border=8)
-        buttonbox.Add(btn_calib, flag=wx.ALL, border=8)
-        buttonbox.Add(btn_integ, flag=wx.ALL, border=8)
-        return buttonbox
-
-
-##############################################
-#### PLOTPANEL FUNCTIONS
-    def plot1DXRD(self,panel):
-
-        self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
-        self.plot1D.cursor_mode = 'zoom'
-
-    def onSAVEfig(self,event=None):
-        self.plot1D.save_figure()
-
-    def onPLOTset(self,event=None):
-        self.plot1D.configure()
-
-    def onRESETplot(self,event=None):
-        self.plot1D.reset_config()
-
-    def onLogLinear(self, event=None):
-
-        self.plot1D.axes.set_yscale(self.ch_yaxis.GetString(self.ch_yaxis.GetSelection()))
-        self.rescale1Daxis(xaxis=False,yaxis=True)
 
 
 ##############################################
@@ -2005,7 +1961,7 @@ class Viewer1DXRD(wx.Panel):
             minq = 0.95*np.min(data[0])
             if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
 
-        cif = create_cif(cifile=path)
+        cif = create_cif(ciffile=path)
         cif.structure_factors(wvlgth=wavelength,q_min=minq,q_max=maxq)
         qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
 
@@ -2318,7 +2274,7 @@ class Viewer1DXRD(wx.Panel):
         if minq is None: minq = QMIN
         if maxq is None: maxq = QMAX
 
-        dlg = SelectCIFData(self,self.owner.cifdatabase,minq=minq,maxq=maxq,energy=energy)
+        dlg = SelectCIFData(self,self.owner.cifdb, minq=minq,maxq=maxq,energy=energy)
 
         okay = False
         if dlg.ShowModal() == wx.ID_OK:
@@ -2330,11 +2286,11 @@ class Viewer1DXRD(wx.Panel):
 
                 if dlg.type == 'file':
                     path = dlg.path
-                    cif = create_cif(cifile=path)
+                    cif = create_cif(ciffile=path)
                     name = os.path.split(path)[-1]
                 elif dlg.type == 'database':
                     amcsd_id = dlg.amcsd_id
-                    cif = create_cif(cifdatabase=self.owner.cifdatabase,amcsd_id=amcsd_id)
+                    cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
                     name = 'AMCSD %i' % amcsd_id
                 if cif.label is not None: name = '%s : %s' % (name,cif.label)
 
@@ -2393,9 +2349,9 @@ def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
 
 class SelectCIFData(wx.Dialog):
 
-    def __init__(self,parent,cifdatabase,minq=QMIN,maxq=QMAX,energy=ENERGY):
+    def __init__(self,parent, cifdb, minq=QMIN,maxq=QMAX,energy=ENERGY):
 
-        self.cifdb = cifdatabase
+        self.cifdb = cifdb
         self.type = None
         self.path = None
         self.amcsd_id = None
@@ -2578,7 +2534,7 @@ class SelectCIFData(wx.Dialog):
 
     def load_file(self,event=None):
 
-        wildcards = 'XRD cifile (*.cif)|*.cif|All files (*.*)|*.*'
+        wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose CIF',
                            defaultDir=os.getcwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
@@ -2985,12 +2941,12 @@ class SearchPanel(wx.Panel):
         amcsd = self.amcsdlistbox.GetStringSelection().split()[0]
 
         self.owner.cifframe += [CIFFrame(amcsd=int(amcsd), title=title,
-                                         cifdatabase=self.owner.owner.cifdatabase)]
+                                         cifdb=self.owner.owner.cifdb)]
 
 
 class CIFPanel(wx.Panel):
 
-    def __init__(self, parent,cifdatabase=None,amcsd=100):
+    def __init__(self, parent,cifdb=None,amcsd=100):
         wx.Panel.__init__(self, parent)
 
         cif_text_box = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.HSCROLL)
@@ -3000,19 +2956,19 @@ class CIFPanel(wx.Panel):
 
         self.SetSizer(sizer)
 
-        if cifdatabase is None:
-            cifdatabase = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
+        if cifdb is None:
+            cifdb = cifDB(dbname='%s/.larch/cif_amcsd.db' % expanduser('~'))
 
-        cif_text_box.SetValue(cifdatabase.cif_by_amcsd(amcsd))
+        cif_text_box.SetValue(cifdb.cif_by_amcsd(amcsd))
 
 
 class CIFFrame(wx.Frame):
 
-    def __init__(self, amcsd=None, title='', cifdatabase=None):
+    def __init__(self, amcsd=None, title='', cifdb=None):
         title = 'CIF Display - %s' % title
         wx.Frame.__init__(self, None, size=(650,900), title=title)
 
-        panel = CIFPanel(self, cifdatabase=cifdatabase, amcsd=amcsd)
+        panel = CIFPanel(self, cifdb=cifdb, amcsd=amcsd)
 
         self.Show()
 
@@ -3328,10 +3284,10 @@ class DatabaseInfoGUI(wx.Dialog):
     def onUpdateText(self,event=None):
 
         try:
-            filename = self.parent.owner.cifdatabase.dbname
+            filename = self.parent.owner.cifdb.dbname
         except:
             return
-        nocif = self.parent.owner.cifdatabase.return_no_of_cif()
+        nocif = self.parent.owner.cifdb.return_no_of_cif()
 
         self.txt_dbname.SetLabel('Current file : %s' % filename)
         try:
@@ -4004,13 +3960,6 @@ class diFFit1D(wx.App):
 # def registerLarchPlugin():
 #     return ('_diFFit', {})
 
-class DebugViewer(diFFit1D):
-    def __init__(self, **kws):
-        diFFit1D.__init__(self, **kws)
-
-    def OnInit(self):
-        self.createApp()
-        return True
 
 if __name__ == '__main__':
     diFFit1D().run()
