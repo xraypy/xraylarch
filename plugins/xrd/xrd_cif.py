@@ -15,7 +15,10 @@ import re
 import math
 import cmath
 
+from six import StringIO
+
 from larch_plugins.xray import xrayDB
+
 from larch_plugins.xrd import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
                                twth_from_d,d_from_q,twth_from_q)
 
@@ -2380,18 +2383,18 @@ class Citation(object):
         self.volume = None
         self.first_page = None
         self.last_page = None
-        
+
 class CIFcls(object):
 
     '''
     CIF data class
-    
+
     Attributes:
     ------------
     * self.unitcell         = [5.4, 5.4, 5.4, 90, 90, 90] # [a,b,c,alpha,beta,gamma]
     * self.spacegroup.no    = 225                         # space group number
     * self.spacegroup.name  = 'F m 3 m'                   # space group name
-    
+
 
     mkak 2017.04.13
     '''
@@ -2400,163 +2403,170 @@ class CIFcls(object):
 
         self.label   = None
         self.formula = None
-        self.cifile  = None
+        self.ciffile = None
         self.id_no   = None
 
         self.unitcell = np.array([0,0,0,0,0,0], dtype=np.float32)
         self.density  = None
-        self.volume   = None        
+        self.volume   = None
 
-        self.symmetry    = Symmetry()        
+        self.symmetry    = Symmetry()
         self.atom        = Atom()
         self.publication = Citation()
-        
+
         self.formula = None
-        
         self.elem_uvw = {}
 
-            
-    def read_cifile(self,cifile,verbose=False):
+    def read_ciffile(self, ciffile, verbose=False):
+        if not os.path.exists(ciffile):
+            print("cif file '%s' not found" % repr(ciffile))
+            return
 
+        if verbose:
+            print( '\n=== Reading file: %s\n' % ciffile)
+
+        self.ciffile = ciffile
+        textlines = []
+        has_formula_sum = False
+        with open(ciffile, 'r') as fh:
+            for line in fh.readlines():
+                if line.startswith('_chemical_formula_sum'):
+                    if not has_formula_sum:
+                        textlines.append(line)
+                    has_formula_sum = True
+                else:
+                    textlines.append(line)
+
+        self.read_ciftext(''.join(textlines))
+
+    def read_ciftext(self, ciftext, verbose=False):
         if not HAS_CifFile:
             print('Missing required package(s) for this function:')
             print('Have CifFile? %r' % HAS_CifFile)
             return
 
-        if cifile is not None and os.path.exists(cifile):
+        cf = CifFile.ReadCif(StringIO(ciftext))
+        key = cf.keys()[0]
+        for k0 in cf[key].keys():
+            k = k0.lower()
+            ## name/label
+            if k in ('_chemical_name_mineral','_chemical_name_systematic','_amcsd_formula_title'):
+                self.label = cf[key][k]
+            elif k in ('_chemical_formula_structural','_chemical_formula_sum'):
+                self.formula = cf[key][k]
+            elif k in ('_database_code_amcsd','_database_code_icsd'):
+                self.id_no = int(cf[key][k])
 
-            if verbose:
-                print( '\n=== Reading file: %s\n' % cifile)
+            ## unit cell information
+            elif k == '_cell_length_a':
+                if cf[key][k] == '3,2518':
+                    self.unitcell[0] = '3.2518' ## typo in cif 14130
+                elif cf[key][k][-1] == ',':
+                    self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
+                else:
+                    self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_cell_length_b':
+                if cf[key][k][-1] == ',':
+                    self.unitcell[1] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
+                else:
+                    self.unitcell[1] =re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_cell_length_c':
+                self.unitcell[2] = re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_cell_angle_alpha':
+                self.unitcell[3] = re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_cell_angle_beta':
+                self.unitcell[4] = re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_cell_angle_gamma':
+                self.unitcell[5] = re.sub(r"\(\w*\)", r"", cf[key][k])
+            elif k == '_exptl_crystal_density_diffrn':
+                self.density = cf[key][k]
+            elif k == '_cell_volume':
+                self.volume = cf[key][k]
 
-            self.cifile = cifile
-           
-            ## Maybe this is where the try statement should be
-            ## mkak 2017.05.19
-            cf = CifFile.ReadCif(cifile)
-            key = cf.keys()[0]
+            ## per atom in unit cell information
+            elif k == '_atom_site_label':
+                atoms = cf[key][k]
+                for a,atmlbl in enumerate(atoms):
+                    if atmlbl not in elem_symbol:
+                        if '-' in atmlbl:
+                            for e,echatm in enumerate(atmlbl.split('-')):
+                                try:
+                                    junk = int(echatm) ## skip this - not an element
+                                except:
+                                    addatm = check_elemsym(echatm)
+                                    if e == 0:
+                                        newlbl = addatm
+                                    else:
+                                        newlbl = '%s-%s' % (newlbl,addatm)
+                                    atmlbl = newlbl
+                        else:
+                            atmlbl = check_elemsym(atmlbl)
+                        atoms[a] = atmlbl
+                self.atom.label = atoms
+            elif k == '_atom_site_type_symbol' or  k == '_atom_type_symbol':
+                self.atom.label2 = cf[key][k]
+            elif k == '_atom_site_fract_x':
+                self.atom.fract_x = [float(re.sub(r"\(\w*\)", r"", x)) for x in cf[key][k]]
+                #self.atom.fract_x = [float(x) for x in cf[key][k]]
+            elif k == '_atom_site_fract_y':
+                self.atom.fract_y = [float(re.sub(r"\(\w*\)", r"", y)) for y in cf[key][k]]
+                #self.atom.fract_y = [float(y) for y in cf[key][k]]
+            elif k == '_atom_site_fract_z':
+                self.atom.fract_z = [float(re.sub(r"\(\w*\)", r"", z)) for z in cf[key][k]]
+                #self.atom.fract_z = [float(z) for z in cf[key][k]]
+            elif k == '_atom_site_wyckoff_symbol':
+                self.atom.symm_wyckoff = cf[key][k]
+            elif k == '_atom_type_oxidation_number':
+                self.atom.oxid_no = cf[key][k]
+            elif k == '_atom_site_attached_hydrogens':
+                self.atom.site_H = cf[key][k]
+            elif k == '_atom_site_b_iso_or_equiv':
+                self.atom.B_iso = cf[key][k]
+            elif k == '_atom_site_occupancy':
+                self.atom.occupancy = cf[key][k]
+            elif k == '_atom_site_symmetry_multiplicity':
+                self.atom.symm_multi = cf[key][k]
 
-            for k0 in cf[key].keys():
-                k = k0.lower()
-                ## name/label
-                if k in ('_chemical_name_mineral','_chemical_name_systematic','_amcsd_formula_title'):
-                    self.label = cf[key][k]
-                elif k in ('_chemical_formula_structural','_chemical_formula_sum'):
-                    self.formula = cf[key][k]
-                elif k in ('_database_code_amcsd','_database_code_icsd'):
-                    self.id_no = int(cf[key][k])
+            ## crystal symmetry information
+            elif k == '_symmetry_int_tables_number':
+                self.symmetry.no = cf[key][k]
+            elif k == '_symmetry_space_group_name_h-m':
+                self.symmetry.name = re.sub(' ','',cf[key][k])
+                #self.symmetry.name = cf[key][k]
+            elif k == '_chemical_name_structure_type':
+                self.symmetry.type = cf[key][k]
+            elif k == '_space_group_symop_operation_xyz' or k == '_symmetry_equiv_pos_as_xyz':
+                self.symmetry.xyz = cf[key][k]
+            elif k == '_symmetry_equiv_pos_site_id':
+                self.symmetry.xyz_id = cf[key][k]
 
-                ## unit cell information
-                elif k == '_cell_length_a':
-                    if cf[key][k] == '3,2518':
-                        self.unitcell[0] = '3.2518' ## typo in cif 14130
-                    elif cf[key][k][-1] == ',':
-                        self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
-                    else:
-                        self.unitcell[0] = re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_cell_length_b':
-                    if cf[key][k][-1] == ',':
-                        self.unitcell[1] = re.sub(r"\(\w*\)", r"", cf[key][k][0:-1])
-                    else:
-                        self.unitcell[1] =re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_cell_length_c':
-                    self.unitcell[2] = re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_cell_angle_alpha':
-                    self.unitcell[3] = re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_cell_angle_beta':
-                    self.unitcell[4] = re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_cell_angle_gamma':
-                    self.unitcell[5] = re.sub(r"\(\w*\)", r"", cf[key][k])
-                elif k == '_exptl_crystal_density_diffrn':
-                    self.density = cf[key][k]
-                elif k == '_cell_volume':
-                    self.volume = cf[key][k]
+            ## publication information for citation
+            elif k == '_citation_id':
+                self.publication.id = cf[key][k]
+            elif k == '_citation_journal_full' or k == '_journal_name_full':
+                self.publication.journal = cf[key][k]
+            elif k == '_citation_journal_id_astm':
+                self.publication.journal_id = cf[key][k]
+            elif k == '_citation_journal_volume' or k == '_journal_volume':
+                self.publication.volume = cf[key][k]
+            elif k == '_citation_page_first' or k == '_journal_page_first':
+                self.publication.first_page = cf[key][k]
+            elif k == '_citation_page_last' or k == '_journal_page_last':
+                self.publication.last_page = cf[key][k]
+            elif k == '_citation_year' or k == '_journal_year':
+                self.publication.year = cf[key][k]
+            elif k == '_publ_author_name':
+                self.publication.author = cf[key][k]
+            elif k == '_publ_section_title':
+                self.publication.title = cf[key][k]
 
-                ## per atom in unit cell information
-                elif k == '_atom_site_label':
-                    atoms = cf[key][k]
-                    for a,atmlbl in enumerate(atoms):
-                        if atmlbl not in elem_symbol:
-                            if '-' in atmlbl:
-                                for e,echatm in enumerate(atmlbl.split('-')):
-                                    try:
-                                        junk = int(echatm) ## skip this - not an element
-                                    except:
-                                        addatm = check_elemsym(echatm)
-                                        if e == 0:
-                                            newlbl = addatm
-                                        else:
-                                            newlbl = '%s-%s' % (newlbl,addatm)
-                                        atmlbl = newlbl
-                            else:
-                                atmlbl = check_elemsym(atmlbl)
-                            atoms[a] = atmlbl
-                    self.atom.label = atoms
-                elif k == '_atom_site_type_symbol' or  k == '_atom_type_symbol':
-                    self.atom.label2 = cf[key][k] 
-                elif k == '_atom_site_fract_x':
-                    self.atom.fract_x = [float(re.sub(r"\(\w*\)", r"", x)) for x in cf[key][k]]
-                    #self.atom.fract_x = [float(x) for x in cf[key][k]]
-                elif k == '_atom_site_fract_y':
-                    self.atom.fract_y = [float(re.sub(r"\(\w*\)", r"", y)) for y in cf[key][k]]
-                    #self.atom.fract_y = [float(y) for y in cf[key][k]]
-                elif k == '_atom_site_fract_z':
-                    self.atom.fract_z = [float(re.sub(r"\(\w*\)", r"", z)) for z in cf[key][k]]
-                    #self.atom.fract_z = [float(z) for z in cf[key][k]]
-                elif k == '_atom_site_wyckoff_symbol':
-                    self.atom.symm_wyckoff = cf[key][k]
-                elif k == '_atom_type_oxidation_number':
-                    self.atom.oxid_no = cf[key][k]
-                elif k == '_atom_site_attached_hydrogens':
-                    self.atom.site_H = cf[key][k]
-                elif k == '_atom_site_b_iso_or_equiv':
-                    self.atom.B_iso = cf[key][k]
-                elif k == '_atom_site_occupancy':
-                    self.atom.occupancy = cf[key][k]
-                elif k == '_atom_site_symmetry_multiplicity':
-                    self.atom.symm_multi = cf[key][k]
-
-                ## crystal symmetry information
-                elif k == '_symmetry_int_tables_number':
-                    self.symmetry.no = cf[key][k]
-                elif k == '_symmetry_space_group_name_h-m':
-                    self.symmetry.name = re.sub(' ','',cf[key][k])
-                    #self.symmetry.name = cf[key][k]
-                elif k == '_chemical_name_structure_type':
-                    self.symmetry.type = cf[key][k]
-                elif k == '_space_group_symop_operation_xyz' or k == '_symmetry_equiv_pos_as_xyz':
-                    self.symmetry.xyz = cf[key][k]
-                elif k == '_symmetry_equiv_pos_site_id':
-                    self.symmetry.xyz_id = cf[key][k]
-
-                ## publication information for citation
-                elif k == '_citation_id':
-                    self.publication.id = cf[key][k]
-                elif k == '_citation_journal_full' or k == '_journal_name_full':
-                    self.publication.journal = cf[key][k]
-                elif k == '_citation_journal_id_astm':
-                    self.publication.journal_id = cf[key][k]
-                elif k == '_citation_journal_volume' or k == '_journal_volume':
-                    self.publication.volume = cf[key][k]
-                elif k == '_citation_page_first' or k == '_journal_page_first':
-                    self.publication.first_page = cf[key][k]
-                elif k == '_citation_page_last' or k == '_journal_page_last':
-                    self.publication.last_page = cf[key][k]
-                elif k == '_citation_year' or k == '_journal_year':
-                    self.publication.year = cf[key][k]
-                elif k == '_publ_author_name':
-                    self.publication.author = cf[key][k]
-                elif k == '_publ_section_title':
-                    self.publication.title = cf[key][k]
-
-                ## '_audit_creation_date','_audit_update_record' : source specific (kit)
-                ## '_cell_formula_units_z'   : not sure what this is (kit)
-                ## '_refine_ls_r_factor_all' : not sure what this is (kit)
+            ## '_audit_creation_date','_audit_update_record' : source specific (kit)
+            ## '_cell_formula_units_z'   : not sure what this is (kit)
+            ## '_refine_ls_r_factor_all' : not sure what this is (kit)
 
         self.spacegroup()
-        
         self.wyckoff()
         self.check_atoms()
-
 
     def check_atoms(self):
 
@@ -2578,7 +2588,7 @@ class CIFcls(object):
             coor_list = []
             x,y,z = self.atom.fract_x[i],self.atom.fract_y[i],self.atom.fract_z[i]
 
-            if sym not in SPGRP_SYMM[self.symm_key].keys(): 
+            if sym not in SPGRP_SYMM[self.symm_key].keys():
                 sym = self.atom.symm_multi[i]+sym
                 self.atom.symm_wyckoff[i]  = sym
 
@@ -2589,7 +2599,7 @@ class CIFcls(object):
                         a[i] = eval(ai)
                 coor_list += [a]
             self.elem_uvw.update({el:coor_list})
-    
+
     def wyckoff(self):
 
         self.symm_key = []
@@ -2625,7 +2635,7 @@ class CIFcls(object):
                     self.symmetry.no = self.symm_key
                 else:
                     self.atom.symm_wyckoff += ['error']
-                    
+
 
 
     def spacegroup(self):
@@ -2639,17 +2649,17 @@ class CIFcls(object):
     def q_calculator(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
 
         hkl_list = generate_hkl(positive_only=True)
-#         xraydb = xrayDB()
-        
-        dhkl = d_from_hkl(hkl_list,*self.unitcell)
+        xraydb = xrayDB()
+
+        dhkl = d_from_hkl(hkl_list, *self.unitcell)
         qhkl = q_from_d(dhkl)
-        
+
         F2hkl = np.zeros(len(hkl_list))
-    
+
         ## removes q values outside of range
-        ii,jj = qhkl < q_max,qhkl > q_min
-        ii = jj*ii        
-        
+        ii, jj = qhkl < q_max, qhkl > q_min
+        ii = jj*ii
+
         for i,hkl in enumerate(hkl_list):
             Fhkl = 0
             if ii[i]:
@@ -2658,13 +2668,13 @@ class CIFcls(object):
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + (cmath.exp(2*cmath.pi*imag*hukvlw)).real
             if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
-        
+
         ## removes zero value structure factors
         jj = F2hkl > 0.001
         ii = ii*jj
-        
+
         qarr = np.array(qhkl[ii],dtype=np.float16)
-       
+
         return sorted(np.array(list(set(qarr))))
 
 
@@ -2672,16 +2682,16 @@ class CIFcls(object):
 
         hkl_list = generate_hkl()
         xraydb = xrayDB()
-        
+
         dhkl = d_from_hkl(hkl_list,*self.unitcell)
         qhkl = q_from_d(dhkl)
-        
+
         F2hkl = np.zeros(len(hkl_list))
-    
+
         ## removes q values outside of range
         ii,jj = qhkl < q_max,qhkl > q_min
-        ii = jj*ii        
-        
+        ii = jj*ii
+
         for i,hkl in enumerate(hkl_list):
             Fhkl = 0
             if ii[i]:
@@ -2691,20 +2701,20 @@ class CIFcls(object):
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
             if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
-        
+
         ## removes zero value structure factors
         jj = F2hkl > 0.001
         ii = ii*jj
-        
+
         qarr = np.array(qhkl[ii],dtype=np.float16)
         qarr = sorted(np.array(list(set(qarr))))
         kk = len(qarr)
-        
+
         self.hkl      = np.zeros(kk,dtype=np.ndarray)
         self.qhkl     = np.zeros(kk,dtype=np.float32)
         self.F2hkl    = np.zeros(kk,dtype=np.float32)
         self.phkl     = np.zeros(kk,dtype=np.int)
-        
+
         for i,row in enumerate(zip(list(hkl_list[ii]),qhkl[ii],F2hkl[ii])):
             hkl,q,F2 = row
             j = (np.abs(qarr-q)).argmin()
@@ -2713,13 +2723,13 @@ class CIFcls(object):
             self.qhkl[j] = q
             self.F2hkl[j] = F2
             self.phkl[j] += 1
-        
+
         self.dhkl = d_from_q(self.qhkl)
         self.twthhkl = twth_from_q(self.qhkl,wvlgth)
         self.LAP = self.correction_factor(self.twthhkl)
-        
+
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
-        
+
     def correction_factor(self,twth):
         ## calculates Lorentz and Polarization corrections
         twth = np.radians(twth)
@@ -2755,27 +2765,25 @@ def check_elemsym(atom):
 def removeNonAscii(s):
     return "".join(i for i in s if ord(i)<128)
 
-def create_cif(cifdatabase=None,cifile=None,amcsd_id=None,cifstr=None):
+def create_cif(cifdb=None, ciffile=None, amcsd_id=None, cifstr=None):
 
     cif = CIFcls()
-    if cifile is not None:
-        cif.read_cifile(cifile)
+    if ciffile is not None:
+        cif.read_ciffile(ciffile)
     else:
         tmpcif = 'tempcif.cif'
-        if cifstr is not None:    
+        if cifstr is not None:
             ciftext = cifstr
-        elif amcsd_id is not None and cifdatabase is not None:
-            ciftext = cifdatabase.return_cif(amcsd_id)
+        elif amcsd_id is not None and cifdb is not None:
+            ciftext = cifdb.return_cif(amcsd_id)
         with open(tmpcif, 'w') as f:
             try:
                 f.write(ciftext)
             except:
-                f.write(removeNonAscii(ciftext)) 
+                f.write(removeNonAscii(ciftext))
 
-        cif.read_cifile(tmpcif)
-        os.system('rm -rf %s' % tmpcif)
+        cif.read_ciffile(tmpcif)
+        os.unlink(tmpcif)
     cif.spacegroup()
-    
+
     return cif
-
-
