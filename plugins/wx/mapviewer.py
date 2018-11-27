@@ -152,9 +152,9 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.owner = owner
         sizer = wx.GridBagSizer(3, 3)
         bpanel = wx.Panel(self)
-        show_new = Button(bpanel, 'Show New Map',     size=(120, -1),
+        show_new = Button(bpanel, 'Show New Map',     size=(125, -1),
                           action=partial(self.onShowMap, new=True))
-        show_old = Button(bpanel, 'Replace Last Map', size=(120, -1),
+        show_old = Button(bpanel, 'Replace Last Map', size=(125, -1),
                                    action=partial(self.onShowMap, new=False))
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(show_new, 0, 3)
@@ -187,6 +187,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
         sizer.Add(SimpleText(self, 'Detector'),    (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'ROI'),         (ir, 3), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'DT Correct?'), (ir, 4), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Array Shape'), (ir, 5), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Data Range'), (ir, 6), (1, 1), ALL_CEN, 2)
 
         self.varfile  = {}
         self.varroi   = {}
@@ -195,17 +197,17 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e', 'f'):
-            self.varfile[varname]  = vfile  = Choice(self, size=(180, -1),
+            self.varfile[varname]  = vfile  = Choice(self, size=(250, -1),
                                                      action=partial(self.onFILE, varname=varname))
-            self.varroi[varname]   = vroi   = Choice(self, size=(100, -1),
+            self.varroi[varname]   = vroi   = Choice(self, size=(125, -1),
                                                      action=partial(self.onROI, varname=varname))
-            self.vardet[varname]   = vdet   = Choice(self, size=(80, -1),
+            self.vardet[varname]   = vdet   = Choice(self, size=(100, -1),
                                                      action=partial(self.onDET, varname=varname))
             self.varcor[varname]   = vcor   = wx.CheckBox(self, -1, ' ')
-            self.varshape[varname] = vshape = SimpleText(self, 'Array Shape = (, )',
-                                                          size=(200, -1))
-            self.varrange[varname] = vrange = SimpleText(self, 'Range = [   :    ]',
-                                                          size=(200, -1))
+            self.varshape[varname] = vshape = SimpleText(self, '(, )',
+                                                          size=(125, -1))
+            self.varrange[varname] = vrange = SimpleText(self, '[   :    ]',
+                                                         size=(125, -1))
             vcor.SetValue(self.owner.dtcor)
             vdet.SetSelection(0)
 
@@ -215,9 +217,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
             sizer.Add(vdet,                         (ir, 2), (1, 1), ALL_CEN, 2)
             sizer.Add(vroi,                         (ir, 3), (1, 1), ALL_CEN, 2)
             sizer.Add(vcor,                         (ir, 4), (1, 1), ALL_CEN, 2)
-            ir +=1
-            sizer.Add(vshape,                       (ir, 1), (1, 1), ALL_LEFT, 2)
-            sizer.Add(vrange,                       (ir, 2), (1, 3), ALL_LEFT, 2)
+            sizer.Add(vshape,                       (ir, 5), (1, 1), ALL_LEFT, 2)
+            sizer.Add(vrange,                       (ir, 6), (1, 3), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(HLine(self, size=(350, 4)), (ir, 0), (1, 5), ALL_LEFT, 2)
@@ -322,8 +323,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
 
-        self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
-        self.varrange[varname].SetLabel('Range = [%g: %g]' % (map.min(), map.max()))
+        self.varshape[varname].SetLabel('%s' % repr(map.shape))
+        self.varrange[varname].SetLabel('[%g:%g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmfile=None):
 
@@ -399,13 +400,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
             dname   = self.vardet[varname].GetStringSelection()
             dtcorr  = self.varcor[varname].IsChecked()
 
-            self.map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
-
-            _larch.symtable.set_symbol(str(varname), self.map)
+            map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
+            _larch.symtable.set_symbol(str(varname), map)
             if main_file is None:
                 main_file = filemap[fname]
 
-        self.map = _larch.eval(expr_in)
+        _larch.eval("_mapcalc = %s" % expr_in)
+        self.map = _larch.symtable._mapcalc
         omap = self.map[:, 1:-1]
         info  = 'Intensity: [%g, %g]' %(omap.min(), omap.max())
         title = '%se: %s' % (fname, expr_in)
