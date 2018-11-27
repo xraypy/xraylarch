@@ -2773,10 +2773,6 @@ class GSEXRM_MapFile(object):
 
         imin = (np.abs(q-qrange[0])).argmin()
         imax = (np.abs(q-qrange[1])).argmin()+1
-        # print(" ADD XRD1D ROI xrange/qrange ", xrange, qrange)
-        # print(" imin/imax ", imin, imax)
-        # print(" qaxis     ", q[:5], q[-5:])
-        # print(" xrmdet    ", counts.shape)
 
         xrd1d_sum = xrd1d_cor = counts[:, :, imin:imax].sum(axis=2)
         if subtract_bkg and imax > imin:
@@ -2982,6 +2978,7 @@ class GSEXRM_MapFile(object):
             if hotcolse:
                 out = out[1:-1]
             return out
+        dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         ext = 'cor' if dtcorrect else 'raw'
         roi, detaddr = self.check_roi(roiname, det)
