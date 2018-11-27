@@ -1097,10 +1097,12 @@ class MapPanel(GridPanel):
         plt3 = (self.plot_choice.GetSelection() == 1)
         oprtr = self.oper.GetStringSelection()
 
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         args={'hotcols'   : self.owner.hotcols,
               'dtcorrect' : self.owner.dtcor}
+
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -1113,16 +1115,16 @@ class MapPanel(GridPanel):
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
         if roi_name[-1] != '1':
-            mapx = xrmfile.get_roimap(roi_name[-1],det=det_name[-1],**args)
+            mapx = xrmfile.get_roimap(roi_name[-1], det=det_name[-1], **args)
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
         else:
             mapx = 1.
 
-        r_map = xrmfile.get_roimap(roi_name[0],det=det_name[0],**args)
+        r_map = xrmfile.get_roimap(roi_name[0], det=det_name[0], **args)
         if plt3:
-            g_map = xrmfile.get_roimap(roi_name[1],det=det_name[1],**args)
-            b_map = xrmfile.get_roimap(roi_name[2],det=det_name[2],**args)
+            g_map = xrmfile.get_roimap(roi_name[1], det=det_name[1], **args)
+            b_map = xrmfile.get_roimap(roi_name[2], det=det_name[2], **args)
 
         x = xrmfile.get_pos(0, mean=True)
         y = xrmfile.get_pos(1, mean=True)
@@ -1194,10 +1196,8 @@ class MapPanel(GridPanel):
 
         args={'hotcols'   : self.owner.hotcols,
               'dtcorrect' : self.owner.dtcor}
-
         det_name,roi_name = [],[]
         plt_name = []
-
 
         xdet = self.det_choice[0].GetStringSelection()
         xroi = self.roi_choice[0].GetStringSelection()
