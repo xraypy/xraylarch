@@ -2739,52 +2739,56 @@ class GSEXRM_MapFile(object):
             self.add_xrd1droi(xrange,label,unit=xunit)
         print('Finished.\n')
 
-    def add_xrd1droi(self, xrange, roiname, unit='q'):
-        if version_ge(self.version, '2.0.0'):
-            if not self.has_xrd1d:
-                print('No 1D-XRD data in file')
-                return
-
-            if self.mono_energy is None:
-                env_names = list(self.xrmmap['config/environ/name'])
-                env_vals  = list(self.xrmmap['config/environ/value'])
-                for name, val in zip(env_names, env_vals):
-                    name = str(name).lower()
-                if ('mono.energy' in name or 'mono energy' in name):
-                    self.mono_energy = float(val)/1000.
-
-            if unit.startswith('2th'): ## 2th to 1/A
-                qrange = q_from_twth(xrange, lambda_from_E(self.mono_energy))
-            elif unit == 'd':           ## A to 1/A
-                qrange = q_from_d(xrange)
-            else:
-                qrange = xrange
-
-            roigroup, detname  = self.build_xrd_roimap(xrd='1d')
-            xrmdet = self.xrmmap[detname]
-
-            if roiname in roigroup[detname]:
-                raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,detname))
-
-            qaxis = xrmdet['q'][:]
-            imin = (np.abs(qaxis-qrange[0])).argmin()
-            imax = (np.abs(qaxis-qrange[1])).argmin()+1
-            xrd1d_counts = xrmdet['counts'][:,:,slice(imin,imax)].sum(axis=2)
-            if abs(imax-imin) > 0:
-
-                A = (xrmdet['counts'][:,:,imin]+xrmdet['counts'][:,:,imax])/2
-                B = abs(imax-imin)
-
-                ## cor = ( raw - AB ) / B = ( raw/B ) - A
-
-                xrd1d_counts = xrd1d_counts / B ## divides by number of channels
-                xrd1d_cor    = xrd1d_counts - A ## subtracts 'average' background
-            else:
-                xrd1d_cor = xrd1d_counts
-
-            self.save_roi(roiname,detname,xrd1d_counts,xrd1d_cor,qrange,'q','1/A')
-        else:
+    def add_xrd1droi(self, xrange, roiname, unit='q', subtract_bkg=False):
+        if not version_ge(self.version, '2.0.0'):
             print('Only compatible with newest hdf5 mapfile version.')
+            return
+
+        if not self.has_xrd1d:
+            print('No 1D-XRD data in file')
+            return
+
+        if self.mono_energy is None:
+            env_names = list(self.xrmmap['config/environ/name'])
+            env_vals  = list(self.xrmmap['config/environ/value'])
+            for name, val in zip(env_names, env_vals):
+                name = str(name).lower()
+            if ('mono.energy' in name or 'mono energy' in name):
+                self.mono_energy = float(val)/1000.
+
+        if unit.startswith('2th'): ## 2th to 1/A
+            qrange = q_from_twth(xrange, lambda_from_E(self.mono_energy))
+        elif unit == 'd':           ## A to 1/A
+            qrange = q_from_d(xrange)
+        else:
+            qrange = xrange
+
+        roigroup, detname  = self.build_xrd_roimap(xrd='1d')
+
+        if roiname in roigroup[detname]:
+            raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname, detname))
+
+        counts = self.xrmmap[detname]['counts']
+        q = self.xrmmap[detname]['q'][:]
+
+        imin = (np.abs(q-qrange[0])).argmin()
+        imax = (np.abs(q-qrange[1])).argmin()+1
+        # print(" ADD XRD1D ROI xrange/qrange ", xrange, qrange)
+        # print(" imin/imax ", imin, imax)
+        # print(" qaxis     ", q[:5], q[-5:])
+        # print(" xrmdet    ", counts.shape)
+
+        xrd1d_sum = xrd1d_cor = counts[:, :, imin:imax].sum(axis=2)
+        if subtract_bkg and imax > imin:
+            ibkglo = max(0, imin-3)
+            ibkghi = min(len(q), imax+3)
+            bkglo = counts[:,:,ibkglo:imin].sum(axis=2)/(imin-ibkglo)
+            bkghi = counts[:,:,imax::ibkghi].sum(axis=2)/(ibkghi-imax)
+            xrd1d_cor -=  (imax-imin)* (bkglo + bkghi)/2.0
+
+        self.save_roi(roiname, detname, xrd1d_sum, xrd1d_cor,
+                      qrange,'q', '1/A')
+
 
     def del_all_xrd1droi(self):
 
