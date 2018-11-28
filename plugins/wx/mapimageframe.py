@@ -38,7 +38,7 @@ class MapImageFrame(ImageFrame):
     def __init__(self, parent=None, size=(650, 650), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
-                 output_title='Image', **kws):
+                 with_savepos=True,output_title='Image', **kws):
 
         # instdb=None,  inst_name=None,
 
@@ -47,6 +47,7 @@ class MapImageFrame(ImageFrame):
         self.map = None
         self.move_callback = move_callback
         self.save_callback = save_callback
+        self.with_savepos = with_savepos
 
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
@@ -71,7 +72,8 @@ class MapImageFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0, **kws):
+    def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0,
+                with_savepos=True, **kws):
         self.xoff = xoff
         self.yoff = yoff
         self.det = det
@@ -87,18 +89,15 @@ class MapImageFrame(ImageFrame):
             self.panel.ydata = kws['y']
         self.set_contrast_levels()
 
-        sd = kws.get('subtitles', {})
-        if sd is None:
-            return
-        t_red = sd.get('red', None)
-        t_green = sd.get('green', None)
-        t_blue = sd.get('blue', None)
-        if t_red is not None:
-            self.cmap_panels[0].title.SetLabel(t_red)
-        if t_green is not None:
-            self.cmap_panels[1].title.SetLabel(t_green)
-        if t_blue is not None:
-            self.cmap_panels[2].title.SetLabel(t_blue)
+        if self.save_callback is not None and hasattr(self, 'pos_name'):
+            self.pos_name.Enable(with_savepos)
+
+        sd = kws.get('subtitles', None)
+        if sd is not None:
+            for i, name in enumerate(('red', 'green', 'blue')):
+                sub = sd.get(name, None)
+                if sub is not None:
+                    self.cmap_panels[i].title.SetLabel(sub)
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:

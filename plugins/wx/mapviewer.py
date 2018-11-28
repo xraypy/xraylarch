@@ -389,21 +389,21 @@ class MapMathPanel(scrolled.ScrolledPanel):
             return val
         expr_in = get_expr(self.expr_in)
 
-
-        main_file = None
+        files = []
         _larch = self.owner.larch
         filemap = self.owner.filemap
 
         for varname in self.varfile.keys():
             fname   = self.varfile[varname].GetStringSelection()
+            if fname not in files:
+                files.append(fname)
             roiname = self.varroi[varname].GetStringSelection()
             dname   = self.vardet[varname].GetStringSelection()
             dtcorr  = self.varcor[varname].IsChecked()
 
             map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
             _larch.symtable.set_symbol(str(varname), map)
-            if main_file is None:
-                main_file = filemap[fname]
+
 
         _larch.eval("_mapcalc = %s" % expr_in)
         self.map = _larch.symtable._mapcalc
@@ -411,6 +411,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
         info  = 'Intensity: [%g, %g]' %(omap.min(), omap.max())
         title = '%se: %s' % (fname, expr_in)
         subtitles = None
+
+        main_file = filemap[files[0]]
         try:
             x = main_file.get_pos(0, mean=True)
         except:
@@ -420,13 +422,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
         except:
             y = None
 
-        fname = main_file.filename
-
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title)
 
         self.owner.display_map(omap, title=title, subtitles=subtitles,
-                               info=info, x=x, y=y, xrmfile=main_file)
+                               info=info, x=x, y=y, xrmfile=main_file,
+                               with_savepos=(len(files)==1))
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -1506,6 +1507,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.update  = Button(pane, 'Save Label',   size=(135, -1), action=self.onLabel)
         self.bexport = Button(pane, 'Export Areas', size=(135, -1), action=self.onExport)
         self.bimport = Button(pane, 'Import Areas', size=(135, -1), action=self.onImport)
+        # self.bcopy   = Button(pane, 'Copy Area', size=(135, -1), action=self.onImport)
         ######################################
 
         ######################################
@@ -2397,22 +2399,21 @@ class MapViewerFrame(wx.Frame):
 
     def add_imdisplay(self, title, det=None):
         imd = MapImageFrame(output_title=title,
-                               lasso_callback=partial(self.lassoHandler, det=det),
-                               cursor_labels=self.cursor_menulabels,
-                               save_callback=self.onSavePixel)
+                            lasso_callback=partial(self.lassoHandler, det=det),
+                            cursor_labels=self.cursor_menulabels,
+                            save_callback=self.onSavePixel)
         self.im_displays.append(imd)
         return imd
 
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
-                    det=None, subtitles=None, xrmfile=None):
+                    det=None, subtitles=None, xrmfile=None, with_savepos=True):
         """display a map in an available image display"""
         if x is not None and self.hotcols and map.shape[1] != x.shape[0]:
             x = x[1:-1]
 
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                      det=det, subtitles=subtitles, contrast_level=0.5,
-                     xrmfile=xrmfile)
-
+                     xrmfile=xrmfile, with_savepos=with_savepos)
         displayed = False
         while not displayed:
             if len(self.im_displays) == 0:
