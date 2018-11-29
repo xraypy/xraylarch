@@ -76,7 +76,7 @@ from larch.utils.strutils import bytes2str, version_ge
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
-from larch_plugins.diFFit import diFFit1DFrame, diFFit2DFrame
+from larch_plugins.diFFit import XRD1DViewerFrame, XRD2DViewerFrame
 from larch_plugins.xrd import lambda_from_E, xrd1d,save1D
 from larch_plugins.epics import pv_fullname
 from larch_plugins.io import nativepath
@@ -2443,14 +2443,14 @@ class MapViewerFrame(wx.Frame):
             poni = None
 
         if self.xrddisplay2D is None:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
-                                              xrd1Dviewer=self.xrddisplay1D,
-                                              ponifile=poni)
+            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
+                                                 xrd1Dviewer=self.xrddisplay1D,
+                                                 ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(label,map)
         except PyDeadObjectError:
-            self.xrddisplay2D = diFFit2DFrame(_larch=self.larch,flip=flptyp,
-                                              xrd1Dviewer=self.xrddisplay1D)
+            self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
+                                                 xrd1Dviewer=self.xrddisplay1D)
             self.xrddisplay2D.plot2Dxrd(label,map)
         self.xrddisplay2D.Show()
 
@@ -2465,12 +2465,12 @@ class MapViewerFrame(wx.Frame):
         data1dxrd.xrd_from_2d(xy,'q')
 
         if self.xrddisplay1D is None:
-            self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
+            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
         try:
             self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
             self.xrddisplay1D.Show()
         except PyDeadObjectError:
-            self.xrddisplay1D = diFFit1DFrame(_larch=self.larch)
+            self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
             self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
             self.xrddisplay1D.Show()
 
