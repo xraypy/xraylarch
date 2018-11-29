@@ -30,7 +30,8 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch_plugins.io import nativepath
-from larch_plugins.cifdb import (cifDB,SearchCIFdb,QSTEP,QMIN,QMAX,CATEGORIES,match_database)
+from larch_plugins.cifdb import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX,
+                                 CATEGORIES, match_database)
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
                                lambda_from_E, E_from_lambda,calc_broadening,
@@ -2553,7 +2554,6 @@ class SelectCIFData(wx.Dialog):
             self.cif_list.SetSelection(0)
 
     def filter_database(self,event=None):
-
         myDlg = XRDSearchGUI(self.cifdb,self.parent.owner.srch_cls)
 
         filter = False
@@ -3413,7 +3413,6 @@ class XRDSearchGUI(wx.Dialog):
 
         self.Show()
 
-
         self.srch = SearchCIFdb() if srch_cls is None else srch_cls
         self.setValues()
 
@@ -3428,7 +3427,9 @@ class XRDSearchGUI(wx.Dialog):
         self.Symmetry.SetValue(self.srch.print_geometry())
 
         key = 'categories'
-        self.Category.Set(self.srch.print_parameter(key=key))
+        # print("categoiries ", self.Category, dir(self.Category))
+        # print(" -- = ", self.srch.print_parameter(key=key))
+        # self.Category.Set(self.srch.print_parameter(key=key))
 
         key = 'keywords'
         self.Keyword.SetValue(self.srch.print_parameter(key=key))
@@ -3464,7 +3465,9 @@ class XRDSearchGUI(wx.Dialog):
 
     def entrAMCSD(self,event=None):
         key = 'amcsd'
+        # print(" search amcsd ", self.AMCSD.GetValue())
         self.srch.read_parameter(self.AMCSD.GetValue(),key=key)
+        # print(" search says: ", self.srch.print_parameter(key=key)))
         self.AMCSD.SetValue(self.srch.print_parameter(key=key))
 
     def entrMineral(self,event=None):
