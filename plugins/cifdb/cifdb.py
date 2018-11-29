@@ -7,6 +7,7 @@ import os
 import requests
 
 import numpy as np
+import six
 
 from itertools import groupby
 from distutils.version import StrictVersion
@@ -1129,9 +1130,8 @@ class cifDB(object):
         return np.array(q)
 
     def return_mineral_names(self):
-
         mineralqry = self.query(self.nametbl.c.mineral_name).all()
-        names = [name[0] for name in mineralqry if isinstance(name[0], unicode) or isinstance(name[0], str)]
+        names = [name[0] for name in mineralqry if isinstance(name[0], six.string_types)]
         names += ['']
         return sorted(names)
 

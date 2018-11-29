@@ -2206,15 +2206,11 @@ class GSEXRM_MapFile(object):
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         dgroup = '%ssum' % mcastr
 
-        try: ## python 2
-            is_str = (isinstance(det,str) or isinstance(det, unicode))
-        except: ## python 3
-            is_str = isinstance(det,str)
-        if is_str:
+        if isinstance(det,six.string_types):
             for d in build_detector_list(self.xrmmap):
                 if det.lower() == d.lower():
                     dgroup = d
-        elif isinstance(det,int):
+        elif isinstance(det, int):
             if det in range(1, self.ndet+1):
                 dgroup = '%s%i' % (mcastr,det)
 
