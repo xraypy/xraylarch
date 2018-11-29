@@ -45,8 +45,8 @@ from .fitting import (Minimizer, Parameter, isParameter, param_value,
                       param_group, minimize)
 
 from .apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
-                   run_xrfdisplay, run_xrfdisplay_epics,run_diffit1D,
-                   run_diffit2D, run_gse_dtcorrect, run_feff8l,
+                   run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,
+                   run_xrd2d_viewer, run_gse_dtcorrect, run_feff8l,
                    run_larch_server, run_larch)
 
 enable_plugins()

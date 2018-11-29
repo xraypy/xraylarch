@@ -121,13 +121,12 @@ def plot_sticks(x,y):
     return xy
 
 
-class diFFit1DFrame(wx.Frame):
-    def __init__(self, _larch=None):
+class XRD1DViewerFrame(wx.Frame):
+    def __init__(self, parent=None, _larch=None, **kws):
         self._larch = _larch
 
-        x,y = calcFrameSize(1000, 450)
-        label = 'diFFit : 1D XRD Data Analysis Software'
-        wx.Frame.__init__(self, None, title=label, size=(x,y))
+        label = '1D XRD Data Analysis Software'
+        wx.Frame.__init__(self, parent, -1, title=label, size=(1000, 650), **kws)
 
         read_workdir('gsemap.dat')
 
@@ -1213,7 +1212,7 @@ class Fitting1DXRD(BasePanel):
 #### PLOTPANEL FUNCTIONS
     def plot1DXRD(self,panel):
 
-        self.plot1D = PlotPanel(panel,size=(1000, 500),messenger=self.owner.write_message)
+        self.plot1D = PlotPanel(panel,size=(1000, 600),messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
         self.plot1D.cursor_callback = self.on_cursor
 
@@ -3941,15 +3940,12 @@ class XRDSymmetrySearch(wx.Dialog):
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
 
-class diFFit1D(wx.App):
-    def __init__(self):
+class XRD1DViewer(wx.App):
+    def __init__(self, **kws):
         wx.App.__init__(self)
 
-    def run(self):
-        self.MainLoop()
-
     def createApp(self):
-        frame = diFFit1DFrame()
+        frame = XRD1DViewerFrame()
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -3957,9 +3953,6 @@ class diFFit1D(wx.App):
         self.createApp()
         return True
 
-# def registerLarchPlugin():
-#     return ('_diFFit', {})
-
 
 if __name__ == '__main__':
-    diFFit1D().run()
+    XRD1DViewer().MainLoop()

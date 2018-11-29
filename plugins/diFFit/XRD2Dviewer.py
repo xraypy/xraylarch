@@ -35,7 +35,7 @@ from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                                return_ai,twth_from_xy,q_from_xy,eta_from_xy)
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
-from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup,diFFit1DFrame
+from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup
 
 ###################################
 
@@ -177,7 +177,7 @@ class diFFit1DPanel(wx.Panel):
 
 
 
-class diFFit2DFrame(wx.Frame):
+class XRD2DViewerFrame(wx.Frame):
     '''
     Frame for housing all 2D XRD viewer widgets
     '''
@@ -1289,22 +1289,6 @@ class diFFit2DFrame(wx.Frame):
 
         return buttonbox
 
-class diFFit2D(wx.App):
-    def __init__(self):
-        wx.App.__init__(self)
-
-    def run(self):
-        self.MainLoop()
-
-    def createApp(self):
-        frame = diFFit2DFrame()
-        frame.Show()
-        self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.createApp()
-        return True
-
 
 class XRDImg(Group):
     '''
@@ -1404,16 +1388,20 @@ class XRDImg(Group):
         self.maxval = int(maxval)
 
 
-## def registerLarchPlugin():
-##     return ('_diFFit', {})
+class XRD2DViewer(wx.App):
+    def __init__(self):
+        wx.App.__init__(self)
 
-class DebugViewer(diFFit2D):
-    def __init__(self, **kws):
-        diFFit2D.__init__(self, **kws)
+    def createApp(self):
+        frame = XRD2DViewerFrame()
+        frame.Show()
+        self.SetTopWindow(frame)
 
     def OnInit(self):
         self.createApp()
         return True
 
+
+
 if __name__ == '__main__':
-    diFFit2D().run()
+    XRD2DViewer().MainLoop()

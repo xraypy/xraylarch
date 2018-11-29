@@ -51,8 +51,8 @@ APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
         LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
         LarchApp('Dioptas', 'dioptas', icon='dioptas'),
-        LarchApp('2D XRD Viewer', 'diFFit2D'),
-        LarchApp('1D XRD Viewer', 'diFFit1D') )
+        LarchApp('2D XRD Viewer', 'xrd2d_viewer'),
+        LarchApp('1D XRD Viewer', 'xrd1d_viewer') )
 
 
 def make_desktop_shortcuts():
@@ -65,49 +65,41 @@ def make_desktop_shortcuts():
 def run_gse_mapviewer():
     """GSE Mapviewer """
     from larch_plugins.wx import MapViewer
-    os.chdir(home_dir)
     MapViewer().MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
     from larch_plugins.wx import DTViewer
-    os.chdir(home_dir)
     DTViewer().MainLoop()
 
 
 def run_xas_viewer():
     """XAS Viewer """
     from larch_plugins.xasgui import XASViewer
-    os.chdir(home_dir)
     XASViewer().MainLoop()
 
 
 def run_xrfdisplay():
     """ XRF Display"""
     from larch_plugins.wx import XRFApp
-    os.chdir(home_dir)
     XRFApp().MainLoop()
 
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
     from larch_plugins.epics import EpicsXRFApp
-    os.chdir(home_dir)
     EpicsXRFApp().MainLoop()
 
 
-def run_diffit1D():
+def run_xrd1d_viewer():
     """XRD Display for 1D patternss"""
-    from larch_plugins.diFFit.XRD1DViewer import diFFit1D
-    os.chdir(home_dir)
-    diFFit1D.MainLoop()
+    from larch_plugins.diFFit.XRD1Dviewer import XRD1DViewer
+    XRD1DViewer().MainLoop()
 
-
-def run_diffit2D():
+def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
-    from larch_plugins.diFFit.XRD2DViewer import diFFit2D
-    os.chdir(home_dir)
-    diFFit2D.MainLoop()
+    from larch_plugins.diFFit.XRD2Dviewer import XRD2DViewer
+    XRD2DViewer().MainLoop()
 
 def run_gse_dtcorrect():
     """GSE Deadtime corrections"""
