@@ -2974,7 +2974,10 @@ class GSEXRM_MapFile(object):
             if hotcolse:
                 out = out[1:-1]
             return out
-        dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
+        if det is None:
+            dtcorrect = False
+        else:
+            dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         ext = 'cor' if dtcorrect else 'raw'
         roi, detaddr = self.check_roi(roiname, det)
