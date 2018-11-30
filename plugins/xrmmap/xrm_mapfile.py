@@ -711,14 +711,14 @@ class GSEXRM_MapFile(object):
                 irow  = irow + 1
 
         # self.set_roidata(current_row)
-        print("End: %s" % isotime())
+        # print("End: %s" % isotime())
 
 
     def set_roidata(self, row_start=0, row_end=None):
         if row_end is None:
             row_end = self.last_row
 
-        print("Process ROIs for rows %d to %d " % (row_start+1, row_end+1))
+        # print("Process ROIs for rows %d to %d " % (row_start+1, row_end+1))
         rows = slice(row_start, row_end+1)
         roigrp = self.xrmmap['roimap']
         # print("Dir ROIMAP : ", list(roigrp.keys()))
@@ -1450,7 +1450,7 @@ class GSEXRM_MapFile(object):
                     self.xrmmap['xrd1d/counts'][i,] = row1d
 
                 self.has_xrd1d = True
-                print('End: %s' % isotime())
+                # print('End: %s' % isotime())
             except:
                 print('xrd1d data already in file.')
                 return
