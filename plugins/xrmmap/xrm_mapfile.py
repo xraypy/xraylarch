@@ -780,9 +780,8 @@ class GSEXRM_MapFile(object):
         if self.folder is None or irow >= len(self.rowdata):
             return
 
-        if self.xrdcalfile is None:
+        if self.has_xrd1d and self.xrdcalfile is None:
             self.xrdcalfile = bytes2str(self.xrmmap['xrd1d'].attrs.get('calfile',''))
-
         if self.xrdcalfile in (None, ''):
             calfile = os.path.join(nativepath(self.folder), self.XRDCALFile)
             if os.path.exists(calfile):
