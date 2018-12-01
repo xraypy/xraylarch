@@ -2206,11 +2206,8 @@ class MapViewerFrame(wx.Frame):
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
         nbpanel = self.nbpanels[idx]
-        print(' selected nb ', idx, nbpanel)
         if callable(getattr(nbpanel, 'on_select', None)):
             nbpanel.on_select()
-
-
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
 
