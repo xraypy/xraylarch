@@ -247,7 +247,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
             self.onFILE(evt=None, varname=v)
 
 
-
     def onSelectArray(self, evt=None):
         xrmfile = self.owner.current_file
         name = self.workarray_choice.GetStringSelection()
@@ -1502,82 +1501,91 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pane = wx.Panel(self)
         sizer = wx.GridBagSizer(3, 3)
         self.choices = {}
-        self.choice = Choice(pane, size=(200, -1), action=self.onSelect)
-        self.desc    = wx.TextCtrl(pane,   -1, '',  size=(200, -1))
-        self.info1   = wx.StaticText(pane, -1, '',  size=(250, -1))
-        self.info2   = wx.StaticText(pane, -1, '',  size=(250, -1))
-        self.info3   = wx.StaticText(pane, -1, '',  size=(250, -1))
-        self.onmap   = Button(pane, 'Show on Map',  size=(135, -1), action=self.onShow)
-        self.clear   = Button(pane, 'Clear Map',    size=(135, -1), action=self.onClear)
-        self.delete  = Button(pane, 'Delete Area',  size=(135, -1), action=self.onDelete)
-        self.update  = Button(pane, 'Save Label',   size=(135, -1), action=self.onLabel)
-        self.bexport = Button(pane, 'Export Areas', size=(135, -1), action=self.onExport)
-        self.bimport = Button(pane, 'Import Areas', size=(135, -1), action=self.onImport)
-        # self.bcopy   = Button(pane, 'Copy Area', size=(135, -1), action=self.onImport)
-        ######################################
+        bsize = (140, -1)
+        self.choice = Choice(pane, size=(225, -1), action=self.onSelect)
+        self.desc    = wx.TextCtrl(pane,   -1, '',  size=(225, -1))
+        self.info1   = wx.StaticText(pane, -1, '',  size=(275, -1))
+        self.info2   = wx.StaticText(pane, -1, '',  size=(275, -1))
+        self.onmap   = Button(pane, 'Show on Map',  size=bsize, action=self.onShow)
+        self.clear   = Button(pane, 'Clear Map',    size=bsize, action=self.onClear)
+        self.bdelete = Button(pane, 'Delete',       size=bsize, action=self.onDelete)
+        self.update  = Button(pane, 'Apply',        size=bsize, action=self.onLabel)
+        self.bexport = Button(pane, 'Export Areas', size=bsize, action=self.onExport)
+        self.bimport = Button(pane, 'Import Areas', size=bsize, action=self.onImport)
+        self.bcopy   = Button(pane, 'Copy to Other Maps',  size=bsize, action=self.onCopy)
+        self.xrf     = Button(pane, 'Show XRF (Fore)', size=bsize, action=self.onXRF)
+        self.xrf2    = Button(pane, 'Show XRF (Back)', size=bsize,
+                              action=partial(self.onXRF, as_mca2=True))
 
-        ######################################
-        ## SPECIFIC TO XRF MAP AREAS
-        self.onstats  = Button(pane, 'Calculate XRF Stats', size=(135, -1),
-                                                action=self.onShowStats)
-        self.xrf      = Button(pane, 'Show XRF (Fore)', size=(135, -1),
-                                                action=self.onXRF)
-        self.xrf2     = Button(pane, 'Show XRF (Back)', size=(135, -1),
-                                                action=partial(self.onXRF, as_mca2=True))
-        self.onreport = Button(pane, 'Save XRF Report', size=(135, -1),
-                                                action=self.onReport)
-        #  self.cor = Check(pane, label='Correct Deadtime?')
+        self.onstats  = Button(pane, 'Calculate XRF Stats', size=bsize,
+                               action=self.onShowStats)
+        self.onreport = Button(pane, 'Save XRF Stats', size=bsize,
+                               action=self.onReport)
+
+        self.xrd1d_plot  = Button(pane, 'Show 1D XRD', size=bsize,
+                                  action=partial(self.onXRD,show=True,xrd1d=True))
+
+        self.xrd2d_plot  = Button(pane, 'Show 2D XRD', size=bsize,
+                                  action=partial(self.onXRD,show=True,xrd2d=True))
+
         legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
 
-        ######################################
-        ## SPECIFIC TO XRD MAP AREAS
-        self.xrd2d_save  = Button(pane, 'Save 2D XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,save=True,xrd2d=True))
-        self.xrd2d_plot  = Button(pane, 'Show 2D XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,show=True,xrd2d=True))
-        self.xrd1d_save  = Button(pane, 'Save 1D XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,save=True,xrd1d=True))
-        self.xrd1d_plot  = Button(pane, 'Show 1D XRD Data', size=(135, -1),
-                                                action=partial(self.onXRD,show=True,xrd1d=True))
-
-        ######################################
+        #  self.cor = Check(pane, label='Correct Deadtime?')
+        # self.xrd2d_save  = Button(pane, 'Save 2D XRD Data', size=bsize,
+        #                           action=partial(self.onXRD,save=True,xrd2d=True))
+        # self.xrd1d_save  = Button(pane, 'Save 1D XRD Data', size=bsize,
+        #                           action=partial(self.onXRD,save=True,xrd1d=True))
 
         def txt(s):
             return SimpleText(pane, s)
-        sizer.Add(txt('Map Areas'),         ( 0, 0), (1, 1), ALL_CEN,  2)
-        sizer.Add(self.info1,               ( 0, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(self.info2,               ( 1, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(self.info3,               ( 2, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(txt('Area: '),            ( 3, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              ( 3, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.delete,              ( 3, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(txt('New Label: '),       ( 4, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                ( 4, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.update,              ( 4, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onmap,               ( 5, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.clear,               ( 5, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onstats,             ( 5, 4), (1, 1), ALL_LEFT, 2)
-
-        sizer.Add(self.bexport,             ( 6, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.bimport,             ( 6, 2), (1, 2), ALL_LEFT, 2)
-
-        sizer.Add(self.xrf,                 ( 7, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                ( 7, 2), (1, 2), ALL_LEFT, 2)
-#         sizer.Add(self.cor,                 ( 7, 4), (1, 2), ALL_LEFT, 2)
-
-        sizer.Add(self.onreport,            ( 8, 0), (1, 2), ALL_LEFT, 2)
-
-        sizer.Add(self.xrd1d_plot,          ( 9, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd2d_plot,          ( 9, 2), (1, 2), ALL_LEFT, 2)
+        irow = 1
+        sizer.Add(txt('Map Areas and Saved Points'),  ( 0, 0), (1, 5), ALL_CEN,  2)
+        sizer.Add(txt('Area: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              (irow, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.bdelete,             (irow, 3), (1, 1), ALL_LEFT, 2)
 
 
-        sizer.Add(self.xrd1d_save,          (10, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrd2d_save,          (10, 2), (1, 2), ALL_LEFT, 2)
+        irow += 1
+        sizer.Add(txt('Info: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.info1,               (irow, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.info2,               (irow, 3), (1, 2), ALL_LEFT, 2)
 
-        sizer.Add(legend,                   (12, 1), (1, 2), ALL_LEFT, 2)
+        irow += 1
+        sizer.Add(txt('Rename: '),          (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                (irow, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.update,              (irow, 3), (1, 1), ALL_LEFT, 2)
+
+        irow += 1
+        sizer.Add(txt('Show: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               (irow, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.clear,               (irow, 2), (1, 1), ALL_LEFT, 2)
+
+        irow += 1
+        sizer.Add(txt('Save: '),            (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.bexport,             (irow, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.bimport,             (irow, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.bcopy,               (irow, 3), (1, 1), ALL_LEFT, 2)
+
+        irow += 1
+        sizer.Add(txt('XRF: '),             (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.xrf,                 (irow, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                (irow, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onstats,             (irow, 3), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            (irow, 4), (1, 1), ALL_LEFT, 2)
+
+
+        irow += 1
+        sizer.Add(txt('XRD: '),             (irow, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.xrd1d_plot,          (irow, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.xrd2d_plot,          (irow, 2), (1, 1), ALL_LEFT, 2)
+
+        # sizer.Add(self.xrd1d_save,          (irow, 0), (1, 2), ALL_LEFT, 2)
+        # sizer.Add(self.xrd2d_save,          (irow, 2), (1, 2), ALL_LEFT, 2)
+        irow += 1
+        sizer.Add(legend,                   (irow, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
-        for btn in (self.xrd1d_save,self.xrd1d_plot,self.xrd2d_save,self.xrd2d_plot):
+        for btn in (self.xrd1d_plot, self.xrd2d_plot):
             btn.Disable()
 
         # main sizer
@@ -1610,6 +1618,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pack(self, msizer)
         self.SetupScrolling()
 
+    def onCopy(self, event=None):
+        xrmfile   = self.owner.current_file
+        xrmmap    = xrmfile.xrmmap
+        print("Copy Area : shape", xrmfile, xrmmap.shape)
+
     def show_stats(self):
         # self.stats = self.xrmfile.get_area_stats(self.areaname)
         if self.report is None:
@@ -1619,7 +1632,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.report_data = []
 
         def report_info(dname,d):
-
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
@@ -1660,7 +1672,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
               det = det[:mask.shape[0]]
            return det[mask]
 
-
         if 'roistats' in area.attrs:
            for dat in json.loads(area.attrs.get('roistats','')):
                dat = tuple(dat)
@@ -1671,19 +1682,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         version = xrmmap.attrs.get('Version','1.0.0')
 
-
         if version_ge(version, '2.0.0'):
+            d_pref = 'mca'
             d_scas = [d for d in xrmmap['scalars']]
-            d_dets = [d for d in xrmmap['roimap'] if 'sum' not in d and 'xrd' not in d]
-            d_rois = xrmfile.get_roi_list(d_dets[0])
-            ndet = 'mca'
+            detnames = ["%s%i" % (d_pref, i) for i in range(1, xrmfile.ndet+1)]
+            d_rois = xrmfile.get_roi_list(detnames[0])
+
         else:
             d_addrs = [d.lower() for d in xrmmap['roimap/det_address']]
             d_names = [d for d in xrmmap['roimap/det_name']]
-            ndet = 'det'
+            d_pref = 'det'
 
-        for i in range(xrmmap.attrs.get('N_Detectors',0)):
-            tname = '%s%i/realtime' % (ndet,i+1)
+
+        for i in range(1, xrmfile.ndet+1):
+            tname = '%s%i/realtime' % (d_pref, i)
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
@@ -1695,8 +1707,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 report_info(scalar, d/ctime)
 
             for roi in d_rois:
-                for i,det in enumerate(d_dets):
-                    d = xrmmap['roimap'][det][roi]['raw'].value
+                for det in detnames:
+                    d = xrmfile.get_roimap(roi, det=det, dtcorrect=False)
                     d = match_mask_shape(d, amask)
                     report_info('%s (%s)' % (roi, det), d/ctime)
 
@@ -1716,13 +1728,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 d = match_mask_shape(d, amask)
                 report_info(dname, d/ctime)
 
-        if False and 'roistats' not in area.attrs:
+        if 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
 
-
     def update_xrmmap(self, xrmfile=None):
-
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
 
@@ -1734,37 +1744,19 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.onSelect()
 
     def set_enabled_btns(self, xrmfile=None):
-
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         xrmfile.reset_flags()
-        flag1dxrd = xrmfile.has_xrd1d
 
-        ## checks for calibration file if calibration file provided
-        if xrmfile.has_xrd2d and not flag1dxrd:
-            if os.path.exists(bytes2str(xrmfile.xrmmap['xrd1d'].attrs.get('calfile',''))):
-                flag1dxrd = True
-
-        ## sets saving/plotting buttons in accordance with available data
-        if xrmfile.has_xrd2d:
-            for btn in (self.xrd2d_save,self.xrd2d_plot):
-                btn.Enable()
-        else:
-            for btn in (self.xrd2d_save,self.xrd2d_plot):
-                btn.Disable()
-        if flag1dxrd:
-            for btn in (self.xrd1d_save,self.xrd1d_plot):
-                btn.Enable()
-        else:
-            for btn in (self.xrd1d_save,self.xrd1d_plot):
-                btn.Disable()
+        self.xrd2d_plot.Enable(xrmfile.has_xrd2d)
+        self.xrd1d_plot.Enable(xrmfile.has_xrd1d)
 
 
     def clear_area_choices(self):
 
         self.info1.SetLabel('')
         self.info2.SetLabel('')
-        self.info3.SetLabel('')
         self.desc.SetValue('')
         self.choice.Clear()
 
@@ -1873,14 +1865,14 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         except:
             pass
 
-        info1_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
-        info2_fmt = ' Range (pixels)   X : [%i:%i],  Y : [%i:%i] '
-        info3_fmt = '                  (tomography area) ' if tomo_area else ' '
+        info1_fmt = '%i Pixels, %.3f seconds'
+        info2_fmt = ' Range (pixels)   X: [%i:%i], Y: [%i:%i] '
+        if tomo_area:
+            info2_fmt = info2_fmt + '(tomography area)'
 
-        self.info1.SetLabel(info1_fmt%(npix, int(round(1000.0*pixtime)), dtime))
-        self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(),
-                                       yvals.min(), yvals.max()))
-        self.info3.SetLabel(info3_fmt)
+        self.info1.SetLabel(info1_fmt % (npix, dtime))
+        self.info2.SetLabel(info2_fmt % (xvals.min(), xvals.max(),
+                                         yvals.min(), yvals.max()))
 
         self.desc.SetValue(area.attrs.get('description', aname))
         self.report.DeleteAllItems()
@@ -3405,11 +3397,10 @@ class OpenMapFolder(wx.Dialog):
         self.info[1].SetValue(BEAMLINE)
         for line in open(os.path.join(self.folder, 'Scan.ini'), 'r'):
             if line.split()[0] == 'basedir':
-                npath = line.split()[-1].split('/')
-                cycle,usr = npath[-2],npath[-1]
+                npath = line.split()[-1].replace('\\', '/').split('/')
+                cycle, usr = npath[-2], npath[-1]
                 self.info[2].SetValue(cycle)
                 self.info[4].SetValue(usr)
-
         self.checkOK()
 
     def checkOK(self, evt=None):
