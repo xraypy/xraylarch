@@ -2897,7 +2897,7 @@ class GSEXRM_MapFile(object):
 
             for sclr in self.xrmmap['scalars']:
                 if roiname == sclr.lower():
-                    return sclr.strip('_raw'),'scalars'
+                    return sclr.strip('_raw'), 'scalars'
 
             if detname is None:
                 detname = 'roimap/mcasum'
@@ -2978,11 +2978,13 @@ class GSEXRM_MapFile(object):
         else:
             dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
-        ext = 'cor' if dtcorrect else 'raw'
         roi, detaddr = self.check_roi(roiname, det)
 
-        # print(" Get ROIMAP %s | %s | %s | %s" % (roiname, roi, det, detaddr))
+        ext = 'cor' if dtcorrect else 'raw'
+        if detaddr.startswith('scal'):
+            ext = ''
 
+        # print(" GetROIMAP %s|%s|%s|%s|%s|%s" % (roiname, roi, det, detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
             if detaddr.startswith('roimap'):
                 roi_ext = '%s/' + ext
