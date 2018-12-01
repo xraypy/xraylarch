@@ -242,6 +242,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
         pack(self, sizer)
         self.SetupScrolling()
 
+    def on_select(self):
+        for v in ('a', 'b', 'c', 'd', 'e', 'f'):
+            self.onFILE(evt=None, varname=v)
+
+
+
     def onSelectArray(self, evt=None):
         xrmfile = self.owner.current_file
         name = self.workarray_choice.GetStringSelection()
@@ -300,35 +306,32 @@ class MapMathPanel(scrolled.ScrolledPanel):
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 
-    def onFILE(self, evt, varname='a'):
-        pass
-        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        # print('\tNot doing anything yet...')
-        # print('\tShould switch from previous file to: %s' %
-        #          self.varfile[varname].GetStringSelection())
-        # print("\tNeeds to ignore 'currrent file' somehow.")
-        # print('\t%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+    def onFILE(self, evt=None, varname='a'):
+        fname   = self.varfile[varname].GetStringSelection()
+        shape = self.owner.filemap[fname].get_shape()
+
+        self.varshape[varname].SetLabel('%s' % repr(shape))
 
     def onDET(self, evt, varname='a'):
-
         self.set_roi_choices(varname=varname)
 
 
     def onROI(self, evt, varname='a'):
-
         fname   = self.varfile[varname].GetStringSelection()
         roiname = self.varroi[varname].GetStringSelection()
         dname   = self.vardet[varname].GetStringSelection()
         dtcorr  = self.varcor[varname].IsChecked()
 
-        map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
+        shape = self.owner.filemap[fname].get_shape()
+        self.varshape[varname].SetLabel('%s' % repr(shape))
 
-        self.varshape[varname].SetLabel('%s' % repr(map.shape))
+        map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
         self.varrange[varname].SetLabel('[%g:%g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmfile=None):
 
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         self.cfile = xrmfile
         self.xrmmap = xrmfile.xrmmap
@@ -352,7 +355,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
 
     def set_roi_choices(self, varname=None):
-
         if varname is None:
             for varname in self.vardet.keys():
                 dname = self.vardet[varname].GetStringSelection()
@@ -365,7 +367,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
 
     def update_roi(self, detname):
-
         return self.cfile.get_roi_list(detname)
 
     def set_workarray_choices(self, xrmmap):
@@ -394,16 +395,21 @@ class MapMathPanel(scrolled.ScrolledPanel):
         filemap = self.owner.filemap
 
         for varname in self.varfile.keys():
+            try:
+                _larch.symtable.get_symbol(varname)
+                _larch.symtable.del_symbol(str(varname))
+            except:
+                pass
             fname   = self.varfile[varname].GetStringSelection()
-            if fname not in files:
-                files.append(fname)
-            roiname = self.varroi[varname].GetStringSelection()
-            dname   = self.vardet[varname].GetStringSelection()
-            dtcorr  = self.varcor[varname].IsChecked()
+            if fname in filemap:
+                if fname not in files:
+                    files.append(fname)
+                roiname = self.varroi[varname].GetStringSelection()
+                dname   = self.vardet[varname].GetStringSelection()
+                dtcorr  = self.varcor[varname].IsChecked()
 
-            map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
-            _larch.symtable.set_symbol(str(varname), map)
-
+                map = filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
+                _larch.symtable.set_symbol(str(varname), map)
 
         _larch.eval("_mapcalc = %s" % expr_in)
         self.map = _larch.symtable._mapcalc
@@ -2199,6 +2205,11 @@ class MapViewerFrame(wx.Frame):
 
     def onNBChanged(self, event=None):
         idx = self.nb.GetSelection()
+        nbpanel = self.nbpanels[idx]
+        print(' selected nb ', idx, nbpanel)
+        if callable(getattr(nbpanel, 'on_select', None)):
+            nbpanel.on_select()
+
 
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
