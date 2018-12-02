@@ -15,7 +15,7 @@ from distutils.version import StrictVersion
 import larch
 from larch import ValidateLarchPlugin
 from larch_plugins.xrd import (peaklocater, create_cif, SPACEGROUPS,
-                               lambda_from_E, CIFcls)
+                               lambda_from_E)
 
 import json
 from larch.utils.jsonutils import encode4js, decode4js
@@ -456,7 +456,7 @@ class cifDB(object):
             return
 
         ## Define q-array for each entry at given energy
-        qhkl = cif.q_calculator(wvlgth=lambda_from_E(ENERGY), q_min=QMIN, q_max=QMAX)
+        qhkl = cif.calc_q(wvlgth=lambda_from_E(ENERGY), q_min=QMIN, q_max=QMAX)
         qarr = self.create_q_array(qhkl)
 
         ###################################################
@@ -1212,7 +1212,7 @@ class SearchCIFdb(object):
         print('chemistry : %s' % self.print_chemistry())
         print('geometry : %s' % self.print_geometry())
 
-    def print_parameter(self,key='authors'):
+    def print_parameter(self, key='authors'):
 
         s = ''
         if len(self.__dict__[key]) > 0:
@@ -1419,19 +1419,12 @@ def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
 
 
 @ValidateLarchPlugin
-def amcsd_cif(amcsd_id, _larch=None):
+def read_cif(ciffile=None, amcsd_id=None, _larch=None):
+    """make a representation of a CIF data structure
+    for crystallographic computations
+    """
     cifdb = get_cifdb(_larch)
-    ciftext = cifdb.return_cif(amcsd_id)
-    cif = CIFcls()
-    cif.read_ciftext(ciftext)
-    cif.spacegroup()
-    return cif
-
-@ValidateLarchPlugin
-def make_cif(ciffile, _larch=None):
-    cif = CIFcls()
-    cif.read_ciffile(ciffile)
-    return cif
+    return create_cif(filename=ciffile, cifdb=cifdb, amcsd_id=amcsd_id)
 
 def initializeLarchPlugin(_larch=None):
     """initialize cifdb"""
@@ -1441,5 +1434,4 @@ def initializeLarchPlugin(_larch=None):
 def registerLarchPlugin():
     return ('_xray', {'cif_match': cif_match,
                       'get_cifdb': get_cifdb,
-                      'amcsd_cif': amcsd_cif,
-                      'make_cif': make_cif})
+                      'read_cif': read_cif})

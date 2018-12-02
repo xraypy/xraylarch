@@ -19,8 +19,9 @@ from six import StringIO
 
 from larch_plugins.xray import xrayDB
 
-from larch_plugins.xrd import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
-                               twth_from_d,d_from_q,twth_from_q)
+from larch_plugins.xrd import (generate_hkl, qv_from_hkl, d_from_hkl,
+                               q_from_d, twth_from_d, d_from_q,
+                               twth_from_q)
 
 HAS_CifFile = False
 try:
@@ -2384,17 +2385,21 @@ class Citation(object):
         self.first_page = None
         self.last_page = None
 
-class CIFcls(object):
-
+class CIF(object):
     '''
     CIF data class
 
     Attributes:
     ------------
-    * self.unitcell         = [5.4, 5.4, 5.4, 90, 90, 90] # [a,b,c,alpha,beta,gamma]
-    * self.spacegroup.no    = 225                         # space group number
-    * self.spacegroup.name  = 'F m 3 m'                   # space group name
+    * unitcell       = [5.4, 5.4, 5.4, 90, 90, 90] # [a,b,c,alpha,beta,gamma]
+    * symmetry.no    = 225                         # space group number
+    * symmetry.name  = 'F m 3 m'                   # space group name
 
+    Methods
+    -------
+    read_ciffile(ciffile)
+    read_ciftext(ciftext)
+    structure_factors(wavelength=1.54056, q_min=0.2, q_max=10.0)
 
     mkak 2017.04.13
     '''
@@ -2413,7 +2418,7 @@ class CIFcls(object):
         self.symmetry    = Symmetry()
         self.atom        = Atom()
         self.publication = Citation()
-
+        self.xraydb = xrayDB()
         self.formula = None
         self.elem_uvw = {}
 
@@ -2427,6 +2432,8 @@ class CIFcls(object):
 
         self.ciffile = ciffile
         textlines = []
+        # hack? to ignore multiple 'chemical_formula_sum',
+        # has can happen with AMCSD
         has_formula_sum = False
         with open(ciffile, 'r') as fh:
             for line in fh.readlines():
@@ -2436,7 +2443,6 @@ class CIFcls(object):
                     has_formula_sum = True
                 else:
                     textlines.append(line)
-
         self.read_ciftext(''.join(textlines))
 
     def read_ciftext(self, ciftext, verbose=False):
@@ -2450,7 +2456,8 @@ class CIFcls(object):
         for k0 in cf[key].keys():
             k = k0.lower()
             ## name/label
-            if k in ('_chemical_name_mineral','_chemical_name_systematic','_amcsd_formula_title'):
+            if k in ('_chemical_name_mineral', '_chemical_name_systematic',
+                     '_amcsd_formula_title'):
                 self.label = cf[key][k]
             elif k in ('_chemical_formula_structural','_chemical_formula_sum'):
                 self.formula = cf[key][k]
@@ -2564,13 +2571,18 @@ class CIFcls(object):
             ## '_cell_formula_units_z'   : not sure what this is (kit)
             ## '_refine_ls_r_factor_all' : not sure what this is (kit)
 
-        self.spacegroup()
-        self.wyckoff()
+        # set spacegroup number
+        if self.symmetry.no is None and self.symmetry.name is not None:
+            name = self.symmetry.name.replace(' ', '')
+            for no, sgroup in SPACEGROUPS.items():
+                if name in sgroup:
+                    self.symmetry.no = no
+                    break
+        self.set_wyckoff()
         self.check_atoms()
 
     def check_atoms(self):
-
-        for i,atom in enumerate(zip(self.atom.label,self.atom.symm_wyckoff)):
+        for i,atom in enumerate(zip(self.atom.label, self.atom.symm_wyckoff)):
             el,sym = atom
             if len(el.split('-')) > 1:
                 for j,e in enumerate(el.split('-')):
@@ -2600,8 +2612,7 @@ class CIFcls(object):
                 coor_list += [a]
             self.elem_uvw.update({el:coor_list})
 
-    def wyckoff(self):
-
+    def set_wyckoff(self):
         self.symm_key = []
         if str(self.symmetry.no) not in SPGRP_SYMM.keys():
              for key in SPGRP_SYMM.keys():
@@ -2637,19 +2648,10 @@ class CIFcls(object):
                     self.atom.symm_wyckoff += ['error']
 
 
-
-    def spacegroup(self):
-        if self.symmetry.no is None and self.symmetry.name is not None:
-            name = re.sub(' ','',self.symmetry.name)
-            for no in SPACEGROUPS.keys():
-                if name in SPACEGROUPS[no]:
-                    self.symmetry.no = no
-                    return
-
-    def q_calculator(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
-
+    def calc_q(self, wavelength=1.54056, q_min=0.2, q_max=10.0):
+        """
+        """
         hkl_list = generate_hkl(positive_only=True)
-        xraydb = xrayDB()
 
         dhkl = d_from_hkl(hkl_list, *self.unitcell)
         qhkl = q_from_d(dhkl)
@@ -2660,39 +2662,38 @@ class CIFcls(object):
         ii, jj = qhkl < q_max, qhkl > q_min
         ii = jj*ii
 
-        for i,hkl in enumerate(hkl_list):
+        for i, hkl in enumerate(hkl_list):
             Fhkl = 0
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
                         Fhkl = Fhkl + (cmath.exp(2*cmath.pi*imag*hukvlw)).real
-            if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
+            if abs(Fhkl) > 1e-5:
+                F2hkl[i] = np.float(Fhkl**2)
 
         ## removes zero value structure factors
-        jj = F2hkl > 0.001
-        ii = ii*jj
+        ii = ii*(F2hkl > 0.001)
 
         qarr = np.array(qhkl[ii],dtype=np.float16)
 
         return sorted(np.array(list(set(qarr))))
 
 
-    def structure_factors(self, wvlgth=1.54056, q_min=0.2, q_max=10.0):
-
+    def structure_factors(self, wavelength=1.54056, q_min=0.2, q_max=10.0):
         hkl_list = generate_hkl()
-        xraydb = xrayDB()
+        xraydb = self.xraydb
 
-        dhkl = d_from_hkl(hkl_list,*self.unitcell)
+        dhkl = d_from_hkl(hkl_list, *self.unitcell)
         qhkl = q_from_d(dhkl)
 
         F2hkl = np.zeros(len(hkl_list))
 
         ## removes q values outside of range
-        ii,jj = qhkl < q_max,qhkl > q_min
+        ii, jj = qhkl < q_max, qhkl > q_min
         ii = jj*ii
 
-        for i,hkl in enumerate(hkl_list):
+        for i, hkl in enumerate(hkl_list):
             Fhkl = 0
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
@@ -2710,10 +2711,10 @@ class CIFcls(object):
         qarr = sorted(np.array(list(set(qarr))))
         kk = len(qarr)
 
-        self.hkl      = np.zeros(kk,dtype=np.ndarray)
-        self.qhkl     = np.zeros(kk,dtype=np.float32)
-        self.F2hkl    = np.zeros(kk,dtype=np.float32)
-        self.phkl     = np.zeros(kk,dtype=np.int)
+        self.hkl    = np.zeros(kk, dtype=np.ndarray)
+        self.qhkl   = np.zeros(kk, dtype=np.float32)
+        self.F2hkl  = np.zeros(kk, dtype=np.float32)
+        self.phkl   = np.zeros(kk, dtype=np.int)
 
         for i,row in enumerate(zip(list(hkl_list[ii]),qhkl[ii],F2hkl[ii])):
             hkl,q,F2 = row
@@ -2725,7 +2726,7 @@ class CIFcls(object):
             self.phkl[j] += 1
 
         self.dhkl = d_from_q(self.qhkl)
-        self.twthhkl = twth_from_q(self.qhkl,wvlgth)
+        self.twthhkl = twth_from_q(self.qhkl,wavelength)
         self.LAP = self.correction_factor(self.twthhkl)
 
         self.Ihkl = self.LAP * self.phkl * self.F2hkl
@@ -2765,25 +2766,20 @@ def check_elemsym(atom):
 def removeNonAscii(s):
     return "".join(i for i in s if ord(i)<128)
 
-def create_cif(cifdb=None, ciffile=None, amcsd_id=None, cifstr=None):
+def create_cif(filename=None, text=None, cifdb=None, amcsd_id=None):
+    """
+    create CIF representation from CIF filename, text of CIF file,
+    or AMCSD id in CIFDB
 
-    cif = CIFcls()
+    Arguments
+    ---------
+    ciffile
+    """
+    cif = CIF()
     if ciffile is not None:
         cif.read_ciffile(ciffile)
-    else:
-        tmpcif = 'tempcif.cif'
-        if cifstr is not None:
-            ciftext = cifstr
-        elif amcsd_id is not None and cifdb is not None:
-            ciftext = cifdb.return_cif(amcsd_id)
-        with open(tmpcif, 'w') as f:
-            try:
-                f.write(ciftext)
-            except:
-                f.write(removeNonAscii(ciftext))
-
-        cif.read_ciffile(tmpcif)
-        os.unlink(tmpcif)
-    cif.spacegroup()
-
+    elif cifstr is not None:
+        cif.read_ciftext(cifstr)
+    elif cifdb is not None and amcsd_id is not None:
+        cif.read_ciftext(cifdb.return_cif(amcsd_id))
     return cif
