@@ -32,6 +32,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch_plugins.io import nativepath
 from larch_plugins.cifdb import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX,
                                  CATEGORIES, match_database)
+
 from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                d_from_twth,twth_from_d,q_from_d,
                                lambda_from_E, E_from_lambda,calc_broadening,
@@ -156,16 +157,11 @@ class XRD1DViewerFrame(wx.Frame):
         sizer = wx.BoxSizer()
         sizer.Add(self.nb, -1, wx.EXPAND)
         panel.SetSizer(sizer)
-
         self.XRD1DMenuBar()
-
-    def closeDB(self,event=None):
-
-        self.cifdb.close_database()
 
     def openDB(self,dbname=None):
         try:
-            self.closeDB()
+            self.cifdb.close()
         except:
             pass
 
@@ -176,9 +172,8 @@ class XRD1DViewerFrame(wx.Frame):
             self.cifdb = cifDB(dbname=dbname)
         except:
             print('Failed to import file as database: %s' % dbname)
-            dbname = self.default_cifdb
             self.cifdb = cifDB(dbname=self.default_cifdb)
-        print('Now using database: %s' % os.path.split(dbname)[-1])
+        # print('Now using database: %s' % os.path.split(dbname)[-1])
 
     def onExit(self, event=None):
 
@@ -203,7 +198,7 @@ class XRD1DViewerFrame(wx.Frame):
 
 
         try:
-            self.closeDB()
+            self.cifdb.close()
         except:
             pass
 
@@ -835,7 +830,6 @@ class Fitting1DXRD(BasePanel):
             xi = self.rngpl.ch_xaxis.GetSelection()
 
             cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
-            print("Display CIF peaks ", cif)
             cif.structure_factors(wavelength=wavelength, q_max=qmax)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
@@ -1350,7 +1344,6 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
 
     def open_database(self,event=None):
-
         wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose AMCSD database file',
                            defaultDir=os.getcwd(),
@@ -1367,13 +1360,14 @@ class Fitting1DXRD(BasePanel):
                 self.owner.openDB(dbname=path)
             except:
                 pass
-
         return path
 
 
     def filter_database(self,event=None):
+        print(" filter database B")
+        cifdb = self.owner.cifdb
 
-        myDlg = XRDSearchGUI(self.owner.cifdb, self.owner.srch_cls)
+        myDlg = XRDSearchGUI(cifdb, self.owner.srch_cls)
 
         filter = False
 
@@ -1408,18 +1402,17 @@ class Fitting1DXRD(BasePanel):
         myDlg.Destroy()
 
         if filter == True:
-            cif = self.owner.cifdb
 
             if len(self.elem_include) > 0 or len(self.elem_exclude) > 0:
-                list_amcsd = cif.amcsd_by_chemistry(include=self.elem_include,
-                                                    exclude=self.elem_exclude,
-                                                    list=list_amcsd)
+                list_amcsd = cifdb.amcsd_by_chemistry(include=self.elem_include,
+                                                      exclude=self.elem_exclude,
+                                                      list=list_amcsd)
             if self.mnrl_include is not None:
-                list_amcsd = cif.amcsd_by_mineral(include=self.mnrl_include,
-                                                  list=list_amcsd)
+                list_amcsd = cifdb.amcsd_by_mineral(self.mnrl_include,
+                                                    list=list_amcsd)
             if self.auth_include is not None:
-                list_amcsd = cif.amcsd_by_author(include=self.auth_include,
-                                                 list=list_amcsd)
+                list_amcsd = cifdb.amcsd_by_author(include=self.auth_include,
+                                                   list=list_amcsd)
         try:
             self.displayMATCHES(list_amcsd)
         except:
@@ -2521,9 +2514,7 @@ class SelectCIFData(wx.Dialog):
         self.val_cifE.SetValue(new)
 
 
-
     def load_file(self,event=None):
-
         wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose CIF',
                            defaultDir=os.getcwd(),
@@ -2544,7 +2535,8 @@ class SelectCIFData(wx.Dialog):
             self.cif_list.SetSelection(0)
 
     def filter_database(self,event=None):
-        myDlg = XRDSearchGUI(self.cifdb,self.parent.owner.srch_cls)
+        # print(" filter database A")
+        myDlg = XRDSearchGUI(self.cifdb, self.parent.owner.srch_cls)
 
         filter = False
         list_amcsd = None
@@ -2566,10 +2558,12 @@ class SelectCIFData(wx.Dialog):
                     pass
 
 
-            if myDlg.Mineral.IsTextEmpty():
-                mnrl_include = None
-            else:
-                mnrl_include = myDlg.Mineral.GetStringSelection()
+            mnrl_include = myDlg.Mineral.GetStringSelection()
+            # print( myDlg.Mineral.GetStringSelection())
+            # print("Mineral name > ", mnrl_include, " < ")
+            # print("elem include > ", elem_include, " < ")
+            # print("elem exclude > ", elem_exclude, " < ")
+
             if myDlg.Author.GetValue() == '':
                 auth_include = None
             else:
@@ -2578,28 +2572,31 @@ class SelectCIFData(wx.Dialog):
             filter = True
         myDlg.Destroy()
 
-        if filter == True:
-
+        if filter:
             if len(elem_include) > 0 or len(elem_exclude) > 0:
                 list_amcsd = self.cifdb.amcsd_by_chemistry(include=elem_include,
-                                                      exclude=elem_exclude,
-                                                      list=list_amcsd)
+                                                           exclude=elem_exclude,
+                                                           list=list_amcsd)
             if mnrl_include is not None:
-                list_amcsd = self.cifdb.amcsd_by_mineral(include=mnrl_include,
-                                                    list=list_amcsd)
+                # print( " mineral name ", mnrl_include, ' >l ', list_amcsd)
+                list_amcsd = self.cifdb.amcsd_by_mineral(mnrl_include,
+                                                         list=list_amcsd)[:1000]
+
+                # print(" --> ", len(list_amcsd))
+
             if auth_include is not None:
                 list_amcsd = self.cifdb.amcsd_by_author(include=auth_include,
                                                    list=list_amcsd)
             self.returnMATCHES(list_amcsd)
 
-    def returnMATCHES(self,list_amcsd):
+    def returnMATCHES(self, list_amcsd):
         '''
         Populates Results Panel with list
         '''
         self.cif_list.Clear()
 
         if list_amcsd is not None and len(list_amcsd) > 0:
-            for amcsd in list_amcsd:
+            for amcsd in list_amcsd[:200]:
                 try:
                     elem,name,spgp,autr = self.cifdb.all_by_amcsd(amcsd)
                     entry = 'AMCSD %i : %s' % (amcsd,name)
@@ -3276,7 +3273,7 @@ class DatabaseInfoGUI(wx.Dialog):
             filename = self.parent.owner.cifdb.dbname
         except:
             return
-        nocif = self.parent.owner.cifdb.return_no_of_cif()
+        nocif = self.parent.owner.cifdb.cifcount()
 
         self.txt_dbname.SetLabel('Current file : %s' % filename)
         try:
@@ -3307,8 +3304,8 @@ class XRDSearchGUI(wx.Dialog):
 
         ## Mineral search
         lbl_Mineral  = wx.StaticText(self.panel, label='Mineral name:' )
-        self.minerals = self.cifdb.return_mineral_names()
-        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1), style=wx.TE_PROCESS_ENTER)
+        self.minerals = self.cifdb.get_mineral_names()
+        self.Mineral = wx.ComboBox(self.panel, choices=self.minerals, size=(270, -1))
 
         ## AMCSD search
         lbl_AMCSD  = wx.StaticText(self.panel, label='AMCSD search:' )
@@ -3412,53 +3409,51 @@ class XRDSearchGUI(wx.Dialog):
     def setValues(self):
 
         key = 'authors'
-        self.Author.SetValue(self.srch.print_parameter(key=key))
+        self.Author.SetValue(self.srch.show_parameter(key=key))
 
-        self.Symmetry.SetValue(self.srch.print_geometry())
+        self.Symmetry.SetValue(self.srch.show_geometry())
 
         key = 'categories'
         # print("categoiries ", self.Category, dir(self.Category))
-        # print(" -- = ", self.srch.print_parameter(key=key))
-        # self.Category.Set(self.srch.print_parameter(key=key))
+        # print(" -- = ", self.srch.show_parameter(key=key))
+        # self.Category.Set(self.srch.show_parameter(key=key))
 
         key = 'keywords'
-        self.Keyword.SetValue(self.srch.print_parameter(key=key))
+        self.Keyword.SetValue(self.srch.show_parameter(key=key))
 
         key = 'amcsd'
-        self.AMCSD.SetValue(self.srch.print_parameter(key=key))
+        self.AMCSD.SetValue(self.srch.show_parameter(key=key))
 
         if len(np.shape(self.srch.mnrlname)) > 0:
             self.srch.mnrlname = self.srch.mnrlname[0]
         self.Mineral.SetStringSelection(self.srch.mnrlname)
 
-        self.Chemistry.SetValue(self.srch.print_chemistry())
+        self.Chemistry.SetValue(self.srch.show_chemistry())
 
 
     def entrAuthor(self,event=None):
         key = 'authors'
         self.srch.read_parameter(self.Author.GetValue(),key=key)
-        self.Author.SetValue(self.srch.print_parameter(key=key))
+        self.Author.SetValue(self.srch.show_parameter(key=key))
 
     def entrSymmetry(self,event=None):
         self.srch.read_geometry(str(self.Symmetry.GetValue()))
-        self.Symmetry.SetValue(self.srch.print_geometry())
+        self.Symmetry.SetValue(self.srch.show_geometry())
 
     def entrCategory(self,event=None):
         key = 'categories'
         self.srch.read_parameter(self.Category.GetValue(),key=key)
-        self.Category.SetValue(self.srch.print_parameter(key=key))
+        self.Category.SetValue(self.srch.show_parameter(key=key))
 
     def entrKeyword(self,event=None):
         key = 'keywords'
         self.srch.read_parameter(self.Keyword.GetValue(),key=key)
-        self.Keyword.SetValue(self.srch.print_parameter(key=key))
+        self.Keyword.SetValue(self.srch.show_parameter(key=key))
 
     def entrAMCSD(self,event=None):
         key = 'amcsd'
-        # print(" search amcsd ", self.AMCSD.GetValue())
         self.srch.read_parameter(self.AMCSD.GetValue(),key=key)
-        # print(" search says: ", self.srch.print_parameter(key=key)))
-        self.AMCSD.SetValue(self.srch.print_parameter(key=key))
+        self.AMCSD.SetValue(self.srch.show_parameter(key=key))
 
     def entrMineral(self,event=None):
         key = 'mnrlname'
@@ -3471,7 +3466,7 @@ class XRDSearchGUI(wx.Dialog):
 
     def entrChemistry(self,event=None):
         self.srch.read_chemistry(self.Chemistry.GetValue())
-        self.Chemistry.SetValue(self.srch.print_chemistry())
+        self.Chemistry.SetValue(self.srch.show_chemistry())
 
 #########################################################################
 #     def SetValues(self,event=None):
@@ -3496,7 +3491,7 @@ class XRDSearchGUI(wx.Dialog):
 #
 #         ## Chemistry search
 #
-#         self.Chemistry.SetValue(self.srch.print_chemistry())
+#         self.Chemistry.SetValue(self.srch.show_chemistry())
 #
 #
 #         ## Cell parameter symmetry search
@@ -3528,7 +3523,7 @@ class XRDSearchGUI(wx.Dialog):
         if update:
             self.srch.elem_incl = incl
             self.srch.elem_excl = excl
-            self.Chemistry.SetValue(self.srch.print_chemistry())
+            self.Chemistry.SetValue(self.srch.show_chemistry())
 
 
     def onAuthor(self,event=None):
@@ -3546,7 +3541,7 @@ class XRDSearchGUI(wx.Dialog):
 
         if update:
             self.srch.authors = incl
-            self.Author.SetValue(self.srch.print_parameter(key='authors'))
+            self.Author.SetValue(self.srch.show_parameter(key='authors'))
 
     def onSymmetry(self,event=None):
         dlg = XRDSymmetrySearch(self,search=self.srch)
@@ -3579,10 +3574,10 @@ class XRDSearchGUI(wx.Dialog):
 
             self.srch.sg = vals[12]
 
-            self.Symmetry.SetValue(self.srch.print_geometry())
+            self.Symmetry.SetValue(self.srch.show_geometry())
 
     def onReset(self,event=None):
-        self.minerals = self.cifdb.return_mineral_names()
+        self.minerals = self.cifdb.get_mineral_names()
         self.Mineral.Set(self.minerals)
         self.Mineral.Select(0)
         self.Author.Clear()
