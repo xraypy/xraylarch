@@ -39,6 +39,7 @@ from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
                                xrd1d,peakfinder_methods,SPACEGROUPS,
                                create_cif, save1D)
 
+from larch.wxlib import Button
 ###################################
 
 VERSION = '2 (14-March-2018)'
@@ -49,7 +50,7 @@ CIFSCALE = 1000
 MT01 = np.array([0,1])
 MT00 = np.zeros(2)
 
-ENERGY = 19.0
+ENERGY = 18.0
 
 SRCH_MTHDS = peakfinder_methods()
 
@@ -105,8 +106,7 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
             else:
                 xrdviewer.add1Ddata(data1dxrd)
 
-def plot_sticks(x,y):
-
+def plot_sticks(x, y):
     ## adds peaks to zero array to plot vertical lines of given heights
     xy = np.zeros((2,len(x)*3+2))
 
@@ -114,11 +114,10 @@ def plot_sticks(x,y):
     xy[0,0]  = x[ 0] - xstep
     xy[0,-1] = x[-1] + xstep
 
-    for i,xyi in enumerate(zip(x,y)):
+    for i, xyi in enumerate(zip(x, y)):
         ii = i*3
         xy[0,ii+1:ii+4] = xyi[0] ## x
         xy[1,ii+2]      = xyi[1] ## y
-
     return xy
 
 
@@ -223,7 +222,7 @@ class XRD1DViewerFrame(wx.Frame):
         diFFitMenu = wx.Menu()
 
         MenuItem(self, diFFitMenu, '&Open 1D dataset', '', self.xrd1Dviewer.load_file)
-        MenuItem(self, diFFitMenu, 'Open &CIFFile', '', self.xrd1Dviewer.chooseCIF)
+        MenuItem(self, diFFitMenu, 'Open &CIFFile', '', self.xrd1Dviewer.select_CIF)
         MenuItem(self, diFFitMenu, 'Change larch &working folder', '', self.onFolderSelect)
         diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, 'Save 1D dataset to file', '', self.save1Dxrd)
@@ -831,12 +830,13 @@ class Fitting1DXRD(BasePanel):
             energy = self.xrd1dgrp.energy
             wavelength = self.xrd1dgrp.wavelength
             maxI = np.max(self.plt_data[3])*0.95
-            maxq = np.max(self.plt_data[0])*1.05
+            qmax = np.max(self.plt_data[0])*1.05
 
             xi = self.rngpl.ch_xaxis.GetSelection()
 
             cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
-            cif.structure_factors(wvlgth=wavelength, q_max=maxq)
+            print("Display CIF peaks ", cif)
+            cif.structure_factors(wavelength=wavelength, q_max=qmax)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
 
@@ -1431,8 +1431,8 @@ class Fitting1DXRD(BasePanel):
         q_pks = peaklocater(self.xrd1dgrp.pki,self.plt_data[0])
         # print('Still need to determine how best to rank these matches')
         list_amcsd = match_database(self.owner.cifdb, q_pks,
-                                    minq=np.min(self.plt_data[0]),
-                                    maxq=np.max(self.plt_data[0]))
+                                    qmin=np.min(self.plt_data[0]),
+                                    qmax=np.max(self.plt_data[0]))
         self.displayMATCHES(list_amcsd)
 
     def displayMATCHES(self,list_amcsd):
@@ -1728,12 +1728,20 @@ class Viewer1DXRD(wx.Panel):
         leftbox = wx.BoxSizer(wx.VERTICAL)
 
         plttools = self.Toolbox(self)
-        addbtns = self.AddPanel(self)
+
+        add_btns = wx.BoxSizer(wx.HORIZONTAL)
+        add_btns.Add(Button(self, label=' Add Data Set ',
+                            action=self.load_file),
+                     wx.ALL, border=3)
+        add_btns.Add(Button(self, label=' Add CIF Structure ',
+                            action=self.select_CIF),
+                     wx.ALL, border=3)
+
         dattools = self.DataBox(self)
         ciftools = self.CIFBox(self)
 
         leftbox.Add(plttools, flag=wx.ALL,border=10)
-        leftbox.Add(addbtns, flag=wx.ALL,border=10)
+        leftbox.Add(add_btns, flag=wx.ALL,border=10)
         leftbox.Add(dattools, flag=wx.ALL,border=10)
         leftbox.Add(ciftools, flag=wx.ALL,border=10)
 
@@ -1900,19 +1908,7 @@ class Viewer1DXRD(wx.Panel):
 
         return vbox
 
-    def AddPanel(self,panel):
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-
-        btn_data = wx.Button(panel,label='ADD NEW DATA SET')
-        btn_data.Bind(wx.EVT_BUTTON, self.load_file)
-
-        btn_cif = wx.Button(panel,label='ADD NEW CIF')
-        btn_cif.Bind(wx.EVT_BUTTON, self.chooseCIF)
-
-        hbox.Add(btn_data, flag=wx.ALL, border=8)
-        hbox.Add(btn_cif, flag=wx.ALL, border=8)
-        return hbox
 
 
 
@@ -1950,48 +1946,42 @@ class Viewer1DXRD(wx.Panel):
         self.val_cifscale.SetValue('%i' % self.cif_scale[cif_no])
         self.optionsON(data=False,cif=True)
 
-    def readCIF(self,path,cifscale=CIFSCALE,verbose=False):
-
-        energy = self.getE()
-        wavelength = lambda_from_E(energy)
-
-        minq,maxq = 0.2,6.0
+    def readCIF(self, path, cifscale=CIFSCALE, verbose=False):
+        wavelength = lambda_from_E(self.getE())
+        qmin, qmax = 0.2, 8.0
         for i,data in enumerate(self.xy_plot):
-            maxq = 1.05*np.max(data[0])
-            minq = 0.95*np.min(data[0])
-            if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
+            qmax = 1.05*np.max(data[0])
+            qmin = 0.95*np.min(data[0])
+            if qmax > (4*math.pi/wavelength): qmax = (4*math.pi/wavelength)*0.95
 
-        cif = create_cif(ciffile=path)
-        cif.structure_factors(wvlgth=wavelength,q_min=minq,q_max=maxq)
-        qall,Iall = plot_sticks(cif.qhkl,cif.Ihkl)
-
+        cif = create_cif(filename=path)
+        cif.structure_factors(wavelength=wavelength, q_min=qmin, q_max=qmax)
+        qall, Iall = plot_sticks(cif.qhkl, cif.Ihkl)
         if len(Iall) > 0:
-            q    = qall
-            twth = twth_from_q(q,wavelength)
-            d    = d_from_q(q)
+            twth = twth_from_q(qall, wavelength)
+            d    = d_from_q(qall)
             I    = Iall/np.max(Iall)*cifscale
         else:
             print('No real structure factors found in range.')
             return
 
-        return [q,twth,d,I]
+        return [qall, twth, d, I]
 
     def onResetE(self,event=None):
 
-        energy = self.getE()
-        wavelength = lambda_from_E(energy)
+        wavelength = lambda_from_E(self.getE())
 
-        minq,maxq = 0.2,6.0
+        qmin, qmax = 0.2, 8.0
         for i,data in enumerate(self.xy_plot):
-            maxq = 1.05*np.max(data[0])
-            minq = 0.95*np.min(data[0])
-            if maxq > (4*math.pi/wavelength): maxq = (4*math.pi/wavelength)*0.95
+            qmax = 1.05*np.max(data[0])
+            qmin = 0.95*np.min(data[0])
+            if qmax > (4*math.pi/wavelength): qmax = (4*math.pi/wavelength)*0.95
 
 
         xi = self.ch_xaxis.GetSelection()
         for i,cif_no in enumerate(self.icif):
-            self.cif_plot[i] = calculateCIF(self.cif_all[i], wvlgth=wavelength,
-                                            qmin=minq, qmax=maxq,
+            self.cif_plot[i] = calculateCIF(self.cif_all[i], wavelength=wavelength,
+                                            qmin=qmin, qmax=qmax,
                                             cifscale=self.cif_scale[i])
             self.plot1D.update_line(cif_no,np.array(self.cif_plot[i][xi]),
                                            np.array(self.cif_plot[i][3]))
@@ -2256,7 +2246,7 @@ class Viewer1DXRD(wx.Panel):
             ## mkak 2016.11.16
             print('Not yet capable of saving data. Function yet to be written.')
 
-    def chooseCIF(self,event=None,cifscale=CIFSCALE):
+    def select_CIF(self, event=None, cifscale=CIFSCALE):
 
         if len(self.xy_data) > 0:
             plt_no = self.ch_data.GetSelection()
@@ -2264,38 +2254,39 @@ class Viewer1DXRD(wx.Panel):
         else:
             energy = ENERGY
 
-        minq,maxq = None,None
+        qmin,qmax = None,None
         for i,xydata in enumerate(self.xy_plot):
             if i == 0:
-                minq,maxq = np.min(xydata[0]),np.max(xydata[0])
+                qmin,qmax = np.min(xydata[0]),np.max(xydata[0])
             else:
-                if minq > np.min(xydata[0]): minq = np.min(xydata[0])
-                if maxq < np.max(xydata[0]): maxq = np.max(xydata[0])
-        if minq is None: minq = QMIN
-        if maxq is None: maxq = QMAX
+                if qmin > np.min(xydata[0]): qmin = np.min(xydata[0])
+                if qmax < np.max(xydata[0]): qmax = np.max(xydata[0])
+        if qmin is None: qmin = QMIN
+        if qmax is None: qmax = QMAX
 
-        dlg = SelectCIFData(self,self.owner.cifdb, minq=minq,maxq=maxq,energy=energy)
+        dlg = SelectCIFData(self, self.owner.cifdb,
+                            qmin=qmin, qmax=qmax, energy=energy)
 
         okay = False
         if dlg.ShowModal() == wx.ID_OK:
-
-            try:
+            if True: #try:
                 energy = E_from_lambda(dlg.returnLambda())
                 qaxis = dlg.returnQ()
-                minq,maxq = min(qaxis),max(qaxis)
+                qmin, qmax = min(qaxis), max(qaxis)
 
                 if dlg.type == 'file':
                     path = dlg.path
-                    cif = create_cif(ciffile=path)
+                    cif = create_cif(filename=path)
                     name = os.path.split(path)[-1]
                 elif dlg.type == 'database':
                     amcsd_id = dlg.amcsd_id
                     cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
                     name = 'AMCSD %i' % amcsd_id
-                if cif.label is not None: name = '%s : %s' % (name,cif.label)
+                if cif.label is not None:
+                    name = '%s : %s' % (name,cif.label)
 
                 okay = True
-            except:
+            else: # except:
                 print('ERROR: something failed while loading CIF')
                 pass
 
@@ -2305,10 +2296,10 @@ class Viewer1DXRD(wx.Panel):
         if okay:
             self.slctEorL.SetSelection(0)
             self.val_cifE.SetValue(str(energy))
-            wvlgth = lambda_from_E(energy)
-
-            newcif = calculateCIF(cif,wvlgth=wvlgth,qmin=minq,qmax=maxq,cifscale=cifscale)
-            self.addCIFdata(cif,newcif,name)
+            wavelength = lambda_from_E(energy)
+            newcif = calculateCIF(cif, wavelength=wavelength, qmin=qmin, qmax=qmax,
+                                  cifscale=cifscale)
+            self.addCIFdata(cif, newcif, name)
 
     def getE(self):
 
@@ -2335,21 +2326,19 @@ class Viewer1DXRD(wx.Panel):
 
 
 
-def calculateCIF(cif,wvlgth=0.65,qmin=0.5,qmax=5.5,cifscale=CIFSCALE):
-
-    cif.structure_factors(wvlgth=wvlgth,q_min=qmin,q_max=qmax)
-    qall,Iall = cif.qhkl,cif.Ihkl
+def calculateCIF(cif, wavelength=0.65, qmin=0.5, qmax=5.5, cifscale=CIFSCALE):
+    cif.structure_factors(wavelength=wavelength, q_min=qmin, q_max=qmax)
+    qall, Iall = cif.qhkl, cif.Ihkl
     Iall = Iall/np.max(Iall)*cifscale
-    qall,Iall = plot_sticks(qall,Iall)
+    qall, Iall = plot_sticks(qall, Iall)
 
-    return np.array([qall, twth_from_q(qall,wvlgth), d_from_q(qall), Iall])
-
+    return np.array([qall, twth_from_q(qall,wavelength), d_from_q(qall), Iall])
 
 
 
 class SelectCIFData(wx.Dialog):
-
-    def __init__(self,parent, cifdb, minq=QMIN,maxq=QMAX,energy=ENERGY):
+    def __init__(self, parent, cifdb, qmin=QMIN, qmax=QMAX,
+                 energy=ENERGY):
 
         self.cifdb = cifdb
         self.type = None
@@ -2359,7 +2348,8 @@ class SelectCIFData(wx.Dialog):
         self.xaxis = 0
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, parent, title='Select CIF to plot', size=(350, 520))
+        dialog = wx.Dialog.__init__(self, parent,
+                                    title='Select CIF to plot', size=(450, 600))
 
         panel = wx.Panel(self)
 
@@ -2449,8 +2439,8 @@ class SelectCIFData(wx.Dialog):
 
         self.val_cifE.SetValue('%0.4f' % energy)
         self.ch_xaxis.SetSelection(self.xaxis)
-        self.val_xmin.SetValue('%0.4f' % minq)
-        self.val_xmax.SetValue('%0.4f' % maxq)
+        self.val_xmin.SetValue('%0.4f' % qmin)
+        self.val_xmax.SetValue('%0.4f' % qmax)
 
     def returnLambda(self,event=None):
 

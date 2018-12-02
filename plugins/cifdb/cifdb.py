@@ -426,7 +426,7 @@ class cifDB(object):
         else:
             with open(ciffile,'r') as file:
                 cifstr = str(file.read())
-        cif = create_cif(cifstr=cifstr)
+        cif = create_cif(text=cifstr)
 
         if cif.id_no is None:
             cif_no = 99999
@@ -1419,12 +1419,21 @@ def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
 
 
 @ValidateLarchPlugin
-def read_cif(ciffile=None, amcsd_id=None, _larch=None):
+def read_cif(filename=None, amcsd_id=None, _larch=None):
     """make a representation of a CIF data structure
     for crystallographic computations
+
+    Arguments:
+    ----------
+    filename  (str or None) name of CIF file
+    amcsd_id  (int or None) index of CIF in Am Min Cystal Structure database
+
+    Returns
+    -------
+    CIF representation
     """
     cifdb = get_cifdb(_larch)
-    return create_cif(filename=ciffile, cifdb=cifdb, amcsd_id=amcsd_id)
+    return create_cif(filename=filename, cifdb=cifdb, amcsd_id=amcsd_id)
 
 def initializeLarchPlugin(_larch=None):
     """initialize cifdb"""

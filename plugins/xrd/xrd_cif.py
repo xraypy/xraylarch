@@ -2538,7 +2538,7 @@ class CIF(object):
             elif k == '_symmetry_int_tables_number':
                 self.symmetry.no = cf[key][k]
             elif k == '_symmetry_space_group_name_h-m':
-                self.symmetry.name = re.sub(' ','',cf[key][k])
+                self.symmetry.name = cf[key][k].replace(' ', '')
                 #self.symmetry.name = cf[key][k]
             elif k == '_chemical_name_structure_type':
                 self.symmetry.type = cf[key][k]
@@ -2776,10 +2776,10 @@ def create_cif(filename=None, text=None, cifdb=None, amcsd_id=None):
     ciffile
     """
     cif = CIF()
-    if ciffile is not None:
-        cif.read_ciffile(ciffile)
-    elif cifstr is not None:
-        cif.read_ciftext(cifstr)
+    if filename is not None:
+        cif.read_ciffile(filename)
+    elif text is not None:
+        cif.read_ciftext(text)
     elif cifdb is not None and amcsd_id is not None:
         cif.read_ciftext(cifdb.return_cif(amcsd_id))
     return cif
