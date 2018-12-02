@@ -2693,9 +2693,6 @@ class CIF(object):
         ii, jj = qhkl < q_max, qhkl > q_min
         ii = jj*ii
 
-        print(" HKL ", len(hkl_list))
-        print(" II ", len(ii), ii.sum())
-
 
         for i, hkl in enumerate(hkl_list):
             Fhkl = 0
