@@ -2693,21 +2693,26 @@ class CIF(object):
         ii, jj = qhkl < q_max, qhkl > q_min
         ii = jj*ii
 
+        print(" HKL ", len(hkl_list))
+        print(" II ", len(ii), ii.sum())
+
+
         for i, hkl in enumerate(hkl_list):
             Fhkl = 0
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
-                    f0 = xraydb.f0(el, qhkl[i]/(4*math.pi)) # xraydb.f0(el, 1/(2*dhkl[i]))
+                    f0 = xraydb.f0(el, qhkl[i]/(4*math.pi))
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
-                        hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
+                        hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2] ## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
-            if abs(Fhkl) > 1e-5: F2hkl[i] = np.float(Fhkl**2)
+            if abs(Fhkl) > 1e-2:
+                F2hkl[i] = np.float(Fhkl**2)
 
         ## removes zero value structure factors
-        jj = F2hkl > 0.001
-        ii = ii*jj
+        ii = ii*(F2hkl > 0.001)
+        # print(" II ", len(ii), ii.sum())
 
-        qarr = np.array(qhkl[ii],dtype=np.float16)
+        qarr = np.array(qhkl[ii], dtype=np.float32)
         qarr = sorted(np.array(list(set(qarr))))
         kk = len(qarr)
 
@@ -2716,8 +2721,8 @@ class CIF(object):
         self.F2hkl  = np.zeros(kk, dtype=np.float32)
         self.phkl   = np.zeros(kk, dtype=np.int)
 
-        for i,row in enumerate(zip(list(hkl_list[ii]),qhkl[ii],F2hkl[ii])):
-            hkl,q,F2 = row
+        for i, row in enumerate(zip(list(hkl_list[ii]), qhkl[ii], F2hkl[ii])):
+            hkl, q, F2 = row
             j = (np.abs(qarr-q)).argmin()
 
             self.hkl[j]  = hkl
