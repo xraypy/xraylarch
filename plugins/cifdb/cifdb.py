@@ -876,7 +876,14 @@ class cifDB(object):
     def match_elements(self, elems, exclude=None):
         """match structues containing all elements in a list
 
-        Arguments
+        Arguments:
+        ----------
+        elems    list of elements to match
+        exclude  list of elements to exclude for match (default None)
+
+        Returns:
+        --------
+        list of amcsd ids for structures
 
         """
         matches = None
