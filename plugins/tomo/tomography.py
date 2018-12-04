@@ -82,7 +82,6 @@ def return_methods():
 
 def check_parameters(sino, center, omega, tomo_alg, sinogram_order):
 
-
     if type(tomo_alg) is str: tomo_alg = [tomo_alg]
     try:
         if len(tomo_alg) > 3: tomo_alg = tomo_alg[:3]
@@ -177,7 +176,7 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
     '''
 
     check = check_parameters(sino, center, omega, tomo_alg, sinogram_order)
-    sino,center,omega,tomo_alg,sinogram_order = check
+    sino, center, omega, tomo_alg, sinogram_order = check
 
     if tomo_alg[0] is None:
         print('No tomographic reconstruction packages available')
@@ -224,10 +223,8 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
         tomo = np.array(tomo)
 
     elif tomo_alg[0].lower().startswith('tomopy') and HAS_tomopy:
-
         if refine_center:
             center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
-
         algorithm =  tomo_alg[1]
         filter_name = tomo_alg[2]
         if filter_name is None:
@@ -239,7 +236,6 @@ def tomo_reconstruction(sino, refine_center=False, center_range=None, center=Non
 
         if algorithm.startswith('gridrec'):
             args['filter_name'] = filter_name
-
         tomo = tomopy.recon(sino, np.radians(omega),**args)
 
     return center,tomo
