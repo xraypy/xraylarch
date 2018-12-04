@@ -374,9 +374,6 @@ class FitResultFrame(wx.Frame):
         return self.peakfit_history[self.nfit]
 
     def onPlot(self, event=None):
-        if self.skip_plotting:
-            return
-
         show_resid = self.wids['plot_resid'].IsChecked()
         sub_bline = self.wids['plot_bline'].IsChecked()
         cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
