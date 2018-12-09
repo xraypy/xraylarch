@@ -231,7 +231,6 @@ class Interpreter:
         """executes parsed Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
         #    run(None) and expect a None in return.
-        # print(" Run", node, expr)
         if node is None:
             return None
         if isinstance(node, str):
@@ -265,7 +264,7 @@ class Interpreter:
                 if out.dtype == numpy.object:
                     try:
                         out = out.astype(float)
-                    except TypeError:
+                    except (ValueError, TypeError):
                         try:
                             out = out.astype(complex)
                         except TypeError:
