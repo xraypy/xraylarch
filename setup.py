@@ -150,13 +150,8 @@ if DEBUG:
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch plugins
 
-larch_icos = glob('icons/*.ic*')
-larch_exes = [pjoin('exes', sname, exefmt % exe) for exe in compiled_exes]
-larch_dlls = glob("%s/*" % pjoin('dlls', sname))
-
-data_files = [(bindir, larch_exes),
-              (pjoin(larchdir, 'icons'),       larch_icos),
-              (pjoin(larchdir, 'dlls', sname), larch_dlls)]
+data_files = [(pjoin(larchdir, 'icons'),       glob('icons/*.ic*')),
+              (pjoin(larchdir, 'dlls', sname), glob("%s/*" % pjoin('dlls', sname)))]
 
 
 scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
@@ -215,7 +210,6 @@ setup(name = 'xraylarch',
                    'Topic :: Scientific/Engineering'],
       )
 
-print("# setup done, finishing installation")
 
 def remove_cruft():
     """remove files that may be left from earlier installs"""
@@ -264,13 +258,22 @@ def remove_distutils_sitepackage():
             except:
                 pass
 
+def copy_compiled_exes():
+    for exename in compiled_exes:
+        exe = exefmt % exename
+        src = os.path.abspath(pjoin('exes', sname, exe))
+        dest = os.path.abspath(pjoin(sys.prefix, 'bin', exe))
+        shutil.copy(src, dest)
+        os.chmod(dest, 493)
+
+
 def fix_darwin_dylibs():
     """
     fix dynamic libs on Darwin with install_name_tool
     """
     olddir    = '/usr/local/gfortran/lib'
-    newdir    = sys.prefix
     larchdlls = 'share/larch/dlls/darwin64'
+    newdir    = pjoin(sys.prefix, larchdlls)
 
     dylibs = ('libgcc_s.1.dylib','libquadmath.0.dylib', 'libgfortran.3.dylib',
 
@@ -280,18 +283,20 @@ def fix_darwin_dylibs():
     fixcmd = '/usr/bin/install_name_tool -change'
 
     cmds = []
+
+
     for ename in compiled_exes:
-        ename = pjoin(newdir, 'bin', ename)
+        ename = pjoin(sys.prefix, 'bin', ename)
         for dname in dylibs:
             old = pjoin(olddir, dname)
-            new = pjoin(newdir, larchdlls, dname)
+            new = pjoin(newdir, dname)
             cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
 
     for ename in dylibs:
-        ename = pjoin(newdir, larchdlls, ename)
+        ename = pjoin(newdir, ename)
         for dname in dylibs:
             old = pjoin(olddir, dname)
-            new = pjoin(newdir, larchdlls, dname)
+            new = pjoin(newdir, dname)
             cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
 
     for cmd in cmds:
@@ -300,9 +305,9 @@ def fix_darwin_dylibs():
 def fix_darwin_exes():
     "fix anaconda python apps on MacOs to launch with pythonw"
 
-    if 'Anaconda' not in sys.version:
-        return
     pyapp = pjoin(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
+    if not pexists(pyapp):
+        return
     for script in scripts:
         appname = os.path.join(sys.exec_prefix, 'bin', script)
         if os.path.exists(appname):
@@ -322,10 +327,9 @@ def fix_linux_dylibs():
     """
     fix dynamic libs on Linux with patchelf
     """
-    prefix = sys.prefix
-    larchdlls = os.path.join(prefix, 'share/larch/dlls/linux64')
+    larchdlls = os.path.join(sys.prefix, 'share/larch/dlls/linux64')
 
-    fixcmd = "%s/bin/patchelf --set-rpath "  % prefix
+    fixcmd = "%s/bin/patchelf --set-rpath "  % (sys.prefix)
 
     dylibs = ('libgcc_s.so.1','libquadmath.so.0', 'libgfortran.so.3',
               'libfeff6.so', 'libcldata.so', 'libfeff8lpath.so',
@@ -334,21 +338,23 @@ def fix_linux_dylibs():
         os.system("%s '$ORIGIN' %s" % (fixcmd, os.path.join(larchdlls, lname)))
 
     for ename in compiled_exes:
-        os.system("%s %s %s/bin/%s" % (fixcmd, larchdlls, prefix, ename))
+        os.system("%s %s %s/bin/%s" % (fixcmd, larchdlls, sys.prefix, ename))
 
 # on install:
 #   remove historical cruft
 #   fix dynamic libraries
+#   copy compiled exes to top bin directory (out of egg)
 #   fix MacOS + Anaconda python vs. pythonw
 #   create desktop icons
 if INSTALL:
     remove_cruft()
     remove_distutils_sitepackage()
+    copy_compiled_exes()
+
     larchbin = 'larch'
     if uname.startswith('darwin'):
         fix_darwin_dylibs()
-        if 'Anaconda' in sys.version:
-            fix_darwin_exes()
+        fix_darwin_exes()
     elif uname.startswith('linux'):
         fix_linux_dylibs()
     elif uname.startswith('win'):
