@@ -461,6 +461,8 @@ class XASNormPanel(TaskPanel):
 
         if dgroup is None:
             dgroup = self.controller.get_group()
+        if dgroup is None:
+            return
 
         self.skip_process = True
         self.get_config(dgroup)
