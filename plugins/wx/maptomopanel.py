@@ -333,18 +333,15 @@ class TomographyPanel(GridPanel):
                 pass
 
     def calculateSinogram(self,xrmfile=None):
-
         '''
         returns slice as [slices, x, 2th]
         '''
-
         subtitles = None
         plt3 = ('three' in self.plot_choice.GetStringSelection().lower())
         oprtr = self.oper.GetStringSelection()
 
-        det_name,roi_name = [],[]
-        plt_name = []
-        for det,roi in zip(self.det_choice,self.roi_choice):
+        det_name, roi_name, plt_name = [], [], []
+        for det, roi in zip(self.det_choice,self.roi_choice):
             det_name += [det.GetStringSelection()]
             roi_name += [roi.GetStringSelection()]
             if det_name[-1] == 'scalars':
@@ -359,7 +356,8 @@ class TomographyPanel(GridPanel):
         else:
             flagxrd = True if det_name[0].startswith('xrd') else False
 
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
         args={'trim_sino' : flagxrd,
               'hotcols'   : self.owner.hotcols,
@@ -372,13 +370,19 @@ class TomographyPanel(GridPanel):
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
 
-        r_map,sino_order = xrmfile.get_sinogram(roi_name[0],det=det_name[0],**args)
+        # check for common case of a few too many angles -- in which case, always
+        # remove the first and last:
+        domega  = abs(np.diff(omega).mean())
+        if abs(omega[-1] - omega[0]) > 360+2*domega:
+            omega = omega[1:-1]
+            args['hotcols'] = True
+        r_map, sino_order = xrmfile.get_sinogram(roi_name[0], det=det_name[0], **args)
         if plt3:
-            g_map,sino_order = xrmfile.get_sinogram(roi_name[1],det=det_name[1],**args)
-            b_map,sino_order = xrmfile.get_sinogram(roi_name[2],det=det_name[2],**args)
+            g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1], **args)
+            b_map, sino_order = xrmfile.get_sinogram(roi_name[2], det=det_name[2], **args)
 
         if roi_name[-1] != '1':
-            mapx,sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
+            mapx, sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
 
             ## remove negative background counts for dividing
             if oprtr == '/': mapx[np.where(mapx==0)] = 1.
@@ -417,7 +421,7 @@ class TomographyPanel(GridPanel):
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
 
-        return title,subtitles,info,x,omega,sino_order,sino
+        return title, subtitles, info, x, omega, sino_order, sino
 
     def onSaveTomograph(self, event=None):
 
@@ -447,7 +451,7 @@ class TomographyPanel(GridPanel):
         det = None
 
         ## returns sino in order: slice, x, 2theta
-        title,subtitles,info,x,ome,sino_order,sino = self.calculateSinogram()
+        title, subtitles, info, x, ome, sino_order, sino = self.calculateSinogram()
 
         tomo_alg = [self.alg_choice[0].GetStringSelection(),
                     self.alg_choice[1].GetStringSelection(),
@@ -460,8 +464,6 @@ class TomographyPanel(GridPanel):
                 'sinogram_order' : sino_order,
                 'omega'          : ome,
                 'hotcols'        : self.owner.hotcols}
-
-        # print("On Show Tomo ", tomo_alg, args)
 
         tomo = xrmfile.get_tomograph(sino, **args)
 
@@ -485,7 +487,7 @@ class TomographyPanel(GridPanel):
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
 
-        self.owner.display_tomo(tomo, title=title, det=det)
+        self.owner.display_tomo(tomo, title=title, subtitles=subtitles, det=det)
 
     def set_center(self,cen):
 
