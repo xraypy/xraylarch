@@ -1605,13 +1605,14 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
-                tmd.display(tomo, title=title, contrast_level=0.5)
+                tmd.display(tomo, title=title, subtitles=subtitles,
+                            contrast_level=0.5)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
-                tmd = MapImageFrame(output_title   = title,
-                                      lasso_callback = lasso_cb)
-                tmd.display(tomo, title=title,
+                tmd = MapImageFrame(output_title=title,
+                                    lasso_callback=lasso_cb)
+                tmd.display(tomo, title=title, subtitles=subtitles,
                             contrast_level=0.5)
                 displayed = True
             except PyDeadObjectError:
