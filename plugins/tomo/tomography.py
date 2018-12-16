@@ -19,12 +19,12 @@ except ImportError:
     pass
 
 HAS_scikit = False
-try:
-    from skimage.transform import iradon
-    #from skimage.transform import radon, iradon_sart
-    HAS_scikit = True
-except:
-    pass
+# try:
+#     # from skimage.transform import iradon
+#     #from skimage.transform import radon, iradon_sart
+#     # HAS_scikit = True
+# except:
+#     pass
 
 # HAS_larch = False
 # try:
@@ -64,8 +64,7 @@ def check_method(method):
     return method
 
 def return_methods():
-
-    alg0,alg1,alg2 = [],[],[]
+    alg0, alg1, alg2 = [], [], []
     if HAS_tomopy:
         alg0 += ['tomopy']
         alg1 += [TOMOPY_ALG]

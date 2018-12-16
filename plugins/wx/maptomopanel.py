@@ -47,7 +47,7 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 from larch_plugins.tomo import (tomo_reconstruction, reshape_sinogram, trim_sinogram,
-                                return_methods)
+                                return_methods, TOMOPY_ALG, TOMOPY_FILT)
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -105,15 +105,16 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.tomo_pkg,self.tomo_alg_A,self.tomo_alg_B = return_methods()
+        self.tomo_pkg, self.tomo_alg_A, self.tomo_alg_B = return_methods()
 
-        self.alg_choice = [Choice(self, choices=self.tomo_pkg,      size=(125, -1)),
-                           Choice(self, choices=self.tomo_alg_A[0], size=(125, -1)),
-                           Choice(self, choices=self.tomo_alg_B[0], size=(125, -1))]
-        self.alg_choice[0].Bind(wx.EVT_CHOICE, self.onALGchoice)
+        self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(125, -1),
+                                action=self.onALGchoice)
+        self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(125, -1))
+
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
+        self.center_value.SetIncrement(0.25)
         self.refine_center = wx.CheckBox(self, label='Refine center')
         self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
@@ -148,13 +149,14 @@ class TomographyPanel(GridPanel):
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
 
         self.Add(SimpleText(self,' '),         dcol=1, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Engine'),    dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Algorithm'), dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Filter'),    dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'# Iterations'), dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Grid Size'),    dcol=1, style=LEFT)
+
         self.Add(SimpleText(self,'Reconstruct: '), dcol=1, style=LEFT,  newrow=True)
-        self.AddMany((self.alg_choice[0], self.alg_choice[1], self.alg_choice[2]),
-                                                       dcol=1, style=LEFT)
-        self.Add(SimpleText(self,'Center: '),          dcol=1, style=LEFT,  newrow=True)
+        self.AddMany((self.tomo_algo, self.tomo_filt))
+        self.Add(SimpleText(self,'Center: '),         dcol=1, style=LEFT,  newrow=True)
         self.Add(self.center_value,    dcol=1, style=LEFT)
         self.Add(self.refine_center,    dcol=1, style=LEFT)
 
@@ -181,20 +183,20 @@ class TomographyPanel(GridPanel):
         self.disable_options()
 
     def disable_options(self):
-        # print(" tomo panel disable options ")
+        print(" tomo panel disable options ")
 
-        all_choices = [self.plot_choice]+[self.oper]+[self.sino_data]
-        all_choices += self.alg_choice+self.det_choice+self.roi_choice
-        for chc in all_choices:
-            chc.Disable()
-
-        self.refine_center.Disable()
-
-        for btn in (self.tomo_show+[self.tomo_save]):
-            btn.Disable()
-
-        self.center_value.Disable()
-        self.center_range.Disable()
+#         all_choices = [self.plot_choice]+[self.oper]+[self.sino_data]
+#         all_choices += self.alg_choice + self.det_choice + self.roi_choice
+#         for chc in all_choices:
+#             chc.Disable()
+#
+#         self.refine_center.Disable()
+#
+#         for btn in (self.tomo_show+[self.tomo_save]):
+#             btn.Disable()
+#
+#         self.center_value.Disable()
+#         self.center_range.Disable()
 
 
     def enable_options(self):
@@ -209,8 +211,8 @@ class TomographyPanel(GridPanel):
 
         self.oper.Enable()
 
-        for chc in self.alg_choice:
-            chc.Enable()
+        # for chc in self.alg_choice:
+        #    chc.Enable()
 
         if self.tomo_pkg[0] != '':
             for btn in (self.tomo_show+[self.tomo_save]):
@@ -432,9 +434,9 @@ class TomographyPanel(GridPanel):
         if not self.owner.dtcor and 'scalars' in detpath:
             detpath = '%s_raw' % detpath
 
-        tomo_alg = [self.alg_choice[0].GetStringSelection(),
-                    self.alg_choice[1].GetStringSelection(),
-                    self.alg_choice[2].GetStringSelection()]
+        tomo_alg = ['tomopy',
+                    self.tomo_algo.GetStringSelection(),
+                    self.tomo_filt.GetStringSelection()]
 
         print('\nSaving tomographic reconstruction for %s ...' % detpath)
 
