@@ -39,7 +39,7 @@ HAS_scikit = False
 ##########################################################################
 # GLOBAL VARIABLES
 
-TOMOPY_ALG  = ['gridrec', 'art', 'bart', 'fbp', 'mlem', 'osem', 'ospml_hybrid',
+TOMOPY_ALG = ['gridrec', 'art', 'bart', 'mlem', 'osem', 'ospml_hybrid',
                'ospml_quad', 'pml_hybrid', 'pml_quad', 'sirt' ]
 
 TOMOPY_FILT = ['shepp', 'ramlak', 'butterworth','parzen', 'cosine', 'hann',
@@ -79,7 +79,7 @@ def return_methods():
 
     return alg0,alg1,alg2
 
-def check_parameters(sino, center, omega, tomo_alg, sinogram_order):
+def check_parameters(sino, algorithm,  center, omega, sinogram_order):
 
     if type(tomo_alg) is str: tomo_alg = [tomo_alg]
     try:
@@ -136,8 +136,8 @@ def reshape_sinogram(A,x=[],omega=[]):
     if len(x) == len(omega):
         print('''Cannot reorder sinogram based on length of positional
                  arrays when same length. Acceptable orders:
-                 sinogram_order = False : sino = [ 2th   x slice x X ]
-                 sinogram_order = True  : sino = [ slice x 2th   x X ]''')
+                 sinogram_order = False : sino = [ 2th   , slice, X ]
+                 sinogram_order = True  : sino = [ slice , 2th  , X ]''')
         return A,False
     if len(x) < 1 or len(omega) < 1:
         return A,False
@@ -167,77 +167,33 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
 
     return sino,x,omega
 
-def tomo_reconstruction(sino, refine_center=False, center_range=None, center=None,
-                        tomo_alg=[], omega=None, sinogram_order=False, **args):
+def tomo_reconstruction(sino, omega, algorithm='gridrec',
+                        filter_name='shepp', num_iter=1, center=None,
+                        refine_center=False, sinogram_order=True):
+
     '''
     INPUT ->  sino : slice, 2th, x OR 2th, slice, x (with flag sinogram_order=True/False)
     OUTPUT -> tomo : slice, x, y
     '''
+    # check = check_parameters(sino, center, omega, tomo_alg, sinogram_order)
+    # sino, center, omega, tomo_alg, sinogram_order = check
+    if center is None:
+        center = sino.shape[1]/2.
+        refine_center = True
 
-    check = check_parameters(sino, center, omega, tomo_alg, sinogram_order)
-    sino, center, omega, tomo_alg, sinogram_order = check
+    if refine_center:
+        center = tomopy.find_center(sino, np.radians(omega), init=center,
+                                    ind=0, tol=0.5, sinogram_order=sinogram_order)
 
-    if tomo_alg[0] is None:
-        print('No tomographic reconstruction packages available')
-        return center, np.zeros((1,sino.shape[-1],sino.shape[-1]))
-
-
-    if tomo_alg[0].lower().startswith('scikit') and HAS_scikit:
-
-        npts = sino.shape[2]
-        center = int(center)
-        cntr = npts - center   ## switch reference direction for compatibility with tomopy convention
-        if not sinogram_order:
-            sino = np.einsum('jik->ijk',sino)
-
-        args.update({'theta':omega,
-                     'filter':tomo_alg[1],
-                     'interpolation':tomo_alg[2],
-                     'circle':True})
-
-        if refine_center:
-            print(' Refining center; start value: %i' % center)
-            if center_range is None: center_range = 12
-            rng = int(center_range) if center_range > 0 and center_range < 21 else 12
-
-            center_list,negentropy = [],[]
-
-            for cen in np.arange(cntr-rng, cntr+rng, 1, dtype=int):
-                xslice = slice(npts-2*cen, -1) if cen <= npts/2. else slice(0, npts-2*cen)
-                if sinogram_order:
-                    recon = iradon(sino[0,:,xslice].T, **args)
-                else:
-                    recon = iradon(sino[0,xslice], **args)
-                recon = recon - recon.min() + 0.005*(recon.max()-recon.min())
-                negentropy += [(recon*np.log(recon)).sum()]
-                center_list += [cen]
-            cntr = center_list[np.array(negentropy).argmin()]
-            center = float(npts-cntr) # flip axis for compatibility with tomopy convention
-            print('   Best center: %i' % center)
-
-        tomo = []
-        xslice = slice(npts-2*cntr, -1) if cntr <= npts/2. else slice(0, npts-2*cntr)
-        for sino0 in sino:
-            tomo += [iradon(sino0[:,xslice].T, **args)]
-        tomo = np.array(tomo)
-
-    elif tomo_alg[0].lower().startswith('tomopy') and HAS_tomopy:
-        if refine_center:
-            center = tomopy.find_center(sino, np.radians(omega), init=center, ind=0, tol=0.5, sinogram_order=sinogram_order)
-        algorithm =  tomo_alg[1]
-        filter_name = tomo_alg[2]
-        if filter_name is None:
-            filter_name = 'none'
-
-        args.update({'center':center,
-                     'algorithm':algorithm,
-                     'sinogram_order':sinogram_order})
-
-        if algorithm.startswith('gridrec'):
-            args['filter_name'] = filter_name
-        tomo = tomopy.recon(sino, np.radians(omega),**args)
-
-    return center,tomo
+    algorithm = algorithm.lower()
+    recon_kws = {}
+    if algorithm.startswith('gridr'):
+        recon_kws['filter_name'] = filter_name
+    else:
+        recon_kws['num_iter'] = num_iter
+    tomo = tomopy.recon(sino, np.radians(omega), algorithm=algorithm,
+                        center=center, sinogram_order=sinogram_order, **recon_kws)
+    return center, tomo
 
 # def registerLarchPlugin():
 #     return ('_tomo', {'create_tomogrp': create_tomogrp})

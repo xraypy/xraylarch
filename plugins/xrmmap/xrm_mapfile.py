@@ -1918,7 +1918,8 @@ class GSEXRM_MapFile(object):
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
 
-        if trim_sino: sino,x,omega = trim_sinogram(sino,x,omega)
+        if trim_sino:
+            sino, x, omega = trim_sinogram(sino,x,omega)
 
         return reshape_sinogram(sino,x,omega)
 
@@ -1926,22 +1927,20 @@ class GSEXRM_MapFile(object):
         '''
         returns tomo_center, tomo
         '''
-
         if center is None:
             center = self.get_tomography_center()
-
         if omega  is None:
             omega = self.get_rotation_axis(hotcols=hotcols)
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
-
-        center,tomo = tomo_reconstruction(sino, omega=omega, center=center, **kws)
+        center, tomo = tomo_reconstruction(sino, omega, center=center, **kws)
         self.set_tomography_center(center=center)
-
         return tomo
 
-    def save_tomograph(self, datapath, tomo_alg=[], dtcorrect=False, hotcols=False, **kws):
+    def save_tomograph(self, datapath, algorithm='gridrec',
+                       filter_name='shepp', num_iter=1, dtcorrect=False,
+                       hotcols=False, **kws):
         '''
         saves group for tomograph for selected detector
         '''
@@ -2005,12 +2004,14 @@ class GSEXRM_MapFile(object):
         else:
             sino = datagroup.value
 
-        sino,order = reshape_sinogram(sino,x,omega)
+        sino,order = reshape_sinogram(sino, x, omega)
 
-        center,tomo = tomo_reconstruction(sino, omega=omega, center=center,
-                                          sinogram_order=order, tomo_alg=tomo_alg)
+        center,tomo = tomo_reconstruction(sino, algorithm=algorithm,
+                                          filter_name=filter_name,
+                                          num_iter=num_iter, omega=omega,
+                                          center=center, sinogram_order=order)
 
-        tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in tomo_alg])
+        tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in (algorithm, filter_name)])
         tomogrp.attrs['center'] = '%0.2f pixels' % (center)
 
         try:
