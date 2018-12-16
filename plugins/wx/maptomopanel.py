@@ -46,8 +46,7 @@ from larch.utils.strutils import bytes2str, version_ge
 
 from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch_plugins.tomo import (tomo_reconstruction, reshape_sinogram, trim_sinogram,
-                                return_methods, TOMOPY_ALG, TOMOPY_FILT)
+from larch_plugins.tomo import TOMOPY_ALG, TOMOPY_FILT
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
@@ -105,21 +104,17 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.tomo_pkg, self.tomo_alg_A, self.tomo_alg_B = return_methods()
-
         self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(125, -1),
                                 action=self.onALGchoice)
         self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(125, -1))
-
+        self.tomo_niter = wx.SpinCtrl(self, min=1, max=500, initial=1,
+                                      size=(100, -1),
+                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.center_value.SetIncrement(0.25)
         self.refine_center = wx.CheckBox(self, label='Refine center')
-        self.center_range = wx.SpinCtrlDouble(self, inc=1, size=(50, -1),
-                                     style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
-        self.refine_center.Bind(wx.EVT_CHECKBOX, self.refineCHOICE)
-
         self.refine_center.SetValue(False)
 
         self.sino_data   = Choice(self, size=(250, -1))
@@ -152,19 +147,12 @@ class TomographyPanel(GridPanel):
         self.Add(SimpleText(self,'Algorithm'), dcol=1, style=LEFT)
         self.Add(SimpleText(self,'Filter'),    dcol=1, style=LEFT)
         self.Add(SimpleText(self,'# Iterations'), dcol=1, style=LEFT)
-        self.Add(SimpleText(self,'Grid Size'),    dcol=1, style=LEFT)
 
         self.Add(SimpleText(self,'Reconstruct: '), dcol=1, style=LEFT,  newrow=True)
-        self.AddMany((self.tomo_algo, self.tomo_filt))
+        self.AddMany((self.tomo_algo, self.tomo_filt, self.tomo_niter))
         self.Add(SimpleText(self,'Center: '),         dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.center_value,    dcol=1, style=LEFT)
-        self.Add(self.refine_center,    dcol=1, style=LEFT)
-
-        os = wx.BoxSizer(wx.HORIZONTAL)
-        os.Add(SimpleText(self,' Max Range: '), 0, LEFT)
-        os.Add(self.center_range, 1, LEFT)
-        self.Add(os,    dcol=1, style=LEFT)
-
+        self.Add(self.center_value, dcol=1, style=LEFT)
+        self.Add(self.refine_center, dcol=1, style=LEFT)
 
         self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
 
@@ -180,24 +168,6 @@ class TomographyPanel(GridPanel):
 
         #################################################################################
         self.pack()
-        self.disable_options()
-
-    def disable_options(self):
-        print(" tomo panel disable options ")
-
-#         all_choices = [self.plot_choice]+[self.oper]+[self.sino_data]
-#         all_choices += self.alg_choice + self.det_choice + self.roi_choice
-#         for chc in all_choices:
-#             chc.Disable()
-#
-#         self.refine_center.Disable()
-#
-#         for btn in (self.tomo_show+[self.tomo_save]):
-#             btn.Disable()
-#
-#         self.center_value.Disable()
-#         self.center_range.Disable()
-
 
     def enable_options(self):
         # print(" tomo panel enable options ")
@@ -211,16 +181,6 @@ class TomographyPanel(GridPanel):
 
         self.oper.Enable()
 
-        # for chc in self.alg_choice:
-        #    chc.Enable()
-
-        if self.tomo_pkg[0] != '':
-            for btn in (self.tomo_show+[self.tomo_save]):
-                btn.Enable()
-            self.refine_center.Enable()
-            self.center_value.Enable()
-            self.center_range.SetValue(10)
-            self.center_range.SetRange(1, 20)
 
     def update_xrmmap(self, xrmfile=None):
 
@@ -234,7 +194,6 @@ class TomographyPanel(GridPanel):
 
         if self.cfile.get_rotation_axis() is None:
             self.center_value.SetValue(0)
-            self.disable_options()
             return
 
         self.enable_options()
@@ -245,29 +204,27 @@ class TomographyPanel(GridPanel):
         except:
             self.npts = len(self.cfile.get_pos('x', mean=True))
 
-        if self.tomo_pkg[0] != '':
-            center = self.cfile.get_tomography_center()
-            self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
-            self.center_value.SetValue(center)
+        center = self.cfile.get_tomography_center()
+        self.center_value.SetRange(-0.5*self.npts,1.5*self.npts)
+        self.center_value.SetValue(center)
 
         self.plotSELECT()
 
-    def refineCHOICE(self,event=None):
-
-        if self.refine_center.GetValue():
-            self.center_range.Enable()
-        else:
-            self.center_range.Disable()
 
     def onALGchoice(self,event=None):
 
-        self.alg_choice[1].SetChoices(self.tomo_alg_A[self.alg_choice[0].GetSelection()])
-        self.alg_choice[2].SetChoices(self.tomo_alg_B[self.alg_choice[0].GetSelection()])
+        alg = self.tomo_algo.GetStringSelection().lower()
+        enable_filter = False
+        enable_niter = False
 
-        if self.alg_choice[0].GetStringSelection().startswith('sci'):
-            self.center_value.SetIncrement(1)
+        if alg.startswith('gridrec'):
+            enable_filter = True
         else:
-            self.center_value.SetIncrement(0.25)
+            enable_niter = True
+
+        self.tomo_niter.Enable(enable_niter)
+        self.tomo_filt.Enable(enable_filter)
+
 
     def detSELECT(self,idet,event=None):
         self.set_roi_choices(idet=idet)
@@ -428,57 +385,48 @@ class TomographyPanel(GridPanel):
     def onSaveTomograph(self, event=None):
 
         xrmfile = self.owner.current_file
-        detpath     = self.sino_data.GetStringSelection()
-        tomo_center = self.center_value.GetValue()
+        detpath = self.sino_data.GetStringSelection()
+        center = self.center_value.GetValue()
 
         if not self.owner.dtcor and 'scalars' in detpath:
             detpath = '%s_raw' % detpath
 
-        tomo_alg = ['tomopy',
-                    self.tomo_algo.GetStringSelection(),
-                    self.tomo_filt.GetStringSelection()]
-
         print('\nSaving tomographic reconstruction for %s ...' % detpath)
 
-        xrmfile.save_tomograph(detpath, tomo_alg=tomo_alg,
-                               center=tomo_center,dtcorrect=self.owner.dtcor,
+        xrmfile.save_tomograph(detpath,
+                               algorithm=self.tomo_algo.GetStringSelection(),
+                               filter_name=self.tomo_filt.GetStringSelection(),
+                               num_iter=self.tomo_niter.GetValue(),
+                               center=center, dtcorrect=self.owner.dtcor,
                                hotcols=self.owner.hotcols)
         print('Saved.')
 
 
     def onShowTomograph(self, event=None, new=True):
-
         xrmfile = self.owner.current_file
-        tomo_center = self.center_value.GetValue()
         det = None
 
-        ## returns sino in order: slice, x, 2theta
-        title, subtitles, info, x, ome, sino_order, sino = self.calculateSinogram()
+        title, subtitles, info, x, omega, sino_order, sino = self.calculateSinogram()
 
-        tomo_alg = [self.alg_choice[0].GetStringSelection(),
-                    self.alg_choice[1].GetStringSelection(),
-                    self.alg_choice[2].GetStringSelection()]
+        algorithm = self.tomo_algo.GetStringSelection()
+        filter_name = self.tomo_filt.GetStringSelection()
+        niter = self.tomo_niter.GetValue()
+        center = self.center_value.GetValue()
+        refine_center = self.refine_center.GetValue()
 
-        args = {'refine_center'  : self.refine_center.GetValue(),
-                'center_range'   : self.center_range.GetValue(),
-                'center'         : tomo_center,
-                'tomo_alg'       : tomo_alg,
-                'sinogram_order' : sino_order,
-                'omega'          : ome,
-                'hotcols'        : self.owner.hotcols}
+        tomo = xrmfile.get_tomograph(sino, refine_center=refine_center,
+                                     algorithm=algorithm,
+                                     filter_name=filter_name, num_iter=niter,
+                                     center=center, omega=omega,
+                                     sinogram_order=sino_order,
+                                     hotcols=self.owner.hotcols)
 
-        tomo = xrmfile.get_tomograph(sino, **args)
-
-        if args['refine_center']:
+        if refine_center:
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
             self.refine_center.SetValue(False)
 
         omeoff, xoff = 0, 0
-        alg = [alg_ch.GetStringSelection() for alg_ch in self.alg_choice]
-        if alg[1] != '' and alg[1] is not None:
-            title = '[%s : %s @ %0.1f] %s ' % (alg[0],alg[1],tomo_center,title)
-        else:
-            title = '[%s @ %0.1f] %s' % (alg[0],tomo_center,title)
+        title = '%s, center=%0.1f' % (title, center)
 
         ## for one color plot
         if sino.shape[0] == 1 and tomo.shape[0] == 1:
@@ -488,16 +436,13 @@ class TomographyPanel(GridPanel):
 
         if len(self.owner.tomo_displays) == 0 or new:
             iframe = self.owner.add_tomodisplay(title)
-
         self.owner.display_tomo(tomo, title=title, subtitles=subtitles, det=det)
 
     def set_center(self,cen):
-
         self.center_value.SetValue(cen)
         self.cfile.set_tomography_center(center=cen)
 
     def set_det_choices(self):
-
         det_list = self.cfile.get_detector_list()
 
         for det_ch in self.det_choice:
