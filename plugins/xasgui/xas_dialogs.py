@@ -559,7 +559,8 @@ class RebinDataDialog(wx.Dialog):
         xdat, ydat, yerr, de0 = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        ngroup.delta_mu = ngroup.yerr
+
+        ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
         self.parent.nb_panels[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
