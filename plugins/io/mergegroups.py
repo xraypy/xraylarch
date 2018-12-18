@@ -8,8 +8,10 @@ from larch import Group, ValidateLarchPlugin
 from larch.utils.mathutils import interp, index_of
 
 @ValidateLarchPlugin
+
 def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
-                 kind='cubic', trim=True, _larch=None):
+                 kind='cubic', trim=True, calc_yerr=True, _larch=None):
+
     """merge arrays from a list of groups.
 
     Arguments
@@ -20,6 +22,7 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
      yarray      name of y-array for merge ['mu']
      kind        interpolation kind ['cubic']
      trim        whether to trim to the shortest energy range [True]
+     calc_yerr   whether to use the variance in the input as yerr [True]
 
     Returns
     --------
@@ -29,31 +32,35 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     if master is None:
         master = grouplist[0]
 
-    x0 = getattr(master, xarray)
-    y0 = np.zeros(len(x0))
-    xmins = [min(x0)]
-    xmaxs = [max(x0)]
+    xout = getattr(master, xarray)
+    xmins = [min(xout)]
+    xmaxs = [max(xout)]
+    yvals = []
 
     for g in grouplist:
         x = getattr(g, xarray)
         y = getattr(g, yarray)
-        y0 += interp(x, y, x0, kind=kind)
+        yvals.append(interp(x, y, xout, kind=kind))
         xmins.append(min(x))
         xmaxs.append(max(x))
 
-    y0 = y0/len(grouplist)
+    yvals = np.array(yvals)
+    yave = yvals.mean(axis=0)
+    ystd = yvals.std(axis=0)
 
     if trim:
         xmin = min(xmins)
         xmax = min(xmaxs)
-        ixmin = index_of(x0, xmin)
-        ixmax = index_of(x0, xmax)
-        x0 = x0[ixmin:ixmax]
-        y0 = y0[ixmin:ixmax]
+        ixmin = index_of(xout, xmin)
+        ixmax = index_of(xout, xmax)
+        xout = xout[ixmin:ixmax]
+        yave = yave[ixmin:ixmax]
+        ystd = ystd[ixmin:ixmax]
 
     grp = Group()
-    setattr(grp, xarray, x0)
-    setattr(grp, yarray, y0)
+    setattr(grp, xarray, xout)
+    setattr(grp, yarray, yave)
+    setattr(grp, 'd' + yarray, ystd)
 
     return grp
 
