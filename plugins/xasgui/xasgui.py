@@ -252,6 +252,8 @@ class XASController():
         this.datatype = master.datatype
         this.xdat = 1.0*this.energy
         this.ydat = 1.0*getattr(this, yarray)
+        if yarray != 'mu':
+            this.mu = this.ydat
         this.plot_xlabel = 'energy'
         this.plot_ylabel = yarray
         return outgroup
