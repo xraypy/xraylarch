@@ -1277,7 +1277,13 @@ class XRFDisplayFrame(wx.Frame):
             self.win_calib.Raise()
         except:
             self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
-                                              larch=self.larch)
+                                                 callback=self.onCalibrationChange,
+                                                 larch=self.larch)
+
+    def onCalibrationChange(self, mca):
+        """update whenn mca changed calibration"""
+        # print("new calib ", mca.offset, mca.slope)
+        self.plotmca(mca)
 
     def onFitPeaks(self, event=None, **kws):
         try:

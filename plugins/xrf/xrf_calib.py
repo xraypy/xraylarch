@@ -90,6 +90,7 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     either supply offset and slope arguments (in keV and keV/chan)
     or run xrf_calib_compute(mca) to estimate these from ROI peaks
     """
+    # print(" xrf calib apply ", mca, mca.offset, mca.slope, offset, slope)
     if not isLarchMCAGroup(mca):
         print( 'Not a valid MCA')
         return
@@ -102,7 +103,7 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     mca.offset = offset
     mca.slope = slope
     npts = len(mca.energy)
-    mca.energy = offset + slope*np.arange(npts)
+    mca.energy = (offset + slope*np.arange(npts))
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_calib_fitrois': xrf_calib_fitrois,

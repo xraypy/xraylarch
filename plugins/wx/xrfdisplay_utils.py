@@ -31,7 +31,7 @@ class XRFCalibrationFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.SetFont(Font(8))
+        self.SetFont(Font(9))
         panel = GridPanel(self)
         self.calib_updated = False
         panel.AddText("Calibrate MCA Energy (Energies in eV)",
@@ -161,12 +161,12 @@ class XRFCalibrationFrame(wx.Frame):
 
     def onUseCalib(self, event=None):
         mca = self.mca
-        offset = float(self.new_offset.GetValue())
-        slope  = float(self.new_slope.GetValue())
+        offset = 0.001*float(self.new_offset.GetValue())
+        slope  = 0.001*float(self.new_slope.GetValue())
         mca.new_calib = offset, slope
         xrf_calib_apply(mca, offset=offset, slope=slope, _larch=self.larch)
-        if hasattr(self.callback, '__call__'):
-            self.callback(offset, slope, mca=mca)
+        if callable(self.callback):
+            self.callback(mca)
         self.Destroy()
 
     def onClose(self, event=None):
