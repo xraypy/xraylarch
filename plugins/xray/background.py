@@ -1,4 +1,4 @@
-'''
+"""
 Methods for fitting background in xray spectra (energy dispersive or diffraction)
 
 Authors/Modifications:
@@ -99,11 +99,10 @@ Inputs to calc()
         Slope for the conversion from channel number to energy.
         i.e. the slope from calibration
 
+"""
 
-'''
 
 import numpy as np
-
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -111,43 +110,44 @@ HUGE = 1.E20
 MAX_TANGENT=2
 
 def compress_array(array, compress):
-   '''
-   Compresses an 1-D array by the integer factor "compress".
-   near equivalent of IDL's 'rebin'....
-   '''
+    """
+    Compresses an 1-D array by the integer factor compress.
+    near equivalent of IDL's 'rebin'....
+    """
 
-   if len(array) % compress != 0:
-      ## Trims array to be divisible by compress factor
-      rng_min = int( (len(array) % compress ) / 2)
-      rng_max = int( len(array) / compress ) * compress + 1
-      array = array[rng_min:rng_max]
+    if len(array) % compress != 0:
+        ## Trims array to be divisible by compress factor
+        rng_min = int( (len(array) % compress ) / 2)
+        rng_max = int( len(array) / compress ) * compress + 1
+        array = array[rng_min:rng_max]
 
-   temp = np.resize(array, (len(array)/compress, compress))
-   return np.sum(temp, 1)/compress
+    nsize = int(len(array)/compress)
+    temp = np.resize(array, (nsize, compress))
+    return np.sum(temp, 1)/compress
 
 
 def expand_array(array, expand, sample=0):
-   '''
-   Expands an 1-D array by the integer factor "expand".
+    """
+    Expands an 1-D array by the integer factor expand.
 
-   if 'sample' is 1 the new array is created with sampling,
-   if 0 then the new array is created via interpolation (default)
-   Temporary fix until the equivalent of IDL's 'rebin' is found.
-   '''
-   if expand == 1:
-       return array
-   if sample == 1:
-       return np.repeat(array, expand)
+    if 'sample' is 1 the new array is created with sampling,
+    if 0 then the new array is created via interpolation (default)
+    Temporary fix until the equivalent of IDL's 'rebin' is found.
+    """
+    if expand == 1:
+        return array
+    if sample == 1:
+        return np.repeat(array, expand)
 
-   kernel = np.ones(expand)/expand
-   # The following mimic the behavior of IDL's rebin when expanding
-   temp = np.convolve(np.repeat(array, expand), kernel, mode=2)
-   # Discard the first "expand-1" entries
-   temp = temp[expand-1:]
-   # Replace the last "expand" entries with the last entry of original
-   for i in range(1,expand):
-       temp[-i]=array[-1]
-   return temp
+    kernel = np.ones(expand)/expand
+    # The following mimic the behavior of IDL's rebin when expanding
+    temp = np.convolve(np.repeat(array, expand), kernel, mode=2)
+    # Discard the first "expand-1" entries
+    temp = temp[expand-1:]
+    # Replace the last "expand" entries with the last entry of original
+    for i in range(1,expand):
+        temp[-i]=array[-1]
+    return temp
 
 class XrayBackground:
     '''
@@ -156,8 +156,8 @@ class XrayBackground:
     Attributes:
     -----------
     These may be set by kw argument upon initialization.
-    
-    
+
+
     * width      = 4.0   # Width
     * exponent   = 2     # Exponent
     * compress   = 2     # Compress
@@ -165,24 +165,21 @@ class XrayBackground:
     '''
 
     def __init__(self, data=None, width=4, slope=1.0, exponent=2, compress=2,
-                 tangent=False, type_int=False, data_type='xrf'):
-        
-        if data_type == 'xrf': type_int = True
+                 tangent=False):
 
-        self.bgr          = []
-        self.width = width
-        self.compress     = compress
-        self.exponent     = exponent
-        self.tangent      = tangent
+        self.bgr      = []
+        self.width     = width
+        self.compress = compress
+        self.exponent = exponent
+        self.tangent  = tangent
+        self.slope    = slope
+        self.info = dict(width=width, slope=slope, exponenet=exponent,
+                         compress=compress, tangent=tangent)
 
-        self.parinfo = {'width': width, 'compress': compress,
-                        'exponent': exponent, 'tangent': tangent}
+        self.calc(data=data)
 
-        self.data = data
-        if data is not None:
-            self.calc(data, slope=slope, type_int=type_int)
 
-    def calc(self, data=None, slope=1.0, type_int=False):
+    def calc(self, data=None, slope=None):
         '''compute background
 
         Parameters:
@@ -193,7 +190,10 @@ class XrayBackground:
 
         if data is None:
             data = self.data
-
+        if data is None:
+            return
+        if slope is None:
+            slope    = self.slope
         width    = self.width
         exponent = self.exponent
         tangent  = self.tangent
@@ -202,7 +202,7 @@ class XrayBackground:
         nchans   = len(data)
         self.bgr = np.zeros(nchans, dtype=np.int)
         scratch  = data[:]
-        
+
         # Compress scratch spectrum
         if compress > 1:
             tmp = compress_array(scratch, compress)
@@ -212,7 +212,7 @@ class XrayBackground:
                 scratch = tmp
                 slope = slope * compress
                 nchans = len(scratch) #nchans / compress
-                
+
         # Copy scratch spectrum to background spectrum
         bckgnd = scratch[:]
 
@@ -228,8 +228,8 @@ class XrayBackground:
         indices     = np.arange(nchans*2+1, dtype=np.float) - nchans
         power_funct = indices**exponent  * (REFERENCE_AMPL / denom)
         power_funct = np.compress((power_funct <= max_counts), power_funct)
-        max_index   = len(power_funct)/2 - 1
-        # print( "NCHANS: ", nchans, denom, min(indices), max(indices), max_index)
+        max_index   = int(len(power_funct)/2 - 1)
+
         for chan in range(nchans-1):
             tan_slope = 0.
             if tangent:
@@ -250,14 +250,13 @@ class XrayBackground:
 
             # Find the maximum height of a function centered on this channel
             # such that it is never higher than the counts in any channel
-            f      = chan0 - chan + max_index
-            l      = chan1 - chan + max_index
-            test   = scratch[chan0:chan1+1] - lin_offset + power_funct[f:l+1]
+            f = int(chan0 - chan + max_index)
+            l = int(chan1 - chan + max_index)
+            test = scratch[chan0:chan1+1] - lin_offset + power_funct[f:l+1]
             height = min(test)
 
             # We now have the function height. Set the background to the
             # height of the maximum function amplitude at each channel
-
             test = height + lin_offset - power_funct[f:l+1]
             sub  = bckgnd[chan0:chan1+1]
             bckgnd[chan0:chan1+1] = np.maximum(sub, test)
@@ -267,11 +266,7 @@ class XrayBackground:
             bckgnd = expand_array(bckgnd, compress)
 
         ## Set background to be of type integer
-        if type_int:
-            bckgnd = bckgnd.astype(int)
-
-        ## No negative values in background
+        bckgnd = bckgnd.astype(data.dtype)
+ negative values in background
         bckgnd[np.where(bckgnd <= 0)] = 0
-
         self.bgr = bckgnd
-
