@@ -6,7 +6,7 @@ Some common lineshapes and distribution functions
 from __future__ import division
 
 from numpy import exp, pi, sqrt
-from scipy import special
+from scipy.special import erf, erfc, wofz, gamma, gammaln
 
 from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
                               pearson7, breit_wigner, damped_oscillator,
@@ -40,12 +40,10 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     s2pi = sqrt(2*pi)):
 
         arg  = (x - center)/sigma
-        gaus = exp(-arg**2/2.0) / (s2pi*sigma)
-        step = step * erfc(arg/s2) / (2*center)
-        tail = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/(s2*gamma))
-        tail = tail / (2*sigma*gamma*exp(-1.0/(2*gamma**2)))
-
-        hypermet = amplitude * (peak + step + tail)
+        gauss = exp(-arg**2/2.0) / (s2pi*sigma)
+        sfunc = step * erfc(arg/s2) / (2.0*center)
+        tfunc = tail * exp((x-center)/gamma) * erfc(arg/s2 + sigma/(s2*gamma))
+        hypermet = amplitude * (gauss + sfunc + tfunc)
 
     This follows the definitions given in
         ED-XRF SPECTRUM EVALUATION AND QUANTITATIVE ANALYSIS
@@ -60,48 +58,45 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     gamma = max(0.1, gamma)
     arg   = (x - center)/sigma
 
-    gaus = exp(-arg**2/2.0) / (s2pi*sigma)
+    gauss = exp(-arg**2/2.0) / (s2pi*sigma)
+    sfunc = step * erfc(arg/s2) / (2.0*center)
+    tfunc = tail * exp((x-center)/gamma) * erfc(arg/s2 + sigma/(s2*gamma))
 
-    step = step * special.erfc(arg/s2) / (2*center)
-
-    tail = tail * exp(arg/gamma) * special.erfc(arg/s2 + 1.0/(s2*gamma))
-    tail = tail / (2*sigma*gamma*exp(-1.0/(2*gamma**2)))
-
-    return amplitude * (gaus + step + tail)
+    return amplitude * (gauss + sfunc + tfunc)
 
 
-def erf(x):
-    """Return the error function.
-
-    erf = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])
-
-    """
-    return special.erf(x)
-
-
-def erfc(x):
-    """Return the complementary error function.
-
-    erfc = 1 - erf(x)
-
-    """
-    return special.erfc(x)
-
-
-def wofz(x):
-    """Return the fadeeva function for complex argument.
-
-    wofz = exp(-x**2)*erfc(-i*x)
-
-    """
-    return special.wofz(x)
-
-
-def gamma(x):
-    """Return the gamma function."""
-    return special.gamma(x)
-
-
-def gammaln(x):
-    """Return the log of absolute value of gamma function."""
-    return special.gammaln(x)
+# def erf(x):
+#     """Return the error function.
+#
+#     erf = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])
+#
+#     """
+#     return special.erf(x)
+#
+#
+# def erfc(x):
+#     """Return the complementary error function.
+#
+#     erfc = 1 - erf(x)
+#
+#     """
+#     return special.erfc(x)
+#
+#
+# def wofz(x):
+#     """Return the fadeeva function for complex argument.
+#
+#     wofz = exp(-x**2)*erfc(-i*x)
+#
+#     """
+#     return special.wofz(x)
+#
+#
+# def gamma(x):
+#     """Return the gamma function."""
+#     return special.gamma(x)
+#
+#
+# def gammaln(x):
+#     """Return the log of absolute value of gamma function."""
+#     return special.gammaln(x)
