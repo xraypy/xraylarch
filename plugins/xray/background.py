@@ -265,8 +265,7 @@ class XrayBackground:
         if compress > 1:
             bckgnd = expand_array(bckgnd, compress)
 
-        ## Set background to be of type integer
+        ## Set background to be same data type as data, prevent negative values
         bckgnd = bckgnd.astype(data.dtype)
- negative values in background
         bckgnd[np.where(bckgnd <= 0)] = 0
         self.bgr = bckgnd
