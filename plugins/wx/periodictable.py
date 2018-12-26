@@ -71,12 +71,10 @@ class PeriodicTablePanel(wx.Panel):
     TITLE_BG = (253, 253, 250) ## light grey
     REG_BG   = (253, 253, 250) ## light grey
     REG_FG   = ( 20,  20, 120) ## blue
-    SEL_BG   = (255, 255, 135) ## yellow
-    SEL_FG   = (100,   0,   0) ## dark red
-    NEG_BG   = (253, 100,   0) ## light red
-    NEG_FG   = (  0,   0,   0) ## black
+    SEL_BG   = (254, 254,   0) ## yellow
+    SEL_FG   = ( 20,  20, 120) ## blue
 
-    def __init__(self, parent, title='Select Element', highlight=None,
+    def __init__(self, parent, title='Select Element', multi_select=True,
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
         wx.Panel.__init__(self, parent, -1, size=size, name='PeriodicTable', **kws)
         self.parent = parent
@@ -85,11 +83,12 @@ class PeriodicTablePanel(wx.Panel):
         self.wids = {}
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
-        self.selected = None
-        self.highlight = highlight
-        self.titlefont    = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
-        self.elemfont     = wx.Font( 9,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
-        self.subtitlefont = wx.Font( 7,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.selected = []
+        self.current = None
+        self.multi_select = multi_select
+        self.titlefont = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.elemfont  = wx.Font(10,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
+        self.subtitlefont = wx.Font( 9,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
         if sys.platform.lower().startswith('win'):
             self.elemfont     = wx.Font( 8,  wx.SWISS,   wx.NORMAL, wx.BOLD)
             self.subtitlefont = wx.Font( 8,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
@@ -98,9 +97,9 @@ class PeriodicTablePanel(wx.Panel):
 
     def onKey(self, event=None, name=None):
         """support browsing through elements with arrow keys"""
-        if self.selected is None:
+        if self.current is None:
             return
-        selname = self.selected.GetLabel()
+        selname = self.current.GetLabel()
         if selname  in self.elems:
             coords = self.elems[selname]
             if name is None and event is not None:
@@ -146,97 +145,75 @@ class PeriodicTablePanel(wx.Panel):
                     self.onclick(label=newlabel)
         event.Skip()
 
-    def onexclude(self, event=None, selected=[]):
 
-        for name in self.ctrls:
-            if name not in selected:
-                textwid = self.ctrls[name]
-                textwid.SetForegroundColour(self.NEG_FG)
-                textwid.SetBackgroundColour(self.NEG_BG)
-
-    def onclear(self, event=None):
-
-        for name in self.ctrls:
-            textwid = self.ctrls[name]
-            textwid.SetForegroundColour(self.REG_FG)
-            textwid.SetBackgroundColour(self.REG_BG)
+    def on_clear_all(self, event=None):
+        for wid in self.ctrls.values():
+            wid.SetForegroundColour(self.REG_FG)
+            wid.SetBackgroundColour(self.REG_BG)
+        self.selected = []
+        self.current = None
 
     def onclick(self, event=None, label=None):
+        if event is None and label is None:
+            return
+        textwid = None
+        if label is None and event.Id in self.wids:
+            textwid = self.wids[event.Id]
+            label = textwid.GetLabel()
+        if label is None:
+            return
+        if textwid is None and label:
+            textwid = self.ctrls[label]
 
-        if self.highlight:
-            textwid = None
-            if (label is None and event is not None and
-                event.Id in self.wids):
-                    textwid = self.wids[event.Id]
-                    label = textwid.GetLabel()
-            if label is None:
-                return
-            if textwid is None and label is not None:
-                textwid = self.ctrls[label]
-
+        if self.multi_select:
             if textwid.GetBackgroundColour() == self.REG_BG:
                 textwid.SetForegroundColour(self.SEL_FG)
                 textwid.SetBackgroundColour(self.SEL_BG)
-            elif textwid.GetBackgroundColour() == self.SEL_BG:
-                textwid.SetForegroundColour(self.NEG_FG)
-                textwid.SetBackgroundColour(self.NEG_BG)
-            elif textwid.GetBackgroundColour() == self.NEG_BG:
+                self.selected.append(label)
+            else:
                 textwid.SetForegroundColour(self.REG_FG)
                 textwid.SetBackgroundColour(self.REG_BG)
-
-            znum = self.syms.index(label)
-            name = self.names[znum]
-
-            self.tsym.SetLabel(label)
-            self.title.SetLabel(name)
-            self.tznum.SetLabel("{:d}".format(znum+1))
-            if self.onselect is not None:
-                self.onselect(elem=label, event=event)
-
-
+                try:
+                    self.selected.remove(label)
+                except ValueError:
+                    pass
         else:
-
-            textwid = None
-            if (label is None and event is not None and
-                event.Id in self.wids):
-                    textwid = self.wids[event.Id]
-                    label = textwid.GetLabel()
-            if label is None:
-                return
-            if textwid is None and label is not None:
-                textwid = self.ctrls[label]
-
             textwid.SetForegroundColour(self.SEL_FG)
             textwid.SetBackgroundColour(self.SEL_BG)
-            if self.selected is not None and self.selected != textwid:
-                self.selected.SetForegroundColour(self.REG_FG)
-                self.selected.SetBackgroundColour(self.REG_BG)
+            if self.current is not None and self.current != textwid:
+                self.current.SetForegroundColour(self.REG_FG)
+                self.current.SetBackgroundColour(self.REG_BG)
+            self.current = textwid
+            self.selected.clear()
+            self.selected.apend(textwid)
 
-            self.selected = textwid
-            znum = self.syms.index(label)
-            name = self.names[znum]
+        znum = self.syms.index(label)
+        name = self.names[znum]
 
-            self.tsym.SetLabel(label)
-            self.title.SetLabel(name)
-            self.tznum.SetLabel("{:d}".format(znum+1))
-            if self.onselect is not None:
-                self.onselect(elem=label, event=event)
+        self.tsym.SetLabel(label)
+        self.title.SetLabel(name)
+        self.tznum.SetLabel("{:d}".format(znum+1))
+        if self.onselect is not None:
+            self.onselect(elem=label, event=event)
         self.Refresh()
 
     def BuildPanel(self):
         sizer = wx.GridBagSizer(9, 20)
+        sizer.SetHGap(2)
+        sizer.SetVGap(2)
+
         for name, coords in self.elems.items():
             tw = wx.StaticText(self, -1, label=name)
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
             tw.SetBackgroundColour(self.REG_BG)
-            tw.SetMinSize((18, 18))
+            #tw.SetMinSize((18, 18))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 SetTip(tw, self.tooltip_msg)
             self.wids[tw.Id] = tw
             self.ctrls[name] = tw
-            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
+            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, 0)
         self.title = wx.StaticText(self, -1, label=' Select Element ')
         self.tsym  = wx.StaticText(self, -1, label='__')
         self.tznum = wx.StaticText(self, -1, label='__')
@@ -245,9 +222,9 @@ class PeriodicTablePanel(wx.Panel):
             a.SetFont(self.titlefont)
             a.SetBackgroundColour(self.TITLE_BG)
 
-        sizer.Add(self.title, (0, 4), (1, 8), wx.ALIGN_CENTER, 1)
-        sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 1)
-        sizer.Add(self.tznum, (0, 12), (1, 3), wx.ALIGN_LEFT, 1)
+        sizer.Add(self.title, (0, 4), (1, 8), wx.ALIGN_CENTER, 3)
+        sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 3)
+        sizer.Add(self.tznum, (0, 12), (1, 3), wx.ALIGN_LEFT, 3)
 
         self.subtitle = [None, None]
         self.subtitle[0] = wx.StaticText(self, -1, label='         ')
@@ -255,12 +232,10 @@ class PeriodicTablePanel(wx.Panel):
         self.subtitle[1] = wx.StaticText(self, -1, label='         ')
         self.subtitle[1].SetFont(self.subtitlefont)
 
-        sizer.Add(self.subtitle[0], (1, 2), (1, 9), wx.ALIGN_LEFT, 2)
-        sizer.Add(self.subtitle[1], (2, 2), (1, 9), wx.ALIGN_LEFT, 2)
+        sizer.Add(self.subtitle[0], (1, 2), (1, 9), wx.ALIGN_LEFT)
+        sizer.Add(self.subtitle[1], (2, 2), (1, 9), wx.ALIGN_LEFT)
 
         sizer.SetEmptyCellSize((2, 2))
-        sizer.SetHGap(1)
-        sizer.SetVGap(1)
         self.Bind(wx.EVT_KEY_UP, self.onKey)
         #self.Bind(wx.EVT_SET_FOCUS, self.onGetFocus)
         #self.Bind(wx.EVT_KILL_FOCUS, self.onLoseFocus)
@@ -269,9 +244,11 @@ class PeriodicTablePanel(wx.Panel):
         self.SetSize((ix+2, iy+2))
         sizer.Fit(self)
 
-    def onLoseFocus(self, event=None):     event.Skip()
+    def onLoseFocus(self, event=None):
+        event.Skip()
 
-    def onGetFocus(self, event=None):      event.Skip()
+    def onGetFocus(self, event=None):
+        event.Skip()
 
     def set_subtitle(self, label, index=0):
         if index not in (0, 1): index = 0
@@ -282,7 +259,7 @@ class PTableFrame(wx.Frame):
         wx.Frame.__init__(self, parent=None, size=size)
         ptab  = PeriodicTablePanel(self, title='Periodic Table',
                                    tooltip_msg='Select Element',
-                                   onselect = self.onElement)
+                                   onselect=self.onElement)
         sx, sy = ptab.GetBestSize()
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ptab, 1, wx.EXPAND|wx.ALL, 5)
