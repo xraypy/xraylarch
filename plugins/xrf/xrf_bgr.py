@@ -44,11 +44,11 @@ def xrf_background(energy, counts=None, group=None, width=4,
         slope = (energy[-1] - energy[0])/len(energy)
 
     xbgr = XrayBackground(counts, width=width, compress=compress,
-                         exponent=exponent, slope=slope)
+                          exponent=exponent, slope=slope)
 
     if group is not None:
         group.bgr = xbgr.bgr
-        group.bgr_info = xbgr.parinfo
+        group.bgr_info = xbgr.info
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_background': xrf_background})
