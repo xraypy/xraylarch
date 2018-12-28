@@ -90,7 +90,7 @@ class Interpreter:
                        'importfrom', 'index', 'interrupt', 'list',
                        'listcomp', 'module', 'name', 'nameconstant', 'num',
                        'pass', 'print', 'raise', 'repr', 'return', 'slice',
-                       'str', 'subscript', 'try', 'tryexcept',
+                       'starred', 'str', 'subscript', 'try', 'tryexcept',
                        'tryfinally', 'tuple', 'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
@@ -516,6 +516,14 @@ class Interpreter:
                 self.raise_exception(node, msg=msg)
         return val
 
+    def on_starred(self, node):    # ('value', 'ctx')
+        """ Starred node """
+        ctx = node.ctx.__class__
+        if ctx != ast.Load:
+            msg = "can only load starargs"
+            self.raise_exception(node, msg=msg)
+        return self.run(node.value)
+
     def node_assign(self, node, val):
         """here we assign a value (not the node.value object) to a node
         this is used by on_assign, but also by for, list comprehension, etc.
@@ -795,7 +803,13 @@ class Interpreter:
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
 
-        args = [self.run(targ) for targ in node.args]
+        args = []
+        for narg in node.args:
+            aadd = args.append
+            if six.PY3 and isinstance(narg, ast.Starred):
+                aadd = args.extend
+            aadd(self.run(narg))
+
         starargs = getattr(node, 'starargs', None)
         if starargs is not None:
             args = args + self.run(starargs)
