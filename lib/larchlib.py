@@ -277,7 +277,7 @@ class Procedure(object):
             for targ in self.argnames:
                 if targ in kwargs:
                     self.raise_exc(exc=TypeError,
-                                   msg=msg % (targ, self.name))
+                                   msg=msg % (self.name, targ))
                     return
 
         # case 3: too few args given
