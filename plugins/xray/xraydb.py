@@ -72,7 +72,7 @@ def json_encode(val):
     return  json.dumps(val)
 
 
-def elam_spline(xin, yin, yspl_in, x):
+def elam_spline(xin, yin, yspl_in, xout):
     """
     interpolate values from Elam photoabsorption and
     scattering tables, according to Elam, and following
@@ -83,12 +83,12 @@ def elam_spline(xin, yin, yspl_in, x):
         yin (ndarray): y values for interpolation data
         yspl_in (ndarray): spline coefficients (second derivatives of y) for
                        interpolation data
-        x (float or ndarray): x values to be evaluated at
+        xout(float or ndarray): x values to be evaluated at
 
     Returns:
         ndarray: interpolated values
     """
-    x = as_ndarray(x)
+    x = as_ndarray(xout)
     x[np.where(x < min(xin))] = min(xin)
     x[np.where(x > max(xin))] = max(xin)
 
@@ -677,8 +677,6 @@ class XrayDB():
             Elam, Ravel, and Sieber.
         """
         elem = self.symbol(element)
-        energies = as_ndarray(energies)
-
         kind = kind.lower()
         if kind not in ('coh', 'incoh', 'photo'):
             raise ValueError('unknown cross section kind=%s' % kind)
@@ -700,9 +698,10 @@ class XrayDB():
             tab_val = np.array(json.loads(row.log_photoabsorption))
             tab_spl = np.array(json.loads(row.log_photoabsorption_spline))
 
+        en = 1.0*as_ndarray(energies)
         emin_tab = 10*int(0.102*np.exp(tab_lne[0]))
-        energies[np.where(energies < emin_tab)] = emin_tab
-        out = np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(energies)))
+        en[np.where(en < emin_tab)] = emin_tab
+        out = np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(en)))
         if len(out) == 1:
             return out[0]
         return out
