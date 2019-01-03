@@ -165,21 +165,24 @@ class XrayBackground:
     '''
 
     def __init__(self, data=None, width=4, slope=1.0, exponent=2, compress=2,
-                 tangent=False):
+                 tangent=False, type_int=False, data_type='xrf'):
 
-        self.bgr      = []
-        self.width     = width
-        self.compress = compress
-        self.exponent = exponent
-        self.tangent  = tangent
-        self.slope    = slope
-        self.info = dict(width=width, slope=slope, exponenet=exponent,
-                         compress=compress, tangent=tangent)
+        if data_type == 'xrf': type_int = True
 
-        self.calc(data=data)
+        self.bgr          = []
+        self.width = width
+        self.compress     = compress
+        self.exponent     = exponent
+        self.tangent      = tangent
 
+        self.info = {'width': width, 'compress': compress,
+                     'exponent': exponent, 'tangent': tangent}
 
-    def calc(self, data=None, slope=None):
+        self.data = data
+        if data is not None:
+            self.calc(data, slope=slope, type_int=type_int)
+
+    def calc(self, data=None, slope=1.0, type_int=False):
         '''compute background
 
         Parameters:
@@ -190,10 +193,7 @@ class XrayBackground:
 
         if data is None:
             data = self.data
-        if data is None:
-            return
-        if slope is None:
-            slope    = self.slope
+
         width    = self.width
         exponent = self.exponent
         tangent  = self.tangent
@@ -229,7 +229,6 @@ class XrayBackground:
         power_funct = indices**exponent  * (REFERENCE_AMPL / denom)
         power_funct = np.compress((power_funct <= max_counts), power_funct)
         max_index   = int(len(power_funct)/2 - 1)
-
         for chan in range(nchans-1):
             tan_slope = 0.
             if tangent:
@@ -242,21 +241,22 @@ class XrayBackground:
                 tan_slope = (scratch[chan] - scratch[chan0:chan1+1]) / denom
                 tan_slope = np.sum(tan_slope) / (chan1 - chan0)
 
-            chan0 = max((chan - max_index), 0)
-            chan1 = min((chan + max_index), (nchans-1))
+            chan0 = int(max((chan - max_index), 0))
+            chan1 = int(min((chan + max_index), (nchans-1)))
             chan1 = max(chan1, chan0)
             nc    = chan1 - chan0 + 1
             lin_offset = scratch[chan] + (np.arange(float(nc)) - nc/2) * tan_slope
 
             # Find the maximum height of a function centered on this channel
             # such that it is never higher than the counts in any channel
-            f = int(chan0 - chan + max_index)
-            l = int(chan1 - chan + max_index)
-            test = scratch[chan0:chan1+1] - lin_offset + power_funct[f:l+1]
+            f      = int(chan0 - chan + max_index)
+            l      = int(chan1 - chan + max_index)
+            test   = scratch[chan0:chan1+1] - lin_offset + power_funct[f:l+1]
             height = min(test)
 
             # We now have the function height. Set the background to the
             # height of the maximum function amplitude at each channel
+
             test = height + lin_offset - power_funct[f:l+1]
             sub  = bckgnd[chan0:chan1+1]
             bckgnd[chan0:chan1+1] = np.maximum(sub, test)
@@ -265,7 +265,11 @@ class XrayBackground:
         if compress > 1:
             bckgnd = expand_array(bckgnd, compress)
 
-        ## Set background to be same data type as data, prevent negative values
-        bckgnd = bckgnd.astype(data.dtype)
+        ## Set background to be of type integer
+        if type_int:
+            bckgnd = bckgnd.astype(int)
+
+        ## No negative values in background
         bckgnd[np.where(bckgnd <= 0)] = 0
+
         self.bgr = bckgnd
