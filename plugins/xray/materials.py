@@ -1,39 +1,39 @@
 import os
 import numpy as np
-from larch import ValidateLarchPlugin, site_config
+from larch import site_config
 
 from larch_plugins.xray import chemparse, mu_elam, atomic_mass
 
 MODNAME = '_xray'
+_materials = None
 
-def get_materials(_larch):
+
+def get_materials(_larch=None):
     """return _materials dictionary, creating it if needed"""
-    symname = '%s._materials' % MODNAME
-    if _larch.symtable.has_symbol(symname):
-        return _larch.symtable.get_symbol(symname)
-    mat = {}
-    conf = site_config
-    paths = [os.path.join(conf.larchdir, 'plugins', 'xray'),
-             os.path.join(conf.larchdir)]
+    global _materials
+    if _materials is None:
+        # initialize materials table
+        _materials = {}
+        for dirname in (os.path.join(site_config.larchdir, 'plugins', 'xray'),
+                        os.path.join(site_config.larchdir)):
+            fname = os.path.join(dirname, 'materials.dat')
+            if os.path.exists(fname):
+                with open(fname, 'r') as fh:
+                    lines = fh.readlines()
+                for line in lines:
+                    line = line.strip()
+                    if len(line) > 2 and not line.startswith('#'):
+                        try:
+                            name, f, den = [i.strip() for i in line.split('|')]
+                            name = name.lower()
+                            _materials[name] = (f.replace(' ', ''), float(den))
+                        except:
+                            pass
+        if _larch is not None :
+            symname = '%s._materials' % MODNAME
+            _larch.symtable.set_symbol(symname, _materials)
+    return _materials
 
-    for dirname in paths:
-        fname = os.path.join(dirname, 'materials.dat')
-        if os.path.exists(fname):
-            fh = open(fname, 'r')
-            lines = fh.readlines()
-            fh.close()
-            for line in lines:
-                line = line.strip()
-                if len(line) > 2 and not line.startswith('#'):
-                    try:
-                        name, f, den = [i.strip() for i in line.split('|')]
-                        mat[name.lower()] = (f.replace(' ', ''), float(den))
-                    except:
-                        pass
-    _larch.symtable.set_symbol(symname, mat)
-    return mat
-
-@ValidateLarchPlugin
 def material_mu(name, energy, density=None, kind='total', _larch=None):
     """
     material_mu(name, energy, density=None, kind='total')
@@ -81,14 +81,13 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
 
     mass_tot, mu = 0.0, 0.0
     for elem, frac in chemparse(formula).items():
-        mass  = frac * atomic_mass(elem, _larch=_larch)
-        mu   += mass * mu_elam(elem, energy, kind=kind, _larch=_larch)
+        mass  = frac * atomic_mass(elem)
+        mu   += mass * mu_elam(elem, energy, kind=kind)
         mass_tot += mass
     return density*mu/mass_tot
 
-@ValidateLarchPlugin
-def material_mu_components(name, energy, density=None, kind='total',
-                           _larch=None):
+
+def material_mu_components(name, energy, density=None, kind='total', _larch=None):
     """material_mu_components: absorption coefficient (in 1/cm) for a compound
 
     arguments
@@ -122,29 +121,32 @@ def material_mu_components(name, energy, density=None, kind='total',
 
     out = {'mass': 0.0, 'density': density, 'elements':[]}
     for atom, frac in chemparse(formula).items():
-        mass  = atomic_mass(atom, _larch=_larch)
-        mu    = mu_elam(atom, energy, kind=kind, _larch=_larch)
+        mass  = atomic_mass(atom)
+        mu    = mu_elam(atom, energy, kind=kind)
         out['mass'] += frac*mass
         out[atom] = (frac, mass, mu)
         out['elements'].append(atom)
     return out
 
-@ValidateLarchPlugin
 def material_get(name, _larch=None):
     """lookup material """
     return get_materials(_larch).get(name.lower(), None)
 
-@ValidateLarchPlugin
+
 def material_add(name, formula, density, _larch=None):
     """ save material in local db"""
-    materials = get_materials(_larch)
+    global _materials
+    if _materials is not None:
+        _materials = get_materials()
     formula = formula.replace(' ', '')
-    materials[name.lower()] = (formula, float(density))
+    _materials[name.lower()] = (formula, float(density))
 
-    symname = '%s._materials' % MODNAME
-    _larch.symtable.set_symbol(symname, materials)
+    if _larch is not None:
+        symname = '%s._materials' % MODNAME
+        _larch.symtable.set_symbol(symname, _materials)
 
-    fname = os.path.join(larch.site_config.larchdir, 'materials.dat')
+
+    fname = os.path.join(site_config.larchdir, 'materials.dat')
     if os.path.exists(fname):
         fh = open(fname, 'r')
         text = fh.readlines()
