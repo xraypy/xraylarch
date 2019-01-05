@@ -4,7 +4,6 @@ from math import pi
 import larch
 from larch import Group
 from larch.utils.mathutils import index_nearest
-
 from larch_plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
                                 XrayDB, chemparse)
 
@@ -231,7 +230,7 @@ def atomic_mass(element, _larch=None):
     "return molar mass (amu) from element symbol or atomic number"
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
-        element = atomic_symbol(element, _larch=_larch)
+        element = atomic_symbol(element)
     return xdb._elem_data(element).mass
 
 
@@ -239,7 +238,7 @@ def atomic_density(element, _larch=None):
     "return density (gr/cm^3) from element symbol or atomic number"
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
-        element = atomic_symbol(element, _larch=_larch)
+        element = atomic_symbol(element)
     return xdb._elem_data(element).density
 
 
@@ -356,8 +355,8 @@ def fluo_yield(symbol, edge, emission, energy,
 
     Adapted for Larch from code by Yong Choi
     """
-    e0, fyield, jump = xray_edge(symbol, edge, _larch=_larch)
-    trans  = xray_lines(symbol, initial_level=edge, _larch=_larch)
+    e0, fyield, jump = xray_edge(symbol, edge)
+    trans  = xray_lines(symbol, initial_level=edge)
 
     lines = []
     net_ener, net_prob = 0., 0.
@@ -462,7 +461,7 @@ def guess_edge(energy, edges=['K', 'L3', 'L2', 'L1', 'M5'], _larch=None):
 
     for edge, iz, diff in ret:
         if abs(diff - min_diff) < 2:
-            return (atomic_symbol(iz, _larch=_larch), edge)
+            return (atomic_symbol(iz), edge)
     return (None, None)
 
 
@@ -475,13 +474,13 @@ class Scatterer:
     def __init__(self, symbol, energy=10000, _larch=None):
         # atomic symbol and incident x-ray energy (eV)
         self.symbol = symbol
-        self.number = atomic_number(symbol, _larch=_larch)
-        self.mass   = atomic_mass(symbol, _larch=_larch)
-        self.f1     = chantler_data(symbol, energy, 'f1', _larch=_larch)
+        self.number = atomic_number(symbol)
+        self.mass   = atomic_mass(symbol)
+        self.f1     = chantler_data(symbol, energy, 'f1')
         self.f1     = self.f1 + self.number
-        self.f2     = chantler_data(symbol, energy, 'f2', _larch=_larch)
-        self.mu_photo = chantler_data(symbol, energy, 'mu_photo', _larch=_larch)
-        self.mu_total = chantler_data(symbol, energy, 'mu_total', _larch=_larch)
+        self.f2     = chantler_data(symbol, energy, 'f2')
+        self.mu_photo = chantler_data(symbol, energy, 'mu_photo')
+        self.mu_total = chantler_data(symbol, energy, 'mu_total')
 
 def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
     """
