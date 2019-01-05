@@ -4,7 +4,7 @@
 
 import numpy as np
 from scipy.signal import deconvolve
-from larch import ValidateLarchPlugin, parse_group_args
+from larch import parse_group_args
 
 from larch.utils import (gaussian, lorentzian, interp,
                          index_of, index_nearest, remove_dups,
@@ -14,7 +14,6 @@ from larch_plugins.xafs import set_xafsGroup
 
 MODNAME = '_xafs'
 
-@ValidateLarchPlugin
 def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, smooth=True,
                    sgwindow=None, sgorder=3, _larch=None):
@@ -54,8 +53,6 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
        default, window = int(esigma / estep) where estep is step size for
        the gridded data, approximately the finest energy step in the data.
     """
-    if _larch is None:
-        raise Warning("cannot deconvolve -- larch broken?")
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'norm'),
                                          defaults=(norm,), group=group,
@@ -68,7 +65,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
     npts = 1  + int(max(en) / estep)
 
     x = np.arange(npts)*estep
-    y = interp(en, mu, x, kind='cubic', _larch=_larch)
+    y = interp(en, mu, x, kind='cubic')
 
     kernel = lorentzian
     if form.lower().startswith('g'):
@@ -90,11 +87,11 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
             sgwindow += 1
         ret = savitzky_golay(ret, sgwindow, sgorder)
 
-    out = interp(x+eshift, ret, en, kind='cubic', _larch=_larch)
+    out = interp(x+eshift, ret, en, kind='cubic')
     group = set_xafsGroup(group, _larch=_larch)
     group.deconv = out
 
-@ValidateLarchPlugin
+
 def xas_convolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, _larch=None):
     """
@@ -124,8 +121,6 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
        Follows the First Argument Group convention, using group members named
        'energy' and 'norm'
     """
-    if _larch is None:
-        raise Warning("cannot xas_convolve -- larch broken?")
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'norm'),
                                          defaults=(norm,), group=group,
@@ -141,7 +136,7 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
     npts = npad  + int(max(en) / estep)
 
     x = np.arange(npts)*estep
-    y = interp(en, mu, x, kind='cubic', _larch=_larch)
+    y = interp(en, mu, x, kind='cubic')
 
     kernel = lorentzian
     if form.lower().startswith('g'):
@@ -150,7 +145,7 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
     k = kernel(x, center=0, sigma=esigma)
     ret = np.convolve(y, k, mode='full')
 
-    out = interp(x-eshift, ret[:len(x)], en, kind='cubic', _larch=_larch)
+    out = interp(x-eshift, ret[:len(x)], en, kind='cubic')
 
     group = set_xafsGroup(group, _larch=_larch)
     group.conv = out / k.sum()

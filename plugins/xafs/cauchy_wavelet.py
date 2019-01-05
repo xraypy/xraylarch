@@ -23,11 +23,11 @@
 # 2014-Apr M Newville : translated to Python for Larch
 
 import numpy as np
-from larch import ValidateLarchPlugin, parse_group_args
+from larch import Make_CallArgs, parse_group_args
 from larch.utils import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
-@ValidateLarchPlugin
+@Make_CallArgs(["k" ,"chi"])
 def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
                    nfft=2048, _larch=None):
     """

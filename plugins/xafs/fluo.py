@@ -1,12 +1,11 @@
 import numpy as np
 
-from larch import ValidateLarchPlugin, Make_CallArgs, parse_group_args
+from larch import  parse_group_args
 from larch_plugins.xray import xray_line, xray_edge, material_mu
 from larch_plugins.xafs import preedge, set_xafsGroup
 
 MODNAME = '_xafs'
 
-@ValidateLarchPlugin
 def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
               angout=45,  _larch=None, **pre_kws):
     """correct over-absorption (self-absorption) for fluorescene XAFS
@@ -48,12 +47,12 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
     angout   = max(1.e-7, np.deg2rad(angout))
 
     # find edge energies and fluorescence line energy
-    e_edge   = xray_edge(elem, edge, _larch=_larch)[0]
-    e_fluor  = xray_line(elem, edge, _larch=_larch)[0]
+    e_edge   = xray_edge(elem, edge)[0]
+    e_fluor  = xray_line(elem, edge)[0]
 
     # calculate mu(E) for fluorescence energy, above, below edge
     energies = np.array([e_fluor, e_edge-10.0, e_edge+10.0])
-    muvals   = material_mu(formula, energies, density=1, _larch=_larch)
+    muvals   = material_mu(formula, energies, density=1)
 
     mu_fluor = muvals[0] * np.sin(anginp)/np.sin(angout)
     mu_below = muvals[1]

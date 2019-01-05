@@ -1,12 +1,9 @@
 import numpy as np
 
-from larch import (Group, Make_CallArgs, ValidateLarchPlugin,
-                   parse_group_args)
-
+from larch import Group, Make_CallArgs, parse_group_args
 from larch.utils import index_of, interp1d, remove_dups
 from larch_plugins.xafs.xafsutils import ktoe, etok
 
-@ValidateLarchPlugin
 @Make_CallArgs(["energy", "mu"])
 def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _larch=None):
     """sort energy, mu pair of XAFS data so that energy is monotonically increasing
@@ -47,7 +44,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _la
         group.mu = mu
     return
 
-@ValidateLarchPlugin
+
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,

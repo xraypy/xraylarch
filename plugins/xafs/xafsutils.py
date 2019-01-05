@@ -70,7 +70,6 @@ def guess_energy_units(e):
             units = 'deg'
     return units
 
-@ValidateLarchPlugin
 def set_xafsGroup(group, _larch=None):
     """set _sys.xafsGroup to the supplied group (if not None)
 
@@ -79,11 +78,13 @@ def set_xafsGroup(group, _larch=None):
     if needed, a new, empty _sys.xafsGroup may be created.
     """
     if group is None:
-        if not hasattr(_larch.symtable._sys, 'xafsGroup'):
-            _larch.symtable._sys.xafsGroup = Group()
-    else:
+        if _larch is None:
+            group = Group()
+        else:
+            group = getattr(_larch.symtable._sys, 'xafsGroup', Group())
+    if _larch is not None:
         _larch.symtable._sys.xafsGroup = group
-    return _larch.symtable._sys.xafsGroup
+    return group
 
 
 def initializeLarchPlugin(_larch=None):

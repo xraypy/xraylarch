@@ -17,9 +17,7 @@ try:
 except ImportError:
     HAS_PEAKUTILS = False
 
-from larch import (Group, ValidateLarchPlugin,
-                   Make_CallArgs, isgroup,
-                   parse_group_args)
+from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
 # now we can reliably import other std and xafs modules...
 
@@ -30,7 +28,6 @@ from larch_plugins.xafs import set_xafsGroup
 MODNAME = '_xafs'
 MAX_NNORM = 5
 
-@ValidateLarchPlugin
 def find_e0(energy, mu=None, group=None, _larch=None):
     """calculate E0 given mu(energy)
 
@@ -192,7 +189,7 @@ def preedge(energy, mu, e0=None, step=None,
             'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs,
             'norm2_input': norm2_input,  'pre1_input': pre1_input}
 
-@ValidateLarchPlugin
+
 @Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
@@ -328,7 +325,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     return
 
 
-@ValidateLarchPlugin
 @Make_CallArgs(["energy", "norm"])
 def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
                       emin=None, emax=None, elo=None, ehi=None,

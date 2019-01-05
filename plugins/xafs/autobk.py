@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
@@ -51,6 +52,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
                            abs(clamp_lo)*scaled_chik[:nclamp],
                            abs(clamp_hi)*scaled_chik[-nclamp:]))
 
+
 @ValidateLarchPlugin
 @Make_CallArgs(["energy" ,"mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
@@ -91,7 +93,9 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
     Follows the 'First Argument Group' convention.
     """
-    msg = _larch.writer.write
+    msg = sys.stdout
+    if _larch is not None:
+        msg = _larch.writer.write
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:

@@ -136,8 +136,8 @@ class FeffDatFile(Group):
                     if len(words) > 5:
                         lab = words[5]
                     else:
-                        lab = atomic_symbol(iz, _larch=self._larch)
-                    amass = atomic_mass(iz, _larch=self._larch)
+                        lab = atomic_symbol(iz)
+                    amass = atomic_mass(iz)
                     geom = [lab, iz, ipot, amass] + xyz
                     self.geom.append(tuple(geom))
             elif mode == 'arrays':

@@ -117,7 +117,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
     return fwin
 
-@ValidateLarchPlugin
+
 @Make_CallArgs(["r", "chir"])
 def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
@@ -199,7 +199,6 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
 
 
 
-@ValidateLarchPlugin
 @Make_CallArgs(["k", "chi"])
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
@@ -273,9 +272,6 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
 
 
 
-
-
-@ValidateLarchPlugin
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
     """
@@ -292,6 +288,7 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     chi_ = interp(k_, k, chi)
     win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
     return ((chi_[:npts] *k_[:npts]**kweight), win[:npts])
+
 
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
