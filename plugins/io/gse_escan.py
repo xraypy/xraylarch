@@ -7,7 +7,7 @@ import time
 import gc
 
 import numpy
-from larch import ValidateLarchPlugin, use_plugin_path
+from larch import Group
 
 from larch_plugins.io import iso8601_time
 
@@ -778,14 +778,14 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
 
         fout.close()
 
-@ValidateLarchPlugin
+
 def gsescan_group(fname, _larch=None, bad=None, **kws):
     """simple mapping of EscanData file to larch groups"""
     escan = EscanData(fname, bad=bad)
     if escan.status is not None:
         raise ValueError('Not a valid Escan Data file')
 
-    group = _larch.symtable.create_group()
+    group = Group()
     group.__name__ ='GSE Escan Data file %s' % fname
     for key, val in escan.__dict__.items():
         if not key.startswith('_'):
@@ -827,12 +827,11 @@ GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
 
 
 
-@ValidateLarchPlugin
 def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected',
                              bad=None, _larch=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
-       sg = gsescan_group(fname, bad=bad, _larch=_larch)
+       sg = gsescan_group(fname, bad=bad)
     except:
       print('%s is not a valid ESCAN file' % fname)
       return

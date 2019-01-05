@@ -3,13 +3,14 @@
   Larch column file reader: read_ascii
 """
 import os
+import sys
 import time
 import string
 import six
 import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
-from larch import ValidateLarchPlugin, Group
+from larch import Group
 from larch.utils import fixName
 from larch.symboltable import isgroup
 
@@ -291,8 +292,11 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
          attributes will not be changed.
 
     """
+    write = sys.stdout.write
+    if _larch is not None:
+        write = _larch.writer.write
     if not hasattr(group, 'data'):
-        _larch.writer.write("cannot set array labels for group '%s': no `data`" % repr(group))
+        write("cannot set array labels for group '%s': no `data`\n" % repr(group))
         return
 
     # clear old arrays, if desired
@@ -371,7 +375,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     group.array_labels = labels
     return group
 
-@ValidateLarchPlugin
+
 def write_ascii(filename, *args, **kws):
     """write a list of items to an ASCII column file
 
@@ -385,7 +389,11 @@ def write_ascii(filename, *args, **kws):
 
     """
     ARRAY_MINLEN = 2
-    _larch = kws['_larch']
+    _larch = kws.get('_larch', None)
+    write = sys.stdout.write
+    if _larch is not None:
+        write = _larch.writer.write
+
     com = kws.get('commentchar', '#')
     label = kws.get('label', None)
     header = kws.get('header', [])
@@ -428,22 +436,20 @@ def write_ascii(filename, *args, **kws):
     try:
         fout = open(filename, 'w')
     except:
-        _larch.writer.write("cannot open file %s'" % filename)
+        write("cannot open file %s'\n" % filename)
         return
 
     try:
         fout.write('\n'.join(buff))
         fout.write('\n')
     except:
-        _larch.writer.write("cannot write to file %s'" % filename)
+        write("cannot write to file %s'\n" % filename)
         return
+    write("wrote to file '%s'\n" % filename)
 
-    _larch.writer.write("wrote to file '%s'\n" % filename)
 
-@ValidateLarchPlugin
-def write_group(filename, group, scalars=None,
-                arrays=None, arrays_like=None,
-                commentchar='#',  _larch=None):
+def write_group(filename, group, scalars=None, arrays=None,
+                arrays_like=None, commentchar='#', _larch=None):
     """write components of a group to an ASCII column file
 
     write_group(filename, group, commentchar='#')
@@ -487,7 +493,6 @@ def write_group(filename, group, scalars=None,
                 label=label, header=header, _larch=_larch)
 
 
-@ValidateLarchPlugin
 def guess_filereader(filename, _larch=None):
     """guess function name to use to read an ASCII data file based
     on the file header

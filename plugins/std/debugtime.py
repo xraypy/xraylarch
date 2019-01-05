@@ -6,7 +6,6 @@ portions of code, and writes a simple report
 
 import time
 import sys
-from larch import ValidateLarchPlugin
 
 class DebugTimer(object):
     def __init__(self, _larch=None):
@@ -16,7 +15,7 @@ class DebugTimer(object):
     def clear(self):
         self.times = []
         self.add('started timer')
-        
+
     def add(self,msg=''):
         # print(msg)
         self.times.append((msg,time.time()))
@@ -46,7 +45,6 @@ class DebugTimer(object):
         if clear:
             self.clear()
 
-@ValidateLarchPlugin
 def debugtimer(_larch=None):
     """debugtimer returns a Timer object that can be used
     to time the running of portions of code, and then
@@ -56,7 +54,7 @@ def debugtimer(_larch=None):
       clear()   -- reset Timer
       add(msg)  -- record time, with message
       show_report -- print timer report
-    
+
     An example:
 
       timer = debugtimer()
@@ -69,6 +67,6 @@ def debugtimer(_larch=None):
     """
     return DebugTimer(_larch=_larch)
 
-   
+
 def registerLarchPlugin():
     return ('_builtin', {'debugtimer': debugtimer})

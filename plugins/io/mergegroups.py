@@ -4,10 +4,8 @@ merge groups, interpolating if necessary
 """
 import os
 import numpy as np
-from larch import Group, ValidateLarchPlugin
+from larch import Group
 from larch.utils.mathutils import interp, index_of
-
-@ValidateLarchPlugin
 
 def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
                  kind='cubic', trim=True, calc_yerr=True, _larch=None):

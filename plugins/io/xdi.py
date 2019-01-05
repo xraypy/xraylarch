@@ -10,7 +10,7 @@ __version__ = '1.2.0larch'
 
 from numpy import array, exp, log, sin, arcsin
 
-from larch import ValidateLarchPlugin
+from larch import Group
 from larch.larchlib import get_dll
 from larch.utils.strutils import bytes2str, str2bytes
 from larch_plugins.xray import RAD2DEG, PLANCK_HC
@@ -252,11 +252,11 @@ class XDIFile(object):
             elif hasattr(self, 'murefer') and not hasattr(self, 'irefer'):
                 self.irefer = self.itrans * exp(-self.murefer)
 
-@ValidateLarchPlugin
+
 def read_xdi(filename, labels=None, _larch=None):
     """simple mapping of XDI file to larch groups"""
     xdif = XDIFile(filename, labels=labels)
-    group = _larch.symtable.create_group()
+    group = Group()
     for key, val in xdif.__dict__.items():
         if not key.startswith('_'):
             if six.PY3 and key in string_attrs:
