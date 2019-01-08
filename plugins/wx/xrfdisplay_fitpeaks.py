@@ -100,7 +100,7 @@ class FitSpectraFrame(wx.Frame):
                                                        _larch=self.larch)
 
         self.wids = Empty()
-        self.SetFont(Font(9))
+        self.SetFont(Font(10))
         self.panels = {}
         self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.nb.SetBackgroundColour('#FBFBF8')
@@ -187,8 +187,7 @@ class FitSpectraFrame(wx.Frame):
         conf = self.parent.conf
         wids = self.wids
 
-        width = getattr(mca, 'bgr_width',    4)
-        compr = getattr(mca, 'bgr_compress', 2)
+        width = getattr(mca, 'bgr_width',    5)
         expon = getattr(mca, 'bgr_exponent', 2)
 
         p = GridPanel(self, itemstyle=LEFT)
@@ -196,8 +195,6 @@ class FitSpectraFrame(wx.Frame):
                              default=True)
         wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
                                    precision=1, size=(70, -1))
-        wids.bgr_compress = Choice(p, choices=['1', '2', '4', '8', '16'],
-                                   size=(70, -1), default=1)
         wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
 
@@ -270,8 +267,6 @@ class FitSpectraFrame(wx.Frame):
         p.AddText(" Energy Width (keV): ", newrow=False)
         p.Add(wids.bgr_width)
 
-        p.AddText(" Compression: ", newrow=True)
-        p.Add(wids.bgr_compress)
         p.Add(Button(p, 'Show Background', size=(130, -1),
                      action=self.onShowBgr), dcol=2)
 
@@ -284,13 +279,12 @@ class FitSpectraFrame(wx.Frame):
         mca      = self.mca
         parent   = self.parent
         width    = wids.bgr_width.GetValue()
-        compress = int(wids.bgr_compress.GetStringSelection())
         exponent = int(wids.bgr_exponent.GetStringSelection())
-        xrf_background(energy=mca.energy, counts=mca.counts,
-                       group=mca, width=width, compress=compress,
-                       exponent=exponent, _larch=parent.larch)
+
+        xrf_background(energy=mca.energy, counts=mca.counts, group=mca,
+                       width=width, exponent=exponent, _larch=parent.larch)
+
         mca.bgr_width = width
-        mca.bgr_compress = compress
         mca.bgr_exponent = exponent
         parent.plotmca(mca)
         parent.oplot(mca.energy, mca.bgr, label='background',
@@ -361,7 +355,6 @@ class FitSpectraFrame(wx.Frame):
 
         bgr['use']       = self.wids.bgr_use.IsChecked()
         bgr['width']     = self.wids.bgr_width.GetValue()
-        bgr['compress']  = int(self.wids.bgr_compress.GetStringSelection())
         bgr['exponent']  = int(self.wids.bgr_exponent.GetStringSelection())
 
         sig['offset']    = self.wids.sig_offset.param
