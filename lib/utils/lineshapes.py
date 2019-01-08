@@ -5,7 +5,7 @@ Some common lineshapes and distribution functions
 
 from __future__ import division
 
-from numpy import exp, pi, sqrt
+from numpy import exp, pi, sqrt, where
 from scipy.special import erf, erfc, wofz, gamma, gammaln
 
 from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
@@ -40,10 +40,10 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     s2pi = sqrt(2*pi)):
 
         arg  = (x - center)/sigma
-        gauss = exp(-arg**2/2.0) / (s2pi*sigma)
-        sfunc = step * erfc(arg/s2) / (2.0*center)
-        tfunc = tail * exp((x-center)/gamma) * erfc(arg/s2 + sigma/(s2*gamma))
-        hypermet = amplitude * (gauss + sfunc + tfunc)
+        gauss = (1.0/(s2pi*sigma)) * exp(-arg**2 /2)
+        sfunc = step * max(gauss) * erfc(arg/2.0) / 2.0
+        tfunc = tail * exp((x-center)/(gamma*sigma)) * erfc(arg/s2 + 1.0/gamma))
+        hypermet = amplitude * (gauss + sfunc + tfunc) / 2.0
 
     This follows the definitions given in
         ED-XRF SPECTRUM EVALUATION AND QUANTITATIVE ANALYSIS
@@ -52,18 +52,25 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
         JCPDS-International Centre for Diffraction Data 2000,
         Advances in X-ray Analysis,Vol.43 560
 
+    But is modified slightly to better preserve area with changing tail and gamma
+
     """
-
     sigma = max(1.e-8, sigma)
-    gamma = max(0.1, gamma)
+    gamma = max(1.e-8, gamma)
     arg   = (x - center)/sigma
+    arg[where(arg>100)] = 100.0
+    arg[where(arg<-100)] = -100.0
+    gscale = s2pi*sigma
+    gauss = (1.0/gscale) * exp(-arg**2 / 2.0)
+    sfunc = step * erfc(arg/2.0) / (2.0*gscale)
 
-    gauss = exp(-arg**2/2.0) / (s2pi*sigma)
-    sfunc = step * erfc(arg/s2) / (2.0*center)
-    tfunc = tail * exp((x-center)/gamma) * erfc(arg/s2 + sigma/(s2*gamma))
+    targ = (x-center)/(gamma*sigma)
+    targ[where(targ>100)] = 100.0
+    targ[where(targ<-100)] = -100.0
 
-    return amplitude * (gauss + sfunc + tfunc)
-
+    tfunc = exp(targ) * erfc(arg/2.0 + 1.0/gamma)
+    tfunc = tail*tfunc / (max(tfunc)*gscale)
+    return amplitude * (gauss + sfunc + tfunc) /2.0
 
 # def erf(x):
 #     """Return the error function.
