@@ -1,9 +1,6 @@
 import os
 import sys
 import numpy
-import pkg_resources
-from optparse import OptionParser
-
 from pyshortcuts import make_shortcut
 from pyshortcuts.shortcut import Shortcut
 
@@ -125,6 +122,7 @@ def run_larch():
     """
 
     usage = "usage: %prog [options] file(s)"
+    from optparse import OptionParser
     parser = OptionParser(usage=usage, prog="larch",
                           version="larch command-line version 0.2")
 
