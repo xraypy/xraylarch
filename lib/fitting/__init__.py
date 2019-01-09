@@ -1,26 +1,24 @@
 #!/usr/bin/env python
 import six
 from copy import copy, deepcopy
-HAS_WXPYTHON = False
-try:
-    import wx
-    HAS_WXPYTHON = True
-except ImportError:
-    pass
 
 import numpy as np
 from scipy.stats import f
 
+# note: for lmfit 0.9.12 and earlier, we have to
+# set the matplotlib backend before import lmfit!!
 import matplotlib
 import warnings
-
-if HAS_WXPYTHON:
+try:
+    import wx
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
             matplotlib.use("WXAgg")
         except:
             pass
+except ImportError:
+    pass
 
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
@@ -53,8 +51,8 @@ def f_test(ndata, nvars, chisquare, chisquare0, nfix=1):
 
 def confidence_report(conf_vals, **kws):
     """return a formatted report of confidence intervals calcualted
-    by confidence_intervals"""
-
+    by confidence_intervals
+    """
     return ci_report(conf_vals)
 
 

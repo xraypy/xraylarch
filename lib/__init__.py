@@ -3,18 +3,11 @@
 """
   Larch: a scientific data processing macro language based on python
 """
-
-#
+import os
 import sys
 import numpy
 import warnings
 warnings.simplefilter('ignore')
-
-import matplotlib
-try:
-    matplotlib.use('WXAgg')
-except:
-    pass
 
 major, minor = sys.version_info[0], sys.version_info[1]
 if not ((major == 2 and minor == 7) or
@@ -27,18 +20,28 @@ try:
     import hdf5plugin
 except ImportError:
     pass
-import h5py
 
+# note: for lmfit 0.9.12 and earlier or any other import that does
+#    import matplotlib.pyplot as plt
+# we have to set the matplotlib backend before import lmfit / pyplot
+import matplotlib
+try:
+    import wx
+except ImportError:
+    pass
+finally:
+    matplotlib.use("WXAgg")
+
+from .version import __date__, __version__, make_banner
+from .site_config import show_site_config
+from .symboltable import Group, SymbolTable, isgroup
 from .larchlib import (plugin_path, use_plugin_path, enable_plugins,
                        isNamedClass, LarchPluginException, Make_CallArgs,
                        ValidateLarchPlugin, parse_group_args)
 
-from .site_config import show_site_config
-from .symboltable import Group, SymbolTable, isgroup
 from .shell import shell
 from .inputText import InputText
 from .utils import fixName, nativepath, get_homedir
-from .version import __date__, __version__, make_banner
 from .interpreter import Interpreter
 
 from .fitting import (Minimizer, Parameter, isParameter, param_value,
@@ -48,5 +51,4 @@ from .apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
                    run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,
                    run_xrd2d_viewer, run_gse_dtcorrect, run_feff8l,
                    run_larch_server, run_larch)
-
 enable_plugins()
