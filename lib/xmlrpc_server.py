@@ -12,7 +12,7 @@ from optparse import OptionParser
 from six.moves.xmlrpc_server import SimpleXMLRPCServer
 from six.moves.xmlrpc_client import ServerProxy
 
-import larch
+from .interpreter import Interpreter
 from .site_config import uname
 from .utils.jsonutils import encode4js
 
@@ -124,7 +124,7 @@ class LarchServer(SimpleXMLRPCServer):
                  keepalive_time=3*24*3600):
         self.out_buffer = []
 
-        self.larch = larch.Interpreter(writer=self)
+        self.larch = Interpreter(writer=self)
         self.larch.input.prompt = ''
         self.larch.input.prompt2 = ''
         self.larch.run_init_scripts()
