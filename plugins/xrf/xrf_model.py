@@ -23,7 +23,7 @@ class XRF_Material:
     def __init__(self, material='Si', thickness=0.050, efano=None, noise=10.):
         self.material = material
         self.thickness = thickness
-        self.mu = None
+        self.mu_total = self.mu_photo = None
         # note on efano:
         # self.efano = (energy to create e-h pair)  * FanoFactor
         # material     E-h excitation (eV)   Fano Factor
@@ -47,21 +47,52 @@ class XRF_Material:
         return np.sqrt(efano*energy + noise**2)
 
     def calc_mu(self, energy):
-        self.mu = material_mu(self.material, energy)
+        self.mu_total = material_mu(self.material, energy, kind='total')
+        self.mu_photo = material_mu(self.material, energy, kind='photo')
 
-    def absorbance(self, energy, thickness=None):
+    def absorbance(self, energy, thickness=None, kind='total'):
+        """calculate absorbance (fraction absorbed)
+
+        Arguments
+        ----------
+        energy      float or ndarray   energy (eV) of X-ray
+        thicknesss  float    material thickness (cm)
+
+        Returns
+        -------
+        fraction of X-rays absorbed by material
+        """
         if thickness is None:
             thickness = self.thickness
-        if self.mu is None:
+        if self.mu_total is None:
             self.calc_mu(energy)
-        return (1.0 - np.exp(-self.thickness*self.mu))
+        mu = self.mu_total
+        if kind == 'photo':
+            mu = self.mu_photo
+        return (1.0 - np.exp(-self.thickness*mu))
 
-    def attenuation(self, energy, thickness=None):
+
+    def attenuation(self, energy, thickness=None, kind='total'):
+        """calculate attenuation (fraction attenuated)
+
+        Arguments
+        ----------
+        energy      float or ndarray   energy (eV) of X-ray
+        thicknesss  float    material thickness (cm)
+
+        Returns
+        -------
+        fraction of X-rays attenuated by material
+        """
+
         if thickness is None:
             thickness = self.thickness
-        if self.mu is None:
+        if self.mu_total is None:
             self.calc_mu(energy)
-        return np.exp(-thickness*self.mu)
+        mu = self.mu_total
+        if kind == 'photo':
+            mu = self.mu_photo
+        return np.exp(-thickness*mu)
 
 
 class XRF_Element:
@@ -73,7 +104,7 @@ class XRF_Element:
         self.fyields = {}
 
         if xray_energy is not None:
-            self.mu = mu_elam(symbol, xray_energy)
+            self.mu = mu_elam(symbol, xray_energy, kind='photo')
 
             self.edges = []
             for ename, xedge in xray_edges(self.symbol).items():
@@ -327,7 +358,6 @@ class XRF_Model:
         for key, val in self.comps.items():
             tmat.append(val / self.eigenvalues[key])
         self.transfer_matrix = np.array(tmat)
-
 
 @ValidateLarchPlugin
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None,
