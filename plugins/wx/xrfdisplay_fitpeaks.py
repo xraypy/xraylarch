@@ -67,6 +67,15 @@ def xrf_resid(pars, peaks=None, mca=None, det=None, bgr=None,
 
     return resid[imin:imax]
 
+def VarChoice(p, default=0):
+    return Choice(p, choices=['Fix', 'Vary'],
+                  size=(70, -1), default=default)
+
+
+Detector_Materials = ['Si', 'Ge']
+EFano = {'Si': 3.66 * 0.115,
+         'Ge': 3.0 * 0.130}
+
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
@@ -77,17 +86,13 @@ class FitSpectraFrame(wx.Frame):
                         'silicon', 'quartz', 'sapphire', 'diamond', 'graphite',
                         'boron nitride']
 
-    Detector_Materials = ['Si', 'Ge']
-
-    gsig_offset = 'sig_o'
-    gsig_slope  = 'sig_s'
-    gsig_quad   = 'sig_q'
 
     def __init__(self, parent, size=(675, 525)):
         self.parent = parent
         self.larch = parent.larch
         self.mca = parent.mca
-        conf = parent.conf
+        self.conf = {}
+
         self.paramgroup = Group()
 
         if not hasattr(self.mca, 'init_calib'):
@@ -106,9 +111,9 @@ class FitSpectraFrame(wx.Frame):
         self.nb.SetBackgroundColour('#FBFBF8')
         self.SetBackgroundColour('#F6F6F0')
 
-        self.nb.AddPage(self.settings_page(), 'Fit & Background Settings')
-        self.nb.AddPage(self.filters_page(),  'Filters and Attenuation')
-        self.nb.AddPage(self.fitpeaks_page(), 'XRF Peaks')
+        self.nb.AddPage(self.settings_page(), 'Beam and Detector')
+        self.nb.AddPage(self.filters_page(),  'Filters')
+        self.nb.AddPage(self.fitpeaks_page(), 'Elements')
 
         self.nb.SetSelection(0)
 
@@ -120,7 +125,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add((5,5))
 
         bpanel = RowPanel(self)
-        bpanel.Add(Button(bpanel, 'Fit Peaks', action=self.onFitPeaks), 0, LEFT)
+        bpanel.Add(Button(bpanel, 'Run Fit', action=self.onFitPeaks), 0, LEFT)
         bpanel.Add(Button(bpanel, 'Done', action=self.onClose), 0, LEFT)
         bpanel.pack()
         sizer.Add(bpanel, 0, CEN)
@@ -140,55 +145,60 @@ class FitSpectraFrame(wx.Frame):
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
-            try:
-                cenval, ecen, fwhm, ampval, _x = self.mca.init_calib[roi.name]
-            except KeyError:
-                continue
-            sigval = 0.4*fwhm
-            mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
-            maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
-
-            pname = roi.name.replace(' ', '').lower()
-            ampnam = '%s_amp' % pname
-            cennam = '%s_cen' % pname
-            signam = '%s_sig' % pname
-            sigexpr = "%s + %s*%s +%s*%s**2" % (self.gsig_offset,
-                                                self.gsig_slope, cennam,
-                                                self.gsig_quad, cennam)
-
-            p_amp = Parameter(value=ampval, vary=True,    min=0, name=ampnam)
-            p_sig = Parameter(value=sigval, expr=sigexpr, min=0, name=signam)
-            p_cen = Parameter(value=cenval, vary=False, name=cennam,
-                              min=mincen, max=maxcen)
-
-            setattr(self.paramgroup, ampnam, p_amp)
-            setattr(self.paramgroup, cennam, p_cen)
-            setattr(self.paramgroup, signam, p_sig)
-
-            _use   = Check(p, label='use' , default=True)
-            _cen   = ParameterPanel(p, p_cen, precision=3)
-            _sig   = ParameterPanel(p, p_sig, precision=3)
-            _amp   = ParameterPanel(p, p_amp, precision=2)
-
-            self.wids.peaks.append((_use, _cen, _sig, _amp))
-
-            p.AddText(' %s' % roi.name,  newrow=True, style=LEFT)
-            p.Add(_use, style=wx.ALIGN_CENTER)
-            p.Add(_cen)
-            p.Add(_sig)
-            p.Add(_amp)
+            xx = roi
+#             try:
+#                 cenval, ecen, fwhm, ampval, _x = self.mca.init_calib[roi.name]
+#             except KeyError:
+#                 continue
+#             sigval = 0.4*fwhm
+#             mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
+#             maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
+#
+#             pname = roi.name.replace(' ', '').lower()
+#             ampnam = '%s_amp' % pname
+#             cennam = '%s_cen' % pname
+#             signam = '%s_sig' % pname
+#             sigexpr = "%s + %s*%s +%s*%s**2" % (self.gsig_offset,
+#                                                 self.gsig_slope, cennam,
+#                                                 self.gsig_quad, cennam)
+#
+#             p_amp = Parameter(value=ampval, vary=True,    min=0, name=ampnam)
+#             p_sig = Parameter(value=sigval, expr=sigexpr, min=0, name=signam)
+#             p_cen = Parameter(value=cenval, vary=False, name=cennam,
+#                               min=mincen, max=maxcen)
+#
+#             setattr(self.paramgroup, ampnam, p_amp)
+#             setattr(self.paramgroup, cennam, p_cen)
+#             setattr(self.paramgroup, signam, p_sig)
+#
+#             _use   = Check(p, label='use' , default=True)
+#             _cen   = ParameterPanel(p, p_cen, precision=3)
+#             _sig   = ParameterPanel(p, p_sig, precision=3)
+#             _amp   = ParameterPanel(p, p_amp, precision=2)
+#
+#             self.wids.peaks.append((_use, _cen, _sig, _amp))
+#
+#             p.AddText(' %s' % roi.name,  newrow=True, style=LEFT)
+#             p.Add(_use, style=wx.ALIGN_CENTER)
+#             p.Add(_cen)
+#             p.Add(_sig)
+#             p.Add(_amp)
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
         p.pack()
         return p
 
     def settings_page(self):
-        "create fit and background settings"
+        "beam / detector settings"
         mca = self.parent.mca
         conf = self.parent.conf
         wids = self.wids
 
         width = getattr(mca, 'bgr_width',    5)
         expon = getattr(mca, 'bgr_exponent', 2)
+
+        det_noise = getattr(mca, 'det_noise',  30)
+        det_efano = getattr(mca, 'det_efano',  EFano['Si'])
+
 
         p = GridPanel(self, itemstyle=LEFT)
         wids.bgr_use = Check(p, label='Fit Background-Subtracted Spectra',
@@ -198,18 +208,11 @@ class FitSpectraFrame(wx.Frame):
         wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
 
-        sopts = {'vary': True, 'precision': 5}
-        sig_offset = Parameter(value=0.050, name=self.gsig_offset, vary=True)
-        sig_slope  = Parameter(value=0.005, name=self.gsig_slope, vary=True)
-        sig_quad   = Parameter(value=0.000, name=self.gsig_quad, vary=False)
+        wids.det_noise = FloatCtrl(p, value=det_noise, minval=0, maxval=500, precision=4)
+        wids.det_efano = FloatCtrl(p, value=det_efano, minval=0, maxval=1, precision=4)
 
-        setattr(self.paramgroup, self.gsig_offset, sig_offset)
-        setattr(self.paramgroup, self.gsig_slope, sig_slope)
-        setattr(self.paramgroup, self.gsig_quad,  sig_quad)
-
-        wids.sig_offset = ParameterPanel(p, sig_offset, vary=True, precision=5)
-        wids.sig_slope  = ParameterPanel(p, sig_slope, vary=True, precision=5)
-        wids.sig_quad   = ParameterPanel(p, sig_quad, vary=False, precision=5)
+        wids.det_noise_vary = VarChoice(p, default=1)
+        wids.det_efano_vary = VarChoice(p, default=0)
 
         wids.xray_en = FloatCtrl(p, value=20.0, size=(70, -1),
                                  minval=0, maxval=1000, precision=3)
@@ -218,45 +221,35 @@ class FitSpectraFrame(wx.Frame):
                                   minval=0, maxval=1000, precision=3)
         wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
                                   minval=0, maxval=1000, precision=3)
-        wids.flyield_use = Check(p,
-            label='Account for Absorption, Fluorescence Efficiency')
 
-        p.AddText(' General Settings ', colour='#880000', dcol=3)
-
+        p.AddText(' Beam Energy :', colour='#880000', dcol=3)
         p.AddText(' X-ray Energy (keV): ', newrow=True)
         p.Add(wids.xray_en)
-        p.AddText(' Min Energy (keV): ', newrow=True)
+        p.AddText(' Min Energy (keV): ')
         p.Add(wids.fit_emin)
-        p.AddText(' Max Energy (keV): ', newrow=False)
+        p.AddText(' Max Energy (keV): ')
         p.Add(wids.fit_emax)
 
-        wids.det_mat = Choice(p, choices=self.Detector_Materials,
+        wids.det_mat = Choice(p, choices=Detector_Materials,
                               size=(55, -1), default=0)
         wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
-        wids.det_use = Check(p, label='Account for Detector Thickness')
 
+        p.AddText(' Detector :', colour='#880000', dcol=3, newrow=True)
         p.AddText(' Detector Material:  ', newrow=True)
         p.Add(wids.det_mat)
         p.AddText(' Thickness (mm): ', newrow=False)
         p.Add(wids.det_thk)
-        p.Add(wids.det_use,     dcol=4, newrow=True)
-        p.Add(wids.flyield_use, dcol=4, newrow=True)
 
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
-
-        p.AddText(' Energy Dependence of Peak Width:',
-                  colour='#880000', newrow=True, dcol=2)
-        # p.AddText(' ', newrow=True)
-        p.AddText(' sigma = offset + slope * Energy + quad * Energy^2 (keV)',
-                  dcol=3)
-        p.AddText(' Offset: ', newrow=True)
-        p.Add(wids.sig_offset, dcol=3)
-        p.AddText(' Slope: ', newrow=True)
-        p.Add(wids.sig_slope, dcol=3)
-        p.AddText(' Quad: ', newrow=True)
-        p.Add(wids.sig_quad, dcol=3)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
+        p.AddText('   Peak Width: sigma = sqrt(e_Fano * Energy + Noise**2)',  newrow=True,
+                  dcol=4)
+        p.AddText(' Det Noise (eV): ')
+        p.Add(wids.det_noise)
+        p.Add(wids.det_noise_vary)
+        p.AddText(' Detector e_Fano (eV): ', newrow=True)
+        p.Add(wids.det_efano)
+        p.Add(wids.det_efano_vary)
+        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
 
         p.AddText(" Background Parameters: ", colour='#880000', dcol=2,
                   newrow=True)
@@ -270,7 +263,8 @@ class FitSpectraFrame(wx.Frame):
         p.Add(Button(p, 'Show Background', size=(130, -1),
                      action=self.onShowBgr), dcol=2)
 
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
+        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
+
         p.pack()
         return p
 
@@ -314,7 +308,7 @@ class FitSpectraFrame(wx.Frame):
         bx.Disable()
         p.AddManyText((' filter', 'material', 'density (gr/cm^3)',
                        'thickness (mm)'), style=CEN)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
+        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
         for i in range(4):
             _mat = Choice(p, choices=self.Filter_Materials, default=0,
                           size=(125, -1),
@@ -404,7 +398,7 @@ class FitSpectraFrame(wx.Frame):
                      label='fit', style='solid',
                      color='#DD33DD')
 
-        print( fitting.fit_report(self.paramgroup, _larch=_larch))
+        # print( fitting.fit_report(self.paramgroup, _larch=_larch))
 
         # filters:
         #  75 microns kapton, etc
