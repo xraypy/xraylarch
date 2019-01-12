@@ -4,6 +4,12 @@ import wx.lib.mixins.inspection
 
 from larch.wxlib import SetTip
 
+FRAME_BG = (253, 253, 250) ## light grey
+TITLE_BG = (253, 253, 250) ## light grey
+FGCOL    = ( 20,  20, 120) ## blue
+BGCOL    = (253, 253, 250) ## light grey
+BGSEL    = (254, 200,  50) ## yellow
+
 class PeriodicTablePanel(wx.Panel):
     """periodic table of the elements"""
     elems = {'H':  ( 0,  0), 'He': ( 0, 17), 'Li': ( 1,  0), 'Be': ( 1,  1),
@@ -67,30 +73,33 @@ class PeriodicTablePanel(wx.Panel):
              'einsteinium', 'fermium', 'mendelevium', 'nobelium',
              'lawrencium']
 
-    FRAME_BG = (253, 253, 250) ## light grey
-    TITLE_BG = (253, 253, 250) ## light grey
-    FGCOL = ( 20,  20, 120) ## blue
-    BGCOL = (253, 253, 250) ## light grey
-    BGSEL = (254, 254,   0) ## yellow
 
     def __init__(self, parent, title='Select Element', multi_select=False,
-                 onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
+                 onselect=None, tooltip_msg=None, size=(-1, -1),
+                 fontsize=10, fgcol=None, bgcol=None, bgsel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=size, name='PeriodicTable', **kws)
         self.parent = parent
         self.onselect = onselect
         self.tooltip_msg = tooltip_msg
         self.wids = {}
         self.ctrls = {}
-        self.SetBackgroundColour(self.FRAME_BG)
+        self.SetBackgroundColour(FRAME_BG)
         self.selected = []
+        if fgcol is None: fgcol = FGCOL
+        if bgcol is None: bgcol = BGCOL
+        if bgsel is None: bgsel = BGSEL
+        self.fgcol = fgcol
+        self.bgcol = bgcol
+        self.bgsel = bgsel
+
         self.current = None
         self.multi_select = multi_select
-        self.titlefont = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
-        self.elemfont  = wx.Font(10,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
-        self.subtitlefont = wx.Font( 9,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
         if sys.platform.lower().startswith('win'):
-            self.elemfont     = wx.Font( 8,  wx.SWISS,   wx.NORMAL, wx.BOLD)
-            self.subtitlefont = wx.Font( 8,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+            fonstize = fontsize - 1
+
+        self.titlefont = wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.elemfont = wx.Font(fontsize,  wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.subtitlefont = wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
 
         self.BuildPanel()
 
@@ -147,7 +156,7 @@ class PeriodicTablePanel(wx.Panel):
 
     def on_clear_all(self, event=None):
         for wid in self.ctrls.values():
-            wid.SetBackgroundColour(self.BGCOL)
+            wid.SetBackgroundColour(self.bgcol)
         self.selected = []
         self.current = None
 
@@ -164,19 +173,19 @@ class PeriodicTablePanel(wx.Panel):
             textwid = self.ctrls[label]
 
         if self.multi_select:
-            if textwid.GetBackgroundColour() == self.BGCOL:
-                textwid.SetBackgroundColour(self.BGSEL)
+            if textwid.GetBackgroundColour() == self.bgcol:
+                textwid.SetBackgroundColour(self.bgsel)
                 self.selected.append(label)
             else:
-                textwid.SetBackgroundColour(self.BGCOL)
+                textwid.SetBackgroundColour(self.bgcol)
                 try:
                     self.selected.remove(label)
                 except ValueError:
                     pass
         else:
-            textwid.SetBackgroundColour(self.BGSEL)
+            textwid.SetBackgroundColour(self.bgsel)
             if self.current is not None and self.current != textwid:
-                self.current.SetBackgroundColour(self.BGCOL)
+                self.current.SetBackgroundColour(self.bgcol)
             self.current = textwid
             self.selected = [textwid]
 
@@ -198,8 +207,8 @@ class PeriodicTablePanel(wx.Panel):
         for name, coords in self.elems.items():
             tw = wx.StaticText(self, -1, label=name)
             tw.SetFont(self.elemfont)
-            tw.SetForegroundColour(self.FGCOL)
-            tw.SetBackgroundColour(self.BGCOL)
+            tw.SetForegroundColour(self.fgcol)
+            tw.SetBackgroundColour(self.bgcol)
             #tw.SetMinSize((18, 18))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
@@ -213,7 +222,7 @@ class PeriodicTablePanel(wx.Panel):
 
         for a in (self.title, self.tsym, self.tznum):
             a.SetFont(self.titlefont)
-            a.SetBackgroundColour(self.TITLE_BG)
+            a.SetBackgroundColour(TITLE_BG)
 
         sizer.Add(self.title, (0, 4), (1, 8), wx.ALIGN_CENTER, 5)
         sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 5)
