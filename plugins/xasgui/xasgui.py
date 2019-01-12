@@ -13,7 +13,6 @@ np.seterr(all='ignore')
 from functools import partial
 from collections import OrderedDict
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 
@@ -34,7 +33,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
 
 from larch.wxlib import (SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
-                         LCEN, FRAMESTYLE, Font, FONTSIZE, FNB_STYLE)
+                         LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
 
 from larch.fitting import fit_report
 
@@ -65,12 +64,12 @@ ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (950, 625)
 PLOTWIN_SIZE = (550, 550)
 
-NB_PANELS = (('XAS Normalization', XASNormPanel),
-             ('Pre-edge Peaks', PrePeakPanel),
-             ('Linear Combos', LinearComboPanel),
-             ('PCA',  PCAPanel),
-             # ('LASSO', LASSOPanel),
-             ('EXAFS', EXAFSPanel) )
+NB_PANELS = OrderedDict((('XAS Normalization', XASNormPanel),
+                         ('Pre-edge Peaks', PrePeakPanel),
+                         ('Linear Combos', LinearComboPanel),
+                         ('PCA',  PCAPanel),
+                         # ('LASSO', LASSOPanel),
+                         ('EXAFS', EXAFSPanel)))
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
@@ -437,35 +436,17 @@ class XASFrame(wx.Frame):
 
         ir = 0
         sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
-
-        self.nb = flat_nb.FlatNotebook(panel, -1, agwStyle=FNB_STYLE)
-
-        self.nb.SetTabAreaColour(wx.Colour(250,250,250))
-        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-
-        self.nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
-        self.nb.SetActiveTabTextColour(wx.Colour(128,0,0))
-
-        self.nb_panels = []
-        for name, creator in NB_PANELS:
-            _panel = creator(parent=self, controller=self.controller)
-            self.nb.AddPage(_panel," %s " % name, True)
-            self.nb_panels.append(_panel)
-
+        self.nb = flatnotebook(panel, NB_PANELS,
+                               panelkws=dict(controller=self.controller),
+                               on_change=self.onNBChanged)
         sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
-        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
-        self.nb.SetSelection(0)
-
         pack(panel, sizer)
 
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
 
     def onNBChanged(self, event=None):
-        idx = self.nb.GetSelection()
-        pan = self.nb_panels[idx]
-
-        callback = getattr(pan, 'onPanelExposed', None)
+        callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
 
@@ -523,7 +504,7 @@ class XASFrame(wx.Frame):
 
         self.controller.group = dgroup
         self.controller.groupname = groupname
-        cur_panel = self.nb_panels[self.nb.GetSelection()]
+        cur_panel = self.nb.GetCurrentPage()
         if process:
             cur_panel.fill_form(dgroup)
             cur_panel.process(dgroup=dgroup)
@@ -605,22 +586,6 @@ class XASFrame(wx.Frame):
 
         MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
-
-        # MenuItem(self, ppeak_menu, "&Read Fit Model\tCtrl+R",
-        #          "Read Fit Model from File", self.onLoadFitResult)
-
-#         fsave = MenuItem(self, ppeak_menu, "Save Fit Model",
-#                             "Save Fit Model to File", self.onSaveFitResult)
-#
-#         fexport = MenuItem(self, ppeak_menu, "Export Data and Fit",
-#                            "Export Data and Fit",
-#                            self.onExportFitResult)
-#
-#
-#         self.afterfit_menus = (fsave, fexport)
-#
-#         for m in self.afterfit_menus:
-#             m.Enable(False)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
@@ -893,8 +858,9 @@ class XASFrame(wx.Frame):
                                               overwrite=True))
 
     def onLoadFitResult(self, event=None):
-        self.nb.SetSelection(1)
-        self.nb_panels[1].onLoadFitResult(event=event)
+        print("onLoadFitResult??")
+        # self.nb.SetSelection(1)
+        # self.nb_panels[1].onLoadFitResult(event=event)
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
@@ -945,7 +911,7 @@ class XASFrame(wx.Frame):
         dgroup = None
         script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
 
-        cur_panel = self.nb_panels[self.nb.GetSelection()]
+        cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         for gname in namelist:
             cur_panel.skip_plotting = (gname == namelist[-1])

@@ -10,7 +10,7 @@ import json
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-import wx.lib.agw.flatnotebook as flat_nb
+# import wx.lib.agw.flatnotebook as flat_nb
 
 import wx.dataview as dv
 
@@ -33,7 +33,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
-                         Font, FileSave, FileOpen)
+                         Font, FileSave, FileOpen, flatnotebook)
 
 from larch_plugins.std import group2dict
 from larch_plugins.io.export_modelresult import export_modelresult
@@ -44,7 +44,6 @@ from larch_plugins.xasgui.taskpanel import TaskPanel
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
@@ -538,14 +537,7 @@ class PrePeakPanel(TaskPanel):
             pass # print(" Cannot Fill prepeak panel from group ")
 
     def build_display(self):
-        self.mod_nb = flat_nb.FlatNotebook(self, -1, agwStyle=FNB_STYLE)
-        self.mod_nb.SetTabAreaColour(wx.Colour(250,250,250))
-        self.mod_nb.SetActiveTabColour(wx.Colour(254,254,195))
-
-        self.mod_nb.SetNonActiveTabTextColour(wx.Colour(10,10,128))
-        self.mod_nb.SetActiveTabTextColour(wx.Colour(128,0,0))
-        self.mod_nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
-
+        self.mod_nb = flatnotebook(self, {})
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
 
         self.wids = {}
@@ -799,9 +791,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             args.append("show_init=%s" % (show_init))
         cmd = "%s(%s)" % (cmd, ', '.join(args))
         self.larch_eval(cmd.format(**opts))
-
-    def onNBChanged(self, event=None):
-        idx = self.mod_nb.GetSelection()
 
     def addModel(self, event=None, model=None, prefix=None, isbkg=False):
         if model is None and event is not None:
