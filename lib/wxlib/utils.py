@@ -6,7 +6,6 @@ mostly simplified wrappers around existing widgets.
 """
 import platform
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -19,8 +18,6 @@ RCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT
 CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
-
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
 FONTSIZE = 8
 if platform.system() in ('Windows', 'Darwin'):

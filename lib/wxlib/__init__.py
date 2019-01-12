@@ -9,7 +9,7 @@ from . import utils
 
 from .utils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
                     Popup, is_wxPhoenix, RIGHT, LEFT, CEN , LCEN, RCEN,
-                    CCEN, LTEXT, FRAMESTYLE)
+                    CCEN, LTEXT, FRAMESTYLE, FONTSIZE)
 
 from .buttons import Button, ToggleButton, BitmapButton
 from .choice import Choice, YesNo
@@ -29,3 +29,4 @@ from .columnframe import ColumnDataFileFrame, EditColumnFrame
 from .athena_importer import AthenaImporter
 from .reportframe import ReportFrame
 from .parameter import ParameterWidgets
+from .notebooks import FNB_STYLE, flatnotebook
