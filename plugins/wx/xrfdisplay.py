@@ -112,6 +112,7 @@ class XRFDisplayFrame(wx.Frame):
         self.x2data = None
         self.y2data = None
         self.rois_shown = False
+        # self.show_pileup = False
         self.major_markers = []
         self.minor_markers = []
         self.hold_markers = []
@@ -290,9 +291,9 @@ class XRFDisplayFrame(wx.Frame):
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
 
-        ptable = PeriodicTablePanel(ctrlpanel,  onselect=self.onShowLines,
-                                    tooltip_msg='Select Element for KLM Lines')
-
+        ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
+                                    tooltip_msg='Select Element for KLM Lines',
+                                    fontsize=9)
         self.wids['ptable'] = ptable
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
@@ -331,9 +332,9 @@ class XRFDisplayFrame(wx.Frame):
         # roi section...
         rsizer = wx.GridBagSizer(4, 6)
         roipanel = wx.Panel(ctrlpanel, name='ROI Panel')
-        self.wids['roilist'] = wx.ListBox(roipanel, size=(135, 120))
+        self.wids['roilist'] = wx.ListBox(roipanel, size=(140, 150))
         self.wids['roilist'].Bind(wx.EVT_LISTBOX, self.onROI)
-        self.wids['roilist'].SetMinSize((135, 120))
+        self.wids['roilist'].SetMinSize((140, 150))
         self.wids['roiname'] = wx.TextCtrl(roipanel, -1, '', size=(150, -1))
 
         #
@@ -348,13 +349,13 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z3,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Channels:', size=75, font=Font9)
-        rt2 = txt(roipanel, ' Energy:',   size=75, font=Font9)
-        rt3 = txt(roipanel, ' Cen/Wid:',  size=75, font=Font9)
+        rt1 = txt(roipanel, ' Channels:', size=75, font=Font10)
+        rt2 = txt(roipanel, ' Energy:',   size=75, font=Font10)
+        rt3 = txt(roipanel, ' Cen/Wid:',  size=75, font=Font10)
         m = ''
-        self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font9)
-        self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font9)
-        self.wids['roi_msg3'] = txt(roipanel, m, size=135, font=Font9)
+        self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font10)
+        self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font10)
+        self.wids['roi_msg3'] = txt(roipanel, m, size=135, font=Font10)
 
         rsizer.Add(txt(roipanel, ' Regions of Interest:', size=125, font=Font11),
                    (0, 0), (1, 3), labstyle)
@@ -403,10 +404,6 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
         pack(zoompanel, zsizer)
 
-        pileup_opt = Check(ctrlpanel, ' Show Pileup Prediction ',
-                           action=self.onPileupPrediction, default=False)
-        self.wids['pileup'] = pileup_opt
-        #
         self.wids['xray_lines'] = None
         if HAS_DV:
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -440,7 +437,6 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
         sizer.Add(arrowpanel,          0, labstyle)
-        sizer.Add(pileup_opt,          0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         if self.wids['xray_lines'] is not None:
@@ -773,6 +769,9 @@ class XRFDisplayFrame(wx.Frame):
                  "Close Background MCA", self.close_bkg_mca)
 
         amenu = wx.Menu()
+        ix = amenu.Append(-1, "Show Pileup Prediction",
+                          "Show Pileup Prediction", kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onPileupPrediction, ix)
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
         MenuItem(self, amenu, "Fit Peaks\tCtrl+F",
@@ -812,7 +811,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def onExit(self, event=None):
         try:
-            if hasattr(self.exit_callback, '__call__'):
+            if callable(self.exit_callback):
                 self.exit_callback()
         except:
             pass
@@ -986,8 +985,7 @@ class XRFDisplayFrame(wx.Frame):
         self.draw()
 
     def onPileupPrediction(self, event=None):
-        show = self.wids['pileup'].IsChecked()
-        if show:
+        if event.IsChecked():
             self.mca.predict_pileup()
             self.oplot(self.mca.energy, self.mca.pileup)
         else:

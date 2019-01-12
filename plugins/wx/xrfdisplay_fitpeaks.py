@@ -20,8 +20,10 @@ from larch.utils import index_of, gaussian
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
 
+
 from larch_plugins.xray import material_mu, material_get
 from larch_plugins.wx import ParameterPanel
+from larch_plugins.wx.periodictable import PeriodicTablePanel
 
 try:
     from collections import OrderedDict
@@ -40,52 +42,24 @@ def read_filterdata(flist, _larch):
             out[name]  = materials[name]
     return out
 
-
-def xrf_resid(pars, peaks=None, mca=None, det=None, bgr=None,
-              sig=None, filters=None, flyield=None, use_bgr=False,
-              xray_en=30.0, emin=0.0, emax=30.0, **kws):
-
-    sig_o = pars.sig_o.value
-    sig_s = pars.sig_s.value
-    sig_q = pars.sig_q.value
-    model = mca.data * 0.0
-    if use_bgr:
-        model += mca.bgr
-    for use, pcen, psig, pamp in peaks:
-        amp = pamp.value
-        cen = pcen.value
-        sig = sig_o + cen * (sig_s + sig_q * cen)
-        psig.value = sig
-        if use: model += amp*gaussian(mca.energy, cen, sig)
-
-    mca.model = model
-    imin = index_of(mca.energy, emin)
-    imax = index_of(mca.energy, emax)
-    resid = (mca.data - model)
-    # if det['use']:
-    #     resid = resid / np.maximum(1.e-29, (1.0 - mca.det_atten))
-
-    return resid[imin:imax]
-
 def VarChoice(p, default=0):
     return Choice(p, choices=['Fix', 'Vary'],
                   size=(70, -1), default=default)
 
 
 Detector_Materials = ['Si', 'Ge']
-EFano = {'Si': 3.66 * 0.115,
-         'Ge': 3.0 * 0.130}
-
+EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
+EFano_Text = ' Note on Peak Width: sigma = sqrt(e_Fano * Energy + Noise**2) with e_Fano from detector material '
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
     Filter_Lengths = ['microns', 'mm', 'cm']
-    Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'argon', 'kapton',
-                        'mylar', 'pmma', 'water', 'aluminum', 'silicon nitride',
-                        'silicon', 'quartz', 'sapphire', 'diamond', 'graphite',
-                        'boron nitride']
 
+    Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
+                        'aluminum', 'mylar', 'beryllium', 'diamond',
+                        'argon', 'silicon nitride', 'pmma', 'silicon',
+                        'quartz', 'sapphire', 'graphite', 'boron nitride']
 
     def __init__(self, parent, size=(675, 525)):
         self.parent = parent
@@ -95,26 +69,21 @@ class FitSpectraFrame(wx.Frame):
 
         self.paramgroup = Group()
 
-        if not hasattr(self.mca, 'init_calib'):
-            xrf_calib_fitrois(self.mca, _larch=self.larch)
-
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
+
         if not hasattr(self.parent, 'filters_data'):
             self.parent.filters_data = read_filterdata(self.Filter_Materials,
                                                        _larch=self.larch)
 
         self.wids = Empty()
-        self.SetFont(Font(10))
+        # self.SetFont(Font(10))
         self.panels = {}
         self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
-        self.nb.SetBackgroundColour('#FBFBF8')
-        self.SetBackgroundColour('#F6F6F0')
 
-        self.nb.AddPage(self.settings_page(), 'Beam and Detector')
-        self.nb.AddPage(self.filters_page(),  'Filters')
-        self.nb.AddPage(self.fitpeaks_page(), 'Elements')
-
+        self.nb.AddPage(self.beamdet_page(), 'Beam, Detector, Filters')
+        # self.nb.AddPage(self.filters_page(),  'Filters')
+        self.nb.AddPage(self.elempeaks_page(), 'Elements and Peaks')
         self.nb.SetSelection(0)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -133,19 +102,21 @@ class FitSpectraFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def fitpeaks_page(self):
+    def elempeaks_page(self):
         "create row for filters parameters"
         mca = self.parent.mca
         self.wids.peaks = []
 
         p = GridPanel(self)
 
-        p.AddManyText((' ROI Name', 'Fit?', 'Center', 'Sigma', 'Amplitude'),
-                      style=CEN)
+        ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
+                                    tooltip_msg='Select Elements to include in model')
+
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
-        offset, slope = self.mca.offset, self.mca.slope
-        for iroi, roi in enumerate(self.mca.rois):
-            xx = roi
+        p.Add(ptable, dcol=6, newrow=True)
+        # offset, slope = self.mca.offset, self.mca.slope
+        # for iroi, roi in enumerate(self.mca.rois):
+        #     xx = roi
 #             try:
 #                 cenval, ecen, fwhm, ampval, _x = self.mca.init_calib[roi.name]
 #             except KeyError:
@@ -187,7 +158,7 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
         return p
 
-    def settings_page(self):
+    def beamdet_page(self):
         "beam / detector settings"
         mca = self.parent.mca
         conf = self.parent.conf
@@ -199,14 +170,20 @@ class FitSpectraFrame(wx.Frame):
         det_noise = getattr(mca, 'det_noise',  30)
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
 
+        main = wx.Panel(self)
 
-        p = GridPanel(self, itemstyle=LEFT)
+        p = GridPanel(main, itemstyle=LEFT)
         wids.bgr_use = Check(p, label='Fit Background-Subtracted Spectra',
                              default=True)
         wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
                                    precision=1, size=(70, -1))
         wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
+
+        wids.det_mat = Choice(p, choices=Detector_Materials,
+                              size=(55, -1), default=0, action=self.onDetMaterial)
+        wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
+                                 minval=0, maxval=100, precision=3)
 
         wids.det_noise = FloatCtrl(p, value=det_noise, minval=0, maxval=500, precision=4)
         wids.det_efano = FloatCtrl(p, value=det_efano, minval=0, maxval=1, precision=4)
@@ -222,6 +199,8 @@ class FitSpectraFrame(wx.Frame):
         wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
                                   minval=0, maxval=1000, precision=3)
 
+        wids.filters = []
+
         p.AddText(' Beam Energy :', colour='#880000', dcol=3)
         p.AddText(' X-ray Energy (keV): ', newrow=True)
         p.Add(wids.xray_en)
@@ -230,25 +209,20 @@ class FitSpectraFrame(wx.Frame):
         p.AddText(' Max Energy (keV): ')
         p.Add(wids.fit_emax)
 
-        wids.det_mat = Choice(p, choices=Detector_Materials,
-                              size=(55, -1), default=0)
-        wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
-                                 minval=0, maxval=100, precision=3)
-
+        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
         p.AddText(' Detector :', colour='#880000', dcol=3, newrow=True)
         p.AddText(' Detector Material:  ', newrow=True)
         p.Add(wids.det_mat)
         p.AddText(' Thickness (mm): ', newrow=False)
         p.Add(wids.det_thk)
 
-        p.AddText('   Peak Width: sigma = sqrt(e_Fano * Energy + Noise**2)',  newrow=True,
-                  dcol=4)
-        p.AddText(' Det Noise (eV): ')
+        p.AddText(' Det Noise (eV): ', newrow=True)
         p.Add(wids.det_noise)
         p.Add(wids.det_noise_vary)
-        p.AddText(' Detector e_Fano (eV): ', newrow=True)
+        p.AddText(' Detector e_Fano (eV): ')
         p.Add(wids.det_efano)
         p.Add(wids.det_efano_vary)
+        p.AddText(EFano_Text, newrow=True,  dcol=6)
         p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
 
         p.AddText(" Background Parameters: ", colour='#880000', dcol=2,
@@ -264,9 +238,52 @@ class FitSpectraFrame(wx.Frame):
                      action=self.onShowBgr), dcol=2)
 
         p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
-
         p.pack()
-        return p
+
+        # filters section
+#         fp = GridPanel(self, itemstyle=LEFT)
+#
+#         bx = Button(fp, 'Customize Filter List', size=(150, -1),
+#                     action = self.onEditFilters)
+#         bx.Disable()
+#
+#         fp.AddManyText((' filter', 'material', 'density (gr/cm^3)',
+#                        'thickness (mm)'), style=CEN)
+#         fp.Add(HLine(fp, size=(600, 3)), dcol=6, newrow=True)
+#         for i in range(4):
+#             _mat = Choice(fp, choices=self.Filter_Materials, default=0,
+#                           size=(125, -1),
+#                           action=partial(self.onFilterMaterial, index=i))
+#             _den = FloatCtrl(fp, value=0, minval=0, maxval=30,
+#                              precision=4, size=(75, -1))
+#
+#             pnam = 'filter%i_thickness' % (i+1)
+#             param = Parameter(value=0.0, vary=False, min=0, name=pnam)
+#             setattr(self.paramgroup, pnam, param)
+#             _len  = ParameterPanel(p, param, precision=4)
+#
+#             self.wids.filters.append((_mat, _den, _len))
+#             p.AddText('  %i ' % (i+1), newrow=True)
+#             p.Add(_mat)
+#             p.Add(_den, style=wx.ALIGN_CENTER)
+#             p.Add(_len)
+#         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
+#         p.AddText(' ', newrow=True)
+#         p.Add(bx, dcol=3)
+#
+#         p.pack()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(p)
+        pack(main, sizer)
+        return main
+
+    def onDetMaterial(self, event=None):
+        det_mat = self.wids.det_mat.GetStringSelection()
+        if det_mat not in EFano:
+            det_mat = 'Si'
+        self.wids.det_efano.SetValue(EFano[det_mat])
+
 
     def onShowBgr(self, event=None):
         wids     = self.wids
