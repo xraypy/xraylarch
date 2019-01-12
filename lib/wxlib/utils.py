@@ -4,7 +4,9 @@
 A collection of wx utility functions,
 mostly simplified wrappers around existing widgets.
 """
+import platform
 import wx
+import wx.lib.agw.flatnotebook as flat_nb
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
@@ -17,6 +19,36 @@ RCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT
 CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
+
+FONTSIZE = 8
+if platform.system() in ('Windows', 'Darwin'):
+    FONTSIZE = 10
+
+#############################
+## Hack System and Startfile on Windows totry to track down
+## weird error of starting other applications, like Mail
+if platform.system() == 'Windows':
+    from os import system as os_system
+    from os import startfile as os_startfile
+    def my_system(command):
+        print("#@ os.system: ", command)
+        return os_system(command)
+
+    def my_startfile(filepath, operation=None):
+        print("#@ os.startfile: ", filepath, operation)
+        try:
+            if operation is None:
+                return os_startfile(filepath)
+            else:
+                return os_startfile(filepath, operation)
+        except WindowsError:
+            print("#@ os.startfile failed: ", filepath, operation)
+
+    os.system = my_system
+    os.startfile = my_startfile
+
 
 def SetTip(wid, tip=''):
     if is_wxPhoenix:

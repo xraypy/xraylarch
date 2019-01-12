@@ -34,7 +34,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
 
 from larch.wxlib import (SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
-                         LCEN, FRAMESTYLE, Font)
+                         LCEN, FRAMESTYLE, Font, FONTSIZE, FNB_STYLE)
 
 from larch.fitting import fit_report
 
@@ -42,8 +42,7 @@ from larch_plugins.std import group2dict
 
 from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
 
-from larch_plugins.xasgui import (FONTSIZE, FNB_STYLE,
-                                  PrePeakPanel, XASNormPanel,
+from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
                                   LinearComboPanel, PCAPanel, LASSOPanel,
                                   EXAFSPanel, MergeDialog, RenameDialog,
                                   RemoveDialog, DeglitchDialog,
@@ -77,36 +76,6 @@ QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting
  This is not done automatically!'''
 
 WX_DEBUG = False
-
-
-
-#############################
-## Hack System and Startfile on Windows to
-## try to track down weird error of starting
-## other applications
-import platform
-
-if platform.system() == 'Windows':
-    from os import system as os_system
-    from os import startfile as os_startfile
-
-    def my_system(command):
-        print("#@ os.system: ", command)
-        return os_system(command)
-
-    def my_startfile(filepath, operation=None):
-        print("#@ os.startfile: ", filepath, operation)
-        try:
-            if operation is None:
-                return os_startfile(filepath)
-            else:
-                return os_startfile(filepath, operation)
-        except WindowsError:
-            print("#@ os.startfile failed: ", filepath, operation)
-
-
-    os.system = my_system
-    os.startfile = my_startfile
 
 def assign_gsescan_groups(group):
     labels = group.array_labels

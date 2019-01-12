@@ -159,11 +159,10 @@ class PCAPanel(TaskPanel):
         panel.Add(wids['stats'], dcol=3, drow=4, newrow=True)
         panel.Add(SimpleText(panel, 'chi-square = '))
         panel.Add(wids['fit_chi2'])
-
-
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(panel, 1, LCEN, 3)
         pack(self, sizer)
         self.skip_process = False

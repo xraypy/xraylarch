@@ -16,19 +16,13 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font,
-                         FileSave, FileOpen)
+                         FileSave, FileOpen, FNB_STYLE, FONTSIZE)
 
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.std import group2dict
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
-
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
-
-FONTSIZE = 8
-if platform.system() in ('Windows', 'Darwin'):
-    FONTSIZE = 10
 
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.

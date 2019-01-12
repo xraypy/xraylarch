@@ -199,11 +199,10 @@ class XASNormPanel(TaskPanel):
         xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((5, 5), 0, LCEN, 3)
-        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
+        sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(xas, 0, LCEN, 3)
-        sizer.Add((5, 5), 0, LCEN, 3)
-        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
+        sizer.Add((10, 10), 0, LCEN, 3)
+        sizer.Add(HLine(self, size=(600, 2)), 0, LCEN, 3)
         pack(self, sizer)
 
     def get_config(self, dgroup=None):
@@ -632,7 +631,9 @@ class XASNormPanel(TaskPanel):
         if new:
             plotcmd = ppanel.plot
 
-        groupname = dgroup.groupname
+        groupname = getattr(dgroup, 'groupname', None)
+        if groupname is None:
+            return
 
         if not hasattr(dgroup, 'xdat'):
             print("Cannot plot group ", groupname)

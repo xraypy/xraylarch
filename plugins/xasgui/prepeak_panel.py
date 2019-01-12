@@ -663,12 +663,11 @@ class PrePeakPanel(TaskPanel):
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add((10, 10), 0, LCEN, 3)
+        sizer.Add(pan, 0, LCEN, 3)
+        sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
-        sizer.Add(pan,   0, LCEN, 3)
-        sizer.Add((5,5), 0, LCEN, 3)
-        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
-        sizer.Add((5,5), 0, LCEN, 3)
+        sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(self.mod_nb,  1, LCEN|wx.GROW, 10)
 
         pack(self, sizer)
