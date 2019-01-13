@@ -1,4 +1,4 @@
-from .taskpanel  import TaskPanel, FONTSIZE, FNB_STYLE
+from .taskpanel  import TaskPanel, FONTSIZE
 from .xasnorm_panel import XASNormPanel
 from .prepeak_panel import PrePeakPanel
 from .lincombo_panel import LinearComboPanel

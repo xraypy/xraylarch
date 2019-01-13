@@ -541,22 +541,12 @@ class PrePeakPanel(TaskPanel):
 
         self.wids = {}
 
-        def FloatSpinWithPin(name, value, **kws):
-            s = wx.BoxSizer(wx.HORIZONTAL)
-            self.wids[name] = FloatSpin(pan, value=value, **kws)
-            bb = BitmapButton(pan, get_icon('pin'), size=(25, 25),
-                              action=partial(self.onSelPoint, opt=name),
-                              tooltip='use last point selected from plot')
-            s.Add(self.wids[name])
-            s.Add(bb)
-            return s
-
-        opts = dict(digits=2, increment=0.1)
-        ppeak_e0   = FloatSpinWithPin('ppeak_e0', value=0, **opts)
-        ppeak_elo  = FloatSpinWithPin('ppeak_elo', value=-15, **opts)
-        ppeak_ehi  = FloatSpinWithPin('ppeak_ehi', value=-5, **opts)
-        ppeak_emin = FloatSpinWithPin('ppeak_emin', value=-30, **opts)
-        ppeak_emax = FloatSpinWithPin('ppeak_emax', value=0, **opts)
+        fsopts = dict(digits=2, increment=0.1, with_pin=True)
+        ppeak_e0   = self.add_floatspin('ppeak_e0', value=0, **fsopts)
+        ppeak_elo  = self.add_floatspin('ppeak_elo', value=-15, **fsopts)
+        ppeak_ehi  = self.add_floatspin('ppeak_ehi', value=-5, **fsopts)
+        ppeak_emin = self.add_floatspin('ppeak_emin', value=-30, **fsopts)
+        ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(150, -1))

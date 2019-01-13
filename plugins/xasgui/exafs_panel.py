@@ -102,13 +102,13 @@ class EXAFSPanel(TaskPanel):
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
 
-        def FloatSpinWithPin(name, value, **kws):
+        def xxxFSWithPinPanel(name, value, **kws):
             s = wx.BoxSizer(wx.HORIZONTAL)
             self.wids[name] = FloatSpin(panel, value=value, **kws)
             bb = BitmapButton(panel, get_icon('pin'), size=(25, 25),
                               action=partial(self.onSelPoint, opt=name),
                               tooltip='use last point selected from plot')
-            s.Add(wids[name])
+            s.Add(self.wids[name])
             s.Add(bb)
             return s
 
@@ -126,13 +126,10 @@ class EXAFSPanel(TaskPanel):
         wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
 
         opts['max_val'] = 125
-        bkg_kmin = FloatSpinWithPin('bkg_kmin', value=0, **opts)
-
-        bkg_kmax = FloatSpinWithPin('bkg_kmax', value=20, **opts)
-
-        fft_kmin = FloatSpinWithPin('fft_kmin', value=0, **opts)
-
-        fft_kmax = FloatSpinWithPin('fft_kmax', value=20, **opts)
+        bkg_kmin = self.add_floatspin('bkg_kmin', value=0, with_pin=True, **opts)
+        bkg_kmax = self.add_floatspin('bkg_kmax', value=20, with_pin=True, **opts)
+        fft_kmin = self.add_floatspin('fft_kmin', value=0, with_pin=True, **opts)
+        fft_kmax = self.add_floatspin('fft_kmax', value=20, with_pin=True, **opts)
 
         wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 

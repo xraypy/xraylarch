@@ -10,12 +10,11 @@ np.seterr(all='ignore')
 import wx
 
 from larch import Group
-
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font,
-                         FileSave, FileOpen, FNB_STYLE, FONTSIZE)
+                         FileSave, FileOpen, FONTSIZE)
 
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.std import group2dict
@@ -160,10 +159,10 @@ class TaskPanel(wx.Panel):
             bb = (1, 1)
 
         self.wids[name] = fspin
-        s = wx.BoxSizer(wx.HORIZONTAL)
-        s.Add(fspin)
-        s.Add(bb)
-        return s
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(fspin)
+        sizer.Add(bb)
+        return sizer
 
     def onPlot(self, evt=None):
         pass
