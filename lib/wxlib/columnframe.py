@@ -14,13 +14,9 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
-from .text import SimpleText
-from .floats import FloatCtrl
-from .colors import GUIColors
-from .buttons import Button
-from .choice import Choice
-from .utils import (pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
-                    FRAMESTYLE, HLine, Font)
+from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
+                     pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
+                     FRAMESTYLE, HLine, Font)
 
 import larch
 from larch import Group, Interpreter

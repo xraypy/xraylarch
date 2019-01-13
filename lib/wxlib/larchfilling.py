@@ -27,8 +27,7 @@ from functools import partial
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.larchlib import Procedure
-from .buttons import Button
-from .utils import pack, is_wxPhoenix
+from wxutils  import Button, pack, is_wxPhoenix
 
 
 VERSION = '0.9.5(Larch)'

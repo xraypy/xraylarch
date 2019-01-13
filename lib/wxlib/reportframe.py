@@ -1,9 +1,7 @@
 import wx
 from wx.richtext import RichTextCtrl
 
-from .utils import (pack, FRAMESTYLE)
-
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+from wxutils import (pack, FRAMESTYLE, is_wxPhoenix)
 
 class ReportFrame(wx.Frame):
     """basic frame for displaying a text report -- should be improved!

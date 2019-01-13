@@ -10,9 +10,7 @@ import scipy
 import matplotlib
 import larch
 
-from .utils import MenuItem, Font
-from .buttons import Button
-from .choice import Choice
+from wxutils import (MenuItem, Font, Button, Choice)
 
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling

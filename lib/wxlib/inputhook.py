@@ -16,7 +16,7 @@ from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
 
 import wx
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+from wxutils import is_wxPhoenix
 
 if is_wxPhoenix:
     is_wxMain = wx.IsMainThread

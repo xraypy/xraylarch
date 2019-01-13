@@ -11,13 +11,11 @@ import wx
 import larch
 from larch import Group
 from larch_plugins.io import fix_varname, read_athena
-from .text import SimpleText
-from .filechecklist import FileCheckList, FileDropTarget
-from .buttons import Button
-from .choice import Choice
-from .colors import GUIColors
-from .utils import (pack, Check, MenuItem, SetTip, Popup, CEN,
-                    RCEN, LCEN, FRAMESTYLE, Font)
+
+from wxutils import (SimpleText, Button, Choice, GUIColors,
+                     FileCheckList, FileDropTarget, pack,
+                     Check, MenuItem, SetTip, Popup, CEN,
+                     RCEN, LCEN, FRAMESTYLE, Font)
 
 from wxmplot import PlotPanel
 
