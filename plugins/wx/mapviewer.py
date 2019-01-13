@@ -16,6 +16,7 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
+from collections import OrderedDict
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -55,7 +56,7 @@ import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
-                         Choice, Check, GridPanel, FileSave, HLine)
+                         Choice, Check, GridPanel, FileSave, HLine, flatnotebook)
 from larch.utils.strutils import bytes2str, version_ge
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
@@ -81,7 +82,6 @@ ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
 
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 FILE_WILDCARDS = 'X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*'
 
@@ -1397,22 +1397,33 @@ class MapViewerFrame(wx.Frame):
     def createNBPanels(self, parent):
         self.title    = SimpleText(parent, 'initializing...', size=(680, -1))
 
-        self.nb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
-        self.nb.SetBackgroundColour('#FCFCFA')
         self.SetBackgroundColour('#F0F0E8')
 
-        self.nbpanels = []
+        self.nbpanels = OrderedDict()
 
-        for creator in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
-                        TomographyPanel):
-            p = creator(parent, owner=self)
-            self.nb.AddPage(p, p.label, True)
-            bgcol = p.GetBackgroundColour()
-            self.nbpanels.append(p)
-            p.SetSize((750, 550))
+        for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
+                      TomographyPanel):
+            self.nbpanels[panel.label] = panel
 
-        self.nb.SetSelection(0)
-        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
+        self.nb = flatnotebook(parent, self.nbpanels, panelkws={'owner':self},
+                               on_change=self.onNBChanged)
+
+        # self.nbpanels = []
+        # self.nb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
+        # self.nb.SetBackgroundColour('#FCFCFA')
+
+
+        #         for creator in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
+        #                         TomographyPanel):
+        #             p = creator(parent, owner=self)
+        #             self.nb.AddPage(p, p.label, True)
+        #             bgcol = p.GetBackgroundColour()
+        #             self.nbpanels.append(p)
+        #             p.SetSize((750, 550))
+
+        # self.nb.SetSelection(0)
+        # self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -1420,10 +1431,9 @@ class MapViewerFrame(wx.Frame):
         pack(parent, sizer)
 
     def onNBChanged(self, event=None):
-        idx = self.nb.GetSelection()
-        nbpanel = self.nbpanels[idx]
-        if callable(getattr(nbpanel, 'on_select', None)):
-            nbpanel.on_select()
+        callback = getattr(self.nb.GetCurrentPage(), 'on_select', None)
+        if callable(callback):
+            callback()
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
 
@@ -1478,12 +1488,12 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.npixels = npix
             self.xrfdisplay.plotmca(self.sel_mca)
 
-            for p in self.nbpanels:
+            for p in self.nbpanels.values():
                 if hasattr(p, 'update_xrmmap'):
                     p.update_xrmmap(xrmfile=self.current_file)
 
         if self.showxrd:
-            for p in self.nbpanels:
+            for p in self.nbpanels.values():
                 if hasattr(p, 'onXRD'):
                     p.onXRD(show=True, xrd1d=True,verbose=False)
 
@@ -1544,7 +1554,7 @@ class MapViewerFrame(wx.Frame):
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
         xrmfile.add_area(tmask, name=name)
-        for p in self.nbpanels:
+        for p in self.nbpanels.values():
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 
@@ -1746,7 +1756,7 @@ class MapViewerFrame(wx.Frame):
 
         fnames = self.filelist.GetItems()
 
-        for p in self.nbpanels:
+        for p in self.nbpanels.values():
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=self.current_file)
             if hasattr(p, 'set_file_choices'):
@@ -2032,7 +2042,7 @@ class MapViewerFrame(wx.Frame):
 
             if read:
                 self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
-                for p in self.nbpanels:
+                for p in self.nbpanels.values():
                     if hasattr(p, 'update_xrmmap'):
                         p.update_xrmmap(xrmfile=self.current_file)
 
@@ -2050,7 +2060,7 @@ class MapViewerFrame(wx.Frame):
             myDlg.Destroy()
 
             if read:
-                for p in self.nbpanels:
+                for p in self.nbpanels.values():
                     if hasattr(p, 'update_xrmmap'):
                         p.update_xrmmap(xrmfile=self.current_file)
 
@@ -2132,7 +2142,7 @@ class MapViewerFrame(wx.Frame):
             if (filename not in self.files_in_progress and
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
-                thispanel = self.nbpanels[self.nb.GetSelection()]
+                thispanel = self.nb.GetCurrentPage()
                 if hasattr(thispanel, 'onROIMap'):
                     thispanel.onROIMap(event=None, new=False)
 
