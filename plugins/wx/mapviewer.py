@@ -19,7 +19,6 @@ from threading import Thread
 from collections import OrderedDict
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 try:
@@ -1407,23 +1406,6 @@ class MapViewerFrame(wx.Frame):
 
         self.nb = flatnotebook(parent, self.nbpanels, panelkws={'owner':self},
                                on_change=self.onNBChanged)
-
-        # self.nbpanels = []
-        # self.nb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
-        # self.nb.SetBackgroundColour('#FCFCFA')
-
-
-        #         for creator in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
-        #                         TomographyPanel):
-        #             p = creator(parent, owner=self)
-        #             self.nb.AddPage(p, p.label, True)
-        #             bgcol = p.GetBackgroundColour()
-        #             self.nbpanels.append(p)
-        #             p.SetSize((750, 550))
-
-        # self.nb.SetSelection(0)
-        # self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
-
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)

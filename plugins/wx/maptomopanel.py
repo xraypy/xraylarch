@@ -18,7 +18,6 @@ from functools import partial
 from threading import Thread
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 try:

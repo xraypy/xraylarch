@@ -10,7 +10,6 @@ import json
 
 import wx
 import wx.lib.scrolledpanel as scrolled
-# import wx.lib.agw.flatnotebook as flat_nb
 
 import wx.dataview as dv
 

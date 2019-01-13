@@ -8,7 +8,6 @@ import numpy as np
 np.seterr(all='ignore')
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 
 from larch import Group
 

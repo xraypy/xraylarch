@@ -4,10 +4,11 @@ utilities for XRF display
 """
 import copy
 from functools import partial
+from collections import OrderedDict
+
 import numpy as np
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
@@ -20,17 +21,9 @@ from larch.utils import index_of, gaussian
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
 
-
 from larch_plugins.xray import material_mu, material_get
 from larch_plugins.wx import ParameterPanel
 from larch_plugins.wx.periodictable import PeriodicTablePanel
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from larch.utils import OrderedDict
-
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -78,13 +71,12 @@ class FitSpectraFrame(wx.Frame):
 
         self.wids = Empty()
         # self.SetFont(Font(10))
-        self.panels = {}
-        self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.panels = OrderedDict()
+        self.panels['Beam, Detector, Filters'] = self.beamdet_page
+        self.panels['Elements and Peaks'] = self.elempeaks_page
+        # self.panels['Filter's] = self.filters_page
 
-        self.nb.AddPage(self.beamdet_page(), 'Beam, Detector, Filters')
-        # self.nb.AddPage(self.filters_page(),  'Filters')
-        self.nb.AddPage(self.elempeaks_page(), 'Elements and Peaks')
-        self.nb.SetSelection(0)
+        self.nb = flatnoteboook(self, self.panels)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)

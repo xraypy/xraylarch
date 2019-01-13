@@ -16,7 +16,6 @@ from functools import partial
 from threading import Thread
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 try:
@@ -208,7 +207,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                expression=h5str(expr),
                                info=json.dumps(info))
 
-        for p in self.owner.nbpanels:
+        for p in self.owner.nbpanels.values():
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 

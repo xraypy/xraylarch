@@ -18,7 +18,6 @@ from functools import partial
 from six import StringIO
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.mixins.listctrl  as listmix
 
 from wxmplot import PlotPanel
@@ -54,8 +53,6 @@ MT00 = np.zeros(2)
 ENERGY = 18.0
 
 SRCH_MTHDS = peakfinder_methods()
-
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

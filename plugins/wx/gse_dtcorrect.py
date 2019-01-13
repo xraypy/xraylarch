@@ -10,7 +10,6 @@ from functools import partial
 from datetime import timedelta
 
 import wx
-import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 
@@ -34,8 +33,6 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.1*,*.dat,*.xdi)|*.0*;*.1*;*.dat;*.xdi|All files (*)|*"
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
 
 
 def okcancel(panel, onOK=None, onCancel=None):
