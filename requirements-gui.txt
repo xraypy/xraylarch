@@ -1,0 +1,4 @@
+-r requirements.txt
+wxpython>=4.0.3
+wxutils>=0.2.2
+wxmplot>=0.9.32
