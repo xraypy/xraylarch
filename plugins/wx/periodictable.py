@@ -96,10 +96,12 @@ class PeriodicTablePanel(wx.Panel):
         self.multi_select = multi_select
         if sys.platform.lower().startswith('win'):
             fonstize = fontsize - 1
-
+        subfontsize = fontsize
+        if sys.platform.lower().startswith('lin'):
+            subfontsize -= 1
         self.titlefont = wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
         self.elemfont = wx.Font(fontsize,  wx.SWISS, wx.NORMAL, wx.BOLD)
-        self.subtitlefont = wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.subtitlefont = wx.Font(subfontsize, wx.DEFAULT, wx.NORMAL, wx.BOLD)
 
         self.BuildPanel()
 

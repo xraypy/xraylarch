@@ -120,7 +120,10 @@ class LarchWxShell(object):
     def write(self, text, **kws):
         if text is None:
             return
-        if self.output is None:
+        if self.textstyle is None:
+            self.set_textstyle()
+        
+        if self.output is None or self.textstyle is None:
             self.write_sys(text)
         else:
             self.output.SetInsertionPointEnd()
