@@ -27,7 +27,7 @@ if uname.startswith('linux'):
     uname = 'linux'
 
 _version__ = None
-with open(os.path.join('lib', 'version.py'), 'r') as version_file:
+with open(os.path.join('larch', 'version.py'), 'r') as version_file:
     lines = version_file.readlines()
     for line in lines:
         line = line[:-1]
@@ -198,7 +198,6 @@ setup(name = 'xraylarch',
       download_url = 'http://xraypy.github.io/xraylarch/',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
-      package_dir = {'larch': 'lib'},
       packages = ['larch', 'larch.utils', 'larch.wxlib', 'larch.fitting'],
       install_requires=requirements,
       data_files  = data_files,
