@@ -262,7 +262,7 @@ def copy_compiled_exes():
     for exename in compiled_exes:
         exe = exefmt % exename
         src = os.path.abspath(pjoin('exes', sname, exe))
-        dest = os.path.abspath(pjoin(sys.prefix, 'bin', exe))
+        dest = os.path.abspath(pjoin(sys.prefix, bindir, exe))
         shutil.copy(src, dest)
         os.chmod(dest, 493)
 
@@ -284,9 +284,8 @@ def fix_darwin_dylibs():
 
     cmds = []
 
-
     for ename in compiled_exes:
-        ename = pjoin(sys.prefix, 'bin', ename)
+        ename = pjoin(sys.prefix, bindir, ename)
         for dname in dylibs:
             old = pjoin(olddir, dname)
             new = pjoin(newdir, dname)
@@ -309,7 +308,7 @@ def fix_darwin_exes():
     if not pexists(pyapp):
         return
     for script in scripts:
-        appname = os.path.join(sys.exec_prefix, 'bin', script)
+        appname = os.path.join(sys.exec_prefix, bindir, script)
         if os.path.exists(appname):
             with open(appname, 'r') as fh:
                 try:
