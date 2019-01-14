@@ -969,18 +969,26 @@ class XRFDisplayFrame(wx.Frame):
         if xlines is not None:
             xlines.Refresh()
 
-        for index, edges in ((0, ('K', 'M5')),
-                             (1, ('L3', 'L2', 'L1'))):
-            out = []
-            for edge in edges:
-                xex = self.larch.symtable._xray.xray_edge(elem, edge)
-                if xex is None: xex = (0., 0)
-                en = xex[0]*0.001
-                if en > erange[0] and en < erange[1]:
-                    out.append("%s=%.3f" % (edge, en))
-
-            out = '  ' + ', '.join(out)
-            self.wids['ptable'].set_subtitle(out, index=index)
+        edge_en = {}
+        for edge in ('K', 'M5', 'L3', 'L2', 'L1'):
+            edge_en[edge] = None
+            xex = self.larch.symtable._xray.xray_edge(elem, edge)
+            en = xex[0]*0.001
+            if en > erange[0] and en < erange[1]:
+                edge_en[edge] = en
+        out = ''
+        for key in ('M5', 'K'):
+            if edge_en[key] is not None:
+                out = "%s=%.3f" % (key, edge_en[key])
+        if len(out) > 1:
+            self.wids['ptable'].set_subtitle(out, index=0)
+        s, v = [], []
+        for key in ('L3', 'L2', 'L1'):
+            if edge_en[key] is not None:
+                s.append(key)
+                v.append("%.3f" % edge_en[key])
+        out = "%s=%s" %(', '.join(s), ', '.join(v))
+        self.wids['ptable'].set_subtitle(out, index=1)
 
         self.draw()
 
