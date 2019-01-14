@@ -101,12 +101,12 @@ class XRFCalibrationFrame(wx.Frame):
         panel.Add(self.new_slope,     dcol=1, style=RIGHT)
 
         panel.Add(Button(panel, 'Compute Calibration',
-                         size=(125, -1), action=self.onCalibrate),
-                  dcol=2, newrow=True)
+                         size=(175, -1), action=self.onCalibrate),
+                  dcol=3, newrow=True)
 
         panel.Add(Button(panel, 'Use New Calibration',
-                         size=(125, -1), action=self.onUseCalib),
-                  dcol=2, style=RIGHT)
+                         size=(175, -1), action=self.onUseCalib),
+                  dcol=3, style=RIGHT)
 
         panel.Add(Button(panel, 'Done',
                          size=(125, -1), action=self.onClose),
