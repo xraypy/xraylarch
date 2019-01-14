@@ -24,10 +24,14 @@ from .larchlib import (LarchExceptionHolder, ReturnedNone,
 from .fitting  import isParameter
 from .utils import Closure
 
-UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__code__',
-                '__closure__', '__globals__', 'func_code',
-                'func_closure', 'func_globals',
-                'im_class', 'im_func', '__func__')
+UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__globals__', '__code__',
+                '__closure__', '__func__', '__self__', '__module__',
+                '__dict__', '__class__', '__call__', '__get__',
+                '__getattribute__', '__subclasshook__', '__new__',
+                '__init__', 'func_globals', 'func_code', 'func_closure',
+                'im_class', 'im_func', 'im_self', 'gi_code', 'gi_frame',
+                '__asteval__', 'f_locals', '__mro__')
+
 
 OPERATORS = {
     ast.Add:    lambda a, b: b.__radd__(a) if isParameter(b) else a + b,
@@ -64,8 +68,9 @@ PYTHON_RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class',
                          'except', 'exec', 'finally', 'for', 'from',
                          'global', 'if', 'import', 'in', 'is', 'lambda',
                          'not', 'or', 'pass', 'print', 'raise', 'return',
-                         'try', 'while', 'with', 'yield')
-
+                         'try', 'while', 'with', 'yield', 'True', 'False',
+                         'None', 'eval', 'execfile', '__import__',
+                         '__package__')
 
 class Interpreter:
     """larch program compiler and interpreter.
