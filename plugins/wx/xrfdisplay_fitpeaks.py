@@ -11,12 +11,13 @@ import wx
 import wx.lib.agw.pycollapsiblepane as CP
 import wx.lib.scrolledpanel as scrolled
 
-from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
-                     Check, HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
+from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button, Check,
+                     HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
 
 from larch import Group, Parameter, Minimizer, fitting
 from larch.larchlib import Empty
 from larch.utils import index_of, gaussian
+from larch.wxlib import flatnotebook
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
@@ -54,7 +55,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(675, 525)):
+    def __init__(self, parent, size=(725, 550)):
         self.parent = parent
         self.larch = parent.larch
         self.mca = parent.mca
@@ -76,7 +77,7 @@ class FitSpectraFrame(wx.Frame):
         self.panels['Elements and Peaks'] = self.elempeaks_page
         # self.panels['Filter's] = self.filters_page
 
-        self.nb = flatnoteboook(self, self.panels)
+        self.nb = flatnotebook(self, self.panels)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -94,7 +95,7 @@ class FitSpectraFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def elempeaks_page(self):
+    def elempeaks_page(self, **kws):
         "create row for filters parameters"
         mca = self.parent.mca
         self.wids.peaks = []
@@ -150,7 +151,7 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
         return p
 
-    def beamdet_page(self):
+    def beamdet_page(self, **kws):
         "beam / detector settings"
         mca = self.parent.mca
         conf = self.parent.conf
@@ -177,20 +178,19 @@ class FitSpectraFrame(wx.Frame):
         wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
 
-        wids.det_noise = FloatCtrl(p, value=det_noise, minval=0, maxval=500, precision=4)
-        wids.det_efano = FloatCtrl(p, value=det_efano, minval=0, maxval=1, precision=4)
 
         wids.det_noise_vary = VarChoice(p, default=1)
         wids.det_efano_vary = VarChoice(p, default=0)
 
-        wids.xray_en = FloatCtrl(p, value=20.0, size=(70, -1),
-                                 minval=0, maxval=1000, precision=3)
+        opts = dict(size=(70, -1), minval=0, maxval=1000, precision=3)
+        wids.xray_en = FloatCtrl(p, value=20.0, **opts)
+        wids.fit_emin = FloatCtrl(p, value=conf.e_min, **opts)
+        wids.fit_emax = FloatCtrl(p, value=conf.e_max, **opts)
 
-        wids.fit_emin = FloatCtrl(p, value=conf.e_min, size=(70, -1),
-                                  minval=0, maxval=1000, precision=3)
-        wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
-                                  minval=0, maxval=1000, precision=3)
-
+        opts['precision'] = 4
+        opts.pop('maxval')
+        wids.det_noise = FloatCtrl(p, value=det_noise, maxval=500, **opts)
+        wids.det_efano = FloatCtrl(p, value=det_efano, maxval=1, **opts)
         wids.filters = []
 
         p.AddText(' Beam Energy :', colour='#880000', dcol=3)
@@ -233,40 +233,35 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
 
         # filters section
-#         fp = GridPanel(self, itemstyle=LEFT)
-#
-#         bx = Button(fp, 'Customize Filter List', size=(150, -1),
-#                     action = self.onEditFilters)
-#         bx.Disable()
-#
-#         fp.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-#                        'thickness (mm)'), style=CEN)
-#         fp.Add(HLine(fp, size=(600, 3)), dcol=6, newrow=True)
-#         for i in range(4):
-#             _mat = Choice(fp, choices=self.Filter_Materials, default=0,
-#                           size=(125, -1),
-#                           action=partial(self.onFilterMaterial, index=i))
-#             _den = FloatCtrl(fp, value=0, minval=0, maxval=30,
-#                              precision=4, size=(75, -1))
-#
-#             pnam = 'filter%i_thickness' % (i+1)
-#             param = Parameter(value=0.0, vary=False, min=0, name=pnam)
-#             setattr(self.paramgroup, pnam, param)
-#             _len  = ParameterPanel(p, param, precision=4)
-#
-#             self.wids.filters.append((_mat, _den, _len))
-#             p.AddText('  %i ' % (i+1), newrow=True)
-#             p.Add(_mat)
-#             p.Add(_den, style=wx.ALIGN_CENTER)
-#             p.Add(_len)
-#         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
-#         p.AddText(' ', newrow=True)
-#         p.Add(bx, dcol=3)
-#
-#         p.pack()
+        fp = GridPanel(main, itemstyle=LEFT)
+        bx = Button(fp, 'Customize Filter List', size=(150, -1),
+                    action = self.onEditFilters)
+        bx.Disable()
+        fp.AddText(' Filters :', colour='#880000', dcol=3, newrow=True)
+        fp.Add(bx, dcol=3)
+        fp.AddManyText((' filter', 'material', 'density (gr/cm^3)',
+                        'thickness (mm)'), style=CEN, newrow=True)
+        fp.Add(HLine(fp, size=(600, 3)), dcol=6, newrow=True)
+        for i in range(4):
+            _mat = Choice(fp, choices=self.Filter_Materials, default=0,
+                          size=(125, -1),
+                          action=partial(self.onFilterMaterial, index=i))
+            _den = FloatCtrl(fp, value=0, minval=0, maxval=30,
+                             precision=4, size=(75, -1))
+            pnam = 'filter%i_thickness' % (i+1)
+            param = Parameter(value=0.0, vary=False, min=0, name=pnam)
+            setattr(self.paramgroup, pnam, param)
+            _len  = ParameterPanel(fp, param, precision=4)
+            self.wids.filters.append((_mat, _den, _len))
+            fp.AddText('  %i ' % (i+1), newrow=True)
+            fp.Add(_mat)
+            fp.Add(_den, style=wx.ALIGN_CENTER)
+            fp.Add(_len)
+        fp.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(p)
+        sizer.Add(fp)
         pack(main, sizer)
         return main
 
