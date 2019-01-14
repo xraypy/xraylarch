@@ -3,6 +3,7 @@
 wx widgets for Larch
 """
 import platform
+import os
 import wx
 
 from . import larchframe
