@@ -17,10 +17,11 @@ def flatnotebook(parent, paneldict, panelkws={},
     nb.SetNonActiveTabTextColour(wx.Colour(10, 10, 128))
     nb.SetActiveTabTextColour(wx.Colour(128, 0, 0))
     nb.DeleteAllPages()
-
+    nb.pagelist = []
     for name, creator in paneldict.items():
-        _panel = creator(parent=parent.GetParent(), **panelkws)
-        nb.AddPage(_panel," %s " % name, True)
+        _page = creator(parent=parent.GetParent(), **panelkws)
+        nb.AddPage(_page," %s " % name, True)
+        nb.pagelist.append(_page)
 
     if callable(on_change):
         nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, on_change)
