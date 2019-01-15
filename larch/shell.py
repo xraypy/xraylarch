@@ -98,7 +98,6 @@ class shell(cmd.Cmd):
         self.larch.input.history.save(trim_last=trim_last)
         sys.exit()
 
-
     def do_quit(self, text):
         self.on_exit(text=text)
 
@@ -127,7 +126,8 @@ class shell(cmd.Cmd):
         self.default(text)
 
     def default(self, text):
-        if text.strip() in ('quit', 'exit', 'EOF'):
+        print("Default ::%s::" % text)
+        if text.strip() in ('quit', 'exit', 'quit()', 'exit()', 'EOF'):
             self.on_exit(text)
         ret = self.larch.eval(text, fname='<stdin>', lineno=0)
         if self.larch.error:
