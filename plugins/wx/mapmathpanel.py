@@ -48,7 +48,7 @@ VARNAMES = ('a', 'b', 'c', 'd', 'e', 'f')
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
     label  = 'Map Math'
-    def __init__(self, parent, owner, **kws):
+    def __init__(self, parent, owner=None, **kws):
 
         self.map   = None
         self.cfile = None

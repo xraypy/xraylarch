@@ -127,7 +127,7 @@ if ESCAN_CRED is not None:
 class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
     label  = 'ROI Map'
-    def __init__(self, parent, owner, **kws):
+    def __init__(self, parent, owner=None, **kws):
 
         self.owner = owner
         self.cfile,self.xrmmap = None,None
@@ -499,7 +499,7 @@ class MapPanel(GridPanel):
 class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
     label  = 'Map Info'
-    def __init__(self, parent, owner, **kws):
+    def __init__(self, parent, owner=None, **kws):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
@@ -714,7 +714,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     """
 
-    def __init__(self, parent, owner, **kws):
+    def __init__(self, parent, owner=None, **kws):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
 
@@ -1398,13 +1398,12 @@ class MapViewerFrame(wx.Frame):
 
         self.SetBackgroundColour('#F0F0E8')
 
-        self.nbpanels = OrderedDict()
-
+        nbpanels = OrderedDict()
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
                       TomographyPanel):
-            self.nbpanels[panel.label] = panel
+            nbpanels[panel.label] = panel
 
-        self.nb = flatnotebook(parent, self.nbpanels, panelkws={'owner':self},
+        self.nb = flatnotebook(parent, nbpanels, panelkws={'owner':self},
                                on_change=self.onNBChanged)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
@@ -1453,7 +1452,6 @@ class MapViewerFrame(wx.Frame):
         mca_thread.start()
         self.show_XRFDisplay()
         mca_thread.join()
-
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
 
@@ -1470,14 +1468,14 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.npixels = npix
             self.xrfdisplay.plotmca(self.sel_mca)
 
-            for p in self.nbpanels.values():
-                if hasattr(p, 'update_xrmmap'):
-                    p.update_xrmmap(xrmfile=self.current_file)
+            for page in self.nb.pagelist:
+                if hasattr(page, 'update_xrmmap'):
+                    page.update_xrmmap(xrmfile=self.current_file)
 
         if self.showxrd:
-            for p in self.nbpanels.values():
-                if hasattr(p, 'onXRD'):
-                    p.onXRD(show=True, xrd1d=True,verbose=False)
+            for page in self.nb.pagelist:
+                if hasattr(page, 'onXRD'):
+                    page.onXRD(show=True, xrd1d=True,verbose=False)
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
         'make sure XRF plot frame is enabled and visible'
@@ -1536,9 +1534,10 @@ class MapViewerFrame(wx.Frame):
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
         xrmfile.add_area(tmask, name=name)
-        for p in self.nbpanels.values():
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmfile=xrmfile)
+
+        for page in self.nb.pagelist:
+            if hasattr(page, 'update_xrmmap'):
+                page.update_xrmmap(xrmfile=xrmfile)
 
         # show position on map
         self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
@@ -1738,11 +1737,11 @@ class MapViewerFrame(wx.Frame):
 
         fnames = self.filelist.GetItems()
 
-        for p in self.nbpanels.values():
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmfile=self.current_file)
-            if hasattr(p, 'set_file_choices'):
-                p.set_file_choices(fnames)
+        for page in self.nb.pagelist:
+            if hasattr(page, 'update_xrmmap'):
+                page.update_xrmmap(xrmfile=self.current_file)
+            if hasattr(page, 'set_file_choices'):
+                page.set_file_choices(fnames)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -2024,9 +2023,9 @@ class MapViewerFrame(wx.Frame):
 
             if read:
                 self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
-                for p in self.nbpanels.values():
-                    if hasattr(p, 'update_xrmmap'):
-                        p.update_xrmmap(xrmfile=self.current_file)
+                for page in self.nb.pagelist:
+                    if hasattr(page, 'update_xrmmap'):
+                        page.update_xrmmap(xrmfile=self.current_file)
 
     def defineROI(self, event=None):
         if not self.h5convert_done:
@@ -2042,9 +2041,9 @@ class MapViewerFrame(wx.Frame):
             myDlg.Destroy()
 
             if read:
-                for p in self.nbpanels.values():
-                    if hasattr(p, 'update_xrmmap'):
-                        p.update_xrmmap(xrmfile=self.current_file)
+                for page in self.nb.pagelist:
+                    if hasattr(page, 'update_xrmmap'):
+                        page.update_xrmmap(xrmfile=self.current_file)
 
     def add1DXRDFile(self, event=None):
 

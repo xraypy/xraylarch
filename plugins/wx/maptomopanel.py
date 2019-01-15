@@ -63,7 +63,7 @@ PLOT_OPERS = ('/', '*', '-', '+')
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
     label  = 'Tomography Tools'
-    def __init__(self, parent, owner, **kws):
+    def __init__(self, parent, owner=None, **kws):
 
         self.owner = owner
         self.cfile,self.xrmmap = None,None
