@@ -126,7 +126,6 @@ class shell(cmd.Cmd):
         self.default(text)
 
     def default(self, text):
-        print("Default ::%s::" % text)
         if text.strip() in ('quit', 'exit', 'quit()', 'exit()', 'EOF'):
             self.on_exit(text)
         ret = self.larch.eval(text, fname='<stdin>', lineno=0)
