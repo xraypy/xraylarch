@@ -16,5 +16,5 @@ pyyaml
 psutil
 termcolor
 wxpython>=4.0.3
-wxutils>=0.2.2
+wxutils>=0.2.3
 wxmplot>=0.9.32
