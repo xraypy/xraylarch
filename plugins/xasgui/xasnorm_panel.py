@@ -191,10 +191,6 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
 
-        # self.wids['norm_method']
-        self.wids['mback_elem'].Disable()
-        self.wids['mback_edge'].Disable()
-
         xas.Add(saveconf, dcol=6, newrow=True)
         xas.pack()
 
@@ -306,16 +302,12 @@ class XASNormPanel(TaskPanel):
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
         if method.startswith('mback'):
-            self.wids['mback_edge'].Enable()
-            self.wids['mback_elem'].Enable()
             dgroup = self.controller.get_group()
-            if hasattr(dgroup, 'e0'):
+            cur_elem = self.wids['mback_elem'].GetStringSelection()
+            if hasattr(dgroup, 'e0') and cur_elem == 'H':
                 atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
                 self.wids['mback_edge'].SetStringSelection(edge)
                 self.wids['mback_elem'].SetStringSelection(atsym)
-        else:
-            self.wids['mback_edge'].Disable()
-            self.wids['mback_elem'].Disable()
 
         self.onReprocess()
 
@@ -510,7 +502,7 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
         copts = [dgroup.groupname]
         # copts.append("e0=%.2f" % form['e0'])
-        copts.append("z=%d" % atomic_number(form['mback_elem'], _larch=self.larch))
+        copts.append("z=%d" % atomic_number(form['mback_elem']))
         copts.append("edge='%s'" % form['mback_edge'])
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             copts.append("%s=%.2f" % (attr, form[attr]))
@@ -539,6 +531,8 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
             conf[attr] = getattr(dgroup.pre_edge_details, attr)
 
+        conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', 'H')
+        conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', 'K')
         self.update_config(conf, dgroup=dgroup)
         self.skip_process = False
 
@@ -690,6 +684,7 @@ class XASNormPanel(TaskPanel):
         if hasattr(dgroup, 'custom_plotopts'):
             popts.update(dgroup.custom_plotopts)
 
+        popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
             # print("PLOT ", dgroup, dgroup.filename, i, pydat)
@@ -699,7 +694,6 @@ class XASNormPanel(TaskPanel):
                 popts['label'] = yalabel
 
             popts['delay_draw'] = delay_draw or (i != narr)
-            # print("plot:: ", i, popts['delay_draw'], plotcmd, popts)
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
 
