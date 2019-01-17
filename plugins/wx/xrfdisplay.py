@@ -973,9 +973,10 @@ class XRFDisplayFrame(wx.Frame):
         for edge in ('K', 'M5', 'L3', 'L2', 'L1'):
             edge_en[edge] = None
             xex = self.larch.symtable._xray.xray_edge(elem, edge)
-            en = xex[0]*0.001
-            if en > erange[0] and en < erange[1]:
-                edge_en[edge] = en
+            if xex is not None:
+                en = xex[0]*0.001
+                if en > erange[0] and en < erange[1]:
+                    edge_en[edge] = en
         out = ''
         for key in ('M5', 'K'):
             if edge_en[key] is not None:
