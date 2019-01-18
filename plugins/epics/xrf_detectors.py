@@ -6,7 +6,6 @@ try:
     import epics
     from epics.devices.mca import  MultiXMAP
     from epics.devices.struck import Struck
-    from epics.devices.xspress3 import Xspress3
     from epics.wx import EpicsFunction, DelayedEpicsCallback
     HAS_EPICS = True
 except (NameError, ImportError):
@@ -14,13 +13,7 @@ except (NameError, ImportError):
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
 
-if HAS_EPICS:
-    Xspress310 = Xspress3
-    try:
-        from epics.devices.xspress3 import Xspress310
-    except:
-        pass
-
+from larch_plugins.epics.xspress3 import Xspress3, Xspress310
 
 from larch_plugins.xrf import MCA, ROI, Environment
 
