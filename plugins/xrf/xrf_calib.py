@@ -4,19 +4,70 @@ XRF Calibration routines
 """
 
 import numpy as np
+from collections import OrderedDict
+from lmfit.models import GaussianModel, ConstantModel
+
 from larch import ValidateLarchPlugin
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from larch.utils import OrderedDict
-
-from larch_plugins.xrf import isLarchMCAGroup
-from larch_plugins.xrf import split_roiname
+from larch_plugins.xrf import isLarchMCAGroup, split_roiname
 
 from larch.utils import index_of, linregress
 from larch_plugins.math import fit_peak
 from larch_plugins.xray import xray_line, xray_lines
+
+def xrf_calib_init_roi(mca, roiname):
+    """initial calibration step for MCA:
+    find energy locations for one ROI
+    """
+    if not isLarchMCAGroup(mca):
+        print( 'Not a valid MCA')
+        return
+    energy = 1.0*mca.energy
+    chans = 1.0*np.arange(len(energy))
+    counts = mca.counts
+    bgr = getattr(mca, 'bgr', None)
+    if bgr is not None:
+        counts = counts - bgr
+    if not hasattr(mca, 'init_calib'):
+        mca.init_calib = OrderedDict()
+
+    roi = None
+    for xroi in mca.rois:
+        if xroi.name == roiname:
+            roi = xroi
+            break
+    if roi is None:
+        return
+    words = roiname.split()
+    elem = words[0].title()
+    family = 'Ka'
+    if len(words) > 1:
+        family = words[1].title()
+    if family == 'Lb':
+        family = 'Lb1'
+    eknown = xray_line(elem, family)[0]/1000.0
+    llim = max(0, roi.left - roi.bgr_width)
+    hlim = min(len(chans)-1, roi.right + roi.bgr_width)
+    segcounts = counts[llim:hlim]
+    maxcounts = max(segcounts)
+    ccen = llim + np.where(segcounts==maxcounts)[0]
+    ecen = ccen * mca.slope + mca.offset
+    bkgcounts = counts[llim] + counts[hlim]
+    if maxcounts < 2*bkgcounts:
+        mca.init_calib[roiname] = (eknown, ecen, 0.0, ccen, None)
+    else:
+        model = GaussianModel() + ConstantModel()
+        params = model.make_params(amplitude=maxcounts,
+                                   sigma=(chans[hlim]-chans[llim])/2.0,
+                                   center=ccen-llim, c=0.00)
+        params['center'].min = -10
+        params['center'].max = hlim - llim + 10
+        params['c'].min = -10
+        out = model.fit(counts[llim:hlim], params, x=chans[llim:hlim])
+        ccen = llim + out.params['center'].value
+        ecen = ccen * mca.slope + mca.offset
+        fwhm = out.params['fwhm'].value * mca.slope
+        mca.init_calib[roiname] = (eknown, ecen, fwhm, ccen, out)
+
 
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:
@@ -107,5 +158,6 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_calib_fitrois': xrf_calib_fitrois,
+                     'xrf_calib_init_roi': xrf_calib_init_roi,
                      'xrf_calib_compute': xrf_calib_compute,
                      'xrf_calib_apply': xrf_calib_apply})
