@@ -4,6 +4,7 @@ utilities for XRF display
 """
 import copy
 from functools import partial
+from collections import OrderedDict
 import time
 import numpy as np
 
@@ -21,7 +22,8 @@ except:
 import larch
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
-                               xrf_calib_compute, xrf_calib_apply)
+                               xrf_calib_init_roi, xrf_calib_compute,
+                               xrf_calib_apply)
 
 class XRFCalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):
@@ -31,7 +33,6 @@ class XRFCalibrationFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.SetFont(Font(9))
         panel = GridPanel(self)
         self.calib_updated = False
         panel.AddText("Calibrate MCA Energy (Energies in eV)",
@@ -55,13 +56,24 @@ class XRFCalibrationFrame(wx.Frame):
         self.wids = []
 
         # find ROI peak positions
-        xrf_calib_fitrois(mca, _larch=self.larch)
-
+        self.init_wids = {}
         for roi in self.mca.rois:
+            eknown, ecen, fwhm = 1, 1, 1
+
+            words = roi.name.split()
+            elem = words[0].title()
+            family = 'ka'
+            if len(words) > 1:
+                family = words[1]
             try:
-                eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
+                eknown = xray_line(elem, family)/1000.0
             except:
-                continue
+                eknown = 1
+            mid = (roi.right + roi.left)/2
+            wid = (roi.right - roi.left)/2
+            ecen = mid * mca.slope + mca.offset
+            fwhm = 2.354820 * wid * mca.slope
+
             diff = ecen - eknown
             name = ('   ' + roi.name+' '*10)[:10]
             opts = {'style': CEN, 'size':(75, -1)}
@@ -73,12 +85,11 @@ class XRFCalibrationFrame(wx.Frame):
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
-            w_use  = Check(panel, label='', size=(40, -1), default=fwhm<0.50)
-
+            w_use  = Check(panel, label='', size=(40, -1), default=0)
             panel.Add(w_name, style=LEFT, newrow=True)
             panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
                            w_ncen, w_ndif, w_nwid, w_use))
-
+            self.init_wids[roi.name] = [False, w_pred, w_ccen, w_cdif, w_cwid, w_use]
             self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
         panel.Add(HLine(panel, size=(700, 3)),  dcol=9, newrow=True)
@@ -100,10 +111,10 @@ class XRFCalibrationFrame(wx.Frame):
         panel.AddText("slope(eV/chan):")
         panel.Add(self.new_slope,     dcol=1, style=RIGHT)
 
-        panel.Add(Button(panel, 'Compute Calibration',
-                         size=(175, -1), action=self.onCalibrate),
-                  dcol=3, newrow=True)
-
+        self.calib_btn = Button(panel, 'Compute Calibration',
+                                size=(175, -1), action=self.onCalibrate)
+        self.calib_btn.Disable()
+        panel.Add(self.calib_btn, dcol=3, newrow=True)
         panel.Add(Button(panel, 'Use New Calibration',
                          size=(175, -1), action=self.onUseCalib),
                   dcol=3, style=RIGHT)
@@ -117,6 +128,50 @@ class XRFCalibrationFrame(wx.Frame):
         self.SetSize((a[0]+25, a[1]+50))
         self.Show()
         self.Raise()
+        self.init_proc = False
+        self.init_t0 = time.time()
+        self.init_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onInitTimer, self.init_timer)
+        self.init_timer.Start(2)
+
+    def onInitTimer(self, evt=None):
+        """initial calibration"""
+        if self.init_proc:
+            print("skipping...")
+            return
+        nextroi = None
+        if time.time() - self.init_t0 > 20:
+            self.init_timer.Stop()
+            self.init_proc = False
+            self.calib_btn.Enable()
+        for roiname, wids in self.init_wids.items():
+            if not wids[0]:
+                nextroi = roiname
+                break
+
+        if nextroi is None:
+            self.init_timer.Stop()
+            self.init_proc = False
+            self.calib_btn.Enable()
+        else:
+            self.init_proc = True
+            xrf_calib_init_roi(self.mca, roiname)
+            s, w_pred, w_ccen, w_cdif, w_cwid, w_use = self.init_wids[roiname]
+            if roiname in self.mca.init_calib:
+                eknown, ecen, fwhm, amp, fit = self.mca.init_calib[roiname]
+
+                diff = ecen - eknown
+                opts = {'style': CEN, 'size':(75, -1)}
+                w_pred.SetLabel("% .1f" % (1000*eknown))
+                w_ccen.SetLabel("% .1f" % (1000*ecen))
+                w_cdif.SetLabel("% .1f" % (1000*diff))
+                w_cwid.SetLabel("% .1f" % (1000*fwhm))
+                if fwhm > 0.001 and fwhm < 2.00 and fit is not None:
+                    w_use.SetValue(1)
+
+            self.init_wids[roiname][0] = True
+            self.init_proc = False
+
 
     def onCalibrate(self, event=None):
         x, y = [], []
@@ -127,6 +182,10 @@ class XRFCalibrationFrame(wx.Frame):
         for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
             if not w_use.IsChecked():
                 mca.init_calib.pop(roiname)
+            w_ncen.SetLabel("-----")
+            w_ndif.SetLabel("-----")
+            w_nwid.SetLabel("-----")
+
 
         xrf_calib_compute(mca, apply=True, _larch=self.larch)
         offset, slope = mca.new_calib
@@ -141,14 +200,14 @@ class XRFCalibrationFrame(wx.Frame):
                 eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
             except:
                 continue
-
             diff  = ecen - eknown
             for roiname, eknown, ocen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
-                if roiname == roi.name:
+                if roiname == roi.name and w_use.IsChecked():
                     w_ncen.SetLabel("%.1f" % (1000*ecen))
                     w_ndif.SetLabel("% .1f" % (1000*diff))
                     w_nwid.SetLabel("%.1f" % (1000*fwhm))
                     break
+
 
         # restore calibration to old values until new values are accepted
         xrf_calib_apply(mca, offset=old_calib[0], slope=old_calib[1],
