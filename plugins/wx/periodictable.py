@@ -175,15 +175,13 @@ class PeriodicTablePanel(wx.Panel):
             textwid = self.ctrls[label]
 
         if self.multi_select:
-            if textwid.GetBackgroundColour() == self.bgcol:
+            if label in self.selected: # already selected
+                textwid.SetBackgroundColour(self.bgcol)
+                self.selected.remove(label)
+            else:
                 textwid.SetBackgroundColour(self.bgsel)
                 self.selected.append(label)
-            else:
-                textwid.SetBackgroundColour(self.bgcol)
-                try:
-                    self.selected.remove(label)
-                except ValueError:
-                    pass
+
         else:
             textwid.SetBackgroundColour(self.bgsel)
             if self.current is not None and self.current != textwid:
