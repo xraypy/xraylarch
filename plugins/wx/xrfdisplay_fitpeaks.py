@@ -11,8 +11,9 @@ import wx
 import wx.lib.agw.pycollapsiblepane as CP
 import wx.lib.scrolledpanel as scrolled
 
-from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button, Check,
-                     HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
+from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
+                     Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
+                     RIGHT)
 
 from larch import Group, Parameter, Minimizer, fitting
 from larch.larchlib import Empty
@@ -43,7 +44,7 @@ def VarChoice(p, default=0):
 
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
-EFano_Text = ' Note on Peak Width: sigma = sqrt(e_Fano * Energy + Noise**2) with e_Fano from detector material '
+EFano_Text = '      Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
@@ -55,7 +56,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(725, 550)):
+    def __init__(self, parent, size=(550, 625)):
         self.parent = parent
         self.larch = parent.larch
         self.mca = parent.mca
@@ -70,27 +71,22 @@ class FitSpectraFrame(wx.Frame):
             self.parent.filters_data = read_filterdata(self.Filter_Materials,
                                                        _larch=self.larch)
 
-        self.wids = Empty()
+        self.wids = {}
         # self.SetFont(Font(10))
         self.panels = OrderedDict()
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
-        # self.panels['Filter's] = self.filters_page
 
         self.nb = flatnotebook(self, self.panels)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
-        sizer.Add((5,5))
-        sizer.Add(HLine(self, size=(675, 3)),  0, CEN|LEFT|wx.TOP|wx.GROW)
-        sizer.Add((5,5))
-
         bpanel = RowPanel(self)
         bpanel.Add(Button(bpanel, 'Run Fit', action=self.onFitPeaks), 0, LEFT)
-        bpanel.Add(Button(bpanel, 'Done', action=self.onClose), 0, LEFT)
         bpanel.pack()
         sizer.Add(bpanel, 0, CEN)
+        sizer.Add((5,5))
         pack(self, sizer)
         self.Show()
         self.Raise()
@@ -98,56 +94,74 @@ class FitSpectraFrame(wx.Frame):
     def elempeaks_page(self, **kws):
         "create row for filters parameters"
         mca = self.parent.mca
-        self.wids.peaks = []
-
+        wids = self.wids
         p = GridPanel(self)
+        tooltip_msg = 'Select Elements to include in model'
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
+                                         tooltip_msg=tooltip_msg,
+                                         onselect=self.onElemSelect)
 
-        ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
-                                    tooltip_msg='Select Elements to include in model')
+        for roi in self.mca.rois:
+            words = roi.name.split()
+            elem = words[0].title()
+            if elem in self.ptable.syms and elem not in self.ptable.selected:
+                self.ptable.onclick(label=elem)
 
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
-        p.Add(ptable, dcol=6, newrow=True)
-        # offset, slope = self.mca.offset, self.mca.slope
-        # for iroi, roi in enumerate(self.mca.rois):
-        #     xx = roi
-#             try:
-#                 cenval, ecen, fwhm, ampval, _x = self.mca.init_calib[roi.name]
-#             except KeyError:
-#                 continue
-#             sigval = 0.4*fwhm
-#             mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
-#             maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
-#
-#             pname = roi.name.replace(' ', '').lower()
-#             ampnam = '%s_amp' % pname
-#             cennam = '%s_cen' % pname
-#             signam = '%s_sig' % pname
-#             sigexpr = "%s + %s*%s +%s*%s**2" % (self.gsig_offset,
-#                                                 self.gsig_slope, cennam,
-#                                                 self.gsig_quad, cennam)
-#
-#             p_amp = Parameter(value=ampval, vary=True,    min=0, name=ampnam)
-#             p_sig = Parameter(value=sigval, expr=sigexpr, min=0, name=signam)
-#             p_cen = Parameter(value=cenval, vary=False, name=cennam,
-#                               min=mincen, max=maxcen)
-#
-#             setattr(self.paramgroup, ampnam, p_amp)
-#             setattr(self.paramgroup, cennam, p_cen)
-#             setattr(self.paramgroup, signam, p_sig)
-#
-#             _use   = Check(p, label='use' , default=True)
-#             _cen   = ParameterPanel(p, p_cen, precision=3)
-#             _sig   = ParameterPanel(p, p_sig, precision=3)
-#             _amp   = ParameterPanel(p, p_amp, precision=2)
-#
-#             self.wids.peaks.append((_use, _cen, _sig, _amp))
-#
-#             p.AddText(' %s' % roi.name,  newrow=True, style=LEFT)
-#             p.Add(_use, style=wx.ALIGN_CENTER)
-#             p.Add(_cen)
-#             p.Add(_sig)
-#             p.Add(_amp)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
+        p.AddText(' Select Elements to include :', colour='#880000', dcol=7)
+        p.Add(self.ptable, dcol=6, newrow=True)
+
+        p.Add(HLine(p, size=(550, 3)), dcol=8, newrow=True)
+        p.AddText(' Elastic / Compton peaks: ', colour='#880000',
+                  dcol=5, newrow=True)
+
+        opts = dict(size=(100, -1),
+                    min_val=0, digits=4, increment=0.010)
+        for name, def_use  in (('Elastic', True), ('Compton1', True),
+                               ('Compton2', False)):
+            en = self.mca.incident_energy
+            if name == 'Compton1':
+                en = 0.96 * self.mca.incident_energy
+            elif name == 'Compton2':
+                en = 0.92 * self.mca.incident_energy
+            t = name.lower()
+            wids['%s_use'%t] = Check(p, label='Include in fit',
+                                      default=def_use,
+                                      action=partial(self.onUsePeak, name=t))
+            wids['%s_show'%t] = Button(p, 'Show Peak', size=(150, -1),
+                                       action=partial(self.onShowPeak, name=t))
+            wids['%s_cen_vary'%t] = VarChoice(p, default=1)
+            wids['%s_step_vary'%t] = VarChoice(p, default=0)
+            wids['%s_tail_vary'%t] = VarChoice(p, default=0)
+            wids['%s_sigm_vary'%t] = VarChoice(p, default=0)
+
+            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=1, min_val=0,
+                                           increment=10)
+            wids['%s_step'%t] = FloatSpin(p, value=0.01, digits=3, min_val=0,
+                                           max_val=1.0, increment=1.e-2)
+            wids['%s_tail'%t] = FloatSpin(p, value=0.010, digits=3, min_val=0,
+                                           max_val=3.0, increment=1.e-3)
+            wids['%s_sigm'%t] = FloatSpin(p, value=2.0, digits=2, min_val=0,
+                                           max_val=5.0, increment=0.1)
+            if not def_use:
+                self.onUsePeak(name=t, value=False)
+
+            p.AddText("  %s " % name,  colour='#880000', newrow=True)
+            p.Add(wids['%s_use' % t], dcol=3)
+            p.Add(wids['%s_show' % t], dcol=3)
+            p.AddText('  Energy (keV): ', newrow=True)
+            p.Add(wids['%s_cen'%t])
+            p.Add(wids['%s_cen_vary'%t])
+            p.AddText('  Tail (%): ', newrow=False)
+            p.Add(wids['%s_tail'%t])
+            p.Add(wids['%s_tail_vary'%t])
+            p.AddText('  Step : ', newrow=True)
+            p.Add(wids['%s_step'%t])
+            p.Add(wids['%s_step_vary'%t])
+            p.AddText('  Sigma Scale : ', newrow=False)
+            p.Add(wids['%s_sigm'%t])
+            p.Add(wids['%s_sigm_vary'%t])
+            p.Add(HLine(p, size=(550, 3)), dcol=7, newrow=True)
+
         p.pack()
         return p
 
@@ -155,263 +169,286 @@ class FitSpectraFrame(wx.Frame):
         "beam / detector settings"
         mca = self.parent.mca
         conf = self.parent.conf
-        wids = self.wids
 
-        width = getattr(mca, 'bgr_width',    5)
-        expon = getattr(mca, 'bgr_exponent', 2)
+        xray_energy = getattr(mca, 'incident_energy', None)
+        if xray_energy is None:
+            xray_energy = mca.incident_energy = 20.0
+        if xray_energy < 250:
+            xray_energy = 1000.0 * xray_energy
 
+        en_min = getattr(conf, 'e_min', 1.0) * 1000.0
+        en_max = getattr(conf, 'e_max', None)
+        if en_max is None:
+            en_max = mca.incident_energy
+        en_max = en_max * 1000.0
+
+        cal_offset = getattr(mca, 'offset',  0) * 1000.0
+        cal_slope = getattr(mca, 'slope',  0.010) * 1000.0
+        det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         det_noise = getattr(mca, 'det_noise',  30)
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
+        width = getattr(mca, 'bgr_width',    5000)
+        expon = getattr(mca, 'bgr_exponent', 2)
 
+        wids = self.wids
         main = wx.Panel(self)
 
-        p = GridPanel(main, itemstyle=LEFT)
-        wids.bgr_use = Check(p, label='Fit Background-Subtracted Spectra',
-                             default=True)
-        wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
-                                   precision=1, size=(70, -1))
-        wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
+        pdet = GridPanel(main, itemstyle=LEFT)
+        pflt = GridPanel(main, itemstyle=LEFT)
+
+        wids['bgr_use'] = Check(pdet, label='Fit Background-Subtracted Spectrum',
+                                default=False, action=self.onUseBackground)
+        wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
+                                   digits=0, increment=500, size=(100, -1))
+        wids['bgr_expon'] = Choice(pdet, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
+        wids['bgr_show'] = Button(pdet, 'Show Background', size=(150, -1),
+                                  action=self.onShowBgr)
+        wids['bgr_width'].Disable()
+        wids['bgr_expon'].Disable()
+        wids['bgr_show'].Disable()
 
-        wids.det_mat = Choice(p, choices=Detector_Materials,
-                              size=(55, -1), default=0, action=self.onDetMaterial)
-        wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
-                                 minval=0, maxval=100, precision=3)
+        wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
+                                      min_val=0, max_val=100,
+                                      digits=3, increment=0.01, size=(100, -1))
+        wids['cal_offset'] = FloatSpin(pdet, value=cal_offset,
+                                      min_val=-500, max_val=500,
+                                      digits=3, increment=0.01, size=(100, -1))
+
+        wids['cal_vary'] = VarChoice(pdet, default=0)
+
+        wids['det_mat'] = Choice(pdet, choices=Detector_Materials,
+                                 size=(55, -1), default=0,
+                                 action=self.onDetMaterial)
+
+        wids['det_thk'] = FloatSpin(pdet, value=0.400, size=(100, -1),
+                                     increment=0.010, min_val=0, max_val=10,
+                                     digits=3)
+
+        wids['det_noise_vary'] = VarChoice(pdet, default=1)
+        wids['det_efano_vary'] = VarChoice(pdet, default=0)
+
+        opts = dict(size=(100, -1), min_val=0, max_val=250000,
+                    digits=1, increment=0.010)
+        wids['xray_en'] = FloatSpin(pdet, value=xray_energy, **opts)
+        wids['fit_emin'] = FloatSpin(pdet, value=en_min, **opts)
+        wids['fit_emax'] = FloatSpin(pdet, value=en_max, **opts)
+
+        opts.update({'digits': 4, 'max_val': 500, 'increment': 1})
+        wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
+
+        opts.update({'max_val': 1, 'increment': 0.001})
+        wids['det_efano'] = FloatSpin(pdet, value=det_efano, **opts)
 
 
-        wids.det_noise_vary = VarChoice(p, default=1)
-        wids.det_efano_vary = VarChoice(p, default=0)
+        pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=3)
+        pdet.AddText('    X-ray Energy (eV): ', newrow=True)
+        pdet.Add(wids['xray_en'])
+        pdet.AddText('    Fit Range (eV): ', newrow=True)
+        pdet.Add(wids['fit_emin'])
+        pdet.AddText(' : ')
+        pdet.Add(wids['fit_emax'])
 
-        opts = dict(size=(70, -1), minval=0, maxval=1000, precision=3)
-        wids.xray_en = FloatCtrl(p, value=20.0, **opts)
-        wids.fit_emin = FloatCtrl(p, value=conf.e_min, **opts)
-        wids.fit_emax = FloatCtrl(p, value=conf.e_max, **opts)
+        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
+        pdet.AddText(' Energy Calibration :', colour='#880000', dcol=1, newrow=True)
+        pdet.AddText('   Vary in fit:')
+        pdet.Add(wids['cal_vary'], dcol=2)
+        pdet.AddText('    Offset (eV): ', newrow=True)
+        pdet.Add(wids['cal_offset'])
+        pdet.AddText('    Slope (eV/bin): ', newrow=True)
+        pdet.Add(wids['cal_slope'])
 
-        opts['precision'] = 4
-        opts.pop('maxval')
-        wids.det_noise = FloatCtrl(p, value=det_noise, maxval=500, **opts)
-        wids.det_efano = FloatCtrl(p, value=det_efano, maxval=1, **opts)
-        wids.filters = []
 
-        p.AddText(' Beam Energy :', colour='#880000', dcol=3)
-        p.AddText(' X-ray Energy (keV): ', newrow=True)
-        p.Add(wids.xray_en)
-        p.AddText(' Min Energy (keV): ')
-        p.Add(wids.fit_emin)
-        p.AddText(' Max Energy (keV): ')
-        p.Add(wids.fit_emax)
+        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
+        pdet.AddText(' Detector :', colour='#880000', dcol=4, newrow=True)
+        pdet.AddText('    Material:  ', newrow=True)
+        pdet.Add(wids['det_mat'])
+        pdet.AddText('    Thickness (mm): ', newrow=True)
+        pdet.Add(wids['det_thk'])
 
-        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
-        p.AddText(' Detector :', colour='#880000', dcol=3, newrow=True)
-        p.AddText(' Detector Material:  ', newrow=True)
-        p.Add(wids.det_mat)
-        p.AddText(' Thickness (mm): ', newrow=False)
-        p.Add(wids.det_thk)
+        pdet.AddText('    Noise (eV): ', newrow=True)
+        pdet.Add(wids['det_noise'])
+        pdet.Add(wids['det_noise_vary'], dcol=2)
+        pdet.AddText('    E_Fano (eV): ', newrow=True)
+        pdet.Add(wids['det_efano'])
+        pdet.Add(wids['det_efano_vary'], dcol=2)
+        pdet.AddText(EFano_Text, newrow=True,  dcol=4)
 
-        p.AddText(' Det Noise (eV): ', newrow=True)
-        p.Add(wids.det_noise)
-        p.Add(wids.det_noise_vary)
-        p.AddText(' Detector e_Fano (eV): ')
-        p.Add(wids.det_efano)
-        p.Add(wids.det_efano_vary)
-        p.AddText(EFano_Text, newrow=True,  dcol=6)
-        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
-
-        p.AddText(" Background Parameters: ", colour='#880000', dcol=2,
-                  newrow=True)
-        p.Add(wids.bgr_use, dcol=2)
-
-        p.AddText(" Exponent:", newrow=True)
-        p.Add(wids.bgr_exponent)
-        p.AddText(" Energy Width (keV): ", newrow=False)
-        p.Add(wids.bgr_width)
-
-        p.Add(Button(p, 'Show Background', size=(130, -1),
-                     action=self.onShowBgr), dcol=2)
-
-        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
-        p.pack()
+        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
+        pdet.AddText(" Background: ", colour='#880000', newrow=True)
+        pdet.Add(wids['bgr_use'], dcol=3)
+        pdet.AddText('    Exponent:', newrow=True)
+        pdet.Add(wids['bgr_expon'])
+        pdet.AddText('    Width (keV): ', newrow=True)
+        pdet.Add(wids['bgr_width'], dcol=2)
+        pdet.Add(wids['bgr_show'])
+        pdet.pack()
 
         # filters section
-        fp = GridPanel(main, itemstyle=LEFT)
-        bx = Button(fp, 'Customize Filter List', size=(150, -1),
+        bx = Button(pflt, 'Customize Filter List', size=(150, -1),
                     action = self.onEditFilters)
         bx.Disable()
-        fp.AddText(' Filters :', colour='#880000', dcol=3, newrow=True)
-        fp.Add(bx, dcol=3)
-        fp.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-                        'thickness (mm)'), style=CEN, newrow=True)
-        fp.Add(HLine(fp, size=(600, 3)), dcol=6, newrow=True)
-        for i in range(4):
-            _mat = Choice(fp, choices=self.Filter_Materials, default=0,
-                          size=(125, -1),
-                          action=partial(self.onFilterMaterial, index=i))
-            _den = FloatCtrl(fp, value=0, minval=0, maxval=30,
-                             precision=4, size=(75, -1))
-            pnam = 'filter%i_thickness' % (i+1)
-            param = Parameter(value=0.0, vary=False, min=0, name=pnam)
-            setattr(self.paramgroup, pnam, param)
-            _len  = ParameterPanel(fp, param, precision=4)
-            self.wids.filters.append((_mat, _den, _len))
-            fp.AddText('  %i ' % (i+1), newrow=True)
-            fp.Add(_mat)
-            fp.Add(_den, style=wx.ALIGN_CENTER)
-            fp.Add(_len)
-        fp.pack()
+        pflt.Add(HLine(pflt, size=(550, 3)), dcol=6)
+        pflt.AddText(' Filters :', colour='#880000', dcol=3, newrow=True)
+        pflt.Add(bx, dcol=3)
+        pflt.AddManyText(('    filter', 'material', 'density (gr/cm^3)',
+                        'thickness (mm)', 'vary thickness'), style=CEN, newrow=True)
+        opts = dict(size=(100, -1), min_val=0, digits=3, increment=0.010)
+        for i in range(1, 5):
+            t = 'filt%d' % i
+            wids['%s_mat'%t] = Choice(pflt, choices=self.Filter_Materials, default=0,
+                                      size=(125, -1),
+                                      action=partial(self.onFilterMaterial, index=i))
+            wids['%s_den'%t] = FloatCtrl(pflt, value=0, minval=0, maxval=30,
+                                         precision=5, size=(100, -1))
+            wids['%s_thk'%t] = FloatSpin(pflt, value=0.0, **opts)
+            wids['%s_var'%t] = VarChoice(pflt, default=0)
+
+            pflt.AddText('     %i' % (i), newrow=True)
+            pflt.Add(wids['%s_mat' % t])
+            pflt.Add(wids['%s_den' % t])
+            pflt.Add(wids['%s_thk' % t])
+            pflt.Add(wids['%s_var' % t])
+
+        pflt.Add(HLine(pflt, size=(550, 3)), dcol=6, newrow=True)
+        pflt.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(p)
-        sizer.Add(fp)
+        sizer.Add(pdet)
+        sizer.Add(pflt)
         pack(main, sizer)
         return main
 
-    def onDetMaterial(self, event=None):
-        det_mat = self.wids.det_mat.GetStringSelection()
-        if det_mat not in EFano:
-            det_mat = 'Si'
-        self.wids.det_efano.SetValue(EFano[det_mat])
+    def onUseBackground(self, event=None):
+        use = self.wids['bgr_use'].IsChecked()
+        self.wids['bgr_width'].Enable(use)
+        self.wids['bgr_expon'].Enable(use)
+        self.wids['bgr_show'].Enable(use)
 
 
     def onShowBgr(self, event=None):
-        wids     = self.wids
-        mca      = self.mca
-        parent   = self.parent
-        width    = wids.bgr_width.GetValue()
-        exponent = int(wids.bgr_exponent.GetStringSelection())
+        mca    = self.mca
+        parent = self.parent
+        width  = self.wids['bgr_width'].GetValue()
+        expon  = int(self.wids['bgr_expon'].GetStringSelection())
 
         xrf_background(energy=mca.energy, counts=mca.counts, group=mca,
-                       width=width, exponent=exponent, _larch=parent.larch)
+                       width=width, exponent=expon, _larch=parent.larch)
 
         mca.bgr_width = width
-        mca.bgr_exponent = exponent
+        mca.bgr_expoent = expon
         parent.plotmca(mca)
         parent.oplot(mca.energy, mca.bgr, label='background',
                      color=parent.conf.bgr_color, linewidth=1, style='--')
 
+    def onDetMaterial(self, event=None):
+        det_mat = self.wids['det_mat'].GetStringSelection()
+        if det_mat not in EFano:
+            det_mat = 'Si'
+        self.wids['det_efano'].SetValue(EFano[det_mat])
+
     def onFilterMaterial(self, evt=None, index=0):
         name = evt.GetString()
         form, den = self.parent.filters_data.get(name, ('', 0))
-        self.wids.filters[index][1].SetValue(den)
-        thick = self.wids.filters[index][2]
-        if thick.wids.val.GetValue()  < 1.e-5:
-            thick.wids.val.SetValue(0.0250)
+        t = 'filt%d' % index
+        self.wids['%s_den'%t].SetValue(den)
+        thick = self.wids['%s_thk'%t]
+        if den < 0.1 and thick.GetValue() < 0.1:
+            thick.SetValue(5.0)
+        elif den > 0.1 and thick.GetValue() < 1.e-5:
+            thick.SetValue(0.0250)
 
     def onEditFilters(self, evt=None):
         print( 'on Edit Filters ',  evt)
 
+    def onElemSelect(self, event=None, elem=None):
+        # print('elem select ', event, elem, elem in self.ptable.selected)
+        self.ptable.tsym.SetLabel('')
+        self.ptable.title.SetLabel('%d elements selected' % len(self.ptable.selected))
 
-    def filters_page(self):
-        "create row for filters parameters"
-        mca = self.parent.mca
-        self.wids.filters = []
 
-        p = GridPanel(self, itemstyle=LEFT)
+    def onShowPeak(self, event=None, name=None):
+        print('show peak ', name)
+        opts = {}
+        for a in ('cen', 'step', 'tail', 'sigm'):
+            v = self.wids['%s_%s'%(name, a)].GetValue()
+            opts[a] = v
+        print(opts)
 
-        bx = Button(p, 'Customize Filter List', size=(150, -1),
-                    action = self.onEditFilters)
-        bx.Disable()
-        p.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-                       'thickness (mm)'), style=CEN)
-        p.Add(HLine(p, size=(600, 3)), dcol=6, newrow=True)
-        for i in range(4):
-            _mat = Choice(p, choices=self.Filter_Materials, default=0,
-                          size=(125, -1),
-                          action=partial(self.onFilterMaterial, index=i))
-            _den = FloatCtrl(p, value=0, minval=0, maxval=30,
-                             precision=4, size=(75, -1))
 
-            pnam = 'filter%i_thickness' % (i+1)
-            param = Parameter(value=0.0, vary=False, min=0, name=pnam)
-            setattr(self.paramgroup, pnam, param)
-            _len  = ParameterPanel(p, param, precision=4)
+    def onUsePeak(self, event=None, name=None, value=None):
+        if value is None and event is not None:
+            value = event.IsChecked()
+        if name is None:
+            return
+        for a in ('show', 'cen', 'step', 'tail', 'sigm'):
+            self.wids['%s_%s'%(name, a)].Enable(value)
+            varwid = self.wids.get('%s_%s_vary'%(name, a), None)
+            if varwid is not None:
+                varwid.Enable(value)
 
-            self.wids.filters.append((_mat, _den, _len))
-            p.AddText('  %i ' % (i+1), newrow=True)
-            p.Add(_mat)
-            p.Add(_den, style=wx.ALIGN_CENTER)
-            p.Add(_len)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
-        p.AddText(' ', newrow=True)
-        p.Add(bx, dcol=3)
 
-        p.pack()
-        return p
+
+    def build_model(self):
+        """build xrf_model from form settings"""
+
+        opts = {}
+        filters, peaks = [], []
+        sig, det, bgr = {}, {}, {}
+
+        print("on Fit " , self.mca)
+        print(self.ptable.selected)
+
+        print(list(self.wids.keys()))
+
 
     def onFitPeaks(self, event=None):
         opts = {}
         filters, peaks = [], []
         sig, det, bgr = {}, {}, {}
 
-        opts['flyield']  = self.wids.flyield_use.IsChecked()
-        opts['xray_en']  = self.wids.xray_en.GetValue()
-        opts['emin']     = self.wids.fit_emin.GetValue()
-        opts['emax']     = self.wids.fit_emax.GetValue()
+        print("on Fit " , self.mca)
+        print(self.ptable.selected)
 
-        det['use']       = self.wids.det_use.IsChecked()
-        det['thickness'] = self.wids.det_thk.GetValue()
-        det['material']  = self.wids.det_mat.GetStringSelection()
+        print(list(self.wids.keys()))
 
-        bgr['use']       = self.wids.bgr_use.IsChecked()
-        bgr['width']     = self.wids.bgr_width.GetValue()
-        bgr['exponent']  = int(self.wids.bgr_exponent.GetStringSelection())
 
-        sig['offset']    = self.wids.sig_offset.param
-        sig['slope']     = self.wids.sig_slope.param
-        sig['quad']      = self.wids.sig_quad.param
-
-        for k in self.wids.filters:
-            f = (k[0].GetStringSelection(), k[1].GetValue(), k[2].param)
-            filters.append(f)
-
-        for k in self.wids.peaks:
-            use = k[0].IsChecked()
-            p = (k[0].IsChecked(), k[1].param, k[2].param, k[3].param)
-            peaks.append(p)
-            if not use:
-                k[1].param.vary = False
-                k[2].param.vary = False
-                k[3].param.vary = False
-
-        opts['det'] = det
-        opts['bgr'] = bgr
-        opts['sig'] = sig
-        opts['filters'] = filters
-        opts['peaks'] = peaks
-
-        mca    = self.mca
-        mca.data = mca.counts*1.0
-        energy = mca.energy
-        _larch = self.parent.larch
-        if bgr['use']:
-            bgr.pop('use')
-            xrf_background(energy=mca.energy, counts=mca.counts,
-                           group=mca, _larch=_larch, **bgr)
-            opts['use_bgr']=True
-        opts['mca'] = mca
-        if det['use']:
-            mu = material_mu(det['material'], energy*1000.0,
-                             _larch=_larch)/10.0
-            t = det['thickness']
-            mca.det_atten = np.exp(-t*mu)
-
-        fit = Minimizer(xrf_resid, self.paramgroup, toler=1.e-4,
-                        _larch=_larch, fcn_kws = opts)
-        fit.leastsq()
-        parent = self.parent
-        parent.oplot(mca.energy, mca.model,
-                     label='fit', style='solid',
-                     color='#DD33DD')
-
-        # print( fitting.fit_report(self.paramgroup, _larch=_larch))
-
-        # filters:
-        #  75 microns kapton, etc
-        #
-        # form, nominal_density = material_get(material)
-        # mu = material_mu(material, energy*1000.0, _larch=_larch)/10.0
-        # mu = mu * nominal_density/user_density
-        # scale = exp(-thickness*mu)
-
+#         opts['xray_en']  = self.wids.xray_en.GetValue()
+#         opts['emin']     = self.wids.fit_emin.GetValue()
+#         opts['emax']     = self.wids.fit_emax.GetValue()
+#
+#         det['use']       = self.wids.det_use.IsChecked()
+#         det['thickness'] = self.wids.det_thk.GetValue()
+#         det['material']  = self.wids.det_mat.GetStringSelection()
+#
+#         bgr['use']       = self.wids.bgr_use.IsChecked()
+#         bgr['width']     = self.wids.bgr_width.GetValue()
+#         bgr['exponent']  = int(self.wids.bgr_expon.GetStringSelection())
+#
+#
+#         mca    = self.mca
+#         mca.data = mca.counts*1.0
+#         energy = mca.energy
+#         _larch = self.parent.larch
+#         if bgr['use']:
+#             bgr.pop('use')
+#             xrf_background(energy=mca.energy, counts=mca.counts,
+#                            group=mca, _larch=_larch, **bgr)
+#             opts['use_bgr']=True
+#         opts['mca'] = mca
+#         if det['use']:
+#             mu = material_mu(det['material'], energy*1000.0,
+#                              _larch=_larch)/10.0
+#             t = det['thickness']
+#             mca.det_atten = np.exp(-t*mu)
+#
+#         fit = Minimizer(xrf_resid, self.paramgroup, toler=1.e-4,
+#                         _larch=_larch, fcn_kws = opts)
+#         fit.leastsq()
+#         parent = self.parent
+#         parent.oplot(mca.energy, mca.model,
+#                      label='fit', style='solid',
+#                      color='#DD33DD')
 
     def onClose(self, event=None):
         self.Destroy()
