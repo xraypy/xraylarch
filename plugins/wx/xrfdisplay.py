@@ -774,8 +774,9 @@ class XRFDisplayFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onPileupPrediction, ix)
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
-        MenuItem(self, amenu, "Fit Peaks\tCtrl+F",
-                 "Fit Peaks in spectra",  self.onFitPeaks)
+        MenuItem(self, amenu, "Fit Spectrum\tCtrl+F",
+                 "Fit Spectrum for Elemental Contributiosn",
+                 self.onFitSpectrum)
         self._menus = [(fmenu, '&File'),
                        (omenu, '&Options'),
                        (amenu, '&Analysis')]
@@ -1292,7 +1293,7 @@ class XRFDisplayFrame(wx.Frame):
         # print("new calib ", mca.offset, mca.slope)
         self.plotmca(mca)
 
-    def onFitPeaks(self, event=None, **kws):
+    def onFitSpectrum(self, event=None, **kws):
         try:
             self.win_fit.Raise()
         except:
