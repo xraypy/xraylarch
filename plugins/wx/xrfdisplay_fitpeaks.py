@@ -42,6 +42,7 @@ def VarChoice(p, default=0):
                   size=(70, -1), default=default)
 
 
+NFILTERS = 4
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
 EFano_Text = '      Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
@@ -58,7 +59,7 @@ class FitSpectraFrame(wx.Frame):
 
     def __init__(self, parent, size=(550, 625)):
         self.parent = parent
-        self.larch = parent.larch
+        self._larch = parent.larch
         self.mca = parent.mca
         self.conf = {}
 
@@ -69,7 +70,7 @@ class FitSpectraFrame(wx.Frame):
 
         if not hasattr(self.parent, 'filters_data'):
             self.parent.filters_data = read_filterdata(self.Filter_Materials,
-                                                       _larch=self.larch)
+                                                       _larch=self._larch)
 
         self.wids = {}
         # self.SetFont(Font(10))
@@ -83,7 +84,10 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
         bpanel = RowPanel(self)
-        bpanel.Add(Button(bpanel, 'Run Fit', action=self.onFitPeaks), 0, LEFT)
+        bpanel.Add(Button(bpanel, 'Calculate Model',
+                          action=self.onShowModel), 0, LEFT)
+        bpanel.Add(Button(bpanel, 'Fit Model',
+                          action=self.onFitModel), 0, LEFT)
         bpanel.pack()
         sizer.Add(bpanel, 0, CEN)
         sizer.Add((5,5))
@@ -148,7 +152,7 @@ class FitSpectraFrame(wx.Frame):
             p.AddText("  %s " % name,  colour='#880000', newrow=True)
             p.Add(wids['%s_use' % t], dcol=3)
             p.Add(wids['%s_show' % t], dcol=3)
-            p.AddText('  Energy (keV): ', newrow=True)
+            p.AddText('  Energy (eV): ', newrow=True)
             p.Add(wids['%s_cen'%t])
             p.Add(wids['%s_cen_vary'%t])
             p.AddText('  Tail (%): ', newrow=False)
@@ -172,9 +176,10 @@ class FitSpectraFrame(wx.Frame):
 
         xray_energy = getattr(mca, 'incident_energy', None)
         if xray_energy is None:
-            xray_energy = mca.incident_energy = 20.0
+            xray_energy = 20.0
         if xray_energy < 250:
             xray_energy = 1000.0 * xray_energy
+        mca.incident_energy = xray_energy
 
         en_min = getattr(conf, 'e_min', 1.0) * 1000.0
         en_max = getattr(conf, 'e_max', None)
@@ -230,9 +235,9 @@ class FitSpectraFrame(wx.Frame):
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
                     digits=1, increment=0.010)
-        wids['xray_en'] = FloatSpin(pdet, value=xray_energy, **opts)
-        wids['fit_emin'] = FloatSpin(pdet, value=en_min, **opts)
-        wids['fit_emax'] = FloatSpin(pdet, value=en_max, **opts)
+        wids['en_xray'] = FloatSpin(pdet, value=xray_energy, **opts)
+        wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
+        wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
 
         opts.update({'digits': 4, 'max_val': 500, 'increment': 1})
         wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
@@ -243,11 +248,11 @@ class FitSpectraFrame(wx.Frame):
 
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=3)
         pdet.AddText('    X-ray Energy (eV): ', newrow=True)
-        pdet.Add(wids['xray_en'])
+        pdet.Add(wids['en_xray'])
         pdet.AddText('    Fit Range (eV): ', newrow=True)
-        pdet.Add(wids['fit_emin'])
+        pdet.Add(wids['en_min'])
         pdet.AddText(' : ')
-        pdet.Add(wids['fit_emax'])
+        pdet.Add(wids['en_max'])
 
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
         pdet.AddText(' Energy Calibration :', colour='#880000', dcol=1, newrow=True)
@@ -291,22 +296,22 @@ class FitSpectraFrame(wx.Frame):
         pflt.Add(HLine(pflt, size=(550, 3)), dcol=6)
         pflt.AddText(' Filters :', colour='#880000', dcol=3, newrow=True)
         pflt.Add(bx, dcol=3)
-        pflt.AddManyText(('    filter', 'material', 'density (gr/cm^3)',
+        pflt.AddManyText(('    filter', 'material',
                         'thickness (mm)', 'vary thickness'), style=CEN, newrow=True)
         opts = dict(size=(100, -1), min_val=0, digits=3, increment=0.010)
-        for i in range(1, 5):
+        for i in range(1, NFILTERS+1):
             t = 'filt%d' % i
             wids['%s_mat'%t] = Choice(pflt, choices=self.Filter_Materials, default=0,
                                       size=(125, -1),
                                       action=partial(self.onFilterMaterial, index=i))
-            wids['%s_den'%t] = FloatCtrl(pflt, value=0, minval=0, maxval=30,
-                                         precision=5, size=(100, -1))
+            # wids['%s_den'%t] = FloatCtrl(pflt, value=0, minval=0, maxval=30,
+            #                              precision=5, size=(100, -1))
             wids['%s_thk'%t] = FloatSpin(pflt, value=0.0, **opts)
             wids['%s_var'%t] = VarChoice(pflt, default=0)
 
             pflt.AddText('     %i' % (i), newrow=True)
             pflt.Add(wids['%s_mat' % t])
-            pflt.Add(wids['%s_den' % t])
+            #  pflt.Add(wids['%s_den' % t])
             pflt.Add(wids['%s_thk' % t])
             pflt.Add(wids['%s_var' % t])
 
@@ -351,7 +356,6 @@ class FitSpectraFrame(wx.Frame):
         name = evt.GetString()
         form, den = self.parent.filters_data.get(name, ('', 0))
         t = 'filt%d' % index
-        self.wids['%s_den'%t].SetValue(den)
         thick = self.wids['%s_thk'%t]
         if den < 0.1 and thick.GetValue() < 0.1:
             thick.SetValue(5.0)
@@ -375,7 +379,6 @@ class FitSpectraFrame(wx.Frame):
             opts[a] = v
         print(opts)
 
-
     def onUsePeak(self, event=None, name=None, value=None):
         if value is None and event is not None:
             value = event.IsChecked()
@@ -387,22 +390,94 @@ class FitSpectraFrame(wx.Frame):
             if varwid is not None:
                 varwid.Enable(value)
 
-
-
-    def build_model(self):
+    def build_model(self, initialize_amplitudes=True):
         """build xrf_model from form settings"""
-
+        vars = {'Vary':'True', 'Fix': 'False', 'True':True, 'False': False}
         opts = {}
-        filters, peaks = [], []
-        sig, det, bgr = {}, {}, {}
+        for key, wid in self.wids.items():
+            if hasattr(wid, 'GetValue'):
+                val = wid.GetValue()
+            elif hasattr(wid, 'IsChecked'):
+                val = wid.IsChecked()
+            elif isinstance(wid, Choice):
+                val = wid.GetStringSelection()
+                if val.title() in vars:
+                    val = vars[val.title()]
+            elif hasattr(wid, 'GetStringSelection'):
+                val = wid.GetStringSelection()
+            else:
+                opts[key] = '????'
+            opts[key] = val
 
-        print("on Fit " , self.mca)
-        print(self.ptable.selected)
+        script = ["""xrfmod = xrf_model(xray_energy={en_xray:.1f},
+        energy_min={en_min:.1f}, energy_max={en_max:.1f})""".format(**opts),
+                  """xrfmod.set_detector(thickness={det_thk:.4f},
+         material='{det_mat:s}',
+         cal_offset={cal_offset:.4f}, cal_slope={cal_slope:.4f},
+         vary_cal_offset={cal_vary:s}, vary_cal_slope={cal_vary:s},
+         vary_cal_quad=False, vary_peak_gamma=False,
+         vary_peak_step=True, vary_peak_tail=True,
+         noise={det_noise:.2f}, vary_noise={det_noise_vary:s},
+         efano={det_efano:.5f}, vary_efano={det_efano_vary:s})""".format(**opts)]
 
-        print(list(self.wids.keys()))
+        for peak in ('Elastic', 'Compton1', 'Compton2'):
+            t = peak.lower()
+            if opts['%s_use'% t]:
+                d = {}
+                d['_cen']  = opts['%s_cen'%t]
+                d['vcen']  = opts['%s_cen_vary'%t]
+                d['_step'] = opts['%s_step'%t]
+                d['vstep'] = opts['%s_step_vary'%t]
+                d['_tail'] = opts['%s_tail'%t]  * 0.01
+                d['vtail'] = opts['%s_tail_vary'%t]
+                d['_sigm'] = opts['%s_sigm'%t]
+                d['vsigm'] = opts['%s_sigm_vary'%t]
+                s = """amplitude=1e6, center={_cen:.1f}, step={_step:.5f},
+         tail={_tail:.5f}, sigmax={_sigm:.3f}, vary_center={vcen:s},
+         vary_step={vstep:s}, vary_sigmax={vsigm:s}, vary_gamma=False""".format(**d)
+                script.append("xrfmod.add_scatter_peak(name='%s', %s)" % (t, s))
+                if t == 'compton2':
+                    script.append("xrfmod.params['compton2_step'].expr = 'compton1_step'")
+                    script.append("xrfmod.params['compton1_sigmax'].expr = 'compton1_sigmax")
+
+        for i in range(1, NFILTERS+1):
+            t = 'filt%d' % i
+            _mat =opts['%s_mat'%t]
+            if _mat not in (None, 'None'):
+                _thk = opts['%s_thk'%t]
+                _var = opts['%s_var'%t]
+                s = "'%s', %.4f, vary_thickness=%s" % (_mat, _thk, _var)
+                script.append("xrfmod.add_filter(%s)" % s)
+
+        for elem in self.ptable.selected:
+            script.append("xrfmod.add_element('%s', amplitude=1e6)" % elem)
+
+        self._larch.symtable.set_symbol('test_mca', self.mca)
+        en_str = "test_mca.energy"
+        if max(self.mca.energy) < 250.0:
+            en_str = "test_mca.energy*1000.0"
+        script.append("xrfmod.calc_spectrum(%s)" % en_str)
+        script = '\n'.join(script)
+        self._larch.eval(script)
+
+        floor = 1.e-12*max(self.mca.counts)
+        if initialize_amplitudes:
+            xrfmod  = self._larch.symtable.get_symbol('xrfmod')
+            for name, parr in xrfmod.comps.items():
+                nam = name.lower()
+                imax = np.where(parr == parr.max())[0][0]
+                scale = self.mca.counts[imax] / (parr[imax]+1.e-5)
+                parr *= scale
+                parr[np.where(parr<floor)] = floor
+                paramval = xrfmod.params['amp_%s' % nam].value
+                xrfmod.params['amp_%s' % nam].value = paramval * scale
 
 
-    def onFitPeaks(self, event=None):
+    def onShowModel(self, event=None):
+
+        self.build_model()
+
+    def onFitModel(self, event=None):
         opts = {}
         filters, peaks = [], []
         sig, det, bgr = {}, {}, {}
