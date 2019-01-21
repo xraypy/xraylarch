@@ -209,13 +209,13 @@ class XRF_Model:
         if center is None:
             center = self.xray_energy
 
-        self.params.add('%s_amp' % name,    value=amplitude, vary=True, min=0)
-        self.params.add('%s_center' % name, value=center, vary=vary_center,
+        self.params.add('amp_%s' % name,    value=amplitude, vary=True, min=0)
+        self.params.add('center_%s' % name, value=center, vary=vary_center,
                         min=center*0.8, max=center*1.2)
-        self.params.add('%s_step' % name,   value=step, vary=vary_step, min=0, max=10)
-        self.params.add('%s_tail' % name,   value=tail, vary=vary_tail, min=0, max=20)
-        self.params.add('%s_gamma' % name,  value=gamma, vary=vary_gamma, min=0, max=10)
-        self.params.add('%s_sigmax' % name, value=sigmax, vary=vary_sigmax,
+        self.params.add('step_%s' % name,   value=step, vary=vary_step, min=0, max=10)
+        self.params.add('tail_%s' % name,   value=tail, vary=vary_tail, min=0, max=20)
+        self.params.add('gamma_%s' % name,  value=gamma, vary=vary_gamma, min=0, max=10)
+        self.params.add('sigmax_%s' % name, value=sigmax, vary=vary_sigmax,
                         min=0, max=100)
 
     def add_element(self, elem, amplitude=1.0, vary_amplitude=True):
@@ -224,7 +224,7 @@ class XRF_Model:
         xelem = XRF_Element(elem, xray_energy=self.xray_energy,
                             energy_min=self.energy_min)
         self.elements.append(xelem)
-        self.params.add('amp_%s' % elem, value=amplitude,
+        self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
 
     def add_filter(self, material, thickness, vary_thickness=False):
@@ -239,7 +239,7 @@ class XRF_Model:
         pars = params.valuesdict()
         self.comps = OrderedDict()
         self.eigenvalues = OrderedDict()
-
+        print("Calc ", list(pars.keys()))
         efano = pars['det_efano']
         noise = pars['det_noise']
         step = pars['peak_step']
@@ -253,7 +253,7 @@ class XRF_Model:
             factor *= f.attenuation(energy, thickness=thickness)
         self.atten = factor
         for elem in self.elements:
-            amp = pars['amp_%s' % elem.symbol]
+            amp = pars['amp_%s' % elem.symbol.lower()]
             comp = 0. * energy
             for key, line in elem.lines.items():
                 ecen = line.energy
@@ -266,12 +266,12 @@ class XRF_Model:
 
         # scatter peaks for Rayleigh and Compton
         for p in self.scatter:
-            amp  = pars['%s_amp' % p]
-            ecen = pars['%s_center' % p]
-            step = pars['%s_step' % p]
-            tail = pars['%s_tail' % p]
-            gamma = pars['%s_gamma' % p]
-            sigma = pars['%s_sigmax' % p]
+            amp  = pars['amp_%s' % p]
+            ecen = pars['center_%s' % p]
+            step = pars['step_%s' % p]
+            tail = pars['tail_%s' % p]
+            gamma = pars['gamma_%s' % p]
+            sigma = pars['sigmax_%s' % p]
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, gamma=gamma)
@@ -325,7 +325,7 @@ class XRF_Model:
         floor = 1.e-12*np.percentile(counts, [99])[0]
         work_counts[np.where(counts<floor)] = floor
 
-        if max(energy) < 500.0: # input energies are in keV
+        if max(energy) < 250.0: # input energies are in keV
             work_energy = 1000.0 * energy
 
         self.set_fit_weight(work_energy, work_counts)
