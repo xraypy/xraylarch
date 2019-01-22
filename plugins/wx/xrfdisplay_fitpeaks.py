@@ -57,7 +57,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(550, 625)):
+    def __init__(self, parent, size=(550, 600)):
         self.parent = parent
         self._larch = parent.larch
         self.mca = parent.mca
@@ -73,7 +73,7 @@ class FitSpectraFrame(wx.Frame):
                                                        _larch=self._larch)
 
         self.wids = {}
-        # self.SetFont(Font(10))
+
         self.panels = OrderedDict()
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
@@ -105,6 +105,7 @@ class FitSpectraFrame(wx.Frame):
         wids = self.wids
         p = GridPanel(self)
         tooltip_msg = 'Select Elements to include in model'
+        self.selected_elems = []
         self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=13,
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
@@ -272,7 +273,7 @@ class FitSpectraFrame(wx.Frame):
         wids['det_efano_vary'] = VarChoice(pdet, default=0)
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
-                    digits=1, increment=0.010)
+                    digits=1, increment=10)
         wids['en_xray'] = FloatSpin(pdet, value=xray_energy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
@@ -403,7 +404,6 @@ class FitSpectraFrame(wx.Frame):
         print( 'on Edit Filters ',  evt)
 
     def onElemSelect(self, event=None, elem=None):
-        # print('elem select ', event, elem, elem in self.ptable.selected)
         self.ptable.tsym.SetLabel('')
         self.ptable.title.SetLabel('%d elements selected' % len(self.ptable.selected))
 
@@ -437,15 +437,15 @@ class FitSpectraFrame(wx.Frame):
             else:
                 opts[key] = '????'
             opts[key] = val
+        opts['count_time'] = getattr(self.mca, 'real_time', 1.0)
 
         # convert thicknesses from mm to cm:
         opts['det_thk'] /= 10.0
         # peak step is displayed as percent, used as fraction
         opts['peak_step'] /= 100.0
 
-        script = ["""xrfmod = xrf_model(xray_energy={en_xray:.1f},
+        script = ["""xrfmod = xrf_model(xray_energy={en_xray:.1f}, count_time={count_time:.3f},
         energy_min={en_min:.1f}, energy_max={en_max:.1f})""".format(**opts),
-
                   """xrfmod.set_detector(thickness={det_thk:.4f},
          material='{det_mat:s}', cal_offset={cal_offset:.4f},
          cal_slope={cal_slope:.4f}, vary_cal_offset={cal_vary:s},
@@ -485,8 +485,14 @@ class FitSpectraFrame(wx.Frame):
                 s = "'%s', %.4f, vary_thickness=%s" % (_mat, _thk, _var)
                 script.append("xrfmod.add_filter(%s)" % s)
 
+        # sort elements selected on Periodic Table by Z
+        elemz = []
         for elem in self.ptable.selected:
-            script.append("xrfmod.add_element('%s', amplitude=1e5)" % elem)
+            elemz.append( 1 + self.ptable.syms.index(elem))
+        elemz.sort()
+        for iz in elemz:
+            sym = self.ptable.syms[iz-1]
+            script.append("xrfmod.add_element('%s', amplitude=1e5)" % sym)
 
         self._larch.symtable.set_symbol('work_mca', self.mca)
         en_assign = "work_mca.energy_ev = work_mca.energy[:]"
@@ -495,10 +501,10 @@ class FitSpectraFrame(wx.Frame):
         script.append(en_str)
         script.append("xrfmod.calc_spectrum(work_mca.energy_ev)")
         script = '\n'.join(script)
-        # print(script)
         self._larch.eval(script)
+        self.model_script = script
 
-        script = []
+        cmds = []
         self.xrfmod = self._larch.symtable.get_symbol('xrfmod')
         floor = 1.e-12*max(self.mca.counts)
         if match_amplitudes:
@@ -510,14 +516,14 @@ class FitSpectraFrame(wx.Frame):
                 ampname = 'amp_%s' % nam
                 paramval = self.xrfmod.params[ampname].value
                 s = "xrfmod.params['%s'].value = %.1f"
-                script.append(s % (ampname, paramval * scale))
+                cmds.append(s % (ampname, paramval * scale))
                 parr *= scale
                 parr[np.where(parr<floor)] = floor
                 total += parr
             self.xrfmod.init_fit = total
-            script = '\n'.join(script)
-            # print(script)
+            script = '\n'.join(cmds)
             self._larch.eval(script)
+            self.model_script = "%s\n%s" % (self.model_script, script)
 
     def onShowModel(self, event=None):
         self.build_model()
@@ -528,8 +534,8 @@ class FitSpectraFrame(wx.Frame):
                           show_legend=True, delay_draw=show_comps)
         if show_comps:
             for label, arr in self.xrfmod.comps.items():
-                self.parent.panel.oplot(self.mca.energy, arr, label=label, delay_draw=True,
-                                        show_legend=True)
+                self.parent.panel.oplot(self.mca.energy, arr, label=label,
+                                        delay_draw=True, show_legend=True)
             self.parent.panel.canvas.draw()
 
 
@@ -546,12 +552,12 @@ class FitSpectraFrame(wx.Frame):
         show_comps = self.wids['show_components'].IsChecked()
 
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca)
-        self.parent.oplot(self.mca.energy, self.xrfmod.best_fit, label='best fit',
-                          show_legend=True)
+        self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
+                          label='best fit', show_legend=True)
         if show_comps:
             for label, arr in self.xrfmod.comps.items():
-                self.parent.panel.oplot(self.mca.energy, arr, label=label, delay_draw=True,
-                                        show_legend=True)
+                self.parent.panel.oplot(self.mca.energy, arr, label=label,
+                                        delay_draw=True, show_legend=True)
             self.parent.panel.canvas.draw()
 
 
