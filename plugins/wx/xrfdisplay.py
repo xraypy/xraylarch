@@ -36,7 +36,7 @@ except:
     pass
 
 from larch import Interpreter, site_config
-from larch.utils import index_of
+from larch.utils import index_of, debugtime
 from larch.utils.strutils import bytes2str
 from larch.wxlib import get_icon
 
@@ -239,7 +239,7 @@ class XRFDisplayFrame(wx.Frame):
                     self.cursor_markers[idx].remove()
                 except:
                     pass
-            self.cursor_markers[idx] = axes.axvline(x, y1, y2, linewidth=2.0,
+            self.cursor_markers[idx] = axes.axvline(x, y1, y2, linewidth=2.5,
                                                     color=self.conf.marker_color)
 
         if self.xmarker_left is not None:
@@ -728,7 +728,7 @@ class XRFDisplayFrame(wx.Frame):
                  "Read ROIs from File",  self.onRestoreROIs)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu,  "&Save Plot\tCtrl+I",
+        MenuItem(self, fmenu,  "Save Plot\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
         MenuItem(self, fmenu, "&Copy Plot\tCtrl+C",
                  "Copy Plot Image to Clipboard",
@@ -752,6 +752,8 @@ class XRFDisplayFrame(wx.Frame):
                  "Zoom out to full data range", self.unzoom_all)
         MenuItem(self, omenu, "Toggle Grid\tCtrl+G",
                  "Toggle Grid Display", self.toggle_grid)
+        MenuItem(self, omenu,  "Toggle Plot legend\tCtrl+L",
+                 "Toggle Plot Legend", self.onToggleLegend)
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
                  "Hide all X-ray Lines", self.clear_lines)
@@ -843,6 +845,10 @@ class XRFDisplayFrame(wx.Frame):
             self.win_config.Raise()
         except:
             self.win_config = XrayLinesFrame(parent=self)
+
+    def onToggleLegend(self, event=None):
+        self.panel.conf.show_legend = not self.panel.conf.show_legend
+        self.panel.conf.draw_legend()
 
     def onKLM(self, event=None):
         """selected K, L, or M Markers"""
@@ -997,7 +1003,7 @@ class XRFDisplayFrame(wx.Frame):
     def onPileupPrediction(self, event=None):
         if event.IsChecked():
             self.mca.predict_pileup()
-            self.oplot(self.mca.energy, self.mca.pileup)
+            self.oplot(self.mca.energy, self.mca.pileup, label='pileup prediction')
         else:
             self.plotmca(self.mca)
 
@@ -1097,12 +1103,15 @@ class XRFDisplayFrame(wx.Frame):
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
+                  'linewidth': 2.5,
+                  'delay_draw': True,
                   'grid': panel.conf.show_grid,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
+
         self.xdata = 1.0*x[:]
         self.ydata = 1.0*y[:]
         yroi = None
@@ -1126,20 +1135,18 @@ class XRFDisplayFrame(wx.Frame):
                 if xnpts*(r.right - r.left) > 0.5: # suppress very large ROIs
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
-                ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
             yroi = np.ma.masked_less(yroi, 0)
-            ydat = np.ma.masked_less(ydat, 0)
-        panel.plot(x, ydat, label='spectra',  **kwargs)
 
+        panel.plot(x, ydat, label='spectrum',  **kwargs)
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
-            panel.oplot(x, yroi, label='roi', **kwargs)
+            panel.oplot(x, yroi, label='rois', **kwargs)
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
-
         self.draw()
         panel.canvas.Refresh()
+
 
     def update_mca(self, counts, energy=None, with_rois=True,
                    is_mca2=False, draw=True):
@@ -1179,7 +1186,7 @@ class XRFDisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
-    def oplot(self, x, y, color='darkgreen', label='spectra2',
+    def oplot(self, x, y, color='darkgreen', label='spectrum2',
               mca=None, zorder=-2, **kws):
         if mca is not None:
             self.mca2 = mca
@@ -1312,9 +1319,6 @@ class XRFDisplayFrame(wx.Frame):
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
-
-#     def onClose(self,event):
-#         self.Destroy()
 
     def onReadFile(self, event=None):
         dlg = wx.FileDialog(self, message="Read MCA File",
