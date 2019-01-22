@@ -3,8 +3,9 @@ from lmfit import Parameter, Parameters, minimize
 from larch import Group, isgroup, parse_group_args
 
 from larch.utils import index_of
-from larch_plugins.xray import (xray_edge, xray_line, f1_chantler, f2_chantler, f1f2,
-                                guess_edge, atomic_number, atomic_symbol)
+from larch_plugins.xray import (xray_edge, xray_line, xray_lines,
+                                f1_chantler, f2_chantler, f1f2, guess_edge,
+                                atomic_number, atomic_symbol)
 
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
@@ -82,8 +83,8 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
 
     group = set_xafsGroup(group, _larch=_larch)
 
-    if e0 is None:              # need to run find_e0:
-        e0 = xray_edge(z, edge, _larch=_larch)[0]
+    if e0 is None and z is not None:  # need to run find_e0:
+        e0 = xray_edge(z, edge)[0]
     if e0 is None:
         e0 = group.e0
     if e0 is None:
@@ -100,15 +101,15 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     theta = np.ones(len(energy)) # default: 1 throughout
     theta[0:i1]  = 0
     theta[i2:-1] = 0
-    if whiteline:
+    if whiteline is not None:
         pre     = 1.0*(energy<e0)
         post    = 1.0*(energy>e0+float(whiteline))
         theta   = theta * (pre + post)
-    if edge.lower().startswith('l'):
-        l2      = xray_edge(z, 'L2', _larch=_larch)[0]
-        l2_pre  = 1.0*(energy<l2)
-        l2_post = 1.0*(energy>l2+float(whiteline))
-        theta   = theta * (l2_pre + l2_post)
+        if edge.lower().startswith('l'):
+            l2      = xray_edge(z, 'L2')[0]
+            l2_pre  = 1.0*(energy<l2)
+            l2_post = 1.0*(energy>l2+float(whiteline))
+            theta   = theta * (l2_pre + l2_post)
 
 
     ## this is used to weight the pre- and post-edge differently as
@@ -126,7 +127,14 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     if return_f1:
         group.f1=f1
 
-    em = xray_line(z, edge.upper(), _larch=_larch)[0] # erfc centroid
+    # find main emmission line for erfc centroid
+    em_old = xray_line(z, edge.upper()[0], _larch=_larch)[0] # erfc centroid
+    em, em_strength = e0 *0.5, 0.0
+    em_lines = xray_lines(z)
+    for line in em_lines.values():
+        if line.intensity > em_strength and line.initial_level == edge.upper():
+            em_strength = line.intensity
+            em = line.energy
 
     params = Parameters()
     params.add(name='s',  value=1.0,  vary=True)  # scale of data
@@ -219,7 +227,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
-        e0_nominal = xray_edge(z, edge, _larch=_larch)[0]
+        e0_nominal = xray_edge(z, edge)[0]
     if e0 is None:
         e0 = getattr(group, 'e0', None)
         if e0 is None:
@@ -229,16 +237,16 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     atsym = None
     if z is None or z < 2:
         atsym, edge = guess_edge(group.e0, _larch=_larch)
-        z = atomic_number(atsym, _larch=_larch)
+        z = atomic_number(atsym)
     if atsym is None and z is not None:
-        atsym = atomic_symbol(z, _larch=_larch)
+        atsym = atomic_symbol(z)
 
     if getattr(group, 'pre_edge_details', None) is None:  # pre_edge never run
         preedge(energy, mu, pre1=pre1, pre2=pre2, nvict=nvict,
                 norm1=norm1, norm2=norm2, e0=e0, nnorm=2)
 
     mu_pre = mu - group.pre_edge
-    f2 = f2_chantler(z, energy, _larch=_larch)
+    f2 = f2_chantler(z, energy)
 
     weights = np.ones(len(energy))*1.0
 
@@ -247,6 +255,15 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     if norm2 < 0:
         norm2 = max(energy) - e0  - norm2
+
+    # avoid l2 and higher edges
+    if edge.lower().startswith('l'):
+        if edge.lower() == 'l3':
+            e_l2 = xray_edge(z, 'L2').edge
+            norm2 = min(norm2,  e_l2-e0)
+        elif edge.lower() == 'l2':
+            e_l2 = xray_edge(z, 'L1').edge
+            norm2 = min(norm2,  e_l1-e0)
 
     ipre2 = index_of(energy, e0+pre2)
     inor1 = index_of(energy, e0+norm1)
@@ -283,7 +300,8 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     group.mback_params = Group(e0=e0, pre1=pre1, pre2=pre2, norm1=norm1,
                                norm2=norm2, nnorm=nnorm, fit_params=p,
-                               fit_weights=weights, atsym=atsym, edge=edge)
+                               fit_weights=weights, model=model, f2=f2,
+                               pre_f2=pre_f2, atsym=atsym, edge=edge)
 
     if (abs(step_new - group.edge_step)/(1.e-13+group.edge_step)) > 0.75:
         print("Warning: mback edge step failed....")
