@@ -990,12 +990,13 @@ class XRFDisplayFrame(wx.Frame):
                 out = "%s=%.3f" % (key, edge_en[key])
         if len(out) > 1:
             self.wids['ptable'].set_subtitle(out, index=0)
-        s, v = [], []
+        s, v, out = [], [], ''
         for key in ('L3', 'L2', 'L1'):
             if edge_en[key] is not None:
                 s.append(key)
                 v.append("%.3f" % edge_en[key])
-        out = "%s=%s" %(', '.join(s), ', '.join(v))
+        if len(s) > 0:
+            out = "%s=%s" %(', '.join(s), ', '.join(v))
         self.wids['ptable'].set_subtitle(out, index=1)
 
         self.draw()
