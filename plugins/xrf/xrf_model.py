@@ -192,8 +192,8 @@ class XRF_Model:
         self.params.add('cal_offset', value=cal_offset, vary=vary_cal_offset, min=-500, max=500)
         self.params.add('cal_slope', value=cal_slope, vary=vary_cal_slope, min=0)
         self.params.add('cal_quad', value=cal_quad, vary=vary_cal_quad)
-        self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0)
-        self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0)
+        self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0, max=0.25)
+        self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=0.25)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
@@ -239,7 +239,6 @@ class XRF_Model:
         pars = params.valuesdict()
         self.comps = OrderedDict()
         self.eigenvalues = OrderedDict()
-        print("Calc ", list(pars.keys()))
         efano = pars['det_efano']
         noise = pars['det_noise']
         step = pars['peak_step']
@@ -285,6 +284,7 @@ class XRF_Model:
         # remove tiny values
         floor = 1.e-12*max(total)
         total[np.where(total<floor)] = floor
+        self.init_fit = total
         return total
 
     def __resid(self, params, data, index):
