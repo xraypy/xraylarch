@@ -165,6 +165,7 @@ class XRF_Model:
         self.xray_energy = xray_energy
         self.energy_min = energy_min
         self.energy_max = energy_max
+        self.count_time = count_time
         self.params = Parameters()
         self.elements = []
         self.scatter = []
@@ -244,13 +245,14 @@ class XRF_Model:
         step = pars['peak_step']
         tail = pars['peak_tail']
         gamma = pars['peak_gamma']
-
         # factor for Detector absorbance and Filters
         factor = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
             thickness = pars['filt_%s_thickness' % f.material]
             factor *= f.attenuation(energy, thickness=thickness)
         self.atten = factor
+
+        factor = factor * self.count_time
         for elem in self.elements:
             amp = pars['amp_%s' % elem.symbol.lower()]
             comp = 0. * energy
@@ -344,7 +346,8 @@ class XRF_Model:
         self.fit_weight[imax+1:] = 0.0
         self.fit_iter = 0
 
-        userkws = dict(data=work_counts, index=np.arange(len(counts)))
+        userkws = dict(data=work_counts,
+                       index=np.arange(len(counts)))
         kws = dict(method='leastsq', maxfev=4000, gtol=self.fit_toler,
                    ftol=self.fit_toler, xtol=self.fit_toler, epsfcn=1.e-5)
 
