@@ -30,6 +30,9 @@ from wxmplot.colors import rgb2hex, register_custom_colormaps
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
 
+def get_wxmplot_version():
+    return "this function is deprecated"
+	
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
