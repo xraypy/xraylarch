@@ -57,7 +57,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(550, 600)):
+    def __init__(self, parent, size=(550, 650)):
         self.parent = parent
         self._larch = parent.larch
         self.mca = parent.mca
@@ -83,16 +83,18 @@ class FitSpectraFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
-        bpanel = RowPanel(self)
-        self.wids['show_components'] = Check(bpanel, label='Show Components',
+        bpanel = wx.Panel(self)
+        self.SetBackgroundColour((235, 235, 235))		
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.wids['show_components'] = Check(bpanel, label='Show All Components',
                                              default=False)
-        bpanel.Add(Button(bpanel, 'Calculate Model',
+        bsizer.Add(Button(bpanel, 'Calculate Model',
                           action=self.onShowModel), 0, LEFT)
-        bpanel.Add(Button(bpanel, 'Fit Model',
+        bsizer.Add(Button(bpanel, 'Fit Model',
                           action=self.onFitModel), 0, LEFT)
-        bpanel.Add(self.wids['show_components'], 0, LEFT)
+        bsizer.Add(self.wids['show_components'], 0, LEFT)
 
-        bpanel.pack()
+        pack(bpanel, bsizer)
         sizer.Add(bpanel, 0, CEN)
         sizer.Add((5,5))
         pack(self, sizer)
