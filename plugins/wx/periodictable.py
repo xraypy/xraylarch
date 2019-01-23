@@ -8,7 +8,7 @@ FRAME_BG = (253, 253, 250) ## light grey
 TITLE_BG = (253, 253, 250) ## light grey
 FGCOL    = ( 20,  20, 120) ## blue
 BGCOL    = (253, 253, 250) ## light grey
-BGSEL    = (254, 200,  50) ## yellow
+BGSEL    = (250, 250, 200) ## yellow
 FGSEL    = (200,   0,   0) ## red
 
 class PeriodicTablePanel(wx.Panel):
