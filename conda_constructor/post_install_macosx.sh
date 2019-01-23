@@ -5,7 +5,7 @@ echo "post_install script for Mac OSX, installing to $PREFIX"
 # fix scripts to use pythonw instead of python
 # make folder of simple Apps / Icons
 
-$PREFIX/bin/python $PREFIX/bin/larch_makeicons
+$PREFIX/bin/python $PREFIX/bin/larch -m
 
 # $PREFIX/bin/pip install --upgrade --use-wheel fabio pyFAI tifffile
 
