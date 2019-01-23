@@ -9,6 +9,7 @@ TITLE_BG = (253, 253, 250) ## light grey
 FGCOL    = ( 20,  20, 120) ## blue
 BGCOL    = (253, 253, 250) ## light grey
 BGSEL    = (254, 200,  50) ## yellow
+FGSEL    = (200,   0,   0) ## red
 
 class PeriodicTablePanel(wx.Panel):
     """periodic table of the elements"""
@@ -177,15 +178,19 @@ class PeriodicTablePanel(wx.Panel):
         if self.multi_select:
             if label in self.selected: # already selected
                 textwid.SetBackgroundColour(self.bgcol)
+                textwid.SetForegroundColour(self.fgcol)
                 self.selected.remove(label)
             else:
                 textwid.SetBackgroundColour(self.bgsel)
+                textwid.SetForegroundColour(self.fgsel)
                 self.selected.append(label)
 
         else:
             textwid.SetBackgroundColour(self.bgsel)
+            textwid.SetForegroundColour(self.fgsel)
             if self.current is not None and self.current != textwid:
                 self.current.SetBackgroundColour(self.bgcol)
+                self.current.SetForegroundColour(self.fgcol)
             self.current = textwid
             self.selected = [textwid]
 
