@@ -76,8 +76,8 @@ class PeriodicTablePanel(wx.Panel):
 
 
     def __init__(self, parent, title='Select Element', multi_select=False,
-                 onselect=None, tooltip_msg=None, size=(-1, -1),
-                 fontsize=10, fgcol=None, bgcol=None, bgsel=None, **kws):
+                 onselect=None, tooltip_msg=None, size=(-1, -1), fontsize=10,
+                 fgcol=None, bgcol=None, fgsel=None, bgsel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=size, name='PeriodicTable', **kws)
         self.parent = parent
         self.onselect = onselect
@@ -88,9 +88,11 @@ class PeriodicTablePanel(wx.Panel):
         self.selected = []
         if fgcol is None: fgcol = FGCOL
         if bgcol is None: bgcol = BGCOL
+        if fgsel is None: fgsel = FGSEL
         if bgsel is None: bgsel = BGSEL
         self.fgcol = fgcol
         self.bgcol = bgcol
+        self.fgsel = fgsel
         self.bgsel = bgsel
 
         self.current = None
