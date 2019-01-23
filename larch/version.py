@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2018-July-17'
-__version__ = '0.9.40'
+__date__    = '2019-January-22'
+__version__ = '0.9.41rc1'
 
 import sys
 import numpy
