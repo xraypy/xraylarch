@@ -156,7 +156,7 @@ data_files = [(pjoin(larchdir, 'icons'),       glob('icons/*.ic*')),
 
 scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
            'gse_mapviewer', 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
-           'xrfdisplay', 'xrfdisplay_epics']
+           'dioptas', 'xrfdisplay', 'xrfdisplay_epics']
 
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]
 

@@ -98,6 +98,11 @@ def run_xrd2d_viewer():
     from larch_plugins.diFFit.XRD2Dviewer import XRD2DViewer
     XRD2DViewer().MainLoop()
 
+def run_dioptas():
+    """XRD Display for 2D patternss"""
+    from dioptas import main
+    main()
+
 def run_gse_dtcorrect():
     """GSE Deadtime corrections"""
     from larch_plugins.wx import DTViewer
