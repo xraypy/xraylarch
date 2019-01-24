@@ -1,5 +1,5 @@
 ;;  post install for windows
 
-%PREFIX%\Scripts\pip.exe install --upgrade --use-wheel fabio pyFAI
+%PREFIX%\Scripts\pip.exe install --upgrade fabio pyFAI silx hdf5plugin
 
 %PREFIX%\Scripts\larch -m
