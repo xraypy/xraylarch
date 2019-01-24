@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.41rc1
+version: 0.9.41rc2
 
 channels:
     - http://repo.continuum.io/pkgs/main
@@ -40,16 +40,16 @@ specs:
     - silx>=0.9
     - fabio>=0.6
     - pyfai
-    - dioptas
+    - dioptas>=0.4.2gse
     - tomopy>=1.3
     - tifffile=0.14.0
     - wxpython>=4.0.3
-    - wxmplot>=0.9.32
+    - wxmplot>=0.9.33
     - pyepics>=3.3.3
     - lmfit>=0.9.12
     - asteval>=0.9.13
     - wxutils>=0.2.3
-    - xraylarch>=0.9.41rc1
+    - xraylarch>=0.9.41rc2
 
 installer_type: sh # [osx]
 
