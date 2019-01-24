@@ -84,7 +84,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
         bpanel = wx.Panel(self)
-        self.SetBackgroundColour((235, 235, 235))		
+        self.SetBackgroundColour((235, 235, 235))
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wids['show_components'] = Check(bpanel, label='Show All Components',
                                              default=False)
@@ -527,40 +527,56 @@ class FitSpectraFrame(wx.Frame):
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
 
+
+    def plot_model(self, init=False):
+
+        plotkws = {'linewidth': 2.5,
+                   'delay_draw': True,
+                   'grid': self.parent.panel.conf.show_grid,
+                   'ylog_scale': self.parent.ylog_scale,
+                   'show_legend': False,
+                   'fullbox': False}
+
+
+        self.parent.panel.conf.reset_trace_properties()
+
+        self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
+             xlabel='E (keV)', xmin=0,  **plotkws)
+
+        print(" plot ", init, self.wids['show_components'].IsChecked(),
+              plotkws)
+
+        if init:
+            self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
+                  label='predicted model', **plotkws)
+        else:
+            self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
+                  label='best fit', **plotkws)
+
+        print(" plot 1")
+        if self.wids['show_components'].IsChecked():
+            for label, arr in self.xrfmod.comps.items():
+               self.parent.panel.oplot(self.mca.energy, arr, label=label, **plotkws)
+
+        print(" plot legend, ")
+        self.parent.panel.conf.draw_legend(show=True, delay_draw=False)
+
+
     def onShowModel(self, event=None):
         self.build_model()
-        show_comps = self.wids['show_components'].IsChecked()
-
-        self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca)
-        self.parent.oplot(self.mca.energy, self.xrfmod.init_fit, label='predicted model',
-                          show_legend=True, delay_draw=show_comps)
-        if show_comps:
-            for label, arr in self.xrfmod.comps.items():
-                self.parent.panel.oplot(self.mca.energy, arr, label=label,
-                                        delay_draw=True, show_legend=True)
-            self.parent.panel.canvas.draw()
-
+        self.plot_model(init=True)
 
     def onFitModel(self, event=None):
         self.build_model()
 
         emin = self.wids['en_min'].GetValue()
         emax = self.wids['en_max'].GetValue()
-        script = "xrfmod.fit_spectrum(work_mca.energy_ev, work_mca.counts, energy_min=%.1f, energy_max=%.1f)"
+        script = """xrfmod.fit_spectrum(work_mca.energy_ev, work_mca.counts,
+         energy_min=%.1f, energy_max=%.1f)"""
         script = script % (emin, emax)
         self._larch.eval(script)
         self._larch.eval("print(xrfmod.fit_report)")
-
-        show_comps = self.wids['show_components'].IsChecked()
-
-        self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca)
-        self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
-                          label='best fit', show_legend=True)
-        if show_comps:
-            for label, arr in self.xrfmod.comps.items():
-                self.parent.panel.oplot(self.mca.energy, arr, label=label,
-                                        delay_draw=True, show_legend=True)
-            self.parent.panel.canvas.draw()
+        self.plot_model(init=False)
 
 
     def onClose(self, event=None):
