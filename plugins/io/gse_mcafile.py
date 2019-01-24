@@ -110,10 +110,11 @@ class GSEMCA_File(Group):
 
         Outputs 'pileup' attribute containing predicted pileup for each mca
         """
+        pileup = self.mcas[0].counts * 0.0
         for m in self.mcas:
             m.predict_pileup(scale=scale)
-        mca0 = self.__get_mca0()
-        self.pileup = mca0.pileup
+            pileup += m.pileup
+        self.pileup = pileup
 
     def read(self, filename=None, bad=None):
         """read GSE MCA file"""
