@@ -538,11 +538,10 @@ class FitSpectraFrame(wx.Frame):
                    'fullbox': False}
 
         ppanel = self.parent.panel
-
         ppanel.conf.reset_trace_properties()
+
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
              xlabel='E (keV)', xmin=0,  **plotkws)
-
 
         if init:
             self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
@@ -555,9 +554,9 @@ class FitSpectraFrame(wx.Frame):
             for label, arr in self.xrfmod.comps.items():
                 ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
 
-        ppanel.set_viewlimits()
+        yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
-        ppanel.axes.get_yaxis().set_visible(self.show_yaxis)
+        ppanel.set_viewlimits()
         ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
