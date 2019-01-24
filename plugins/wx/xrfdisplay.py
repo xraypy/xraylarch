@@ -1142,7 +1142,9 @@ class XRFDisplayFrame(wx.Frame):
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='rois', **kwargs)
-
+        yscale = {False:'linear', True:'log'}[self.ylog_scale]
+        panel.set_viewlimits()
+        panel.set_logscale(yscale=yscale)
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
         self.draw()
