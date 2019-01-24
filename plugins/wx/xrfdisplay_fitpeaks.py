@@ -57,7 +57,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(550, 650)):
+    def __init__(self, parent, size=(550, 700)):
         self.parent = parent
         self._larch = parent.larch
         self.mca = parent.mca
@@ -537,14 +537,12 @@ class FitSpectraFrame(wx.Frame):
                    'show_legend': False,
                    'fullbox': False}
 
+        ppanel = self.parent.panel
 
-        self.parent.panel.conf.reset_trace_properties()
-
+        ppanel.conf.reset_trace_properties()
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
              xlabel='E (keV)', xmin=0,  **plotkws)
 
-        print(" plot ", init, self.wids['show_components'].IsChecked(),
-              plotkws)
 
         if init:
             self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
@@ -553,14 +551,14 @@ class FitSpectraFrame(wx.Frame):
             self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
                   label='best fit', **plotkws)
 
-        print(" plot 1")
         if self.wids['show_components'].IsChecked():
             for label, arr in self.xrfmod.comps.items():
-               self.parent.panel.oplot(self.mca.energy, arr, label=label, **plotkws)
+                ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
 
-        print(" plot legend, ")
-        self.parent.panel.conf.draw_legend(show=True, delay_draw=False)
-
+        ppanel.set_viewlimits()
+        ppanel.set_logscale(yscale=yscale)
+        ppanel.axes.get_yaxis().set_visible(self.show_yaxis)
+        ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
         self.build_model()
