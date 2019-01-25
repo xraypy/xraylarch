@@ -10,11 +10,11 @@ peakutils>=1.0.0
 requests>=2.1
 asteval>=0.9.12
 lmfit>=0.9.12
-uncertainties>=3.0
+uncertainties>=3.0.3
 pyshortcuts>=1.3
 pyyaml
 psutil
 termcolor
 wxpython>=4.0.3
 wxutils>=0.2.3
-wxmplot>=0.9.32
+wxmplot>=0.9.33
