@@ -2,7 +2,7 @@
 
 echo "post_install script for Mac OSX, installing to $PREFIX"
 
-b$PREFIX/bin/pip install --upgrade fabio pyFAI tifffile silx hdf5plugin
+$PREFIX/bin/pip install --upgrade fabio pyFAI tifffile silx hdf5plugin
 
 # fix scripts to use pythonw instead of python
 # make folder of simple Apps / Icons
