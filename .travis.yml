@@ -21,7 +21,7 @@ install:
     - source activate test_env
     - conda config --add channels gsecars
     - conda install six h5py matplotlib pandas nose pytest sphinx sqlalchemy psycopg2 libgfortran
-    - conda install pillow requests yaml pyyalm pango pcre psutil peakutils scikit-learn
+    - conda install pillow requests yaml pyyaml pango pcre psutil peakutils scikit-learn
     - conda install wxmplot wxutils uncertainties asteval lmfit termcolor pyepics fabio pyfai pycifrw pyshortcuts
     - python setup.py install
 
