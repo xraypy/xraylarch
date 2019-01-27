@@ -36,8 +36,8 @@ The :func:`pre_edge` function
     :param nvict:   energy exponent to use for pre-edge fit.  See Note below.
     :param norm1:   low E range (relative to E0) for post-edge fit
     :param norm2:   high E range (relative to E0) for post-edge fit
-    :param nnorm:   number of terms in polynomial (that is, 1+degree) for
-                    post-edge, normalization curve. Default=3 (quadratic)
+    :param nnorm:   degree of polynomial (ie, norm+1 coefficients will be found) for
+                    post-edge normalization curve. Default=2 (quadratic).
 
     :returns:  None.
 
@@ -68,7 +68,12 @@ Notes:
 
    -  nvict gives an exponent to the energy term for the pre-edge fit.
       That is, a line :math:`(m E + b)` is fit to
-      :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
+      :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1,
+      E0+pre2].
+
+   - nnorm is the degree of the post-edge normalization polynomial.  Use
+     `nnorm=0` to use constant, `nnorm=1` for a linear normalization curve,
+     `nnorm=2` for  a quadratic normalization curve, etc.
 
 ..  function:: find_e0(energy, mu=None, group=None, ...)
 
