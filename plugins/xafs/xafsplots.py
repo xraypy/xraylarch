@@ -941,7 +941,7 @@ def plot_pca_weights(result, max_components=None, min_weight=0,
 
 
 @ValidateLarchPlugin
-def plot_pca_fit(dgroup, win=1, _larch=None, **kws):
+def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     """Plot data and fit result from pca_fit, which rom PCA result
 
     result must be output of `pca_fit`
@@ -959,6 +959,13 @@ def plot_pca_fit(dgroup, win=1, _larch=None, **kws):
     popts.update(kws)
     _fitplot(result.x, result.ydat, result.yfit,
              label='data', label2='PCA fit', **popts)
+
+    if with_components:
+        panel = _getDisplay(win=win, stacked=True, _larch=_larch).panel
+        panel.oplot(result.x, model.mean, label='mean')
+        for n in range(len(result.weights)):
+            cval = model.components[n]*result.weights[n]
+            panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
     redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
 
 def initializeLarchPlugin(_larch=None):

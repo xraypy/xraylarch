@@ -38,8 +38,8 @@ noname = '<none>'
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 FitSpace_Choices = [norm, dmude, chik]
-Plot_Choices = ['PCA Components', 'Component Weights',
-                'Data + Fit + Compononents']
+Plot_Choices = ['PCA Components', 'Component Weights', 'Data + Fit',
+                'Data + Fit + Components']
 
 defaults = dict(e0=0, xmin=-30, xmax=70, fitspace=norm, weight_min=0.005,
                 max_components=500) # , show_e0=True, show_fitrange=True)
@@ -219,9 +219,11 @@ class PCAPanel(TaskPanel):
         if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
+        with_comps = repr('components' in form['plotchoice'].lower())
         dgroup = self.controller.get_group()
         if hasattr(dgroup, 'pca_result'):
-            self.larch_eval("plot_pca_fit(%s)" % dgroup.groupname)
+            a = (dgroup.groupname, win, with_comps)
+            self.larch_eval("plot_pca_fit(%s, win=%d, with_components=%s)" % a)
 
     def onPlot(self, event=None):
         form = self.read_form()
