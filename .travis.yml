@@ -8,22 +8,25 @@ python:
     - 3.6
 
 before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh ; fi
+    - if [[ $TRAVIS_PYTHON_VERSION != 2.7 ]]; then wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh ; fi
+    - bash miniconda.sh -b -p $HOME/xraylarch
+    - export PATH="$HOME/xraylarch/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     - conda info -a
 
 install:
-    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy pip h5py matplotlib wxpython
-    - source activate test_env
+    - conda create -q -n testlarch python=$TRAVIS_PYTHON_VERSION numpy scipy libgfortran matplotlib
+    - source activate testlarch
+    - conda install six pandas nose sphinx sqlalchemy psycopg2 wxpython pip six h5py pytest
+    - conda install pillow requests yaml pyyaml pango pcre psutil scikit-learn peakutils
     - conda config --add channels gsecars
-    - conda install six h5py matplotlib pandas nose pytest sphinx sqlalchemy psycopg2 libgfortran
-    - conda install pillow requests yaml pyyaml pango pcre psutil peakutils scikit-learn
-    - conda install wxmplot wxutils uncertainties asteval lmfit termcolor pyepics fabio pyfai pycifrw pyshortcuts
+    - conda install -c gsecars wxmplot wxutils uncertainties asteval lmfit termcolor pyepics pycifrw pyshortcuts
     - python setup.py install
+    - conda list
+
 
 script:
     - cd tests
