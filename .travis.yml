@@ -21,9 +21,9 @@ install:
     - conda create -q -n testlarch python=$TRAVIS_PYTHON_VERSION numpy scipy libgfortran matplotlib
     - source activate testlarch
     - conda install six pandas nose sphinx sqlalchemy psycopg2 wxpython pip six h5py pytest
-    - conda install pillow requests yaml pyyaml pango pcre psutil scikit-learn peakutils
+    - conda install pillow requests yaml pyyaml pango pcre psutil scikit-learn
     - conda config --add channels gsecars
-    - conda install -c gsecars wxmplot wxutils uncertainties asteval lmfit termcolor pyepics pycifrw pyshortcuts
+    - conda install -c gsecars wxmplot wxutils uncertainties asteval lmfit termcolor peakutils pyepics pycifrw pyshortcuts
     - python setup.py install
     - conda list
 
