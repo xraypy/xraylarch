@@ -13,4 +13,3 @@ $PREFIX/bin/pip install --upgrade fabio pyFAI tifffile silx hdf5plugin
 
 echo "### Larch > creating desktop shortcuts in Desktop/Larch folder"
 $PREFIX/bin/python $PREFIX/bin/larch -m
-xs
