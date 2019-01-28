@@ -1,16 +1,15 @@
 #/bin/bash
 
-echo "post_install script for Mac OSX, installing to $PREFIX"
+echo "### Larch > installing OS dependent packages"
+$PREFIX/bin/conda install fontconfig python.app
+
+echo "### Larch > installing more scientific python packages"
+$PREFIX/bin/conda install cython h5py pillow sqlalchemy psycopg2 scikit-image scikit-learn pandas wxpython=4.0.4
+
+echo "### Larch > installing Larch-specific packages"
+$PREFIX/bin/conda install -c gsecars pycifrw peakutils pyshortcuts pyepics lmfit asteval wxutils wxmplot dioptas tomopy xraylarch
 
 $PREFIX/bin/pip install --upgrade fabio pyFAI tifffile silx hdf5plugin
 
-# fix scripts to use pythonw instead of python
-# make folder of simple Apps / Icons
-
-
+echo "### Larch > creating desktop shortcuts in Desktop/Larch folder"
 $PREFIX/bin/python $PREFIX/bin/larch -m
-
-
-### fix what seems to be a broken python.app install
-# mv $PREFIX/python.app  $PREFIX/orig_python_app
-# $PREFIX/bin/conda install -y python.app
