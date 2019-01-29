@@ -1,10 +1,9 @@
 #/bin/bash
 
 echo "### Larch > installing Larch-specific packages"
-$PREFIX/bin/conda install -c gsecars pycifrw peakutils pyshortcuts pyepics lmfit asteval wxutils wxmplot xraylarch dioptas tomopy
+$PREFIX/bin/conda install -c gsecars pycifrw peakutils pyshortcuts pyepics=3.3.3 lmfit=0.9.12 asteval wxutils=0.2.3 wxmplot=0.9.34 xraylarch dioptas tomopy
 
 $PREFIX/bin/pip install --upgrade fabio pyFAI tifffile silx hdf5plugin
 
 echo "### Larch > creating desktop shortcuts in Desktop/Larch folder"
 $PREFIX/bin/python $PREFIX/bin/larch -m
-xs
