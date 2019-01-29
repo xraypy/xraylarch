@@ -1,11 +1,5 @@
 #/bin/bash
 
-echo "### Larch > installing OS dependent packages"
-$PREFIX/bin/conda install fontconfig python.app
-
-echo "### Larch > installing more scientific python packages"
-$PREFIX/bin/conda install cython h5py pillow sqlalchemy psycopg2 scikit-image scikit-learn pandas wxpython=4.0.4
-
 echo "### Larch > installing Larch-specific packages"
 $PREFIX/bin/conda install -c gsecars pycifrw peakutils pyshortcuts pyepics lmfit asteval wxutils wxmplot dioptas tomopy xraylarch
 

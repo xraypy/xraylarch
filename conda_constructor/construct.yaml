@@ -23,6 +23,22 @@ specs:
     - pyyaml
     - psutil
     - requests
+    - cython
+    - h5py
+    - pillow
+    - sqlalchemy
+    - psycopg2
+    - scikit-image
+    - scikit-learn
+    - pandas
+    - wxpython=4.0.4
+    - patchelf # [linux64]
+    - pango # [linux64]
+    - fontconfig # [linux64 or osx]
+    - python.app # [osx]
+    - pywin32 # [win64]
+    - console_shortcut # [win64]
+
 
 post_install: post_install_linux.sh # [linux64]
 post_install: post_install_macosx.sh # [osx]
