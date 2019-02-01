@@ -34,6 +34,7 @@ COMPRESSION = 'gzip'
 DEFAULT_ROOTNAME = 'xrmmap'
 NOT_OWNER = "Not Owner of HDF5 file %s"
 STEPS = 4096
+STEPS = 2048
 
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -813,7 +814,7 @@ class GSEXRM_MapFile(object):
 
         # eiger XRD maps with 1D data
         # print("XRDF :%s: "  % xrdf)
-        if xrdf.startswith('eig') and xrdf.endswith('_master.h5'):
+        if xrdf.startswith('eig') and xrdf.endswith('.h5'):
             self.has_xrd2d = False
             self.has_xrd1d = True
 
