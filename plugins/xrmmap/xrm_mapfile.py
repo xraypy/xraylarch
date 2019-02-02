@@ -1056,7 +1056,12 @@ class GSEXRM_MapFile(object):
             if self.bkgd_xrd1d is not None:
                 self.xrmmap['xrd1d/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
             else:
-                self.xrmmap['xrd1d/counts'][thisrow,] = row.xrd1d
+                _ni, _nc, _nq  = self.xrmmap['xrd1d/counts'].shape
+                _rc, _rq = row.xrd1d.shape
+                _nc = min(_nc, _rc)
+                _nq = min(_nq, _rq)
+                self.xrmmap['xrd1d/counts'][thisrow, :_nc, :_nq] = row.xrd1d[:_nc,:_nq]
+
             if self.azwdgs > 1 and row.xrd1d_wdg is not None:
                 for iwdg,wdggrp in enumerate(self.xrmmap['work/xrdwedge'].values()):
                     try:
