@@ -415,9 +415,9 @@ class GSEXRM_MapRow:
                 self.dtfactor = self.dtfactor[::-1]
                 self.inpcounts= self.inpcounts[::-1]
                 self.outcounts= self.outcounts[::-1]
-            if has_xrd2d:
+            if has_xrd2d and self.xrd2d is not None:
                 self.xrd2d = self.xrd2d[::-1]
-            if has_xrd1d:
+            if has_xrd1d and self.xrd1d is not None:
                 self.xrd1d = self.xrd1d[::-1]
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg        = self.xrdq_wdg[::-1]
