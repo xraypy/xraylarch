@@ -1047,7 +1047,7 @@ class GSEXRM_MapFile(object):
                 sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
-        if self.has_xrd1d:
+        if self.has_xrd1d and row.xrdq is not None:
             if thisrow == 0:
                 if len(row.xrdq.shape) == 1:
                     self.xrmmap['xrd1d/q'][:] = row.xrdq

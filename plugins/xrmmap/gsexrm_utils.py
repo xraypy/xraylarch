@@ -339,7 +339,8 @@ class GSEXRM_MapRow:
                     xdat = np.load(xrd1d_file)
                     self.xrdq  = xdat[0, :]
                     self.xrd1d = xdat[1:, :]
-                if self.xrdq is None: # integrate data if needed.
+                if self.xrdq is None and self.xrd2d is not None: # integrate data if needed.
+                    print("will try to integrate 2DXRD data ", self.xrd2d.shape)
                     attrs['flip'] = True
                     self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
                     maxval = 2**32 - 2**14
