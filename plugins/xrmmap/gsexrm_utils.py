@@ -2,26 +2,22 @@ import os
 import numpy as np
 import time
 
-# from .xrf_netcdf import read_xrf_netcdf
-# from .xsp3_hhd5 import read_xsp3_hdf5
-# from .asciifiles import readMasterFile
-
 import larch
 from larch_plugins.xrmmap import (read_xrf_netcdf,
-                                   read_xsp3_hdf5, readASCII,
-                                   readMasterFile, readROIFile,
-                                   readEnvironFile, parseEnviron,
-                                   read_xrd_netcdf, read_xrd_hdf5)
+                                  read_xsp3_hdf5, readASCII,
+                                  readMasterFile, readROIFile,
+                                  readEnvironFile, parseEnviron,
+                                  read_xrd_netcdf, read_xrd_hdf5)
 
 from larch_plugins.xrd import integrate_xrd_row
 
 
-def eiger_xrd1d_filename(xrd_file):
-    """check for 1D XRD file from Eiger detector --
+def fix_xrd1d_filename(xrd_file):
+    """check for 1D XRD file from Eiger or other detector --
     avoids having to read hdf5 file at all
     """
     xrd1d_file = xrd_file.replace('.h5', '.npy').replace('_master', '')
-    if 'eig' in xrd_file and os.path.exists(xrd1d_file):
+    if os.path.exists(xrd1d_file):
         return xrd1d_file
     return None
 
@@ -253,7 +249,7 @@ class GSEXRM_MapRow:
         xrf_dat, xrf_file = None, os.path.join(folder, xrffile)
         xrd_dat, xrd_file = None, os.path.join(folder, xrdfile)
 
-        xrd1d_file = eiger_xrd1d_filename(xrd_file)
+        xrd1d_file = fix_xrd1d_filename(xrd_file)
         # print("xrd files ", xrd_file, xrd1d_file, irow, has_xrd2d, has_xrd1d)
 
         while atime < 0 and time.time()-t0 < 10:
