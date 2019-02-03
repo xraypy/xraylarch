@@ -339,9 +339,10 @@ class ColumnDataFileFrame(wx.Frame) :
         arr_labels = [l.lower() for l in self.initgroup.array_labels]
 
         if self.workgroup.datatype is None:
-            self.workgroup.datatype = 'xas'
-            # self.workgroup.datatype = 'raw'
-            ## if ('energ' in arr_labels[0] or 'energ' in arr_labels[1]):
+            self.workgroup.datatype = 'raw'
+            for arrlab in arr_labels[:4]:
+                if 'energ' in arrlab:
+                    self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
         self.array_sel = {'xpop': '',  'xarr': None,
@@ -837,11 +838,11 @@ class ColumnDataFileFrame(wx.Frame) :
             return
 
         en = workgroup.xdat
-        if (len(en) > 1000 or
-            any(np.diff(en) < 0) or
-            ((max(en)-min(en)) > 350 and
-             (np.diff(en[:100]).mean() < 1.0))):
-            self.message.SetLabel("Warning: data may need to be rebinned!")
+        if ((workgroup.datatype == 'xas') and
+            ((len(en) > 1000 or any(np.diff(en) < 0) or
+              ((max(en)-min(en)) > 350 and
+               (np.diff(en[:100]).mean() < 1.0))))):
+            self.message.SetLabel("Warning: XAS data may need to be rebinned!")
         else:
             self.message.SetLabel("")
 
