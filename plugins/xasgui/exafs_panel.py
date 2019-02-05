@@ -233,8 +233,6 @@ class EXAFSPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-        # print("EXAFS Fill form dgroup: ", dgroup)
-        # print("EXAFS Fill form opts     : ", opts)
         self.dgroup = dgroup
         self.skip_process = True
         wids = self.wids
@@ -260,7 +258,9 @@ class EXAFSPanel(TaskPanel):
 
     def read_form(self, dgroup=None):
         "read form, return dict of values"
+        skip_save = self.skip_process
         self.skip_process = True
+
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
@@ -280,7 +280,8 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             form_opts[attr] = wids[attr].GetStringSelection()
-        self.skip_process = False
+        time.sleep(0.001)
+        self.skip_process = skip_save
         return form_opts
 
     def onSaveConfigBtn(self, evt=None):
@@ -310,16 +311,16 @@ class EXAFSPanel(TaskPanel):
         """ handle process events"""
         if self.skip_process:
             return
-
         self.skip_process = True
+
         form = self.read_form()
         self.process(dgroup=self.dgroup, opts=form)
-        if self.last_plot == 'selected':
-            self.onPlotSel()
-        else:
-            self.onPlotOne()
-
         self.skip_process = False
+
+        plotter = self.onPlotOne
+        if self.last_plot == 'selected':
+            plotter = self.onPlotSel
+        wx.CallAfter(partial(plotter, form=form))
 
     def process(self, dgroup=None, opts=None, **kws):
         if opts is None:
@@ -351,10 +352,11 @@ class EXAFSPanel(TaskPanel):
             return
         self.onPlotOne(dgroup=dgroup)
 
-    def onPlotOne(self, evt=None, dgroup=None):
+    def onPlotOne(self, evt=None, form=None, dgroup=None):
         if self.skip_plotting:
             return
-        form = self.read_form()
+        if form is None:
+            form = self.read_form()
         if len(form) == 0:
             return
         if dgroup is not None:
@@ -374,15 +376,17 @@ class EXAFSPanel(TaskPanel):
         self.larch_eval(cmd.format(**form))
         self.last_plot = 'one'
         self.parent.SetFocus()
+        if evt is not None:
+            evt.Skip()
 
-
-    def onPlotSel(self, evt=None):
+    def onPlotSel(self, evt=None, form=None):
         if self.skip_plotting:
             return
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
-        form = self.read_form()
+        if form is None:
+            form = self.read_form()
 
         bcmd = PlotCmds[form['plotsel_op']]
         form['new'] = 'True'
@@ -406,3 +410,5 @@ class EXAFSPanel(TaskPanel):
         self.larch_eval("redraw(win=1, show_legend=True)")
         self.last_plot = 'selected'
         self.parent.SetFocus()
+        if evt is not None:
+            evt.Skip()
