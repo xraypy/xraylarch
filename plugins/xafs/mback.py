@@ -1,18 +1,35 @@
+#!/usr/bin/env python
+"""
+  XAFS MBACK normalization algorithms.
+"""
+
 from lmfit import Parameter, Parameters, minimize
 
 from larch import Group, isgroup, parse_group_args
 
-from larch.utils import index_of
+from larch.utils import index_of, index_nearest, remove_dups, remove_nans2
 from larch_plugins.xray import (xray_edge, xray_line, xray_lines,
                                 f1_chantler, f2_chantler, f1f2, guess_edge,
                                 atomic_number, atomic_symbol)
-
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
 import numpy as np
 from scipy.special import erfc
 
 MAXORDER = 6
+
+def find_xray_line(z, edge):
+    """
+    Finds most intense X-ray emission line energy for a given element and edge.
+    """
+    intensity = 0
+    line      = ''
+    for key, value in xray_lines(z).items() :
+        if value.initial_level == edge.upper():
+            if value.intensity > intensity:
+                intensity = value.intensity
+                line      = key
+    return xray_line(z, line[:-1])
 
 def match_f2(p, en=0, mu=1, f2=1, e0=0, em=0, weight=1, theta=1, order=None,
              leexiang=False):
@@ -23,44 +40,55 @@ def match_f2(p, en=0, mu=1, f2=1, e0=0, em=0, weight=1, theta=1, order=None,
     pars = p.valuesdict()
     eoff  = en - e0
 
-    bkg = p['a']*erfc((en-em)/p['xi'])  # erfc function + constant term of polynomial
-    for i in range(order):        # successive orders of polynomial
-        attr = 'c%d' % i
+    norm = p['a']*erfc((en-em)/p['xi']) + p['c0'] # erfc function + constant term
+    for i in range(order):                        # successive orders of polynomial
+        attr = 'c%d' % (i + 1)
         if attr in p:
-            bkg += p[attr] * eoff**i
-    resid = (mu - (p['s']*f2 + bkg)) * theta # / weight
+            norm += p[attr] * eoff**(i + 1)
+    func = (f2 + norm - p['s']*mu) * theta / weight
     if leexiang:
-        resid /= p['s']*mu
-    return resid
+        func = func / p['s']*mu
+    return func
 
 
-def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
-          whiteline=None, leexiang=False, tables='chantler', fit_erfc=False, return_f1=False,
-          _larch=None):
+def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre2=-50,
+          norm1=100, norm2=None, order=3, leexiang=False, tables='chantler', fit_erfc=False,
+          return_f1=False, _larch=None):
     """
     Match mu(E) data for tabulated f''(E) using the MBACK algorithm and,
     optionally, the Lee & Xiang extension
 
-    Arguments:
-      energy, mu:    arrays of energy and mu(E)
-      order:         order of polynomial [3]
-      group:         output group (and input group for e0)
-      z:             Z number of absorber
-      edge:          absorption edge (K, L3)
-      e0:            edge energy
-      emin:          beginning energy for fit
-      emax:          ending energy for fit
-      whiteline:     exclusion zone around white lines
-      leexiang:      flag to use the Lee & Xiang extension
-      tables:        'chantler' (default) or 'cl'
-      fit_erfc:      True to float parameters of error function
-      return_f1:     True to put the f1 array in the group
+    Arguments
+    ----------
+      energy:     array of x-ray energies, in eV.
+      mu:         array of mu(E).
+      group:      output group.
+	  z:          atomic number of the absorber.
+	  edge:       x-ray absorption edge (default 'K')
+      e0:         edge energy, in eV.  If None, it will be determined here.
+      pre1:       low E range (relative to e0) for pre-edge region.
+      pre2:       high E range (relative to e0) for pre-edge region.
+      norm1:      low E range (relative to e0) for post-edge region.
+      norm2:      high E range (relative to e0) for post-edge region.
+      order:      order of the legendre polynomial for normalization.
+	              (default=3, min=0, max=5).
+      leexiang:   boolean (default False)  to use the Lee & Xiang extension.
+      tables:     tabulated scattering factors: 'chantler' (default) or 'cl' (cromer-liberman)
+      fit_erfc:   boolean (default False) to fit parameters of error function.
+      return_f1:  boolean (default False) to include the f1 array in the group.
 
-    Returns:
-      group.f2:      tabulated f2(E)
-      group.f1:      tabulated f1(E) (if return_f1 is True)
-      group.fpp:     matched data
-      group.mback_params:  Group of parameters for the minimization
+
+    Returns
+    -------
+      None
+
+    The following attributes will be written to the output group:
+      group.f2:            tabulated f2(E).
+      group.f1:            tabulated f1(E) (if 'return_f1' is True).
+      group.fpp:           mback atched spectrum.
+	  group.edge_step:     edge step of spectrum.
+	  group.norm:          normalized spectrum.
+      group.mback_params:  group of parameters for the minimization.
 
     References:
       * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
@@ -68,9 +96,7 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
       * Cromer-Liberman: http://dx.doi.org/10.1063/1.1674266
       * Chantler: http://dx.doi.org/10.1063/1.555974
     """
-    order=int(order)
-    if order < 1: order = 1 # set order of polynomial
-    if order > MAXORDER: order = MAXORDER
+    order = max(min(order, MAXORDER), 0)
 
     ### implement the First Argument Group convention
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -83,68 +109,71 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
 
     group = set_xafsGroup(group, _larch=_larch)
 
-    if e0 is None and z is not None:  # need to run find_e0:
-        e0 = xray_edge(z, edge)[0]
-    if e0 is None:
-        e0 = group.e0
-    if e0 is None:
-        find_e0(energy, mu, group=group)
+    energy = remove_dups(energy)
+    if e0 is None or e0 < energy[1] or e0 > energy[-2]:
+        e0 = find_e0(energy, mu, group=group)
 
+    print(e0)
+    ie0 = index_nearest(energy, e0)
+    e0 = energy[ie0]
 
-    ### theta is an array used to exclude the regions <emin, >emax, and
-    ### around white lines, theta=0.0 in excluded regions, theta=1.0 elsewhere
-    (i1, i2) = (0, len(energy)-1)
-    if emin is not None:
-        i1 = index_of(energy, emin)
-    if emax is not None:
-        i2 = index_of(energy, emax)
-    theta = np.ones(len(energy)) # default: 1 throughout
-    theta[0:i1]  = 0
-    theta[i2:-1] = 0
-    if whiteline is not None:
-        pre     = 1.0*(energy<e0)
-        post    = 1.0*(energy>e0+float(whiteline))
-        theta   = theta * (pre + post)
-        if edge.lower().startswith('l'):
-            l2      = xray_edge(z, 'L2')[0]
-            l2_pre  = 1.0*(energy<l2)
-            l2_post = 1.0*(energy>l2+float(whiteline))
-            theta   = theta * (l2_pre + l2_post)
+    pre1_input = pre1
+    norm2_input = norm2
 
+    if pre1 is None:  pre1  = min(energy) - e0
+    if norm2 is None: norm2 = max(energy) - e0
+    if norm2 < 0:     norm2 = max(energy) - e0 - norm2
+    pre1  = max(pre1,  (min(energy) - e0))
+    norm2 = min(norm2, (max(energy) - e0))
 
-    ## this is used to weight the pre- and post-edge differently as
-    ## defined in the MBACK paper
-    weight1 = 1*(energy<e0)
-    weight2 = 1*(energy>e0)
-    weight  = 1 # np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
-    ## get the f'' function from CL or Chantler
+    if pre1 > pre2:
+        pre1, pre2 = pre2, pre1
+    if norm1 > norm2:
+        norm1, norm2 = norm2, norm1
+
+    p1 = index_of(energy, pre1+e0)
+    p2 = index_nearest(energy, pre2+e0)
+    n1 = index_nearest(energy, norm1+e0)
+    n2 = index_of(energy, norm2+e0)
+    if p2 - p1 < 2:
+        p2 = min(len(energy), p1 + 2)
+    if n2 - n1 < 2:
+        p2 = min(len(energy), p1 + 2)
+
+    ## theta is a boolean array indicating the
+	## energy values considered for the fit.
+    ## theta=1 for included values, theta=0 for excluded values.
+    theta            = np.zeros_like(energy, dtype='int')
+    theta[p1:(p2+1)] = 1
+    theta[n1:(n2+1)] = 1
+
+    ## weights for the pre- and post-edge regions, as defined in the MBACK paper (?)
+    weight            = np.ones_like(energy, dtype=float)
+    weight[p1:(p2+1)] = np.sqrt(np.sum(weight[p1:(p2+1)]))
+    weight[n1:(n2+1)] = np.sqrt(np.sum(weight[n1:(n2+1)]))
+
+	## get the f'' function from CL or Chantler
     if tables.lower() == 'chantler':
         f1 = f1_chantler(z, energy, _larch=_larch)
         f2 = f2_chantler(z, energy, _larch=_larch)
     else:
         (f1, f2) = f1f2(z, energy, edge=edge, _larch=_larch)
-    group.f2=f2
+    group.f2 = f2
     if return_f1:
-        group.f1=f1
+        group.f1 = f1
 
-    # find main emmission line for erfc centroid
-    em_old = xray_line(z, edge.upper()[0], _larch=_larch)[0] # erfc centroid
-    em, em_strength = e0 *0.5, 0.0
-    em_lines = xray_lines(z)
-    for line in em_lines.values():
-        if line.intensity > em_strength and line.initial_level == edge.upper():
-            em_strength = line.intensity
-            em = line.energy
+    em = find_xray_line(z, edge)[0] # erfc centroid
 
     params = Parameters()
     params.add(name='s',  value=1.0,  vary=True)  # scale of data
     params.add(name='xi', value=50.0, vary=False, min=0) # width of erfc
-    params.add(name='a',  value=1.0, vary=False)  # amplitude of erfc
+    params.add(name='a',  value=0.0, vary=False)  # amplitude of erfc
     if fit_erfc:
         params['a'].vary  = True
+        params['a'].value = 0.5
         params['xi'].vary  = True
 
-    for i in range(order): # polynomial coefficients
+    for i in range(order+1): # polynomial coefficients
         params.add(name='c%d' % i, value=0, vary=True)
 
     out = minimize(match_f2, params, method='leastsq',
@@ -155,23 +184,23 @@ def mback(energy, mu=None, group=None, order=3, z=None, edge='K', e0=None, emin=
     opars = out.params.valuesdict()
     eoff = energy - e0
 
-    bkg_pre = opars['a']*erfc((energy-em)/opars['xi'])
+    norm_function = opars['a']*erfc((energy-em)/opars['xi']) + opars['c0']
     for i in range(order):
-        attr = 'c%d' % i
+        attr = 'c%d' % (i + 1)
         if attr in opars:
-            bkg_pre += opars[attr]* eoff**i
+            norm_function  += opars[attr]* eoff**(i + 1)
 
     group.e0 = e0
-    group.mback_details = Group(params=opars, bkg_pre=bkg_pre,
-                                f2_scaled=opars['s']*f2)
+    group.fpp = opars['s']*mu - norm_function
+    # calculate edge step and normalization from f2 + norm_function
+    pre_f2 = preedge(energy, group.f2+norm_function, e0=e0, pre1=pre1,
+	         pre2=pre2, norm1=norm1, norm2=norm2, nnorm=2, nvict=0)
+    group.edge_step = pre_f2['edge_step'] / opars['s']
+    group.norm = (opars['s']*mu -  pre_f2['pre_edge']) / pre_f2['edge_step']
+    group.mback_details = Group(params=opars, pre_f2=pre_f2,
+                                f2_scaled=opars['s']*f2,
+                                norm_function=norm_function)
 
-    # calculate edge step from f2 + norm_function: should be very smooth
-    pre_f2 = preedge(energy, opars['s']*f2 + bkg_pre, e0=e0, nnorm=2, nvict=0)
-    group.edge_step = pre_f2['edge_step']
-
-    pre_fpp = preedge(energy, mu, e0=e0, nnorm=2, nvict=0)
-
-    group.norm = (mu -  pre_fpp['pre_edge']) / group.edge_step
 
 
 def f2norm(params, en=1, mu=1, f2=1, weights=1):
