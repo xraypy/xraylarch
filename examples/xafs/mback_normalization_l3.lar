@@ -1,0 +1,11 @@
+data=read_ascii('../xafsdata/sno2_l3.dat')
+
+pre_edge(data, pre1=-60, pre2=-30)
+data.norm_poly = data.norm
+
+mback_norm(data, z=50, edge='L3', pre1=-60, pre2=-30)
+
+plot_mu(data, show_norm=True, title='SnO3 L3 edge', new=True,
+        label='MBACK normalized')
+
+plot(data.energy, data.norm_poly, label='Polynomial normalized')
