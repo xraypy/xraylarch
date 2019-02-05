@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.41rc2
+version: 0.9.41
 
 channels:
     - http://repo.continuum.io/pkgs/main
