@@ -508,10 +508,11 @@ class XASNormPanel(TaskPanel):
             copts.append("%s=%.2f" % (attr, form[attr]))
         self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
-        norm_expr = "{group:s}.norm = 1.0*{group:s}.norm_poly"
+        norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+        {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
+        form['normmeth'] = 'poly'
         if form['norm_method'].lower().startswith('mback'):
-            norm_expr = "{group:s}.norm = 1.0*{group:s}.norm_mback"
-
+            form['normmeth'] = 'mback'
         self.larch_eval(norm_expr.format(**form))
         self.make_dnormde(dgroup)
 
