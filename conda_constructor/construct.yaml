@@ -38,8 +38,19 @@ specs:
     - python.app # [osx]
     - pywin32 # [win64]
     - console_shortcut # [win64]
+    - pycifrw
+    - peakutils
+    - pyshortcuts
+    - pyepics=3.3.3
+    - lmfit=0.9.12
+    - asteval
+    - wxutils=0.2.3
+    - wxmplot=0.9.34
 
 
 post_install: post_install_linux.sh # [linux64]
 post_install: post_install_macosx.sh # [osx]
 post_install: post_install_windows.bat # [win]
+
+license_file: LICENSE
+welcome_image: larch_3cones.png          #        [win]

@@ -1,7 +1,7 @@
 ;;  post install for windows
 
-%PREFIX%\Scripts\conda.exe install -c gsecars pycifrw peakutils pyshortcuts pyepics lmfit asteval wxutils wxmplot dioptas tomopy xraylarch
+$PREFIX/bin/conda install -yc gsecars dioptas tomopy xraylarch=0.9.41
 
 %PREFIX%\Scripts\pip.exe install --upgrade fabio pyFAI silx hdf5plugin
 
-%PREFIX%\Scripts\larch -m
+%PREFIX%\Scripts\larch-script.py -m
