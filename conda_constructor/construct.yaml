@@ -52,5 +52,5 @@ post_install: post_install_linux.sh # [linux64]
 post_install: post_install_macosx.sh # [osx]
 post_install: post_install_windows.bat # [win]
 
-license_file: LICENSE
+license_file: ../LICENSE
 welcome_image: larch_3cones.png          #        [win]
