@@ -7,14 +7,17 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.5. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.40 documentation</title>
+    <title>9.5. XAFS: Fourier Transforms for XAFS &#8212; larch 0.9.41 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9.6. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
@@ -67,12 +70,12 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">9.5. XAFS: Fourier Transforms for XAFS</a><ul>
 <li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">9.5.1. Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms">9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms-k-rightarrow-r">9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms-r-rightarrow-q">9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
 <li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">9.5.4. <code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
 <li><a class="reference internal" href="#catalog-of-fourier-transform-window">9.5.5. Catalog of Fourier transform window</a></li>
 <li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">9.5.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -201,8 +204,8 @@ concerned about the differences of the real and imaginary parts of
 <span class="math notranslate nohighlight">\(\chi(R)\)</span> or one is intending to filter and back-transform the
 <span class="math notranslate nohighlight">\(\chi(R)\)</span> and compare the filtered and unfiltered data.</p>
 </div>
-<div class="section" id="forward-xafs-fourier-transforms">
-<h2>9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="forward-xafs-fourier-transforms-k-rightarrow-r">
+<h2>9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms-k-rightarrow-r" title="Permalink to this headline">¶</a></h2>
 <p>The forward Fourier transform converts <span class="math notranslate nohighlight">\(\chi(k)\)</span> to <span class="math notranslate nohighlight">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
@@ -308,8 +311,8 @@ the complex array of <span class="math notranslate nohighlight">\(\chi(R)\)</spa
 </dd></dl>
 
 </div>
-<div class="section" id="reverse-xafs-fourier-transforms">
-<h2>9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="reverse-xafs-fourier-transforms-r-rightarrow-q">
+<h2>9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)<a class="headerlink" href="#reverse-xafs-fourier-transforms-r-rightarrow-q" title="Permalink to this headline">¶</a></h2>
 <p>Reverse Fourier transforms convert <span class="math notranslate nohighlight">\(\chi(R)\)</span> back to filtered
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  We refer to the filtered <span class="math notranslate nohighlight">\(k\)</span> space as <span class="math notranslate nohighlight">\(q\)</span> to
 emphasize the distinction between the two.  The filtered <span class="math notranslate nohighlight">\(\chi(q)\)</span> is
@@ -706,7 +709,7 @@ array.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

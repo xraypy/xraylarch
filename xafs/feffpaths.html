@@ -7,14 +7,17 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.40 documentation</title>
+    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.41 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9.8. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
@@ -67,7 +70,7 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">9.7. XAFS: Reading and using Feff Paths</a><ul>
 <li><a class="reference internal" href="#running-feff">9.7.1. Running Feff</a><ul>
@@ -77,10 +80,10 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#feffpath-and-feffpath-groups">9.7.2. <code class="docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-for-a-feffpath">9.7.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">9.7.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">9.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">9.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#models-for-calculating">9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
+<li><a class="reference internal" href="#models-for-calculating-sigma-2">9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
 <li><a class="reference internal" href="#example-reading-a-feff-file">9.7.7. Example:  Reading a Feff file</a></li>
 <li><a class="reference internal" href="#example-adding-feff-files">9.7.8. Example:  Adding Feff files</a></li>
 <li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">9.7.9. Example: Using Path Parameters when adding Feff files</a></li>
@@ -471,8 +474,8 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 <p>For all the options described above with <strong>value or parameter</strong> either a
 numerical value or a Parameter (as created by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code></a>) can be given.</p>
 </div>
-<div class="section" id="path2chi-and-ff2chi-generating-for-a-feffpath">
-<h2>9.7.3. <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">
+<h2>9.7.3. <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.path2chi">
 <code class="descclassname">_xafs.</code><code class="descname">path2chi</code><span class="sig-paren">(</span><em>path</em>, <em>paramgroup=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em>, <em>k=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.path2chi" title="Permalink to this definition">¶</a></dt>
@@ -704,8 +707,8 @@ path be ordered enough for the cumulant expansion to work.  A highly
 disordered system can be modeled by applying a more complex weighting to a
 set of paths – that is, a histogram of paths.</p>
 <span class="target" id="index-3"></span></div>
-<div class="section" id="models-for-calculating">
-<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2>9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="models-for-calculating-sigma-2">
+<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2>9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating-sigma-2" title="Permalink to this headline">¶</a></h2>
 <p>The value for <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
@@ -1060,7 +1063,7 @@ Washington group in that the free version can calculate only EXAFS.</td></tr>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

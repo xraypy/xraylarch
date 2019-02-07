@@ -7,14 +7,17 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.4. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.40 documentation</title>
+    <title>9.4. XAFS: Post-edge Background Subtraction &#8212; larch 0.9.41 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9.5. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
@@ -67,14 +70,14 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">9.4. XAFS: Post-edge Background Subtraction</a><ul>
 <li><a class="reference internal" href="#the-autobk-function">9.4.1. The <code class="docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
 <li><a class="reference internal" href="#the-autobk-algorithm">9.4.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#and-spline-for">9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
+<li><a class="reference internal" href="#r-rm-bkg-and-spline-for-mu-0-e">9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
 <li><a class="reference internal" href="#selecting-fourier-transform-parameters">9.4.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard">9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#using-a-standard-chi-k">9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
 <li><a class="reference internal" href="#end-point-clamps-for-the-spline">9.4.2.4. End-point clamps for the spline</a></li>
 <li><a class="reference internal" href="#recommendations">9.4.2.5. Recommendations</a></li>
 </ul>
@@ -269,7 +272,7 @@ determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <spa
 <div class="section" id="the-autobk-algorithm">
 <h2>9.4.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
-(see <a class="reference internal" href="#autobk" id="id1">[Larch_3]</a>), in which a spline function is matched to the
+(see <a class="reference internal" href="#autobk" id="id1">[Autobk_1]</a>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <p>For reference, <span class="math notranslate nohighlight">\(k = \sqrt{2m_e (E-E_0)/\hbar^2}\)</span> is the wavenumber of
 the ejected photo-electron, where <span class="math notranslate nohighlight">\(E_0\)</span> is the absorption threshold
@@ -296,8 +299,8 @@ often described in introductory texts on EXAFS.  The reason for this is
 essentially the same – so that we do not need to carefully take care of
 slow energy drifts in the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> or worry about having an
 absolute measure of <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
-<div class="section" id="and-spline-for">
-<h3>9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="r-rm-bkg-and-spline-for-mu-0-e">
+<h3>9.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span><a class="headerlink" href="#r-rm-bkg-and-spline-for-mu-0-e" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
 <span class="math notranslate nohighlight">\(\mu(E)\)</span> that we will subtract from the same <span class="math notranslate nohighlight">\(\mu(E)\)</span> could
 easily match <em>too</em> well, and erase much of the data we’re interested in.
@@ -415,8 +418,8 @@ emphasize the low-<span class="math notranslate nohighlight">\(k\)</span> portio
 parameter values for <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> are generally sufficient, and need only
 minor adjustments except in unusual cases.</p>
 </div>
-<div class="section" id="using-a-standard">
-<h3>9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="using-a-standard-chi-k">
+<h3>9.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard-chi-k" title="Permalink to this headline">¶</a></h3>
 <p>We said above that we want to minimize the low-<span class="math notranslate nohighlight">\(R\)</span> components of
 <span class="math notranslate nohighlight">\(\chi\)</span>.  In principle, there should be some leakage of the first
 shell to fairly low-<span class="math notranslate nohighlight">\(R\)</span>.  This is especially noticeable for a short
@@ -623,7 +626,7 @@ function.</p>
 <p id="bibtex-bibliography-xafs/autobk-0"><table class="docutils citation" frame="void" id="autobk" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Larch_3]</a></td><td>M.&nbsp;Newville, P.&nbsp;Livins, Y.&nbsp;Yacoby, J.&nbsp;J. Rehr, and E.&nbsp;A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. <em>Physical Review B</em>, 47(21):14126–14131, 1993. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.47.14126">doi:10.1103/PhysRevB.47.14126</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[Autobk_1]</a></td><td>M.&nbsp;Newville, P.&nbsp;Livins, Y.&nbsp;Yacoby, J.&nbsp;J. Rehr, and E.&nbsp;A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. <em>Physical Review B</em>, 47(21):14126–14131, 1993. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.47.14126">doi:10.1103/PhysRevB.47.14126</a>.</td></tr>
 </tbody>
 </table>
 </p>
@@ -661,7 +664,7 @@ function.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>

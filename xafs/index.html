@@ -7,14 +7,17 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9. XAFS Analysis &#8212; larch 0.9.40 documentation</title>
+    <title>9. XAFS Analysis &#8212; larch 0.9.41 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
@@ -102,13 +105,13 @@
   <div class="section" id="xafs-analysis">
 <span id="xafs-chapter"></span><h1>9. XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit <a class="reference internal" href="#ifeffit" id="id1">[Larch_7]</a>,
+was originally conceived to be version 2 of Ifeffit <a class="reference internal" href="#ifeffit" id="id1">[XAFS_1]</a>,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
 functionality of Ifeffit is available in Larch.  There may still be a few
 minor features of Ifeffit that are not yet available, and some
-functionality to port from Athena <a class="reference internal" href="#athena" id="id2">[Larch_8]</a> back to the core
+functionality to port from Athena <a class="reference internal" href="#athena" id="id2">[XAFS_2]</a> back to the core
 library.  In addition, there are some minor differences in implementation
 details, so that slightly different numerical results may be obtained.
 Importantly, several features are available with Larch that were not
@@ -161,8 +164,8 @@ is in the default search path.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xafsft.html">9.5. XAFS: Fourier Transforms for XAFS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">9.5.1. Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms-k-rightarrow-r">9.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms-r-rightarrow-q">9.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">9.5.4. <code class="docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">9.5.5. Catalog of Fourier transform window</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">9.5.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -177,10 +180,10 @@ is in the default search path.</p>
 <li class="toctree-l1"><a class="reference internal" href="feffpaths.html">9.7. XAFS: Reading and using Feff Paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#running-feff">9.7.1. Running Feff</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">9.7.2. <code class="docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">9.7.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">9.7.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">9.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">9.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating-sigma-2">9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">9.7.7. Example:  Reading a Feff file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">9.7.8. Example:  Adding Feff files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">9.7.9. Example: Using Path Parameters when adding Feff files</a></li>
@@ -199,7 +202,7 @@ is in the default search path.</p>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">9.8.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">9.8.11. Example 4: Measuring Coordination number</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">9.8.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to">9.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to-z">9.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="diffkk.html">9.9. XAFS: Computing anomalous scattering factors from XAFS data</a><ul>
@@ -213,13 +216,13 @@ is in the default search path.</p>
 <p id="bibtex-bibliography-xafs/index-0"><table class="docutils citation" frame="void" id="ifeffit" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Larch_7]</a></td><td>M&nbsp;Newville. Ifeffit: interactive xafs analysis and feff fitting. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):322–324, MAR 2001. <a class="reference external" href="https://doi.org/10.1107/S0909049500016964">doi:10.1107/S0909049500016964</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[XAFS_1]</a></td><td>M&nbsp;Newville. Ifeffit: interactive xafs analysis and feff fitting. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):322–324, MAR 2001. <a class="reference external" href="https://doi.org/10.1107/S0909049500016964">doi:10.1107/S0909049500016964</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="athena" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Larch_8]</a></td><td>B&nbsp;Ravel and M&nbsp;Newville. ATHENA, ARTEMIS, HEPHAESTUS: data analysis for X-ray absorption spectroscopy using IFEFFIT. <em>Journal of Synchrotron Radiation</em>, 12(Part 4):537–541, 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049505012719">doi:10.1107/S0909049505012719</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id2">[XAFS_2]</a></td><td>B&nbsp;Ravel and M&nbsp;Newville. ATHENA, ARTEMIS, HEPHAESTUS: data analysis for X-ray absorption spectroscopy using IFEFFIT. <em>Journal of Synchrotron Radiation</em>, 12(Part 4):537–541, 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049505012719">doi:10.1107/S0909049505012719</a>.</td></tr>
 </tbody>
 </table>
 </p>
@@ -254,7 +257,7 @@ is in the default search path.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
   </body>
 </html>
