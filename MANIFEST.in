@@ -1,7 +1,7 @@
 include README.rst LICENSE INSTALL  MANIFEST.in PKG-INFO
 include setup.py
 exclude *.lar *.pyc core.* *~ *.pdf .deps
-recursive-include lib *.py
+recursive-include larch *.py
 recursive-include tests *.py
 recursive-include doc *
 recursive-include modules *
