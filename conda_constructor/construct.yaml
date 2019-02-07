@@ -38,7 +38,7 @@ specs:
     - python.app # [osx]
     - pywin32 # [win64]
     - console_shortcut # [win64]
-    - pycifrw
+    - pycifrw  # [linux64 or osx]
     - peakutils
     - pyshortcuts
     - pyepics=3.3.3

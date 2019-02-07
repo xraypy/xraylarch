@@ -1,6 +1,6 @@
 ;;  post install for windows
 
-$PREFIX/bin/conda install -yc gsecars dioptas tomopy xraylarch=0.9.41
+$PREFIX/bin/conda install -yc gsecars pycifrw dioptas tomopy xraylarch=0.9.41
 
 %PREFIX%\Scripts\pip.exe install --upgrade fabio pyFAI silx hdf5plugin
 
