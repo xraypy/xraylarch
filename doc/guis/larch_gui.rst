@@ -8,21 +8,21 @@ Basic Larch GUI
 .. _matplotlib: http://matplotlib.org/
 
 
-The main Larch GUI gives a simple view of a Larch session.
+The main Larch Graphical Interface gives a simple view of a Larch session.
 
 .. image::  ../_images/LarchGUI.png
    :target: ../_images/LarchGUI.png
    :width: 45%
 
-This GUI enables an interactive Larch session, with a command-line
-interface at the bottom of the screen.  In this window, you can copy or
-type Larch commands.  When you hit Enter or Return, the command will be
-executed.  The history of the commands and any outputs written by the
-command will be displayed in the output panel taking up most of the bottom
-half of the main window.  The top part of the window shows a Data Browser,
-from which you can browse through the various groups for modules and
-datasets, and examine their contents, view function documentation and so
-on.x
+This Graphical Interface enables an interactive Larch session, with a
+command-line interface at the bottom of the screen.  In this window, you
+can copy or type Larch commands.  When you hit Enter or Return, the command
+will be executed.  The history of the commands and any outputs written by
+the command will be displayed in the output panel taking up most of the
+bottom half of the main window.  The top part of the window shows a Data
+Browser, from which you can browse through the various groups for modules
+and datasets, and examine their contents, view function documentation and
+so on.
 
 This Graphical User Interface is deliberately basic, giving a low-level
 interface to Larch commands and data.  This is mainly intended for
@@ -41,9 +41,29 @@ ability make Simple plot of 1-D data, using `wxmplot`_.  This wraps
 rubber-band zoom, and a configuration frame (right) for the user to select
 colors and line properties, and so forth.
 
-.. image:: ../_images/Larch_LinePlot.png
+.. subfigstart::
+
+.. _fig_gui_plottera:
+
+.. figure:: ../_images/Larch_LinePlot.png
     :target: ../_images/Larch_LinePlot.png
-    :width: 45%
-.. image:: ../_images/Larch_LinePlot_Config.png
+    :width: 100%
+    :align: center
+
+    Basic Plot
+
+.. _fig_gui_plotterb:
+
+.. figure:: ../_images/Larch_LinePlot_Config.png
     :target: ../_images/Larch_LinePlot_Config.png
-    :width: 50%
+    :width: 100%
+    :align: center
+
+    Plot Configuration Window
+
+.. subfigend::
+    :width: 0.45
+    :alt: plotter fig
+    :label: fig_plotter
+
+    Example plots and plot configuration.
