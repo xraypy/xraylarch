@@ -27,11 +27,9 @@ from larch.utils.strutils import file2groupname, unique_name
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
-from larch.wxlib import (LarchPanel, LarchFrame, ColumnDataFileFrame,
-                         AthenaImporter, ReportFrame, BitmapButton,
-                         FileCheckList, FloatCtrl, SetTip, get_icon)
-
-from larch.wxlib import (SimpleText, pack, Button, Popup, HLine, FileSave,
+from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
+                         FileCheckList, FloatCtrl, SetTip, get_icon,
+                         SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
                          LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
 
@@ -541,7 +539,6 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
-
 
         MenuItem(self, fmenu, 'Save Larch Script of History\tCtrl+H',
                  'Save Session History as Larch Script',
