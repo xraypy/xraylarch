@@ -501,7 +501,7 @@ class FitSpectraFrame(wx.Frame):
         if max(self.mca.energy) < 250.0:
             en_str = "work_mca.energy_ev = work_mca.energy*1000.0"
         script.append(en_str)
-        script.append("xrfmod.calc_spectrum(work_mca.energy_ev)")
+        script.append("work_mca.xrf_init = xrfmod.calc_spectrum(work_mca.energy_ev)")
         script = '\n'.join(script)
         self._larch.eval(script)
         self.model_script = script
@@ -572,6 +572,8 @@ class FitSpectraFrame(wx.Frame):
          energy_min=%.1f, energy_max=%.1f)"""
         script = script % (emin, emax)
         self._larch.eval(script)
+
+        # display report,
         self._larch.eval("print(xrfmod.fit_report)")
         self.plot_model(init=False)
 
