@@ -1710,8 +1710,9 @@ class MapViewerFrame(wx.Frame):
                 connect_scandb(_larch=self.larch)
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
-                self.inst_name = 'IDE_SampleStage'
-                print(" ScanDB: %s" % (self.scandb.engine))
+                self.inst_name = self.scandb.get_info('samplestage_instrument',
+                                                      default='IDE_SampleStage')
+                print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
             except:
                 etype, emsg, tb = sys.exc_info()
                 if six.PY2:
