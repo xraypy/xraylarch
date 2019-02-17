@@ -140,7 +140,6 @@ class FitResultFrame(wx.Frame):
 
         wx.Frame.__init__(self, None, -1, title='Fit Results',
                           style=FRAMESTYLE, size=(625, 750), **kws)
-        self.parent = parent
         self.peakframe = peakframe
         self.datagroup = datagroup
         self.peakfit_history = getattr(datagroup.prepeaks, 'fit_history', [])
@@ -727,12 +726,12 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         self.msg_centroid.SetLabel(dgroup.centroid_msg)
 
-        if 'bp_' not in self.fit_components:
-            self.addModel(model='Lorentzian', prefix='bp_', isbkg=True)
-        if 'bl_' not in self.fit_components:
-            self.addModel(model='Linear', prefix='bl_', isbkg=True)
+        if 'bpeak_' not in self.fit_components:
+            self.addModel(model='Lorentzian', prefix='bpeak_', isbkg=True)
+        if 'bline_' not in self.fit_components:
+            self.addModel(model='Linear', prefix='bline_', isbkg=True)
 
-        for prefix in ('bp_', 'bl_'):
+        for prefix in ('bpeak_', 'bline_'):
             cmp = self.fit_components[prefix]
             # cmp.bkgbox.SetValue(1)
             self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
@@ -1170,9 +1169,9 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         self.autosave_modelresult(self.larch_get("peakresult"))
 
         self.onPlot()
-        self.parent.show_subframe('prepeak_result_frame', FitResultFrame,
+        self.show_subframe('prepeak_result_frame', FitResultFrame,
                                   datagroup=dgroup, peakframe=self)
-        self.parent.subframes['prepeak_result_frame'].show_results()
+        self.subframes['prepeak_result_frame'].show_results()
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
