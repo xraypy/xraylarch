@@ -204,6 +204,8 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
                       _larch=_larch)
         _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
     #endif
+    if xmin is not None or xmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -270,6 +272,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
                       color=plotlabels.e0color, win=win, _larch=_larch)
         _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
     #endif
+    if xmin is not None or xmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -319,7 +323,10 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
           ylabel=plotlabels.chie, title=title, label=label, zorder=20,
           new=new, xmin=xmin, xmax=xmax, win=win, show_legend=True,
           delay_draw=delay_draw, linewidth=3, _larch=_larch)
-
+    if delay_draw:
+        if xmin is not None or xmax is not None:
+            _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
+        redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -376,6 +383,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
             kwin = kwin*max(abs(chi))
         _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
     #endif
+    if kmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, kmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -435,6 +444,9 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_imag:
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
+    if rmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
+
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -512,6 +524,8 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         opts['new'] = False
         plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
     #endif
+    if kmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, kmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -546,6 +560,10 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
     _plot(path.k, chi_kw, label=label, xmin=kmin, xmax=kmax,
          xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
+    if delay_draw:
+        if kmin is not None or kmax is not None:
+            _getDisplay(win=win, _larch=_larch).panel.set_xylims((kmin, kmax, None, None))
+        redraw(win=win, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -564,7 +582,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     ----------
      dataset      feffit dataset, after running feffit()
      ipath        index of path, starting count at 0 [0]
-     kmax         max k to show [None, end of data]
+     rmax         max R to show [None, end of data]
      offset       vertical offset to use for plot [0]
      label        path label ['path %d' % ipath]
      show_mag     bool whether to plot |chi(R)| [True]
@@ -599,6 +617,8 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
         _plot(path.r,  offset+path.chir_im, label=label, **opts)
         opts['new'] = False
     #endif
+    if rmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -641,6 +661,10 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                     kmin=kmin, kmax=kmax, new=False, delay_draw=True,
                     win=win, _larch=_larch)
     #endfor
+    if delay_draw:
+        if kmin is not None or kmax is not None:
+            _getDisplay(win=win, _larch=_larch).panel.set_xylims((kmin, kmax, None, None))
+        redraw(win=win, _larch=_larch)
     redraw(win=win, _larch=_larch)
 #enddef
 
@@ -695,17 +719,23 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                     show_mag=show_mag, show_real=show_real,
                     show_imag=show_imag, **opts)
     #endfor
+    if rmax is not None:
+        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
     redraw(win=win, _larch=_larch)
 #enddef
 
 
-def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.05):
+def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
     """return plot limits to extend a plot range for x, y pairs"""
     xeps = min(diff(x)) / 5.
     if xmin is None:
         xmin = min(x)
     if xmax is None:
         xmax = max(x)
+
+    xmin = max(min(x), xmin-5)
+    xmax = min(max(x), xmax+5)
+
     i0 = index_of(x, xmin + xeps)
     i1 = index_of(x, xmax + xeps) + 1
 
@@ -733,6 +763,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
+
     title = "pre_edge baesline\n %s" % dgroup.filename
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
@@ -757,6 +788,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
 
     popts = dict(win=win, _larch=_larch, delay_draw=True,
                  label='_nolegend_')
+
     if show_fitrange:
         for x in (ppeak.emin, ppeak.emax):
             _plot_axvline(x, color='#DDDDCC', **popts)
@@ -766,6 +798,8 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
         for x in (ppeak.elo, ppeak.ehi):
             y = ydat[index_of(xdat, x)]
             _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
+
+    _getDisplay(win=win, _larch=_larch).panel.set_xylims((px0, px1, py0, py1))
     redraw(win=win, show_legend=True, _larch=_larch)
 #enddef
 
@@ -832,8 +866,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-    plotopts.update(dict(xmin=dx0, xmax=dx1,
-                         ymin=min(dy0, fy0), ymax=max(dy1, fy1)))
+    xylims = [dx0, dx1, min(dy0, fy0), max(dy1, fy1)]
 
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
@@ -878,6 +911,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
                           color='#EECCCC', label='_nolegend_', **popts)
 
+    _getDisplay(win=win, _larch=_larch).panel.set_xylims(xylims)
     redraw(show_legend=True, **popts)
 
 @ValidateLarchPlugin
