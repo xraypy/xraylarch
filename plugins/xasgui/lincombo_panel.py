@@ -794,12 +794,11 @@ result = {func:s}({gname:s}, [{comps:s}],
         self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
-        self.parent.show_subframe('lcf_result',  ResultFrame)
+        self.show_subframe('lcf_result',  ResultFrame)
 
-
-        self.parent.subframes['lcf_result'].show_results(datagroup=dgroup,
-                                                         form=form,
-                                                         larch_eval=self.larch_eval)
+        self.subframes['lcf_result'].show_results(datagroup=dgroup,
+                                                  form=form,
+                                                  larch_eval=self.larch_eval)
         self.plot(dgroup=dgroup)
 
     def onFitOne(self, event=None):

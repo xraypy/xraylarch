@@ -37,8 +37,8 @@ class TaskPanel(wx.Panel):
         if config is not None:
             self.set_defaultconfig(config)
         self.wids = {}
+        self.subframes = {}
         self.SetFont(Font(FONTSIZE))
-
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
@@ -46,6 +46,17 @@ class TaskPanel(wx.Panel):
         self.skip_plotting = False
         self.build_display()
         self.skip_process = False
+
+    def show_subframe(self, name, frameclass, **opts):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self, **opts)
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
