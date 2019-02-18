@@ -443,6 +443,15 @@ def wx_update(_larch=None, **kws):
         pass
 
 @larch.ValidateLarchPlugin
+def _plot_setlimits(xmin=None, xmax=None, ymin=None, ymax=None, win=1, wxparent=None,
+                    _larch=None):
+    """set plot view limits for plot in window `win`"""
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        return
+    plotter.panel.set_xylims((xmin, xmax, ymin, ymax))a
+
+@larch.ValidateLarchPlugin
 def _oplot(x, y, win=1, _larch=None, wxparent=None, xrf=False, stacked=False,
            size=None, **kws):
     """oplot(x, y[, win=1[, options]])
@@ -854,6 +863,7 @@ def registerLarchPlugin():
                       'plot_text': _plot_text,
                       'plot_marker': _plot_marker,
                       'plot_arrow': _plot_arrow,
+                      'plot_setlimits', _plot_setlimits,
                       'plot_axvline':  _plot_axvline,
                       'plot_axhline':  _plot_axhline,
                       'scatterplot': _scatterplot,
