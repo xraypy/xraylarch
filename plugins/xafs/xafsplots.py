@@ -91,13 +91,16 @@ def _get_title(dgroup, title=None):
 #enddef
 
 @ValidateLarchPlugin
-def redraw(win=1, show_legend=True, stacked=False, _larch=None):
-    try:
-        panel = _getDisplay(win=win, stacked=stacked, _larch=_larch).panel
-    except AttributeError:
+def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
+           show_legend=True, stacked=False, _larch=None):
+    disp = _getDisplay(win=win, stacked=stacked, _larch=_larch)
+    if disp is None:
         return
-    #endtry
+    panel = disp.panel
     panel.conf.show_legend = show_legend
+    if (xmin is not None or xmax is not None or
+        ymin is not None or ymax is not None):
+        panel.set_xylims((xmin, xmax, ymin, ymax))
     if show_legend:  # note: draw_legend *will* redraw the canvas
         panel.conf.draw_legend()
     else:
@@ -202,11 +205,10 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
         _plot_axvline(dgroup.e0, zorder=2, size=3,
                       label='E0', color=plotlabels.e0color, win=win,
                       _larch=_larch)
-        _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
-    #endif
-    if xmin is not None or xmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
-    redraw(win=win, _larch=_larch)
+        disp = _getDisplay(win=win, _larch=_larch)
+        if disp is not None:
+            disp.panel.conf.draw_legend()
+    redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -270,11 +272,11 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     if show_e0:
         _plot_axvline(dgroup.e0, zorder=2, size=3, label='E0',
                       color=plotlabels.e0color, win=win, _larch=_larch)
-        _getDisplay(win=win, _larch=_larch).panel.conf.draw_legend()
+        disp = _getDisplay(win=win, _larch=_larch)
+        if disp is not None:
+            disp.panel.conf.draw_legend()
     #endif
-    if xmin is not None or xmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -324,9 +326,7 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
           new=new, xmin=xmin, xmax=xmax, win=win, show_legend=True,
           delay_draw=delay_draw, linewidth=3, _larch=_larch)
     if delay_draw:
-        if xmin is not None or xmax is not None:
-            _getDisplay(win=win, _larch=_larch).panel.set_xylims((xmin, xmax, None, None))
-        redraw(win=win, _larch=_larch)
+        redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -383,9 +383,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
             kwin = kwin*max(abs(chi))
         _plot(dgroup.k, kwin+offset, zorder=12, label='window',  **opts)
     #endif
-    if kmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, kmax, None, None))
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
 
@@ -444,10 +442,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_imag:
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
-    if rmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
-
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmax=rmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -498,7 +493,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
             xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
             label='data', new=new, **opts)
     _plot(dataset.model.k, model_chik+offset, label='fit',  **opts)
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
     # show chi(R) in next plot window
     opts['win'] = win = win+1
 
@@ -524,9 +519,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
         opts['new'] = False
         plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
     #endif
-    if kmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, kmax, None, None))
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -561,9 +554,7 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
          xlabel=plotlabels.k, ylabel=plotlabels.chikw.format(kweight),
          win=win, new=new, delay_draw=delay_draw, _larch=_larch, **kws)
     if delay_draw:
-        if kmin is not None or kmax is not None:
-            _getDisplay(win=win, _larch=_larch).panel.set_xylims((kmin, kmax, None, None))
-        redraw(win=win, _larch=_larch)
+        redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -617,9 +608,7 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
         _plot(path.r,  offset+path.chir_im, label=label, **opts)
         opts['new'] = False
     #endif
-    if rmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmax=rmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -661,11 +650,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                     kmin=kmin, kmax=kmax, new=False, delay_draw=True,
                     win=win, _larch=_larch)
     #endfor
-    if delay_draw:
-        if kmin is not None or kmax is not None:
-            _getDisplay(win=win, _larch=_larch).panel.set_xylims((kmin, kmax, None, None))
-        redraw(win=win, _larch=_larch)
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -719,9 +704,7 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                     show_mag=show_mag, show_real=show_real,
                     show_imag=show_imag, **opts)
     #endfor
-    if rmax is not None:
-        _getDisplay(win=win, _larch=_larch).panel.set_xylims((None, rmax, None, None))
-    redraw(win=win, _larch=_larch)
+    redraw(win=win, xmax=rmax,_larch=_larch)
 #enddef
 
 
@@ -799,8 +782,8 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
             y = ydat[index_of(xdat, x)]
             _plot_marker(x, y, color='#222255', marker='o', size=8, **popts)
 
-    _getDisplay(win=win, _larch=_larch).panel.set_xylims((px0, px1, py0, py1))
-    redraw(win=win, show_legend=True, _larch=_larch)
+    redraw(win=win, xmin=px0, xmax=px1, ymin=py0, ymax=py1,
+           show_legend=True, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -866,7 +849,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-    xylims = [dx0, dx1, min(dy0, fy0), max(dy1, fy1)]
 
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
@@ -911,8 +893,8 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
                           color='#EECCCC', label='_nolegend_', **popts)
 
-    _getDisplay(win=win, _larch=_larch).panel.set_xylims(xylims)
-    redraw(show_legend=True, **popts)
+    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
+           ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
 
 @ValidateLarchPlugin
 def plot_pca_components(result, max_components=None, min_weight=0,
@@ -994,12 +976,12 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     _fitplot(result.x, result.ydat, result.yfit,
              label='data', label2='PCA fit', **popts)
 
-    if with_components:
-        panel = _getDisplay(win=win, stacked=True, _larch=_larch).panel
-        panel.oplot(result.x, model.mean, label='mean')
+    disp = _getDisplay(win=win, stacked=True, _larch=_larch)
+    if with_components and disp is not None:
+        disp.panel.oplot(result.x, model.mean, label='mean')
         for n in range(len(result.weights)):
             cval = model.components[n]*result.weights[n]
-            panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
+            disp.panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
     redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
 
 def initializeLarchPlugin(_larch=None):
