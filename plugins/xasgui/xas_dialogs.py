@@ -44,8 +44,6 @@ EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
     def __init__(self, parent, controller, **kws):
-
-
         self.parent = parent
         self.controller = controller
         self.dgroup = self.controller.get_group()
@@ -169,7 +167,7 @@ class OverAbsorptionDialog(wx.Dialog):
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def plot_results(self, event=None):
@@ -365,7 +363,7 @@ overwriting current arrays''')
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def on_apply_sel(self, event=None):
@@ -374,7 +372,7 @@ overwriting current arrays''')
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
-            self.parent.nb_panels[0].process(dgroup)
+            self.parent.nb.pagelist[0].process(dgroup)
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -561,7 +559,7 @@ class RebinDataDialog(wx.Dialog):
         ngroup.mu     = ngroup.ydat = ydat
 
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
-        self.parent.nb_panels[0].process(ngroup)
+        self.parent.nb.pagelist[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -610,7 +608,7 @@ class RebinDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = dgroup.xdat = xdat
         dgroup.mu     = dgroup.ydat = ydat
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -736,7 +734,7 @@ class SmoothDataDialog(wx.Dialog):
         xdat, ydat = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb_panels[0].process(ngroup)
+        self.parent.nb.pagelist[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -788,7 +786,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -890,7 +888,7 @@ class DeconvolutionDialog(wx.Dialog):
         xdat, ydat = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb_panels[0].process(ngroup)
+        self.parent.nb.pagelist[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -916,7 +914,7 @@ class DeconvolutionDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def plot_results(self):
@@ -1056,7 +1054,7 @@ clear undo history''')
         xdat, ydat = self.data[-1]
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb_panels[0].process(ngroup)
+        self.parent.nb.pagelist[0].process(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def reset_data_history(self):
@@ -1118,7 +1116,7 @@ clear undo history''')
         dgroup.energy = xdat
         dgroup.mu     = ydat
         self.reset_data_history()
-        self.parent.nb_panels[0].process(dgroup)
+        self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()
 
     def plot_results(self):

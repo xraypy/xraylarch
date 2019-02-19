@@ -47,7 +47,7 @@ APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('GSE Mapviewer', 'gse_mapviewer',  icon='gse_xrfmap'),
         LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
         LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
-        LarchApp('Dioptas', 'dioptas', icon='dioptas'),
+        LarchApp('Dioptas', 'dioptas_larch', icon='dioptas'),
         LarchApp('2D XRD Viewer', 'xrd2d_viewer'),
         LarchApp('1D XRD Viewer', 'xrd1d_viewer') )
 
@@ -98,7 +98,7 @@ def run_xrd2d_viewer():
     from larch_plugins.diFFit.XRD2Dviewer import XRD2DViewer
     XRD2DViewer().MainLoop()
 
-def run_dioptas():
+def run_dioptas_larch():
     """XRD Display for 2D patternss"""
     from dioptas import main
     main()
