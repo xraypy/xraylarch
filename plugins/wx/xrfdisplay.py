@@ -38,7 +38,7 @@ except:
 from larch import Interpreter, site_config
 from larch.utils import index_of, debugtime
 from larch.utils.strutils import bytes2str
-from larch.wxlib import get_icon
+from larch.wxlib import get_icon, LarchFrame, SetTip
 
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      Button, Check, MenuItem, Choice, FileOpen, FileSave,
@@ -97,8 +97,16 @@ class XRFDisplayFrame(wx.Frame):
         self.plotframe = None
         self.wids = {}
         self.larch = _larch
-        if self.larch is None:
-            self.init_larch()
+
+        self.larch_buffer = parent
+        if not isinstance(parent, LarchFrame):
+            self.larch_buffer = LarchFrame(_larch=_larch)
+            self.larch_buffer.Show()
+            self.larch_buffer.Raise()
+            self.larch_buffer.Hide()
+        self.larch = self.larch_buffer.larchshell
+        self.init_larch()
+
         self._mcagroup = self.larch.symtable.new_group('_mcas')
         self.exit_callback = exit_callback
         self.roi_patch = None
@@ -463,12 +471,9 @@ class XRFDisplayFrame(wx.Frame):
 
         self.SetMinSize((450, 150))
         pack(self, sizer)
-        wx.CallAfter(self.init_larch)
         self.set_roilist(mca=None)
 
     def init_larch(self):
-        if self.larch is None:
-            self.larch = Interpreter()
         symtab = self.larch.symtable
         if not symtab.has_symbol('_sys.wx.wxapp'):
             symtab.set_symbol('_sys.wx.wxapp', wx.GetApp())
@@ -728,6 +733,9 @@ class XRFDisplayFrame(wx.Frame):
                  "Read ROIs from File",  self.onRestoreROIs)
 
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
+                 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
         MenuItem(self, fmenu,  "Save Plot\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
         MenuItem(self, fmenu, "&Copy Plot\tCtrl+C",
@@ -791,6 +799,12 @@ class XRFDisplayFrame(wx.Frame):
             self.menubar.Append(menu, title)
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
+
+    def onShowLarchBuffer(self, evt=None):
+        if self.larch_buffer is None:
+            self.larch_buffer = LarchFrame(_larch=self.larch)
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
 
     def onSavePNG(self, event=None):
         if self.panel is not None:
