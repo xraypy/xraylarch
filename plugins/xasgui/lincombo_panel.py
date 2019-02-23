@@ -23,7 +23,8 @@ from larch.utils import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
                          HLine, Choice, Check, CEN, RCEN, LCEN, Font,
-                         MenuItem, FRAMESTYLE, GUIColors, FileSave)
+                         MenuItem, FRAMESTYLE, GUIColors, FileSave,
+                         EditableListBox)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
 from larch_plugins.io.columnfile import write_ascii
@@ -50,6 +51,9 @@ MAX_COMPONENTS = 10
 
 def make_lcfplot(dgroup, form, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
+    form['group'] = dgroup.groupname
+    form['filename'] = dgroup.filename
+
     form['nfit'] = nfit
     form['label'] = label = 'Fit #%2.2d' % (nfit+1)
     form['plotopt'] = 'show_norm=True'
@@ -90,8 +94,9 @@ class ResultFrame(wx.Frame):
     def __init__(self, parent=None,  **kws):
 
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
-                          style=FRAMESTYLE, size=(675, 700), **kws)
+                          style=FRAMESTYLE, size=(825, 675), **kws)
         self.parent = parent
+        self.datasets = {}
         self.datagroup = None
         self.form = None
         self.larch_eval = None
@@ -117,11 +122,18 @@ class ResultFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
 
     def build(self):
-        sizer = wx.GridBagSizer(10, 5)
+        sizer = wx.GridBagSizer(5, 5)
         sizer.SetVGap(5)
         sizer.SetHGap(5)
 
-        panel = scrolled.ScrolledPanel(self)
+        splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(200)
+
+        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+                                           size=(250, -1))
+        panel = scrolled.ScrolledPanel(splitter)
+
+
         self.SetMinSize((650, 600))
         self.colors = GUIColors()
 
@@ -224,7 +236,7 @@ class ResultFrame(wx.Frame):
         title = SimpleText(panel, '[[Weights]]',  font=Font(12),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
-        self.wids['weightspanel'] = ppan = wx.Panel(self)
+        self.wids['weightspanel'] = ppan = wx.Panel(panel)
 
         p1 = SimpleText(ppan, ' < Weights > ')
         os = wx.BoxSizer(wx.VERTICAL)
@@ -241,13 +253,29 @@ class ResultFrame(wx.Frame):
         pack(panel, sizer)
         panel.SetupScrolling()
 
+        splitter.SplitVertically(self.datalistbox, panel, 1)
+
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
 
         pack(self, mainsizer)
         # self.SetSize((725, 750))
         self.Show()
         self.Raise()
+
+    def ShowDataSet(self, evt=None):
+        dataset = evt.GetString()
+        group = self.datasets.get(evt.GetString(), None)
+        if group is not None:
+            self.show_results(datagroup=group)
+
+    def add_results(self, dgroup, form=None, larch_eval=None, show=True):
+        name = dgroup.filename
+        if name not in self.datalistbox.GetItems():
+            self.datalistbox.Append(name)
+        self.datasets[name] = dgroup
+        if show:
+            self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
 
     def show_results(self, datagroup=None, form=None, larch_eval=None):
         if datagroup is not None:
@@ -257,6 +285,8 @@ class ResultFrame(wx.Frame):
         if larch_eval is not None:
             self.larch_eval = larch_eval
 
+        form = self.form
+        datagroup = self.datagroup
         lcf_history = getattr(self.datagroup, 'lcf_history', [])
 
         wids = self.wids
@@ -355,7 +385,6 @@ class ResultFrame(wx.Frame):
 
         for attr in ('show_e0', 'show_fitrange'):
             self.form[attr] = self.wids[attr].GetValue()
-
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
@@ -796,9 +825,8 @@ result = {func:s}({gname:s}, [{comps:s}],
         dgroup = self.controller.get_group(groupname)
         self.show_subframe('lcf_result',  ResultFrame)
 
-        self.subframes['lcf_result'].show_results(datagroup=dgroup,
-                                                  form=form,
-                                                  larch_eval=self.larch_eval)
+        self.subframes['lcf_result'].add_results(dgroup, form=form,
+                                                 larch_eval=self.larch_eval)
         self.plot(dgroup=dgroup)
 
     def onFitOne(self, event=None):
