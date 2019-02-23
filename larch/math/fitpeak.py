@@ -28,19 +28,14 @@ Basic Fitting Models for 1-D data, simplifying fits to many standard line shapes
 
 import numpy as np
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
-
-from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
-
-from larch.utils import index_nearest, index_of, savitzky_golay
-
-VALID_BKGS = ('constant', 'linear', 'quadratic')
-
+from lmfit import Parameter, Minimizer
 from lmfit.model import Model
-from lmfit.models import (update_param_vals, COMMON_INIT_DOC, COMMON_GUESS_DOC,
-                          LinearModel, QuadraticModel, PolynomialModel,
-                          GaussianModel, LorentzianModel, VoigtModel,
-                          PseudoVoigtModel, MoffatModel, Pearson7Model,
-                          StudentsTModel, BreitWignerModel, LognormalModel,
+
+from lmfit.models import (update_param_vals, LinearModel, ConstandModel,
+                          QuadraticModel, PolynomialModel, GaussianModel,
+                          LorentzianModel, VoigtModel, PseudoVoigtModel,
+                          MoffatModel, Pearson7Model, StudentsTModel,
+                          BreitWignerModel, LognormalModel,
                           DampedOscillatorModel,
                           DampedHarmonicOscillatorModel,
                           ExponentialGaussianModel, SkewedGaussianModel,
@@ -49,37 +44,13 @@ from lmfit.models import (update_param_vals, COMMON_INIT_DOC, COMMON_GUESS_DOC,
                           update_param_vals)
 
 
-## Note: this version of ConstantModel is stolen from unreleased lmfit to
-##    fix a problem using 'eval_components()'
-class _LOCAL_ConstantModel(Model):
-    """Constant model, with a single Parameter: ``c``.
+from .. import Group
+from .utils import index_nearest, index_of, savitzky_golay
 
-    Note that this is 'constant' in the sense of having no dependence on
-    the independent variable ``x``, not in the sense of being non-
-    varying. To be clear, ``c`` will be a Parameter that will be varied
-    in the fit (by default, of course).
-
-    """
-    def __init__(self, independent_vars=['x'], prefix='', missing=None,
-                 **kwargs):
-        kwargs.update({'prefix': prefix, 'missing': missing,
-                       'independent_vars': independent_vars})
-
-        def constant(x, c=0.0):
-            return c
-        super(_LOCAL_ConstantModel, self).__init__(constant, **kwargs)
-
-    def guess(self, data, **kwargs):
-        pars = self.make_params()
-
-        pars['%sc' % self.prefix].set(value=data.mean())
-        return update_param_vals(pars, self.prefix, **kwargs)
-
-    __init__.__doc__ = COMMON_INIT_DOC
-    guess.__doc__ = COMMON_GUESS_DOC
+VALID_BKGS = ('constant', 'linear', 'quadratic')
 
 
-MODELS = {'constant': _LOCAL_ConstantModel,
+MODELS = {'constant': ConstantModel,
           'linear': LinearModel,
           'quadratic': QuadraticModel,
           'step': StepModel,
@@ -145,9 +116,8 @@ def rect_guess(self, data, x=None, **kwargs):
 StepModel.guess = step_guess
 RectangleModel.guess = rect_guess
 
-@ValidateLarchPlugin
 def fit_peak(x, y, model, dy=None, background=None, form=None, step=None,
-             negative=False, use_gamma=False, _larch=None):
+             negative=False, use_gamma=False):
     """fit peak to one a selection of simple 1d models
 
     out = fit_peak(x, y, model, dy=None,
@@ -185,11 +155,10 @@ def fit_peak(x, y, model, dy=None, background=None, form=None, step=None,
         weight = 1.0/max(1.e-16, abs(dy))
 
     if model.lower() not in MODELS:
-        _larch.writer.write('Unknown fit model: %s ' % model)
-        return None
+        raise ValueError('Unknown fit model: %s ' % model)
 
     kwargs = dict(negative=negative, background=background,
-                  form=form, weight=weight, _larch=_larch)
+                  form=form, weight=weight)
 
     fitclass = MODELS[model.lower()]
     if fitclass == VoigtModel:
@@ -226,6 +195,3 @@ def fit_peak(x, y, model, dy=None, background=None, form=None, step=None,
         comps = mod.eval_components(x=out.x)
         out.bkg = comps['bkg_']
     return out
-
-def registerLarchPlugin():
-    return ('_math', {'fit_peak': fit_peak})

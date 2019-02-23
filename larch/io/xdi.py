@@ -10,10 +10,10 @@ __version__ = '1.2.0larch'
 
 from numpy import array, exp, log, sin, arcsin
 
-from larch import Group
-from larch.larchlib import get_dll
-from larch.utils.strutils import bytes2str, str2bytes
-from larch_plugins.xray import RAD2DEG, PLANCK_HC
+from .. import Group
+from ..larchlib import get_dll
+from ..utils.strutils import bytes2str, str2bytes
+from ..utils.physical_constants import RAD2DEG, PLANCK_HC
 
 class XDIFileStruct(Structure):
     "emulate XDI File"

@@ -651,9 +651,9 @@ def shear_matrix(angle, direction, point, normal):
     The shear plane is defined by a point and normal vector. The direction
     vector must be orthogonal to the plane's normal vector.
 
-    A point P is transformed by the shear matrix into P" such that
-    the vector P-P" is parallel to the direction vector and its extent is
-    given by the angle of P-P'-P", where P' is the orthogonal projection
+    A point P is transformed by the shear matrix into P'' such that
+    the vector P-P'' is parallel to the direction vector and its extent is
+    given by the angle of P-P'-P'', where P' is the orthogonal projection
     of P onto the shear plane.
 
     >>> angle = (random.random() - 0.5) * 4*math.pi

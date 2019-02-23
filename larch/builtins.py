@@ -537,8 +537,8 @@ local_funcs = {'_builtin': {'group':_group,
                         'confidence_report': fitting.confidence_report,
                         'f_test': fitting.f_test,
                         'chi2_map': fitting.chi2_map,
-                        'is_param': fitting.is_param,
-                        'isparam': fitting.is_param,
+                        'is_param': fitting.isParameter,
+                        'isparam': fitting.isParameter,
                         'minimize': fitting.minimize,
                         'ufloat': _ufloat,
                         'fit_report': fitting.fit_report,
@@ -548,6 +548,3 @@ local_funcs = {'_builtin': {'group':_group,
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which']
-
-# if six.PY3:
-#     valid_commands.append('print')

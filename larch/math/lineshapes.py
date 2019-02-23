@@ -71,39 +71,3 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     tfunc = exp(targ) * erfc(arg/2.0 + 1.0/gamma)
     tfunc = tail*tfunc / (max(tfunc)*gscale)
     return amplitude * (gauss + sfunc + tfunc) /2.0
-
-# def erf(x):
-#     """Return the error function.
-#
-#     erf = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])
-#
-#     """
-#     return special.erf(x)
-#
-#
-# def erfc(x):
-#     """Return the complementary error function.
-#
-#     erfc = 1 - erf(x)
-#
-#     """
-#     return special.erfc(x)
-#
-#
-# def wofz(x):
-#     """Return the fadeeva function for complex argument.
-#
-#     wofz = exp(-x**2)*erfc(-i*x)
-#
-#     """
-#     return special.wofz(x)
-#
-#
-# def gamma(x):
-#     """Return the gamma function."""
-#     return special.gamma(x)
-#
-#
-# def gammaln(x):
-#     """Return the log of absolute value of gamma function."""
-#     return special.gammaln(x)

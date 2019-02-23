@@ -7,9 +7,9 @@ import time
 import gc
 
 import numpy
-from larch import Group
+from . import Group
 
-from larch_plugins.io import iso8601_time
+from .utils import isotime
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
@@ -885,7 +885,7 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         ncol += 1
     buff = [l.strip() for l in header]
     buff.append("# Scan.start_time: %s" %
-                iso8601_time(os.stat(fname).st_ctime))
+                isotime(os.stat(fname).st_ctime), with_tzone=True)
 
     thead = ["# ///",
              "# summed %s fluorescence data from %s" % (channelname, fname),

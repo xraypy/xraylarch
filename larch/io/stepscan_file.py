@@ -5,7 +5,7 @@ Output data file from Epics Step Scan (slightly different from gse_escan)
 
 import time
 import numpy as np
-from larch import Group
+from .. import Group
 
 COM1 = '#'
 COM2 = '##'

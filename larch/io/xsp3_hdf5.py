@@ -9,11 +9,12 @@ import h5py
 import sys
 import os
 
-from larch import Group, ValidateLarchPlugin
+from .. import Group, ValidateLarchPlugin
 
 # Default tau values for xspress3
 
-XSPRESS3_TAUS = [109.e-9, 91.e-9, 99.e-9, 98.e-9]
+## XSPRESS3_TAUS = [109.e-9, 91.e-9, 99.e-9, 98.e-9]
+XSPRESS3_TAUS = [100.e-9, 100.e-9, 100.e-9, 100.e-9]
 
 def estimate_icr(ocr, tau, niter=3):
     "estimate icr from ocr and tau"
@@ -131,11 +132,11 @@ def test_read(fname):
     fd = read_xsp3_hdf5(fname, verbose=True)
     print(fd.counts.shape)
 
-def initializeLarchPlugin(_larch=None):
-    """initialize xspress3 data"""
-    g = _larch.symtable.create_group(xspress3_taus=XSPRESS3_TAUS)
-    _larch.symtable.set_symbol("_sys.gsecars", g)
+# def initializeLarchPlugin(_larch=None):
+#     """initialize xspress3 data"""
+#     g = _larch.symtable.create_group(xspress3_taus=XSPRESS3_TAUS)
+#     _larch.symtable.set_symbol("_sys.gsecars", g)
 
 
 def registerLarchPlugin():
-    return ('_xrf', {'read_xsp3_hdf5': read_xsp3_hdf5})
+    return ('_io', {'read_xsp3_hdf5': read_xsp3_hdf5})

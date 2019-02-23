@@ -5,10 +5,9 @@ import numpy as np
 
 from collections import OrderedDict
 
-from larch import Group, Parameter, isParameter
-from larch import ValidateLarchPlugin
-from larch.utils.jsonutils import encode4js, decode4js
-from larch_plugins.io import fix_varname
+from .. import Group, Parameter, isParameter, ValidateLarchPlugin
+from ..utils.jsonutils import encode4js, decode4js
+from . import fix_varname
 
 @ValidateLarchPlugin
 def save(fname,  *args, **kws):

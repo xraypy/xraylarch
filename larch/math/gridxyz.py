@@ -8,12 +8,9 @@ from __future__ import division, print_function
 import warnings
 import numpy as np
 
-### GLOBAL VARIABLES ###
-MODNAME = '_math'
-
 def gridxyz(xcol, ycol, zcol, xystep=None, lib='scipy', method='cubic'):
     """ grid (X, Y, Z) 1D data on a 2D regular mesh
-    
+
     Parameters
     ----------
     xcol, ycol, zcol : 1D arrays repesenting the map (z is the intensity)
@@ -22,12 +19,12 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib='scipy', method='cubic'):
           [scipy]
           matplotlib
     method : interpolation method
-    
+
     Returns
     -------
     xgrid, ygrid : 1D arrays giving abscissa and ordinate of the map
     zz : 2D array with the gridded intensity map
-    
+
     See also
     --------
     - MultipleScanToMeshPlugin in PyMca
@@ -59,17 +56,6 @@ def gridxyz(xcol, ycol, zcol, xystep=None, lib='scipy', method='cubic'):
         print("Gridding data with {0}...".format(lib))
         zz = griddata((xcol, ycol), zcol, (xgrid[None,:], ygrid[:,None]), method=method)
         return xgrid, ygrid, zz
-
-### LARCH ###
-def gridxyz_larch(xcol, ycol, zcol, xystep=None, method='cubic', lib='scipy', _larch=None):
-    """ Larch equivalent of gridxyz() """
-    if _larch is None:
-        raise Warning("Larch broken?")
-    return gridxyz(xcol, ycol, zcol, xystep=xystep, method=method, lib=lib)
-gridxyz_larch.__doc__ += gridxyz.__doc__
-
-def registerLarchPlugin():
-    return (MODNAME, {'gridxyz': gridxyz_larch})
 
 if __name__ == '__main__':
     pass

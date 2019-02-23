@@ -57,11 +57,6 @@ def getfloats(txt, allow_times=True):
 def colname(txt):
     return fixName(txt.strip().lower()).replace('.', '_')
 
-def iso8601_time(ts):
-    tzone = '-%2.2i:00' % (time.timezone/3600)
-    s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
-    return "%s%s" % (s, tzone)
-
 
 def lformat(val, length=12):
     """Format a number with fixed-length format, somewhat like '%g' except that

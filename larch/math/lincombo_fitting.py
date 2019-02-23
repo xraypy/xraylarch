@@ -17,8 +17,8 @@ from numpy.random import randint
 
 import lmfit
 
-from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
-from larch.utils.mathutils import interp, index_of
+from .. import Group
+from .utils import interp, index_of
 
 def get_arrays(group, arrayname):
     y = None
@@ -41,10 +41,9 @@ def get_label(group):
         label = hex(id(group))
     return label
 
-@ValidateLarchPlugin
-def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
-                 arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                 sum_to_one=True, _larch=None):
+def lincombo_fit(group, components, weights=None, minvals=None,
+                 maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf,
+                 sum_to_one=True):
 
     """perform linear combination fitting for a group
 
@@ -147,10 +146,9 @@ def lincombo_fit(group, components, weights=None, minvals=None, maxvals=None,
                  params=params, weights=weights, weights_lstsq=weights_lstsq,
                  xdata=xdat, ydata=ydat, yfit=yfit, ycomps=fcomps)
 
-@ValidateLarchPlugin
 def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
                      arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                     sum_to_one=True, _larch=None):
+                    sum_to_one=True):
     """perform linear combination fittings for a group with all combinations
     of 2 or more of the components given
 
@@ -203,7 +201,7 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
 
             o = lincombo_fit(group, comps, weights=_wts, arrayname=arrayname,
                              minvals=_min, maxvals=_max, xmin=xmin, xmax=xmax,
-                             sum_to_one=sum_to_one, _larch=_larch)
+                             sum_to_one=sum_to_one)
             all.append(o)
     # sort outputs by reduced chi-square
     return sorted(all, key=lambda x: x.redchi)

@@ -8,14 +8,13 @@ import time
 import gc
 
 import numpy as np
-from larch import Group, ValidateLarchPlugin, use_plugin_path
-from larch.utils import OrderedDict
-from larch.utils.strutils import bytes2str
+from .. import Group, ValidateLarchPlugin, use_plugin_path
+from ..utils import OrderedDict
+from ..utils.strutils import bytes2str
 
-from larch_plugins.io import XDIFile, XDIFileException, iso8601_time
+from . import XDIFile, XDIFileException, iso8601_time
 
-use_plugin_path('xrmmap')
-from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
+from .xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
 @ValidateLarchPlugin
 def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):

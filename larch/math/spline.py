@@ -5,11 +5,11 @@ Splines for fitting to data within Larch
 """
 from scipy.interpolate import splrep, splev
 
-from larch import (Parameter, Group, isgroup, isParameter,
-                   ValidateLarchPlugin)
+from .. import Group, isgroup
+from ..fitting import Parameter, isParameter
 
-@ValidateLarchPlugin
-def spline_rep(x, y, group=None, name='spl1', _larch=None):
+
+def spline_rep(x, y, group=None, name='spl1'):
     """create a spline representation for an (x, y) data set to be
     evaluated with spline_eval(), with
 
@@ -49,12 +49,11 @@ def spline_rep(x, y, group=None, name='spl1', _larch=None):
 
     for i, val in enumerate(coefs[2:-2]):
         pname = "{:s}_c{:d}".format(name, i)
-        p = Parameter(value=val, name=pname, vary=True) #, _larch=_larch)
+        p = Parameter(value=val, name=pname, vary=True)
         setattr(group, pname, p)
     return group
 
-@ValidateLarchPlugin
-def spline_eval(x, group, name='spl1', _larch=None):
+def spline_eval(x, group, name='spl1'):
     """evaluate spline at specified x values
 
     arguments:

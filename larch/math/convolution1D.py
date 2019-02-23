@@ -40,7 +40,6 @@ __version__ = "0.0.4"
 __status__ = "Alpha"
 __date__ = "Jan 2014"
 
-MODNAME = '_math'
 DEBUG = 0
 
 import os, sys
@@ -50,7 +49,7 @@ from datetime import date
 from string import Template
 import numpy as np
 
-from larch.utils import gaussian, lorentzian
+from .lineshapes import gaussian, lorentzian
 
 def get_ene_index(ene, cen, hwhm):
     """ returns the min/max indexes for array ene at (cen-hwhm) and (cen+hwhm)
@@ -333,6 +332,3 @@ ${gauss_sel}${gaussian} !Gaussian conv for experimental res\n\
             subprocess.call('fdmnes', shell=True)
         except OSError:
             print("check 'fdmnes' executable exists!")
-
-def registerLarchPlugin():
-    return (MODNAME, {'glinbroad': glinbroad})

@@ -144,7 +144,7 @@ def guess(value,  **kws):
     kws.update({'vary':True})
     return param(value, **kws)
 
-def is_param(obj, _larch=None, **kws):
+def is_param(obj):
     """return whether an object is a Parameter"""
     return isParameter(obj)
 
@@ -187,7 +187,7 @@ def params2group(params, paramgroup):
     """
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
-        if is_param(this):
+        if isParameter(this):
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
                          'name', 'correl', 'brute_step', 'user_data'):
                 setattr(this, attr, getattr(param, attr, None))

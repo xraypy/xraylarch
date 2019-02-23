@@ -15,13 +15,12 @@ from numpy.random import randint
 
 from sklearn.decomposition import PCA
 
-from larch import Group, ValidateLarchPlugin
-from larch.utils.mathutils import interp, index_of
+from .. import Group
+from .utils import interp, index_of
 
-from larch_plugins.math.lincombo_fitting import get_arrays, get_label
+from .lincombo_fitting import get_arrays, get_label
 
-@ValidateLarchPlugin
-def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, _larch=None):
+def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
     """use a list of data groups to train a Principal Component Analysis model
 
     Arguments
@@ -70,8 +69,7 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, _larch=None):
                  components=ret.components_,
                  variances=ret.explained_variance_ratio_)
 
-@ValidateLarchPlugin
-def pca_fit(group, pca_model, ncomps=None, _larch=None):
+def pca_fit(group, pca_model, ncomps=None):
     """
     fit a spectrum from a group to a pca training model from pca_train()
 
