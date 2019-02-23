@@ -65,7 +65,6 @@ defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
-        self.last_process = 0.0
         TaskPanel.__init__(self, parent, controller,
                            configname='xasnorm_config',
                            config=defaults, **kws)
@@ -437,7 +436,7 @@ class XASNormPanel(TaskPanel):
 
     def onReprocess(self, evt=None, value=None, **kws):
         "handle request reprocess"
-        if self.skip_process or (time.time() - self.last_process) < 0.1:
+        if self.skip_process:
             return
         try:
             dgroup = self.controller.get_group()
@@ -453,10 +452,8 @@ class XASNormPanel(TaskPanel):
     def process(self, dgroup=None, fast_process=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
-        t0 = time.time()
         if self.skip_process:
             return
-
         if dgroup is None:
             dgroup = self.controller.get_group()
         if dgroup is None:
@@ -464,11 +461,9 @@ class XASNormPanel(TaskPanel):
 
         self.skip_process = True
         self.get_config(dgroup)
-
         dgroup.custom_plotopts = {}
 
         if dgroup.datatype != 'xas':
-            self.last_process = time.time()
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
             return
@@ -548,8 +543,7 @@ class XASNormPanel(TaskPanel):
             conf['mback_elem'] = 'H'
             conf['mback_edge'] = 'K'
         self.update_config(conf, dgroup=dgroup)
-        self.skip_process = False
-        self.last_process = time.time()
+        wx.CallAfter(self.unset_skip_process)
 
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
