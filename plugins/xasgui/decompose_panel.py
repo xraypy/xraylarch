@@ -41,8 +41,11 @@ FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['PCA Components', 'Component Weights', 'Data + Fit',
                 'Data + Fit + Components']
 
-defaults = dict(e0=0, xmin=-30, xmax=70, fitspace=norm, weight_min=0.005,
-                max_components=500) # , show_e0=True, show_fitrange=True)
+defaults = dict(xmin=-5.e5, xmax=5.e5, fitspace=norm, weight_min=0.003,
+                max_components=50)
+
+# max number of *reported* PCA weights after fit
+NWTS = 10
 
 class PCAPanel(TaskPanel):
     """PCA Panel"""
@@ -75,9 +78,8 @@ class PCAPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=1.0, relative_e0=True)
+        opts = dict(digits=2, increment=1.0)
 
-        w_e0   = self.add_floatspin('e0', value=0, **opts)
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
 
@@ -119,7 +121,8 @@ class PCAPanel(TaskPanel):
 
         wids['status'] = SimpleText(panel, ' ')
 
-        wids['fit_chi2'] = SimpleText(panel, '--')
+        wids['fit_chi2'] = SimpleText(panel, '0.000')
+        wids['fit_dscale'] = SimpleText(panel, '1.000')
 
 
         panel.Add(SimpleText(panel, ' Principal Component Analysis', **titleopts), dcol=4)
@@ -133,17 +136,13 @@ class PCAPanel(TaskPanel):
 
         panel.Add(wids['save_model'], dcol=2)
 
-        add_text('E0: ')
-        panel.Add(w_e0, dcol=3)
-        # panel.Add(wids['show_e0'])
-
         add_text('Fit Range: ')
         panel.Add(w_xmin)
         add_text(' : ', newrow=False)
         panel.Add(w_xmax)
         #panel.Add(wids['show_fitrange'])
 
-        add_text('Minimum Weight: ')
+        add_text('Min Weight: ')
         panel.Add(w_wmin)
         add_text('Max Components:', dcol=1, newrow=True)
         panel.Add(w_mcomps)
@@ -156,9 +155,28 @@ class PCAPanel(TaskPanel):
         panel.Add(b_build_model, dcol=3, newrow=True)
         panel.Add(wids['fit_group'], dcol=3)
 
-        panel.Add(wids['stats'], dcol=3, drow=4, newrow=True)
+        panel.Add(wids['stats'], dcol=3, drow=15, newrow=True)
         panel.Add(SimpleText(panel, 'chi-square = '))
         panel.Add(wids['fit_chi2'])
+
+        ## add weights report: slightly tricky layout
+        ## working with GridBagSizer under gridpanel...
+        icol = panel.icol - 2
+        irow = panel.irow
+        pstyle, ppad = panel.itemstyle, panel.pad
+
+        panel.sizer.Add(SimpleText(panel, 'data scale factor= '),
+                        (irow+1, icol), (1, 1), pstyle, ppad)
+        panel.sizer.Add(wids['fit_dscale'],
+                        (irow+1, icol+1), (1, 1), pstyle, ppad)
+        irow +=1
+        for i in range(1, NWTS+1):
+            wids['fit_wt%d' % i] = SimpleText(panel, '--')
+            panel.sizer.Add(SimpleText(panel, 'weight_%d ='%i),
+                            (irow+i, icol), (1, 1), pstyle, ppad)
+            panel.sizer.Add(wids['fit_wt%d'%i],
+                            (irow+i, icol+1), (1, 1), pstyle, ppad)
+
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -173,23 +191,17 @@ class PCAPanel(TaskPanel):
         if isinstance(dgroup, Group):
             d_emin = min(dgroup.energy)
             d_emax = max(dgroup.energy)
-            if opts['e0'] < d_emin or opts['e0'] > d_emax:
-                opts['e0'] = dgroup.e0
+            if opts['xmin'] < d_emin:
+                opts['xmin'] = -40 + int(dgroup.e0/10.0)*10
+            if opts['xmax'] > d_emax:
+                opts['xmax'] =  110 + int(dgroup.e0/10.0)*10
 
         self.skip_process = True
         wids = self.wids
-        e0 = None
-        for attr in ('e0', 'xmin', 'xmax', 'weight_min'):
+        for attr in ('xmin', 'xmax', 'weight_min'):
             val = opts.get(attr, None)
-            if attr == 'e0':
-                e0 = val
             if val is not None:
-                if attr in ('xmin', 'xmax') and e0 is not None:
-                    val += e0
                 wids[attr].SetValue(val)
-
-#         for attr in ('show_e0', 'show_fitrange'):
-#             wids[attr].SetValue(opts.get(attr, True))
 
         for attr in ('fitspace',):
             if attr in opts:
@@ -247,7 +259,17 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd)
         dgroup = self.controller.get_group()
         pca_chisquare = dgroup.pca_result.chi_square
-        self.wids['fit_chi2'].SetLabel(gformat(pca_chisquare))
+        self.wids['fit_chi2'].SetLabel(gformat(dgroup.pca_result.chi_square))
+        self.wids['fit_dscale'].SetLabel(gformat(dgroup.pca_result.data_scale))
+
+        weights = dgroup.pca_result.weights
+        for i in range(NWTS):
+            if i < len(weights):
+                val = gformat(weights[i])
+            else:
+                val = '--'
+            self.wids['fit_wt%d'%(i+1)].SetLabel(val)
+
         self.plot_pca_fit()
 
 

@@ -44,8 +44,9 @@ Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-defaults = dict(e0=0, elo=-25, ehi=75, fitspace=norm, all_combos=True,
-                sum_to_one=True, show_e0=True, show_fitrange=True)
+defaults = dict(elo=-5.e5, ehi=5.e5, elo_rel=-40, ehi_rel=110,
+                fitspace=norm, all_combos=True, sum_to_one=True,
+                show_e0=False, show_fitrange=True)
 
 MAX_COMPONENTS = 10
 
@@ -81,11 +82,11 @@ def make_lcfplot(dgroup, form, nfit=0):
                 delay = 'delay_draw=False' if i==(ncomps-1) else 'delay_draw=True'
                 cmds.append("plot(%s, %s['%s'], label='%s', %s)" % (xarr, ycmp, key, key, delay))
 
-    if form['show_e0']:
-        cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
+    # if form['show_e0']:
+    #     cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
     if form['show_fitrange']:
-        cmds.append("plot_axvline({elo_abs:1f}, color='#EECCCC', zorder=-10)")
-        cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
+        cmds.append("plot_axvline({elo:1f}, color='#EECCCC', zorder=-10)")
+        cmds.append("plot_axvline({ehi:1f}, color='#EECCCC', zorder=-10)")
 
     script = "\n".join(cmds)
     return script.format(**form)
@@ -158,7 +159,7 @@ class ResultFrame(wx.Frame):
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
         copts = dict(size=(125, 30), default=True, action=self.onPlotOne)
-        wids['show_e0'] = Check(panel, label='show E0?', **copts)
+        # wids['show_e0'] = Check(panel, label='show E0?', **copts)
         wids['show_fitrange'] = Check(panel, label='show fit range?', **copts)
 
         irow = 0
@@ -195,10 +196,10 @@ class ResultFrame(wx.Frame):
         sizer.Add(self.wids['plot_sel'],     (irow+1, 1), (1, 2), LCEN)
         sizer.Add(self.wids['plot_ntitle'],  (irow+2, 1), (1, 1), LCEN)
         sizer.Add(self.wids['plot_nchoice'], (irow+2, 2), (1, 1), LCEN)
-        sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LCEN)
-        sizer.Add(self.wids['show_fitrange'],(irow+4, 1), (1, 2), LCEN)
+        # sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LCEN)
+        sizer.Add(self.wids['show_fitrange'],(irow+3, 1), (1, 2), LCEN)
 
-        irow += 5
+        irow += 4
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
@@ -291,7 +292,7 @@ class ResultFrame(wx.Frame):
 
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['show_e0'].SetValue(form['show_e0'])
+        # wids['show_e0'].SetValue(form['show_e0'])
         wids['show_fitrange'].SetValue(form['show_fitrange'])
 
         wids['stats'].DeleteAllItems()
@@ -383,16 +384,14 @@ class ResultFrame(wx.Frame):
         if self.form is None or self.larch_eval is None:
             return
 
-        for attr in ('show_e0', 'show_fitrange'):
-            self.form[attr] = self.wids[attr].GetValue()
+        self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
     def onPlotSel(self, evt=None):
         if self.form is None or self.larch_eval is None:
             return
-        for attr in ('show_e0', 'show_fitrange'):
-            self.form[attr] = self.wids[attr].GetValue()
+        self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
         form = self.form
         dgroup = self.datagroup
 
@@ -415,11 +414,11 @@ class ResultFrame(wx.Frame):
             lab = 'Fit #%2.2d' % (i+1)
             cmds.append("plot(%s, %s, label='%s', zorder=30, %s)" % (xarr, yfit, lab, delay))
 
-        if form['show_e0']:
-            cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
+        # if form['show_e0']:
+        #     cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
         if form['show_fitrange']:
-            cmds.append("plot_axvline({elo_abs:1f}, color='#EECCCC', zorder=-10)")
-            cmds.append("plot_axvline({ehi_abs:1f}, color='#EECCCC', zorder=-10)")
+            cmds.append("plot_axvline({elo:1f}, color='#EECCCC', zorder=-10)")
+            cmds.append("plot_axvline({ehi:1f}, color='#EECCCC', zorder=-10)")
 
         script = "\n".join(cmds)
         self.larch_eval(script.format(**form))
@@ -447,7 +446,7 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  'E0:  %f '  % form['e0'],
+                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'Components: ']
         for key, val in result.weights.items():
@@ -485,7 +484,7 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  'E0:  %f '  % form['e0'],
+                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'N_Data: %d' % len(results[0].xdata)]
 
@@ -533,7 +532,7 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  'E0:  %f '  % form['e0'],
+                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
 
         label = [' energy         ',  ' data           ']
@@ -576,11 +575,11 @@ class LinearComboPanel(TaskPanel):
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=1.0, relative_e0=True)
+        opts = dict(digits=2, increment=1.0, relative_e0=False) # True)
 
-        e0_wids = self.add_floatspin('e0', value=0, **opts)
-        elo_wids = self.add_floatspin('elo', value=-20, **opts)
-        ehi_wids = self.add_floatspin('ehi', value=30, **opts)
+        # e0_wids = self.add_floatspin('e0', value=0, **opts)
+        elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
+        ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)
 
         wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
                                    action=self.onFitOne)
@@ -595,7 +594,7 @@ class LinearComboPanel(TaskPanel):
 
         opts = dict(default=True, size=(75, -1), action=self.onPlotOne)
 
-        wids['show_e0']       = Check(panel, label='show?', **opts)
+        # wids['show_e0']       = Check(panel, label='show?', **opts)
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
@@ -612,9 +611,9 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['plotchoice'], dcol=3)
         panel.Add(wids['fit_selected'])
 
-        add_text('E0: ')
-        panel.Add(e0_wids, dcol=3)
-        panel.Add(wids['show_e0'])
+        # add_text('E0: ')
+        # panel.Add(e0_wids, dcol=3)
+        # panel.Add(wids['show_e0'])
 
         add_text('Fit Energy Range: ')
         panel.Add(elo_wids)
@@ -693,17 +692,19 @@ class LinearComboPanel(TaskPanel):
         if isinstance(dgroup, Group):
             d_emin = min(dgroup.energy)
             d_emax = max(dgroup.energy)
-            if opts['e0'] < d_emin or opts['e0'] > d_emax:
-                opts['e0'] = dgroup.e0
+            if opts['elo'] < d_emin:
+                opts['elo'] = defaults['elo_rel'] + int(dgroup.e0/10.0)*10
+            if opts['ehi'] > d_emax:
+                opts['ehi'] =  defaults['ehi_rel'] + int(dgroup.e0/10.0)*10
 
         self.skip_process = True
         wids = self.wids
-        for attr in ('e0', 'elo', 'ehi'):
+        for attr in ('elo', 'ehi'):
             val = opts.get(attr, None)
             if val is not None:
                 wids[attr].SetValue(val)
 
-        for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
+        for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
             wids[attr].SetValue(opts.get(attr, True))
 
         for attr in ('fitspace',):
@@ -732,12 +733,12 @@ class LinearComboPanel(TaskPanel):
         self.dgroup = dgroup
         opts = {'group': dgroup.groupname, 'filename':dgroup.filename}
         wids = self.wids
-        for attr in ('e0', 'elo', 'ehi'):
+        for attr in ('elo', 'ehi'):
             opts[attr] = wids[attr].GetValue()
 
         for attr in ('fitspace', 'plotchoice'):
             opts[attr] = wids[attr].GetStringSelection()
-        for attr in ('all_combos', 'sum_to_one', 'show_e0', 'show_fitrange'):
+        for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
             opts[attr] = wids[attr].GetValue()
 
         for attr, wid in wids.items():
@@ -761,8 +762,6 @@ class LinearComboPanel(TaskPanel):
         opts['weights'] = ', '.join(wval)
         opts['minvals'] = ', '.join(wmin)
         opts['maxvals'] = ', '.join(wmax)
-        opts['elo_abs'] = float(opts['elo']) + float(opts['e0'])
-        opts['ehi_abs'] = float(opts['ehi']) + float(opts['e0'])
         opts['func'] = 'lincombo_fit'
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
@@ -810,7 +809,7 @@ class LinearComboPanel(TaskPanel):
         form['gname'] = groupname
         script = """# do LCF for {gname:s}
 result = {func:s}({gname:s}, [{comps:s}],
-            xmin={elo_abs:.4f}, xmax={ehi_abs:.4f}, sum_to_one={sum_to_one}, arrayname='{arrayname:s}',
+            xmin={elo:.4f}, xmax={ehi:.4f}, sum_to_one={sum_to_one}, arrayname='{arrayname:s}',
             weights=[{weights:s}],
             minvals=[{minvals:s}],
             maxvals=[{maxvals:s}])
