@@ -136,7 +136,7 @@ class PCAPanel(TaskPanel):
 
         panel.Add(wids['save_model'], dcol=2)
 
-        add_text('Fit Range: ')
+        add_text('Fit Energy Range: ')
         panel.Add(w_xmin)
         add_text(' : ', newrow=False)
         panel.Add(w_xmax)
