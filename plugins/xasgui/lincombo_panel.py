@@ -110,14 +110,18 @@ class ResultFrame(wx.Frame):
         fmenu = wx.Menu()
         m = {}
 
-        MenuItem(self, fmenu, "Save This Fit And Components",
-                 "Save Fit and Compoents to Data File",  self.onSaveFit)
+        MenuItem(self, fmenu, "Save Fit And Components for Current Group",
+                 "Save Fit and Compoents to Data File for Current Group",  self.onSaveGroupFit)
 
-        MenuItem(self, fmenu, "Save Statistics for Best N Fits",
-                 "Save Statistics and Weights for Best N Fits",  self.onSaveStats)
+        MenuItem(self, fmenu, "Save Statistics for Best N Fits for Current Group",
+                 "Save Statistics and Weights for Best N Fits for Current Group",  self.onSaveGroupStats)
 
-        MenuItem(self, fmenu, "Save Data and Best N Fits",
-                 "Save Data and Best N Fits",  self.onSaveMultiFits)
+        MenuItem(self, fmenu, "Save Data and Best N Fits for Current Group",
+                 "Save Data and Best N Fits for Current Group",  self.onSaveGroupMultiFits)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Save Statistics Report for All Fitted Groups",
+                 "Save Statistics for All Fitted Groups",  self.onSaveAllStats)
 
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
@@ -423,8 +427,8 @@ class ResultFrame(wx.Frame):
         script = "\n".join(cmds)
         self.larch_eval(script.format(**form))
 
-    def onSaveFit(self, evt=None):
-        "Save Fit and Compoents to Data File"
+    def onSaveGroupFit(self, evt=None):
+        "Save Fit and Compoents for current fit to Data File"
         nfit = self.current_fit
         dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
@@ -465,8 +469,8 @@ class ResultFrame(wx.Frame):
         write_ascii(path, header=header, label=label, _larch=_larch, *out)
 
 
-    def onSaveStats(self, evt=None):
-        "Save Statistics and Weights for Best N Fits"
+    def onSaveGroupStats(self, evt=None):
+        "Save Statistics and Weights for Best N Fits for the current group"
         dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
         results = dgroup.lcf_result[:nfits]
@@ -513,8 +517,8 @@ class ResultFrame(wx.Frame):
         _larch = self.parent.controller.larch
         write_ascii(path, header=header, label=label, _larch=_larch, *out)
 
-    def onSaveMultiFits(self, evt=None):
-        "Save Data and Best N Fits"
+    def onSaveGroupMultiFits(self, evt=None):
+        "Save Data and Best N Fits for the current group"
         dgroup = self.datagroup
         nfits = int(self.wids['plot_nchoice'].GetStringSelection())
         results = dgroup.lcf_result[:nfits]
@@ -545,6 +549,48 @@ class ResultFrame(wx.Frame):
 
         _larch = self.parent.controller.larch
         write_ascii(path, header=header, label=label, _larch=_larch, *out)
+
+    def onSaveAllStats(self, evt=None):
+        "Save All Statistics and Weights "
+        print("  save stats report" )
+
+        deffile = "LinearFitStats.csv"
+        wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
+        path = FileSave(self, 'Save Statistics Report',
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+        form = self.form
+
+        out = ['# Larch Linear Fit Statistics Report (best results) %s' % time.ctime(),
+               '# Array name: %s' %  form['arrayname'],
+               '# Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
+
+        label = ['Data Set ', 'n_varys', 'chi2',
+                 'chi2_reduced', 'akaike_info', 'bayesian_info']
+        label.extend(form['comp_names'])
+        label.append('Total')
+        for i in range(len(label)):
+            if len(label[i]) < 13:
+                label[i] = (" %s                " % label[i])[:13]
+        label = ', '.join(label)
+        out.append('# %s' % label)
+
+        for name, dgroup in self.datasets.items():
+            res = dgroup.lcf_result[0]
+            dat = [dgroup.filename]
+            for attr in ('nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
+                dat.append(gformat(getattr(res.result, attr)))
+            for cname in form['comp_names'] + ['total']:
+                val = 0
+                if cname in res.params:
+                    val = res.params[cname].value
+                dat.append(gformat(val))
+            out.append(', '.join(dat))
+        out.append('')
+
+        with open(path, 'w') as fh:
+            fh.write('\n'.join(out))
 
 
 class LinearComboPanel(TaskPanel):
