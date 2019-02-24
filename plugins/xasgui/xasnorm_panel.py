@@ -387,6 +387,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
+                self.skip_process = False
                 self.process(grp)
 
     def onSet_XASE0(self, evt=None, value=None):
