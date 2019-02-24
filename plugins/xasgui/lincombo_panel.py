@@ -191,7 +191,7 @@ class ResultFrame(wx.Frame):
 
 
         irow += 1
-        sizer.Add(self.wids['params'],       (irow,   0), (5, 1), LCEN)
+        sizer.Add(self.wids['params'],       (irow,   0), (4, 1), LCEN)
         sizer.Add(self.wids['plot_one'],     (irow,   1), (1, 2), LCEN)
         sizer.Add(self.wids['plot_sel'],     (irow+1, 1), (1, 2), LCEN)
         sizer.Add(self.wids['plot_ntitle'],  (irow+2, 1), (1, 1), LCEN)

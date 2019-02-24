@@ -56,7 +56,7 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
-                show_e0=True, pre1=-200, pre2=-25, norm1=75, norm2=-10,
+                show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
                 norm_method='polynomial', mback_edge='K', mback_elem='H',
                 nvict=1, nnorm=1,
                 plotone_op='Normalized \u03BC(E)',
