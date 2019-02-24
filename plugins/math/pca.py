@@ -15,6 +15,8 @@ from numpy.random import randint
 
 from sklearn.decomposition import PCA
 
+from lmfit import minimize, Parameters
+
 from larch import Group, ValidateLarchPlugin
 from larch.utils.mathutils import interp, index_of
 
@@ -70,8 +72,16 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf, _larch=None):
                  components=ret.components_,
                  variances=ret.explained_variance_ratio_)
 
+
+def _pca_scale_resid(params, ydat=None, pca_model=None, comps=None):
+    scale = params['scale'].value
+    weights, chi2, rank, s = np.linalg.lstsq(comps, ydat*scale-pca_model.mean)
+    yfit = (weights * comps).sum(axis=1) + pca_model.mean
+    return (scale*ydat - yfit)
+
+
 @ValidateLarchPlugin
-def pca_fit(group, pca_model, ncomps=None, _larch=None):
+def pca_fit(group, pca_model, ncomps=None, rescale=True, _larch=None):
     """
     fit a spectrum from a group to a pca training model from pca_train()
 
@@ -80,6 +90,7 @@ def pca_fit(group, pca_model, ncomps=None, _larch=None):
       group       group with data to fit
       pca_model   PCA model as found from pca_train()
       ncomps      number of components to included
+      rescale     whether to allow data to be renormalized (True)
 
     Returns
     -------
@@ -101,16 +112,33 @@ def pca_fit(group, pca_model, ncomps=None, _larch=None):
 
     ydat = interp(xdat, ydat, pca_model.x, kind='cubic')
 
+    params = Parameters()
+    params.add('scale', value=1.0, vary=True, min=0)
+
     if ncomps is None:
         ncomps=len(pca_model.components)
     comps = pca_model.components[:ncomps].transpose()
 
-    weights, chi2, rank, s = np.linalg.lstsq(comps, ydat-pca_model.mean)
-    yfit = (weights * comps).sum(axis=1) + pca_model.mean
+    if rescale:
+        weights, chi2, rank, s = np.linalg.lstsq(comps, ydat-pca_model.mean)
+        yfit = (weights * comps).sum(axis=1) + pca_model.mean
+
+        result = minimize(_pca_scale_resid, params, method='leastsq',
+                          gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                          kws = dict(ydat=ydat, comps=comps, pca_model=pca_model))
+        scale = result.params['scale'].value
+        ydat *= scale
+        weights, chi2, rank, s = np.linalg.lstsq(comps, ydat-pca_model.mean)
+        yfit = (weights * comps).sum(axis=1) + pca_model.mean
+
+    else:
+        weights, chi2, rank, s = np.linalg.lstsq(comps, ydat-pca_model.mean)
+        yfit = (weights * comps).sum(axis=1) + pca_model.mean
+        scale = 1.0
 
     group.pca_result = Group(x=pca_model.x, ydat=ydat, yfit=yfit,
                              pca_model=pca_model, chi_square=chi2[0],
-                             weights=weights)
+                             data_scale=scale, weights=weights)
 
     return
 
