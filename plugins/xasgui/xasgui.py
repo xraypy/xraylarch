@@ -562,6 +562,8 @@ class XASFrame(wx.Frame):
                  "Remove Selected Group", self.onRemoveGroups)
 
 
+        group_menu.AppendSeparator()
+
         MenuItem(self, group_menu, "Merge Selected Groups",
                  "Merge Selected Groups", self.onMergeData)
 
