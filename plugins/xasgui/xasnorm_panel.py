@@ -503,20 +503,24 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
 
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
-        copts = [dgroup.groupname]
-        # copts.append("e0=%.2f" % form['e0'])
-        copts.append("z=%d" % atomic_number(form['mback_elem']))
-        copts.append("edge='%s'" % form['mback_edge'])
-        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            copts.append("%s=%.2f" % (attr, form[attr]))
 
-        if not fast_process:
+        use_mback = form['norm_method'].lower().startswith('mback')
+        form['normmeth'] = 'poly'
+        if use_mback:
+            form['normmeth'] = 'mback'
+
+        if use_mback and not fast_process:
+            form['normmeth'] = 'mback'
+            copts = [dgroup.groupname]
+            copts.append("z=%d" % atomic_number(form['mback_elem']))
+            copts.append("edge='%s'" % form['mback_edge'])
+            for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+                copts.append("%s=%.2f" % (attr, form[attr]))
+
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
+
             norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
         {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
-            form['normmeth'] = 'poly'
-            if form['norm_method'].lower().startswith('mback'):
-                form['normmeth'] = 'mback'
             self.larch_eval(norm_expr.format(**form))
 
         self.make_dnormde(dgroup)
