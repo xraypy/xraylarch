@@ -10,6 +10,7 @@ import numpy as np
 
 from functools import partial
 from collections import OrderedDict
+from lmfit.printfuncs import gformat
 from larch.utils import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
@@ -116,7 +117,7 @@ class XASNormPanel(TaskPanel):
         xas_nor1 = self.add_floatspin('nor1', value=defaults['norm1'], **opts)
         xas_nor2 = self.add_floatspin('nor2', value=defaults['norm2'], **opts)
 
-        opts = {'digits': 2, 'increment': 0.1, 'value': 0}
+        opts = {'digits': 3, 'increment': 0.1, 'value': 0}
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
@@ -248,7 +249,7 @@ class XASNormPanel(TaskPanel):
 
             ndigits = int(2 - round(np.log10(abs(edge_step))))
             self.wids['step'].SetDigits(ndigits+1)
-            self.wids['step'].SetIncrement(0.2*10**(-ndigits))
+            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
             self.wids['step'].SetValue(edge_step)
 
             self.wids['pre1'].SetValue(opts['pre1'])
@@ -450,7 +451,7 @@ class XASNormPanel(TaskPanel):
         form = dict(group=dgroup.groupname)
         self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
 
-    def process(self, dgroup=None, fast_process=False, **kws):
+    def process(self, dgroup=None, force_all=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
         if self.skip_process:
@@ -495,7 +496,7 @@ class XASNormPanel(TaskPanel):
                 copts.append("e0=%.4f" % float(e0))
 
         if not form['auto_step']:
-            copts.append("step=%.4f" % float(edge_step))
+            copts.append("step=%s" % gformat(float(edge_step)))
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             copts.append("%s=%.2f" % (attr, form[attr]))
@@ -509,8 +510,7 @@ class XASNormPanel(TaskPanel):
         if use_mback:
             form['normmeth'] = 'mback'
 
-        if use_mback and not fast_process:
-            form['normmeth'] = 'mback'
+        if force_all or use_mback:
             copts = [dgroup.groupname]
             copts.append("z=%d" % atomic_number(form['mback_elem']))
             copts.append("edge='%s'" % form['mback_edge'])
@@ -529,6 +529,10 @@ class XASNormPanel(TaskPanel):
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step']:
             self.wids['step'].SetValue(dgroup.edge_step)
+            ndigits = int(2 - round(np.log10(abs(edge_step))))
+            self.wids['step'].SetDigits(ndigits+1)
+            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
+
 
         self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
@@ -708,6 +712,9 @@ class XASNormPanel(TaskPanel):
             popts['delay_draw'] = delay_draw or (i != narr)
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
+            if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
+                self.skip_process = False
+                self.process(force_all=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
