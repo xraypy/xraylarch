@@ -311,7 +311,7 @@ class ResultFrame(wx.Frame):
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
-                    val = gformat(val, 11)
+                    val = gformat(val, 12)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
 
@@ -379,9 +379,9 @@ class ResultFrame(wx.Frame):
         wids['params'].DeleteAllItems()
 
         for pname, par in fit_result.params.items():
-            args = [pname, gformat(par.value, 11), '--']
+            args = [pname, gformat(par.value, 12), '--']
             if par.stderr is not None:
-                args[2] = gformat(par.stderr, 11)
+                args[2] = gformat(par.stderr, 12)
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
@@ -552,8 +552,6 @@ class ResultFrame(wx.Frame):
 
     def onSaveAllStats(self, evt=None):
         "Save All Statistics and Weights "
-        print("  save stats report" )
-
         deffile = "LinearFitStats.csv"
         wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
         path = FileSave(self, 'Save Statistics Report',
@@ -566,26 +564,30 @@ class ResultFrame(wx.Frame):
                '# Array name: %s' %  form['arrayname'],
                '# Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
 
-        label = ['Data Set ', 'n_varys', 'chi2',
-                 'chi2_reduced', 'akaike_info', 'bayesian_info']
+        label = [('Data Set' + ' '*25)[:25],
+                 'n_varys', 'chi-square',
+                 'chi-square_red', 'akaike_info', 'bayesian_info']
         label.extend(form['comp_names'])
         label.append('Total')
         for i in range(len(label)):
-            if len(label[i]) < 13:
-                label[i] = (" %s                " % label[i])[:13]
+            if len(label[i]) < 12:
+                label[i] = (" %s                " % label[i])[:12]
         label = ', '.join(label)
         out.append('# %s' % label)
 
         for name, dgroup in self.datasets.items():
             res = dgroup.lcf_result[0]
-            dat = [dgroup.filename]
+            label = dgroup.filename
+            if len(label) < 25:
+                label = (label + ' '*25)[:25]
+            dat = [label]
             for attr in ('nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
-                dat.append(gformat(getattr(res.result, attr)))
+                dat.append(gformat(getattr(res.result, attr), 12))
             for cname in form['comp_names'] + ['total']:
                 val = 0
                 if cname in res.params:
                     val = res.params[cname].value
-                dat.append(gformat(val))
+                dat.append(gformat(val, 12))
             out.append(', '.join(dat))
         out.append('')
 
