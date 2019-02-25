@@ -147,6 +147,12 @@ class PCAPanel(TaskPanel):
         add_text('Max Components:', dcol=1, newrow=True)
         panel.Add(w_mcomps)
 
+        panel.Add(Button(panel, 'Copy To Selected Groups', size=(175, -1),
+                         action=partial(self.onCopyParam, 'pca')),
+                  dcol=2)
+
+
+
         add_text('Status: ')
         panel.Add(wids['status'], dcol=3)
 
@@ -208,6 +214,19 @@ class PCAPanel(TaskPanel):
                 wids[attr].SetStringSelection(opts[attr])
 
         self.skip_process = False
+
+    def onCopyParam(self, name=None, evt=None):
+        conf = self.get_config()
+        conf.update(self.read_form())
+        attrs =  ('xmin', 'xmax', 'weight_min',
+                  'max_components', 'fitspace', 'plotchoice')
+
+        out = {a: conf[a] for a in attrs}
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(checked)]
+            dgroup = self.controller.get_group(groupname)
+            self.update_config(out, dgroup=dgroup)
+
 
     def plot_pca_weights(self, win=2):
         if self.result is None or self.skip_plotting:
