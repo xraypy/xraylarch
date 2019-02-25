@@ -1,4 +1,4 @@
-#o!/usr/bin/env python
+#!/usr/bin/env python
 """
 XANES Normalization panel
 """
@@ -487,7 +487,6 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
         e0 = form['e0']
         edge_step = form['edge_step']
-
         form['group'] = dgroup.groupname
 
         copts = [dgroup.groupname]
@@ -519,9 +518,14 @@ class XASNormPanel(TaskPanel):
 
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
-            norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
-        {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
-            self.larch_eval(norm_expr.format(**form))
+            if form['auto_step']:
+                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+{group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
+                self.larch_eval(norm_expr.format(**form))
+            else:
+                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+{group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
+                self.larch_eval(norm_expr.format(**form))
 
         self.make_dnormde(dgroup)
 
