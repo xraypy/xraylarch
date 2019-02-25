@@ -1482,13 +1482,13 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrfdisplay is None:
-            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
+            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer)
 
         try:
             self.xrfdisplay.Show()
 
         except PyDeadObjectError:
-            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
+            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer)
             self.xrfdisplay.Show()
 
         if do_raise:

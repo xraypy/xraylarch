@@ -322,7 +322,7 @@ class EXAFSPanel(TaskPanel):
             plotter = self.onPlotSel
         wx.CallAfter(partial(plotter, form=form))
 
-    def process(self, dgroup=None, opts=None, **kws):
+    def process(self, dgroup=None, opts=None, fast_process=False, **kws):
         if opts is None:
             opts = self.read_form()
         if dgroup is not None:
@@ -341,7 +341,7 @@ class EXAFSPanel(TaskPanel):
 
         lpars = getattr(dgroup, 'exafs_formvals', False)
 
-        if pars != lpars:
+        if pars != lpars and not fast_process:
             self.larch_eval(autobk_cmd.format(**opts))
             self.larch_eval(xftf_cmd.format(**opts))
             dgroup.exafs_formvals = pars
