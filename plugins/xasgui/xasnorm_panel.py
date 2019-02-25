@@ -388,8 +388,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
-                self.skip_process = False
-                self.process(grp)
+                self.process(grp, noskip=True)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
@@ -451,10 +450,10 @@ class XASNormPanel(TaskPanel):
         form = dict(group=dgroup.groupname)
         self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
 
-    def process(self, dgroup=None, force_all=False, **kws):
+    def process(self, dgroup=None, force_mback=False, noskip=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
-        if self.skip_process:
+        if self.skip_process and not noskip:
             return
         if dgroup is None:
             dgroup = self.controller.get_group()
@@ -509,7 +508,7 @@ class XASNormPanel(TaskPanel):
         if use_mback:
             form['normmeth'] = 'mback'
 
-        if force_all or use_mback:
+        if force_mback or use_mback:
             copts = [dgroup.groupname]
             copts.append("z=%d" % atomic_number(form['mback_elem']))
             copts.append("edge='%s'" % form['mback_edge'])
@@ -585,6 +584,8 @@ class XASNormPanel(TaskPanel):
                                        ('dnormde', PLOTOPTS_D, 'dy/dx')]
             return
 
+        req_attrs = ['e0', 'norm', 'dmude', 'pre_edge']
+
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
             lab = getattr(plotlabels, pchoice)
@@ -614,6 +615,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_y2label = lab2
 
         elif pchoice == 'mback_norm':
+            req_attrs.append('mback_norm')
             lab = r'$\mu$'
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
@@ -621,6 +623,7 @@ class XASNormPanel(TaskPanel):
                                    ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
 
         elif pchoice == 'mback_poly':
+            req_attrs.append('mback_norm')
             lab = plotlabels.norm
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
@@ -630,6 +633,16 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_ylabel = lab
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
+
+        needs_proc = False
+        force_mback = False
+        for attr in req_attrs:
+            needs_proc = needs_proc or (not hasattr(dgroup, attr))
+            force_mback = force_mback or attr.startswith('mback')
+
+        if needs_proc:
+            self.process(dgroup=dgroup, force_mback=force_mback, noskip=True)
+
         if form['show_e0']:
             ie0 = index_of(dgroup.energy, dgroup.e0)
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
@@ -638,7 +651,6 @@ class XASNormPanel(TaskPanel):
              multi=False, new=True, zoom_out=True, with_extras=True, **kws):
         if self.skip_plotting:
             return
-
         self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
         viewlims = ppanel.get_viewlimits()
@@ -655,7 +667,10 @@ class XASNormPanel(TaskPanel):
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
-             getattr(dgroup, 'mu', None) is None)):
+             getattr(dgroup, 'mu', None) is None or
+             getattr(dgroup, 'e0', None) is None or
+             getattr(dgroup, 'dmude', None) is None or
+             getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
@@ -717,8 +732,7 @@ class XASNormPanel(TaskPanel):
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.skip_process = False
-                self.process(force_all=True)
+                self.process(force_mback=True, noskip=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
