@@ -506,7 +506,7 @@ class XASFrame(wx.Frame):
         if process:
             cur_panel.fill_form(dgroup)
             cur_panel.skip_process = True
-            cur_panel.process(dgroup=dgroup, fast_process=True)
+            cur_panel.process(dgroup=dgroup)
             if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
             cur_panel.skip_process = False
@@ -561,6 +561,8 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "Remove Selected Groups",
                  "Remove Selected Group", self.onRemoveGroups)
 
+
+        group_menu.AppendSeparator()
 
         MenuItem(self, group_menu, "Merge Selected Groups",
                  "Merge Selected Groups", self.onMergeData)
