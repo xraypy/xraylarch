@@ -55,32 +55,29 @@ in-development features and application will be explicitly described as
 	work in progress.
 
 
-  +----------------------+-----------+---------------------------------------+
-  | Application Name     | GUI / CLI | Description                           |
-  +======================+===========+=======================================+
-  | larch                | CLI       | simple command-lne interface          |
-  +----------------------+-----------+---------------------------------------+
-  | larch_gui            | GUI       | enhanced command-lne interface        |
-  |                      |           | with data browser                     |
-  +----------------------+-----------+---------------------------------------+
-  | gse_mapviewer        | GUI       | XRF Map Viewer for data from the      |
-  |                      |           | GSECARS X-ray microprobe              |
-  +----------------------+-----------+---------------------------------------+
-  | xas_viewer           | GUI       | Display XANES data, and Pre-edge      |
-  |                      |           | Peak Fitting.                         |
-  +----------------------+-----------+---------------------------------------+
-  | xrfdisplay           | GUI       | Display XRF Spectra                   |
-  +----------------------+-----------+---------------------------------------+
-  | 1D XRD Viewer        | GUI       | Display and work with XRD diffraction |
-  |                      |           | patterns (beta).                      |
-  +----------------------+-----------+---------------------------------------+
-  | 2D XRD Viewer        | GUI       | Display and work with XRD diffraction |
-  |                      |           | images (beta).                        |
-  +----------------------+-----------+---------------------------------------+
-  | feff6l               | CLI       | Feff 6 EXAFS calculations             |
-  +----------------------+-----------+---------------------------------------+
-  | feff8l               | CLI       | Feff 8 EXAFS calculations - no XANES  |
-  +----------------------+-----------+---------------------------------------+
+  +----------------------+-----------+---------------------------------------------------------+
+  | Application Name     | GUI / CLI | Description                                             |
+  +======================+===========+=========================================================+
+  | larch                | CLI       | simple command-lne interface                            |
+  +----------------------+-----------+---------------------------------------------------------+
+  | larch_gui            | GUI       | enhanced command-lne interface with data browser        |
+  +----------------------+-----------+---------------------------------------------------------+
+  | gse_mapviewer        | GUI       | XRF Map Viewer for GSECARS X-ray microprobe data.       |
+  +----------------------+-----------+---------------------------------------------------------+
+  | xas_viewer           | GUI       | Display XANES data, and Pre-edge Peak Fitting.          |
+  +----------------------+-----------+---------------------------------------------------------+
+  | xrfdisplay           | GUI       | Display and analyze XRF Spectra.                        |
+  +----------------------+-----------+---------------------------------------------------------+
+  | Dioptas              | GUI       | Display XRD images, calibrate to XRD patterns.          |
+  +----------------------+-----------+---------------------------------------------------------+
+  | 1D XRD Viewer        | GUI       | Display and work with 1-D XRD patterns (beta).          |
+  +----------------------+-----------+---------------------------------------------------------+
+  | 2D XRD Viewer        | GUI       | Display  XRD images (beta)                              |
+  +----------------------+-----------+---------------------------------------------------------+
+  | feff6l               | CLI       | Feff 6 EXAFS calculations                               |
+  +----------------------+-----------+---------------------------------------------------------+
+  | feff8l               | CLI       | Feff 8 EXAFS calculations - no XANES                    |
+  +----------------------+-----------+---------------------------------------------------------+
 
 Larch is under active and open development, and has support from the U. S. National Science
 Foundation.

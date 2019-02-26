@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.8. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.41 documentation</title>
+    <title>9.8. XAFS: Fitting XAFS to Feff Paths &#8212; larch 0.9.42 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -133,7 +133,7 @@ process, and those sections will be referenced here.</p>
 <div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
 <h2>9.8.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
-<a class="reference internal" href="#id4" id="id1">[Feffit_1]</a>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
+<a class="reference internal" href="#id4" id="id1">[Larch_4]</a>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
 sum of scattering paths that will be compared to experimentally derived
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
@@ -171,7 +171,7 @@ Nyquist as</p>
 <div class="math notranslate nohighlight">
 \[N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1\]</div>
 <p>where <span class="math notranslate nohighlight">\(\Delta k\)</span> and <span class="math notranslate nohighlight">\(\Delta R\)</span> are the <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
-range of the usable data under consideration.  <a class="reference internal" href="#stern93" id="id2">[Feffit_2]</a>
+range of the usable data under consideration.  <a class="reference internal" href="#stern93" id="id2">[Larch_5]</a>
 argues convincingly that the ‘+1’ here should be ‘+2’, but we’ll remain
 conservative and keep the ‘+1’, and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -240,7 +240,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 <span class="math notranslate nohighlight">\(R\)</span>: white noise.  The function <a class="reference internal" href="utilities.html#_xafs.estimate_noise" title="_xafs.estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a> does this
-<a class="reference internal" href="#newvilleboyanov" id="id3">[Feffit_3]</a>, and the estimate derived from this method is
+<a class="reference internal" href="#newvilleboyanov" id="id3">[Larch_6]</a>, and the estimate derived from this method is
 used unless you specify a value for <code class="docutils literal notranslate"><span class="pre">epsilon_k</span></code> the noise level in
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  Though usually <span class="math notranslate nohighlight">\(\epsilon\)</span> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -2017,19 +2017,19 @@ powerful, and give increased confidence in the refined structure.</p>
 <p id="bibtex-bibliography-xafs/feffit-0"><table class="docutils citation" frame="void" id="id4" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Feffit_1]</a></td><td>M&nbsp;Newville. Exafs analysis using feff and feffit. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):96–100, 2001. URL: <a class="reference external" href="http://dx.doi.org/10.1107/S0909049500016290">http://dx.doi.org/10.1107/S0909049500016290</a>, <a class="reference external" href="https://doi.org/10.1107/S0909049500016290">doi:10.1107/S0909049500016290</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id1">[Larch_4]</a></td><td>M&nbsp;Newville. Exafs analysis using feff and feffit. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):96–100, 2001. URL: <a class="reference external" href="http://dx.doi.org/10.1107/S0909049500016290">http://dx.doi.org/10.1107/S0909049500016290</a>, <a class="reference external" href="https://doi.org/10.1107/S0909049500016290">doi:10.1107/S0909049500016290</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="stern93" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Feffit_2]</a></td><td>E.&nbsp;A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. <em>Physical Review B</em>, 48(13):9825–9827, 1993. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.48.9825">doi:10.1103/PhysRevB.48.9825</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id2">[Larch_5]</a></td><td>E.&nbsp;A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. <em>Physical Review B</em>, 48(13):9825–9827, 1993. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.48.9825">doi:10.1103/PhysRevB.48.9825</a>.</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="newvilleboyanov" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[Feffit_3]</a></td><td>M.&nbsp;Newville, B.&nbsp;Boyanov, and D.&nbsp;E. Sayers. Estimation of uncertainties in XAFS data. <em>Journal of Synchrotron Radiation</em>, 6:264–265, 1999. <a class="reference external" href="https://doi.org/10.1107/S0909049598018147">doi:10.1107/S0909049598018147</a>.</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id3">[Larch_6]</a></td><td>M.&nbsp;Newville, B.&nbsp;Boyanov, and D.&nbsp;E. Sayers. Estimation of uncertainties in XAFS data. <em>Journal of Synchrotron Radiation</em>, 6:264–265, 1999. <a class="reference external" href="https://doi.org/10.1107/S0909049598018147">doi:10.1107/S0909049598018147</a>.</td></tr>
 </tbody>
 </table>
 </p>
