@@ -25,7 +25,6 @@ specs:
     - conda
     - openssl
     - asn1crypto
-    - readline
     - anaconda
     - numpy>=1.15
     - scipy>=1.2
@@ -48,6 +47,7 @@ specs:
     - patchelf         # [linux64]
     - pango            # [linux64]
     - fontconfig       # [linux64 or osx]
+    - readline         # [linux64 or osx]
     - python.app       # [osx]
     - pywin32          # [win64]
     - console_shortcut # [win64]
