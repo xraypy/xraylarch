@@ -51,7 +51,6 @@ specs:
     - python.app       # [osx]
     - pywin32          # [win64]
     - console_shortcut # [win64]
-    - qtpy
     - pyqtgraph
     - wxpython>=4.0.4
     - pycifrw
