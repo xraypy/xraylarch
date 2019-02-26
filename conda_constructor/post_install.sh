@@ -6,5 +6,5 @@ if [ xx$PREFIX == 'xx' ]; then
 fi
 
 echo "### Larch > creating desktop shortcuts in Desktop/Larch folder"
-$PREFIX/conda install --force-reinstall qtpy
+$PREFIX/bin/conda install --force-reinstall qtpy
 $PREFIX/bin/python $PREFIX/bin/larch -m
