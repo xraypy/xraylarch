@@ -8,7 +8,6 @@ import ast
 import numpy as np
 import traceback
 import inspect
-import six
 from collections import OrderedDict
 import ctypes
 import ctypes.util
@@ -593,10 +592,7 @@ def Make_CallArgs(skipped_args):
     def wrap(fcn):
         def wrapper(*args, **kwargs):
             result = fcn(*args, **kwargs)
-            if six.PY3:
-                argspec = inspect.getfullargspec(fcn)
-            else:
-                argspec = inspect.getargspec(fcn)
+            argspec = inspect.getfullargspec(fcn)
 
             offset = len(argspec.args) - len(argspec.defaults)
             call_args = OrderedDict()

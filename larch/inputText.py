@@ -6,9 +6,10 @@ from __future__ import print_function
 import os
 import sys
 import time
-import six
 from collections import deque
 from copy import copy
+import io
+FILETYPE = io.IOBase
 
 OPENS  = '{(['
 CLOSES = '})]'
@@ -27,11 +28,6 @@ BLOCK_FRIENDS = {'if':    ('else', 'elif'),
 
 STARTKEYS = ['if', 'for', 'def', 'try', 'while']
 
-if six.PY2:
-    FILETYPE = file
-else:
-    import io
-    FILETYPE = io.IOBase
 
 def find_eostring(txt, eos, istart):
     """find end of string token for a string"""

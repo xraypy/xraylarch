@@ -16,7 +16,6 @@ import wx
 import numpy
 import wx.html as html
 import types
-import six
 
 from wx.py import dispatcher
 from wx.py import editwindow
@@ -32,9 +31,7 @@ from wxutils  import Button, pack, is_wxPhoenix
 
 VERSION = '0.9.5(Larch)'
 
-COMMONTYPES = [int, float, complex, bool, dict, list, tuple, numpy.ndarray]
-COMMONTYPES.extend(six.string_types)
-COMMONTYPES = tuple(COMMONTYPES)
+COMMONTYPES = (int, float, complex, str, bool, dict, list, tuple, numpy.ndarray)
 
 H5TYPES = ()
 try:
@@ -70,15 +67,8 @@ def call_signature(obj):
     if hasattr(obj, '_larchfunc_'):
         obj = obj._larchfunc_
 
-    # print("CALL SIG3: ", obj, getattr(obj, '__file__', '<>'))
-    # print(dir(obj))
-
-    if six.PY3:
-        argspec = inspect.getfullargspec(obj)
-        keywords = argspec.varkw
-    else:
-        argspec = inspect.getargspec(obj)
-        keywords = argspec.keywords
+    argspec = inspect.getfullargspec(obj)
+    keywords = argspec.varkw
 
     fargs = []
     ioff = len(argspec.args) - len(argspec.defaults)
@@ -242,7 +232,7 @@ class FillingTree(wx.TreeCtrl):
             # Show string dictionary items with single quotes, except
             # for the first level of items, if they represent a
             # namespace.
-            if (isinstance(obj, dict) and isinstance(key, six.string_types) and
+            if (isinstance(obj, dict) and isinstance(key, str) and
                 (item != self.root or
                  (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
