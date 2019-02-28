@@ -5,21 +5,6 @@ from copy import copy, deepcopy
 import numpy as np
 from scipy.stats import f
 
-# note: for lmfit 0.9.12 and earlier, we have to
-# set the matplotlib backend before import lmfit!!
-import matplotlib
-import warnings
-try:
-    import wx
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
-        try:
-            matplotlib.use("WXAgg")
-        except:
-            pass
-except ImportError:
-    pass
-
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d)
