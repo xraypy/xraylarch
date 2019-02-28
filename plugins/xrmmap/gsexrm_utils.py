@@ -31,6 +31,7 @@ class GSEXRM_FileStatus:
     err_notfound = 'file not found'
     empty        = 'file is empty (read from folder)'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
+    err_nowrite  = 'user does not have write permission'
 
 
 class GSEXRM_Exception(Exception):

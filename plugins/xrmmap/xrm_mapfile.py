@@ -84,6 +84,8 @@ def getFileStatus(filename, root=None, folder=None):
     if os.stat(filename).st_size < 1024:
         return GSEXRM_FileStatus.empty, top, vers
 
+    if not os.access(filename, os.W_OK):
+        return GSEXRM_FileStatus.err_nowrite, top, vers
     # see if file is an H5 file
     try:
         fh = h5py.File(filename)
@@ -361,8 +363,8 @@ class GSEXRM_MapFile(object):
         nmaster = -1
         # initialize from filename or folder
         if self.filename is not None:
-
-            self.status,self.root,self.version = getFileStatus(self.filename, root=root)
+            self.status, self.root, self.version = getFileStatus(self.filename,
+                                                                 root=root)
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
@@ -393,6 +395,11 @@ class GSEXRM_MapFile(object):
         if self.status ==  GSEXRM_FileStatus.err_nothdf5:
             raise GSEXRM_Exception(
                 "'%s' is not a readable HDF5 file" % self.filename)
+
+        # file has no write permission
+        if self.status ==  GSEXRM_FileStatus.nowrite:
+            raise GSEXRM_Exception(
+                "'%s' does not have write access" % self.filename)
 
         # create empty HDF5 if needed
         if self.status == GSEXRM_FileStatus.empty and os.path.exists(self.filename):
