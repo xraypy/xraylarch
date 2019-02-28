@@ -38,22 +38,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.argdoc',
               'numpydoc']
 
-#
-# def linkcode_resolve(domain, info):
-#     if domain != 'py':
-#         return None
-#     mname = info.get('module', '')
-#     if mname in (None, '', 'None'):
-#         return None
-#     link = '../plugins'
-#     return '%s/%s.lar' % (link, mname)
-
-
 # from sphinxtr
 extensions.extend(['fix_equation_ref', 'subfig', 'numsec',
-                   'figtable', 'singlehtml_toc', 'singletext',
-                   # 'natbib',
-                   ])
+                   'figtable', 'singlehtml_toc', 'singletext'])
 
 intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
@@ -71,16 +58,6 @@ extlinks = {
 # Turns on numbered figures for HTML output
 number_figures = True
 
-# configures bibliography
-# see http://wnielson.bitbucket.org/projects/sphinx-natbib/
-# natbib = {
-#     'file': 'larch.bib',
-#     'brackets': '[]',
-#     'separator': ',',
-#     'style': 'authors',
-#     'sort': False,
-# }
-
 # List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -97,7 +74,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'larch'
 author = 'Matthew Newville'
-copyright = 'Matthew Newville, The University of Chicago, 2018'
+copyright = 'Matthew Newville, The University of Chicago, 2019'
 
 numfig = True
 numfig_secnum_depth = 2
