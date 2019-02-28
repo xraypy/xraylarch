@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy
+
 from pyshortcuts import make_shortcut
 from pyshortcuts.shortcut import Shortcut
 
@@ -8,9 +9,24 @@ from .site_config import larchdir, home_dir, uname
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 
+HAS_WXPYTHON = False
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    pass
+
 def use_mpl_wxagg():
-    import matplotlib
-    matplotlib.use('WXAgg')
+    """import matplotlib, set backend to wxAgg"""
+    if HAS_WXPYTHON:
+        try:
+            import matplotlib
+            matplotlib.use('WXAgg', force=True)
+            return True
+        except ImportError:
+            pass
+    return False
+
 
 class LarchApp:
     """
@@ -137,7 +153,6 @@ def run_larch():
     main larch application launcher, running either
     commandline repl program or wxgui
     """
-    use_mpl_wxagg()
     usage = "usage: %prog [options] file(s)"
     from optparse import OptionParser
     parser = OptionParser(usage=usage, prog="larch",
@@ -168,6 +183,7 @@ def run_larch():
                       default=False, help="tell remote server to echo commands")
 
     (options, args) = parser.parse_args()
+    with_wx = HAS_WXPYTHON and (not options.nowx)
 
     # create desktop icons
     if options.makeicons:
@@ -175,18 +191,24 @@ def run_larch():
 
     # run in server mode
     elif options.server_mode:
+        if with_wx:
+            use_mpl_wxagg()
+
         from larch.xmlrpc_server import LarchServer
         server = LarchServer(host='localhost', port=int(options.port))
         server.run()
 
     # run wx Larch GUI
     elif options.wxgui:
+        use_mpl_wxagg()
         from larch.wxlib.larchframe import LarchApp
         LarchApp().MainLoop()
 
     # run wx Larch CLI
     else:
-        cli = shell(quiet=options.quiet, with_wx=(not options.nowx))
+        if with_wx:
+            use_mpl_wxagg()
+        cli = shell(quiet=options.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if len(args)>0:
             for arg in args:
