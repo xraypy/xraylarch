@@ -1,24 +1,9 @@
 #!/usr/bin/env python
-import six
+
 from copy import copy, deepcopy
 
 import numpy as np
 from scipy.stats import f
-
-# note: for lmfit 0.9.12 and earlier, we have to
-# set the matplotlib backend before import lmfit!!
-import matplotlib
-import warnings
-try:
-    import wx
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
-        try:
-            matplotlib.use("WXAgg")
-        except:
-            pass
-except ImportError:
-    pass
 
 import lmfit
 from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
@@ -103,7 +88,7 @@ class ParameterGroup(Group):
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
               expr=None, stderr=None, correl=None, brute_step=None):
-        if expr is None and isinstance(value, six.string_types):
+        if expr is None and isinstance(value, str):
             expr = value
             value = None
         if self.__params__  is not None:
@@ -122,7 +107,7 @@ def param(*args, **kws):
     "create a fitting Parameter as a Variable"
     if len(args) > 0:
         a0 = args[0]
-        if isinstance(a0, six.string_types):
+        if isinstance(a0, str):
             kws.update({'expr': a0})
         elif isinstance(a0, (int, float)):
             kws.update({'value': a0})

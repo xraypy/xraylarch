@@ -13,7 +13,6 @@ import types
 import ast
 import math
 import numpy
-import six
 
 from . import builtins
 from . import site_config
@@ -811,7 +810,7 @@ class Interpreter:
         args = []
         for narg in node.args:
             aadd = args.append
-            if six.PY3 and isinstance(narg, ast.Starred):
+            if isinstance(narg, ast.Starred):
                 aadd = args.extend
             aadd(self.run(narg))
 
@@ -820,7 +819,7 @@ class Interpreter:
             args = args + self.run(starargs)
 
         keywords = {}
-        if six.PY3 and func == print:
+        if func == print:
             keywords['file'] = self.writer
 
         for key in node.keywords:
@@ -853,21 +852,15 @@ class Interpreter:
             keyval = self.run(node.args.args[idef+offset])
             kwargs.append((keyval, defval))
         # kwargs.reverse()
-        if six.PY3:
-            args = [tnode.arg for tnode in node.args.args[:offset]]
-        else:
-            args = [tnode.id for tnode in node.args.args[:offset]]
+        args = [tnode.arg for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
             docnode = node.body[0]
             doc = docnode.value.s
 
-        vararg = node.args.vararg
-        varkws = node.args.kwarg
-        if six.PY3:
-            vararg = self.run(vararg)
-            varkws = self.run(varkws)
+        vararg = self.run(node.args.vararg)
+        varkws = self.run(node.args.kwarg)
         proc = Procedure(node.name, _larch=self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,

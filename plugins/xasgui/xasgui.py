@@ -505,6 +505,7 @@ class XASFrame(wx.Frame):
         cur_panel = self.nb.GetCurrentPage()
         if process:
             cur_panel.fill_form(dgroup)
+            cur_panel.skip_process = True
             cur_panel.process(dgroup=dgroup)
             if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
@@ -560,6 +561,8 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "Remove Selected Groups",
                  "Remove Selected Group", self.onRemoveGroups)
 
+
+        group_menu.AppendSeparator()
 
         MenuItem(self, group_menu, "Merge Selected Groups",
                  "Merge Selected Groups", self.onMergeData)
@@ -855,7 +858,8 @@ class XASFrame(wx.Frame):
                                               overwrite=True))
 
     def onLoadFitResult(self, event=None):
-        print("onLoadFitResult??")
+        pass
+        # print("onLoadFitResult??")
         # self.nb.SetSelection(1)
         # self.nb_panels[1].onLoadFitResult(event=event)
 

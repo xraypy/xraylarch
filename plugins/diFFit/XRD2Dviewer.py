@@ -22,7 +22,7 @@ from wxmplot.imagepanel import ImagePanel
 from wxutils import MenuItem
 from wxmplot.imageconf import ImageConfig,ColorMap_List
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import larch
 from larch import Group
@@ -112,7 +112,7 @@ class diFFit2DPanel(wx.Panel):
         self.plot2D.canvas.draw()
 
     def plot_ring(self,x=None,y=None):
-
+        import matplotlib.pyplot as plt
         if x is not None and y is not None:
             radius = np.sqrt((x-self.center[0])**2+(y-self.center[1])**2)
         else:

@@ -11,11 +11,11 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.41.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.41-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.41-MacOSX-x86_64.sh
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.41-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.41-docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42.tar.gz
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-docs-examples.zip
 
 The latest release version of Larch is |release|.
 
@@ -29,17 +29,29 @@ and some missing or incomplete desired features as we add new functionality.
 Single-File Installers
 =========================
 
-For Windows, MacOSX, and Linux, Larch provides simple installers, available at
-`Larch Binary Installers`_.  These are self-contained files that will install
-a complete Python environment from Anaconda Python and all of libraries needed
-by X-ray Larch..  Installing Larch this way will be create a folder in your
-home folder called `xraylarch` (by default - you can change it).  This does
-not require administrative privilege and will not interfere with anything else
-on your system -- you can uninstall simply by removing this folder.  The
-installers are fairly large (300 to 600 Mb), but includes an entire scientific
-python environment.  Installing by the other means described below will not
-actually take less disk space, but will involve downloading many more smaller
-files, which may be an advantage for some people with poor connectivity.
+For Windows, MacOSX, and Linux, Larch provides simple installers, available
+at `Larch Binary Installers`_.  These are self-contained files that will
+install a complete Python environment from Anaconda Python and all of
+libraries needed by X-ray Larch..  Installing Larch this way will be create
+a folder in your home folder called `xraylarch` (by default: you can change
+it).  On Linux and MacOSX, this folder will be in the top-level of your
+home directory, while on Windows this folder will typically be in
+`C:\Users\YourName\AppData\Local\Continuum\xraylarch`.  These installers
+will also create a folder called `Larch` on your desktop that contains
+links (or shortcuts or Apps) to many of the Larch GUI applications listed
+above in :ref:`Table of Larch Applications and Programs <larch_app_table>`.
+This includes tools for X-ray Absorption spectroscopy, X-ray fluorescence
+spectroscopy, and working with X-ray diffraction images.
+
+Note that installing Larch only writes to files owned by the user account
+and does not require administrative privilege.  It will not interfere with
+anything else on your system (like, say, system Python).  You you can
+uninstall simply by removing `xraylarch` folder.  The installers are fairly
+large (400 to 600 Mb), but includes an entire scientific python
+environment.  Installing by the other means described below will not
+actually take less disk space, but will involve downloading many more
+smaller files, which may be an advantage for some people with poor
+connectivity.
 
 .. _installers_table:
 
@@ -62,33 +74,34 @@ files, which may be an advantage for some people with poor connectivity.
 
 If you need a versions for 32-bit Windows or Linux, contact the authors.
 
-For Mac OSX or Linux, download the appropriate file then open a Terminal
-(Applications->Utilities->Terminal on Mac OSX), use `cd` to move to the
-download folder (typically `cd Downloads`) and run::
+For Windows, download the executable installer::
 
-    bash xraylarch-0.9.41-MacOSX-x86_64.sh
+    xraylarch-0.9.42-Windows-x86_64.exe
 
-or::
+and double-click to run it to install Larch
 
-    bash xraylarch-0.9.41-Linux-x86_64.sh
+For Mac OSX, download the package installer::
+
+
+    xraylarch-0.9.42-MacOSX-x86_64.pkg
+
+and double-click to run it to install Larch.
+
+For Linux, download the shell installer file, then open a Terminal, use
+`cd` to move to the download folder (typically `Downloads`) and run::
+
+    bash xraylarch-0.9.42-Linux-x86_64.sh
 
 Once installed, you will be able to upgrade to future versions of Larch using::
 
-    conda update xraylarch
-
-and you will be able to completely uninstall simply by removing the
-`xraylarch` folder in your home directory.
-
-A key advantage of using Anaconda is that once installed, updates can be
-installed with::
-
     conda update -yc GSECARS xraylarch
 
-On all platforms, the installer will create a *Larch* folder on your Desktop
-containing links to many of the Larch GUI applications listed above in
-:ref:`Table of Larch Applications and Programs <larch_app_table>`.
-This includes tools for X-ray Absorption spectroscopy, X-ray fluorescence
-spectroscopy, and working with X-ray diffraction images.
+and you will be able to completely uninstall simply by removing the
+`xraylarch` folder in your home directory.    Note that for Windows, The
+`xraylarch` folder is not typically put in your path, and so you would need
+to open a Command or Powershell window and do::
+
+   C:\Users\YourName\AppData\Continuum\xraylarch\Scripts\conda.exe -yc GSECARS xraylarch
 
 
 Installing with Anaconda Python
@@ -122,27 +135,26 @@ Anaconda prompt (on Windows) and type::
 to install Larch.
 
 To make a `Larch` folder on your desktop with shortcuts (Windows or Linux) or
-Applications (MacOS) for the main Larch applications, you can then type
+Applications (MacOS) for the main Larch applications, you can then type::
 
     larch -m
 
 
 If that complains that it does not find `larch`, you may have to do something
-like
+like::
 
    $HOME/xraylarch/bin/larch -m
 
-from Linux or MacOSX or
+from Linux or MacOSX or::
 
    %APPDATA%\\Continuuum\xraylarch\Scripts\larch.exe -m
 
 from Windows.
 
 
-
-One advantage of Anaconda Python is that it makes updates very easy.  As new
-releases of Larch and the required packages are released, you can get the
-latest versions with::
+By using Anaconda Python, updates are very easy for us to make and for you
+to install.  As new releases of Larch and the required packages are
+released, you can get the latest versions with::
 
    conda update --all
 
@@ -154,13 +166,16 @@ As of this writing (February, 2019) there are three main supported versions of
 Python: Version 3.7, Version 3.6, and Version 2.7.  We have moved to using
 Python 3 by default.  The installers above use Python 3.6.  Most of the
 dependencies and tools will work with Python 3.7, but we have not gotten all
-the tools working together with Python 3.7 yet.  We expect that Larch 0.9.42
+the tools working together with Python 3.7 yet.  We expect that Larch 0.9.43
 will use 3.7.
 
-Up to version 0.9.41, Larch still works with Python 2.7.  With 0.9.41
-released, we will stop testing and supporting Python 2.7, but promise to not
-intentionally break anything until 0.9.42 is relasead (probably in April,
-2019).  After 0.9.42, Larch will no longer work with Python 2.7.
+Up to version 0.9.41, Larch still works with Python 2.7.  With the release
+of Larch 0.9.41, we stopped testing and supporting Python 2.7, but promised
+to not intentionally break anything until 0.9.42 is relasead.
+
+With Larch version 0.9.42, Python 2.7 is no longer supported.  You may be
+able to get Larch to work with Python 2.7 or 3.5, but we cannot help you if
+things do no work properly.
 
 
 Source Installation
@@ -188,8 +203,9 @@ for Larch.  These are listed in the next section.
 Prerequisites
 ~~~~~~~~~~~~~~~~~~~
 
-Larch requires Python version 3.7, 3.6 or 2.7. In addiion, many Python
-packages are required for Larch to work.  These are listed in the table below.
+Larch requires Python version 3.6 or higher. In addiion, many Python
+packages are required for Larch to work.  These are listed in the table
+below.
 
 
 .. _dependencies_table:
@@ -262,7 +278,7 @@ normally be installed by default or are easily available from with `conda` or
 
 
 These are all available from PyPI (the Python Package Index), and for Anaconda
-Python 3.7, 3.6, or (in many cases) 2.7.  The packages not included with core
+Python 3.7 and 3.6.  The packages not included with core
 Anaconda packages are available on the GSECARS conda channel, and will be
 installed with `conda install -c GSECARS xraylarch`.  If you're installing
 from source or using a Python distribution other than Anaconda, all these
@@ -284,6 +300,10 @@ packages:
 
    tomopy, scikit-image
 
+These are generally supported and available with Python 3.6, and are
+included with the binary installers above, or on the GSECARS anaconda.org
+channel.
+
 Some Epics-based data collection tools use Larch, and require:
 
    pyepics, psycopg2, epicsscan
@@ -293,11 +313,6 @@ GSECARS anaconda channel or from PyPI.
 
 To be clear, most of Larch will work fine without these modules installed,
 but the corresponding functionality will not be available.
-
-At this writing (March, 2018), we do not have supported packages for
-Windows for fabio, pyFAI, or tomopy.  You may be able to install fabio and
-pyFAI separately, and we are working on these packages.
-
 
 Installation from Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

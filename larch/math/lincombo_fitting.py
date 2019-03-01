@@ -101,7 +101,7 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     ls_vals = ls_out[0]
     # third use lmfit, imposing bounds and sum_to_one constraint
     if weights in (None, [None]*ncomps):
-        weights = ls_
+        weights = ls_vals
     if minvals in (None, [None]*ncomps):
         minvals = -np.inf * np.ones(ncomps)
     if maxvals in (None, [None]*ncomps):

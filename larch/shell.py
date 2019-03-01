@@ -33,8 +33,6 @@ class shell(cmd.Cmd):
                  stdin=None, stdout=None, banner_msg=None,
                  maxhist=5000, with_wx=False, with_plugins=True):
 
-        with_wx = HAS_WXPYTHON and with_wx
-
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
@@ -52,15 +50,12 @@ class shell(cmd.Cmd):
             except IOError:
                 print('could not read history from %s' % history_file)
 
-        if with_wx:
-            matplotlib.use('WXAgg')
-
         self.larch = Interpreter(with_plugins=with_plugins,
                                  historyfile=history_file,
                                  maxhistory=maxhist)
         self.larch.writer = StdWriter(_larch=self.larch)
 
-        if with_wx:
+        if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
 
             app = wx.App(redirect=False, clearSigInt=False)

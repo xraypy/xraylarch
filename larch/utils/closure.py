@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import inspect
-import six
 
 class Closure(object):
     """Give a reference to a function with arguments so that it
@@ -30,13 +29,8 @@ class Closure(object):
         if _name is None:
             self.__name__ = self.func.__name__
 
-        if six.PY3:
-            argspec = inspect.getfullargspec(self.func)
-            self._haskwargs  = argspec.varkw is not None
-        else:
-            argspec = inspect.getargspec(self.func)
-            self._haskwargs  = argspec.keywords is not None
-
+        argspec = inspect.getfullargspec(self.func)
+        self._haskwargs  = argspec.varkw is not None
         self._hasvarargs = argspec.varargs is not None
         self._argvars    = argspec.args
         self._nkws  = 0

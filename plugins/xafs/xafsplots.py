@@ -90,6 +90,23 @@ def _get_title(dgroup, title=None):
     return repr(dgroup)
 #enddef
 
+def _get_erange(dgroup, emin=None, emax=None):
+    """get absolute emin/emax for data range, allowing using
+    values relative to e0.
+    """
+    dat_emin, dat_emax = min(dgroup.energy)-100, max(dgroup.energy)+100
+    e0 = getattr(dgroup, 'e0', 0.0)
+    if emin is not None:
+        if not (emin > dat_emin and emin < dat_emax):
+            if emin+e0 > dat_emin and emin+e0 < dat_emax:
+                emin += e0
+    if emax is not None:
+        if not (emax > dat_emin and emax < dat_emax):
+            if emax+e0 > dat_emin and emax+e0 < dat_emax:
+                emax += e0
+    return emin, emax
+#enddef
+
 @ValidateLarchPlugin
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            show_legend=True, stacked=False, _larch=None):
@@ -129,8 +146,8 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
      show_post  bool whether to show post-edge curve [False]
      show_e0    bool whether to show E0 [False]
      with_deriv bool whether to show deriv together with mu [False]
-     emin       min energy to show, relative to E0 [None, start of data]
-     emax       max energy to show, relative to E0 [None, end of data]
+     emin       min energy to show, absolute or relative to E0 [None, start of data]
+     emax       max energy to show, absolute or relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
      title      string for plot titlel [None, may use filename if available]
      new        bool whether to start a new plot [True]
@@ -165,14 +182,12 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
         ylabel = "%s (norm)" % ylabel
         dlabel = "%s (norm)" % label
     #endif
-    xmin, xmax = None, None
-    if emin is not None: xmin = dgroup.e0 + emin
-    if emax is not None: xmax = dgroup.e0 + emax
+    emin, emax = _get_erange(dgroup, emin, emax)
 
     title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, show_legend=True, linewidth=3,
-                title=title, xmin=xmin, xmax=xmax,
+                title=title, xmin=emin, xmax=emax,
                 delay_draw=True, _larch=_larch)
 
     _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
@@ -208,7 +223,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
         disp = _getDisplay(win=win, _larch=_larch)
         if disp is not None:
             disp.panel.conf.draw_legend()
-    redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
+    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -224,8 +239,8 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     ----------
      dgroup      group of XAFS data after autobk() results (see Note 1)
      norm        bool whether to show normalized data [True]
-     emin        min energy to show, relative to E0 [None, start of data]
-     emax        max energy to show, relative to E0 [None, end of data]
+     emin       min energy to show, absolute or relative to E0 [None, start of data]
+     emax       max energy to show, absolute or relative to E0 [None, end of data]
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
      title       string for plot titlel [None, may use filename if available]
@@ -252,9 +267,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     if label is None:
         label = 'mu'
     #endif
-    xmin, xmax = None, None
-    if emin is not None: xmin = dgroup.e0 + emin
-    if emax is not None: xmax = dgroup.e0 + emax
+    emin, emax = _get_erange(dgroup, emin, emax)
     if norm:
         mu  = dgroup.norm
         bkg = (dgroup.bkg - dgroup.pre_edge) / dgroup.edge_step
@@ -266,7 +279,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     opts = dict(win=win, show_legend=True, linewidth=3,
                 delay_draw=True, _larch=_larch)
     _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
-         title=title, label=label, zorder=20, new=new, xmin=xmin, xmax=xmax,
+         title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
          **opts)
     _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
     if show_e0:
@@ -276,7 +289,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
         if disp is not None:
             disp.panel.conf.draw_legend()
     #endif
-    redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
+    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin
@@ -290,8 +303,8 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
     Arguments
     ----------
      dgroup      group of XAFS data after autobk() results (see Note 1)
-     emin        min energy to show, relative to E0 [-25]
-     emax        max energy to show, relative to E0 [None, end of data]
+     emin        min energy to show, absolute or relative to E0 [-25]
+     emax        max energy to show, absolute or relative to E0 [None, end of data]
      label       string for label [``None``: 'mu']
      title       string for plot titlel [None, may use filename if available]
      new         bool whether to start a new plot [True]
@@ -313,20 +326,15 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
     #endif
 
     chie = mu - dgroup.bkg
-    xmin, xmax = dgroup.e0-25.0, None
-    if emin is not None:
-        xmin = dgroup.e0 + emin
-    if emax is not None:
-        xmax = dgroup.e0 + emax
-
+    emin, emax = _get_erange(dgroup, emin, emax)
     title = _get_title(dgroup, title=title)
 
     _plot(dgroup.energy, chie+offset, xlabel=plotlabels.energy,
           ylabel=plotlabels.chie, title=title, label=label, zorder=20,
-          new=new, xmin=xmin, xmax=xmax, win=win, show_legend=True,
+          new=new, xmin=emin, xmax=emax, win=win, show_legend=True,
           delay_draw=delay_draw, linewidth=3, _larch=_larch)
     if delay_draw:
-        redraw(win=win, xmin=xmin, xmax=xmax, _larch=_larch)
+        redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
 @ValidateLarchPlugin

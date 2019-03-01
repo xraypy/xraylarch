@@ -7,12 +7,7 @@ import sys
 import time
 import re
 import traceback
-
-import six
-if six.PY3:
-    import io
-
-from six.moves import input
+import io
 
 import asteval
 
@@ -424,7 +419,7 @@ def _which(sym, _larch=None, **kws):
     stable = _larch.symtable
     if hasattr(sym, '__name__'):
         sym = sym.__name__
-    if isinstance(sym, six.string_types) and stable.has_symbol(sym):
+    if isinstance(sym, str) and stable.has_symbol(sym):
         obj = stable.get_symbol(sym)
         if obj is not None:
             return '%s.%s' % (stable.get_parentpath(sym), sym)
@@ -458,7 +453,7 @@ def _isgroup(obj, *args, **kws):
     if _larch is None:
         raise Warning("cannot run isgroup() -- larch broken?")
     stable = _larch.symtable
-    if isinstance(obj, six.string_types) and stable.has_symbol(obj):
+    if isinstance(obj, str) and stable.has_symbol(obj):
         obj = stable.get_symbol(obj)
     return isgroup(obj, *args)
 

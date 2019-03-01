@@ -1,4 +1,4 @@
-#o!/usr/bin/env python
+#!/usr/bin/env python
 """
 XANES Normalization panel
 """
@@ -10,7 +10,7 @@ import numpy as np
 
 from functools import partial
 from collections import OrderedDict
-
+from lmfit.printfuncs import gformat
 from larch.utils import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
@@ -57,7 +57,7 @@ PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
                                       ('Derivative', 'dmude')))
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
-                show_e0=True, pre1=-200, pre2=-25, norm1=75, norm2=-10,
+                show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
                 norm_method='polynomial', mback_edge='K', mback_elem='H',
                 nvict=1, nnorm=1,
                 plotone_op='Normalized \u03BC(E)',
@@ -117,7 +117,7 @@ class XASNormPanel(TaskPanel):
         xas_nor1 = self.add_floatspin('nor1', value=defaults['norm1'], **opts)
         xas_nor2 = self.add_floatspin('nor2', value=defaults['norm2'], **opts)
 
-        opts = {'digits': 2, 'increment': 0.1, 'value': 0}
+        opts = {'digits': 3, 'increment': 0.1, 'value': 0}
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
@@ -249,7 +249,7 @@ class XASNormPanel(TaskPanel):
 
             ndigits = int(2 - round(np.log10(abs(edge_step))))
             self.wids['step'].SetDigits(ndigits+1)
-            self.wids['step'].SetIncrement(0.2*10**(-ndigits))
+            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
             self.wids['step'].SetValue(edge_step)
 
             self.wids['pre1'].SetValue(opts['pre1'])
@@ -272,6 +272,10 @@ class XASNormPanel(TaskPanel):
             self.plotsel_op.SetStringSelection('Raw Data')
             for k in self.wids.values():
                 k.Disable()
+
+        wx.CallAfter(self.unset_skip_process)
+
+    def unset_skip_process(self):
         self.skip_process = False
 
     def read_form(self):
@@ -339,10 +343,12 @@ class XASNormPanel(TaskPanel):
             if dgroup is not None:
                 dgroup.plot_extras = []
                 self.plot(dgroup, title='', new=newplot, multi=True,
-                          plot_yarrays=plot_yarrays, show_legend=True,
-                          with_extras=False,  delay_draw=(last_id != checked))
+                          plot_yarrays=plot_yarrays,
+                          with_extras=False,  delay_draw=True)
                 newplot = False
-        self.controller.get_display(stacked=False).panel.canvas.draw()
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.conf.show_legend=True
+        ppanel.conf.draw_legend()
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.get_config()
@@ -382,7 +388,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
-                self.process(grp)
+                self.process(grp, noskip=True)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting e0"
@@ -444,12 +450,11 @@ class XASNormPanel(TaskPanel):
         form = dict(group=dgroup.groupname)
         self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
 
-    def process(self, dgroup=None, **kws):
+    def process(self, dgroup=None, force_mback=False, noskip=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
-        if self.skip_process:
+        if self.skip_process and not noskip:
             return
-
         if dgroup is None:
             dgroup = self.controller.get_group()
         if dgroup is None:
@@ -457,9 +462,7 @@ class XASNormPanel(TaskPanel):
 
         self.skip_process = True
         self.get_config(dgroup)
-
         dgroup.custom_plotopts = {}
-        # print("XAS norm process ", dgroup.datatype)
 
         if dgroup.datatype != 'xas':
             self.skip_process = False
@@ -483,7 +486,6 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
         e0 = form['e0']
         edge_step = form['edge_step']
-
         form['group'] = dgroup.groupname
 
         copts = [dgroup.groupname]
@@ -492,7 +494,7 @@ class XASNormPanel(TaskPanel):
                 copts.append("e0=%.4f" % float(e0))
 
         if not form['auto_step']:
-            copts.append("step=%.4f" % float(edge_step))
+            copts.append("step=%s" % gformat(float(edge_step)))
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
             copts.append("%s=%.2f" % (attr, form[attr]))
@@ -500,26 +502,40 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
 
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
-        copts = [dgroup.groupname]
-        # copts.append("e0=%.2f" % form['e0'])
-        copts.append("z=%d" % atomic_number(form['mback_elem']))
-        copts.append("edge='%s'" % form['mback_edge'])
-        for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            copts.append("%s=%.2f" % (attr, form[attr]))
-        self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
-        norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
-        {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
+        use_mback = form['norm_method'].lower().startswith('mback')
         form['normmeth'] = 'poly'
-        if form['norm_method'].lower().startswith('mback'):
+        if use_mback:
             form['normmeth'] = 'mback'
-        self.larch_eval(norm_expr.format(**form))
+
+        if force_mback or use_mback:
+            copts = [dgroup.groupname]
+            copts.append("z=%d" % atomic_number(form['mback_elem']))
+            copts.append("edge='%s'" % form['mback_edge'])
+            for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
+                copts.append("%s=%.2f" % (attr, form[attr]))
+
+            self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
+
+            if form['auto_step']:
+                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+{group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
+                self.larch_eval(norm_expr.format(**form))
+            else:
+                norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+{group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
+                self.larch_eval(norm_expr.format(**form))
+
         self.make_dnormde(dgroup)
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step']:
             self.wids['step'].SetValue(dgroup.edge_step)
+            ndigits = int(2 - round(np.log10(abs(edge_step))))
+            self.wids['step'].SetDigits(ndigits+1)
+            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
+
 
         self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
@@ -532,10 +548,14 @@ class XASNormPanel(TaskPanel):
         for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
             conf[attr] = getattr(dgroup.pre_edge_details, attr)
 
-        conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', 'H')
-        conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', 'K')
+        if hasattr(dgroup, 'mback_params'): # from mback
+            conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', 'H')
+            conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', 'K')
+        else:
+            conf['mback_elem'] = 'H'
+            conf['mback_edge'] = 'K'
         self.update_config(conf, dgroup=dgroup)
-        self.skip_process = False
+        wx.CallAfter(self.unset_skip_process)
 
     def get_plot_arrays(self, dgroup):
         form = self.read_form()
@@ -564,8 +584,9 @@ class XASNormPanel(TaskPanel):
                                        ('dnormde', PLOTOPTS_D, 'dy/dx')]
             return
 
+        req_attrs = ['e0', 'norm', 'dmude', 'pre_edge']
+
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
-        # print("=== PLOT CHOICE ", pchoice)
         if pchoice in ('mu', 'norm', 'flat', 'dmude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
@@ -594,6 +615,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_y2label = lab2
 
         elif pchoice == 'mback_norm':
+            req_attrs.append('mback_norm')
             lab = r'$\mu$'
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
@@ -601,6 +623,7 @@ class XASNormPanel(TaskPanel):
                                    ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
 
         elif pchoice == 'mback_poly':
+            req_attrs.append('mback_norm')
             lab = plotlabels.norm
             if not hasattr(dgroup, 'mback_mu'):
                 self.process(dgroup=dgroup)
@@ -610,6 +633,16 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_ylabel = lab
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
+
+        needs_proc = False
+        force_mback = False
+        for attr in req_attrs:
+            needs_proc = needs_proc or (not hasattr(dgroup, attr))
+            force_mback = force_mback or attr.startswith('mback')
+
+        if needs_proc:
+            self.process(dgroup=dgroup, force_mback=force_mback, noskip=True)
+
         if form['show_e0']:
             ie0 = index_of(dgroup.energy, dgroup.e0)
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
@@ -618,7 +651,6 @@ class XASNormPanel(TaskPanel):
              multi=False, new=True, zoom_out=True, with_extras=True, **kws):
         if self.skip_plotting:
             return
-
         self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
         viewlims = ppanel.get_viewlimits()
@@ -635,7 +667,10 @@ class XASNormPanel(TaskPanel):
 
         if ((getattr(dgroup, 'plot_yarrays', None) is None or
              getattr(dgroup, 'energy', None) is None or
-             getattr(dgroup, 'mu', None) is None)):
+             getattr(dgroup, 'mu', None) is None or
+             getattr(dgroup, 'e0', None) is None or
+             getattr(dgroup, 'dmude', None) is None or
+             getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
@@ -688,7 +723,6 @@ class XASNormPanel(TaskPanel):
         popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
-            # print("PLOT ", dgroup, dgroup.filename, i, pydat)
             yaname, yopts, yalabel = pydat
             popts.update(yopts)
             if yalabel is not None:
@@ -697,6 +731,8 @@ class XASNormPanel(TaskPanel):
             popts['delay_draw'] = delay_draw or (i != narr)
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
+            if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
+                self.process(force_mback=True, noskip=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot

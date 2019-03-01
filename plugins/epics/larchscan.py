@@ -108,9 +108,7 @@ try:
     from epicsscan import (Counter, Trigger, AreaDetector, get_detector,
                            ASCIIScanFile, Positioner)
     from epicsscan.scandb import ScanDBException, ScanDBAbort
-
     from epics.devices.struck import Struck
-    from epics.devices.xspress3 import Xspress3
 
     HAS_EPICSSCAN = True
 except ImportError:
@@ -230,7 +228,9 @@ def initializeLarchPlugin(_larch=None):
 
 def registerLarchPlugin():
     symbols = {}
+    # print("Larch add basic scan Commands ", HAS_EPICSSCAN)
     if HAS_EPICSSCAN:
+
         symbols = {'scan_from_db':   scan_from_db,
                    'do_scan': do_scan,
                    'do_slewscan': do_scan,

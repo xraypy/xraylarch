@@ -8,12 +8,12 @@ def json_encode(expr, _larch=None):
     """
     return json encoded larch expression
     """
-    print 'Encode ', expr
+    print( 'Encode ', expr)
     def _get(expr, _larch=None):
         if _larch is None:
             return None
         obj = _larch.eval(expr)
-        print ' .. get ', obj
+        print( ' .. get ', obj)
         if isinstance(obj, np.ndarray):
             out = {'__class__': 'Array', '__shape__': obj.shape,
                    '__dtype__': obj.dtype.name}
@@ -51,7 +51,7 @@ def json_decode(value, _larch=None):
             value = json.loads(value)
         except ValueError:
             return value
-        
+
     if isinstance(value, dict):
         classname = value.get('__class__', None)
         if classname == 'Array':
@@ -61,7 +61,7 @@ def json_decode(value, _larch=None):
             out = Group()
             value.pop('__class__')
             for key, val in value.items():
-                print 'Key ', key, val
+                print( 'Key ', key, val)
                 setattr(out, key,  json_decode(val))
         elif classname == 'Parameter':
             args = {'_larch': _larch}
@@ -80,9 +80,9 @@ _larch.eval("x = 'a string'")
 _larch.eval("y = 77")
 _larch.eval("g = group(a=1.1, s='hello')") # , b='a string')")
 
-print json.loads(json_encode('x', _larch=_larch))
-print json.loads(json_encode('y', _larch=_larch))
-print json.loads(json_encode('g', _larch=_larch))
+print( json.loads(json_encode('x', _larch=_larch)))
+print( json.loads(json_encode('y', _larch=_larch)))
+print( json.loads(json_encode('g', _larch=_larch)))
 out = json_decode(json_encode('g', _larch=_larch))
-print out
-for a in dir(out): print a, getattr(out, a)
+print( out)
+for a in dir(out): print( a, getattr(out, a))
