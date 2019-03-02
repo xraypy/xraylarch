@@ -51,6 +51,7 @@ from .interpreter import Interpreter
 from .fitting import (Minimizer, Parameter, isParameter, param_value,
                       param_group, minimize)
 
+from . import math
 from . import apps
 from .apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
                    run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,

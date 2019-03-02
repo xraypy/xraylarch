@@ -11,8 +11,8 @@ import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
 from larch import Group
-from larch.utils import fixName
 from larch.symboltable import isgroup
+from .fileutils import fix_varname
 
 
 MODNAME = '_io'
@@ -55,7 +55,7 @@ def getfloats(txt, allow_times=True):
     return words
 
 def colname(txt):
-    return fixName(txt.strip().lower()).replace('.', '_')
+    return fix_varname(txt.strip().lower()).replace('.', '_')
 
 
 def lformat(val, length=12):

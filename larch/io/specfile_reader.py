@@ -29,7 +29,7 @@ from scipy.ndimage import map_coordinates
 # to grid X,Y,Z columnar data
 HAS_GRIDXYZ = False
 try:
-    from larch_plugins.math.gridxyz import gridxyz
+    from larch.math.gridxyz import gridxyz
     HAS_GRIDXYZ = True
 except:
     pass

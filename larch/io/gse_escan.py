@@ -7,9 +7,8 @@ import time
 import gc
 
 import numpy
-from . import Group
-
-from .utils import isotime
+from larch import Group
+from larch.utils import isotime
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')

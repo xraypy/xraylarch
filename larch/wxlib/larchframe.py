@@ -18,9 +18,9 @@ from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
 from . import inputhook
 
-from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group, fix_varname,
-                              is_athena_project, AthenaProject)
+from larch.io import (read_ascii, read_xdi, read_gsexdi,
+                      gsescan_group, fix_varname,
+                      is_athena_project, AthenaProject)
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
@@ -122,7 +122,7 @@ class LarchWxShell(object):
             return
         if self.textstyle is None:
             self.set_textstyle()
-        
+
         if self.output is None or self.textstyle is None:
             self.write_sys(text)
         else:

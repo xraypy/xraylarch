@@ -31,7 +31,7 @@ from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 from lmfit import Parameter, Minimizer
 from lmfit.model import Model
 
-from lmfit.models import (update_param_vals, LinearModel, ConstandModel,
+from lmfit.models import (update_param_vals, LinearModel, ConstantModel,
                           QuadraticModel, PolynomialModel, GaussianModel,
                           LorentzianModel, VoigtModel, PseudoVoigtModel,
                           MoffatModel, Pearson7Model, StudentsTModel,

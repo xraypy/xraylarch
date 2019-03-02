@@ -12,7 +12,7 @@ from .. import Group, ValidateLarchPlugin, use_plugin_path
 from ..utils import OrderedDict
 from ..utils.strutils import bytes2str
 
-from . import XDIFile, XDIFileException, iso8601_time
+from . import XDIFile, XDIFileException
 
 from .xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
