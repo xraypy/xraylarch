@@ -29,7 +29,7 @@ from larch import Group
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
 
-from larch_plugins.io import tifffile, nativepath
+from larch.io import tifffile, nativepath
 from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                                calc_cake,twth_from_q,twth_from_d,
                                return_ai,twth_from_xy,q_from_xy,eta_from_xy)

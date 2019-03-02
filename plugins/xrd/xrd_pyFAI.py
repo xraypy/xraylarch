@@ -18,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from larch_plugins.io import tifffile
+from larch.io import tifffile
 
 ##########################################################################
 # FUNCTIONS

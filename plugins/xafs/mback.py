@@ -7,7 +7,7 @@ from lmfit import Parameter, Parameters, minimize
 
 from larch import Group, isgroup, parse_group_args
 
-from larch.utils import index_of, index_nearest, remove_dups, remove_nans2
+from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 from larch_plugins.xray import (xray_edge, xray_line, xray_lines,
                                 f1_chantler, f2_chantler, f1f2, guess_edge,
                                 atomic_number, atomic_symbol)

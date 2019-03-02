@@ -11,7 +11,7 @@ import six
 import numpy as np
 from larch import Group, isgroup
 
-from larch.utils import interp
+from larch.math import interp
 from larch_plugins.xrf.deadtime import calc_icr, correction_factor
 from larch_plugins.xrf.roi import ROI
 

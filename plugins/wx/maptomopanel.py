@@ -42,8 +42,8 @@ from larch.wxlib import (EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
                          Choice, Check, GridPanel, FileSave, HLine)
 from larch.utils.strutils import bytes2str, version_ge
+from larch.io import nativepath
 
-from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 from larch_plugins.tomo import TOMOPY_ALG, TOMOPY_FILT
 

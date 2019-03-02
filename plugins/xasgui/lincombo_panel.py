@@ -18,7 +18,7 @@ import lmfit
 from lmfit.printfuncs import gformat, fit_report
 
 from larch import Group
-from larch.utils import index_of
+from larch.math import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button,
@@ -27,7 +27,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          EditableListBox)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
-from larch_plugins.io.columnfile import write_ascii
+from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
 

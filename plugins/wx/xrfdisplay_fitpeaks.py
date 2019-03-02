@@ -18,7 +18,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
 
 from larch import Group, Parameter, Minimizer, fitting
 from larch.larchlib import Empty
-from larch.utils import index_of, gaussian
+from larch.math import index_of, gaussian
 from larch.wxlib import flatnotebook
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,

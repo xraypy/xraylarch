@@ -15,7 +15,7 @@ from lmfit import Parameters, Parameter, Minimizer, fit_report
 
 from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
 
-from larch.utils import index_of, realimag, complex_phase
+from larch.math import index_of, realimag, complex_phase
 from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
                                 set_xafsGroup, FeffPathGroup, _ff2chi)
 

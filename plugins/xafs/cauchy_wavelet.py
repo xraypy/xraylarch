@@ -24,7 +24,7 @@
 
 import numpy as np
 from larch import Make_CallArgs, parse_group_args
-from larch.utils import complex_phase
+from larch.math import complex_phase
 from larch_plugins.xafs import set_xafsGroup
 
 @Make_CallArgs(["k" ,"chi"])

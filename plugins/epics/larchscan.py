@@ -94,8 +94,7 @@ import six
 from datetime import timedelta
 
 from larch import Group, ValidateLarchPlugin
-from larch.utils import debugtime
-from larch_plugins.io import fix_varname
+from larch.utils import debugtime, fix_varname
 
 try:
     from epics import PV, caget, caput, get_pv, poll

@@ -18,13 +18,13 @@ from collections import OrderedDict
 from lmfit.printfuncs import gformat
 
 from larch import Group
-from larch.utils import index_of
+from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RCEN,
                          LCEN, Font)
 
 from larch_plugins.xasgui.taskpanel import TaskPanel
-from larch_plugins.math.lincombo_fitting import get_arrays
+from larch.math.lincombo_fitting import get_arrays
 
 np.seterr(all='ignore')
 

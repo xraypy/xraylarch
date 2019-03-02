@@ -19,7 +19,7 @@ from larch_plugins.xrd.xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_f
 from larch_plugins.xrd.xrd_pyFAI import integrate_xrd,calc_cake
 from larch_plugins.xrd.xrd_bgr import xrd_background
 from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
-from larch_plugins.io import tifffile
+from larch.io import tifffile
 
 ##########################################################################
 # CLASSES
@@ -343,9 +343,9 @@ class XRD(larch.Group):
         self.data1D  = data1D
         self.data2D  = data2D
         self.cake    = None
-        
+
         self.calfile    = calfile
-        
+
         if energy is None and wavelength is not None:
             self.wavelegth = wavelength
             self.energy = E_from_lambda(wavelength)
@@ -355,7 +355,7 @@ class XRD(larch.Group):
         else:
             self.energy     = energy
             self.wavelength = wavelength
-            
+
         self.filename = filename
         self.title    = title
         self.npixels  = npixels

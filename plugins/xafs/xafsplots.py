@@ -19,7 +19,7 @@ Plotting macros for XAFS data sets and fits
 
 from numpy import gradient, ndarray, diff, where, arange
 from larch import Group, ValidateLarchPlugin
-from larch.utils import (index_of, index_nearest, interp)
+from larch.math import (index_of, index_nearest, interp)
 
 from larch_plugins.wx.plotter import (_getDisplay, _plot, _oplot, _newplot,
                                       _fitplot, _plot_text, _plot_marker,

@@ -28,7 +28,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch_plugins.io import nativepath
+from larch.utils import nativepath
 from larch_plugins.cifdb import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX,
                                  CATEGORIES, match_database)
 

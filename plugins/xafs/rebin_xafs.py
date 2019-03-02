@@ -1,7 +1,7 @@
 import numpy as np
 
 from larch import Group, Make_CallArgs, parse_group_args
-from larch.utils import index_of, interp1d, remove_dups
+from larch.math import index_of, interp1d, remove_dups
 from larch_plugins.xafs.xafsutils import ktoe, etok
 
 @Make_CallArgs(["energy", "mu"])

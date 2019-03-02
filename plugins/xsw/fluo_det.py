@@ -51,7 +51,7 @@ from larch import use_plugin_path
 use_plugin_path('xray')
 use_plugin_path('xsw')
 
-from physical_constants import AVOGADRO, BARN
+from larch.utils.physical_constants import AVOGADRO, BARN
 
 pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
 fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
@@ -106,7 +106,7 @@ class ElemFY:  # fluorescing element
 
 class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two layers with different compositions
     def __init__(self, composition1='Si', density1=2.33, thickness1=0.1, \
-                       composition2='Si', density2=2.33, thickness2=0.1, 
+                       composition2='Si', density2=2.33, thickness2=0.1,
                        angle0=45.0, option='surface', _larch=None):
         self.composition1 = composition1     # ex) Fe2O3
         # MN replace:

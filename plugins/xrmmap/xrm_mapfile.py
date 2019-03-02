@@ -14,7 +14,7 @@ from functools import partial
 import larch
 from larch.utils import debugtime, isotime
 from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
-from larch_plugins.io import nativepath, new_filename
+from larch.io import nativepath, new_filename
 from larch_plugins.xrf import MCA, ROI
 from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
                                   readASCII, readMasterFile, readROIFile,

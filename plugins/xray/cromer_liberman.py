@@ -7,7 +7,7 @@ import larch
 from larch import  ValidateLarchPlugin
 from larch.larchlib import get_dll
 
-from larch.utils import as_ndarray
+from larch.math import as_ndarray
 from larch_plugins.xray import core_width, atomic_number
 
 MODNAME = '_xray'

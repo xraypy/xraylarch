@@ -6,9 +6,7 @@ from lmfit import  Parameters, minimize, fit_report
 
 import larch
 from larch import ValidateLarchPlugin
-from larch.utils import index_of, savitzky_golay
-
-from larch.utils.lineshapes import hypermet, erfc
+from larch.math import index_of, savitzky_golay, hypermet, erfc
 from larch_plugins.xray import (atomic_mass, atomic_symbol, material_mu,
                                 mu_elam, xray_edges, xray_lines,
                                 ck_probability)

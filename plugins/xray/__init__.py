@@ -2,8 +2,8 @@
 #
 from .chemparser import chemparse
 
-from .physical_constants import (R_ELECTRON_CM, AVOGADRO, BARN,
-                                 PLANCK_HC, RAD2DEG)
+from larch.utils.physical_constants import (R_ELECTRON_CM, AVOGADRO, BARN,
+                                            PLANCK_HC, RAD2DEG)
 
 from .xraydb import XrayDB
 xrayDB = XrayDB

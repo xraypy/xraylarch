@@ -10,7 +10,7 @@ import numpy as np
 from functools import partial
 from collections import OrderedDict
 
-from larch.utils import index_of
+from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RCEN,
                          LCEN, Font)

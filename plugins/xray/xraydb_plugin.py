@@ -3,7 +3,7 @@ import numpy as np
 from math import pi
 import larch
 from larch import Group
-from larch.utils.mathutils import index_nearest
+from larch.math import index_nearest
 from larch_plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
                                 XrayDB, chemparse)
 

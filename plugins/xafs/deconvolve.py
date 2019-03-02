@@ -6,9 +6,9 @@ import numpy as np
 from scipy.signal import deconvolve
 from larch import parse_group_args
 
-from larch.utils import (gaussian, lorentzian, interp,
-                         index_of, index_nearest, remove_dups,
-                         savitzky_golay)
+from larch.math import (gaussian, lorentzian, interp,
+                        index_of, index_nearest, remove_dups,
+                        savitzky_golay)
 
 from larch_plugins.xafs import set_xafsGroup
 

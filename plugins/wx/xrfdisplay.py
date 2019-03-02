@@ -36,9 +36,10 @@ except:
     pass
 
 from larch import Interpreter, site_config
-from larch.utils import index_of, debugtime
-from larch.utils.strutils import bytes2str
+from larch.math import index_of
+from larch.utils import bytes2str, debugtime
 from larch.wxlib import get_icon, LarchFrame, SetTip
+from larch.io import GSEMCA_File, gsemca_group
 
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      Button, Check, MenuItem, Choice, FileOpen, FileSave,
@@ -52,7 +53,6 @@ from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
 
 from larch_plugins.wx.xrfdisplay_fitpeaks import FitSpectraFrame
 
-from larch_plugins.io import GSEMCA_File, gsemca_group
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 FILE_ALREADY_READ = """The File

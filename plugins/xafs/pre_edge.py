@@ -21,7 +21,7 @@ from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
 # now we can reliably import other std and xafs modules...
 
-from larch.utils import (index_of, index_nearest,
+from larch.math import (index_of, index_nearest,
                          remove_dups, remove_nans2)
 from larch_plugins.xafs import set_xafsGroup
 

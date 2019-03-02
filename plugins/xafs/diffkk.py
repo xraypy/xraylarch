@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import erfc
 
 from larch import Group
-from larch.utils import interp
+from larch.math import interp
 
 from larch_plugins.std  import show
 

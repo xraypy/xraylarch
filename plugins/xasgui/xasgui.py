@@ -22,7 +22,7 @@ is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 
 from larch import Interpreter, Group
-from larch.utils import index_of
+from larch.math import index_of
 from larch.utils.strutils import file2groupname, unique_name
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
@@ -48,9 +48,9 @@ from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
                                   SmoothDataDialog, OverAbsorptionDialog,
                                   DeconvolutionDialog, QuitDialog)
 
-from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group, fix_varname, groups2csv,
-                              is_athena_project, AthenaProject)
+from larch.io import (read_ascii, read_xdi, read_gsexdi,
+                      gsescan_group, fix_varname, groups2csv,
+                      is_athena_project, AthenaProject)
 
 from larch_plugins.xafs import pre_edge, pre_edge_baseline
 

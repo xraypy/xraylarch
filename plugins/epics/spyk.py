@@ -39,9 +39,8 @@ else:
 
 from larch import use_plugin_path, Group
 
-use_plugin_path('io')
-from fileutils import get_homedir, get_timestamp
-
+from larch.utils import get_homedir
+from larch.io import get_timestamp
 
 try:
     from epics import PV, caget, caput, get_pv, poll

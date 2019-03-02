@@ -8,10 +8,10 @@ from collections import OrderedDict
 from lmfit.models import GaussianModel, ConstantModel
 
 from larch import ValidateLarchPlugin
+from larch.math import index_of, linregress, fit_peak
+
 from larch_plugins.xrf import isLarchMCAGroup, split_roiname
 
-from larch.utils import index_of, linregress
-from larch_plugins.math import fit_peak
 from larch_plugins.xray import xray_line, xray_lines
 
 def xrf_calib_init_roi(mca, roiname):

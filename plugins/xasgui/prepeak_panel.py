@@ -25,8 +25,9 @@ import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
 from larch import Group, site_config
-from larch.utils import index_of
+from larch.math import index_of
 from larch.utils.jsonutils import encode4js, decode4js
+from larch.io.export_modelresult import export_modelresult
 
 from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon,
@@ -35,7 +36,6 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          Font, FileSave, FileOpen, flatnotebook)
 
 from larch_plugins.std import group2dict
-from larch_plugins.io.export_modelresult import export_modelresult
 from larch_plugins.wx.parameter import ParameterPanel
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.xasgui.taskpanel import TaskPanel

@@ -57,6 +57,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook)
 from larch.utils.strutils import bytes2str, version_ge
+from larch.io import nativepath
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -66,7 +67,6 @@ from larch_plugins.wx.maptomopanel import TomographyPanel
 from larch_plugins.diFFit import XRD1DViewerFrame, XRD2DViewerFrame
 from larch_plugins.xrd import lambda_from_E, xrd1d,save1D
 from larch_plugins.epics import pv_fullname
-from larch_plugins.io import nativepath
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
 
