@@ -120,9 +120,11 @@ class PCAPanel(TaskPanel):
         sview.SetMinSize((275, 250))
 
         wids['status'] = SimpleText(panel, ' ')
+        rfont = self.GetFont()
+        rfont.SetPointSize(rfont.GetPointSize()+1)
 
-        wids['fit_chi2'] = SimpleText(panel, '0.000')
-        wids['fit_dscale'] = SimpleText(panel, '1.000')
+        wids['fit_chi2'] = SimpleText(panel, '0.000', font=rfont)
+        wids['fit_dscale'] = SimpleText(panel, '1.000', font=rfont)
 
 
         panel.Add(SimpleText(panel, ' Principal Component Analysis', **titleopts), dcol=4)
@@ -162,7 +164,7 @@ class PCAPanel(TaskPanel):
         panel.Add(wids['fit_group'], dcol=3)
 
         panel.Add(wids['stats'], dcol=3, drow=15, newrow=True)
-        panel.Add(SimpleText(panel, 'chi-square = '))
+        panel.Add(SimpleText(panel, 'chi-square = ', font=rfont))
         panel.Add(wids['fit_chi2'])
 
         ## add weights report: slightly tricky layout
@@ -171,14 +173,14 @@ class PCAPanel(TaskPanel):
         irow = panel.irow
         pstyle, ppad = panel.itemstyle, panel.pad
 
-        panel.sizer.Add(SimpleText(panel, 'data scale factor= '),
+        panel.sizer.Add(SimpleText(panel, 'data scalefactor = '),
                         (irow+1, icol), (1, 1), pstyle, ppad)
         panel.sizer.Add(wids['fit_dscale'],
                         (irow+1, icol+1), (1, 1), pstyle, ppad)
         irow +=1
         for i in range(1, NWTS+1):
-            wids['fit_wt%d' % i] = SimpleText(panel, '--')
-            panel.sizer.Add(SimpleText(panel, 'weight_%d ='%i),
+            wids['fit_wt%d' % i] = SimpleText(panel, '--', font=rfont)
+            panel.sizer.Add(SimpleText(panel, 'weight_%d ='%i, font=rfont),
                             (irow+i, icol), (1, 1), pstyle, ppad)
             panel.sizer.Add(wids['fit_wt%d'%i],
                             (irow+i, icol+1), (1, 1), pstyle, ppad)
