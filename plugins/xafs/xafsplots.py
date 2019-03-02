@@ -938,7 +938,7 @@ def plot_pca_components(result, max_components=None, min_weight=0,
 @ValidateLarchPlugin
 def plot_pca_weights(result, max_components=None, min_weight=0,
                         win=1, _larch=None, **kws):
-    """Plot component weights from PCA result
+    """Plot component weights from PCA result (aka SCREE plot)
 
     result must be output of `pca_train`
     """
@@ -947,12 +947,12 @@ def plot_pca_weights(result, max_components=None, min_weight=0,
     else:
         max_components = max(1, min(len(result.components), max_components))
 
-    title = "PCA model weights"
+    title = "PCA model weights (SCREE)"
 
-    popts = dict(xmin=0, xmax=1+max_components, title=title,
-                 xlabel='Component #', ylabel='weight', style='solid',
-                 linewidth=1, new=True, marker='o', markersize=4, win=win,
-                 _larch=_larch)
+    popts = dict(xmin=0.25, ymax=1.0, title=title, xlabel='Component #',
+                 zorder=10, ylabel='weight', style='solid',
+                 ylog_scale=True, show_legend=True, linewidth=1, new=True,
+                 marker='o', markersize=8, win=win, _larch=_larch)
 
     popts.update(kws)
 
@@ -961,7 +961,17 @@ def plot_pca_weights(result, max_components=None, min_weight=0,
 
     x = 1 + arange(nsig)
     y = result.variances[:nsig]
-    _plot(x, y, label='weights', **popts)
+    _plot(x, y, label='significant', **popts)
+
+    nextra = len(where(result.variances < min_weight)[0]) - 1
+    if nextra > 0:
+        x = 1 + arange(nsig-1, nsig+nextra)
+        y = result.variances[nsig-1:nsig+nextra]
+
+        popts.update(dict(new=False, xmax=max(x)+0.5,
+                          ymin=0.25*min(y), zorder=5,
+                          style='short dashed', color='#B34050'))
+        _plot(x, y, label='not significant', **popts)
 
 
 @ValidateLarchPlugin
@@ -971,7 +981,7 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     result must be output of `pca_fit`
     """
 
-    title = "PCA model fit"
+    title = "PCA fit: %s" % (dgroup.filename)
     result = dgroup.pca_result
     model = result.pca_model
 
