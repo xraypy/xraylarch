@@ -18,6 +18,10 @@ from . import fitting
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
 
+from .utils import (_copy, _deepcopy, _more, _parent, _ls, _cd, cwd,
+                    _mkdir, show, show_tree, get, get_termcolor_opts,
+                    group2dict, dict2group, debugtimer)
+
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'
 REQMATCH = re.compile(r"(.*)\s*(<=?|>=?|==|!=)\s*(.*)", re.IGNORECASE).match
@@ -524,7 +528,22 @@ local_funcs = {'_builtin': {'group':_group,
                             'help': _help,
                             'add_plugin':_addplugin,
                             'save_history': save_history,
-                            'show_history': show_history},
+                            'show_history': show_history,
+                            'copy': _copy,
+                            'deepcopy': _deepcopy,
+                            'more': _more,
+                            'parent': _parent,
+                            'ls': _ls,
+                            'mkdir': _mkdir,
+                            'cd': _cd,
+                            'cwd': _cwd,
+                            'show': show,
+                            'get': get,
+                            'get_termcolor_opts': get_termcolor_opts,
+                            'group2dict': group2dict,
+                            'dict2group': dict2group,
+                            'show_tree': show_tree,
+                            'debugtimer': debugtimer},
                '_math':{'param': fitting.param,
                         'guess': fitting.guess,
                         'param_group': fitting.param_group,
@@ -542,4 +561,4 @@ local_funcs = {'_builtin': {'group':_group,
                }
 
 # list of supported valid commands -- don't need parentheses for these
-valid_commands = ['run', 'help', 'show', 'which']
+valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']

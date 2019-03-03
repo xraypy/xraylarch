@@ -191,19 +191,3 @@ def initialize_sys_display(_larch=None):
     display.colors = colors
     display.use_color = True
     display.terminal = 'xterm'
-
-def initializeLarchPlugin(_larch=None):
-    """initialize show and friends"""
-    cmds = ['show', 'show_tree']
-    if _larch is not None:
-        _larch.symtable._sys.valid_commands.extend(cmds)
-        initialize_sys_display(_larch=_larch)
-
-
-def registerLarchPlugin():
-    return ('_builtin', {'show': show,
-                         'get': get,
-                         'get_termcolor_opts': get_termcolor_opts,
-                         'group2dict': group2dict,
-                         'dict2group': dict2group,
-                         'show_tree': show_tree})

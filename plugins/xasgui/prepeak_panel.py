@@ -35,7 +35,6 @@ from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
                          MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
                          Font, FileSave, FileOpen, flatnotebook)
 
-from larch_plugins.std import group2dict
 from larch_plugins.wx.parameter import ParameterPanel
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.xasgui.taskpanel import TaskPanel

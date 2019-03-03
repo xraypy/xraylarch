@@ -34,8 +34,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
 
 from larch.fitting import fit_report
-
-from larch_plugins.std import group2dict
+from larch.utils import group2dict
 
 from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
 

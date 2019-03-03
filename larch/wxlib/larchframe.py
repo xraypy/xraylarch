@@ -7,7 +7,7 @@ from functools import partial
 import wx
 import numpy
 import scipy
-import matplotlib
+
 import larch
 
 from wxutils import (MenuItem, Font, Button, Choice)

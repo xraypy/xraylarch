@@ -11,11 +11,8 @@ import os
 import sys
 from copy import copy, deepcopy
 from glob import glob
-import six
-from six.moves import input
-from larch import ValidateLarchPlugin
 
-MODNAME = '_builtin'
+from larch import ValidateLarchPlugin
 
 def _copy(obj, **kws):
     """copy an object"""
@@ -30,8 +27,7 @@ def _parent(name, _larch=None, **kw):
     "print out parent group name of an object"
     print(_larch.symtable._lookup(name, create=False))
 
-@ValidateLarchPlugin
-def _ls(directory='.', _larch=None, **kws):
+def _ls(directory='.', **kws):
     """return a list of files in the current directory,
     optionally using '*' to match file names
 
@@ -96,7 +92,7 @@ def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
     txt = text[:]
-    if isinstance(txt, six.string_types):
+    if isinstance(txt, str):
         txt = txt.split('\n')
     if len(txt) <1:
         return
@@ -149,15 +145,3 @@ with the  pagelength option:
 
     show_more(text, filename=fname, _larch=_larch,
               pagelength=pagelength, **kws)
-
-def initializeLarchPlugin(_larch=None):
-    """initialize ls as a valid command"""
-    cmds = ['more', 'cd']
-    if _larch is not None:
-        _larch.symtable._sys.valid_commands.extend(cmds)
-
-def registerLarchPlugin():
-    return ('_builtin', {'copy': _copy, 'deepcopy': _deepcopy,
-                         'more': _more, 'parent': _parent,
-                         'ls': _ls,  'mkdir': _mkdir,
-                         'cd': _cd,  'cwd': _cwd })
