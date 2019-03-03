@@ -64,8 +64,8 @@ PLOTWIN_SIZE = (550, 550)
 
 NB_PANELS = OrderedDict((('XAS Normalization', XASNormPanel),
                          ('Pre-edge Peaks', PrePeakPanel),
-                         ('Linear Combos', LinearComboPanel),
                          ('PCA',  PCAPanel),
+                         ('Linear Combinations', LinearComboPanel),
                          # ('LASSO', LASSOPanel),
                          ('EXAFS', EXAFSPanel)))
 
