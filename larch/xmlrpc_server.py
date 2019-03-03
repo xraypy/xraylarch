@@ -406,23 +406,23 @@ Commands:
             keepalive_time = info.get('keepalive_time', -1)
             keepalive_time += (last_event - time())
             keepalive_units = 'seconds'
-            if keepalive_time > 300:
-                keepalive_time = keepalive_time/60.0
+            if keepalive_time > 150:
+                keepalive_time = round(keepalive_time/60.0)
                 keepalive_units = 'minutes'
-            if keepalive_time > 300:
-                keepalive_time = keepalive_time/60.0
+            if keepalive_time > 150:
+                keepalive_time = round(keepalive_time/60.0)
                 keepalive_units = 'hours'
 
             print('larch_server report:')
-            print(' Client Machine Name = %s' % machname)
-            print(' Client Process ID   = %s' % str(procid))
-            print(' Client Application  = %s' % appname)
-            print(' Client User Name    = %s' % username)
-            print(' Client Last Used    = %s' % last_used)
-            print(' Server Process ID   = %s' % serverid)
-            print(' Server Port Number  = %s' % serverport)
-            print(' Server will expire in  %i %s if not used.' % (keepalive_time,
-                                                                  keepalive_units))
+            print('   Server Port Number  = %s' % serverport)
+            print('   Server Process ID   = %s' % serverid)
+            print('   Server Last Used    = %s' % last_used)
+            print('   Server will expire in %d %s if not used.' % (keepalive_time,
+                                                                 keepalive_units))
+            print('   Client Machine Name = %s' % machname)
+            print('   Client Process ID   = %s' % str(procid))
+            print('   Client Application  = %s' % appname)
+            print('   Client User Name    = %s' % username)
 
         elif server_state == NOT_IN_USE:
             smsg(port, 'not running')
