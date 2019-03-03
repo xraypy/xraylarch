@@ -11,9 +11,10 @@ import inspect
 from collections import OrderedDict
 import ctypes
 import ctypes.util
-from .utils import Closure
+
 from .symboltable import Group, isgroup
 from .site_config import larchdir, usr_larchdir
+from .closure import Closure
 
 HAS_TERMCOLOR = False
 try:

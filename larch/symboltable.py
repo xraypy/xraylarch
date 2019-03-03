@@ -8,8 +8,10 @@ import sys
 import types
 import numpy
 import copy
-from .utils import Closure, fixName, isValidName
 from . import site_config
+from .closure import Closure
+from .utils import fixName, isValidName
+
 
 class Group(object):
     """

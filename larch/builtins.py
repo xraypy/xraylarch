@@ -8,7 +8,6 @@ import time
 import re
 import traceback
 import io
-
 import asteval
 
 from .helper import Helper
@@ -18,9 +17,10 @@ from . import fitting
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
 
-from .utils import (_copy, _deepcopy, _more, _parent, _ls, _cd, cwd,
-                    _mkdir, show, show_tree, get, get_termcolor_opts,
-                    group2dict, dict2group, debugtimer)
+from .utils import (_copy, _deepcopy, _more, _parent, _ls, _cd, _cwd,
+                    _mkdir, debugtimer, group2dict, dict2group)
+
+from .utils.show import (show, show_tree, get, get_termcolor_opts)
 
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'

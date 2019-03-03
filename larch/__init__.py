@@ -37,15 +37,17 @@ with warnings.catch_warnings():
         pass
 
 from .version import __date__, __version__, make_banner
-from .site_config import show_site_config
-from .symboltable import Group, SymbolTable, isgroup
 from .larchlib import (plugin_path, use_plugin_path, enable_plugins,
                        isNamedClass, LarchPluginException, Make_CallArgs,
                        ValidateLarchPlugin, parse_group_args)
+from .symboltable import Group, SymbolTable, isgroup
 
 from .shell import shell
 from .inputText import InputText
 from .utils import fixName, nativepath, get_homedir
+
+from .site_config import show_site_config
+
 from .interpreter import Interpreter
 
 from .fitting import (Minimizer, Parameter, isParameter, param_value,

@@ -4,17 +4,23 @@ from datetime import datetime
 from collections import OrderedDict
 from .paths import uname, nativepath, get_homedir
 from .debugtime import debugtime, debugtimer
-from .closure import Closure
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
                        fix_varname, isLiteralStr, strip_comments,
                        find_delims, version_ge)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
-                         _ls, _cd, cwd, _mkdir)
+                         _ls, _cd, _cwd, _mkdir)
 
-from .show import (show, show_tree, get, get_termcolor_opts,
-                   group2dict, dict2group)
+
+def group2dict(group, _larch=None):
+    "return dictionary of group members"
+    return group.__dict__
+
+def dict2group(d, _larch=None):
+    "return group created from a dictionary"
+    return Group(**d)
+
 
 def isotime(t=None, with_tzone=False):
     if t is None:

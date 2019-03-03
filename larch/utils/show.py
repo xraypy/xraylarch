@@ -62,14 +62,6 @@ def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
                                                          repr(obj.dtype))
             _larch.writer.write('%s %s: %s\n' % (indent*' ', item, dval))
 
-def group2dict(group, _larch=None):
-    "return dictionary of group members"
-    return group.__dict__
-
-def dict2group(d, _larch=None):
-    "return group created from a dictionary"
-    return Group(**d)
-
 @ValidateLarchPlugin
 def show(sym=None, _larch=None, with_private=False, with_color=True,
           color=None, color2=None, truncate=True, with_methods=True, **kws):

@@ -12,8 +12,6 @@ import sys
 from copy import copy, deepcopy
 from glob import glob
 
-from larch import ValidateLarchPlugin
-
 def _copy(obj, **kws):
     """copy an object"""
     return copy(obj)
@@ -22,7 +20,6 @@ def _deepcopy(obj, **kws):
     """deep copy an object"""
     return deepcopy(obj)
 
-@ValidateLarchPlugin
 def _parent(name, _larch=None, **kw):
     "print out parent group name of an object"
     print(_larch.symtable._lookup(name, create=False))
@@ -87,7 +84,6 @@ def _mkdir(name, mode=0o777, **kws):
     """
     return os.makedirs(name, mode=mode)
 
-@ValidateLarchPlugin
 def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
@@ -119,7 +115,6 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
-@ValidateLarchPlugin
 def _more(fname, pagelength=32, _larch=None, **kws):
     """list file contents:
     > more('file.txt')
