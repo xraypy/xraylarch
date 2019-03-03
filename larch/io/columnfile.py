@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import string
-import six
 import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
@@ -240,7 +239,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
 
-    if isinstance(labels, six.string_types):
+    if isinstance(labels, str):
         labelline = labels
         labels = None
     set_array_labels(group, labels=labels, simple_labels=simple_labels,
@@ -311,7 +310,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
     clabels = ['col%i' % (i+1) for i in range(ncols)]
 
     # allow labels to really be 'labelline
-    if isinstance(labels, six.string_types) and labelline is None:
+    if isinstance(labels, str) and labelline is None:
         labelline = labels
         labels = None
 

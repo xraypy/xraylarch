@@ -4,7 +4,6 @@ Read/Write XAS Data Interchange Format for Python
 """
 import os
 from ctypes import c_long, c_double, c_char_p, c_void_p, pointer, Structure
-import six
 
 __version__ = '1.2.0larch'
 
@@ -48,27 +47,16 @@ string_attrs = ('comments', 'edge', 'element', 'error_line',
                 'outer_label', 'xdi_libversion', 'xdi_pyversion',
                 'xdi_version')
 
-def Py2tostr(val):
-    return str(val)
 
-def Py2tostrlist(address, nitems):
-    return [str(i) for i in (nitems*c_char_p).from_address(address)]
-
-def Py3tostr(val):
+def tostr(val):
     if isinstance(val, str):
         return val
     if isinstance(val, bytes):
-        return str(val, 'utf-8')
+        return val.decode()
     return str(val)
 
-def Py3tostrlist(address, nitems):
+def tostrlist(address, nitems):
     return [str(i, 'ASCII') for i in (nitems*c_char_p).from_address(address)]
-
-tostr  = Py2tostr
-tostrlist = Py2tostrlist
-if six.PY3:
-    tostr = Py3tostr
-    tostrlist = Py3tostrlist
 
 def add_dot2path():
     """add this folder to begninng of PATH environmental variable"""
@@ -133,7 +121,7 @@ class XDIFile(object):
         if filename is None and self.filename is not None:
             filename = self.filename
         pxdi = pointer(XDIFileStruct())
-        self.status = self.xdilib.XDI_readfile(six.b(filename), pxdi)
+        self.status = self.xdilib.XDI_readfile(filename.encode(), pxdi)
         if self.status < 0:
             msg =  bytes2str(self.xdilib.XDI_errorstring(self.status))
             self.xdilib.XDI_cleanup(pxdi, self.status)
@@ -259,7 +247,7 @@ def read_xdi(filename, labels=None, _larch=None):
     group = Group()
     for key, val in xdif.__dict__.items():
         if not key.startswith('_'):
-            if six.PY3 and key in string_attrs:
+            if key in string_attrs:
                 val = tostr(val)
             setattr(group, key, val)
     group.__name__ ='XDI file %s' % filename
