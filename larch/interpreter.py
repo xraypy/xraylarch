@@ -786,15 +786,9 @@ class Interpreter:
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
-        if sys.version_info[0] == 3:
-            excnode  = node.exc
-            msgnode  = node.cause
-        else:
-            excnode  = node.type
-            msgnode  = node.inst
-        out  = self.run(excnode)
+        out  = self.run(node.exc)
         msg = ' '.join(out.args)
-        msg2 = self.run(msgnode)
+        msg2 = self.run(node.cause)
         if msg2 not in (None, 'None'):
             msg = "%s: %s" % (msg, msg2)
         self.raise_exception(None, exc=out.__class__, msg=msg, expr='')
