@@ -578,8 +578,8 @@ def _plot_marker(x, y, marker='o', size=4, color='black', label='_nolegend_',
                  color=color, _larch=_larch, wxparent=wxparent,  **kws)
 
 @larch.ValidateLarchPlugin
-def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, size=None,
-                  delay_draw=False, _larch=None, **kws):
+def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, xrf=False,
+                  stacked=False, size=None, delay_draw=False, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
 
     plot a horizontal line spanning the plot axes
@@ -590,14 +590,15 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, wxparent=None, size=None,
         xmax:   ending x fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, xrf=xrf,
+                          stacked=stacked, _larch=_larch)
     if plotter is None:
         return
     plotter.Raise()
     if 'label' not in kws:
         kws['label'] = '_nolegend_'
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
-    if not delay_draw:
+    if delay_draw:
         plotter.panel.canvas.draw()
 
 @larch.ValidateLarchPlugin

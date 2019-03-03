@@ -158,29 +158,26 @@ def run_larch():
     parser = OptionParser(usage=usage, prog="larch",
                           version="larch command-line version 0.2")
 
+    parser.add_option("-e", "--exec", dest="noshell", action="store_true",
+                      default=False, help="execute script only, default = False")
+
     parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
                       default=False, help="set quiet mode, default = False")
-
-    parser.add_option("-m", "--makeicons", dest="makeicons", action="store_true",
-                      default=False, help="create desktop icons")
 
     parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
                       default=False, help="set no wx graphics mode, default = False")
 
-    parser.add_option("-e", "--exec", dest="noshell", action="store_true",
-                      default=False, help="execute script only, default = False")
+    parser.add_option("-w", "--wxgui", dest="wxgui", default=False,
+                      action='store_true', help="run Larch GUI")
+
+    parser.add_option("-m", "--makeicons", dest="makeicons", action="store_true",
+                      default=False, help="create desktop icons")
 
     parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
                       default=False, help="run in remote server mode")
 
     parser.add_option("-p", "--port", dest="port", default='4966',
                       metavar='PORT', help="port number for remote server")
-
-    parser.add_option("-w", "--wxgui", dest="wxgui", default=False,
-                      action='store_true', help="run Larch GUI")
-
-    parser.add_option("-c", "--echo", dest="echo", action="store_true",
-                      default=False, help="tell remote server to echo commands")
 
     (options, args) = parser.parse_args()
     with_wx = HAS_WXPYTHON and (not options.nowx)
