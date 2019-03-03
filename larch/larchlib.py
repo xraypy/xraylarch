@@ -189,6 +189,19 @@ class StdWriter(object):
         self.writer = stdout
         self._larch = _larch
         self.textstyle = None
+        symtable = _larch.symtable
+        if not symtable.has_group('_sys.display'):
+            symtable.new_group('_sys.display')
+            colors = {}
+            colors['text'] = {'color': None}
+            colors['text2'] = {'color': 'cyan'}
+            colors['comment'] = {'color': 'green'}
+            colors['error'] = {'color': 'red',  'attrs': ['bold']}
+
+            display = symtable._sys.display
+            display.colors = colors
+            display.use_color = True
+            display.terminal = 'xterm'
 
     def set_textstyle(self, mode='text'):
         """ set text style for output """
