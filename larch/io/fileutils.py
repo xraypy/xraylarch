@@ -2,17 +2,12 @@
 """
 general purpose file utilities
 """
-MODDOC = '''
-Functions for Input/Output, especially reading specific types
-of scientific data files.
-'''
-
 import time
 import os
 import sys
 from random import seed, randrange
 from string import printable
-from larch.utils.strutils import fix_filename, fix_varname, strip_quotes
+from ..utils.strutils import fix_filename, fix_varname, strip_quotes
 
 def asciikeys(adict):
     """ensure a dictionary has ASCII keys (and so can be an **kwargs)"""
@@ -258,25 +253,3 @@ def test_incrementfilename():
         else:
             npass = npass + 1
     print('Passed %i of %i tests' % (npass, npass+nfail))
-
-
-
-def initializeLarchPlugin(_larch=None):
-    """initialize _io"""
-    if _larch is not None:
-        mod = getattr(_larch.symtable, '_io')
-        mod.__doc__ = MODDOC
-
-def registerLarchPlugin():
-    return ('_io', {'increment_filename': increment_filename,
-                    'new_filename': new_filename,
-                    'new_dirname': new_dirname,
-                    'fix_filename': fix_filename,
-                    'fix_varname': fix_varname,
-                    'pathOf': pathOf,
-                    'unixpath': unixpath,
-                    'winpath': winpath,
-                    'nativepath': nativepath,
-                    'strip_quotes': strip_quotes,
-                    'get_timestamp': get_timestamp,
-                    'asciikeys': asciikeys})

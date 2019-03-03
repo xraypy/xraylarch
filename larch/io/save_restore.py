@@ -5,11 +5,12 @@ import numpy as np
 
 from collections import OrderedDict
 
-from .. import Group, Parameter, isParameter, ValidateLarchPlugin
+from larch import Group
+from ..fitting import Parameter, isParameter
 from ..utils.jsonutils import encode4js, decode4js
 from . import fix_varname
 
-@ValidateLarchPlugin
+
 def save(fname,  *args, **kws):
     """save groups and data into a portable json file
 
@@ -53,7 +54,7 @@ def save(fname,  *args, **kws):
         fh.write("\n".join(buff))
 
 
-@ValidateLarchPlugin
+
 def restore(fname, top_level=True, _larch=None):
     """restore data from a json Larch save file
 

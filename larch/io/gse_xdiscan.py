@@ -8,7 +8,7 @@ import time
 import gc
 
 import numpy as np
-from .. import Group, ValidateLarchPlugin, use_plugin_path
+from .. import Group, ValidateLarchPlugin
 from ..utils import OrderedDict
 from ..utils.strutils import bytes2str
 

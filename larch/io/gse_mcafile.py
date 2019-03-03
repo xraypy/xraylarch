@@ -5,9 +5,8 @@ import copy
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-from larch import Group, param_value, Parameter, Interpreter
+from larch import Group
 
-from larch_plugins.xrf import MCA, ROI
 
 def str2floats(s, delim='&'):
     s = s.replace('&', ' ')
@@ -37,6 +36,8 @@ class GSEMCA_File(Group):
     Read GSECARS style MCA / Multi-element MCA files
     """
     def __init__(self, filename=None, bad=None, **kws):
+
+        from larch_plugins.xrf import MCA, ROI
 
         kwargs = {'name': 'GSE MCA File: %s' % filename}
         kwargs.update(kws)

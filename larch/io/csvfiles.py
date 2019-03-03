@@ -13,13 +13,10 @@ from collections import OrderedDict
 
 import numpy as np
 from larch import Group
-from larch.utils.mathutils import interp
+from larch.math import interp
 from larch.utils.strutils import bytes2str, fix_varname
 
-if sys.version[0] == '2':
-    from string import maketrans
-else:
-    maketrans = str.maketrans
+maketrans = str.maketrans
 
 def groups2csv(grouplist, filename,
                x='energy', y='norm', _larch=None):

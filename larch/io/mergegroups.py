@@ -5,7 +5,7 @@ merge groups, interpolating if necessary
 import os
 import numpy as np
 from larch import Group
-from larch.utils.mathutils import interp, index_of
+from larch.math import interp, index_of
 
 def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
                  kind='cubic', trim=True, calc_yerr=True, _larch=None):

@@ -29,3 +29,9 @@ def isotime(t=None, with_tzone=False):
     if with_tzone:
         sout = "%s-%2.2i:00" % (sout, time.timezone/3600)
     return sout
+
+_larch_builtins = dict(copy=_copy, deepcopy=_deepcopy, more= _more,
+                       parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
+                       cwd=_cwd, group2dict=group2dict,
+                       dict2group=dict2group, debugtimer=debugtimer,
+                       isotime=isotime)

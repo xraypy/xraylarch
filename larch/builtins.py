@@ -14,13 +14,14 @@ from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
+from . import io
+from . import math
+from . import utils
+from .utils.show import _larch_builtins as show_builtins
+
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
 
-from .utils import (_copy, _deepcopy, _more, _parent, _ls, _cd, _cwd,
-                    _mkdir, debugtimer, group2dict, dict2group)
-
-from .utils.show import (show, show_tree, get, get_termcolor_opts)
 
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'
@@ -479,8 +480,6 @@ _clock.__doc__ = time.clock.__doc__
 def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
-def _ufloat(arg, _larch=None):
-    return fitting.ufloat(arg)
 
 def save_history(filename, session_only=False, max_lines=5000, _larch=None):
     """save history of larch commands to a file"""
@@ -509,56 +508,24 @@ def reset_fiteval(_larch=None, **kws):
             else:
                 fiteval(init_item)
 
-local_funcs = {'_builtin': {'group':_group,
-                            'dir': _dir,
-                            'which': _which,
-                            'exists': _exists,
-                            'isgroup': _isgroup,
-                            'subgroups': _subgroups,
-                            'group_items': _groupitems,
-                            'parse_group_args': parse_group_args,
-                            'pause': _pause,
-                            'sleep': _sleep,
-                            'systime': _time,
-                            'clock': _clock,
-                            'strftime': _strftime,
-                            'reload':_reload,
-                            'run': _run,
-                            'eval': _eval,
-                            'help': _help,
-                            'add_plugin':_addplugin,
-                            'save_history': save_history,
-                            'show_history': show_history,
-                            'copy': _copy,
-                            'deepcopy': _deepcopy,
-                            'more': _more,
-                            'parent': _parent,
-                            'ls': _ls,
-                            'mkdir': _mkdir,
-                            'cd': _cd,
-                            'cwd': _cwd,
-                            'show': show,
-                            'get': get,
-                            'get_termcolor_opts': get_termcolor_opts,
-                            'group2dict': group2dict,
-                            'dict2group': dict2group,
-                            'show_tree': show_tree,
-                            'debugtimer': debugtimer},
-               '_math':{'param': fitting.param,
-                        'guess': fitting.guess,
-                        'param_group': fitting.param_group,
-                        'confidence_intervals': fitting.confidence_intervals,
-                        'confidence_report': fitting.confidence_report,
-                        'f_test': fitting.f_test,
-                        'chi2_map': fitting.chi2_map,
-                        'is_param': fitting.isParameter,
-                        'isparam': fitting.isParameter,
-                        'minimize': fitting.minimize,
-                        'ufloat': _ufloat,
-                        'fit_report': fitting.fit_report,
-                        'reset_fiteval': reset_fiteval,
-                        },
-               }
+_math_builtins = {'reset_fiteval': reset_fiteval}
+_math_builtins.update(math._larch_builtins_)
+_math_builtins.update(fitting._larch_builtins_)
+
+_main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
+                      isgroup=_isgroup, subgroups=_subgroups,
+                      group_items=_groupitems,
+                      parse_group_args=parse_group_args, pause=_pause,
+                      sleep=_sleep, systime=_time, clock=_clock,
+                      strftime=_strftime, reload=_reload, run=_run,
+                      eval=_eval, help=_help, add_plugin=_addplugin,
+                      save_history=save_history, show_history=show_history)
+
+_main_builtins.update(utils._larch_builtins)
+_main_builtins.update(show_builtins)
+
+local_funcs = dict(_builtin=_main_builtins, _math=_math_builtins,
+                   _io=io._larch_builtins_)
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']

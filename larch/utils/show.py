@@ -162,3 +162,8 @@ def get_termcolor_opts(dtype, _larch=None):
     if display.use_color:
         out = getattr(display.colors, dtype, out)
     return out
+
+
+
+_larch_builtins = dict(show=show, show_tree=show_tree, get=get,
+                       get_termcolor_opts= get_termcolor_opts)

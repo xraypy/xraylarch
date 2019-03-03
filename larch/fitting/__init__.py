@@ -333,3 +333,17 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, _larch=None, **kws
                            limits=(xrange, yrange),
                            prob_func=scaled_chisqr,
                            nx=nx, ny=ny, **kws)
+
+
+_larch_builtins_ = {'param': param,
+                    'guess': guess,
+                    'param_group': param_group,
+                    'confidence_intervals': confidence_intervals,
+                    'confidence_report': confidence_report,
+                    'f_test': f_test,
+                    'chi2_map': chi2_map,
+                    'is_param': isParameter,
+                    'isparam': isParameter,
+                    'minimize': minimize,
+                    'ufloat': ufloat,
+                    'fit_report': fit_report}
