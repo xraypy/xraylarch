@@ -13,7 +13,7 @@ from .xraydb_plugin import (atomic_mass, atomic_number, atomic_symbol,
                             xray_edge, xray_edges, ck_probability, f0,
                             f0_ions, mu_elam, mu_chantler, f1_chantler,
                             f2_chantler, core_width, chantler_data,
-                            guess_edge, get_xraydb)
+                            guess_edge, get_xraydb, xray_delta_beta)
 
 from .materials import material_mu, material_get
 from .cromer_liberman import f1f2

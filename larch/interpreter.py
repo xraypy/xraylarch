@@ -136,6 +136,10 @@ class Interpreter:
 
         for groupname, entries in builtins.local_funcs.items():
             group = getattr(self.symtable, groupname, None)
+            if group is None:
+                group = Group(__name__=groupname)
+                setattr(self.symtable, groupname, group)
+
             if group is not None:
                 for fname, fcn in list(entries.items()):
                     setattr(group, fname,

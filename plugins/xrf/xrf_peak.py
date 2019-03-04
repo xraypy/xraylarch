@@ -9,9 +9,10 @@ This is a Larch group representing a Peak in an XRF Spectrum.
 import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-from larch import (Group, Parameter, isParameter,
-                   ValidateLarchPlugin,
-                   param_value, isNamedClass)
+
+from larch import (Group, ValidateLarchPlugin)
+
+from larch.fitting import Parameter, isParameter, param_value
 
 from larch_plugins.xray import xray_line, xray_lines
 from larch.math import gaussian, lorentzian, voigt, pvoigt

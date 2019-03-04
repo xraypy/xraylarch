@@ -16,7 +16,9 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT)
 
-from larch import Group, Parameter, Minimizer, fitting
+from larch import Group
+from larch.fitting import Parameter, Minimizer
+
 from larch.larchlib import Empty
 from larch.math import index_of, gaussian
 from larch.wxlib import flatnotebook

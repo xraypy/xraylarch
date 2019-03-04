@@ -1,0 +1,47 @@
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   nvarys, npts       = 4, 104
+   n_independent      = 15.260
+   chi_square         = 38.0085
+   reduced chi_square = 3.37545
+   r-factor           = 0.00279
+   Akaike info crit   = 21.9259
+   Bayesian info crit = 24.8269
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.400, 3.000
+   k-range            = 3.000, 17.000
+   k window, dk       = 'kaiser', 4.000
+   paths used in fit  = ['feffcu01.dat']
+   k-weight           = 2
+   epsilon_k          = Array(mean=0.001076, std=0.003504)
+   epsilon_r          = 0.036161
+   n_independent      = 15.260
+ 
+[[Variables]]
+   amp            =  0.928280 +/- 0.039477   (init=  1.000000)
+   del_e0         =  4.356280 +/- 0.517286   (init=  0.000000)
+   del_r          = -0.006018 +/- 0.002643   (init=  0.000000)
+   sig2           =  0.008668 +/- 0.000311   (init=  0.000000)
+ 
+[[Correlations]]    (unreported correlations are <  0.100)
+   amp, sig2            =  0.928
+   del_e0, del_r        =  0.920
+   del_r, sig2          =  0.159
+   amp, del_r           =  0.137
+ 
+[[Paths]]
+   Path pfh2ced6i, Feff.dat file = feffcu01.dat
+     atom      x        y        z       ipot
+      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+      Cu       0.0000, -1.8016,  1.8016  1
+     reff   =  2.54780
+     degen  =  12.000000
+     n*s02  =  0.928280 +/- 0.039477  'amp'
+     e0     =  4.356280 +/- 0.517286  'del_e0'
+     r      =  2.541782 +/- 0.002643  'reff + del_r'
+     deltar = -0.006018 +/- 0.002643  'del_r'
+     sigma2 =  0.008668 +/- 0.000311  'sig2'
+
+=======================================================

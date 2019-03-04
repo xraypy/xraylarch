@@ -38,7 +38,8 @@ with warnings.catch_warnings():
 
 from .version import __date__, __version__
 from .symboltable import Group, isgroup
-from .larchlib import  ValidateLarchPlugin, Make_CallArgs, enable_plugins
+from .larchlib import (ValidateLarchPlugin, Make_CallArgs, enable_plugins,
+                       parse_group_args, isNamedClass)
 from . import builtins
 from .site_config import show_site_config
 
@@ -47,7 +48,7 @@ from .inputText import InputText
 
 from . import shell, larchlib, utils, version, site_config, apps
 from . import fitting, math, io
-from .fitting import Parameter, isParameter
+from .fitting import Parameter, isParameter, param_value
 
 # from . import apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
 #                    run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,

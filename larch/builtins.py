@@ -524,6 +524,11 @@ _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
 _main_builtins.update(utils._larch_builtins)
 _main_builtins.update(show_builtins)
 
+# _io_builtins = {}
+# _io_builtins.update(io._larch_builtins_)
+# for k, v in _io_builtins.items():
+#     print(k, v)
+
 local_funcs = dict(_builtin=_main_builtins, _math=_math_builtins,
                    _io=io._larch_builtins_)
 

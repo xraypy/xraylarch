@@ -6,8 +6,8 @@
 
 import math
 import numpy as np
-from  larch import use_plugin_path
-use_plugin_path('xray')
+import larch
+from larch_plugins.xray import xray_delta_beta
 
 class Layer:
     def __init__(self, tag, composition='Si', density=2.33, thickness=1000.1234, rms=1e-3):
@@ -98,8 +98,8 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         th_max=1.0          # maximum th
         th_step=0.002      # stepsize th
         th_deg = np.arange(th_min, th_max+th_step, th_step)
-    th=[]               #   theta(incident angle) in radian
-    qz=[]               #   momentum transfer (1/Angstrom)
+        th=[]               #   theta(incident angle) in radian
+        qz=[]               #   momentum transfer (1/Angstrom)
     if mat==[] or thick==[] or den==[] or rough==[]:
     #set defalut layer material, air, film1, film2, substrate
         tag=['air', 'film', 'underlayer', 'substrate']

@@ -47,7 +47,6 @@ from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, XRFCalibrationFrame)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
-# larch.use_plugin_path('epics')
 try:
     from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3, caget
     from scandb import ScanDB

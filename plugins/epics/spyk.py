@@ -37,7 +37,7 @@ else:
     from cStringIO import StringIO
 
 
-from larch import use_plugin_path, Group
+from larch import Group
 
 from larch.utils import get_homedir
 from larch.io import get_timestamp
@@ -49,7 +49,6 @@ except ImportError:
     HAS_EPICS = False
 
 try:
-    use_plugin_path('epics')
     from larch_plugins.epics.larchscan   import LarchStepScan
 
     import epicsscan

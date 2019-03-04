@@ -362,23 +362,6 @@ class Procedure(object):
         del lgroup
         return retval
 
-def plugin_path(val):
-    """return absolute path of a plugin folder - a convenience
-    for adding these paths to sys.path, as with
-
-    sys.path.insert(0, plugin_path('std'))
-    """
-    return os.path.abspath(os.path.join(larchdir, 'plugins', val))
-
-def use_plugin_path(val):
-    """include the specifed Larch plugin path in a module:
-
-    sys.path.insert(0, plugin_path(val))
-    """
-    ppath = plugin_path(val)
-    if ppath not in sys.path:
-        sys.path.insert(0, ppath)
-
 def enable_plugins():
     """add all available Larch plugin paths
     """
