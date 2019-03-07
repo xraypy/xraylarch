@@ -35,4 +35,12 @@ _larch_builtins_ = dict(linregress=linregress,
                         boxcar=boxcar,
                         glinbroad=glinbroad,
                         gridxyz=gridxyz,
-                        fit_peak=fit_peak)
+                        fit_peak=fit_peak,
+                        gaussian=gaussian, lorentzian=lorentzian,
+                        voigt=voigt, pvoigt=pvoigt, hypermet=hypermet,
+                        pearson7=pearson7, lognormal=lognormal,
+                        gammaln=gammaln, breit_wigner=breit_wigner,
+                        damped_oscillator=damped_oscillator,
+                        expgaussian=expgaussian, donaich=donaich,
+                        skewed_voigt=skewed_voigt, students_t=students_t,
+                        logistic=logistic, erf=erf, erfc=erfc, wofz=wofz)
