@@ -22,7 +22,7 @@ for key, val in results.items():
 print(")")
 
 expected = (
-   ('cu2s_xafs.dat', 4, 454, ['energy', 'log_i0_it_', 'log_it_ir_', 'i0']),
+   ('cu2s_xafs.dat', 4, 454, ['energy', 'log_i0_it', 'log_it_ir', 'i0']),
    ('incomplete_label.dat', 57, 17, ['energy', 'time1', 'time2', 'i0', 'i1', 'col6', 'col7', 'col8', 'col9', 'col10']),
    )
 
