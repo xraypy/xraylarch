@@ -6,7 +6,7 @@ Some common lineshapes and distribution functions
 from __future__ import division
 
 from numpy import exp, pi, sqrt, where
-from scipy.special import erf, erfc, wofz, gamma, gammaln
+from scipy import special
 
 from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
                               pearson7, breit_wigner, damped_oscillator,
@@ -62,12 +62,40 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     arg[where(arg<-100)] = -100.0
     gscale = s2pi*sigma
     gauss = (1.0/gscale) * exp(-arg**2 / 2.0)
-    sfunc = step * erfc(arg/2.0) / (2.0*gscale)
+    sfunc = step * special.erfc(arg/2.0) / (2.0*gscale)
 
     targ = (x-center)/(gamma*sigma)
     targ[where(targ>100)] = 100.0
     targ[where(targ<-100)] = -100.0
 
-    tfunc = exp(targ) * erfc(arg/2.0 + 1.0/gamma)
+    tfunc = exp(targ) * special.erfc(arg/2.0 + 1.0/gamma)
     tfunc = tail*tfunc / (max(tfunc)*gscale)
     return amplitude * (gauss + sfunc + tfunc) /2.0
+
+
+
+def erf(x):
+    """Return the error function.
+    erf = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])
+    """
+    return special.erf(x)
+
+def erfc(x):
+    """Return the complementary error function.
+    erfc = 1 - erf(x)
+    """
+    return special.erfc(x)
+
+def wofz(x):
+    """Return the fadeeva function for complex argument.
+    wofz = exp(-x**2)*erfc(-i*x)
+    """
+    return special.wofz(x)
+
+def gamma(x):
+    """Return the gamma function."""
+    return special.gamma(x)
+
+def gammaln(x):
+    """Return the log of absolute value of gamma function."""
+    return special.gammaln(x)
