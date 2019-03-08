@@ -35,9 +35,11 @@ from .parameter import ParameterWidgets
 
 
 
-FONTSIZE = 8
-if platform.system() in ('Windows', 'Darwin'):
-    FONTSIZE = 10
+FONTSIZE = 10
+if platform.system() == 'Windows':
+    FONTSIZE = 11
+if platform.system() == 'Darwin':
+    FONTSIZE = 12
 
 #############################
 ## Hack System and Startfile on Windows totry to track down
