@@ -28,6 +28,9 @@ def pjoin(*args):
 larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
 home_dir = get_homedir()
 
+here, i_am = os.path.split(__file__)
+icondir = os.path.join(here, 'icons')
+
 usr_larchdir = pjoin(home_dir, '.larch')
 if os.name == 'nt':
     usr_larchdir = pjoin(home_dir, 'larch')
@@ -46,8 +49,8 @@ if uname in ('linux', 'darwin') and os.getuid() > 0:
 ## names (and loading order) for core plugin modules
 #core_plugins = ('std', 'math')
 #core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
-core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',
-                'wx', 'xafs', 'xray', 'xrd', 'xrf', 'xrmmap',  'xsw')
+
+core_plugins = ('cifdb', 'diFFit', 'wx', 'xafs', 'xrd', 'xrmmap',  'xsw')
 
 
 # frozen executables, as from cx_freeze, will have

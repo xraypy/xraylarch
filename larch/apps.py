@@ -5,7 +5,7 @@ import numpy
 from pyshortcuts import make_shortcut
 from pyshortcuts.shortcut import Shortcut
 
-from .site_config import larchdir, home_dir, uname
+from .site_config import icondir, home_dir, uname
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 
@@ -45,14 +45,13 @@ class LarchApp:
             bindir = 'Scripts'
 
         self.bindir = os.path.join(sys.prefix, bindir)
-        self.icondir = os.path.join(larchdir, 'icons')
 
     def create_shortcut(self):
         try:
             script =os.path.join(self.bindir, self.script)
             scut = Shortcut(script, name=self.name, folder='Larch')
             make_shortcut(script, name=self.name,
-                          icon=os.path.join(self.icondir, self.icon),
+                          icon=os.path.join(icondir, self.icon),
                           terminal=self.terminal,
                           folder='Larch')
             if uname.startswith('linux'):
