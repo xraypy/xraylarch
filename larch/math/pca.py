@@ -138,8 +138,3 @@ def pca_fit(group, pca_model, ncomps=None, rescale=True, _larch=None):
                              pca_model=pca_model, chi_square=chi2[0],
                              data_scale=scale, weights=weights)
     return
-
-
-def registerLarchPlugin():
-    return ('_math', {'pca_train': pca_train,
-                      'pca_fit': pca_fit})

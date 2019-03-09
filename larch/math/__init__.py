@@ -18,6 +18,7 @@ from .lincombo_fitting import lincombo_fit, lincombo_fitall
 from .pca import pca_train, pca_fit
 from .gridxyz import gridxyz
 
+
 _larch_builtins_ = dict(linregress=linregress,
                         polyfit=polyfit,
                         realimag=realimag,
@@ -35,6 +36,8 @@ _larch_builtins_ = dict(linregress=linregress,
                         boxcar=boxcar,
                         glinbroad=glinbroad,
                         gridxyz=gridxyz,
+                        pca_train=pca_train,
+                        pca_fit=pca_fit,
                         fit_peak=fit_peak,
                         gaussian=gaussian, lorentzian=lorentzian,
                         voigt=voigt, pvoigt=pvoigt, hypermet=hypermet,
