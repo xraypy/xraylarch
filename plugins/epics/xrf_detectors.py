@@ -15,7 +15,7 @@ except (NameError, ImportError):
 
 from larch_plugins.epics.xspress3 import Xspress3, Xspress310
 
-from larch_plugins.xrf import MCA, ROI, Environment
+from larch.xrf import MCA, ROI, Environment
 
 def save_gsemcafile(filename, mcas, rois, environ=None):
     """save GSECARS-style MCA file
