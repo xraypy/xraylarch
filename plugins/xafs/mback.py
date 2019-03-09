@@ -9,7 +9,7 @@ from larch import Group, isgroup, parse_group_args
 
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 from larch.xray import (xray_edge, xray_line, xray_lines,
-                        f1_chantler, f2_chantler, f1f2, guess_edge,
+                        f1_chantler, f2_chantler, f1f2_cl, guess_edge,
                         atomic_number, atomic_symbol)
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
@@ -158,7 +158,7 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
         f1 = f1_chantler(z, energy)
         f2 = f2_chantler(z, energy)
     else:
-        (f1, f2) = f1f2(z, energy, edge=edge)
+        (f1, f2) = f1f2_cl(z, energy, edge=edge)
     group.f2 = f2
     if return_f1:
         group.f1 = f1

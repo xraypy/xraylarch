@@ -11,7 +11,7 @@ mkak 2017.02.06 (originally written spring 2016)
 import math
 import numpy as np
 
-fxrrom larch.xray import PLANCK_HC
+from larch.utils.physical_constants import PLANCK_HC
 
 import re
 import os
