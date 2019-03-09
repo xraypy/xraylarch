@@ -9,7 +9,6 @@ import re
 import traceback
 import io
 import asteval
-
 from .helper import Helper
 from . import inputText
 from . import site_config
@@ -23,6 +22,7 @@ from . import fitting
 from . import io
 from . import math
 from . import xray
+from . import xrf
 
 
 PLUGINSTXT = 'plugins.txt'
@@ -386,7 +386,7 @@ def _addplugin(plugin, _larch=None, verbose=False, **kws):
     if verbose:
         try:
             groupname, syms = symtable._sys.last_import
-        except ValueError:
+        except:
             return
         out = ', '.join(["%s.%s" % (groupname, i) for i in syms])
         write('plugin added: %s \n' % out)
@@ -533,10 +533,11 @@ _main_builtins.update(show_builtins)
 # how to fill in the larch namespace at startup
 local_funcs = dict(_builtin=_main_builtins, _math=_math_builtins,
                    _io=io._larch_builtins_,
-                   _xray=xray._larch_builtins)
+                   _xray=xray._larch_builtins,
+                   _xrf=xrf._larch_builtins)
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
-init_funcs = [xray._larch_init]
+init_funcs = [xray._larch_init, utils._larch_init, xrf._larch_init]
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']

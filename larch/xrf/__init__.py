@@ -8,8 +8,8 @@ function         description
 create_roi       create an ROI
 '''
 
-from .mca import MCA, isLarchMCAGroup, Environment
-from .roi import ROI, split_roiname
+from .mca import MCA, isLarchMCAGroup, Environment, create_mca
+from .roi import ROI, split_roiname, create_roi
 from .deadtime import calc_icr, correction_factor
 from .xrf_bgr import xrf_background
 

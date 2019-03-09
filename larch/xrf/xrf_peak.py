@@ -11,9 +11,9 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 
 from larch import Group
-from .fitting import Parameter, isParameter, param_value
-from .xray import xray_line
-from .math import gaussian, lorentzian, voigt, pvoigt
+from ..fitting import Parameter, isParameter, param_value
+from ..xray import xray_line
+from ..math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
     def __init__(self, name=None, shape='gaussian',

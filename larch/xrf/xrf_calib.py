@@ -7,8 +7,8 @@ import numpy as np
 from collections import OrderedDict
 from lmfit.models import GaussianModel, ConstantModel
 
-from .math import index_of, linregress, fit_peak
-from .xray import xray_line
+from ..math import index_of, linregress, fit_peak
+from ..xray import xray_line
 from .roi import split_roiname
 from .mca import isLarchMCAGroup
 

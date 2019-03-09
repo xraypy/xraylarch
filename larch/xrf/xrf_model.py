@@ -4,9 +4,9 @@ from collections import OrderedDict
 
 from lmfit import  Parameters, minimize, fit_report
 
-from .math import index_of, savitzky_golay, hypermet, erfc
-from .xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
-                   xray_edges, xray_lines, ck_probability)
+from ..math import index_of, savitzky_golay, hypermet, erfc
+from ..xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
+                    xray_edges, xray_lines, ck_probability)
 
 ########
 # Note on units:  energies are in eV, lengths in cm
