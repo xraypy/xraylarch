@@ -29,9 +29,7 @@ from .xray import (atomic_mass, atomic_number, atomic_symbol,
                    chantler_data, chantler_energies, guess_edge,
                    get_xraydb, xray_delta_beta,
                    coherent_cross_section_elam,
-                   incoherent_cross_section_elam,
-                   fluo_yield
-                   )
+                   incoherent_cross_section_elam, fluo_yield)
 
 from .materials import (material_get, material_add, material_mu,
                         material_mu_components, get_materials)
