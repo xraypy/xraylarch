@@ -1,7 +1,7 @@
 import numpy as np
 
 from larch import  parse_group_args
-from larch_plugins.xray import xray_line, xray_edge, material_mu
+from larch.xray import xray_line, xray_edge, material_mu
 from larch_plugins.xafs import preedge, set_xafsGroup
 
 MODNAME = '_xafs'
@@ -63,7 +63,8 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
     preout   = preedge(energy, mu_corr, **pre_kws)
 
     if group is not None:
-        group = set_xafsGroup(group, _larch=_larch)
+        if _larch is not None:
+            group = set_xafsGroup(group, _larch=_larch)
         group.mu_corr = mu_corr
         group.norm_corr = preout['norm']
 

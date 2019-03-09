@@ -5,11 +5,10 @@ from collections import OrderedDict
 from lmfit import  Parameters, minimize, fit_report
 
 import larch
-from larch import ValidateLarchPlugin
 from larch.math import index_of, savitzky_golay, hypermet, erfc
-from larch_plugins.xray import (atomic_mass, atomic_symbol, material_mu,
-                                mu_elam, xray_edges, xray_lines,
-                                ck_probability)
+
+from larch.xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
+                        xray_edges, xray_lines, ck_probability)
 
 ########
 # Note on units:  energies are in eV, lengths in cm
@@ -360,9 +359,7 @@ class XRF_Model:
             tmat.append(val / self.eigenvalues[key])
         self.transfer_matrix = np.array(tmat)
 
-@ValidateLarchPlugin
-def xrf_model(xray_energy=None, energy_min=1500, energy_max=None,
-                     _larch=None, **kws):
+def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, **kws):
     """create an XRF Peak
 
     Returns:

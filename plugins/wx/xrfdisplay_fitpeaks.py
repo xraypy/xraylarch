@@ -21,12 +21,13 @@ from larch.fitting import Parameter, Minimizer
 
 from larch.larchlib import Empty
 from larch.math import index_of, gaussian
+from larch.xray import material_mu, material_get
+
 from larch.wxlib import flatnotebook
 
 from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
 
-from larch_plugins.xray import material_mu, material_get
 from larch_plugins.wx import ParameterPanel
 from larch_plugins.wx.periodictable import PeriodicTablePanel
 

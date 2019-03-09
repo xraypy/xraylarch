@@ -4,7 +4,7 @@ from ctypes import POINTER, pointer, c_int, c_long, c_char, c_char_p, c_double
 
 import larch
 from larch.larchlib import get_dll
-from larch_plugins.xray.xraydb_plugin import atomic_symbol, atomic_mass
+from larch.xray import  atomic_mass
 ## from matplotlib import pylab
 
 F8LIB = None
@@ -62,8 +62,7 @@ class Feff8L_XAFSPath(object):
        path.calcuate_xafs()
 
     """
-    def __init__(self, phase_file=None, title='', _larch=None):
-        self._larch = _larch
+    def __init__(self, phase_file=None, title=''):
         global F8LIB
         if F8LIB is None:
             try:
@@ -284,7 +283,7 @@ class Feff8L_XAFSPath(object):
         for i in range(nleg):
             ipot = int(self.ipot[i])
             iz, sym = self.atoms[ipot]
-            mass = atomic_mass(iz, _larch=self._larch)
+            mass = atomic_mass(iz)
 
             x, y, z = _rat[i][0], _rat[i][1], _rat[i][2]
             self.geom.append((str(sym), iz, ipot, x, y, z))
@@ -293,8 +292,8 @@ class Feff8L_XAFSPath(object):
         self.rmass = 1./rmass
 
 
-def feff8_xafs(phase_file, _larch=None):
-    return Feff8L_XAFSPath(phase_file=phase_file, _larch=_larch)
+def feff8_xafs(phase_file):
+    return Feff8L_XAFSPath(phase_file=phase_file)
 
 
 

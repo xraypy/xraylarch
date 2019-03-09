@@ -8,6 +8,7 @@ from lmfit import Parameters, minimize
 import wx
 
 from larch.math import index_of, index_nearest, interp
+from larch.xray import guess_edge
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, get_icon, SimpleText, Choice,
@@ -16,7 +17,6 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
 
 from larch_plugins.xafs.xafsutils  import etok, ktoe
 from larch_plugins.xafs.xafsplots import plotlabels
-from larch_plugins.xray.xraydb_plugin import guess_edge
 
 PI = np.pi
 DEG2RAD  = PI/180.0

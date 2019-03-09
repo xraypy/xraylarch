@@ -8,9 +8,9 @@ from lmfit import Parameter, Parameters, minimize
 from larch import Group, isgroup, parse_group_args
 
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
-from larch_plugins.xray import (xray_edge, xray_line, xray_lines,
-                                f1_chantler, f2_chantler, f1f2, guess_edge,
-                                atomic_number, atomic_symbol)
+from larch.xray import (xray_edge, xray_line, xray_lines,
+                        f1_chantler, f2_chantler, f1f2, guess_edge,
+                        atomic_number, atomic_symbol)
 from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
 
 import numpy as np
@@ -107,7 +107,8 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    group = set_xafsGroup(group, _larch=_larch)
+    if _larch is not None:
+        group = set_xafsGroup(group, _larch=_larch)
 
     energy = remove_dups(energy)
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -154,10 +155,10 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
 
 	## get the f'' function from CL or Chantler
     if tables.lower() == 'chantler':
-        f1 = f1_chantler(z, energy, _larch=_larch)
-        f2 = f2_chantler(z, energy, _larch=_larch)
+        f1 = f1_chantler(z, energy)
+        f2 = f2_chantler(z, energy)
     else:
-        (f1, f2) = f1f2(z, energy, edge=edge, _larch=_larch)
+        (f1, f2) = f1f2(z, energy, edge=edge)
     group.f2 = f2
     if return_f1:
         group.f1 = f1
@@ -252,7 +253,8 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     if len(mu.shape) > 1:
         mu = mu.squeeze()
 
-    group = set_xafsGroup(group, _larch=_larch)
+    if _larch is not None:
+        group = set_xafsGroup(group, _larch=_larch)
     group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
@@ -265,7 +267,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     atsym = None
     if z is None or z < 2:
-        atsym, edge = guess_edge(group.e0, _larch=_larch)
+        atsym, edge = guess_edge(group.e0)
         z = atomic_number(atsym)
     if atsym is None and z is not None:
         atsym = atomic_symbol(z)

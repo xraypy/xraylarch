@@ -9,10 +9,9 @@ from lmfit.models import GaussianModel, ConstantModel
 
 from larch import ValidateLarchPlugin
 from larch.math import index_of, linregress, fit_peak
+from larch.xray import xray_line
 
 from larch_plugins.xrf import isLarchMCAGroup, split_roiname
-
-from larch_plugins.xray import xray_line, xray_lines
 
 def xrf_calib_init_roi(mca, roiname):
     """initial calibration step for MCA:
@@ -69,7 +68,7 @@ def xrf_calib_init_roi(mca, roiname):
         mca.init_calib[roiname] = (eknown, ecen, fwhm, ccen, out)
 
 
-def xrf_calib_fitrois(mca, _larch=None):
+def xrf_calib_fitrois(mca):
     """initial calibration step for MCA:
     find energy locations for all ROIs
 
@@ -92,14 +91,14 @@ def xrf_calib_fitrois(mca, _larch=None):
         if len(words) > 1:
             family = words[1]
         try:
-            eknown = xray_line(elem, family, _larch=_larch)[0]/1000.0
+            eknown = xray_line(elem, family)[0]/1000.0
         except:
             continue
         llim = max(0, roi.left - roi.bgr_width)
         hlim = min(len(chans)-1, roi.right + roi.bgr_width)
         fit = fit_peak(chans[llim:hlim], counts[llim:hlim],
-                       'Gaussian', background='constant',
-                       _larch=_larch)
+                       'Gaussian', background='constant')
+
 
         ccen = fit.params['center'].value
         ecen = ccen * mca.slope + mca.offset
@@ -107,7 +106,7 @@ def xrf_calib_fitrois(mca, _larch=None):
         calib[roi.name] = (eknown, ecen, fwhm, ccen, fit)
     mca.init_calib = calib
 
-def xrf_calib_compute(mca, apply=False, _larch=None):
+def xrf_calib_compute(mca, apply=False):
     """compute linear energy calibration
     from init_calib dictionary found from xrf_calib_fitrois()
 
@@ -120,7 +119,7 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
         print( 'Not a valid MCA')
         return
     if not hasattr(mca, 'init_calib'):
-        xrf_calib_fitrois(mca, _larch=_larch)
+        xrf_calib_fitrois(mca)
 
     # current calib
     offset, slope = mca.offset, mca.slope
@@ -135,7 +134,7 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
     if apply:
         xrf_calib_apply(mca, offset=_o, slope=_s)
 
-def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
+def xrf_calib_apply(mca, offset=None, slope=None):
     """apply calibration to MCA
 
     either supply offset and slope arguments (in keV and keV/chan)

@@ -3,10 +3,8 @@
 
 import ctypes
 import numpy as np
-from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
 
-from larch_plugins.xray import atomic_mass
 import scipy.constants as consts
 # EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]
@@ -16,7 +14,6 @@ EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
 
-@ValidateLarchPlugin
 def sigma2_eins(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the einstein model
 
@@ -40,9 +37,8 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     feffpath = None
     if path is not None:
         feffpath = path._feffdat
-    else:
-        symtable = _larch.symtable._sys.fiteval.symtable
-        feffpath = symtable.get('feffpath', None)
+    elif _larch is not Non:
+        feffpath = _larch.symtable._sys.fiteval.symtable.get('feffpath', None)
 
     if feffpath is None:
         return 0.
@@ -56,7 +52,6 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     rmass = 1.0/max(1.e-12, rmass)
     return EINS_FACTOR/(theta * rmass * np.tanh(theta/(2.0*t)))
 
-@ValidateLarchPlugin
 def sigma2_debye(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the correlated Debye model
 
@@ -74,9 +69,8 @@ def sigma2_debye(t, theta, path=None, _larch=None):
     feffpath = None
     if path is not None:
         feffpath = path._feffdat
-    else:
-        symtable = _larch.symtable._sys.fiteval.symtable
-        feffpath = symtable.get('feffpath', None)
+    elif _larch is not Non:
+        feffpath = _larch.symtable._sys.fiteval.symtable.get('feffpath', None)
 
     if feffpath is None:
         return 0.

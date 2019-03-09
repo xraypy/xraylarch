@@ -22,7 +22,7 @@ from larch import (Group, Parameter, isParameter,
 
 from larch.utils.strutils import fix_varname, b32hash
 from larch_plugins.xafs import ETOK, set_xafsGroup
-from larch_plugins.xray import atomic_mass, atomic_symbol
+from larch.xray import atomic_mass, atomic_symbol
 from larch.fitting import group2params
 
 SMALL = 1.e-6

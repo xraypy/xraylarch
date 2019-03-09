@@ -10,18 +10,15 @@ import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-from larch import (Group, ValidateLarchPlugin)
-
+from larch import Group
 from larch.fitting import Parameter, isParameter, param_value
-
-from larch_plugins.xray import xray_line, xray_lines
+from larch.xray import xray_line
 from larch.math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
     def __init__(self, name=None, shape='gaussian',
                  amplitude=1, center=0, sigma=1,
-                 sigma_params=None, _larch=None, **kws):
-        self._larch = _larch
+                 sigma_params=None, **kws):
         kwargs = {'name': name}
         kwargs.update(kws)
         self.amplitude = amplitude
@@ -43,14 +40,12 @@ class XRFPeak(Group):
             return
         if line == 'Ka': line='Ka1'
 
-        dat = xray_line(elem, line, _larch=self._larch)
+        dat = xray_line(elem, line)
         if dat is not None:
             ecenter = dat[0]
             if self.center is None:
-                self.center = Parameter(name='center',
-                                        value=ecenter,
-                                        vary=False,
-                                        _larch=self._larch)
+                self.center = Parameter(name='center', value=ecenter,
+                                        vary=False)
 
             if sigma_params is not None:
                 if len(sigma_params) == 2 and self.sigma is None:
@@ -60,9 +55,7 @@ class XRFPeak(Group):
                     expr = "%s + %s * %f" % (sigma_params[0],
                                              sigma_params[1],
                                              ecenter)
-                    self.sigma = Parameter(name='sigma',
-                                           expr=expr,
-                                           _larch=self._larch)
+                    self.sigma = Parameter(name='sigma', expr=expr)
 
     def __repr__(self):
         if self.name is not None:
@@ -70,10 +63,10 @@ class XRFPeak(Group):
         return '<XRFPeak Group (unknown)>'
 
     def __copy__(self):
-        return XRFPeak(name=self.name, _larch=self._larch)
+        return XRFPeak(name=self.name)
 
     def __deepcopy__(self, memo):
-        return XRFPeak(filename=self.ename, _larch=self._larch)
+        return XRFPeak(filename=self.ename)
 
 
     def _peakparams(self, paramgroup=None, **kws):
@@ -86,7 +79,7 @@ class XRFPeak(Group):
                 if kws[parname] is not None:
                     val = kws[parname]
             if isinstance(val, six.string_types):
-                thispar = Parameter(expr=val, _larch=self._larch)
+                thispar = Parameter(expr=val)
                 setattr(self, parname, thispar)
                 val = getattr(self, parname)
             out.append(param_value(val))
@@ -112,10 +105,9 @@ class XRFPeak(Group):
 
         self.counts =  amp*fcn(x, cen=center, sigma=sigma)
 
-@ValidateLarchPlugin
-def xrf_peak(name=None, amplitude=1, sigma=0.1,
-             center=None, shape='gaussian',
-             sigma_params=None, _larch=None, **kws):
+
+def xrf_peak(name=None, amplitude=1, sigma=0.1, center=None,
+             shape='gaussian', sigma_params=None, **kws):
     """create an XRF Peak
 
     Parameters:
@@ -136,7 +128,7 @@ def xrf_peak(name=None, amplitude=1, sigma=0.1,
 
     """
     return XRFPeak(name=name, amplitude=amplitude, sigma=sigma, center=center,
-                    shape=shape, sigma_params=sigma_params, _larch=_larch)
+                    shape=shape, sigma_params=sigma_params)
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_peak': xrf_peak})

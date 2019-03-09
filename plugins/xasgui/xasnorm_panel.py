@@ -12,6 +12,7 @@ from functools import partial
 from collections import OrderedDict
 from lmfit.printfuncs import gformat
 from larch.math import index_of
+from larch.xray import guess_edge, atomic_number
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
@@ -23,7 +24,6 @@ from larch_plugins.xasgui.taskpanel import TaskPanel
 
 from larch_plugins.xafs.xafsutils import guess_energy_units
 from larch_plugins.xafs.xafsplots import plotlabels
-from larch_plugins.xray import guess_edge, atomic_number
 np.seterr(all='ignore')
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)

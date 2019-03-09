@@ -47,9 +47,8 @@ sim_spectra: keeps individual emission lines with significant intensity without 
 import math
 import numpy
 import sys
-import larch
 from larch.utils.physical_constants import AVOGADRO, BARN
-from larch_plugins.xray import xray_delta_beta, chemparse
+from larch.xray import xray_delta_beta, chemparse
 
 pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
 fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
@@ -61,7 +60,7 @@ class: Material, ElemFY, SampleMatrix2
 ----------------------------------------------------------------------------------------------------------
 '''
 class Material:
-    def __init__(self, composition, density, thickness=1,_larch=None):
+    def __init__(self, composition, density, thickness=1):
         self.composition=composition        # ex) SiO2
         self.density=density              # in g/cm^3
         self.thickness=thickness            # in cm
@@ -85,7 +84,7 @@ class Material:
         self.AtWt=AtomWeight            # weight per mole
     def getLa(self, energy, NumLayer=1.0):    # get absorption legnth for incident x-ray, NumLayer for multiple layers
         # MN replace...
-        temp= xray_delta_beta(self.composition, self.density, energy, _larch=_larch)
+        temp= xray_delta_beta(self.composition, self.density, energy)
         # returns delta, beta, la_photoE, Nat, la_total
         self.delta=temp[0];     self.beta=temp[1]
         self.la=temp[2]  # temp[4] (total) instead of temp[2] (photoelectric)
@@ -104,8 +103,8 @@ class ElemFY:  # fluorescing element
 
 class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two layers with different compositions
     def __init__(self, composition1='Si', density1=2.33, thickness1=0.1, \
-                       composition2='Si', density2=2.33, thickness2=0.1,
-                       angle0=45.0, option='surface', _larch=None):
+                 composition2='Si', density2=2.33, thickness2=0.1,
+                 angle0=45.0, option='surface'):
         self.composition1 = composition1     # ex) Fe2O3
         # MN replace:
         out= chemparse(composition1)         # output from get_ChemName
@@ -139,9 +138,9 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         self.ElemFrtFY =[]                  # fraction for fluorescing element
         self.Nat1=1                  # atomic number density in atoms/cc, for example # of Fe2O3/cm^3 for Fe2O3 substrate
         self.Nat2=1                  # atomic number density in atoms/cc
-        substrate1_material = Material(composition1, density1, _larch=_larch)
+        substrate1_material = Material(composition1, density1)
         AtNumDen1 = substrate1_material.NumDen      #  substrate1
-        substrate2_material = Material(composition2, density2, _larch=_larch)
+        substrate2_material = Material(composition2, density2)
         AtNumDen2 = substrate2_material.NumDen      #  substrate2, fixed 8/12/10
         self.Nat1=AtNumDen1
         self.Nat2=AtNumDen2

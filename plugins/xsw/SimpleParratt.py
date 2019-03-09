@@ -6,8 +6,7 @@
 
 import math
 import numpy as np
-import larch
-from larch_plugins.xray import xray_delta_beta
+from larch.xray import xray_delta_beta
 
 class Layer:
     def __init__(self, tag, composition='Si', density=2.33, thickness=1000.1234, rms=1e-3):

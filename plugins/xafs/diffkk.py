@@ -7,7 +7,7 @@ from larch import Group
 from larch.math import interp
 from larch.utils.show import show
 
-from larch_plugins.xray import xray_edge, xray_line
+from larch.xray import xray_edge, xray_line
 from larch_plugins.xafs import mback
 try:
     from larch_plugins.wx   import _newplot, _plot
