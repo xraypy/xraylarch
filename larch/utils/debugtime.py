@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import time
+import sys
 
 class debugtime(object):
     def __init__(self, verbose=False, _larch=None):
