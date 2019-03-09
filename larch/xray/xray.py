@@ -11,6 +11,8 @@ from .chemparser import chemparse
 
 _xraydb = None
 
+MODNAME = '_xray'
+
 _edge_energies = {'k': np.array([-1.0, 13.6, 24.6, 54.7, 111.5, 188.0,
                                  284.2, 409.9, 543.1, 696.7, 870.2, 1070.8,
                                  1303.0, 1559.0, 1839.0, 2145.5, 2472.0,

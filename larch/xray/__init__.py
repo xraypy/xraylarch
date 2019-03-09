@@ -72,4 +72,4 @@ def _larch_init(_larch):
     """initialize xraydb"""
     xdb = get_xraydb(_larch)
     get_materials(_larch)
-    _larch.symtable._xray.__doc__ = MODDOC
+    _larch.symtable._xray.__doc__ = __DOC__
