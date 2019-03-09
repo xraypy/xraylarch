@@ -3,8 +3,7 @@ Methods for fitting background in energy dispersive xray spectra
 
 """
 import numpy as np
-import larch
-from larch_plugins.xrf import isLarchMCAGroup
+from .mca import isLarchMCAGroup
 
 def xrf_background(energy, counts=None, group=None, width=None, exponent=2, **kws):
     """fit background for XRF spectra.
@@ -67,7 +66,3 @@ def xrf_background(energy, counts=None, group=None, width=None, exponent=2, **kw
     if group is not None:
         group.bgr = bgr
         group.bgr_info = dict(width=width, exponent=exponent)
-
-
-def registerLarchPlugin():
-    return ('_xrf', {'xrf_background': xrf_background})

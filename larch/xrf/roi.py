@@ -12,17 +12,6 @@ Authors/Modifications:
 import numpy as np
 from larch import Group
 
-MODDOC = '''
-X-ray Fluorescence Routines
-
-The functions here include (but are not limited to):
-
-function         description
-------------     ------------------------------
-create_roi       create an ROI
-read_xmap_netcdf read netcdf file from XIA XMap DXP
-read_xrfmap      read GSE XRF Map (HDF5) file
-'''
 
 def split_roiname(name):
     words = name.split()
@@ -122,7 +111,7 @@ class ROI(Group):
             out = self.net
         return out
 
-def create_roi(name, left, right, bgr_width=3, address='', _larch=None):
+def create_roi(name, left, right, bgr_width=3, address=''):
     """create an ROI, a named portion of an MCA spectra defined by index
 
      Parameters:
@@ -143,16 +132,3 @@ def create_roi(name, left, right, bgr_width=3, address='', _larch=None):
     """
     return ROI(name=name, left=left, right=right,
                bgr_width=bgr_width, address=address)
-
-
-def initializeLarchPlugin(_larch=None):
-    """initialize _io"""
-    if _larch is not None:
-        mod = getattr(_larch.symtable, '_xrf')
-        mod.__doc__ = MODDOC
-
-def registerLarchGroups():
-    return (ROI,)
-
-def registerLarchPlugin():
-    return ('_xrf', {'create_roi': create_roi})

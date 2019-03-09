@@ -11,9 +11,9 @@ import six
 import numpy as np
 from larch import Group, isgroup
 
-from larch.math import interp
-from larch_plugins.xrf.deadtime import calc_icr, correction_factor
-from larch_plugins.xrf.roi import ROI
+from ..math import interp
+from .deadtime import calc_icr, correction_factor
+from .roi import ROI
 
 
 def isLarchMCAGroup(grp):
@@ -323,7 +323,7 @@ class MCA(Group):
 
 def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
                name='mca', start_time='', real_time=0, live_time=0,
-               dt_factor=1, input_counts=0, tau=0, _larch=None, **kws):
+               dt_factor=1, input_counts=0, tau=0, **kws):
 
     """create an MCA object, containing an XRF (or similar) spectrum
 
@@ -342,9 +342,3 @@ def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
                quad=quad, dt_factor=dt_factor, real_time=real_time,
                live_time=live_time, input_counts=input_counts,
                tau=tau, **kws)
-
-def registerLarchGroups():
-    return (MCA,)
-
-def registerLarchPlugin():
-    return ('_xrf', {'create_mca': create_mca})

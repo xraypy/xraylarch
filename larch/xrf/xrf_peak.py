@@ -11,9 +11,9 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 
 from larch import Group
-from larch.fitting import Parameter, isParameter, param_value
-from larch.xray import xray_line
-from larch.math import gaussian, lorentzian, voigt, pvoigt
+from .fitting import Parameter, isParameter, param_value
+from .xray import xray_line
+from .math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
     def __init__(self, name=None, shape='gaussian',
@@ -129,6 +129,3 @@ def xrf_peak(name=None, amplitude=1, sigma=0.1, center=None,
     """
     return XRFPeak(name=name, amplitude=amplitude, sigma=sigma, center=center,
                     shape=shape, sigma_params=sigma_params)
-
-def registerLarchPlugin():
-    return ('_xrf', {'xrf_peak': xrf_peak})

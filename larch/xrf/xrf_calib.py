@@ -7,11 +7,10 @@ import numpy as np
 from collections import OrderedDict
 from lmfit.models import GaussianModel, ConstantModel
 
-from larch import ValidateLarchPlugin
-from larch.math import index_of, linregress, fit_peak
-from larch.xray import xray_line
-
-from larch_plugins.xrf import isLarchMCAGroup, split_roiname
+from .math import index_of, linregress, fit_peak
+from .xray import xray_line
+from .roi import split_roiname
+from .mca import isLarchMCAGroup
 
 def xrf_calib_init_roi(mca, roiname):
     """initial calibration step for MCA:
@@ -154,9 +153,3 @@ def xrf_calib_apply(mca, offset=None, slope=None):
     mca.slope = slope
     npts = len(mca.energy)
     mca.energy = (offset + slope*np.arange(npts))
-
-def registerLarchPlugin():
-    return ('_xrf', {'xrf_calib_fitrois': xrf_calib_fitrois,
-                     'xrf_calib_init_roi': xrf_calib_init_roi,
-                     'xrf_calib_compute': xrf_calib_compute,
-                     'xrf_calib_apply': xrf_calib_apply})
