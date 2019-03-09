@@ -149,6 +149,11 @@ class Interpreter:
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
 
+        # run any initialization routines
+        for fcn in builtins.init_funcs:
+            if callable(fcn):
+                fcn(_larch=self)
+
         self.on_try = self.on_tryexcept
         self.on_tryfinally = self.on_tryexcept
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
