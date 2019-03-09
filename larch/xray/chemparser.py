@@ -154,8 +154,6 @@ proper capitalization must be used:
     p = ChemFormulaParser()
     return p.parse(formula)
 
-def registerLarchPlugin():
-    return ('_xray', {'chemparse': chemparse})
 
 if __name__ == '__main__':
     examples = ('H2O',  'Mg(SO4)2',

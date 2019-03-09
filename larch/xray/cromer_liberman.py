@@ -4,17 +4,14 @@ import numpy as np
 from scipy.signal import convolve
 
 import larch
-from larch import  ValidateLarchPlugin
 from larch.larchlib import get_dll
 
 from larch.math import as_ndarray
-from larch_plugins.xray import core_width, atomic_number
+from .xray import core_width, atomic_number
 
-MODNAME = '_xray'
 CLLIB = None
 
-@ValidateLarchPlugin
-def f1f2(z, energies, width=None, edge=None, _larch=None):
+def f1f2(z, energies, width=None, edge=None):
     """Return anomalous scattering factors f1, f2 from Cromer-Liberman
 
     Look-up and return f1, f2 for an element and array of energies
@@ -40,7 +37,7 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
     en = as_ndarray(energies)
 
     if not isinstance(z, int):
-        z  = atomic_number(z, _larch=_larch)
+        z  = atomic_number(z)
         if z is None:
             return None
 
@@ -48,8 +45,8 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
         print( 'Cromer-Liberman data not available for Z>92')
         return
 
-    if edge is not None or width is not None and _larch is not None:
-        natwid = core_width(element=z, edge=edge, _larch=_larch)
+    if edge is not None or width is not None:
+        natwid = core_width(element=z, edge=edge)
         if width is None and natwid not in (None, []):
             width = natwid
 
@@ -84,12 +81,6 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
         f1 = np.interp(energies, en, convolve(f1, lor)[nk:-nk])/scale
         f2 = np.interp(energies, en, convolve(f2, lor)[nk:-nk])/scale
     return (f1, f2)
-
-def loren(x, cen=0, sigma=1):
-    return
-
-def registerLarchPlugin():
-    return (MODNAME, {'f1f2_cl': f1f2})
 
 if __name__ == '__main__':
     en = np.linspace(8000, 9200, 51)

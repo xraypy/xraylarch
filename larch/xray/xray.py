@@ -4,30 +4,10 @@ from math import pi
 import larch
 from larch import Group
 from larch.math import index_nearest
-from larch_plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
-                                XrayDB, chemparse)
-
-MODNAME = '_xray'
-
-MODDOC = '''
-Functions for accessing and using data from X-ray Databases and
-Tables.  Many of these take an element as an argument -- this
-can be either the atomic symbol or atomic number Z.
-
-The data and functions here include (but are not limited to):
-
-member name     descrption
-------------    ------------------------------
-materials       dictionary of composition of common materials
-chemparse       parse a Chemical formula to compositiondictionary.
-atomic_mass     return atomic mass for an element
-f0              Thomson X-ray scattering factor
-f1f2_cl         Anomalous scattering factors from Cromer-Libermann
-mu_elam         X-ray attenuation coefficients from Elam etal
-mu_chantler     X-ray attenuation coefficients from Chantler
-xray_edges      X-ray absorption edges for an element
-xray_lines      X-ray emission lines for an element
-'''
+from ..utils.physical_constants import (R_ELECTRON_CM, AVOGADRO,
+                                        PLANCK_HC)
+from .xraydb import  XrayDB
+from .chemparser import chemparse
 
 _xraydb = None
 
@@ -142,7 +122,7 @@ _edge_energies = {'k': np.array([-1.0, 13.6, 24.6, 54.7, 111.5, 188.0,
 def get_xraydb(_larch=None):
     global _xraydb
     if _xraydb is None:
-        _xraydb = XrayDB(dbname='xrayref.db')
+        _xraydb = XrayDB(dbname='xraydata.db')
     if _larch is not None:
         symname = '%s._xraydb' % MODNAME
         if not _larch.symtable.has_symbol(symname):
@@ -634,36 +614,3 @@ def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
     if photo_only:
         beta  = beta_photo * scale
     return delta, beta, lamb_cm/(4*pi*beta)
-
-def initializeLarchPlugin(_larch=None):
-    """initialize xraydb"""
-    if _larch is not None:
-        xdb = get_xraydb(_larch)
-        mod = getattr(_larch.symtable, MODNAME)
-        mod.__doc__ = MODDOC
-
-
-def registerLarchPlugin():
-    return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
-                      'chantler_energies': chantler_energies,
-                      'chantler_data': chantler_data,
-                      'f1_chantler': f1_chantler,
-                      'f2_chantler': f2_chantler,
-                      'mu_chantler': mu_chantler,
-                      'mu_elam': mu_elam,
-                      'coherent_xsec': coherent_cross_section_elam,
-                      'incoherent_xsec': incoherent_cross_section_elam,
-                      'atomic_number': atomic_number,
-                      'atomic_symbol': atomic_symbol,
-                      'atomic_mass':   atomic_mass,
-                      'atomic_density': atomic_density,
-                      'xray_edges': xray_edges,
-                      'xray_edge': xray_edge,
-                      'xray_lines': xray_lines,
-                      'xray_line': xray_line,
-                      'fluo_yield': fluo_yield,
-                      'core_width':  core_width,
-                      'guess_edge':  guess_edge,
-                      'ck_probability': ck_probability,
-                      'xray_delta_beta': xray_delta_beta,
-                      })

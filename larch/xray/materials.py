@@ -1,8 +1,8 @@
 import os
 import numpy as np
 from larch import site_config
-
-from larch_plugins.xray import chemparse, mu_elam, atomic_mass
+from .chemparser import chemparse
+from .xray import mu_elam, atomic_mass
 
 MODNAME = '_xray'
 _materials = None
@@ -14,21 +14,20 @@ def get_materials(_larch=None):
     if _materials is None:
         # initialize materials table
         _materials = {}
-        for dirname in (os.path.join(site_config.larchdir, 'plugins', 'xray'),
-                        os.path.join(site_config.larchdir)):
-            fname = os.path.join(dirname, 'materials.dat')
-            if os.path.exists(fname):
-                with open(fname, 'r') as fh:
-                    lines = fh.readlines()
-                for line in lines:
-                    line = line.strip()
-                    if len(line) > 2 and not line.startswith('#'):
-                        try:
-                            name, f, den = [i.strip() for i in line.split('|')]
-                            name = name.lower()
-                            _materials[name] = (f.replace(' ', ''), float(den))
-                        except:
-                            pass
+        dirname, _ = os.path.split(__file__)
+        fname = os.path.join(dirname, 'materials.dat')
+        if os.path.exists(fname):
+            with open(fname, 'r') as fh:
+                lines = fh.readlines()
+            for line in lines:
+                line = line.strip()
+                if len(line) > 2 and not line.startswith('#'):
+                    try:
+                        name, f, den = [i.strip() for i in line.split('|')]
+                        name = name.lower()
+                        _materials[name] = (f.replace(' ', ''), float(den))
+                    except:
+                        pass
         if _larch is not None :
             symname = '%s._materials' % MODNAME
             _larch.symtable.set_symbol(symname, _materials)
@@ -160,15 +159,3 @@ def material_add(name, formula, density, _larch=None):
     fh = open(fname, 'w')
     fh.write(''.join(text))
     fh.close()
-
-def initializeLarchPlugin(_larch=None):
-    """initialize xraydb"""
-    if _larch is not None:
-         get_materials(_larch)
-
-def registerLarchPlugin():
-    return ('_xray', {'material_get': material_get,
-                      'material_add': material_add,
-                      'material_mu':  material_mu,
-                      'material_mu_components': material_mu_components,
-                      })
