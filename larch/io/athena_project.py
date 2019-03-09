@@ -20,6 +20,7 @@ from numpy.random import randint
 from larch import Group
 from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+from larch.xray import guess_edge
 
 if sys.version[0] == '2':
     from string import maketrans
@@ -370,7 +371,6 @@ class AthenaProject(object):
     def add_group(self, group, signal=None):
         """add Larch group (presumably XAFS data) to Athena project"""
         from larch_plugins.xafs import pre_edge
-        from larch_plugins.xray.xraydb_plugin import guess_edge
 
         x = athena_array(group, 'energy')
         yname = None
