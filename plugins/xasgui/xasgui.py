@@ -35,7 +35,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
 
 from larch.fitting import fit_report
 from larch.utils import group2dict
-
+from larch.site_config import icondir
 from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
@@ -152,8 +152,7 @@ class XASController():
         self.larch.symtable._sys.xas_viewer.workdir = os.getcwd()
 
     def get_iconfile(self):
-        larchdir = self.symtable._sys.config.larchdir
-        return os.path.join(larchdir, 'icons', ICON_FILE)
+        return os.path.join(icondir, ICON_FILE)
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
@@ -360,7 +359,7 @@ class XASFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch)
+            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
@@ -596,7 +595,7 @@ class XASFrame(wx.Frame):
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch)
+            self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
@@ -894,7 +893,7 @@ class XASFrame(wx.Frame):
         # check for athena projects
         if is_athena_project(path):
             kwargs = dict(filename=path,
-                          _larch = self.controller.larch,
+                          _larch=self.controller.larch,
                           read_ok_cb=self.onReadAthenaProject_OK)
             self.show_subframe('athena_import', AthenaImporter, **kwargs)
         else:
@@ -982,6 +981,7 @@ class XASFrame(wx.Frame):
     def install_group(self, groupname, filename, overwrite=False,
                       process=True, rebin=False, plot=True):
         """add groupname / filename to list of available data groups"""
+
         thisgroup = getattr(self.larch.symtable, groupname)
         thisgroup.groupname = groupname
         thisgroup.filename = filename
