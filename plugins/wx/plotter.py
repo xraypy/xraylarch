@@ -27,10 +27,10 @@ import wx.lib.newevent
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 
 import larch
+from larch.xrf import isLarchMCAGroup
 
 from larch_plugins.wx.gui_utils import ensuremod
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
-from larch_plugins.xrf import isLarchMCAGroup
 
 mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir

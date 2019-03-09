@@ -21,9 +21,9 @@ except:
 
 import larch
 
-from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
-                               xrf_calib_init_roi, xrf_calib_compute,
-                               xrf_calib_apply)
+from larch.xrf import (xrf_background, xrf_calib_fitrois,
+                       xrf_calib_init_roi, xrf_calib_compute,
+                       xrf_calib_apply)
 
 class XRFCalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):

@@ -35,12 +35,12 @@ try:
 except:
     pass
 
-from larch import Interpreter, site_config
+from larch import Interpreter
 from larch.math import index_of
 from larch.utils import bytes2str, debugtime
 from larch.wxlib import get_icon, LarchFrame, SetTip
 from larch.io import GSEMCA_File, gsemca_group
-
+from larch.site_config import icondir
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      Button, Check, MenuItem, Choice, FileOpen, FileSave,
                      fix_filename, HLine, GridPanel, CEN, LEFT, RIGHT)
@@ -100,7 +100,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch)
+            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
             self.larch_buffer.Show()
             self.larch_buffer.Raise()
             self.larch_buffer.Hide()
@@ -480,11 +480,11 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
 
-#         fico = os.path.join(site_config.larchdir, 'icons', ICON_FILE)
-#         try:
-#             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-#         except:
-#             pass
+        fico = os.path.join(icondir, ICON_FILE)
+        try:
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -802,7 +802,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch)
+            self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
