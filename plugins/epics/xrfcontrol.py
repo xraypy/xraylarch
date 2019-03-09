@@ -43,6 +43,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 
 import larch
+from larch.site_config import icondir
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, XRFCalibrationFrame)
 
@@ -151,8 +152,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.onConnectEpics(event=None, prefix=prefix)
 
-        self.icon_file = os.path.join(larch.site_config.larchdir,
-                                      'icons', 'ptable.ico')
+        self.icon_file = os.path.join(icondir, 'ptable.ico')
 
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)

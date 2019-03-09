@@ -58,6 +58,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook)
 from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
+from larch.site_config import icondir
 
 from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
@@ -1320,7 +1321,7 @@ class MapViewerFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch)
+            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
@@ -1694,7 +1695,7 @@ class MapViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
-        fico = os.path.join(larch.site_config.larchdir, 'icons', XRF_ICON_FILE)
+        fico = os.path.join(icondir, XRF_ICON_FILE)
         try:
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
@@ -1809,7 +1810,7 @@ class MapViewerFrame(wx.Frame):
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch)
+            self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
 
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
