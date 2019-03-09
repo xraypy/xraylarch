@@ -13,14 +13,16 @@ import asteval
 from .helper import Helper
 from . import inputText
 from . import site_config
-from . import fitting
-from . import io
-from . import math
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
+
+from . import fitting
+from . import io
+from . import math
+from . import xray
 
 
 PLUGINSTXT = 'plugins.txt'
@@ -32,8 +34,7 @@ helper = Helper()
 # inherit most available symbols from python's __builtins__
 from_builtin = [sym for sym in __builtins__ if not sym.startswith('__')]
 
-# inherit these from math (many will be overridden by numpy
-
+# inherit these from math (many will be overridden by numpy)
 from_math = ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
             'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'exp',
             'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'hypot',
@@ -529,8 +530,13 @@ _main_builtins.update(show_builtins)
 # for k, v in _io_builtins.items():
 #     print(k, v)
 
+# how to fill in the larch namespace at startup
 local_funcs = dict(_builtin=_main_builtins, _math=_math_builtins,
-                   _io=io._larch_builtins_)
+                   _io=io._larch_builtins_,
+                   _xray=xray._larch_builtins)
+
+# functions to run (with signature fcn(_larch)) at interpreter startup
+init_funcs = [xray._larch_init]
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']
