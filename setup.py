@@ -3,7 +3,7 @@
 Setup.py for xraylarch
 """
 from __future__ import print_function
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import time
 import os
@@ -138,7 +138,7 @@ elif uname == 'win':
 
 sname = "%s%s" % (uname, nbits)
 
-if DEBUG:
+if DEBUG or True:
     print("##  Settings  (Debug mode) ## ")
     print(" larchdir: ",  larchdir)
     print(" sys.prefix: ",  sys.prefix)
@@ -150,8 +150,9 @@ if DEBUG:
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch plugins
 
-data_files = [(pjoin(larchdir, 'icons'),       glob('icons/*.ic*')),
-              (pjoin(larchdir, 'dlls', sname), glob("%s/*" % pjoin('dlls', sname)))]
+data_files = [
+    (pjoin(larchdir, 'icons'),       glob('icons/*.ic*')),
+    (pjoin(larchdir, 'dlls', sname), glob("%s/*" % pjoin('dlls', sname)))]
 
 
 scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
@@ -189,6 +190,18 @@ with open('requirements.txt', 'r') as f:
     requirements = f.readlines()
 
 
+packages = ['larch']
+for pname in find_packages('larch'):
+    packages.append('larch.%s' % pname)
+
+
+
+print(" Packages")
+print(packages)
+
+print(" DATA FILES ")
+print(data_files)
+
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = __version__,
@@ -198,10 +211,10 @@ setup(name = 'xraylarch',
       download_url = 'http://xraypy.github.io/xraylarch/',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
-      packages = ['larch', 'larch.fitting', 'larch.wxlib', 'larch.io',
-                  'larch.utils', 'larch.math'],
-      data_files  = data_files,
+      packages = packages,
+      package_data={'larch': ['icons/*', 'xray/*.dat', 'xray/*.db']},
       entry_points = {'console_scripts' : larch_apps},
+      data_files  = data_files,
       platforms = ['Windows', 'Linux', 'Mac OS X'],
       classifiers=['Intended Audience :: Science/Research',
                    'Operating System :: OS Independent',
