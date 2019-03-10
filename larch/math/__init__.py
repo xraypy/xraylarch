@@ -18,6 +18,9 @@ from .lincombo_fitting import lincombo_fit, lincombo_fitall
 from .pca import pca_train, pca_fit
 from .gridxyz import gridxyz
 
+from .tomography import (tomo_reconstruction, reshape_sinogram,
+                         trim_sinogram, TOMOPY_ALG, TOMOPY_FILT)
+
 
 _larch_builtins_ = dict(linregress=linregress,
                         polyfit=polyfit,

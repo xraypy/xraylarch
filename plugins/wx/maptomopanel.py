@@ -43,9 +43,9 @@ from larch.wxlib import (EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine)
 from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
+from larch.math.tomography import TOMOPY_ALG, TOMOPY_FILT
 
 from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch_plugins.tomo import TOMOPY_ALG, TOMOPY_FILT
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL

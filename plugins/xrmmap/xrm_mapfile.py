@@ -25,7 +25,7 @@ from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5
 
 from larch_plugins.xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
                                q_from_d, lambda_from_E, read_xrd_data)
-from larch_plugins.tomo import tomo_reconstruction, reshape_sinogram, trim_sinogram
+from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 NINIT = 32
 COMPRESSION_OPTS = 2
