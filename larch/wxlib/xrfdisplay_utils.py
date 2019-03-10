@@ -16,16 +16,12 @@ from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
 
 from wxmplot.colors import hexcolor
 
-import larch
-
-from larch.xrf import (xrf_background, xrf_calib_fitrois,
-                       xrf_calib_init_roi, xrf_calib_compute,
-                       xrf_calib_apply)
+from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
+                   xrf_calib_compute, xrf_calib_apply)
 
 class XRFCalibrationFrame(wx.Frame):
-    def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):
+    def __init__(self, parent, mca, size=(-1, -1), callback=None):
         self.mca = mca
-        self.larch = larch
         self.callback = callback
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
@@ -184,14 +180,14 @@ class XRFCalibrationFrame(wx.Frame):
             w_nwid.SetLabel("-----")
 
 
-        xrf_calib_compute(mca, apply=True, _larch=self.larch)
+        xrf_calib_compute(mca, apply=True)
         offset, slope = mca.new_calib
         self.calib_updated = True
         self.new_offset.SetValue("% .3f" % (1000*offset))
         self.new_slope.SetValue("% .3f" % (1000*slope))
 
         # find ROI peak positions using this new calibration
-        xrf_calib_fitrois(mca, _larch=self.larch)
+        xrf_calib_fitrois(mca)
         for roi in self.mca.rois:
             try:
                 eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
@@ -207,8 +203,7 @@ class XRFCalibrationFrame(wx.Frame):
 
 
         # restore calibration to old values until new values are accepted
-        xrf_calib_apply(mca, offset=old_calib[0], slope=old_calib[1],
-                        _larch=self.larch)
+        xrf_calib_apply(mca, offset=old_calib[0], slope=old_calib[1])
         mca.init_calib = init_calib
 
         tsize = self.GetSize()
@@ -220,7 +215,7 @@ class XRFCalibrationFrame(wx.Frame):
         offset = 0.001*float(self.new_offset.GetValue())
         slope  = 0.001*float(self.new_slope.GetValue())
         mca.new_calib = offset, slope
-        xrf_calib_apply(mca, offset=offset, slope=slope, _larch=self.larch)
+        xrf_calib_apply(mca, offset=offset, slope=slope)
         if callable(self.callback):
             self.callback(mca)
         self.Destroy()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-utilities for XRF display
+fitting GUI for XRF display
 """
 import time
 import copy
@@ -16,20 +16,17 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT)
 
+from .notebooks import flatnotebook
+from .parameter import ParameterPanel
+from .periodictable import PeriodicTablePanel
+
 from larch import Group
-from larch.fitting import Parameter, Minimizer
+from ..fitting import Parameter, Minimizer
 
-from larch.larchlib import Empty
-from larch.math import index_of, gaussian
-from larch.xray import material_mu, material_get
+from ..math import index_of, gaussian
+from ..xray import material_mu, material_get
 
-from larch.wxlib import flatnotebook
-
-from larch.xrf import (xrf_background, xrf_calib_fitrois,
-                       xrf_calib_compute, xrf_calib_apply)
-
-from larch_plugins.wx import ParameterPanel
-from larch_plugins.wx.periodictable import PeriodicTablePanel
+from ..xrf import xrf_background
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
