@@ -658,3 +658,12 @@ def ValidateLarchPlugin(fcn):
     wrapper.__filename__ = fcn.__code__.co_filename
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
+
+
+def ensuremod(_larch, modname=None):
+    "ensure that a group exists"
+    if _larch is not None:
+        symtable = _larch.symtable
+        if modname is not None and not symtable.has_group(modname):
+            symtable.newgroup(modname)
+        return symtable
