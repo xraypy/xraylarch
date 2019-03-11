@@ -14,7 +14,8 @@ from wx.lib.embeddedimage import PyEmbeddedImage
 from wxutils import (GridPanel, Choice, FloatCtrl,
                      LEFT, pack, HLine, SetTip)
 
-from larch import Parameter, Group
+from lmfit import Parameter
+from larch import Group
 from larch.larchlib import Empty
 
 PAR_FIX = 'fix'

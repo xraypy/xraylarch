@@ -2,7 +2,7 @@ import sys
 import wx
 import wx.lib.mixins.inspection
 
-from larch.wxlib import SetTip
+from wxutils import SetTip
 
 FRAME_BG = (253, 253, 250) ## light grey
 TITLE_BG = (253, 253, 250) ## light grey

@@ -12,46 +12,38 @@ from functools import partial
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
+import wx.dataview as dv
+import wx.lib.colourselect  as csel
+
 try:
     from wx._core import PyDeadObjectError
 except:
     PyDeadObjectError = Exception
 
-import wx.lib.colourselect  as csel
+
 import numpy as np
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 
-HAS_PLOT = False
-try:
-    from wxmplot import PlotPanel
-    HAS_PLOT = True
-except ImportError:
-    pass
-HAS_DV = False
-try:
-    import wx.dataview as dv
-    HAS_DV = True
-except:
-    pass
+from wxmplot import PlotPanel
 
-from larch import Interpreter
-from larch.math import index_of
-from larch.utils import bytes2str, debugtime
-from larch.wxlib import get_icon, LarchFrame, SetTip
-from larch.io import GSEMCA_File, gsemca_group
-from larch.site_config import icondir
+from . import get_icon, LarchFrame, SetTip
+
+from ..math import index_of
+from ..utils import bytes2str, debugtime
+from ..io import GSEMCA_File, gsemca_group
+from ..site_config import icondir
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      Button, Check, MenuItem, Choice, FileOpen, FileSave,
                      fix_filename, HLine, GridPanel, CEN, LEFT, RIGHT)
 
-from larch_plugins.wx.periodictable import PeriodicTablePanel
-from larch_plugins.wx.xrfdisplay_utils import (XRFCalibrationFrame,
-                                               ColorsFrame,
-                                               XrayLinesFrame,
-                                               XRFDisplayConfig)
+from .periodictable import PeriodicTablePanel
+from .xrfdisplay_utils import (XRFCalibrationFrame,
+                               ColorsFrame,
+                               XrayLinesFrame,
+                               XRFDisplayConfig)
 
-from larch_plugins.wx.xrfdisplay_fitpeaks import FitSpectraFrame
+from .xrfdisplay_fitpeaks import FitSpectraFrame
 
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
@@ -413,26 +405,26 @@ class XRFDisplayFrame(wx.Frame):
         pack(zoompanel, zsizer)
 
         self.wids['xray_lines'] = None
-        if HAS_DV:
-            dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-            xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
-            self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn(' Line ',         width=60)
-            xlines.AppendTextColumn(' Energy(keV) ',  width=110)
-            xlines.AppendTextColumn(' Strength ',     width=85)
-            xlines.AppendTextColumn(' Levels ',       width=75)
-            for col in (0, 1, 2, 3):
-                this = xlines.Columns[col]
-                this.Sortable = True
-                align = RIGHT
-                if col in (0, 3):
-                    align = wx.ALIGN_LEFT
-                this.Alignment = this.Renderer.Alignment = align
 
-            xlines.SetMinSize((300, 240))
-            xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
-                        self.onSelectXrayLine)
-            store = xlines.GetStore()
+        dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+        xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
+        self.wids['xray_lines'] = xlines
+        xlines.AppendTextColumn(' Line ',         width=60)
+        xlines.AppendTextColumn(' Energy(keV) ',  width=110)
+        xlines.AppendTextColumn(' Strength ',     width=85)
+        xlines.AppendTextColumn(' Levels ',       width=75)
+        for col in (0, 1, 2, 3):
+            this = xlines.Columns[col]
+            this.Sortable = True
+            align = RIGHT
+            if col in (0, 3):
+                align = wx.ALIGN_LEFT
+            this.Alignment = this.Renderer.Alignment = align
+
+        xlines.SetMinSize((300, 240))
+        xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
+                    self.onSelectXrayLine)
+        store = xlines.GetStore()
 
         # main layout
         # may have to adjust comparison....

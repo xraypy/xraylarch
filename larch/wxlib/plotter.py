@@ -10,29 +10,21 @@ Exposed functions here are
    imshow: display a false-color map from array data on
            a configurable Image Display Frame.
 '''
+
 import time
 import os
 import sys
-
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
-import wx.lib.newevent
 
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
-
 import larch
-from larch.xrf import isLarchMCAGroup
+from ..xrf import isLarchMCAGroup
+from ..larchlib import ensuremod
+from ..site_config import usr_larchdir
 
-from larch_plugins.wx.gui_utils import ensuremod
-from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
+from .xrfdisplay import XRFDisplayFrame
 
-mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
+mpl_dir = os.path.join(usr_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
     try:
@@ -49,7 +41,7 @@ FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
 MODNAME = '_plotter'
 
-MODDOC = '''
+__DOC__ = '''
 General Plotting and Image Display Functions
 
 The functions here include (but are not limited to):
@@ -64,7 +56,6 @@ plot_arrow       add an arrow to a 2D plot
 imshow           image display (false-color intensity image)
 
 xrf_plot         browsable display for XRF spectra
-
 '''
 
 MAX_WINDOWS = 20
@@ -849,36 +840,28 @@ def _closeDisplays(_larch=None, **kws):
         win.Destroy()
 
 
-def initializeLarchPlugin(_larch=None):
-    """initialize plotter"""
-    cmds = ['plot', 'oplot', 'newplot', 'imshow', 'contour']
-    if _larch is not None:
-        _larch.symtable._sys.valid_commands.extend(cmds)
-        mod = getattr(_larch.symtable, MODNAME)
-        mod.__doc__ = MODDOC
+_larch_name = MODNAME
 
-def registerLarchPlugin():
-    return (MODNAME, {'plot':_plot,
-                      'oplot':_oplot,
-                      'newplot':_newplot,
-                      'plot_text': _plot_text,
-                      'plot_marker': _plot_marker,
-                      'plot_arrow': _plot_arrow,
-                      'plot_setlimits': _plot_setlimits,
-                      'plot_axvline':  _plot_axvline,
-                      'plot_axhline':  _plot_axhline,
-                      'scatterplot': _scatterplot,
-                      'hist': _hist,
-                      'update_trace': _update_trace,
-                      'save_plot': _saveplot,
-                      'save_image': _saveimg,
-                      'get_display':_getDisplay,
-                      'close_all_displays':_closeDisplays,
-                      'get_cursor': _getcursor,
-                      'last_cursor_pos': last_cursor_pos,
-                      'imshow':_imshow,
-                      'contour':_contour,
-                      'xrf_plot': _xrf_plot,
-                      'xrf_oplot': _xrf_oplot,
-                      'fit_plot': _fitplot,
-                      })
+_larch_builtins = {MODNAME: dict(plot=_plot,
+                                 oplot=_oplot,
+                                 newplot=_newplot,
+                                 plot_text=_plot_text,
+                                 plot_marker=_plot_marker,
+                                 plot_arrow=_plot_arrow,
+                                 plot_setlimits=_plot_setlimits,
+                                 plot_axvline=_plot_axvline,
+                                 plot_axhline=_plot_axhline,
+                                 scatterplot=_scatterplot,
+                                 hist=_hist,
+                                 update_trace=_update_trace,
+                                 save_plot=_saveplot,
+                                 save_image=_saveimg,
+                                 get_display=_getDisplay,
+                                 close_all_displays=_closeDisplays,
+                                 get_cursor=_getcursor,
+                                 last_cursor_pos=last_cursor_pos,
+                                 imshow=_imshow,
+                                 contour=_contour,
+                                 xrf_plot=_xrf_plot,
+                                 xrf_oplot=_xrf_oplot,
+                                 fit_plot=_fitplot)}

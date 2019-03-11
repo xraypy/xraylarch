@@ -10,10 +10,10 @@ except:
 import time
 import os
 
-from larch.wxlib.larchfilling import Filling
+from ..larchlib import ensuremod
+from .larchfilling import Filling
 
 
-MODNAME = '_sys.wx'
 DEF_CHOICES = [('All Files', '*.*')]
 
 def SafeWxCall(fcn):
@@ -31,15 +31,8 @@ def SafeWxCall(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
-def ensuremod(_larch, modname=None):
-    if _larch is not None:
-        symtable = _larch.symtable
-        if modname is not None and not symtable.has_group(modname):
-            symtable.newgroup(modname)
-        return symtable
 
-
-def _wxupdate(_larch=None, **kws):
+def wx_update(_larch=None, **kws):
     """force an update of wxPython windows"""
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
@@ -152,18 +145,18 @@ def fileprompt(mode='open', multi=True, message = None,
     if fname is None:
         fname = ''
         try:
-            fname = symtable.get_symbol("%s.default_filename" % MODNAME)
+            fname = symtable.get_symbol("_sys.wx.default_filename")
         except:
             pass
-    symtable.set_symbol("%s.default_filename" % MODNAME, fname)
+    symtable.set_symbol("_sys.wx.default_filename", fname)
 
     if choices is None or len(choices) < 1:
         choices = DEF_CHOICES
         try:
-            choices = symtable.get_symbol("%s.ext_choices" % MODNAME)
+            choices = symtable.get_symbol("_sys.wx.ext_choices")
         except:
             pass
-    symtable.set_symbol("%s.ext_choices" % MODNAME, choices)
+    symtable.set_symbol("_sys.wx.ext_choices", choices)
 
     wildcard = []
     for title, fglob in choices:
@@ -202,9 +195,3 @@ def fileprompt(mode='open', multi=True, message = None,
     dlg.Destroy()
     timer.Destroy()
     return path
-
-def registerLarchPlugin():
-    return (MODNAME, {'gcd': gcd,
-                      'databrowser': databrowser,
-                      'fileprompt': fileprompt,
-                      'wx_update': _wxupdate})
