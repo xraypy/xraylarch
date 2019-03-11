@@ -19,7 +19,7 @@ mu_chantler     X-ray attenuation coefficients from Chantler
 xray_edges      X-ray absorption edges for an element
 xray_lines      X-ray emission lines for an element
 """
-
+from ..utils import debugtime
 from .xraydb import XrayDB as xrayDB
 
 from .xray import (atomic_mass, atomic_number, atomic_symbol,
@@ -36,40 +36,37 @@ from .materials import (material_get, material_add, material_mu,
 from .cromer_liberman import f1f2 as f1f2_cl
 from .background import XrayBackground
 from .chemparser import chemparse
-
-
-_larch_builtins = dict(chemparse=chemparse,
-                        material_get=material_get,
-                        material_add=material_add,
-                        material_mu=material_mu,
-                        material_mu_components=material_mu_components,
-                        f1f2_cl=f1f2_cl,
-                        f0=f0,
-                        f0_ions=f0_ions,
-                        chantler_energies=chantler_energies,
-                        chantler_data=chantler_data,
-                        f1_chantler=f1_chantler,
-                        f2_chantler=f2_chantler,
-                        mu_chantler=mu_chantler,
-                        mu_elam=mu_elam,
-                        coherent_xsec=coherent_cross_section_elam,
-                        incoherent_xsec=incoherent_cross_section_elam,
-                        atomic_number=atomic_number,
-                        atomic_symbol=atomic_symbol,
-                        atomic_mass=  atomic_mass,
-                        atomic_density=atomic_density,
-                        xray_edges=xray_edges,
-                        xray_edge=xray_edge,
-                        xray_lines=xray_lines,
-                        xray_line=xray_line,
-                        fluo_yield=fluo_yield,
-                        core_width= core_width,
-                        guess_edge= guess_edge,
-                        ck_probability=ck_probability,
-                        xray_delta_beta=xray_delta_beta)
+_larch_builtins = {'_xray': dict(chemparse=chemparse,
+                                 material_get=material_get,
+                                 material_add=material_add,
+                                 material_mu=material_mu,
+                                 material_mu_components=material_mu_components,
+                                 f1f2_cl=f1f2_cl,
+                                 f0=f0,
+                                 f0_ions=f0_ions,
+                                 chantler_energies=chantler_energies,
+                                 chantler_data=chantler_data,
+                                 f1_chantler=f1_chantler,
+                                 f2_chantler=f2_chantler,
+                                 mu_chantler=mu_chantler,
+                                 mu_elam=mu_elam,
+                                 coherent_xsec=coherent_cross_section_elam,
+                                 incoherent_xsec=incoherent_cross_section_elam,
+                                 atomic_number=atomic_number,
+                                 atomic_symbol=atomic_symbol,
+                                 atomic_mass=  atomic_mass,
+                                 atomic_density=atomic_density,
+                                 xray_edges=xray_edges,
+                                 xray_edge=xray_edge,
+                                 xray_lines=xray_lines,
+                                 xray_line=xray_line,
+                                 fluo_yield=fluo_yield,
+                                 core_width= core_width,
+                                 guess_edge= guess_edge,
+                                 ck_probability=ck_probability,
+                                 xray_delta_beta=xray_delta_beta)}
 
 def _larch_init(_larch):
     """initialize xraydb"""
     xdb = get_xraydb(_larch)
     get_materials(_larch)
-    _larch.symtable._xray.__doc__ = __DOC__

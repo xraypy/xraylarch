@@ -36,17 +36,18 @@ with warnings.catch_warnings():
     except:
         pass
 
+import lmfit, matplotlib
 from .version import __date__, __version__
 from .symboltable import Group, isgroup
 from .larchlib import (ValidateLarchPlugin, Make_CallArgs, enable_plugins,
                        parse_group_args, isNamedClass)
-from . import builtins
 from .site_config import show_site_config
-
-from .interpreter import Interpreter
+from . import builtins
 from .inputText import InputText
 
+from .interpreter import Interpreter
 from . import shell, larchlib, utils, version, site_config, apps
+
 from . import fitting, math, io
 from .fitting import Parameter, isParameter, param_value
 

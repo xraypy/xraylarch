@@ -15,15 +15,21 @@ from . import site_config
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
+
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
-
 from . import fitting
 from . import io
 from . import math
 from . import xray
 from . import xrf
+from . import xafs
 
+try:
+    from . import wxlib
+    from .wxlib import plotter
+except ImportError:
+    wxlib = plotter = None
 
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'
@@ -509,9 +515,6 @@ def reset_fiteval(_larch=None, **kws):
             else:
                 fiteval(init_item)
 
-_math_builtins = {'reset_fiteval': reset_fiteval}
-_math_builtins.update(math._larch_builtins_)
-_math_builtins.update(fitting._larch_builtins_)
 
 _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
                       isgroup=_isgroup, subgroups=_subgroups,
@@ -525,19 +528,45 @@ _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
 _main_builtins.update(utils._larch_builtins)
 _main_builtins.update(show_builtins)
 
-# _io_builtins = {}
-# _io_builtins.update(io._larch_builtins_)
-# for k, v in _io_builtins.items():
-#     print(k, v)
 
 # how to fill in the larch namespace at startup
-local_funcs = dict(_builtin=_main_builtins, _math=_math_builtins,
-                   _io=io._larch_builtins_,
-                   _xray=xray._larch_builtins,
-                   _xrf=xrf._larch_builtins)
+local_funcs = dict(_builtin=_main_builtins,
+                   _math={'reset_fiteval': reset_fiteval})
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
-init_funcs = [xray._larch_init, utils._larch_init, xrf._larch_init]
+init_funcs = []
+
+# group/classes to register for save-restore
+init_groups = []
+mod_docs = {}
+
+# _math_builtins.update(math._larch_builtins_)
+# _math_builtins.update(fitting._larch_builtins_)
+for mod in (math, fitting, io, xray, xrf, xafs, wxlib, plotter):
+    if mod is None:
+        continue
+    modname  = getattr(mod, '_larch_name', mod.__name__)
+    if modname.startswith('larch.'):
+        modname = modname.replace('larch.', '_')
+
+    doc = getattr(mod, '__DOC__', None)
+    if doc is not None:
+        mod_docs[modname] = doc
+    builtins = getattr(mod, '_larch_builtins', {})
+    init_fcn = getattr(mod, '_larch_init', None)
+    init_grp = getattr(mod, '_larch_groups', None)
+    # print("Add builtins ", modname, mod, init_fcn, init_grp)
+
+    for key, val in builtins.items():
+        if key not in local_funcs:
+            local_funcs[key] = val
+        else:
+            local_funcs[key].update(val)
+
+    if init_fcn is not None:
+        init_funcs.append(init_fcn)
+    if init_grp is not None:
+        init_groups.append(init_grp)
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']
