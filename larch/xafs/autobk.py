@@ -4,26 +4,16 @@ import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
 from scipy.special import erf
-
 from lmfit import Parameter, Parameters, minimize
+import uncertainties
 
-from larch import (Group, Make_CallArgs, ValidateLarchPlugin,
-                   parse_group_args, isgroup)
+from larch import (Group, Make_CallArgs, parse_group_args, isgroup)
 
-# import other plugins from std, math, and xafs modules...
-from larch.math import (index_of, index_nearest, realimag, remove_dups)
+from larch.math import index_of, index_nearest, realimag, remove_dups
 
-from larch_plugins.xafs import (ETOK, set_xafsGroup, ftwindow, xftf_fast,
-                                find_e0, pre_edge)
-
-
-# check for uncertainties package
-HAS_UNCERTAIN = False
-try:
-    import uncertainties
-    HAS_UNCERTAIN = True
-except ImportError:
-    pass
+from .xafsutils import ETOK, set_xafsGroup
+from .xafsft import ftwindow, xftf_fast
+from .pre_edge import find_e0, pre_edge
 
 FMT_COEF = 'coef_%2.2i'
 
@@ -53,7 +43,6 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
                            abs(clamp_hi)*scaled_chik[-nclamp:]))
 
 
-@ValidateLarchPlugin
 @Make_CallArgs(["energy" ,"mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
@@ -270,7 +259,3 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         group.delta_chi = dchi
         group.delta_bkg = 0.0*mu
         group.delta_bkg[ie0:ie0+len(dbkg)] = dbkg
-
-
-def registerLarchPlugin():
-    return ('_xafs', {'autobk': autobk})

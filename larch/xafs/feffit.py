@@ -8,22 +8,20 @@ from functools import partial
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
-from scipy import constants
 from scipy.optimize import leastsq as scipy_leastsq
 
 from lmfit import Parameters, Parameter, Minimizer, fit_report
 
-from larch import (Group, isParameter, ValidateLarchPlugin, isNamedClass)
+from larch import Group, isNamedClass
 
-from larch.math import index_of, realimag, complex_phase
-from larch_plugins.xafs import (xftf_fast, xftr_fast, ftwindow,
-                                set_xafsGroup, FeffPathGroup, _ff2chi)
+from ..math import index_of, realimag, complex_phase
+from ..fitting import (correlated_values, eval_stderr,
+                       group2params, params2group, isParameter)
 
-from larch_plugins.xafs.sigma2_models import sigma2_correldebye, sigma2_debye
-from larch_plugins.xafs.feffdat import PATHPAR_FMT
-# use larch's uncertainties package
-from larch.fitting import (correlated_values, eval_stderr,
-                           group2params, params2group)
+from .xafsutils import set_xafsGroup
+from .xafsft import xftf_fast, xftr_fast, ftwindow
+from .sigma2_models import sigma2_correldebye, sigma2_debye
+from .feffdat import PATHPAR_FMT, FeffPathGroup, ff2chi
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -376,7 +374,7 @@ class FeffitDataSet(Group):
         if not self.__prepared:
             self.prepare_fit()
 
-        _ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
+        ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
         eps_k = self.epsilon_k
@@ -441,7 +439,6 @@ class FeffitDataSet(Group):
             for p in self.pathlist:
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
-@ValidateLarchPlugin
 def feffit_dataset(data=None, pathlist=None, transform=None,
                    epsilon_k=None, _larch=None):
     """create a Feffit Dataset group.
@@ -463,7 +460,6 @@ def feffit_dataset(data=None, pathlist=None, transform=None,
     return FeffitDataSet(data=data, pathlist=pathlist,
                          transform=transform, _larch=_larch)
 
-@ValidateLarchPlugin
 def feffit_transform(_larch=None, **kws):
     """create a feffit transform group
 
@@ -490,7 +486,6 @@ def feffit_transform(_larch=None, **kws):
     """
     return TransformGroup(_larch=_larch, **kws)
 
-@ValidateLarchPlugin
 def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **kws):
     """execute a Feffit fit: a fit of feff paths to a list of datasets
 
@@ -523,8 +518,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     """
 
 
-    def _resid(params, datasets=None, paramgroup=None,
-               _larch=None, **kwargs):
+    def _resid(params, datasets=None, paramgroup=None, **kwargs):
         """ this is the residual function"""
         params2group(params, paramgroup)
         return concatenate([d._residual(paramgroup) for d in datasets])
@@ -594,7 +588,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         uvars = correlated_values(vbest, result.covar)
         # 3. evaluate constrained params, save stderr
         for nam, obj in result.params.items():
-            eval_stderr(obj, uvars,  result.var_names, result.params) # vsave) # , _larch)
+            eval_stderr(obj, uvars,  result.var_names, result.params)
 
         # 3. evaluate path params, save stderr
         for ds in datasets:
@@ -612,7 +606,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             params[vname] = vsave[vname]
 
         # clear any errors evaluting uncertainties
-        if len(_larch.error) > 0:
+        if _larch is not None and (len(_larch.error) > 0):
             _larch.error = []
 
     # reset the parameters group with the newly updated uncertainties
@@ -633,9 +627,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     return out
 
 
-@ValidateLarchPlugin
-def feffit_report(result, min_correl=0.1, with_paths=True,
-                  _larch=None):
+def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     """return a printable report of fit for feffit
 
     Parameters:
@@ -780,72 +772,3 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
                 out.append('%s\n' % p.report())
     out.append('='*len(topline))
     return '\n'.join(out)
-
-####################################################
-## sigma2_eins and sigma2_debye are set here as
-## Procedures within lmfit's asteval (held in _sys.fiteval)
-## for calculating XAFS sigma2 for a scattering path
-## these use `reff` or `feffpath.geom` which will be updated
-## for each path during an XAFS path calculation
-##
-sigma2xafs_ = """
-def sigma2_eins(t, theta):
-    EINS_FACTOR = 1.e20*const_hbar**2/(2*const_kboltz*const_amu)
-
-    if feffpath is None:
-         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
-    rmass = 0.
-    for sym, iz, ipot, amass, x, y, z in feffpath.geom:
-        rmass = rmass + 1.0/max(0.1, amass)
-    rmass = 1.0/max(1.e-12, rmass)
-    return EINS_FACTOR/(theta * rmass * tanh(theta/(2.0*t)))
-
-def sigma2_debye(t, theta):
-    if feffpath is None:
-         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
-    tempk  = float(t)
-    thetad = float(theta)
-
-    natoms = len(feffpath.geom)
-    rnorm  = feffpath.rnorman
-    atomx, atomy, atomz, atomm = [], [], [], []
-    for sym, iz, ipot, am, x, y, z in feffpath.geom:
-        atomx.append(x)
-        atomy.append(y)
-        atomz.append(z)
-        atomm.append(am)
-
-    return sigma2_correldebye(natoms, tempk, thetad, rnorm,
-                              atomx, atomy, atomz, atomm)
-"""
-
-def initializeLarchPlugin(_larch=None):
-    """sets XAFS-specific constants and procedures for fiteval
-    """
-    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
-    if fiteval_init is None:
-        fiteval_init = _larch.symtable._sys.fiteval_init = []
-
-    add = fiteval_init.append
-    add(('const_hbar', constants.hbar))
-    add(('const_kboltz', constants.k))
-    add(('const_amu', constants.atomic_mass))
-    add(('sigma2_correldebye', sigma2_correldebye))
-    add(sigma2xafs_)
-
-def registereLarchGroups():
-    return (TransformGroup, FeffitDataSet)
-
-def registerLarchPlugin():
-    return ('_xafs', {'feffit': feffit,
-                      'feffit_dataset': feffit_dataset,
-                      'feffit_transform': feffit_transform,
-                      'feffit_report': feffit_report})

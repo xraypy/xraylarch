@@ -5,7 +5,6 @@ from ctypes import POINTER, pointer, c_int, c_long, c_char, c_char_p, c_double
 import larch
 from larch.larchlib import get_dll
 from larch.xray import  atomic_mass
-## from matplotlib import pylab
 
 F8LIB = None
 
@@ -307,16 +306,3 @@ def feff8_xafs(phase_file):
 #             except:
 #                 pass
 ##
-
-def registerLarchPlugin():
-    return ('_xafs', {'feff8_xafs': feff8_xafs})
-
-
-#     path.set_absorber(x=0.01, y=0.1, z=0.01)
-#     path.add_scatterer(x=1.806, y=0.1, z=1.806, ipot=1)
-#     path.degen = 12
-#     path.calculate_xafs()
-#
-#
-#     pylab.plot(path.k[:path.nepts], path.mag_feff[:path.nepts])
-#     pylab.show()

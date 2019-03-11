@@ -8,7 +8,8 @@ from larch.math import interp
 from larch.utils.show import show
 
 from larch.xray import xray_edge, xray_line
-from larch_plugins.xafs import mback
+from .mback import mback
+
 try:
     from larch_plugins.wx   import _newplot, _plot
     HASPLOT = True
@@ -318,9 +319,3 @@ def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, 
         mback_kws:  arguments for the mback algorithm
     """
     return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws, _larch=_larch)
-
-def registerLarchGroups():
-    return (diffKKGroup,)
-
-def registerLarchPlugin(): # must have a function with this name!
-    return ('_xafs', { 'diffkk': diffkk })

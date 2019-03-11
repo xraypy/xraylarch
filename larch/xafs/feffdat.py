@@ -15,15 +15,15 @@ creates a group that contains the chi(k) for the sum of paths.
 import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-from lmfit import Parameters
-from larch import (Group, Parameter, isParameter,
-                   ValidateLarchPlugin,
-                   param_value, isNamedClass)
+from lmfit import Parameters, Parameter
+
+from larch import Group, isNamedClass
 
 from larch.utils.strutils import fix_varname, b32hash
-from larch_plugins.xafs import ETOK, set_xafsGroup
 from larch.xray import atomic_mass, atomic_symbol
-from larch.fitting import group2params
+from larch.fitting import group2params, isParameter, param_value
+
+from .xafsutils import ETOK, set_xafsGroup
 
 SMALL = 1.e-6
 
@@ -429,8 +429,7 @@ class FeffPathGroup(Group):
         self.chi = cchi.imag
         self.chi_imag = -cchi.real
 
-@ValidateLarchPlugin
-def _path2chi(path, paramgroup=None, _larch=None, **kws):
+def path2chi(path, paramgroup=None, _larch=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
     output chi array will be written to path group
@@ -455,8 +454,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
     path.create_path_params()
     path._calc_chi(**kws)
 
-@ValidateLarchPlugin
-def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
+def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
     """sum chi(k) for a list of FeffPath Groups.
 
@@ -527,11 +525,3 @@ def feffpath(filename=None, _larch=None, label=None, s02=None,
                          degen=degen, e0=e0, ei=ei, deltar=deltar,
                          sigma2=sigma2, third=third, fourth=fourth,
                          _larch=_larch)
-
-def registerLarchGroups():
-    return (FeffDatFile, FeffPathGroup)
-
-def registerLarchPlugin():
-    return ('_xafs', {'feffpath': feffpath,
-                      'path2chi': _path2chi,
-                      'ff2chi': _ff2chi})

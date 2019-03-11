@@ -314,7 +314,3 @@ def debint(rx, tx):
         bn = bnp1
         bo = result
     return result
-
-def registerLarchPlugin():
-    return ('_xafs', {'sigma2_eins': sigma2_eins,
-                      'sigma2_debye': sigma2_debye})

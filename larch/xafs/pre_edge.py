@@ -23,7 +23,7 @@ from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
 from larch.math import (index_of, index_nearest,
                          remove_dups, remove_nans2)
-from larch_plugins.xafs import set_xafsGroup
+from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -498,8 +498,3 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
                            emin=emin, emax=emax, elo=elo, ehi=ehi,
                            form=form, with_line=with_line)
     return
-
-def registerLarchPlugin():
-    return (MODNAME, {'find_e0': find_e0,
-                      'pre_edge': pre_edge,
-                      'pre_edge_baseline': pre_edge_baseline})

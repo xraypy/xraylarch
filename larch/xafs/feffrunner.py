@@ -9,8 +9,7 @@ import re
 from optparse import OptionParser
 from subprocess import Popen, PIPE
 
-from larch import (Group, Parameter, isParameter, param_value,
-                   isNamedClass, Interpreter)
+from larch import Group, isNamedClass
 from larch.utils import isotime, bytes2str
 
 def find_exe(exename):
@@ -88,10 +87,7 @@ class FeffRunner(Group):
         kwargs = dict(name='Feff runner')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        if _larch is None:
-            self._larch   = Interpreter()
-        else:
-            self._larch = _larch
+        self._larch = _larch
 
         self.folder   = folder or '.'
         self.feffinp  = feffinp
@@ -242,7 +238,7 @@ def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     """
     return FeffRunner(feffinp=feffinp, verbose=verbose, repo=repo, _larch=_larch)
 
-def _feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
+def feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
     """
     run a Feff6l calculation for a feff.inp file in a folder
 
@@ -270,7 +266,7 @@ def _feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
     feffrunner.run(exe=exe)
     return feffrunner
 
-def _feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=None, **kws):
+def feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=None, **kws):
     """
     run a Feff8l calculation for a feff.inp file in a folder
 
@@ -397,12 +393,3 @@ Example:
             os.chdir(thisdir)
         else:
             print("Could not find folder '{:s}'".format(dirname))
-
-
-def registerLarchGroups():
-    return (FeffRunner,)
-
-def registerLarchPlugin(): # must have a function with this name!
-    return ('_xafs', { 'feffrunner': feffrunner,
-                       'feff6l': _feff6l,
-                       'feff8l': _feff8l})

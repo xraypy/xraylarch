@@ -10,9 +10,7 @@ from larch.math import (gaussian, lorentzian, interp,
                         index_of, index_nearest, remove_dups,
                         savitzky_golay)
 
-from larch_plugins.xafs import set_xafsGroup
-
-MODNAME = '_xafs'
+from .xafsutils import set_xafsGroup
 
 def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, smooth=True,
@@ -149,8 +147,3 @@ def xas_convolve(energy, norm=None, group=None, form='lorentzian',
 
     group = set_xafsGroup(group, _larch=_larch)
     group.conv = out / k.sum()
-
-def registerLarchPlugin():
-    return (MODNAME, {'xas_deconvolve': xas_deconvolve,
-                      'xas_convolve': xas_convolve,
-                      })

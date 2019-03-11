@@ -9,11 +9,10 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
 from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
-from larch import (Group, ValidateLarchPlugin, Make_CallArgs,
-                   parse_group_args)
+from larch import (Group, Make_CallArgs, parse_group_args)
 
 from larch.math import complex_phase
-from larch_plugins.xafs import set_xafsGroup
+from .xafsutils import set_xafsGroup
 
 
 MODNAME = '_xafs'
@@ -339,13 +338,3 @@ def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chir)] = chir
     return  (4*sqrt(pi)/kstep) * ifft(cchi)[:int(nfft/2)]
-
-
-def registerLarchPlugin():
-    return (MODNAME, {'xftf': xftf,
-                      'xftr': xftr,
-                      'xftf_prep': xftf_prep,
-                      'xftf_fast': xftf_fast,
-                      'xftr_fast': xftr_fast,
-                      'ftwindow': ftwindow,
-                      })

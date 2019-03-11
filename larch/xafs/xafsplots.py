@@ -18,13 +18,12 @@ Plotting macros for XAFS data sets and fits
 """
 
 from numpy import gradient, ndarray, diff, where, arange
-from larch import Group, ValidateLarchPlugin
+from larch import Group
 from larch.math import (index_of, index_nearest, interp)
 
-from larch_plugins.wx.plotter import (_getDisplay, _plot, _oplot, _newplot,
-                                      _fitplot, _plot_text, _plot_marker,
-                                      _plot_arrow, _plot_axvline,
-                                      _plot_axhline)
+from ..wxlib.plotter import (_getDisplay, _plot, _oplot, _newplot,
+                             _fitplot, _plot_text, _plot_marker,
+                             _plot_arrow, _plot_axvline, _plot_axhline)
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
@@ -107,7 +106,6 @@ def _get_erange(dgroup, emin=None, emax=None):
     return emin, emax
 #enddef
 
-@ValidateLarchPlugin
 def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
            show_legend=True, stacked=False, _larch=None):
     disp = _getDisplay(win=win, stacked=stacked, _larch=_larch)
@@ -125,7 +123,7 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
     #endif
 #enddef
 
-@ValidateLarchPlugin
+
 def plot_mu(dgroup, show_norm=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
             emin=None, emax=None, label='mu', new=True, delay_draw=False,
@@ -226,7 +224,6 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
              label=None, title=None, new=True, delay_draw=False, offset=0,
              win=1, _larch=None):
@@ -292,7 +289,6 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
               new=True, delay_draw=False, offset=0, win=1, _larch=None):
     """
@@ -337,7 +333,6 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
         redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
               scale_window=True, label=None, title=None, new=True,
               delay_draw=False, offset=0, win=1, _larch=None):
@@ -395,7 +390,6 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
 #enddef
 
 
-@ValidateLarchPlugin
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, label=None, title=None, new=True, delay_draw=False,
               offset=0, win=1, _larch=None):
@@ -453,7 +447,6 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     redraw(win=win, xmax=rmax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
                 show_mag=True, show_real=False, show_imag=False,
                 title=None, new=True, delay_draw=False, offset=0, win=1,
@@ -530,7 +523,6 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
                 new=False, delay_draw=False, win=1, _larch=None, **kws):
     """
@@ -565,7 +557,6 @@ def plot_path_k(dataset, ipath=0, kmin=0, kmax=None, offset=0, label=None,
         redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
                 show_mag=True, show_real=False, show_imag=True,
                 new=False, delay_draw=False, win=1, _larch=None,
@@ -619,7 +610,6 @@ def plot_path_r(dataset, ipath, rmax=None, offset=0, label=None,
     redraw(win=win, xmax=rmax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
                  new=True, delay_draw=False, win=1, _larch=None, **kws):
 
@@ -661,7 +651,6 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
     redraw(win=win, xmin=kmin, xmax=kmax, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
                  show_real=False, show_imag=False, title=None, new=True,
                  win=1, delay_draw=False, _larch=None, **kws):
@@ -740,7 +729,6 @@ def extend_plotrange(x, y, xmin=None, xmax=None, extend=0.10):
              min(yspan) - extend * yrange,
              max(yspan) + extend * yrange)
 
-@ValidateLarchPlugin
 def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
                            show_peakrange=True, win=1, _larch=None, **kws):
     """Plot pre-edge peak baseline fit, as from `pre_edge_baseline` or XAS Viewer
@@ -794,7 +782,6 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
            show_legend=True, _larch=_larch)
 #enddef
 
-@ValidateLarchPlugin
 def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                       show_residual=False, win=1, _larch=None):
     """plot pre-edge peak fit, as from XAS Viewer
@@ -904,7 +891,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
            ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
 
-@ValidateLarchPlugin
 def plot_pca_components(result, max_components=None, min_weight=0,
                         win=1, _larch=None, **kws):
     """Plot components from PCA result
@@ -935,7 +921,6 @@ def plot_pca_components(result, max_components=None, min_weight=0,
 
     redraw(win=win, show_legend=True, _larch=_larch)
 
-@ValidateLarchPlugin
 def plot_pca_weights(result, max_components=None, min_weight=0,
                         win=1, _larch=None, **kws):
     """Plot component weights from PCA result (aka SCREE plot)
@@ -974,7 +959,6 @@ def plot_pca_weights(result, max_components=None, min_weight=0,
         _plot(x, y, label='not significant', **popts)
 
 
-@ValidateLarchPlugin
 def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
     """Plot data and fit result from pca_fit, which rom PCA result
 
@@ -1001,28 +985,3 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
             cval = model.components[n]*result.weights[n]
             disp.panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
     redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
-
-def initializeLarchPlugin(_larch=None):
-    """initialize _xafs"""
-    if _larch is None:
-        return
-    _larch.symtable._xafs.plotlabels  = plotlabels
-
-def registerLarchPlugin():
-    return ('_xafs', {'redraw': redraw,
-                      'plot_mu':plot_mu,
-                      'plot_bkg':plot_bkg,
-                      'plot_chie': plot_chie,
-                      'plot_chik': plot_chik,
-                      'plot_chir': plot_chir,
-                      'plot_chifit': plot_chifit,
-                      'plot_path_k': plot_path_k,
-                      'plot_path_r': plot_path_r,
-                      'plot_paths_k': plot_paths_k,
-                      'plot_paths_r': plot_paths_r,
-                      'plot_prepeaks_fit': plot_prepeaks_fit,
-                      'plot_prepeaks_baseline': plot_prepeaks_baseline,
-                      'plot_pca_components': plot_pca_components,
-                      'plot_pca_weights': plot_pca_weights,
-                      'plot_pca_fit': plot_pca_fit,
-                      })

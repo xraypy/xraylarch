@@ -25,7 +25,7 @@
 import numpy as np
 from larch import Make_CallArgs, parse_group_args
 from larch.math import complex_phase
-from larch_plugins.xafs import set_xafsGroup
+from .xafsutils import set_xafsGroup
 
 @Make_CallArgs(["k" ,"chi"])
 def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
@@ -113,6 +113,3 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     group.wcauchy_mag =  np.sqrt(out.real**2 + out.imag**2)
     group.wcauchy_re =  out.real
     group.wcauchy_im =  out.imag
-
-def registerLarchPlugin():
-    return ('_xafs', {'cauchy_wavelet': cauchy_wavelet})

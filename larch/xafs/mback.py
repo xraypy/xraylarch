@@ -2,6 +2,8 @@
 """
   XAFS MBACK normalization algorithms.
 """
+import numpy as np
+from scipy.special import erfc
 
 from lmfit import Parameter, Parameters, minimize
 
@@ -11,10 +13,9 @@ from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 from larch.xray import (xray_edge, xray_line, xray_lines,
                         f1_chantler, f2_chantler, f1f2_cl, guess_edge,
                         atomic_number, atomic_symbol)
-from larch_plugins.xafs import set_xafsGroup, find_e0, preedge
+from .xafsutils import set_xafsGroup
+from .pre_edge import find_e0, preedge
 
-import numpy as np
-from scipy.special import erfc
 
 MAXORDER = 6
 
@@ -339,7 +340,3 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     else:
         group.edge_step = step_new
         group.norm       = group.norm_mback
-
-
-def registerLarchPlugin(): # must have a function with this name!
-    return ('_xafs', { 'mback': mback, 'mback_norm': mback_norm})

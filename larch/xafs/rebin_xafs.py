@@ -2,7 +2,7 @@ import numpy as np
 
 from larch import Group, Make_CallArgs, parse_group_args
 from larch.math import index_of, interp1d, remove_dups
-from larch_plugins.xafs.xafsutils import ktoe, etok
+from .xafsutils import ktoe, etok
 
 @Make_CallArgs(["energy", "mu"])
 def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _larch=None):
@@ -169,7 +169,3 @@ def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                            delta_mu=np.array(err_out), e0=e0,
                            __name__=newname)
     return
-
-def registerLarchPlugin():
-    return ('_xafs', {'rebin_xafs': rebin_xafs,
-                      'sort_xafs': sort_xafs})
