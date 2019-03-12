@@ -117,15 +117,15 @@ class Epics_Xspress3(object):
 
         # determine max frames
         self.frametime = self.MIN_FRAMETIME
-        self._xsp3.NumImages = self.MAX_FRAMES
-        time.sleep(0.25)
+        self._xsp3._pvs['NumImages'].put(self.MAX_FRAMES, wait=True)
+        time.sleep(0.05)
         rbv = self._xsp3.NumImages_RBV
-        t0 = time.time()
-        if rbv != self.MAX_FRAMES:
-            time.sleep(0.10)
+        while rbv != self.MAX_FRAMES:
+            self.MAX_FRAMES = self.MAX_FRAMES - 500.0
+            self._xsp3._pvs['NumImages'].put(self.MAX_FRAMES, wait=True)
+            time.sleep(0.25)
             rbv = self._xsp3.NumImages_RBV
-            self.MAX_FRAMES = self._xsp3.NumImages = rbv
-            if (time.time() - t0) > 5.0:
+            if self.MAX_FRAMES < 4000:
                 break
 
     # @EpicsFunction
