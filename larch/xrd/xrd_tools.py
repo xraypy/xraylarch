@@ -11,7 +11,7 @@ mkak 2017.02.06 (originally written spring 2016)
 import math
 import numpy as np
 
-from larch.utils.physical_constants import PLANCK_HC
+from ..utils.physical_constants import PLANCK_HC
 
 import re
 import os
@@ -169,38 +169,3 @@ def generate_hkl(hmax=10,kmax=10,lmax=10,positive_only=True):
     else:
         hklall = np.mgrid[-hmax:hmax+1, -kmax:kmax+1, -lmax:lmax+1].reshape(3, -1).T
     return np.array([hkl for hkl in hklall if hkl[0]**2 + hkl[1]**2 + hkl[2]**2 > 0])
-
-
-MODDOC = '''
-
-Functions for manipulating and analyzing x-ray diffraction
-data.
-
-The data and functions here include (but are not limited to):
-
-member name     description
-------------    ------------------------------
-peakfinder      identifies peaks in x,y data
-peakfilter      filters a set of data below a certain threshold
-peaklocater     cross-references data for a give coordinates
-
-'''
-
-def initializeLarchPlugin(_larch=None):
-   ''' initialize xrd '''
-   if _larch is not None:
-       mod = getattr(_larch.symtable, '_xrd')
-       mod.__doc__ = MODDOC
-
-
-def registerLarchPlugin():
-    return ('_xrd', {'d_from_q': d_from_q,
-                     'd_from_twth': d_from_twth,
-                     'twth_from_d': twth_from_d,
-                     'twth_from_q': twth_from_q,
-                     'q_from_d': q_from_d,
-                     'q_from_twth': q_from_twth,
-                     'E_from_lambda': E_from_lambda,
-                     'lambda_from_E': lambda_from_E,
-                     'generate_hkl': generate_hkl,
-                      })

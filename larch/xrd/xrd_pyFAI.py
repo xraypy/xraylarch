@@ -291,7 +291,3 @@ def make_headers(hdr='#', has_dark=False, has_flat=False, ai=None,
         headerLst = ' '
 
     return '\n'.join([hdr + ' ' + i for i in headerLst])
-
-
-def registerLarchPlugin():
-    return ('_xrd', {'integrate_xrd': integrate_xrd}) #,'calculate_ai': calculate_ai})

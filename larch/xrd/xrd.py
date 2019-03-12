@@ -14,11 +14,11 @@ import os
 import numpy as np
 import larch
 
-from larch_plugins.xrd.xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
-                                         q_from_d,q_from_twth,E_from_lambda,lambda_from_E)
-from larch_plugins.xrd.xrd_pyFAI import integrate_xrd,calc_cake
-from larch_plugins.xrd.xrd_bgr import xrd_background
-from larch_plugins.xrd.xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
+from .xrd_tools import (d_from_q,d_from_twth,twth_from_d,twth_from_q,
+                        q_from_d,q_from_twth,E_from_lambda,lambda_from_E)
+from .xrd_pyFAI import integrate_xrd,calc_cake
+from .xrd_bgr import xrd_background
+from .xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch.io import tifffile
 
 ##########################################################################
@@ -131,7 +131,7 @@ class xrd1d(larch.Group):
     def xrd_from_file(self,filename,verbose=True):
 
         try:
-            from larch_plugins.xrmmap import read1DXRDFile
+            from ..xrmmap import read1DXRDFile
             head,dat = read1DXRDFile(filename)
             if verbose:
                 print('Opening xrd data file: %s' % os.path.split(filename)[-1])
@@ -300,7 +300,7 @@ def read_xrd_data(filepath):
         data = np.array(tifffile.imread(filepath))
     except: # TypeError:
         try:
-            from larch_plugins.xrmmap import read_xrd_netcdf
+            from ..xrmmap import read_xrd_netcdf
             data = np.array(read_xrd_netcdf(filepath))
         except:
             try:
@@ -514,12 +514,3 @@ def create_xrd1d(file, _larch=None, **kws):
 
     '''
     return xrd1d(file=file, **kws)
-
-
-
-def registerLarchPlugin():
-    return ('_xrd', {'create_xrd': create_xrd, 'create_xrd1d': create_xrd1d})
-
-
-def registerLarchGroups():
-    return (XRD,xrd1d)

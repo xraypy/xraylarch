@@ -17,11 +17,10 @@ import cmath
 
 from six import StringIO
 
-from larch.xray import xrayDB
+from ..xray import xrayDB
 
-from larch_plugins.xrd import (generate_hkl, qv_from_hkl, d_from_hkl,
-                               q_from_d, twth_from_d, d_from_q,
-                               twth_from_q)
+from .xrd_tools import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
+                        twth_from_d, d_from_q, twth_from_q)
 
 HAS_CifFile = False
 try:

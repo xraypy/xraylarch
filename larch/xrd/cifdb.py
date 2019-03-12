@@ -13,9 +13,9 @@ from itertools import groupby
 from distutils.version import StrictVersion
 
 import larch
-from larch import ValidateLarchPlugin
-from larch_plugins.xrd import (peaklocater, create_cif, SPACEGROUPS,
-                               lambda_from_E)
+from .xrd_fitting import peaklocater
+from .xrd_cif import create_cif, SPACEGROUPS
+from .xrd_tools import lambda_from_E
 
 import json
 from larch.utils.jsonutils import encode4js, decode4js
@@ -83,14 +83,17 @@ QSTEP = 0.01
 QAXIS = np.arange(QMIN, QMAX+QSTEP, QSTEP)
 
 ENERGY = 19000 ## units eV
+_cifdb = None
 
-def get_cifdb(_larch=None):
-    symname = '_xray._cifdb'
-    if _larch.symtable.has_symbol(symname):
-        return _larch.symtable.get_symbol(symname)
-    cifdb = cifDB(dbname='amcsd_cif.db')
-    _larch.symtable.set_symbol(symname, cifdb)
-    return cifdb
+def get_cifdb(dbname='amcsd_cif.db', _larch=None):
+    global _cifdb
+    if _cifdb is None:
+        _cifdb = cifDB(dbname=dbname)
+    if _larch is not None:
+        symname = '_xray._cifdb'
+        if not _larch.symtable.has_symbol(symname):
+            _larch.symtable.set_symbol(symname, _cifdb)
+    return _cifdb
 
 def make_engine(dbname):
     return create_engine('sqlite:///%s' % (dbname),
@@ -1278,13 +1281,12 @@ def match_database(cifdb, peaks, minq=QMIN, maxq=QMAX, verbose=True):
     return MATCHES
 
 
-@ValidateLarchPlugin
 def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
     """
     fracq  : min. ratio of matched q to possible in q range, i.e. 'goodness gauge'
     pk_wid : maximum range in q which qualifies as a match between fitted and ideal
     """
-    cifdb = get_cifdb(_larch)
+    cifdb = get_cifdb(_larch=_larch)
     qstep = 0.05
 
     rows = cifdb.amcsd_by_q(peaks, qmin=qmin,qmax=qmax, qstep=qstep)
@@ -1316,7 +1318,6 @@ def cif_match(peaks, qmin=None, qmax=None, verbose=False, _larch=None):
     return matches
 
 
-@ValidateLarchPlugin
 def read_cif(filename=None, amcsd_id=None, _larch=None):
     """make a representation of a CIF data structure
     for crystallographic computations
@@ -1330,15 +1331,5 @@ def read_cif(filename=None, amcsd_id=None, _larch=None):
     -------
     CIF representation
     """
-    cifdb = get_cifdb(_larch)
+    cifdb = get_cifdb(_larch=_larch)
     return create_cif(filename=filename, cifdb=cifdb, amcsd_id=amcsd_id)
-
-def initializeLarchPlugin(_larch=None):
-    """initialize cifdb"""
-    if _larch is not None:
-        cdb = get_cifdb(_larch)
-
-def registerLarchPlugin():
-    return ('_xray', {'cif_match': cif_match,
-                      'get_cifdb': get_cifdb,
-                      'read_cif': read_cif})

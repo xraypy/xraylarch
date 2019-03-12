@@ -14,8 +14,8 @@ import math
 import numpy as np
 from scipy import optimize,signal,interpolate
 
-from larch_plugins.xrd.xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
-                                       q_from_d, q_from_twth)
+from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
+                        q_from_d, q_from_twth)
 
 
 ##########################################################################
@@ -31,7 +31,7 @@ def peakfilter(intthrsh,ipeaks,y,verbose=False):
     ipks = []
     ipks += [i for i in ipeaks if y[i] > intthrsh]
     if verbose: print('Peaks under intensity %i filtered out.' % intthrsh)
-    
+
     return ipks
 
 def peaklocater(ipeaks,x):
@@ -56,7 +56,7 @@ def peakfinder_methods():
         methods += ['scipy.signal.find_peaks_cwt']
     except:
         pass
-        
+
     return methods
 
 
@@ -65,7 +65,7 @@ def peakfinder(y, method='scipy.signal.find_peaks_cwt',
     '''
     Returns indices for peaks in y from dataset
     '''
-    
+
     if method == 'peakutils.indexes':
         try:
             import peakutils
@@ -75,7 +75,7 @@ def peakfinder(y, method='scipy.signal.find_peaks_cwt',
             peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
         peak_indices = peakutils.indexes(y, thres=thres, min_dist=min_dist)
     elif method == 'scipy.signal.find_peaks_cwt':
-        ## scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None, 
+        ## scipy.signal.find_peaks_cwt(vector, widths, wavelet=None, max_distances=None,
         ##                   gap_thresh=None, min_length=None, min_snr=1, noise_perc=10)
         widths = np.arange(1,int(len(y)/widths))
         peak_indices = signal.find_peaks_cwt(y, widths, gap_thresh=gapthrsh)
@@ -83,7 +83,7 @@ def peakfinder(y, method='scipy.signal.find_peaks_cwt',
     return peak_indices
 
 def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
-    
+
     peaktwth,peakFWHM,peakinty = [],[],[]
     for j in ipeaks:
         if j > halfwidth and (len(twth)-j) > halfwidth:
@@ -101,7 +101,7 @@ def peakfitter(ipeaks, twth, I, verbose=True, halfwidth=40, fittype='single'):
                     peakinty += [pkint]
                 except:
                     pass
-        
+
     return np.array(peaktwth),np.array(peakFWHM),np.array(peakinty)
 
 
@@ -131,7 +131,7 @@ def data_gaussian_fit(x,y,fittype='single'):
             rsqu_n2 = (y[i] - doublegaussian(x[i],*popt2))**2 + rsqu_n2
         rsqu_d = (y[i] - meany)**2 + rsqu_d
 
-   
+
     if fittype == 'double':
         pkpos = popt2[1]
         pkfwhm = abs(2*np.sqrt(2*math.log1p(2))*popt2[2])
@@ -142,7 +142,7 @@ def data_gaussian_fit(x,y,fittype='single'):
         pkint  = np.max(gaussian(x,*popt))
 
     return pkpos,pkfwhm,pkint
-    
+
 
 
 def gaussian(x,a,b,c):
@@ -163,7 +163,7 @@ def instrumental_fit_uvw(ipeaks, twthaxis, I, halfwidth=40, verbose=True):
     sqFWHM  = FWHM**2
 
     (u,v,w) = data_poly_fit(tanth,sqFWHM,verbose=verbose)
-    
+
     if verbose:
         print('\nFit results:')
         for i,(twthi,fwhmi,inteni) in enumerate(zip(twth,FWHM,inten)):
@@ -190,7 +190,7 @@ def data_poly_fit(x, y, plot=False, verbose=False):
     except:
         print( 'WARNING: scipy.optimize.curve_fit was unsuccessful.' )
         return [1,1,1]
-    
+
     n = len(x)
     meany = sum(y)/n
 
@@ -215,34 +215,34 @@ def trim_range(data,min,max,axis=0):
     for i,val in enumerate(data[axis]):
         mini = i if val < min else mini
         maxi = i if val < max else maxi
-   
+
     return data[:,mini:maxi]
 
 def interpolate_for_y(x,x0,y0):
     t = interpolate.splrep(x0,y0)
     return interpolate.splev(x,t,der=0)
 
-def calc_peak(): 
+def calc_peak():
 
     x = np.arange(-2,2,0.001)
-   
-    ## Lorentzian 
+
+    ## Lorentzian
     b = 1/(1+(x**2))
-    
+
     ## Gaussian
     c = np.exp(-math.log1p(2)*(x**2))
-    
+
     ## VOIGT: Convolve, shift, and scale
     d = np.convolve(b,c,'same')
     d = norm_pattern(d,c)
     shiftx = find_max(x,d)
     newx = x-shiftx
-    
+
     ## Diffraction pattern data.
     ## x,b    - 'Lorentzian'
     ## x,c    - 'Gaussian'
     ## newx,d - 'Voigt'
-    
+
     return 'Lorentzian',b,x,'Gaussian',x,c,'Voigt',newx,d
 
 
@@ -251,14 +251,14 @@ def norm_pattern(intensity,scale_int):
     max_int = np.max(intensity)
     scale = np.max(scale_int)
     intensity = intensity/max_int*scale
-    
+
     return(intensity)
 
 
 def scale_100(intensity):
 
     intensity = norm_pattern(intensity,100)
-    
+
     return(intensity)
 
 
@@ -269,16 +269,16 @@ def find_max(x,y):
 
 
 def calcRsqu(y,ycalc):
-    
+
     ss_res = 0
     ss_tot = 0
-    
+
     ymean = np.mean(y) #sum(y)/float(len(y))
-    
+
     for i,yi in enumerate(y):
         ss_res = ss_res + (yi - ycalc[i])**2
         ss_tot = ss_tot + (yi - ymean)**2
-       
+
     return (1 - (ss_res/ss_tot))
 
 
@@ -290,8 +290,8 @@ def outliers(y,scale=0.2):
             if abs(yi-y[i-1]) > yi/scale and abs(yi - y[i+1]) > yi/scale:
                 y[i] = (y[i-1]+y[i+1])/2
 
-    return y    
-    
+    return y
+
 
 def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None, verbose=False,smooth=False):
     '''
@@ -300,7 +300,7 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
     pklist     - location of peaks in range [q,2th,d,I]
     twth       -  2-theta axis
     wavelength - in units A
-    
+
     u,v,w - instrumental broadening parameters
     C - shape factor (1 for sphere)
     D - particle size in units A (if D is None, no size broadening)
@@ -316,12 +316,12 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
     if D is not None:
         termB = ((wavelength*pklist[0])/(2*math.pi))**2
         Bs = (C*wavelength)/D*(1/np.sqrt(1-termB))
-        
+
     ## Define intensity array for broadened peaks
     Itot = np.zeros(len(twth))
-    
+
     step = twth[1]-twth[0]
-    
+
     ## Loop through all peaks
     for i,peak in enumerate(zip(*pklist)):
         if peak[1] > min(twth) and peak[1] < max(twth):
@@ -357,15 +357,15 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
                 new_intensity = intBi
 
             new_intensity = norm_pattern(new_intensity,A)
-            
+
             X = twthG
             Y = new_intensity
-            
+
             bins = len(twth)
             idx  = np.digitize(X,twth)
             Ii    = [np.sum(Y[idx==k]) for k in range(bins)]
             Itot = Itot + Ii
-        
+
     if smooth:
         Itot = outliers(Itot)
     return Itot
@@ -374,45 +374,31 @@ def calc_broadening(pklist, twth, wavelength, u=1.0, v=1.0, w=1.0, C=1.0, D=None
 # def fit_with_minimization(q,I,parameters=None,fit_method='leastsq'):
 #     '''
 #     fit_method options: 'leastsq','cobyla','slsqp','nelder'
-#     
+#
 #     parameters of type Parameters(): needs a,b,c,nsize,pkshift?
-# 
+#
 #     my_pars = Parameters()
 #     my_pars.add('nsize', value= NPsize, min= 3.0,  max=100.0,vary=False)
 #     my_pars.add('a', value=bkgdA, min=minA, max=maxA)
 #     my_pars.add('b', value=bkgdB, min=minB, max=maxB)
 #     my_pars.add('c', value=bkgdC, min=minC, max=maxC)
 #     '''
-# 
+#
 #     from lmfit import minimize,Parameters,report_fit
-# 
+#
 # #     ## First, fit background alone:
 # #     result = minimize(BACKGROUND_FUNCTION, my_pars, args=(q,I),method=fit_method)
 # #     ## Second, add fitted parameters into parameter set
 # #     my_pars.add('?',  value=result.params['?'].value)
-# #     ## Third, fit peaks on top of background   
+# #     ## Third, fit peaks on top of background
 # #     result = minimize(BACKGROUND_FUNCTION+PEAKS_FUNCTION, my_pars, args=(q,I),method=fit_method)
 # #     ## Fourth, view error report
 # #     report_fit(result)
-# #     ## Fifth, return results 
+# #     ## Fifth, return results
 # #     NPsize = result.params['nsize'].value
 # #     bkgdA  = result.params['a'].value
 # #     bkgdB  = result.params['b'].value
 # #     bkgdC  = result.params['c'].value
-# 
-#         
+#
+#
 #     return
-
-                     
-def registerLarchPlugin():
-    return ('_xrd', {'peakfinder': peakfinder,
-                     'peakfitter': peakfitter,
-                     'peakfilter': peakfilter,
-                     'peaklocater': peaklocater,
-                     'data_gaussian_fit': data_gaussian_fit,
-                     'gaussian': gaussian,
-                     'doublegaussian': doublegaussian,
-                     'instrumental_fit_uvw': instrumental_fit_uvw,
-                     'poly_func': poly_func,
-                     'data_poly_fit': data_poly_fit
-                      })

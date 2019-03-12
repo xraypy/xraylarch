@@ -30,7 +30,7 @@ def xy_file_reader(xyfile):
                 x += [float(fields[0])]
                 y += [float(fields[1])]
             else:
-                for opt in ['2th_deg','q_A^-1']: 
+                for opt in ['2th_deg','q_A^-1']:
                     if opt in line: units = opt
 
     return np.array(x),np.array(y),units
@@ -48,6 +48,3 @@ def xy_file_writer(a,b,filename,char=None):
             f.write(str % (ai,b[i]))
 
     return()
-                     
-def registerLarchPlugin():
-    return ('_xrd', {'xy_file_reader': xy_file_reader})
