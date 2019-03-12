@@ -29,13 +29,13 @@ from larch.math import index_of
 from larch.utils.jsonutils import encode4js, decode4js
 from larch.io.export_modelresult import export_modelresult
 
-from larch.wxlib import (ReportFrame, BitmapButton, ParameterWidgets,
-                         FloatCtrl, FloatSpin, SetTip, GridPanel, get_icon,
-                         SimpleText, pack, Button, HLine, Choice, Check,
-                         MenuItem, GUIColors, CEN, RCEN, LCEN, FRAMESTYLE,
-                         Font, FileSave, FileOpen, flatnotebook)
+from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
+                         SetTip, GridPanel, get_icon, SimpleText, pack,
+                         Button, HLine, Choice, Check, MenuItem, GUIColors,
+                         CEN, RCEN, LCEN, FRAMESTYLE, Font, FileSave,
+                         FileOpen, flatnotebook)
 
-from larch_plugins.wx.parameter import ParameterPanel
+from larch.wxlib.parameter import ParameterWidgets, ParameterPanel
 from larch_plugins.wx.plotter import last_cursor_pos
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
