@@ -397,7 +397,7 @@ class GSEXRM_MapFile(object):
                 "'%s' is not a readable HDF5 file" % self.filename)
 
         # file has no write permission
-        if self.status ==  GSEXRM_FileStatus.nowrite:
+        if self.status ==  GSEXRM_FileStatus.err_nowrite:
             raise GSEXRM_Exception(
                 "'%s' does not have write access" % self.filename)
 
