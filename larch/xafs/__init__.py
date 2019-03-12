@@ -55,7 +55,7 @@ from . import xafsplots
 ## these use `reff` or `feffpath.geom` which will be updated
 ## for each path during an XAFS path calculation
 ##
-_sigma2_funcs_ = """
+_sigma2_funcs = """
 def sigma2_eins(t, theta):
     EINS_FACTOR = 1.e20*const_hbar**2/(2*const_kboltz*const_amu)
 
