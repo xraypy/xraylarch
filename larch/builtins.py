@@ -529,16 +529,16 @@ _main_builtins.update(utils._larch_builtins)
 _main_builtins.update(show_builtins)
 
 
-# how to fill in the larch namespace at startup
-local_funcs = dict(_builtin=_main_builtins,
-                   _math={'reset_fiteval': reset_fiteval})
+# names to fill in the larch namespace at startup
+init_builtins = dict(_builtin=_main_builtins,
+                     _math={'reset_fiteval': reset_fiteval})
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
 init_funcs = []
 
 # group/classes to register for save-restore
 init_groups = []
-mod_docs = {}
+init_moddocs = {}
 
 # _math_builtins.update(math._larch_builtins_)
 # _math_builtins.update(fitting._larch_builtins_)
@@ -551,17 +551,17 @@ for mod in (math, fitting, io, xray, xrf, xafs, wxlib, plotter):
 
     doc = getattr(mod, '__DOC__', None)
     if doc is not None:
-        mod_docs[modname] = doc
+        init_moddocs[modname] = doc
     builtins = getattr(mod, '_larch_builtins', {})
     init_fcn = getattr(mod, '_larch_init', None)
     init_grp = getattr(mod, '_larch_groups', None)
     # print("Add builtins ", modname, mod, init_fcn, init_grp)
 
     for key, val in builtins.items():
-        if key not in local_funcs:
-            local_funcs[key] = val
+        if key not in init_builtins:
+            init_builtins[key] = val
         else:
-            local_funcs[key].update(val)
+            init_builtins[key].update(val)
 
     if init_fcn is not None:
         init_funcs.append(init_fcn)
