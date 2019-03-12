@@ -391,8 +391,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)
         for i in range(1, 1+nmca):
             bkg_choices.append("%i" % i)
-            b =  Button(btnpanel, '%i' % i, size=(30, 25),
+            b =  Button(btnpanel, '%i' % i, size=(30, 30),
                         action=partial(self.onSelectDet, index=i))
+            b.SetFont(Font(10))
             self.wids['det%i' % i] = b
             loc = divmod(i-1, NPERROW)
             if self.det_type.lower().startswith('me-4') and nmca<NPERROW-1:
@@ -417,10 +418,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                            action=self.onSetDwelltime)
         self.wids['elapsed']   = SimpleText(pane, ' ', size=(80, -1),  style=style)
 
-        b1 =  Button(pane, 'Start',      size=(90, 25), action=self.onStart)
-        b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
-        b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
-        b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart,
+        b1 =  Button(pane, 'Start',      size=(100, 30), action=self.onStart)
+        b2 =  Button(pane, 'Stop',       size=(100, 30), action=self.onStop)
+        b3 =  Button(pane, 'Erase',      size=(100, 30), action=self.onErase)
+        b4 =  Button(pane, 'Continuous', size=(100, 30), action=partial(self.onStart,
                                                                        dtime=0))
 
         bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
@@ -534,10 +535,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             bcol = (220, 220, 220)
             fcol = (0, 0, 0)
             if i == self.det_fore:
-                bcol = (60, 50, 245)
-                fcol = (240, 230, 100)
-            if i == self.det_back:
-                bcol = (80, 200, 20)
+                fcol = (30, 30, 180)
             self.wids[dname].SetBackgroundColour(bcol)
             self.wids[dname].SetForegroundColour(fcol)
         self.clear_mcas()
