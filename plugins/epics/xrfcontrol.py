@@ -532,10 +532,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         for i in range(1, self.nmca+1):
             dname = 'det%i' % i
-            bcol = (220, 220, 220)
+            bcol = (210, 210, 210)
             fcol = (0, 0, 0)
             if i == self.det_fore:
-                fcol = (30, 30, 180)
+                fcol = (200,  20,  20)
+                bcol = (250, 250, 250)
             self.wids[dname].SetBackgroundColour(bcol)
             self.wids[dname].SetForegroundColour(fcol)
         self.clear_mcas()
