@@ -17,10 +17,12 @@ from . import XDIFile, XDIFileException
 from .xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
 @ValidateLarchPlugin
-def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
+def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
     """
+
+    MAX_MCAS = nmca
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XDI Data file %s' % fname
     xdi = XDIFile(str(fname))
@@ -60,7 +62,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     dtc_mode = 'icr/ocr'
-    for i in range(nmca):
+    for i in range(MAX_MCAS):
         mca = "mca%i" % (i+1)
         ocr    = getattr(xdi, 'OutputCounts_%s' % mca, None)
         clock  = getattr(xdi, 'Clock_%s'        % mca, None)
@@ -68,6 +70,10 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         dtfact = getattr(xdi, 'DTFactor_%s'     % mca, None)
         resets = getattr(xdi, 'ResetTicks_%s'   % mca, None)
         allevt = getattr(xdi, 'AllEvent_%s'     % mca, None)
+        if (ocr is None and icr is None and clock is None and
+            dtfact is None and resets is None):
+            nmca = i
+            break
         if ocr is None:
             ocr = ctime
         ocr = ocr/ctime
@@ -151,7 +157,6 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     for name in labels:
         data.append(getattr(group, name))
     group.data = np.array(data)
-
     for imca in range(nmca):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
         setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
