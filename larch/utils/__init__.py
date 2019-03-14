@@ -21,11 +21,10 @@ def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
 
-
 def isotime(t=None, with_tzone=False):
     if t is None:
         t = time.time()
-    sout = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts))
+    sout = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
     if with_tzone:
         sout = "%s-%2.2i:00" % (sout, time.timezone/3600)
     return sout
