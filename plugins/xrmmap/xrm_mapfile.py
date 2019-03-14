@@ -1149,7 +1149,7 @@ class GSEXRM_MapFile(object):
                 prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
                 print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
 
-            ## mca1 to mca 4
+            ## mca1 to mcaN
             for i in range(nmca):
                 imca = "mca%d" % (i+1)
                 for grp in (xrmmap, xrmmap['roimap']):
@@ -2177,8 +2177,8 @@ class GSEXRM_MapFile(object):
 
         if self.scan_version < 1.35 and (self.has_xrd2d or self.has_xrd1d):
             xrd_files = [fn for fn in os.listdir(self.folder) if fn.endswith('nc')]
-            for i,addxrd in enumerate(xrd_files):
-                self.rowdata[i].insert(4,addxrd)
+            for i, addxrd in enumerate(xrd_files):
+                self.rowdata[i].insert(4, addxrd)
 
         cfile = FastMapConfig()
         cfile.Read(os.path.join(self.folder, self.ScanFile))
@@ -2921,7 +2921,7 @@ class GSEXRM_MapFile(object):
             try:
                 roi_list = [r for r in self.xrmmap[detname]]
                 if roiname is None:
-                    return roi_list,detname
+                    return roi_list, detname
                 if roiname not in roi_list:
                     for roi in roi_list:
                         if roi.lower().startswith(roiname):
@@ -2946,7 +2946,7 @@ class GSEXRM_MapFile(object):
                         if roi.startswith(roiname):
                             roiname = roi
 
-            if detname in ['det1','det2','det3','det4']:
+            if detname in ['det%d' % (i+1) for i in range(self.ndet)]:
                 idet = int(''.join([i for i in detname if i.isdigit()]))
                 detname = 'roimap/det_'
 
