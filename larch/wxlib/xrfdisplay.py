@@ -27,16 +27,17 @@ from matplotlib.ticker import LogFormatter, FuncFormatter
 
 from wxmplot import PlotPanel
 
-from . import get_icon, LarchFrame, SetTip
+from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
+                     get_icon, SetTip, Button, Check, MenuItem, Choice,
+                     FileOpen, FileSave, fix_filename, HLine, GridPanel,
+                     CEN, LEFT, RIGHT)
 
 from ..math import index_of
 from ..utils import bytes2str, debugtime
 from ..io import GSEMCA_File, gsemca_group
 from ..site_config import icondir
-from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
-                     Button, Check, MenuItem, Choice, FileOpen, FileSave,
-                     fix_filename, HLine, GridPanel, CEN, LEFT, RIGHT)
 
+from .larchframe import LarchFrame
 from .periodictable import PeriodicTablePanel
 from .xrfdisplay_utils import (XRFCalibrationFrame,
                                ColorsFrame,
@@ -44,7 +45,6 @@ from .xrfdisplay_utils import (XRFCalibrationFrame,
                                XRFDisplayConfig)
 
 from .xrfdisplay_fitpeaks import FitSpectraFrame
-
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 FILE_ALREADY_READ = """The File
@@ -1361,17 +1361,6 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
         return True
 
-
-def initializeLarchPlugin(_larch=None):
-    """add ScanFrameViewer to _sys.gui_apps """
-    if _larch is not None:
-        _sys = _larch.symtable._sys
-        if not hasattr(_sys, 'gui_apps'):
-            _sys.gui_apps = {}
-        _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
-
-def registerLarchPlugin():
-    return ('_sys.wx', {})
 
 if __name__ == "__main__":
     XRFApp().MainLoop()

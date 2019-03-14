@@ -4,11 +4,7 @@ utilities for reading files from raw scan folder
 import os
 import sys
 import numpy
-import six
-if six.PY2:
-    from ConfigParser import  ConfigParser
-else:
-    from configparser import  ConfigParser
+from configparser import  ConfigParser
 
 def readASCII(fname, nskip=0, isnumeric=True):
     dat, header = [], []

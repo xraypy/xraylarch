@@ -14,17 +14,21 @@ from functools import partial
 import larch
 from larch.utils import debugtime, isotime
 from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
-from larch.io import nativepath, new_filename
-from larch.xrf import MCA, ROI
-from larch_plugins.xrmmap import (FastMapConfig, read_xrf_netcdf, read_xsp3_hdf5,
-                                  readASCII, readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron, read_xrd_netcdf,
-                                  read_xrd_hdf5,
-                                  GSEXRM_Detector, GSEXRM_Area, GSEXRM_Exception,
-                                  GSEXRM_MapRow, GSEXRM_FileStatus)
 
-from larch_plugins.xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
-                               q_from_d, lambda_from_E, read_xrd_data)
+from larch.io import (nativepath, new_filename, read_xrf_netcdf,
+                      read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
+
+from larch.xrf import MCA, ROI
+from .configfile import FastMapConfig
+from .asciifiles import (readASCII, readMasterFile, readROIFile,
+                         readEnvironFile, parseEnviron)
+
+from .gsexrm_utils import (GSEXRM_Detector, GSEXRM_Area, GSEXRM_Exception,
+                           GSEXRM_MapRow, GSEXRM_FileStatus)
+
+from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
+                   q_from_d, lambda_from_E, read_xrd_data)
+
 from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 NINIT = 32
@@ -3125,21 +3129,13 @@ class GSEXRM_MapFile(object):
         roi_names.pop(iroi)
 
 
-def read_xrfmap(filename, root=None):
+def read_xrmmap(filename, root=None):
     '''read GSE XRF FastMap data from HDF5 file or raw map folder'''
     key = 'filename'
     if os.path.isdir(filename):
         key = 'folder'
     kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)
-
-read_xrmmap = read_xrfmap
-
-def read_fake1(filename, root=None):
-    raise GSEXRM_Exception("GSEXMAP Error: %s" % filename)
-
-def read_fake2(filename, root=None):
-    raise ValueError("cannot open %s" % filename)
 
 def process_mapfolder(path, take_ownership=False, **kws):
     """process a single map folder
@@ -3191,12 +3187,3 @@ def process_mapfolders(folders, ncpus=None, take_ownership=False, **kws):
         kws['take_ownership'] = take_ownership
         myfunc = partial(process_mapfolder, **kws)
         pool.map(myfunc, folders)
-
-
-def registerLarchPlugin():
-    return ('_io', {'read_xrfmap': read_xrfmap,
-                    'read_xrmmap': read_xrmmap,
-                    'read_fake1': read_fake1,
-                    'read_fake2': read_fake2,
-                    'process_mapfolder': process_mapfolder,
-                    'process_mapfolders': process_mapfolders})

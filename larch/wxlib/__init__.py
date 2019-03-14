@@ -58,14 +58,55 @@ if HAS_WXPYTHON:
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
     from .athena_importer import AthenaImporter
     from .reportframe import ReportFrame
-    from .parameter import ParameterWidgets
-
     from .gui_utils import gcd, databrowser, fileprompt, wx_update
+
+    from .parameter import ParameterWidgets, ParameterPanel
+    from .periodictable import PeriodicTablePanel
 
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
                                        filepromspt=fileprompt,
                                        wx_update=wx_update)}
+
+    from .plotter import (_plot, _oplot, _newplot, _plot_text,
+                          _plot_marker, _plot_arrow, _plot_setlimits,
+                          _plot_axvline, _plot_axhline, _scatterplot,
+                          _hist, _update_trace, _saveplot, _saveimg,
+                          _getDisplay, _closeDisplays, _getcursor,
+                          last_cursor_pos, _imshow, _contour, _xrf_plot,
+                          _xrf_oplot, _fitplot)
+
+    from .xrfdisplay import  XRFDisplayFrame
+
+    _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
+                                    newplot=_newplot, plot_text=_plot_text,
+                                    plot_marker=_plot_marker,
+                                    plot_arrow=_plot_arrow,
+                                    plot_setlimits=_plot_setlimits,
+                                    plot_axvline=_plot_axvline,
+                                    plot_axhline=_plot_axhline,
+                                    scatterplot=_scatterplot, hist=_hist,
+                                    update_trace=_update_trace,
+                                    save_plot=_saveplot,
+                                    save_image=_saveimg,
+                                    get_display=_getDisplay,
+                                    close_all_displays=_closeDisplays,
+                                    get_cursor=_getcursor,
+                                    last_cursor_pos=last_cursor_pos,
+                                    imshow=_imshow, contour=_contour,
+                                    xrf_plot=_xrf_plot,
+                                    xrf_oplot=_xrf_oplot,
+                                    fit_plot=_fitplot)
+
+
+    def _larch_init(_larch):
+        """add ScanFrameViewer to _sys.gui_apps """
+        if _larch is None:
+            return
+        _sys = _larch.symtable._sys
+        if not hasattr(_sys, 'gui_apps'):
+            _sys.gui_apps = {}
+        _sys.gui_apps['xrfviewer'] = ('XRF Spectrum Viewer', XRFDisplayFrame)
 
 
     #############################

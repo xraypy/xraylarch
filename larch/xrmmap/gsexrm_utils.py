@@ -3,14 +3,14 @@ import numpy as np
 import time
 
 import larch
-from larch_plugins.xrmmap import (read_xrf_netcdf,
-                                  read_xsp3_hdf5, readASCII,
-                                  readMasterFile, readROIFile,
-                                  readEnvironFile, parseEnviron,
-                                  read_xrd_netcdf, read_xrd_hdf5)
 
-from larch_plugins.xrd import integrate_xrd_row
+from larch.io import (read_xsp3_hdf5, read_xrf_netcdf,
+                      read_xrd_netcdf, read_xrd_hdf5)
 
+from .asciifiles import (readASCII, readMasterFile, readROIFile,
+                         readEnvironFile, read1DXRDFile, parseEnviron)
+
+from ..xrd import integrate_xrd_row
 
 def fix_xrd1d_filename(xrd_file):
     """check for 1D XRD file from Eiger or other detector --

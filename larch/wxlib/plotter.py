@@ -39,7 +39,8 @@ IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 FITPLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
-MODNAME = '_plotter'
+
+_larch_name = '_plotter'
 
 __DOC__ = '''
 General Plotting and Image Display Functions
@@ -73,8 +74,8 @@ class XRFDisplay(XRFDisplayFrame):
         self.window = int(window)
         self._larch = _larch
         self._xylims = {}
-        self.symname = '%s.xrf%i' % (MODNAME, self.window)
-        symtable = ensuremod(self._larch, MODNAME)
+        self.symname = '%s.xrf%i' % (_larch_name, self.window)
+        symtable = ensuremod(self._larch, _larch_name)
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
@@ -84,7 +85,7 @@ class XRFDisplay(XRFDisplayFrame):
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
-            if symtable.has_group(MODNAME):
+            if symtable.has_group(_larch_name):
                 symtable.del_symbol(self.symname)
         except:
             pass
@@ -94,7 +95,7 @@ class XRFDisplay(XRFDisplayFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
         symtable.set_symbol('%s_xrf_x'  % self.symname, x)
@@ -114,14 +115,14 @@ class PlotDisplay(PlotFrame):
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
-        self.symname = '%s.plot%i' % (MODNAME, self.window)
-        symtable = ensuremod(self._larch, MODNAME)
+        self.symname = '%s.plot%i' % (_larch_name, self.window)
+        symtable = ensuremod(self._larch, _larch_name)
         self.panel.canvas.figure.set_facecolor('#FDFDFB')
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-            if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
-                symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+            if not hasattr(symtable, '%s.cursor_maxhistory' % _larch_name):
+                symtable.set_symbol('%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
 
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
@@ -129,7 +130,7 @@ class PlotDisplay(PlotFrame):
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
-            if symtable.has_group(MODNAME):
+            if symtable.has_group(_larch_name):
                 symtable.del_symbol(self.symname)
         except:
             pass
@@ -139,10 +140,10 @@ class PlotDisplay(PlotFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+        hmax = getattr(symtable, '%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
         self.cursor_hist.insert(0, (x, y, time.time()))
@@ -164,15 +165,15 @@ class StackedPlotDisplay(StackedPlotFrame):
         self._larch = _larch
         self._xylims = {}
         self.cursor_hist = []
-        self.symname = '%s.fitplot%i' % (MODNAME, self.window)
-        symtable = ensuremod(self._larch, MODNAME)
+        self.symname = '%s.fitplot%i' % (_larch_name, self.window)
+        symtable = ensuremod(self._larch, _larch_name)
         self.panel.canvas.figure.set_facecolor('#FDFDFB')
         self.panel_bot.canvas.figure.set_facecolor('#FDFDFB')
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-            if not hasattr(symtable, '%s.cursor_maxhistory' % MODNAME):
-                symtable.set_symbol('%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+            if not hasattr(symtable, '%s.cursor_maxhistory' % _larch_name):
+                symtable.set_symbol('%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
 
         if window not in FITPLOT_DISPLAYS:
             FITPLOT_DISPLAYS[window] = self
@@ -180,7 +181,7 @@ class StackedPlotDisplay(StackedPlotFrame):
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
-            if symtable.has_group(MODNAME):
+            if symtable.has_group(_larch_name):
                 symtable.del_symbol(self.symname)
         except:
             pass
@@ -190,10 +191,10 @@ class StackedPlotDisplay(StackedPlotFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
-        hmax = getattr(symtable, '%s.cursor_maxhistory' % MODNAME, MAX_CURSHIST)
+        hmax = getattr(symtable, '%s.cursor_maxhistory' % _larch_name, MAX_CURSHIST)
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
         self.cursor_hist.insert(0, (x, y, time.time()))
@@ -211,24 +212,24 @@ class ImageDisplay(ImageFrame):
         self.panel.cursor_callback = self.onCursor
         self.panel.contour_callback = self.onContour
         self.window = int(window)
-        self.symname = '%s.img%i' % (MODNAME, self.window)
+        self.symname = '%s.img%i' % (_larch_name, self.window)
         self._larch = _larch
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if self.window not in IMG_DISPLAYS:
             IMG_DISPLAYS[self.window] = self
 
     def onContour(self, levels=None, **kws):
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is not None and levels is not None:
             symtable.set_symbol('%s_contour_levels'  % self.symname, levels)
 
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
-            symtable.has_group(MODNAME), self.symname
-            if symtable.has_group(MODNAME):
+            symtable.has_group(_larch_name), self.symname
+            if symtable.has_group(_larch_name):
                 symtable.del_symbol(self.symname)
         except:
             pass
@@ -237,7 +238,7 @@ class ImageDisplay(ImageFrame):
         self.Destroy()
 
     def onCursor(self,x=None, y=None, ix=None, iy=None, val=None, **kw):
-        symtable = ensuremod(self._larch, MODNAME)
+        symtable = ensuremod(self._larch, _larch_name)
         if symtable is None:
             return
         set = symtable.set_symbol
@@ -257,24 +258,24 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         return None
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
-    symname = '%s.plot%i' % (MODNAME, win)
+    symname = '%s.plot%i' % (_larch_name, win)
     creator = PlotDisplay
     display_dict = PLOT_DISPLAYS
     if image:
         creator = ImageDisplay
         display_dict = IMG_DISPLAYS
         title   = 'Image Window %i' % win
-        symname = '%s.img%i' % (MODNAME, win)
+        symname = '%s.img%i' % (_larch_name, win)
     elif xrf:
         creator = XRFDisplay
         display_dict = XRF_DISPLAYS
         title   = 'XRF Display Window %i' % win
-        symname = '%s.xrf%i' % (MODNAME, win)
+        symname = '%s.xrf%i' % (_larch_name, win)
     elif stacked:
         creator = StackedPlotDisplay
         display_dict = FITPLOT_DISPLAYS
         title   = 'Fit Plot Window %i' % win
-        symname = '%s.fitplot%i' % (MODNAME, win)
+        symname = '%s.fitplot%i' % (_larch_name, win)
 
     if win in display_dict:
         display = display_dict[win]
@@ -636,10 +637,10 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None,
                           stacked=stacked, _larch=_larch)
     if plotter is None:
         return
-    symtable = ensuremod(_larch, MODNAME)
-    sentinal = '%s.plot%i_cursorflag' % (MODNAME, win)
-    xsym = '%s.plot%i_x' % (MODNAME, win)
-    ysym = '%s.plot%i_y' % (MODNAME, win)
+    symtable = ensuremod(_larch, _larch_name)
+    sentinal = '%s.plot%i_cursorflag' % (_larch_name, win)
+    xsym = '%s.plot%i_x' % (_larch_name, win)
+    ysym = '%s.plot%i_y' % (_larch_name, win)
 
     xval = symtable.get_symbol(xsym, create=True)
     yval = symtable.get_symbol(ysym, create=True)
@@ -838,30 +839,3 @@ def _closeDisplays(_larch=None, **kws):
     for name in names:
         win = IMG_DISPLAYS.pop(name)
         win.Destroy()
-
-
-_larch_name = MODNAME
-
-_larch_builtins = {MODNAME: dict(plot=_plot,
-                                 oplot=_oplot,
-                                 newplot=_newplot,
-                                 plot_text=_plot_text,
-                                 plot_marker=_plot_marker,
-                                 plot_arrow=_plot_arrow,
-                                 plot_setlimits=_plot_setlimits,
-                                 plot_axvline=_plot_axvline,
-                                 plot_axhline=_plot_axhline,
-                                 scatterplot=_scatterplot,
-                                 hist=_hist,
-                                 update_trace=_update_trace,
-                                 save_plot=_saveplot,
-                                 save_image=_saveimg,
-                                 get_display=_getDisplay,
-                                 close_all_displays=_closeDisplays,
-                                 get_cursor=_getcursor,
-                                 last_cursor_pos=last_cursor_pos,
-                                 imshow=_imshow,
-                                 contour=_contour,
-                                 xrf_plot=_xrf_plot,
-                                 xrf_oplot=_xrf_oplot,
-                                 fit_plot=_fitplot)}
