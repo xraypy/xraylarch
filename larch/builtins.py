@@ -517,6 +517,20 @@ def reset_fiteval(_larch=None, **kws):
             else:
                 fiteval(init_item)
 
+def init_display_group(_larch):
+    symtab = _larch.symtable
+    if not symtab.has_group('_sys.display'):
+            symtab.new_group('_sys.display')
+            colors = {}
+            colors['text'] = {'color': None}
+            colors['text2'] = {'color': 'cyan'}
+            colors['comment'] = {'color': 'green'}
+            colors['error'] = {'color': 'red',  'attrs': ['bold']}
+            display = symtab._sys.display
+            display.colors = colors
+            display.use_color = True
+            display.terminal = 'xterm'
+
 
 _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
                       isgroup=_isgroup, subgroups=_subgroups,
@@ -536,7 +550,7 @@ init_builtins = dict(_builtin=_main_builtins,
                      _math={'reset_fiteval': reset_fiteval})
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
-init_funcs = []
+init_funcs = [init_display_group, reset_fiteval]
 
 # group/classes to register for save-restore
 init_groups = []
