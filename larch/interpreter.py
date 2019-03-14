@@ -134,8 +134,12 @@ class Interpreter:
         for fname, sym in list(builtins.numpy_renames.items()):
             setattr(mathgroup, fname, getattr(numpy, sym))
 
+        core_groups = ['_main', '_sys', '_builtin', '_math']
         for groupname, entries in builtins.init_builtins.items():
-            print("Add group ", groupname, self.symtable.has_group(groupname), len(entries))
+            print("Add group ", groupname, self.symtable.has_group(groupname),
+                  len(entries))
+            if groupname not in core_groups:
+                core_groups.append(groupname)
             if self.symtable.has_group(groupname):
                 group = getattr(self.symtable, groupname, None)
             else:
@@ -146,12 +150,7 @@ class Interpreter:
                 setattr(group, fname,
                         Closure(func=fcn, _larch=self, _name=fname))
 
-#             if group is None:
-#                 group = Group(__name__=groupname)
-#                 setattr(self.symtable, groupname, group)
-#             if group is not None:
-
-
+        self.symtable._sys.core_groups = core_groups
         # set valid commands from builtins
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
