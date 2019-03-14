@@ -37,7 +37,7 @@ class GSEMCA_File(Group):
     """
     def __init__(self, filename=None, bad=None, **kws):
 
-        from larch_plugins.xrf import MCA, ROI
+        from larch.xrf import MCA, ROI
 
         kwargs = {'name': 'GSE MCA File: %s' % filename}
         kwargs.update(kws)

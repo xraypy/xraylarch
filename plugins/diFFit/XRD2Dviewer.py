@@ -303,7 +303,7 @@ class XRD2DViewerFrame(wx.Frame):
                 xrmfile = h5py.File(path, 'r')
             except IOError:
                 try:
-                    from larch_plugins.xrmmap import read_xrd_netcdf #,GSEXRM_MapFile
+                    from larch.io import read_xrd_netcdf
                     image = read_xrd_netcdf(path)
                 except TypeError:
                     try:

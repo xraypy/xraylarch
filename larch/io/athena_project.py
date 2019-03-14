@@ -91,7 +91,7 @@ def make_hashkey():
 def make_athena_args(group, hashkey=None, **kws):
     """make athena args line from a group"""
     # start with default args:
-    from larch_plugins.xafs.xafsutils import etok
+    from larch.xafs.xafsutils import etok
 
     if hashkey is None:
         hashkey = make_hashkey()
@@ -370,7 +370,7 @@ class AthenaProject(object):
 
     def add_group(self, group, signal=None):
         """add Larch group (presumably XAFS data) to Athena project"""
-        from larch_plugins.xafs import pre_edge
+        from larch.xafs import pre_edge
 
         x = athena_array(group, 'energy')
         yname = None
@@ -486,7 +486,7 @@ class AthenaProject(object):
         if not os.path.exists(self.filename):
             raise IOError("%s '%s': cannot find file" % (ERR_MSG, self.filename))
 
-        from larch_plugins.xafs import pre_edge, autobk, xftf
+        from larch.xafs import pre_edge, autobk, xftf
 
 
         if not os.path.exists(filename):

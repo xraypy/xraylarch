@@ -11,7 +11,7 @@ from larch.xray import xray_edge, xray_line
 from .mback import mback
 
 try:
-    from larch_plugins.wx   import _newplot, _plot
+    from larch.wxlib   import _newplot, _plot
     HASPLOT = True
 except:
     HASPLOT = False
