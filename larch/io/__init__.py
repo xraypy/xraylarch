@@ -15,7 +15,12 @@ from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
 from .xdi import read_xdi, XDIFile, XDIFileException
 from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
+
 from .xsp3_hdf5 import read_xsp3_hdf5
+from .xrf_netcdf import read_xrf_netcdf
+from .xrd_netcdf import read_xrd_netcdf
+from .xrd_hdf5 import read_xrd_hdf5
+
 from .xdi import read_xdi
 
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
@@ -69,7 +74,14 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_tiff=read_tiff,
                    merge_groups=merge_groups,
                    save=save,
-                   restore=restore)
+                   restore=restore,
+                   read_xrd_hdf5=read_xrd_hdf5,
+                   read_xrd_netcdf=read_xrd_netcdf,
+                   read_xrf_netcdf=read_xrf_netcdf,
+                   read_xsp3_hdf5=read_xsp3_hdf5)
+
+
+
 
 if HAS_SPECFILE:
     __exports__.update(dict(read_specfile_scan=spec_getscan2group,

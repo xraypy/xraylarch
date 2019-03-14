@@ -168,6 +168,3 @@ def test_read(fname):
     print( fname,  os.stat(fname))
     fd = read_xrf_netcdf(fname, verbose=True)
     print(fd.counts.shape)
-
-def registerLarchPlugin():
-    return ('_xrf', {'read_xrf_netcdf': read_xrf_netcdf})

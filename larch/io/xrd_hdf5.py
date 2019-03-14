@@ -33,6 +33,3 @@ def test_read(fname):
     print( fname,  os.stat(fname))
     fd = read_xrd_hdf5(fname, verbose=True)
     print(fd.counts.shape)
-
-def registerLarchPlugin():
-    return ('_xrd', {'read_xrd_hdf5': read_xrd_hdf5})

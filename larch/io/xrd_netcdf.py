@@ -20,7 +20,7 @@ def read_xrd_netcdf(fname,verbose=False):
     ## Reads a netCDF file created for XRD mapping
     if verbose:
         print(' reading %s' % fname)
-    
+
     ## Reads an XRD netCDF file with the netCDF plugin buffers
     xrd_data = read_netcdf(fname, keyword='array_data')
     xrd_data = xrd_data.astype('uint16')
@@ -45,7 +45,7 @@ def read_netcdf(fname,verbose=False,keyword=None):
     returns dictionary of all information in provided xrd netcdf file
     unless data from only one key is specified
     '''
-   
+
     with netcdf_open(fname, mmap=False) as file_netcdf:
         if keyword is not None and keyword in file_netcdf.variables.keys():
             return file_netcdf.variables[keyword].data
@@ -59,6 +59,3 @@ def test_read(fname):
     print( fname,  os.stat(fname))
     fd = read_xrd_netcdf(fname, verbose=True)
     print(fd.counts.shape)
-
-def registerLarchPlugin():
-    return ('_xrd', {'read_xrd_netcdf': read_xrd_netcdf})
