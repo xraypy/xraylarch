@@ -136,8 +136,6 @@ class Interpreter:
 
         core_groups = ['_main', '_sys', '_builtin', '_math']
         for groupname, entries in builtins.init_builtins.items():
-            print("Add group ", groupname, self.symtable.has_group(groupname),
-                  len(entries))
             if groupname not in core_groups:
                 core_groups.append(groupname)
             if self.symtable.has_group(groupname):
@@ -145,7 +143,6 @@ class Interpreter:
             else:
                 group = self.symtable.set_symbol(groupname,
                                                  value=Group(__name__=groupname))
-                print("Set symbol ", groupname, group)
             for fname, fcn in list(entries.items()):
                 setattr(group, fname,
                         Closure(func=fcn, _larch=self, _name=fname))
