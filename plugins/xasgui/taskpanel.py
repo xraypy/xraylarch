@@ -16,7 +16,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font,
                          FileSave, FileOpen, FONTSIZE)
 
-from larch_plugins.wx.plotter import last_cursor_pos
+from larch.wxlib.plotter import last_cursor_pos
 from larch.utils import group2dict
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

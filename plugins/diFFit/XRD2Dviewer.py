@@ -30,9 +30,9 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
 
 from larch.io import tifffile, nativepath
-from larch_plugins.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
-                               calc_cake,twth_from_q,twth_from_d,
-                               return_ai,twth_from_xy,q_from_xy,eta_from_xy)
+from larch.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
+                       calc_cake,twth_from_q,twth_from_d,
+                       return_ai,twth_from_xy,q_from_xy,eta_from_xy)
 from larch_plugins.diFFit.XRDCalibrationFrame import CalibrationPopup
 from larch_plugins.diFFit.XRDMaskFrame import MaskToolsPopup
 from larch_plugins.diFFit.XRD1Dviewer import Calc1DPopup

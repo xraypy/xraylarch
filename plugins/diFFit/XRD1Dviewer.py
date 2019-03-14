@@ -29,17 +29,16 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath
-from larch_plugins.cifdb import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX,
-                                 CATEGORIES, match_database)
+from larch.wxlib import PeriodicTablePanel
 
-from larch_plugins.xrd import (d_from_q,twth_from_q,q_from_twth,
-                               d_from_twth,twth_from_d,q_from_d,
-                               lambda_from_E, E_from_lambda,calc_broadening,
-                               instrumental_fit_uvw,peaklocater,peakfitter,
-                               xrd1d,peakfinder_methods,SPACEGROUPS,
-                               create_cif, save1D)
+from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
+                       match_database, d_from_q,twth_from_q,q_from_twth,
+                       d_from_twth,twth_from_d,q_from_d, lambda_from_E,
+                       E_from_lambda,calc_broadening,
+                       instrumental_fit_uvw,peaklocater,peakfitter,
+                       xrd1d,peakfinder_methods,SPACEGROUPS, create_cif,
+                       save1D)
 
-from larch.wxlib import Button
 ###################################
 
 VERSION = '2 (14-March-2018)'
@@ -3592,10 +3591,6 @@ class PeriodicTableSearch(wx.Dialog):
     def __init__(self, parent,include=[],exclude=[]):
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title='Periodic Table of Elements')
-
-        ## this eventually to file header - do not belong here but works.
-        ## mkak 2017.02.16
-        from larch_plugins.wx import PeriodicTablePanel
 
         panel = wx.Panel(self)
         self.ptable = PeriodicTablePanel(panel,title='Select Element(s)',

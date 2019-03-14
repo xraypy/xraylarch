@@ -44,8 +44,9 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch.site_config import icondir
-from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
-                              FILE_WILDCARDS, XRFCalibrationFrame)
+from larch.wxlib import PeriodicTablePanel
+from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
+                                    FILE_WILDCARDS)
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:

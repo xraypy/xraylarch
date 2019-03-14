@@ -17,11 +17,11 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
                          Check, CEN, RCEN, LCEN, Font)
 
+from larch.xafs.xafsutils import etok, ktoe
+from larch.xafs.xafsplots import plotlabels
+
 from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
 from larch_plugins.xasgui.taskpanel import TaskPanel
-
-from larch_plugins.xafs.xafsutils import etok, ktoe
-from larch_plugins.xafs.xafsplots import plotlabels
 
 np.seterr(all='ignore')
 

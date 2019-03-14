@@ -34,7 +34,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine)
 from larch.utils.strutils import bytes2str, version_ge
 
-from larch_plugins.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
+from larch.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL

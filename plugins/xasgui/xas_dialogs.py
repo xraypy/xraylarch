@@ -15,8 +15,8 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, Check, Button, HLine, OkCancel, LCEN,
                          RCEN)
 
-from larch_plugins.xafs.xafsutils  import etok, ktoe
-from larch_plugins.xafs.xafsplots import plotlabels
+from larch.xafs.xafsutils  import etok, ktoe
+from larch.xafs.xafsplots import plotlabels
 
 PI = np.pi
 DEG2RAD  = PI/180.0

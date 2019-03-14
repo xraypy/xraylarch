@@ -36,7 +36,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          FileOpen, flatnotebook)
 
 from larch.wxlib.parameter import ParameterWidgets, ParameterPanel
-from larch_plugins.wx.plotter import last_cursor_pos
+from larch.wxlib.plotter import last_cursor_pos
 from larch_plugins.xasgui.taskpanel import TaskPanel
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

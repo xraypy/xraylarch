@@ -32,11 +32,11 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
                          LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
+from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
 from larch.fitting import fit_report
 from larch.utils import group2dict
 from larch.site_config import icondir
-from larch_plugins.wx.plotter import _newplot, _plot, last_cursor_pos
 
 from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
                                   LinearComboPanel, PCAPanel, LASSOPanel,
@@ -51,7 +51,7 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname, groups2csv,
                       is_athena_project, AthenaProject)
 
-from larch_plugins.xafs import pre_edge, pre_edge_baseline
+from larch.xafs import pre_edge, pre_edge_baseline
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
