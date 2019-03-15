@@ -150,10 +150,8 @@ if DEBUG or True:
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch plugins
 
-data_files = [
-    (pjoin(larchdir, 'icons'),       glob('icons/*.ic*')),
-    (pjoin(larchdir, 'dlls', sname), glob("%s/*" % pjoin('dlls', sname)))]
-
+data_files = [(pjoin(larchdir, 'dlls', sname),
+               glob("%s/*" % pjoin('dlls', sname)))]
 
 scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
            'gse_mapviewer', 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
@@ -162,6 +160,7 @@ scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]
 
 plugin_dir = pjoin(larchdir, 'plugins')
+
 pluginfiles = []
 pluginpaths = []
 for fname in glob('plugins/*'):
@@ -194,35 +193,11 @@ packages = ['larch']
 for pname in find_packages('larch'):
     packages.append('larch.%s' % pname)
 
-
-
 print(" Packages")
 print(packages)
 
 print(" DATA FILES ")
 print(data_files)
-
-# now we have all the data files, so we can run setup
-setup(name = 'xraylarch',
-      version = __version__,
-      author = 'Matthew Newville and the X-rayLarch Development Team',
-      author_email = 'newville@cars.uchicago.edu',
-      url          = 'http://xraypy.github.io/xraylarch/',
-      download_url = 'http://xraypy.github.io/xraylarch/',
-      license = 'BSD',
-      description = 'Synchrotron X-ray data analysis in python',
-      packages = packages,
-      package_data={'larch': ['icons/*', 'xray/*.dat', 'xray/*.db']},
-      entry_points = {'console_scripts' : larch_apps},
-      data_files  = data_files,
-      platforms = ['Windows', 'Linux', 'Mac OS X'],
-      classifiers=['Intended Audience :: Science/Research',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Topic :: Scientific/Engineering'],
-      )
-
-
 def remove_cruft():
     """remove files that may be left from earlier installs"""
     cruft = {'plugins': ['xrd/xrd_hkl.py',
@@ -256,19 +231,40 @@ def remove_cruft():
                     remove_file(basedir, fname+'c')
                     remove_file(basedir, fname+'o')
 
-def remove_distutils_sitepackage():
-    """rename site-packages/larch folder that may be
-    left over from earlier installs using distutils"""
-    for spath in site.getsitepackages():
-        lpath = os.path.join(spath, 'larch')
-        if os.path.exists(lpath) and os.path.isdir(lpath):
-            dest = lpath + '_outdated'
-            if os.path.exists(dest):
-                shutil.rmtree(dest)
-            try:
-                shutil.move(lpath, dest)
-            except:
-                pass
+def remove_share_larch():
+    """remove all files in share/larch from earlier code layouts"""
+    for dirname, keep in (('plugins', True), ('dlls', True), ('icons', False)):
+        fname = pjoin(larchdir, 'plugins')
+        if os.path.exists(fname):
+            shutil.rmtree(fname)
+        if keep:
+            os.mkdir(fname)
+
+if INSTALL:
+    remove_cruft()
+    remove_share_larch()
+
+# now we have all the data files, so we can run setup
+setup(name = 'xraylarch',
+      version = __version__,
+      author = 'Matthew Newville and the X-rayLarch Development Team',
+      author_email = 'newville@cars.uchicago.edu',
+      url          = 'http://xraypy.github.io/xraylarch/',
+      download_url = 'http://xraypy.github.io/xraylarch/',
+      license = 'BSD',
+      description = 'Synchrotron X-ray data analysis in python',
+      packages = packages,
+      package_data={'larch': ['icons/*', 'xray/*.dat', 'xray/*.db']},
+      entry_points = {'console_scripts' : larch_apps},
+      data_files  = data_files,
+      platforms = ['Windows', 'Linux', 'Mac OS X'],
+      classifiers=['Intended Audience :: Science/Research',
+                   'Operating System :: OS Independent',
+                   'Programming Language :: Python',
+                   'Topic :: Scientific/Engineering'],
+      )
+
+
 
 def copy_compiled_exes():
     for exename in compiled_exes:
@@ -357,9 +353,8 @@ def fix_linux_dylibs():
 #   copy compiled exes to top bin directory (out of egg)
 #   fix MacOS + Anaconda python vs. pythonw
 #   create desktop icons
+
 if INSTALL:
-    remove_cruft()
-    remove_distutils_sitepackage()
     copy_compiled_exes()
 
     larchbin = 'larch'
