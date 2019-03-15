@@ -402,16 +402,19 @@ class AthenaProject(object):
         # fill in data from pre-edge subtraction
         if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
             pre_edge(group, _larch=self._larch)
-        args = make_athena_args(group, hashkey)
+        group.args = make_athena_args(group, hashkey)
         _elem, _edge = guess_edge(group.e0, _larch=self._larch)
-        args['bkg_z'] = _elem
-        self.groups[hashkey] = Group(args=args, x=x, y=y, i0=i0, signal=signal)
+        group.args['bkg_z'] = _elem
+        group.x = x
+        group.y = y
+        group.i0 = i0
+        group.signal = signal
+        self.groups[hashkey] = group
 
 
     def save(self, filename=None, use_gzip=True):
         if filename is not None:
             self.filename = filename
-        # print(" Writing Athena Project ", self.filename)
         iso_now = time.strftime('%Y-%m-%dT%H:%M:%S')
         pyosversion = "Python %s on %s"  % (platform.python_version(),
                                             platform.platform())
@@ -421,8 +424,10 @@ class AthenaProject(object):
                 "# Using Larch version %s, %s" % (larch_version, pyosversion)]
 
         for key, dat in self.groups.items():
+            if not hasattr(dat, 'args'):
+                continue
             buff.append("")
-            buff.append("$old_group = '%s';" % key)
+            buff.append("$old_group = '%s';" % dat.groupname)
             buff.append("@args = (%s);" % format_dict(dat.args))
             buff.append("@x = (%s);" % format_array(dat.x))
             buff.append("@y = (%s);" % format_array(dat.y))
@@ -514,7 +519,6 @@ class AthenaProject(object):
 
         if data is None:
             raise ValueError("cannot read file '%s' as Athena Project File" % (self.filename))
-
 
         self.header = data.header
         self.journal = data.journal
