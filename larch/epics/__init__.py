@@ -53,7 +53,7 @@ def pv_units(pv, default=''):
 
 
 
-def nullfcn(@args,  **kws):
+def nullfcn(*args,  **kws):
     "pyepics is not installed"
     return None
 

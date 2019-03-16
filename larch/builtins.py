@@ -26,7 +26,7 @@ from . import xrf
 from . import xafs
 from . import xrd
 from . import xrmmap
-from . ipmort epics
+from . import epics
 
 try:
     from . import wxlib

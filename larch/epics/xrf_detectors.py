@@ -13,7 +13,7 @@ except (NameError, ImportError):
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
 
-from .epics.xspress3 import Xspress3, Xspress310
+from .xspress3 import Xspress3, Xspress310
 
 from ..xrf import MCA, ROI, Environment
 

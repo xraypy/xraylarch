@@ -42,7 +42,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      GridPanel, CEN, LEFT, RIGHT)
 
 
-yimport larch
+import larch
 from larch.site_config import icondir
 from larch.wxlib import PeriodicTablePanel
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
