@@ -148,6 +148,8 @@ class Interpreter:
                         Closure(func=fcn, _larch=self, _name=fname))
 
         self.symtable._sys.core_groups = core_groups
+        self.symtable._fix_searchGroups(force=True)
+
         # set valid commands from builtins
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
