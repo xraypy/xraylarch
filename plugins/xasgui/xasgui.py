@@ -956,10 +956,10 @@ class XASFrame(wx.Frame):
             #  too many data points
             #  unsorted energy data or data in angle
             #  too fine a step size at the end of the data range
-            if (len(en) > 1000 or
+            if (len(en) > 1200 or
                 any(np.diff(en) < 0) or
-                ((max(en)-min(en)) > 350 and
-                 (np.diff(en[:100]).mean() < 1.0))):
+                ((max(en)-min(en)) > 300 and
+                 (np.diff(en[-50:]).mean() < 0.75))):
                 msg = """This dataset may need to be rebinned.
                 Rebin now?"""
                 dlg = wx.MessageDialog(self, msg, 'Warning',
