@@ -26,6 +26,7 @@ from . import xrf
 from . import xafs
 from . import xrd
 from . import xrmmap
+from . ipmort epics
 
 try:
     from . import wxlib
@@ -558,7 +559,8 @@ init_moddocs = {}
 
 # _math_builtins.update(math._larch_builtins_)
 # _math_builtins.update(fitting._larch_builtins_)
-for mod in (math, fitting, io, xray, xrf, xafs, xrd, xrmmap, wxlib, plotter):
+for mod in (math, fitting, io, xray, xrf, xafs, xrd,
+            xrmmap, wxlib, plotter, epics):
     if mod is None:
         continue
     modname  = getattr(mod, '_larch_name', mod.__name__)
