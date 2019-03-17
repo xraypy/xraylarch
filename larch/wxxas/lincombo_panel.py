@@ -26,7 +26,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox)
 
-from larch_plugins.xasgui.taskpanel import TaskPanel
+from .taskpanel import TaskPanel
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')

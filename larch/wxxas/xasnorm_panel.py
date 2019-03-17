@@ -21,8 +21,8 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          GridPanel, CEN, RCEN, LCEN, Font)
 
 from larch.wxlib.plotter import last_cursor_pos
-from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
-from larch_plugins.xasgui.taskpanel import TaskPanel
+from .xas_dialogs import EnergyUnitsDialog
+from .taskpanel import TaskPanel
 
 np.seterr(all='ignore')
 

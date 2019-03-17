@@ -21,7 +21,8 @@ from wx.richtext import RichTextCtrl
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 
-from larch import Interpreter, Group
+import larch
+from larch import Group
 from larch.math import index_of
 from larch.utils.strutils import file2groupname, unique_name
 
@@ -38,14 +39,19 @@ from larch.fitting import fit_report
 from larch.utils import group2dict
 from larch.site_config import icondir
 
-from larch_plugins.xasgui import (PrePeakPanel, XASNormPanel,
-                                  LinearComboPanel, PCAPanel, LASSOPanel,
-                                  EXAFSPanel, MergeDialog, RenameDialog,
-                                  RemoveDialog, DeglitchDialog,
-                                  ExportCSVDialog,
-                                  RebinDataDialog, EnergyCalibrateDialog,
-                                  SmoothDataDialog, OverAbsorptionDialog,
-                                  DeconvolutionDialog, QuitDialog)
+from .prepeak_panel import PrePeakPanel
+from .xasnorm_panel import XASNormPanel
+from .lincombo_panel import LinearComboPanel
+from .decompose_panel import PCAPanel
+from .exafs_panel import EXAFSPanel
+
+# LASSOPanel,
+
+from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
+                          DeglitchDialog, ExportCSVDialog, RebinDataDialog,
+                          EnergyCalibrateDialog, SmoothDataDialog,
+                          OverAbsorptionDialog, DeconvolutionDialog,
+                          QuitDialog)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname, groups2csv,
@@ -103,7 +109,7 @@ class XASController():
         self.wxparent = wxparent
         self.larch = _larch
         if self.larch is None:
-            self.larch = Interpreter()
+            self.larch = larch.Interpreter()
         self.filelist = None
         self.file_groups = OrderedDict()
         self.fit_opts = {}
@@ -1020,16 +1026,7 @@ class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-def initializeLarchPlugin(_larch=None):
-    """add XAS Frame to _sys.gui_apps """
-    if _larch is not None:
-        _sys = _larch.symtable._sys
-        if not hasattr(_sys, 'gui_apps'):
-            _sys.gui_apps = {}
-        _sys.gui_apps['xas_viewer'] = ('XAS Viewer', XASFrame)
-
-def registerLarchPlugin():
-    return ('_sys.wx', {})
-
-if __name__ == "__main__":
-    XASViewer().run()
+def xas_viewer(**kws):
+    s = XASViewer(**kws)
+    s.Show()
+    s.Raise()

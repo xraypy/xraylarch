@@ -15,7 +15,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RCEN,
                          LCEN, Font)
 
-from larch_plugins.xasgui.taskpanel import TaskPanel
+from .taskpanel import TaskPanel
 
 
 np.seterr(all='ignore')

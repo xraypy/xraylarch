@@ -20,8 +20,8 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
 from larch.xafs.xafsutils import etok, ktoe
 from larch.xafs.xafsplots import plotlabels
 
-from larch_plugins.xasgui.xas_dialogs import EnergyUnitsDialog
-from larch_plugins.xasgui.taskpanel import TaskPanel
+from .xas_dialogs import EnergyUnitsDialog
+from .taskpanel import TaskPanel
 
 np.seterr(all='ignore')
 

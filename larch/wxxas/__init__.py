@@ -13,3 +13,12 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           QuitDialog, ExportCSVDialog)
 
 from .xasgui import XASFrame, XASViewer
+
+
+# def initializeLarchPlugin(_larch=None):
+#     """add XAS Frame to _sys.gui_apps """
+#     if _larch is not None:
+#         _sys = _larch.symtable._sys
+#         if not hasattr(_sys, 'gui_apps'):
+#             _sys.gui_apps = {}
+#         _sys.gui_apps['xas_viewer'] = ('XAS Viewer', XASFrame)
