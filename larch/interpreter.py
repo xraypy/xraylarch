@@ -172,15 +172,8 @@ class Interpreter:
                                    for node in self.supported_nodes))
 
         if with_plugins: # add all plugins in standard plugins folder
-            plugins_dir = os.path.join(site_config.larchdir, 'plugins')
+            plugins_dir = os.path.join(site_config.usr_larchdir, 'plugins')
             loaded_plugins = []
-
-            for pname in site_config.core_plugins:
-                pdir = os.path.join(plugins_dir, pname)
-                if os.path.isdir(pdir):
-                    builtins._addplugin(pdir, _larch=self)
-                    loaded_plugins.append(pname)
-
             for pname in sorted(os.listdir(plugins_dir)):
                 if pname not in loaded_plugins:
                     pdir = os.path.join(plugins_dir, pname)
