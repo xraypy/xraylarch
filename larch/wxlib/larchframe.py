@@ -297,7 +297,8 @@ class LarchFrame(wx.Frame):
         self.BuildMenus()
 
         larchdir = larch.site_config.larchdir
-        fico = os.path.join(larchdir, 'icons', ICON_FILE)
+
+        fico = os.path.join(larch.site_config.icondir, ICON_FILE)
         if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
 
