@@ -119,7 +119,8 @@ for pname in find_packages('larch'):
 
 
 package_data = ['icons/*', 'xray/*.dat', 'xray/*.db', 'xrd/*.db',
-                'bin/darwin64/*', 'bin/linux64/*', 'bin/win64/*']
+                'bin/darwin64/*', 'bin/linux64/*', 'bin/win64/*',
+                'bin/win32/*']
 
 
 if INSTALL:
