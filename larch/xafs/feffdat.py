@@ -16,7 +16,7 @@ import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
-
+from lmfit.printfuncs import gformat
 from larch import Group, isNamedClass
 
 from larch.utils.strutils import fix_varname, b32hash
@@ -311,7 +311,6 @@ class FeffPathGroup(Group):
         return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
                     sigma2=ss2, third=c3, fourth=c4)
 
-
     def report(self):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
@@ -326,7 +325,8 @@ class FeffPathGroup(Group):
             out.append(s)
 
         stderrs = {}
-        out.append('     {:7s}=  {:.5f}'.format('reff', self._feffdat.reff))
+        out.append('     {:7s}= {:s}'.format('reff',
+                                              gformat(self._feffdat.reff)))
 
         for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
@@ -345,9 +345,9 @@ class FeffPathGroup(Group):
                     val = par.value
                     std = par.stderr
             if std is None  or std <= 0:
-                svalue = "{: 5f}".format(val)
+                svalue = gformat(val)
             else:
-                svalue = "{: 5f} +/- {:5f}".format(val, std)
+                svalue = "{:s} +/-{:s}".format(gformat(val), gformat(std))
             if pname == 's02': pname = 'n*s02'
 
             svalue = "     {:7s}= {:s}".format(pname, svalue)

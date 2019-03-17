@@ -11,6 +11,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from lmfit import Parameters, Parameter, Minimizer, fit_report
+from lmfit.printfuncs import gformat
 
 from larch import Group, isNamedClass
 
@@ -651,22 +652,24 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     if not input_ok:
         print( 'must pass output of feffit()!')
         return
+
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
-    varformat  = '   %12s = % f +/- %s   (init= % f)'
-    fixformat  = '   %12s = % f (fixed)'
-    exprformat = '   %12s = % f +/- %s  = \'%s\''
+    varformat  = '   %12s = %s +/-%s   (init= %s)'
+    fixformat  = '   %12s = %s (fixed)'
+    exprformat = '   %12s = %s +/-%s  = \'%s\''
     out = [topline, header % 'Statistics']
 
-    out.append('   nvarys, npts       = %i, %i' % (result.nvarys,
+    out.append('   nvarys, npts       =  %i, %i' % (result.nvarys,
                                                    result.ndata))
-    out.append('   n_independent      = %.3f'  % (result.n_independent))
-    out.append('   chi_square         = %.6g'  % (result.chi_square))
-    out.append('   reduced chi_square = %.6g'  % (result.chi_reduced))
-    out.append('   r-factor           = %.5f'  % (result.rfactor))
-    out.append('   Akaike info crit   = %.6g'  % (result.aic))
-    out.append('   Bayesian info crit = %.6g'  % (result.bic))
+    out.append('   n_independent      =  %.3f'  % (result.n_independent))
+    out.append('   chi_square         = %s'  % gformat(result.chi_square))
+    out.append('   reduced chi_square = %s'  % gformat(result.chi_reduced))
+    out.append('   r-factor           = %s'  % gformat(result.rfactor))
+    out.append('   Akaike info crit   = %s'  % gformat(result.aic))
+    out.append('   Bayesian info crit = %s'  % gformat(result.bic))
     out.append(' ')
+
     if len(datasets) == 1:
         out.append(header % 'Data')
     else:
@@ -679,22 +682,21 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
             if isinstance(ds.epsilon_k[0], np.ndarray):
                 msg = []
                 for eps in ds.epsilon_k:
-                    msg.append('Array(mean=%.6f, std=%.6f)' % (eps.mean(), eps.std()))
+                    msg.append('Array(mean=%s, std=%s)' % (gformat(eps.mean()).strip(),
+                                                           gformat(eps.std()).strip()))
                 eps_k = ', '.join(msg)
             else:
-                eps_k = ', '.join(['%.6f' % eps for eps in ds.epsilon_k])
-            eps_r = ', '.join(['%.6f' % eps for eps in ds.epsilon_r])
+                eps_k = ', '.join([gformat(eps).strip() for eps in ds.epsilon_k])
+            eps_r = ', '.join([gformat(eps).strip() for eps in ds.epsilon_r])
             kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
         else:
             if isinstance(ds.epsilon_k, np.ndarray):
-                eps_k = 'Array(mean=%.6f, std=%.6f)' % (ds.epsilon_k.mean(),
-                                                        ds.epsilon_k.std())
+                eps_k = 'Array(mean=%s, std=%s)' % (gformat(ds.epsilon_k.mean()).strip(),
+                                                    gformat(ds.epsilon_k.std()).strip())
             else:
-                eps_k = '%.6f' % ds.epsilon_k
-            eps_r = '%.6f' % ds.epsilon_r
+                eps_k = gformat(ds.epsilon_k)
+            eps_r = gformat(ds.epsilon_r).strip()
             kweigh = '%i' % tr.kweight
-
-
         out.append('   fit space          = \'%s\''  % (tr.fitspace))
         out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
         out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
@@ -708,7 +710,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         out.append('   epsilon_k          = %s'  % eps_k)
         out.append('   epsilon_r          = %s'  % eps_r)
         out.append('   n_independent      = %.3f'  % (ds.n_idp))
-
         #
     out.append(' ')
     out.append(header % 'Variables')
@@ -722,18 +723,19 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         if isParameter(par):
             if par.vary:
                 stderr = 'unknown'
-                if par.stderr is not None: stderr = "%f" % par.stderr
-                out.append(varformat % (name, par.value,
-                                        stderr, par.init_value))
+                if par.stderr is not None:
+                    stderr = gformat(par.stderr)
+                out.append(varformat % (name, gformat(par.value),
+                                        stderr, gformat(par.init_value)))
 
             elif par.expr is not None:
                 stderr = 'unknown'
-                if par.stderr is not None: stderr = "%f" % par.stderr
-                out.append(exprformat % (name, par.value,
+                if par.stderr is not None:
+                    stderr = gformat(par.stderr)
+                out.append(exprformat % (name, gformat(par.value),
                                          stderr, par.expr))
             else:
-                out.append(fixformat % (name, par.value))
-
+                out.append(fixformat % (name, gformaat(par.value)))
     # if len(exprs) > 0:
     #     out.append(header % 'Constraint Expressions')
     #     out.extend(exprs)
