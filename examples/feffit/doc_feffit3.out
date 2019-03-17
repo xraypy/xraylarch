@@ -1,12 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       = 5, 390
-   n_independent      = 56.476
-   chi_square         = 150.382
-   reduced chi_square = 2.92139
-   r-factor           = 0.01631
-   Akaike info crit   = 65.3103
-   Bayesian info crit = 75.4794
+   nvarys, npts       =  5, 390
+   n_independent      =  56.476
+   chi_square         =  150.381539
+   reduced chi_square =  2.92138785
+   r-factor           =  0.01630576
+   Akaike info crit   =  65.3103277
+   Bayesian info crit =  75.4794120
  
 [[Datasets (3)]]
  dataset 1:
@@ -16,8 +16,8 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.010379, std=0.040095)
-   epsilon_r          = 0.348846
+   epsilon_k          = Array(mean=0.01037895, std=0.04009488)
+   epsilon_r          = 0.34884586
    n_independent      = 18.825
  dataset 2:
    fit space          = 'r'
@@ -26,8 +26,8 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.003540, std=0.011780)
-   epsilon_r          = 0.118996
+   epsilon_k          = Array(mean=0.00354039, std=0.01178046)
+   epsilon_r          = 0.11899574
    n_independent      = 18.825
  dataset 3:
    fit space          = 'r'
@@ -36,16 +36,16 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.003239, std=0.011981)
-   epsilon_r          = 0.108852
+   epsilon_k          = Array(mean=0.00323861, std=0.01198050)
+   epsilon_r          = 0.10885248
    n_independent      = 18.825
  
 [[Variables]]
-   alpha          =  0.000006 +/- 0.000008   (init=  0.000000)
-   amp            =  0.869093 +/- 0.030460   (init=  1.000000)
-   del_e0         =  5.374313 +/- 0.612595   (init=  2.000000)
-   dr_off         = -0.000559 +/- 0.002877   (init=  0.000000)
-   theta          =  233.110563 +/- 8.207756   (init=  250.000000)
+   alpha          =  5.9742e-06 +/- 7.7842e-06   (init=  0.00000000)
+   amp            =  0.86909294 +/- 0.03045969   (init=  1.00000000)
+   del_e0         =  5.37431752 +/- 0.61259622   (init=  2.00000000)
+   dr_off         = -5.5859e-04 +/- 0.00287730   (init=  0.00000000)
+   theta          =  233.110563 +/- 8.20775459   (init=  250.000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, theta           = -0.858
@@ -59,38 +59,38 @@
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
-     reff   =  2.54780
-     degen  =  12.000000
-     n*s02  =  0.869093 +/- 0.030460  'amp'
-     e0     =  5.374313 +/- 0.612595  'del_e0'
-     r      =  2.547394 +/- 0.002786  'reff + dr_off + 10*alpha*reff'
-     deltar = -0.000406 +/- 0.002786  'dr_off + 10*alpha*reff'
-     sigma2 =  0.003275 +/- 0.000115  'sigma2_eins(10, theta)'
+     reff   =  2.54780000
+     degen  =  12.0000000
+     n*s02  =  0.86909294 +/- 0.03045969  'amp'
+     e0     =  5.37431752 +/- 0.61259622  'del_e0'
+     r      =  2.54739362 +/- 0.00278574  'reff + dr_off + 10*alpha*reff'
+     deltar = -4.0638e-04 +/- 0.00278574  'dr_off + 10*alpha*reff'
+     sigma2 =  0.00327469 +/- 1.1530e-04  'sigma2_eins(10, theta)'
 
  dataset 2:
    Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
-     reff   =  2.54780
-     degen  =  12.000000
-     n*s02  =  0.869093 +/- 0.030460  'amp'
-     e0     =  5.374313 +/- 0.612595  'del_e0'
-     r      =  2.548002 +/- 0.002544  'reff + dr_off + 50*alpha*reff'
-     deltar =  0.000202 +/- 0.002544  'dr_off + 50*alpha*reff'
-     sigma2 =  0.003337 +/- 0.000128  'sigma2_eins(50, theta)'
+     reff   =  2.54780000
+     degen  =  12.0000000
+     n*s02  =  0.86909294 +/- 0.03045969  'amp'
+     e0     =  5.37431752 +/- 0.61259622  'del_e0'
+     r      =  2.54800246 +/- 0.00254417  'reff + dr_off + 50*alpha*reff'
+     deltar =  2.0246e-04 +/- 0.00254417  'dr_off + 50*alpha*reff'
+     sigma2 =  0.00333714 +/- 1.2785e-04  'sigma2_eins(50, theta)'
 
  dataset 3:
    Path pfh2ced6i, Feff.dat file = feff0001.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
-     reff   =  2.54780
-     degen  =  12.000000
-     n*s02  =  0.869093 +/- 0.030460  'amp'
-     e0     =  5.374313 +/- 0.612595  'del_e0'
-     r      =  2.549525 +/- 0.002960  'reff + dr_off + 150*alpha*reff'
-     deltar =  0.001725 +/- 0.002960  'dr_off + 150*alpha*reff'
-     sigma2 =  0.005030 +/- 0.000299  'sigma2_eins(150, theta)'
+     reff   =  2.54780000
+     degen  =  12.0000000
+     n*s02  =  0.86909294 +/- 0.03045969  'amp'
+     e0     =  5.37431752 +/- 0.61259622  'del_e0'
+     r      =  2.54952455 +/- 0.00295984  'reff + dr_off + 150*alpha*reff'
+     deltar =  0.00172455 +/- 0.00295984  'dr_off + 150*alpha*reff'
+     sigma2 =  0.00503023 +/- 2.9892e-04  'sigma2_eins(150, theta)'
 
 =======================================================

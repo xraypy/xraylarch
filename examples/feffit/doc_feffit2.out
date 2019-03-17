@@ -1,12 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       = 7, 138
-   n_independent      = 19.717
-   chi_square         = 5.01788
-   reduced chi_square = 0.394592
-   r-factor           = 0.00248
-   Akaike info crit   = -12.9813
-   Bayesian info crit = -6.11108
+   nvarys, npts       =  7, 138
+   n_independent      =  19.717
+   chi_square         =  5.01787671
+   reduced chi_square =  0.39459197
+   r-factor           =  0.00248217
+   Akaike info crit   = -12.9813114
+   Bayesian info crit = -6.11107744
  
 [[Data]]
    fit space          = 'r'
@@ -15,18 +15,18 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.002788, std=0.010181)
-   epsilon_r          = 0.093696
+   epsilon_k          = Array(mean=0.00278768, std=0.01018065)
+   epsilon_r          = 0.09369632
    n_independent      = 19.717
  
 [[Variables]]
-   alpha          =  0.002880 +/- 0.002964   (init=  0.000000)
-   amp            =  0.932893 +/- 0.035852   (init=  1.000000)
-   c3_1           =  0.000147 +/- 0.000082   (init=  0.002000)
-   del_e0         =  5.721576 +/- 0.815157   (init=  3.000000)
-   sig2_1         =  0.008679 +/- 0.000282   (init=  0.002000)
-   sig2_2         =  0.013117 +/- 0.001131   (init=  0.002000)
-   sig2_3         =  0.006285 +/- 0.003059   (init=  0.002000)
+   alpha          =  0.00287975 +/- 0.00296436   (init=  0.00000000)
+   amp            =  0.93289337 +/- 0.03585191   (init=  1.00000000)
+   c3_1           =  1.4651e-04 +/- 8.1767e-05   (init=  0.00200000)
+   del_e0         =  5.72157624 +/- 0.81515657   (init=  3.00000000)
+   sig2_1         =  0.00867899 +/- 2.8210e-04   (init=  0.00200000)
+   sig2_2         =  0.01311654 +/- 0.00113147   (init=  0.00200000)
+   sig2_3         =  0.00628474 +/- 0.00305866   (init=  0.00200000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    alpha, c3_1          =  0.952
@@ -53,38 +53,38 @@
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       0.0000, -1.8016,  1.8016  1
-     reff   =  2.54780
-     degen  =  12.000000
-     n*s02  =  0.932893 +/- 0.035852  'amp'
-     e0     =  5.721576 +/- 0.815157  'del_e0'
-     r      =  2.555137 +/- 0.011329  'reff + alpha*reff'
-     deltar =  0.007337 +/- 0.011329  'alpha*reff'
-     sigma2 =  0.008679 +/- 0.000282  'sig2_1'
-     third  =  0.000147 +/- 0.000082  'c3_1'
+     reff   =  2.54780000
+     degen  =  12.0000000
+     n*s02  =  0.93289337 +/- 0.03585191  'amp'
+     e0     =  5.72157624 +/- 0.81515657  'del_e0'
+     r      =  2.55513702 +/- 0.01132917  'reff + alpha*reff'
+     deltar =  0.00733702 +/- 0.01132917  'alpha*reff'
+     sigma2 =  0.00867899 +/- 2.8210e-04  'sig2_1'
+     third  =  1.4651e-04 +/- 8.1767e-05  'c3_1'
 
    Path pe3tkyh7w, Feff.dat file = feff0002.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu      -3.6032,  0.0000,  0.0000  1
-     reff   =  3.60320
-     degen  =  6.000000
-     n*s02  =  0.932893 +/- 0.035852  'amp'
-     e0     =  5.721576 +/- 0.815157  'del_e0'
-     r      =  3.613576 +/- 0.011329  'reff + alpha*reff'
-     deltar =  0.010376 +/- 0.011329  'alpha*reff'
-     sigma2 =  0.013117 +/- 0.001131  'sig2_2'
+     reff   =  3.60320000
+     degen  =  6.00000000
+     n*s02  =  0.93289337 +/- 0.03585191  'amp'
+     e0     =  5.72157624 +/- 0.81515657  'del_e0'
+     r      =  3.61357631 +/- 0.01132917  'reff + alpha*reff'
+     deltar =  0.01037631 +/- 0.01132917  'alpha*reff'
+     sigma2 =  0.01311654 +/- 0.00113147  'sig2_2'
 
    Path pkky2qtk6, Feff.dat file = feff0003.dat
      atom      x        y        z       ipot
       Cu       0.0000,  0.0000,  0.0000  0 (absorber)
       Cu       1.8016, -1.8016,  0.0000  1
       Cu       1.8016,  0.0000, -1.8016  1
-     reff   =  3.82180
-     degen  =  48.000000
-     n*s02  =  0.932893 +/- 0.035852  'amp'
-     e0     =  5.721576 +/- 0.815157  'del_e0'
-     r      =  3.832806 +/- 0.011329  'reff + alpha*reff'
-     deltar =  0.011006 +/- 0.011329  'alpha*reff'
-     sigma2 =  0.006285 +/- 0.003059  'sig2_3'
+     reff   =  3.82180000
+     degen  =  48.0000000
+     n*s02  =  0.93289337 +/- 0.03585191  'amp'
+     e0     =  5.72157624 +/- 0.81515657  'del_e0'
+     r      =  3.83280582 +/- 0.01132917  'reff + alpha*reff'
+     deltar =  0.01100582 +/- 0.01132917  'alpha*reff'
+     sigma2 =  0.00628474 +/- 0.00305866  'sig2_3'
 
 =======================================================
