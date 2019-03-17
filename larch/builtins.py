@@ -15,24 +15,39 @@ from . import site_config
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
-
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
-from . import fitting
-from . import io
+
 from . import math
+from . import io
+from . import fitting
 from . import xray
 from . import xrf
 from . import xafs
 from . import xrd
 from . import xrmmap
-from . import epics
+
+__core_modules = [math, fitting, io, xray, xrf, xafs, xrd, xrmmap]
 
 try:
+    from . import epics
+    __core_modules.append(epics)
+except ImportError:
+    pass
+
+
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    HAS_WXPYTHON = False
+
+if HAS_WXPYTHON:
     from . import wxlib
     from .wxlib import plotter
-except ImportError:
-    wxlib = plotter = None
+    from . import wxmap, wxxas, wxxrd
+    __core_modules.extend([wxlib, plotter, wxmap, wxxas, wxxrd])
+
 
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'
@@ -559,8 +574,8 @@ init_moddocs = {}
 
 # _math_builtins.update(math._larch_builtins_)
 # _math_builtins.update(fitting._larch_builtins_)
-for mod in (math, fitting, io, xray, xrf, xafs, xrd,
-            xrmmap, wxlib, plotter, epics):
+
+for mod in __core_modules:
     if mod is None:
         continue
     modname  = getattr(mod, '_larch_name', mod.__name__)
