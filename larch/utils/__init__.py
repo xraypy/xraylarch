@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from collections import OrderedDict
 
-from .paths import uname, nativepath, get_homedir
+from .paths import uname, bindir, nativepath, get_homedir
 from .debugtime import debugtime, debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
