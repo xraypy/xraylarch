@@ -13,13 +13,14 @@ import ctypes
 import ctypes.util
 
 from .symboltable import Group, isgroup
-from .site_config import larchdir, usr_larchdir
+from .site_config import usr_larchdir
 from .closure import Closure
+from .utils import uname, bindir
 
 HAS_TERMCOLOR = False
 try:
     from termcolor import colored
-    if os.name == 'nt':
+    if uname == 'win':
         # HACK (hopefully temporary):
         # disable color output for Windows command terminal
         # because it interferes with wx event loop.
@@ -353,9 +354,8 @@ def enable_plugins():
     """add all available Larch plugin paths
     """
     if 'larch_plugins' not in sys.modules:
-        sys.path.insert(1, os.path.abspath(larchdir))
-        import plugins
-        sys.modules['larch_plugins'] = plugins
+        import larch
+        sys.modules['larch_plugins'] = larch
     return sys.modules['larch_plugins']
 
 def add2path(envvar='PATH', dirname='.'):
@@ -363,7 +363,7 @@ def add2path(envvar='PATH', dirname='.'):
     DYLD_LIBRARY_PATH, LD_LIBRARY_PATH environmental variables,
     returns previous definition of PATH, for restoration"""
     sep = ':'
-    if os.name == 'nt':
+    if uname == 'win':
         sep = ';'
     oldpath = os.environ.get(envvar, '')
     if oldpath == '':
@@ -385,34 +385,17 @@ def isNamedClass(obj, cls):
 
 def get_dll(libname):
     """find and load a shared library"""
-    _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
-
-    _dylib_formats = {'win64': '%s.dll', 'linux64': 'lib%s.so', 'darwin64':
-                      'lib%s.dylib'}
-
-    uname = sys.platform.lower()
-    if os.name == 'nt':
-        uname = 'win'
-    if uname.startswith('linux'):
-        uname = 'linux'
-    uname = '%s64' % uname
-
-    thisdir, thisfile = os.path.split(__file__)
-    thisdir = os.path.abspath(os.path.join(top, 'bin', uname))
+    _dylib_formats = {'win': '%s.dll', 'linux': 'lib%s.so',
+                      'darwin': 'lib%s.dylib'}
 
     loaddll = ctypes.cdll.LoadLibrary
-
-    if uname == 'win64':
+    if uname == 'win':
         loaddll = ctypes.windll.LoadLibrary
-
-    for key in _paths:
-        for d in dirs:
-            _paths[key] = add2path(key, d)
 
     # normally, we expect the dll to be here in the larch dlls tree
     # if we find it there, use that one
     fname = _dylib_formats[uname] % libname
-    dllpath = os.path.join(thisdir, fname)
+    dllpath = os.path.join(bindir, fname)
     if os.path.exists(dllpath):
         return loaddll(dllpath)
 

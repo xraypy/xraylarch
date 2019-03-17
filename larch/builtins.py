@@ -219,7 +219,7 @@ def _help(*args, **kws):
     else:
         return helper.getbuffer()
 
-def _addplugin(plugin, _larch=None, verbose=False, **kws):
+def add_plugin(plugin, _larch=None, verbose=False, **kws):
     """add plugin components from plugin directory"""
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
@@ -554,7 +554,7 @@ _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
                       parse_group_args=parse_group_args, pause=_pause,
                       sleep=_sleep, systime=_time, clock=_clock,
                       strftime=_strftime, reload=_reload, run=_run,
-                      eval=_eval, help=_help, add_plugin=_addplugin,
+                      eval=_eval, help=_help, add_plugin=add_plugin,
                       save_history=save_history, show_history=show_history)
 
 _main_builtins.update(utils._larch_builtins)
