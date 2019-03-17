@@ -36,16 +36,14 @@ except ImportError:
 import numpy as np
 import scipy.stats as stats
 
+from  ..wxlib import (EditableListBox, SimpleText,
+                       FloatCtrl, Font, pack, Popup, Button, MenuItem,
+                       Choice, Check, GridPanel, FileSave, HLine)
+from ..utils.strutils import bytes2str, version_ge
+from ..io import nativepath
+from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT
 
-import larch
-from larch.wxlib import (EditableListBox, SimpleText,
-                         FloatCtrl, Font, pack, Popup, Button, MenuItem,
-                         Choice, Check, GridPanel, FileSave, HLine)
-from larch.utils.strutils import bytes2str, version_ge
-from larch.io import nativepath
-from larch.math.tomography import TOMOPY_ALG, TOMOPY_FILT
-
-from larch.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
+from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL

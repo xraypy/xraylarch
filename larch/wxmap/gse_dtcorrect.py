@@ -21,11 +21,11 @@ try:
 except ImportError:
     pass
 
-from larch import Interpreter
-from larch.larchlib import read_workdir, save_workdir
+import larch
+from ..larchlib import read_workdir, save_workdir
 
-from larch.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
-                       is_GSEXDI, AthenaProject, new_filename, increment_filename)
+from ..io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
+                   is_GSEXDI, AthenaProject, new_filename, increment_filename)
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
@@ -174,7 +174,7 @@ class DTCorrectFrame(wx.Frame):
     def init_larch(self):
         t0 = time.time()
         if self.larch is None:
-            self.larch = Interpreter()
+            self.larch = larch.Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.SetStatusText('ready')
@@ -212,16 +212,7 @@ class DTViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-def _dtcorrect(wxparent=None, _larch=None,  **kws):
+def dtcorrect(wxparent=None, _larch=None,  **kws):
     s = DTCorrectFrame(_larch=_larch, **kws)
     s.Show()
     s.Raise()
-
-
-def registerLarchPlugin():
-    return ('_plotter', {'dtcorrect_viewer':_dtcorrect})
-
-
-if __name__ == '__main__':
-    x = DTViewer()
-    x.run()

@@ -27,15 +27,12 @@ except:
 import h5py
 import numpy as np
 
-import larch
+from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
+                     FloatCtrl, Font, pack, Popup, Button, MenuItem,
+                     Choice, Check, GridPanel, FileSave, HLine)
+from ..utils.strutils import bytes2str, version_ge
 
-from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
-                         FloatCtrl, Font, pack, Popup, Button, MenuItem,
-                         Choice, Check, GridPanel, FileSave, HLine)
-from larch.utils.strutils import bytes2str, version_ge
-
-from larch.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-
+from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

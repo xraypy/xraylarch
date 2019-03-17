@@ -60,17 +60,16 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
 from larch.site_config import icondir
 
-from larch.xrd import lambda_from_E, xrd1d,save1D
-from larch.xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
-from larch.wxlib.xrfdisplay import XRFDisplayFrame
+from ..xrd import lambda_from_E, xrd1d,save1D
+from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
+from ..epics import pv_fullname
+from ..wxlib.xrfdisplay import XRFDisplayFrame
 
-from larch_plugins.wx.mapimageframe import MapImageFrame, CorrelatedMapFrame
-from larch_plugins.wx.mapmathpanel import MapMathPanel
-from larch_plugins.wx.maptomopanel import TomographyPanel
+from .mapimageframe import MapImageFrame, CorrelatedMapFrame
+from .mapmathpanel import MapMathPanel
+from .maptomopanel import TomographyPanel
 
-from larch_plugins.diFFit import XRD1DViewerFrame, XRD2DViewerFrame
-from larch_plugins.epics import pv_fullname
-
+from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
 
 FONTSIZE = 8
 if platform.system() in ('Windows', 'Darwin'):
@@ -120,11 +119,9 @@ PLOT_OPERS = ('/', '*', '-', '+')
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
 if ESCAN_CRED is not None:
     try:
-        from larch_plugins.epics.scandb_plugin import connect_scandb
+        from ..epics.scandb_plugin import connect_scandb
     except ImportError:
         ESCAN_CRED = None
-
-
 
 class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
@@ -2692,16 +2689,7 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
             self.ShowInspectionTool()
         return True
 
-def initializeLarchPlugin(_larch=None):
-    """add MapFrameViewer to _sys.gui_apps """
-    if _larch is not None:
-        _sys = _larch.symtable._sys
-        if not hasattr(_sys, 'gui_apps'):
-            _sys.gui_apps = {}
-        _sys.gui_apps['mapviewer'] = ('XRF Map Viewer', MapViewerFrame)
-
-def registerLarchPlugin():
-    return ('_sys.wx', {})
-
-if __name__ == '__main__':
-    MapViewer(with_inspect=True).run()
+def mapviewer(**kws):
+    s = MapViewer(**kws)
+    s.Show()
+    s.Raise()
