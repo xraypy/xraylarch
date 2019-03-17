@@ -18,8 +18,6 @@ DEBUG = False
 cmdline_args = sys.argv[1:]
 INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 
-
-nbits = platform.architecture()[0].replace('bit', '')
 uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
@@ -80,11 +78,6 @@ all_modules = (('basic analysis', required_modules),
                ('PCA and machine learning', pca_modules),
                ('testing tools',  testing_modules))
 
-
-compiled_exes = ('feff6l', 'feff8l_ff2x', 'feff8l_genfmt',
-                 'feff8l_pathfinder', 'feff8l_pot', 'feff8l_rdinp',
-                 'feff8l_xsph')
-
 modules_imported = {}
 missing = []
 
@@ -120,13 +113,11 @@ pexists = os.path.exists
 # system-wide larch directory
 larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
 
-## determine this platform for dlls and exes
-nbits = platform.architecture()[0].replace('bit', '')
-
 libfmt = 'lib%s.so'
 exefmt = "%s"
 bindir = 'bin'
 pyexe = pjoin(bindir, 'python')
+larchbin = 'larch'
 
 if uname == 'darwin':
     libfmt = 'lib%s.dylib'
@@ -135,12 +126,10 @@ elif uname == 'win':
     exefmt = "%s.exe"
     bindir = 'Scripts'
     pyexe = 'python.exe'
+    larchbin = 'larch-script.py'
 
-sname = "%s%s" % (uname, nbits)
-
-if DEBUG or True:
+if DEBUG:
     print("##  Settings  (Debug mode) ## ")
-    print(" larchdir: ",  larchdir)
     print(" sys.prefix: ",  sys.prefix)
     print(" sys.exec_prefix: ",  sys.exec_prefix)
     print(" cmdline_args: ",  cmdline_args)
@@ -150,9 +139,7 @@ if DEBUG or True:
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch plugins
 
-data_files = [(pjoin(larchdir, 'dlls', sname),
-               glob("%s/*" % pjoin('dlls', sname)))]
-
+data_files = []
 scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
            'gse_mapviewer', 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
            'dioptas_larch', 'xrfdisplay', 'xrfdisplay_epics']
@@ -188,23 +175,17 @@ for pdir in pluginpaths:
 with open('requirements.txt', 'r') as f:
     requirements = f.readlines()
 
-
-packages = ['larch']
+packages = ['larch', 'larch.bin']
 for pname in find_packages('larch'):
     packages.append('larch.%s' % pname)
 
-print(" Packages")
-print(packages)
 
-print(" DATA FILES ")
-print(data_files)
-def remove_cruft():
-    """remove files that may be left from earlier installs"""
-    cruft = {'plugins': ['xrd/xrd_hkl.py',
-                         'xrd/xrd_util.py',
-                         'xrd/xrd_xutil.py'],
-             'bin': ['larch_makeicons', 'larch_gui', 'larch_client',
-                     'gse_scanviewer']}
+if INSTALL:
+    # before install:  remove historical cruft, including old plugins
+    cruft = {'bin': ['larch_makeicons', 'larch_gui', 'larch_client',
+                     'gse_scanviewer', 'feff8l_ff2x', 'feff8l_genfmt',
+                     'feff8l_pathfinder', 'feff8l_pot', 'feff8l_rdinp',
+                     'feff8l_xsph']}
 
     def remove_file(base, fname):
         fullname = pjoin(base, fname)
@@ -215,35 +196,20 @@ def remove_cruft():
                 pass
 
     for category, flist in cruft.items():
-        if category == 'plugins':
-            basedir = pjoin(larchdir, 'plugins')
-            for fname in flist:
-                remove_file(basedir, fname)
-                if fname.endswith('.py'):
-                    remove_file(basedir, fname+'c')
-                    remove_file(basedir, fname+'o')
-
         if category == 'bin':
             basedir = pjoin(sys.exec_prefix, bindir)
             for fname in flist:
                 remove_file(basedir, fname)
-                if fname.endswith('.py'):
-                    remove_file(basedir, fname+'c')
-                    remove_file(basedir, fname+'o')
 
-def remove_share_larch():
-    """remove all files in share/larch from earlier code layouts"""
-    for dirname, keep in (('plugins', True), ('dlls', True), ('icons', False)):
+    # remove all files in share/larch from earlier code layouts
+    for dirname in ('plugins', 'dlls', 'icons'):
         fname = pjoin(larchdir, 'plugins')
         if os.path.exists(fname):
             shutil.rmtree(fname)
-        if keep:
-            os.mkdir(fname)
 
-if INSTALL:
-    remove_cruft()
-    remove_share_larch()
 
+package_data = ['icons/*', 'xray/*.dat', 'xray/*.db', 'xrd/*.db',
+                'bin/darwin64/*', 'bin/linux64/*', 'bin/win64/*']
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = __version__,
@@ -254,7 +220,7 @@ setup(name = 'xraylarch',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       packages = packages,
-      package_data={'larch': ['icons/*', 'xray/*.dat', 'xray/*.db']},
+      package_data={'larch': package_data},
       entry_points = {'console_scripts' : larch_apps},
       data_files  = data_files,
       platforms = ['Windows', 'Linux', 'Mac OS X'],
@@ -263,51 +229,6 @@ setup(name = 'xraylarch',
                    'Programming Language :: Python',
                    'Topic :: Scientific/Engineering'],
       )
-
-
-
-def copy_compiled_exes():
-    for exename in compiled_exes:
-        exe = exefmt % exename
-        src = os.path.abspath(pjoin('exes', sname, exe))
-        dest = os.path.abspath(pjoin(sys.prefix, bindir, exe))
-        shutil.copy(src, dest)
-        os.chmod(dest, 493)
-
-
-def fix_darwin_dylibs():
-    """
-    fix dynamic libs on Darwin with install_name_tool
-    """
-    olddir    = '/usr/local/gfortran/lib'
-    larchdlls = 'share/larch/dlls/darwin64'
-    newdir    = pjoin(sys.prefix, larchdlls)
-
-    dylibs = ('libgcc_s.1.dylib','libquadmath.0.dylib', 'libgfortran.3.dylib',
-
-              'libfeff6.dylib', 'libcldata.dylib', 'libfeff8lpath.dylib',
-              'libfeff8lpotph.dylib')
-
-    fixcmd = '/usr/bin/install_name_tool -change'
-
-    cmds = []
-
-    for ename in compiled_exes:
-        ename = pjoin(sys.prefix, bindir, ename)
-        for dname in dylibs:
-            old = pjoin(olddir, dname)
-            new = pjoin(newdir, dname)
-            cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
-
-    for ename in dylibs:
-        ename = pjoin(newdir, ename)
-        for dname in dylibs:
-            old = pjoin(olddir, dname)
-            new = pjoin(newdir, dname)
-            cmds.append("%s %s %s %s" % (fixcmd, old, new, ename))
-
-    for cmd in cmds:
-        os.system(cmd)
 
 def fix_darwin_exes():
     "fix anaconda python apps on MacOs to launch with pythonw"
@@ -330,41 +251,12 @@ def fix_darwin_exes():
                 with open(appname, 'w') as fh:
                     fh.write("".join(text))
 
-def fix_linux_dylibs():
-    """
-    fix dynamic libs on Linux with patchelf
-    """
-    larchdlls = os.path.join(sys.prefix, 'share/larch/dlls/linux64')
-
-    fixcmd = "%s/bin/patchelf --set-rpath "  % (sys.prefix)
-
-    dylibs = ('libgcc_s.so.1','libquadmath.so.0', 'libgfortran.so.3',
-              'libfeff6.so', 'libcldata.so', 'libfeff8lpath.so',
-              'libfeff8lpotph.so')
-    for lname in dylibs:
-        os.system("%s '$ORIGIN' %s" % (fixcmd, os.path.join(larchdlls, lname)))
-
-    for ename in compiled_exes:
-        os.system("%s %s %s/bin/%s" % (fixcmd, larchdlls, sys.prefix, ename))
-
-# on install:
-#   remove historical cruft
-#   fix dynamic libraries
-#   copy compiled exes to top bin directory (out of egg)
-#   fix MacOS + Anaconda python vs. pythonw
+# on install, after setup
+#   fix darwin exes to run with pythonw
 #   create desktop icons
-
 if INSTALL:
-    copy_compiled_exes()
-
-    larchbin = 'larch'
-    if uname.startswith('darwin'):
-        fix_darwin_dylibs()
+    if uname == 'darwin':
         fix_darwin_exes()
-    elif uname.startswith('linux'):
-        fix_linux_dylibs()
-    elif uname.startswith('win'):
-        larchbin = 'larch-script.py'
     subprocess.check_call((pjoin(sys.exec_prefix, pyexe),
                            pjoin(sys.exec_prefix, bindir, larchbin), '-m'))
 
