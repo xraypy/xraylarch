@@ -2,19 +2,13 @@
 """
 Setup.py for xraylarch
 """
-from __future__ import print_function
-from setuptools import setup, find_packages
-
-import time
 import os
 import sys
-import site
-import platform
-from glob import glob
+import time
 import shutil
 import subprocess
+from setuptools import setup, find_packages
 
-DEBUG = False
 cmdline_args = sys.argv[1:]
 INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 
@@ -53,16 +47,13 @@ required_modules = {'numpy': 'numpy',
                     'yaml': 'pyyaml',
                     'termcolor': 'termcolor'}
 
-
 graphics_modules = {'wx': 'wxPython', 'wxmplot': 'wxmplot', 'wxutils':'wxutils'}
-
 xrd_modules  = {'pyFAI': 'pyFAI', 'CifFile' : 'PyCifRW', 'fabio': 'fabio',
                 'dioptas': 'Dioptas'}
 
 tomo_modules = {'tomopy': 'tomopy', 'skimage': 'scikit-image'}
-
-epics_modules = {'epics': 'pyepics'}
-scan_modules = {'epicsscan': 'epicsscan', 'psycopg2': 'psycopg2'}
+epics_modules = {'epics': 'pyepics', 'epicsscan': 'epicsscan',
+                 'psycopg2': 'psycopg2'}
 
 spec_modules = {'silx': 'silx'}
 pca_modules = {'sklearn': 'scikit-learn'}
@@ -78,7 +69,6 @@ all_modules = (('basic analysis', required_modules),
                ('PCA and machine learning', pca_modules),
                ('testing tools',  testing_modules))
 
-modules_imported = {}
 missing = []
 
 try:
@@ -90,11 +80,8 @@ except:
 print( 'Checking dependencies....')
 for desc, mods in all_modules:
     for impname, modname in mods.items():
-        if impname not in modules_imported:
-            modules_imported[modname] = False
         try:
             x = __import__(impname)
-            modules_imported[modname] = True
         except ImportError:
             s = (modname + ' '*25)[:25]
             missing.append('     %s %s' % (s, desc))
@@ -105,79 +92,34 @@ if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
 
 
-isdir = os.path.isdir
 pjoin = os.path.join
 psplit = os.path.split
 pexists = os.path.exists
 
-# system-wide larch directory
-larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
-
-libfmt = 'lib%s.so'
-exefmt = "%s"
 bindir = 'bin'
 pyexe = pjoin(bindir, 'python')
 larchbin = 'larch'
 
-if uname == 'darwin':
-    libfmt = 'lib%s.dylib'
-elif uname == 'win':
-    libfmt = '%s.dll'
-    exefmt = "%s.exe"
+if uname == 'win':
     bindir = 'Scripts'
     pyexe = 'python.exe'
     larchbin = 'larch-script.py'
 
-if DEBUG:
-    print("##  Settings  (Debug mode) ## ")
-    print(" sys.prefix: ",  sys.prefix)
-    print(" sys.exec_prefix: ",  sys.exec_prefix)
-    print(" cmdline_args: ",  cmdline_args)
-    print("##   ")
 
-
-# construct list of files to install besides the normal python modules
-# this includes the larch executable files, and all the larch plugins
-
-data_files = []
-scripts = ['larch', 'larch_server', 'feff8l', 'xas_viewer',
+# list of top level scripts to add to Python's bin/
+scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer',
            'gse_mapviewer', 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
            'dioptas_larch', 'xrfdisplay', 'xrfdisplay_epics']
 
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]
 
-plugin_dir = pjoin(larchdir, 'plugins')
-
-pluginfiles = []
-pluginpaths = []
-for fname in glob('plugins/*'):
-    if isdir(fname):
-        pluginpaths.append(fname)
-    else:
-        pluginfiles.append(fname)
-
-data_files.append((plugin_dir, pluginfiles))
-
-for pdir in pluginpaths:
-    pfiles = []
-    filelist = []
-    for ext in ('py', 'txt', 'db', 'dat', 'rst', 'lar',
-                'dll', 'dylib', 'so'):
-        filelist.extend(glob('%s/*.%s' % (pdir, ext)))
-    for fname in filelist:
-        if isdir(fname):
-            print('Warning -- not walking subdirectories for Plugins!!')
-        else:
-            pfiles.append(fname)
-    data_files.append((pjoin(larchdir, pdir), pfiles))
-
-# Get all required packages from requirements.txt:
-with open('requirements.txt', 'r') as f:
-    requirements = f.readlines()
-
 packages = ['larch', 'larch.bin']
 for pname in find_packages('larch'):
     packages.append('larch.%s' % pname)
+
+
+package_data = ['icons/*', 'xray/*.dat', 'xray/*.db', 'xrd/*.db',
+                'bin/darwin64/*', 'bin/linux64/*', 'bin/win64/*']
 
 
 if INSTALL:
@@ -202,14 +144,14 @@ if INSTALL:
                 remove_file(basedir, fname)
 
     # remove all files in share/larch from earlier code layouts
+    # system-wide larch directory
+    larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
     for dirname in ('plugins', 'dlls', 'icons'):
         fname = pjoin(larchdir, 'plugins')
         if os.path.exists(fname):
             shutil.rmtree(fname)
 
 
-package_data = ['icons/*', 'xray/*.dat', 'xray/*.db', 'xrd/*.db',
-                'bin/darwin64/*', 'bin/linux64/*', 'bin/win64/*']
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = __version__,
@@ -222,7 +164,6 @@ setup(name = 'xraylarch',
       packages = packages,
       package_data={'larch': package_data},
       entry_points = {'console_scripts' : larch_apps},
-      data_files  = data_files,
       platforms = ['Windows', 'Linux', 'Mac OS X'],
       classifiers=['Intended Audience :: Science/Research',
                    'Operating System :: OS Independent',
