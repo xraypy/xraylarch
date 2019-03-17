@@ -10,7 +10,7 @@ import numpy as np
 import wx
 
 from wxmplot.imagepanel import ImagePanel
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from .ImageControlsFrame import ImageToolboxFrame
 
 from larch.io import tifffile
 

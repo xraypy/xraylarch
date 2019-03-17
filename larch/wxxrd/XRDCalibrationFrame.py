@@ -12,7 +12,7 @@ from wxmplot.imagepanel import ImagePanel
 from larch.io import tifffile
 from larch.xrd import lambda_from_E, E_from_lambda
 
-from larch_plugins.diFFit.ImageControlsFrame import ImageToolboxFrame
+from .ImageControlsFrame import ImageToolboxFrame
 
 
 HAS_pyFAI = False
