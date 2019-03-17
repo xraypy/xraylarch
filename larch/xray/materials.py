@@ -7,16 +7,14 @@ from .xray import mu_elam, atomic_mass
 MODNAME = '_xray'
 _materials = None
 
-
 def get_materials(_larch=None):
     """return _materials dictionary, creating it if needed"""
     global _materials
     if _materials is None:
         # initialize materials table
         _materials = {}
-        dirname, _ = os.path.split(__file__)
-        fname = os.path.join(dirname, 'materials.dat')
-        if os.path.exists(fname):
+
+        def read_materialsfile(fname):
             with open(fname, 'r') as fh:
                 lines = fh.readlines()
             for line in lines:
@@ -28,6 +26,18 @@ def get_materials(_larch=None):
                         _materials[name] = (f.replace(' ', ''), float(den))
                     except:
                         pass
+
+        # first, read from standard list
+        local_dir, _ = os.path.split(__file__)
+        fname = os.path.join(local_dir, 'materials.dat')
+        if os.path.exists(fname):
+            read_materialsfile(fname)
+
+        # next, read from local materials file, if defined
+        fname = os.path.join(site_config.usr_larchdir, 'materials.dat')
+        if os.path.exists(fname):
+            read_materialsfile(fname)
+
         if _larch is not None :
             symname = '%s._materials' % MODNAME
             _larch.symtable.set_symbol(symname, _materials)
@@ -145,7 +155,7 @@ def material_add(name, formula, density, _larch=None):
         _larch.symtable.set_symbol(symname, _materials)
 
 
-    fname = os.path.join(site_config.larchdir, 'materials.dat')
+    fname = os.path.join(site_config.usr_larchdir, 'materials.dat')
     if os.path.exists(fname):
         fh = open(fname, 'r')
         text = fh.readlines()
