@@ -381,7 +381,6 @@ Example:
         write("#= Feff85l done %s\n" % isotime())
 
     for dirname in args:
-        print(" ARGS ", dirname)
         if os.path.exists(dirname) and os.path.isdir(dirname):
             thisdir = os.path.abspath(os.curdir)
             os.chdir(dirname)
@@ -389,7 +388,7 @@ Example:
                 run_feff8l(modules)
             else:
                 msg = "Could not find feff.inp file in folder '{:s}'"
-                write(msg.forrmat(os.path.abspath(os.curdir)))
+                sys.stdout.write(msg.forrmat(os.path.abspath(os.curdir)))
             os.chdir(thisdir)
         else:
             print("Could not find folder '{:s}'".format(dirname))
