@@ -1,11 +1,10 @@
 *.pyc
 *.pyo
-
 *~
 *#
 *.bak
+__pycache__
 .deps
-bin/
 doc/_build
 doc/*.pdf
 MANIFEST
