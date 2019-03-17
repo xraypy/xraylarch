@@ -1,6 +1,6 @@
 import sys
 import os
-from os.path import realpath, isdir, isfile, join, basename, dirname
+from os.path import realpath, isdir, isfile, join, basename, dirname, abspath
 import glob
 from shutil import copy, move
 import subprocess
@@ -10,20 +10,14 @@ from optparse import OptionParser
 from subprocess import Popen, PIPE
 
 from larch import Group, isNamedClass
-from larch.utils import isotime, bytes2str
+from larch.utils import isotime, bytes2str, uname, bindir
 
 def find_exe(exename):
-    bindir = 'bin'
-    if os.name == 'nt':
-        bindir = 'Scripts'
-        if not exename.endswith('.exe'):
-            exename = "%s.exe" % exename
-
-    exefile = os.path.join(sys.exec_prefix, bindir, exename)
-
+    if uname == 'win' and exename.endswith('.exe'):
+        exename = "%s.exe" % exename
+    exefile = join(bindir, exename)
     if os.path.exists(exefile) and os.access(exefile, os.X_OK):
         return exefile
-
 
 class FeffRunner(Group):
     """
@@ -118,8 +112,8 @@ class FeffRunner(Group):
             raise Exception("no feff.inp file was specified")
 
         savefile = '.save_.inp'
-        here = os.path.abspath(os.getcwd())
-        os.chdir(os.path.abspath(self.folder))
+        here = abspath(os.getcwd())
+        os.chdir(abspath(self.folder))
 
         feffinp_dir, feffinp_file = os.path.split(self.feffinp)
         feffinp_dir = dirname(self.feffinp)
@@ -137,7 +131,6 @@ class FeffRunner(Group):
 
         #
         # exe is set, find the corresponding executable file
-
         ## find program to run:
         program = None
         if exe in self.Feff8l_modules:
@@ -167,7 +160,12 @@ class FeffRunner(Group):
                 copy('feff.inp', savefile)
             copy(feffinp_file, 'feff.inp')
 
-        log = 'feffrun_%s.log' % exe
+        _, logname = os.path.split(program)
+        if logname.endswith('.exe'):
+            logname = logname[:4]
+
+        log = 'feffrun_%s.log' % logname
+
         if isfile(log):
             os.unlink(log)
 
@@ -177,7 +175,10 @@ class FeffRunner(Group):
         def write(msg):
             msg = bytes2str(msg)
             msg = " : {:s}\n".format(msg.strip().rstrip())
-            self._larch.writer.write(msg)
+            if self._larch is not None:
+                self._larch.writer.write(msg)
+            else:
+                sys.stdout.write(msg)
 
         if self.verbose:
             write(header)
@@ -223,15 +224,6 @@ class FeffRunner(Group):
         return None
 
 ######################################################################
-
-def initializeLarchPlugin(_larch=None):
-    """initialize _xafs._feff_executable"""
-    feff6_exe = find_exe('feff6l')
-    if feff6_exe is None:
-        feff6_exe = find_exe('feff6')
-    _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
-
-
 def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     """
     Make a FeffRunner group given a folder containing a baseline calculation
@@ -257,14 +249,48 @@ def feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
       many results data files are generated in the Feff working folder
     """
     feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
-    feff_exe = _larch.symtable.get_symbol('_xafs._feff_executable')
-
-    if 'feff6l' in feff_exe:
-        exe = 'feff6l'
-    else:
-        exe = 'feff6'
+    exe = find_exe('feff6l')
     feffrunner.run(exe=exe)
     return feffrunner
+
+def feff6l_cli():
+    """run feff6l as command line program
+    """
+
+    usage = """usage: %prog [options] folder(s)
+
+run feff6l on one or more folders containing feff.inp files
+or on an input file in the current folder
+
+Examples:
+   feff6l Structure1 Structure2
+
+   feff6l feff_Cu2O.inp
+
+"""
+
+    parser = OptionParser(usage=usage, prog="feff6l",
+                          version="Feff6L version 6L.02")
+
+    FEFFINP = 'feff.inp'
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        args = ['.']
+
+    curdir = abspath(os.getcwd())
+    for arg in args:
+        if os.path.isfile(arg):
+            feff6l(feffinp=arg)
+        elif os.path.isdir(arg):
+            feffinp = os.path.join(arg, 'feff.inp')
+            if os.path.exists(feffinp):
+                os.chdir(abspath(arg))
+                feff6l(folder=arg)
+            else:
+                msg = "Could not find feff.inp file in folder '{:s}'"
+                sys.stdout.write(msg.format(abspath(os.curdir)))
+            os.chdir(curdir)
+
 
 def feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=None, **kws):
     """
@@ -382,13 +408,13 @@ Example:
 
     for dirname in args:
         if os.path.exists(dirname) and os.path.isdir(dirname):
-            thisdir = os.path.abspath(os.curdir)
+            thisdir = abspath(os.curdir)
             os.chdir(dirname)
             if os.path.exists(FEFFINP) and os.path.isfile(FEFFINP):
                 run_feff8l(modules)
             else:
                 msg = "Could not find feff.inp file in folder '{:s}'"
-                sys.stdout.write(msg.forrmat(os.path.abspath(os.curdir)))
+                sys.stdout.write(msg.format(abspath(os.curdir)))
             os.chdir(thisdir)
         else:
             print("Could not find folder '{:s}'".format(dirname))

@@ -36,12 +36,12 @@ class LarchApp:
         self.name = name
         self.script = script
         icon_ext = 'ico'
-        if uname.startswith('darwin'):
+        if uname == 'darwin':
             icon_ext = 'icns'
         self.icon = "%s.%s" % (icon, icon_ext)
         self.terminal = terminal
         bindir = 'bin'
-        if uname.startswith('win'):
+        if uname == 'win':
             bindir = 'Scripts'
 
         self.bindir = os.path.join(sys.prefix, bindir)
@@ -54,7 +54,7 @@ class LarchApp:
                           icon=os.path.join(icondir, self.icon),
                           terminal=self.terminal,
                           folder='Larch')
-            if uname.startswith('linux'):
+            if uname == 'linux':
                 os.chmod(scut.target, 493)
         except:
             print("Warning: could not create shortcut to ", self.script)
@@ -127,11 +127,15 @@ def run_dioptas_larch():
     from dioptas import main
     main()
 
+def run_feff6l():
+    "run feff6l"
+    from larch.xafs.feffrunner import feff6l_cli
+    feff6l_cli()
+
 def run_feff8l():
     "run feff8l"
     from larch.xafs.feffrunner import feff8l_cli
     feff8l_cli()
-
 
 def run_larch_server():
     "run larch XMLRPC server"

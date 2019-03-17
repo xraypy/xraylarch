@@ -35,7 +35,7 @@ from .mback import mback, mback_norm
 from .diffkk import diffkk, diffKKGroup
 from .fluo import fluo_corr
 
-from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l
+from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l, find_exe
 from .feff8lpath import feff8_xafs
 
 
@@ -107,6 +107,11 @@ def _larch_init(_larch):
     add(('const_amu', constants.atomic_mass))
     add(('sigma2_correldebye', sigma2_correldebye))
     add(_sigma2_funcs)
+
+    # initialize _xafs._feff_executable
+    feff6_exe = find_exe('feff6l')
+    _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
+
 
 _larch_groups = (diffKKGroup, FeffRunner, FeffDatFile, FeffPathGroup,
                  TransformGroup, FeffitDataSet)
