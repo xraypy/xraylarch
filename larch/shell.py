@@ -12,6 +12,7 @@ from .site_config import history_file, show_site_config
 from .version import __version__, __date__, make_banner
 from .inputText import InputText
 from .larchlib import StdWriter
+from .utils import uname
 
 HAS_READLINE = False
 try:
@@ -73,7 +74,7 @@ class shell(cmd.Cmd):
 
         self.prompt = self.larch.input.prompt
         writer = self.larch.writer
-        self.color_writer = os.name != 'nt' and hasattr(writer, 'set_textstyle')
+        self.color_writer = uname != 'win' and hasattr(writer, 'set_textstyle')
         if not quiet:
             if banner_msg is None:
                 banner_msg = make_banner()
