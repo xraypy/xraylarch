@@ -1,0 +1,28 @@
+## examples/fitting/energy_align.lar
+# read data
+
+std = read_xdi('../xafsdata/cu_metal_rt.xdi')
+std.mu  = std.mutrans
+
+dat = read_ascii('../xafsdata/cu_150k.xmu')
+
+pre_edge(std)
+pre_edge(dat)
+
+params = param_group(eshift = param(0, vary=True, min=-50, max=50))
+
+def resid(pars, std, dat, i1, i2):
+    "fit residual"
+    y2 = interp(dat.energy, dat.dmude, std.energy - pars.eshift, kind='cubic')
+    return (y2 - std.dmude)[i1:i2]
+#enddef
+
+
+i1 = index_of(std.energy, std.e0-30)
+i2 = index_of(std.energy, std.e0+70)
+
+mfit = minimize(resid, params, args=(std, dat, i1, i2))
+
+print( fit_report(mfit, show_correl=False))
+
+## end of examples/fitting/energy_align.lar
