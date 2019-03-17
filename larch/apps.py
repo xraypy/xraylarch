@@ -76,52 +76,50 @@ def make_desktop_shortcuts():
     for app in APPS:
         app.create_shortcut()
 
-
 # entry points:
 def run_gse_mapviewer():
     """GSE Mapviewer """
     use_mpl_wxagg()
-    from larch_plugins.wx import MapViewer
+    from larch.wxmap import MapViewer
     MapViewer().MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
     use_mpl_wxagg()
-    from larch_plugins.wx import DTViewer
+    from larch.wxmap import DTViewer
     DTViewer().MainLoop()
-
 
 def run_xas_viewer():
     """XAS Viewer """
     use_mpl_wxagg()
-    from larch_plugins.xasgui import XASViewer
+    from larch.wxxas import XASViewer
     XASViewer().MainLoop()
 
 
 def run_xrfdisplay():
     """ XRF Display"""
     use_mpl_wxagg()
-    from larch_plugins.wx import XRFApp
+    from larch.wxlib import XRFApp
     XRFApp().MainLoop()
 
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
     use_mpl_wxagg()
-    from larch_plugins.epics import EpicsXRFApp
+    from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
 
 def run_xrd1d_viewer():
     """XRD Display for 1D patternss"""
     use_mpl_wxagg()
-    from larch_plugins.diFFit.XRD1Dviewer import XRD1DViewer
+    from larch.wxxrd import XRD1DViewer
     XRD1DViewer().MainLoop()
 
 def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
     use_mpl_wxagg()
-    from larch_plugins.diFFit.XRD2Dviewer import XRD2DViewer
+    from larch.wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
 def run_dioptas_larch():
@@ -129,16 +127,9 @@ def run_dioptas_larch():
     from dioptas import main
     main()
 
-def run_gse_dtcorrect():
-    """GSE Deadtime corrections"""
-    use_mpl_wxagg()
-    from larch_plugins.wx import DTViewer
-    DTViewer().MainLoop()
-
-
 def run_feff8l():
     "run feff8l"
-    from larch_plugins.xafs.feffrunner import feff8l_cli
+    from larch.xafs.feffrunner import feff8l_cli
     feff8l_cli()
 
 
