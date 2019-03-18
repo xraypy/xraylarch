@@ -10,7 +10,8 @@ from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d)
 
 from lmfit.minimizer import eval_stderr, MinimizerResult
-from lmfit.model import ModelResult
+from lmfit.model import (ModelResult, save_model, load_model,
+                         save_modelresult, load_modelresult)
 from lmfit.confidence import f_compare
 from uncertainties import ufloat, correlated_values
 
@@ -334,14 +335,44 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, _larch=None, **kws
                            prob_func=scaled_chisqr,
                            nx=nx, ny=ny, **kws)
 
+def _Parameters(*arg, _larch=None, **kws):
+    return Parameters(*arg, **kws)
+
+
 _larch_name = '_math'
-_larch_builtins = {'_math': {'param': param, 'guess': guess,
-                             'param_group': param_group,
-                             'confidence_intervals': confidence_intervals,
-                             'confidence_report': confidence_report,
-                             'f_test': f_test, 'chi2_map': chi2_map,
-                             'is_param': isParameter,
-                             'isparam': isParameter,
-                             'minimize': minimize,
-                             'ufloat': ufloat,
-                             'fit_report': fit_report}}
+exports = {'param': param,
+           'guess': guess,
+           'param_group': param_group,
+           'confidence_intervals': confidence_intervals,
+           'confidence_report': confidence_report,
+           'f_test': f_test, 'chi2_map': chi2_map,
+           'is_param': isParameter,
+           'isparam': isParameter,
+           'minimize': minimize,
+           'ufloat': ufloat,
+           'fit_report': fit_report,
+           'Parameters': _Parameters,
+           'Parameter': Parameter,
+           'lm_minimize': minimize,
+           'lm_save_model': save_model,
+           'lm_load_model': load_model,
+           'lm_save_modelresult': save_modelresult,
+           'lm_load_modelresult': load_modelresult,
+           }
+
+for name in ('BreitWignerModel', 'ComplexConstantModel',
+             'ConstantModel', 'DampedHarmonicOscillatorModel',
+             'DampedOscillatorModel', 'DonaichModel',
+             'ExponentialGaussianModel', 'ExponentialModel',
+             'ExpressionModel', 'GaussianModel', 'Interpreter',
+             'LinearModel', 'LognormalModel', 'LorentzianModel',
+             'MoffatModel', 'ParabolicModel', 'Pearson7Model',
+             'PolynomialModel', 'PowerLawModel',
+             'PseudoVoigtModel', 'QuadraticModel',
+             'RectangleModel', 'SkewedGaussianModel',
+             'StepModel', 'StudentsTModel', 'VoigtModel'):
+    val = getattr(lmfit.models, name, None)
+    if val is not None:
+        exports[name] = val
+
+_larch_builtins = {'_math': exports}
