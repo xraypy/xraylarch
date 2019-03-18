@@ -178,7 +178,7 @@ class Interpreter:
                 if pname not in loaded_plugins:
                     pdir = os.path.join(plugins_dir, pname)
                     if os.path.isdir(pdir):
-                        builtins._addplugin(pdir, _larch=self)
+                        builtins.add_plugin(pdir, _larch=self)
                         loaded_plugins.append(pname)
 
         reset_fiteval = getattr(mathgroup, 'reset_fiteval', None)
@@ -187,7 +187,7 @@ class Interpreter:
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
-        builtins._addplugin(mod, _larch=self, **kws)
+        builtins.add_plugin(mod, _larch=self, **kws)
 
     def unimplemented(self, node):
         "unimplemented nodes"

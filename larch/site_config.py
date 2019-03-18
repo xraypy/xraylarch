@@ -18,14 +18,11 @@ from .version import __version__ as larch_version
 def pjoin(*args):
     return nativepath(join(*args))
 
-
-
 ##
 # set system-wide and local larch folders
 #   usr_larchdir = get_homedir() + '.larch' (#unix)
 #                = get_homedir() + 'larch'  (#win)
 ##
-
 home_dir = get_homedir()
 
 here, i_am = os.path.split(__file__)
@@ -44,13 +41,6 @@ if uname in ('linux', 'darwin') and os.getuid() > 0:
     lshare = os.path.join(home_dir, '.local', 'share')
     if not os.path.exists(lshare):
         os.makedirs(lshare, mode=457) # for octal 711
-
-##
-## names (and loading order) for core plugin modules
-#core_plugins = ('std', 'math')
-#core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
-
-core_plugins = ('cifdb', 'diFFit', 'wx', 'xafs', 'xrd', 'xrmmap',  'xsw')
 
 
 # frozen executables, as from cx_freeze, will have

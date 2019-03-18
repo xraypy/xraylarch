@@ -296,7 +296,7 @@ class LarchFrame(wx.Frame):
         self.Bind(wx.EVT_SHOW, self.onShow)
         self.BuildMenus()
 
-        larchdir = larch.site_config.larchdir
+        # larchdir = larch.site_config.larchdir
 
         fico = os.path.join(larch.site_config.icondir, ICON_FILE)
         if os.path.exists(fico):
