@@ -60,7 +60,6 @@ class LarchWxShell(object):
         self._larch("_sys.display.colors['text2'] = {'color': 'blue'}",
                     add_history=False)
 
-        self._larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
         self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
