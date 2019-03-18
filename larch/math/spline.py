@@ -84,7 +84,3 @@ def spline_eval(x, group, name='spl1'):
         coefs[2+i] = cval
     setattr(sgroup, 'coefs', coefs)
     return splev(x, [knots, coefs, order])
-
-def registerLarchPlugin():
-    return ('_math', {'spline_rep':  spline_rep,
-                      'spline_eval': spline_eval})

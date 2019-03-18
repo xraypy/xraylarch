@@ -1909,7 +1909,6 @@ def _import_module(name, package=None, warn=True, prefix='_py_', ignore='_'):
             globals()[attr] = getattr(module, attr)
         return True
 
-
 # _import_module('_transformations')
 
 # if __name__ == "__main__":
@@ -1918,44 +1917,3 @@ def _import_module(name, package=None, warn=True, prefix='_py_', ignore='_'):
 #     numpy.set_printoptions(suppress=True, precision=5)
 #     doctest.testmod()
 #
-
-def registerLarchPlugin():
-    return ('_math.transforms', {
-        'doc': __doc__,
-        'identity_matrix': identity_matrix,
-        'translation_matrix': translation_matrix,
-        'translation_from_matrix': translation_from_matrix,
-        'reflection_matrix': reflection_matrix,
-        'reflection_from_matrix': reflection_from_matrix,
-        'rotation_matrix': rotation_matrix,
-        'rotation_from_matrix': rotation_from_matrix,
-        'scale_matrix': scale_matrix,
-        'scale_from_matrix': scale_from_matrix,
-        'projection_matrix': projection_matrix,
-        'projection_from_matrix': projection_from_matrix,
-        'clip_matrix': clip_matrix,
-        'shear_matrix': shear_matrix,
-        'shear_from_matrix': shear_from_matrix,
-        'decompose_matrix': decompose_matrix,
-        'compose_matrix': compose_matrix,
-        'orthogonalization_matrix': orthogonalization_matrix,
-        'affine_matrix_from_points': affine_matrix_from_points,
-        'superimposition_matrix': superimposition_matrix,
-        'euler_matrix': euler_matrix,
-        'euler_from_matrix': euler_from_matrix,
-        'euler_from_quaternion': euler_from_quaternion,
-        'quaternion_from_euler': quaternion_from_euler,
-        'quaternion_about_axis': quaternion_about_axis,
-        'quaternion_matrix': quaternion_matrix,
-        'quaternion_from_matrix': quaternion_from_matrix,
-        'quaternion_multiply': quaternion_multiply,
-        'quaternion_conjugate': quaternion_conjugate,
-        'quaternion_inverse': quaternion_inverse,
-        'quaternion_real': quaternion_real,
-        'quaternion_imag': quaternion_imag,
-        'quaternion_slerp': quaternion_slerp,
-        'vector_norm': vector_norm,
-        'unit_vector': unit_vector,
-        'vector_product': vector_product,
-        'angle_between_vectors': angle_between_vectors,
-        'inverse_matrix': inverse_matrix})
