@@ -36,6 +36,7 @@ from .mergegroups import merge_groups
 from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
                               spec_getmap2group, spec_getmrg2group,
                               str2rng_larch)
+from .stepscan import stepscan
 from . import tifffile
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""
@@ -71,6 +72,7 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_gsexdi=read_gsexdi,
                    gsexdi_deadtime_correct=gsexdi_deadtime_correct,
                    read_mda=read_mda,
+                   read_stepscan=read_stepscan,
                    read_tiff=read_tiff,
                    merge_groups=merge_groups,
                    save=save,
@@ -78,7 +80,12 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_xrd_hdf5=read_xrd_hdf5,
                    read_xrd_netcdf=read_xrd_netcdf,
                    read_xrf_netcdf=read_xrf_netcdf,
-                   read_xsp3_hdf5=read_xsp3_hdf5)
+                   read_xsp3_hdf5=read_xsp3_hdf5,
+                   h5group=h5group,
+                   h5file=h5file,
+                   netcdf_file=netcdf_file,
+                   netcdf_group=netcdf_group,
+                   )
 
 
 

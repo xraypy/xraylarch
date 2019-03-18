@@ -628,9 +628,3 @@ def extract_athenagroup(dgroup, _larch=None):
     g.plot_ylabel = 'mu'
     return g
 #enddef
-
-def registerLarchPlugin():
-    return ('_io', {'read_athena': read_athena,
-                    'create_athena': create_athena,
-                    'extract_athenagroup': extract_athenagroup,
-                    })

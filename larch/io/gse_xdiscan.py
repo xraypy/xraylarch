@@ -358,7 +358,3 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
        print("could not open / write to output file %s" % ofile)
 
     return out
-
-def registerLarchPlugin():
-    return ('_io', {'read_gsexdi': read_gsexdi,
-                    'gsexdi_deadtime_correct': gsexdi_deadtime_correct})

@@ -375,6 +375,3 @@ class GSEMCA_File(Group):
 def gsemca_group(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
     return GSEMCA_File(fname)
-
-def registerLarchPlugin():
-    return ('_io', {'read_gsemca': gsemca_group})

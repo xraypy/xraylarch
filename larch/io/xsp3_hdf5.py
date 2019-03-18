@@ -131,12 +131,3 @@ def test_read(fname):
     print( fname,  os.stat(fname))
     fd = read_xsp3_hdf5(fname, verbose=True)
     print(fd.counts.shape)
-
-# def initializeLarchPlugin(_larch=None):
-#     """initialize xspress3 data"""
-#     g = _larch.symtable.create_group(xspress3_taus=XSPRESS3_TAUS)
-#     _larch.symtable.set_symbol("_sys.gsecars", g)
-
-
-def registerLarchPlugin():
-    return ('_io', {'read_xsp3_hdf5': read_xsp3_hdf5})

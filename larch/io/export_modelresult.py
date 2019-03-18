@@ -134,6 +134,3 @@ def export_modelresult(result, filename='fitresult.xdi',
         fh.write("\n".join(['#%s' % s for s in header]))
         fh.write("\n")
         fh.write("\n".join(datatable))
-
-def registerLarchPlugin():
-    return ('_io', {'export_modelresult': export_modelresult,})

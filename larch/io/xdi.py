@@ -261,6 +261,3 @@ def read_xdi(filename, labels=None, _larch=None):
     path, fname = os.path.split(filename)
     group.filename = fname
     return group
-
-def registerLarchPlugin():
-    return ('_io', {'read_xdi': read_xdi})

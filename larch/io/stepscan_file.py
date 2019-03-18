@@ -133,6 +133,3 @@ def read_stepscan(fname, _larch=None, **kws):
 
     group.get_data = scan.get_data
     return group
-
-def registerLarchPlugin():
-    return ('_io', {'read_stepscan': read_stepscan})

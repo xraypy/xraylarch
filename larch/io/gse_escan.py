@@ -925,8 +925,3 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected',
        print("could not open / write to output file %s" % ofile)
 
     return sg
-
-def registerLarchPlugin():
-    return ('_io', {'read_gsescan': gsescan_group,
-                    'gsescan_dtcorrect': gsescan_deadtime_correct,
-                    })

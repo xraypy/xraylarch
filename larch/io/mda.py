@@ -1624,7 +1624,3 @@ def read_mda(fname, maxdim=3, verbose=False, _larch=None):
         group.field_names = field_names
         group.array_labels = array_labels
     return group
-
-
-def registerLarchPlugin():
-    return ('_io', {'read_mda': read_mda})

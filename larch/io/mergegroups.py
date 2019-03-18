@@ -61,6 +61,3 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     setattr(grp, 'd' + yarray, ystd)
 
     return grp
-
-def registerLarchPlugin():
-    return ('_io', {'merge_groups': merge_groups})

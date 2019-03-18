@@ -511,11 +511,3 @@ def guess_filereader(filename, _larch=None):
     elif 'epics scan' in line1:
         reader = 'read_gsescan'
     return reader
-
-def registerLarchPlugin():
-    return (MODNAME, {'read_ascii': read_ascii,
-                      'set_array_labels': set_array_labels,
-                      'guess_filereader': guess_filereader,
-                      'write_ascii': write_ascii,
-                      'write_group': write_group,
-                     })

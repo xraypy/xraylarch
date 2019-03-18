@@ -924,20 +924,3 @@ def str2rng_larch(rngstr, keeporder=True, _larch=None):
         raise Warning("larch broken?")
     return _str2rng(rngstr, keeporder=keeporder)
 str2rng_larch.__doc__ = _str2rng.__doc__
-
-def registerLarchPlugin():
-    if HAS_SPECFILE:
-        return ('_io', {'read_specfile_scan': spec_getscan2group,
-                        'read_specfile_map' : spec_getmap2group,
-                        'read_specfile_mrg' : spec_getmrg2group,
-                        'str2rng' : str2rng_larch
-                        })
-    else:
-        return ('_io', {})
-
-if __name__ == '__main__':
-    """ test/examples in examples/specfiledata_test.py """
-    #test01()
-    #test02(100)
-    #test03
-    pass

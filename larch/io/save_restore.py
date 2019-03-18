@@ -111,6 +111,3 @@ def restore(fname, top_level=True, _larch=None):
             setattr(_main, objname, getattr(out, objname))
         return
     return out
-
-def registerLarchPlugin():
-    return ('_io', { 'save': save, 'restore': restore})

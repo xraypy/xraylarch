@@ -83,10 +83,3 @@ def h5group(fname, mode='r+', _larch=None):
     top.h5_file = fh
     fh.visititems(partial(add_component, top=top))
     return top
-
-def registerLarchPlugin():
-    meths = {'h5group': h5group,
-             'h5file': h5file,
-             'netcdf_file': netcdf_file,
-             'netcdf_group': netcdf_group}
-    return ('_io', meths)

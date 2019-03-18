@@ -64,6 +64,3 @@ def groups2csv(grouplist, filename,
         fh.write("\n".join(buff))
 
     print("Wrote %i groups to %s" % (len(columns)-1, filename))
-
-def registerLarchPlugin():
-    return ('_io', {'groups2csv': groups2csv})
