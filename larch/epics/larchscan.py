@@ -116,27 +116,24 @@ except ImportError:
 
 SCANDB_NAME = '_scan._scandb'
 INSTDB_NAME = '_scan._instdb'
+_scandb = None
+_instdb = None
 
-MIN_POLL_TIME = 1.e-3
-
-
-@ValidateLarchPlugin
 def scan_from_db(scanname, filename='scan.001',  _larch=None):
     """
     get scan definition from ScanDB by name
     """
-    if _larch.symtable._scan._scandb is None:
+    global _scandb
+    if _scandb is None:
+        print('need to connect to scandb!')
         return
-    scandb = _larch.symtable._scan._scandb
-    # print(" Scan From DB ", scanname, scandb)
     try:
-        scan = scandb.make_scan(scanname, larch=_larch)
+        scan = _scandb.make_scan(scanname, larch=_larch)
         scan.filename = filename
     except ScanDBException:
         raise ScanDBException("no scan definition '%s' found" % scanname)
     return scan
 
-@ValidateLarchPlugin
 def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     """do_scan(scanname, filename='scan.001', nscans=1, comments='')
 
@@ -157,13 +154,12 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     ------
       1. The filename will be incremented so that each scan uses a new filename.
     """
-
-    if _larch.symtable._scan._scandb is None:
+    global _scandb
+    if _scandb is None:
         print('need to connect to scandb!')
         return
-    scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
-        scandb.set_info('nscans', nscans)
+        _scandb.set_info('nscans', nscans)
 
     scan = scan_from_db(scanname, filename=filename,  _larch=_larch)
     scan.comments = comments
@@ -171,17 +167,15 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
         return scan.run(filename=filename, comments=comments)
     else:
         scans_completed = 0
-        nscans = int(scandb.get_info('nscans'))
-        abort  = scandb.get_info('request_abort', as_bool=True)
+        nscans = int(_scandb.get_info('nscans'))
+        abort  = _scandb.get_info('request_abort', as_bool=True)
         while (scans_completed  < nscans) and not abort:
             scan.run()
             scans_completed += 1
-            nscans = int(scandb.get_info('nscans'))
-            abort  = scandb.get_info('request_abort', as_bool=True)
+            nscans = int(_scandb.get_info('nscans'))
+            abort  = _scandb.get_info('request_abort', as_bool=True)
         return scan
 
-
-@ValidateLarchPlugin
 def get_dbinfo(key, default=None, as_int=False, as_bool=False,
                full_row=False, _larch=None, **kws):
     """get a value for a keyword in the scan info table,
@@ -202,36 +196,35 @@ def get_dbinfo(key, default=None, as_int=False, as_bool=False,
      2.  the full row will include notes, create_time, modify_time
 
     """
-    if _larch.symtable._scan._scandb is None:
+    global _scandb
+    if _scandb is None:
         print('need to connect to scandb!')
         return
-    get_info = _larch.symtable._scan._scandb.get_info
-    return get_info(key, default=default, full_row=full_row,
-                    as_int=as_int, as_bool=as_bool, **kws)
+    return _scandb.get_info(key, default=default, full_row=full_row,
+                            as_int=as_int, as_bool=as_bool, **kws)
 
-@ValidateLarchPlugin
 def set_dbinfo(key, value, notes=None, _larch=None, **kws):
     """
     set a value for a keyword in the scan info table.
     """
-    if _larch.symtable._scan._scandb is None:
+    global _scandb
+    if _scandb is None:
         print('need to connect to scandb!')
         return
-    return _larch.symtable._scan._scandb.set_info(key, value, notes=notes)
+    return _scandb.set_info(key, value, notes=notes)
 
-@ValidateLarchPlugin
 def connect_scandb(dbname=None, _larch=None, **kwargs):
-    if (_larch.symtable.has_symbol(SCANDB_NAME) and
-        _larch.symtable.get_symbol(SCANDB_NAME) is not None):
-        scandb = _larch.symtable.get_symbol(SCANDB_NAME)
-    else:
-        scandb = ScanDB(dbname=dbname, **kwargs)
-        _larch.symtable.set_symbol(SCANDB_NAME, scandb)
+    global _scandb, _instdb
+    if _scandb is not None:
+        return _scandb
 
-    if (_larch.symtable.has_symbol(INSTDB_NAME) and
-        _larch.symtable.get_symbol(INSTDB_NAME) is not None):
-        instdb = _larch.symtable.get_symbol(INSTDB_NAME)
-    else:
-        instdb = InstrumentDB(scandb)
-        _larch.symtable.set_symbol(INSTDB_NAME, instdb)
-    return scandb
+    _scandb = ScanDB(dbname=dbname, **kwargs)
+    if _larch is not None:
+        _larch.symtable.set_symbol(SCANDB_NAME, _scandb)
+
+    if _instdb is None:
+        instdb = InstrumentDB(_scandb)
+        if _larch is not None:
+            _larch.symtable.set_symbol(INSTDB_NAME, _instdb)
+
+    return _scandb

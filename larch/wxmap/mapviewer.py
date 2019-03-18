@@ -11,7 +11,6 @@ import platform
 import sys
 import time
 import json
-import six
 import socket
 import datetime
 from functools import partial
@@ -1706,20 +1705,15 @@ class MapViewerFrame(wx.Frame):
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
             try:
-                connect_scandb(_larch=self.larch)
-                self.scandb = self.larch.symtable._scan._scandb
+                self.scandb = connect_scandb(_larch=self.larch)
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = self.scandb.get_info('samplestage_instrument',
                                                       default='IDE_SampleStage')
                 print(" ScanDB: %s, Instrument=%s" % (self.scandb.engine, self.inst_name))
             except:
                 etype, emsg, tb = sys.exc_info()
-                if six.PY2:
-                    print('Could not connect to ScanDB: %s' % (emsg.message))
-                else:
-                    print('Could not connect to ScanDB: %s' % (emsg))
-                self.scandb = None
-
+                print('Could not connect to ScanDB: %s' % (emsg))
+                self.scandb = self.instdb = None
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
