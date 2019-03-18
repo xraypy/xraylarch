@@ -11,7 +11,7 @@ try:
 except ImportError:
     HAS_PYEPICS = False
 
-
+from . import larchscan
 
 def pv_fullname(name):
     """ make sure an Epics PV name ends with .VAL or .SOMETHING!
@@ -59,6 +59,12 @@ def nullfcn(*args,  **kws):
 
 caget = caput = cainfo = PV = nullfcn
 __DOC__ = "pyepics is not installed"
+epics_exports = {}
+scan_exports = {}
+
+_larch_name = '_epics'
+_larch_builtins = {'_epics': {}}
+
 
 if HAS_PYEPICS:
     from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
@@ -95,8 +101,14 @@ For further details, consult the pyepics documentation
            return fullname (that is, including '.VAL' if needed) for PV
 """
 
+    _larch_builtins = {'_epics': dict(PV=PV, caget=caget, caput=caput,
+                                      cainifo=cainfo, pv_units=pv_units,
+                                      pv_fullname=pv_fullname)}
 
-_larch_name = '_epics'
-_larch_builtins = {'_epics': dict(PV=PV, caget=caget, caput=caput,
-                                  cainifo=cainfo, pv_units=pv_units,
-                                  pv_fullname=pv_fullname)}
+    if larchscan.HAS_EPICSSCAN:
+        _larch_builtins['_scan'] = dict(scan_from_db=larchscan.scan_from_db,
+                                        connect_scandb=larchscan.connect_scandb,
+                                        do_scan=larchscan.do_scan,
+                                        do_slewscan=larchscan.do_scan,
+                                        get_dbinfo=larchscan.get_dbinfo,
+                                        set_dbinfo=larchscan.set_dbinfo)

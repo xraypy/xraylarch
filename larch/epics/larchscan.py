@@ -106,7 +106,7 @@ try:
     import epicsscan
     from epicsscan import (Counter, Trigger, AreaDetector, get_detector,
                            ASCIIScanFile, Positioner)
-    from epicsscan.scandb import ScanDBException, ScanDBAbort
+    from epicsscan.scandb import ScanDB, InstrumentDB, ScanDBException, ScanDBAbort
     from epics.devices.struck import Struck
 
     HAS_EPICSSCAN = True
@@ -114,7 +114,8 @@ except ImportError:
     HAS_EPICSSCAN = False
 
 
-MODNAME = '_scan'
+SCANDB_NAME = '_scan._scandb'
+INSTDB_NAME = '_scan._instdb'
 
 MIN_POLL_TIME = 1.e-3
 
@@ -218,22 +219,19 @@ def set_dbinfo(key, value, notes=None, _larch=None, **kws):
         return
     return _larch.symtable._scan._scandb.set_info(key, value, notes=notes)
 
-def initializeLarchPlugin(_larch=None):
-    """initialize _scan"""
-    if not _larch.symtable.has_group(MODNAME):
-        g = Group()
-        g.__doc__ = MODDOC
-        _larch.symtable.set_symbol(MODNAME, g)
+@ValidateLarchPlugin
+def connect_scandb(dbname=None, _larch=None, **kwargs):
+    if (_larch.symtable.has_symbol(SCANDB_NAME) and
+        _larch.symtable.get_symbol(SCANDB_NAME) is not None):
+        scandb = _larch.symtable.get_symbol(SCANDB_NAME)
+    else:
+        scandb = ScanDB(dbname=dbname, **kwargs)
+        _larch.symtable.set_symbol(SCANDB_NAME, scandb)
 
-def registerLarchPlugin():
-    symbols = {}
-    # print("Larch add basic scan Commands ", HAS_EPICSSCAN)
-    if HAS_EPICSSCAN:
-
-        symbols = {'scan_from_db':   scan_from_db,
-                   'do_scan': do_scan,
-                   'do_slewscan': do_scan,
-                   'get_dbinfo': get_dbinfo,
-                   'set_dbinfo': set_dbinfo}
-
-    return (MODNAME, symbols)
+    if (_larch.symtable.has_symbol(INSTDB_NAME) and
+        _larch.symtable.get_symbol(INSTDB_NAME) is not None):
+        instdb = _larch.symtable.get_symbol(INSTDB_NAME)
+    else:
+        instdb = InstrumentDB(scandb)
+        _larch.symtable.set_symbol(INSTDB_NAME, instdb)
+    return scandb

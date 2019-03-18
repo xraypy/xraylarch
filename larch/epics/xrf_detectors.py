@@ -495,12 +495,3 @@ class Epics_MultiXMAP(object):
 
 
         save_gsemcafile(filename, mcas, rois, environ=environ)
-
-
-def epics_xspress3(prefix='13XQX4:', nmca=4):
-    " return Epics Xspress3"
-    return Epics_Xspress3(prefix=prefix, nmca=nmca)
-
-
-def registerLarchPlugin():
-    return ('_epics', {'epics_xspress3': epics_xspress3})
