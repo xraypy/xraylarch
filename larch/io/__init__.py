@@ -36,7 +36,7 @@ from .mergegroups import merge_groups
 from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
                               spec_getmap2group, spec_getmrg2group,
                               str2rng_larch)
-from .stepscan import stepscan
+from .stepscan_file import read_stepscan
 from . import tifffile
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""
