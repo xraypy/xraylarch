@@ -373,7 +373,7 @@ class ResultFrame(wx.Frame):
         fit_result = self.datagroup.lcf_result[n]
         self.current_fit = n
         wids = self.wids
-        wids['nfits_title'].SetLabel('Showing Fit # %2.2d of %i Best Fits' % (n+1, self.nresults))
+        wids['nfits_title'].SetLabel('Showing Fit # %2.2d' % (n+1))
         wids['paramstitle'].SetLabel('[[Parameters for Fit # %2.2d]]' % (n+1))
 
         wids['params'].DeleteAllItems()
