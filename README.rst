@@ -1,6 +1,6 @@
 
 Larch:  Data Analysis for X-ray Spectroscopies and More
-======================================
+====================================================
 
 .. image:: https://travis-ci.org/xraypy/xraylarch.png
    :target: https://travis-ci.org/xraypy/xraylarch
@@ -13,110 +13,102 @@ Larch:  Data Analysis for X-ray Spectroscopies and More
 * Documentation: http://xraypy.github.io/xraylarch
 * Code: http://github.com/xraypy/xraylarch
 
+Larch is an open-source toolkit for analyzing X-ray spectroscopy and
+scattering data as collected at modern synchrotrons X-ray sources. Larch
+provides general-purpose tools for visualization and analysis of numerical
+scientific data, and state-of-the-art tools for working with X-ray
+absorption and fluorescence spectroscopy data.  These tools include a few
+graphical user interfaces for doing the most common visualization and
+analysis tasks and a comprehensive library of lower level functionality for
+more complicated analysis and for scripting.
 
-Larch is an open-source analysis and visualization toolkit and library for
-processing scientific data.  The primary emphasis is on X-ray spectroscopic
-and scattering data, especially that collected at modern synchrotrons and
-X-ray sources.  But, Larch also provides many general-purpose processing,
-analysis, and visualization tools for dealing with arrays of scientific
-data.  
-
-Larch is written in Python, making heavy use of the wonderful `numpy`_,
+Larch is written in Python and makes heavy use of the wonderful `numpy`_,
 `scipy`_, `h5py`_, and `matplotlib`_ libraries.  For interactive and batch
-processing, Larch provides a Python-like and Python-derived language (a
-*macro language*, or *domain specific language*) that is intended to be
-very easy to use for novices while also being complete enough for advanced
-data processing and analysis.  In addition, Larch can be used as a Python
-library, used within Python scripts, and extended using Python.  Finally,
-Larch can be run as a service, interacting with other processes via
-XML-RPC. 
+processing, Larch can be used either as a Python library or using a
+Python-like and Python-derived language (a *macro language*, or *domain
+specific language*) that is intended to be very easy to use for novices
+while also being complete enough for advanced data processing and analysis.
+Finally, Larch can also be run as a service, interacting with other
+processes via XML-RPC.
 
-Larch: An X-ray Analysis Toolkit with Plugins
-===============================
+Larch: An X-ray Analysis Toolkit for Python
+===========================================
 
 Larch has several related target application areas, including:
 
-  * XAFS analysis, becoming version 2 of the Ifeffit Package.
-  * Visualizing and analyzing micro-X-ray fluorescence maps.
+  * XAFS analysis, replacing the unsupported Ifeffit Package.
+  * Visualizing and analyzing micro-X-ray fluorescence and diffraction maps.
   * Quantitative X-ray fluorescence analysis.
-  * X-ray standing waves and surface scattering analysis.
   * Data collection software for synchrotron data.
 
-The initial goal was to rewrite the older Ifeffit XAFS Analysis package,
-and this is largely complete.  Other application areas are nearly complete
-or in early stages of development.
+The initial goal for Larch was to rewrite the older Ifeffit XAFS Analysis
+package, and to provide tools for X-ray fluorescence mapping at X-ray
+microprobes.  With this initial goal essentially complete, we are now able
+to work on improving GUI applications for XAS and XRF mapping, and add more
+capabilities for XAFS and XRF analysis.  In addition, other application
+areas such as X-ray diffraction mapping and robust X-ray fluorescence
+analysis are now in development.
 
-All the scientific domain-specific code is exposed through a plugin
-mechanism.  Plugins are written in Python (which can use compiled code and
-3rd party Python libraries), and are loaded from Python source at runtime,
-making development very easy.  Plugins do not need to know much about the
-internals of Larch.  Adding a small amount of  Larch-awareness to a Plugin
-can make functions defined in Plugins work very easily with Larch's
-interactive macro language.
 
-Larch: A macro language for scientific programming 
-======================================
 
-Larch provides a dialect of Python for interactive use.  The intention is
-to provide a very easy and complete macro language for data processing.
-By building Larch with Python, Larch has many important similarities to
-Python:
+Larch: A macro language for scientific programming
+===========================================
 
-1.  All variables in Larch are real Python objects.
+While Larch can be used as a Python library, it also provides a dialect of
+Python for interactive use at a command-line interface.  The intention is
+to provide a very easy and complete macro language for data processing.  By
+building Larch with Python, the Larch macro language has many important
+similarities to Python:
 
-2.  Existing Python libraries can be imported and used from Larch.
-
-3.  Syntax for lists, dictionaries, array slicing, and so on are identical to python.
-
+1. All variables in Larch are real Python objects.
+2. Existing Python libraries can be imported and used from Larch.
+3. Syntax for lists, dictionaries, array slicing, and so on are identical to python.
 4. Control flow syntax (if, while, for, try) are nearly identical to Python (see below).
-    
-  
+
 The Larch macro language differs from Python in a few significant ways:
 
 1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
 
-            if X:        
+            if X:
                do_something()
             endif
-            if Y: 
+            if Y:
                do_another_thing()
            #endif
 
-and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
+and similarly  for/endfor, while/endwhile, def/enddef, and   try/endtry.
 
-Properly indenting and using the '#end' version allows code to be both  
+Properly indenting and using the '#end' version allows code to be both
 valid larch and python, and is strongly encouraged.
 
-2.  "Command" syntax -- not requiring parentheses for function calls --   is 
+2.  Larch has a nested namespace and a deeper level of name resolution.
+This is more complex than Python's simple and elegant model, but allows
+more functionality and data to be readily available at an interactive
+prompt.
+
+2.  "Command" syntax -- not requiring parentheses for function calls --   is
 supported in many cases.  If the first word of an expression typed at the
 command prompt is a word that is a valid symbol name (and not a reserved
 word) and the second word that is either a valid name or a number, and if
 the line does not end with a ')', the first word is taken as a function
 name and parentheses are added, so that::
 
-           command arg1, arg2   
+           command arg1, arg2
 
 is converted to ``command(arg1, arg2)`` and so on.
 
-3.  Larch has a nested namespace and a deeper level of name resolution.
-This is more complex than Python's simple and elegant model, but allows
-more functionality and data to be readily available at an interactive
-prompt.
-
-4.  While the Larch macro language is a com a Larch does not support many
-important Python constructs.  These include
+4.  While the Larch macro language provides a complete enough language for
+complex scripting of data anlysis work, the Larch macro language does not
+include several important Python constructs.  These include
 
        *  ``class``     -- creating a new object class
        *  ``lambda``  -- anonymous functions.
        *   generators, ``yield`` -- deferred generation of sequences.
        *   decorators   --  function modifiers
-            
-For the sensitive Python-lovers, please note that I am not saying that I
-think these changes from Python are in anyway shortcomings of Python that
-are being fixed by Larch.  Rather, the changes (and omissions) are to make
-Larch a simple scientific macro language.  The fact that the macro language
-is close to Python is a strong benefit, but it is still a domain-specific
-language. 
+
+For Python programmers, please note that the Larch macro language is
+deliberately limited to make a simple yet complete enough macro language
+for processing scientific data.
 
 The implementation of the Larch macro language turns out to be rather
 simple.  The input Larch program text is converted to valid python code,
@@ -135,6 +127,3 @@ In addition, the symbol table is simplified so that a symbolTable contains
 python objects and Groups (simple containers for other objects and
 Groups). Namespaces are built simply using attributes of the Group class.
 That is, attribute lookup is heavily used, and symbols just python objects.
-
-
-
