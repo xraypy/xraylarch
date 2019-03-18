@@ -335,9 +335,6 @@ class MaskToolsPopup(wx.Frame):
 #         self.createApp()
 #         return True
 #
-# def registerLarchPlugin():
-#     return ('_diFFit', {})
-#
 # class DebugViewer(diFFit_XRDmask):
 #     def __init__(self, **kws):
 #         diFFit_XRDmask.__init__(self, **kws)
