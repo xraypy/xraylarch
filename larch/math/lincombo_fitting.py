@@ -205,8 +205,3 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
             all.append(o)
     # sort outputs by reduced chi-square
     return sorted(all, key=lambda x: x.redchi)
-
-
-def registerLarchPlugin():
-    return ('_math', {'lincombo_fit': lincombo_fit,
-                      'lincombo_fitall': lincombo_fitall})
