@@ -10,7 +10,7 @@ import wx
 
 import larch
 from larch import Group
-from larch_plugins.io import fix_varname, read_athena
+from larch.io import fix_varname, read_athena
 
 from wxutils import (SimpleText, Button, Choice, GUIColors,
                      FileCheckList, FileDropTarget, pack,

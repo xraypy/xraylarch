@@ -8,15 +8,46 @@ import time
 import re
 import traceback
 import io
-
 import asteval
-
 from .helper import Helper
 from . import inputText
 from . import site_config
-from . import fitting
+from . import utils
+from .utils.show import _larch_builtins as show_builtins
+
 from .larchlib import parse_group_args, LarchExceptionHolder
 from .symboltable import isgroup
+
+from . import math
+from . import io
+from . import fitting
+from . import xray
+from . import xrf
+from . import xafs
+from . import xrd
+from . import xrmmap
+
+__core_modules = [math, fitting, io, xray, xrf, xafs, xrd, xrmmap]
+
+try:
+    from . import epics
+    __core_modules.append(epics)
+except ImportError:
+    pass
+
+
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    HAS_WXPYTHON = False
+
+if HAS_WXPYTHON:
+    from . import wxlib
+    from .wxlib import plotter
+    from . import wxmap, wxxas, wxxrd
+    __core_modules.extend([wxlib, plotter, wxmap, wxxas, wxxrd])
+
 
 PLUGINSTXT = 'plugins.txt'
 PLUGINSREQ = 'requirements.txt'
@@ -27,8 +58,7 @@ helper = Helper()
 # inherit most available symbols from python's __builtins__
 from_builtin = [sym for sym in __builtins__ if not sym.startswith('__')]
 
-# inherit these from math (many will be overridden by numpy
-
+# inherit these from math (many will be overridden by numpy)
 from_math = ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
             'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'exp',
             'fabs', 'factorial', 'floor', 'fmod', 'frexp', 'fsum', 'hypot',
@@ -189,7 +219,7 @@ def _help(*args, **kws):
     else:
         return helper.getbuffer()
 
-def _addplugin(plugin, _larch=None, verbose=False, **kws):
+def add_plugin(plugin, _larch=None, verbose=False, **kws):
     """add plugin components from plugin directory"""
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
@@ -380,7 +410,7 @@ def _addplugin(plugin, _larch=None, verbose=False, **kws):
     if verbose:
         try:
             groupname, syms = symtable._sys.last_import
-        except ValueError:
+        except:
             return
         out = ', '.join(["%s.%s" % (groupname, i) for i in syms])
         write('plugin added: %s \n' % out)
@@ -475,8 +505,6 @@ _clock.__doc__ = time.clock.__doc__
 def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
-def _ufloat(arg, _larch=None):
-    return fitting.ufloat(arg)
 
 def save_history(filename, session_only=False, max_lines=5000, _larch=None):
     """save history of larch commands to a file"""
@@ -505,41 +533,73 @@ def reset_fiteval(_larch=None, **kws):
             else:
                 fiteval(init_item)
 
-local_funcs = {'_builtin': {'group':_group,
-                            'dir': _dir,
-                            'which': _which,
-                            'exists': _exists,
-                            'isgroup': _isgroup,
-                            'subgroups': _subgroups,
-                            'group_items': _groupitems,
-                            'parse_group_args': parse_group_args,
-                            'pause': _pause,
-                            'sleep': _sleep,
-                            'systime': _time,
-                            'clock': _clock,
-                            'strftime': _strftime,
-                            'reload':_reload,
-                            'run': _run,
-                            'eval': _eval,
-                            'help': _help,
-                            'add_plugin':_addplugin,
-                            'save_history': save_history,
-                            'show_history': show_history},
-               '_math':{'param': fitting.param,
-                        'guess': fitting.guess,
-                        'param_group': fitting.param_group,
-                        'confidence_intervals': fitting.confidence_intervals,
-                        'confidence_report': fitting.confidence_report,
-                        'f_test': fitting.f_test,
-                        'chi2_map': fitting.chi2_map,
-                        'is_param': fitting.is_param,
-                        'isparam': fitting.is_param,
-                        'minimize': fitting.minimize,
-                        'ufloat': _ufloat,
-                        'fit_report': fitting.fit_report,
-                        'reset_fiteval': reset_fiteval,
-                        },
-               }
+def init_display_group(_larch):
+    symtab = _larch.symtable
+    if not symtab.has_group('_sys.display'):
+            symtab.new_group('_sys.display')
+            colors = {}
+            colors['text'] = {'color': None}
+            colors['text2'] = {'color': 'cyan'}
+            colors['comment'] = {'color': 'green'}
+            colors['error'] = {'color': 'red',  'attrs': ['bold']}
+            display = symtab._sys.display
+            display.colors = colors
+            display.use_color = True
+            display.terminal = 'xterm'
+
+
+_main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
+                      isgroup=_isgroup, subgroups=_subgroups,
+                      group_items=_groupitems,
+                      parse_group_args=parse_group_args, pause=_pause,
+                      sleep=_sleep, systime=_time, clock=_clock,
+                      strftime=_strftime, reload=_reload, run=_run,
+                      eval=_eval, help=_help, add_plugin=add_plugin,
+                      save_history=save_history, show_history=show_history)
+
+_main_builtins.update(utils._larch_builtins)
+_main_builtins.update(show_builtins)
+
+
+# names to fill in the larch namespace at startup
+init_builtins = dict(_builtin=_main_builtins,
+                     _math={'reset_fiteval': reset_fiteval})
+
+# functions to run (with signature fcn(_larch)) at interpreter startup
+init_funcs = [init_display_group, reset_fiteval]
+
+# group/classes to register for save-restore
+init_groups = []
+init_moddocs = {}
+
+# _math_builtins.update(math._larch_builtins_)
+# _math_builtins.update(fitting._larch_builtins_)
+
+for mod in __core_modules:
+    if mod is None:
+        continue
+    modname  = getattr(mod, '_larch_name', mod.__name__)
+    if modname.startswith('larch.'):
+        modname = modname.replace('larch.', '_')
+
+    doc = getattr(mod, '__DOC__', None)
+    if doc is not None:
+        init_moddocs[modname] = doc
+    builtins = getattr(mod, '_larch_builtins', {})
+    init_fcn = getattr(mod, '_larch_init', None)
+    init_grp = getattr(mod, '_larch_groups', None)
+    # print("Add builtins ", modname, mod, init_fcn, init_grp)
+
+    for key, val in builtins.items():
+        if key not in init_builtins:
+            init_builtins[key] = val
+        else:
+            init_builtins[key].update(val)
+
+    if init_fcn is not None:
+        init_funcs.append(init_fcn)
+    if init_grp is not None:
+        init_groups.append(init_grp)
 
 # list of supported valid commands -- don't need parentheses for these
-valid_commands = ['run', 'help', 'show', 'which']
+valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']

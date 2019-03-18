@@ -18,18 +18,21 @@ from .version import __version__ as larch_version
 def pjoin(*args):
     return nativepath(join(*args))
 
+
+
 ##
 # set system-wide and local larch folders
-#   larchdir     = sys.exec_prefix + 'share' + 'larch'
 #   usr_larchdir = get_homedir() + '.larch' (#unix)
 #                = get_homedir() + 'larch'  (#win)
 ##
 
-larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
 home_dir = get_homedir()
 
+here, i_am = os.path.split(__file__)
+icondir = os.path.join(here, 'icons')
+
 usr_larchdir = pjoin(home_dir, '.larch')
-if os.name == 'nt':
+if uname == 'win':
     usr_larchdir = pjoin(home_dir, 'larch')
 
 if 'LARCHDIR' in os.environ:
@@ -46,8 +49,8 @@ if uname in ('linux', 'darwin') and os.getuid() > 0:
 ## names (and loading order) for core plugin modules
 #core_plugins = ('std', 'math')
 #core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
-core_plugins = ('cifdb', 'diFFit', 'epics', 'io',  'local', 'math', 'std',
-                'wx', 'xafs', 'xray', 'xrd', 'xrf', 'xrmmap',  'xsw')
+
+core_plugins = ('cifdb', 'diFFit', 'wx', 'xafs', 'xrd', 'xrmmap',  'xsw')
 
 
 # frozen executables, as from cx_freeze, will have
@@ -67,7 +70,7 @@ if hasattr(sys, 'frozen'):
 
 modules_path = []
 plugins_path = []
-_path = [usr_larchdir, larchdir]
+_path = [usr_larchdir]
 
 if 'LARCHPATH' in os.environ:
     _path.extend([nativepath(s) for s in os.environ['LARCHPATH'].split(':')])
@@ -134,7 +137,6 @@ def show_site_config():
   larch version:        %s
   sys executable:       %s
   sys is frozen:        %s
-  system larch dir:     %s
   users larch dir:      %s
   users history_file:   %s
   users startup files:  %s
@@ -143,7 +145,7 @@ def show_site_config():
 ========================
 """ % (larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
-       larchdir, usr_larchdir,
+       usr_larchdir,
        history_file, init_files,
        modules_path, plugins_path))
 

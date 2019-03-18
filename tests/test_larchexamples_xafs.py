@@ -149,6 +149,54 @@ class TestScripts(TestCase):
         self.isTrue('path1.geom[0][1] == 26')
         self.isTrue('path1.geom[1][1] == 8')
 
+
+    def test15_feffit2(self):
+        self.runscript('doc_feffit2.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
+
+        self.isTrue('out.nfev > 50')
+        self.isTrue('out.nfev < 200')
+
+        self.isTrue('out.chi_square > 4')
+        self.isTrue('out.chi_square < 6')
+        self.isTrue('out.rfactor < 0.003')
+        self.isTrue('out.aic < -12')
+        self.isTrue('out.aic > -15')
+        self.isNear("out.params['sig2_1'].value", 0.00868, places=2)
+        self.isNear("out.params['del_e0'].value",    5.75,    places=1)
+        self.isNear("out.params['amp'].value",    0.933,  places=1)
+
+        self.isNear('path1.reff',    2.5478,  places=3)
+        self.isNear('path1.rmass',  31.773,   places=2)
+
+
+    def test16_feffit3(self):
+        self.runscript('doc_feffit3.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
+
+        self.isTrue('out.nfev > 15')
+        self.isTrue('out.nfev < 50')
+
+        self.isTrue('out.chi_square > 140')
+        self.isTrue('out.chi_square < 160')
+
+        self.isTrue('out.aic < 80')
+        self.isTrue('out.aic > 50')
+        self.isNear("out.params['theta'].value", 233.110, places=2)
+        self.isNear("out.params['del_e0'].value",    5.37,    places=1)
+        self.isNear("out.params['amp'].value",    0.869,  places=1)
+
+
+    def test17_feffit3extra(self):
+        self.runscript('doc_feffit3.lar', dirname='../examples/feffit/')
+        self.runscript('doc_feffit3_extra.lar', dirname='../examples/feffit/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isNear('_ave', 0.005030, places=4)
+        self.isNear('_dlo', 0.000315, places=4)
+
+
+
+
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestScripts,):
         suite = unittest.TestLoader().loadTestsFromTestCase(suite)

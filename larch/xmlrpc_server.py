@@ -15,6 +15,7 @@ from xmlrpc.client import ServerProxy
 from .interpreter import Interpreter
 from .site_config import uname
 from .utils.jsonutils import encode4js
+from .utils import uname
 
 try:
     import psutil
@@ -230,7 +231,7 @@ class LarchServer(SimpleXMLRPCServer):
     def cwd(self):
         """change directory"""
         ret = os.getcwd()
-        if sys.platform == 'win32':
+        if uname == 'win':
             ret = ret.replace('\\','/')
         return ret
 

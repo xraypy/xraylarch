@@ -5,7 +5,7 @@ import numpy
 from pyshortcuts import make_shortcut
 from pyshortcuts.shortcut import Shortcut
 
-from .site_config import larchdir, home_dir, uname
+from .site_config import icondir, home_dir, uname
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 
@@ -36,26 +36,25 @@ class LarchApp:
         self.name = name
         self.script = script
         icon_ext = 'ico'
-        if uname.startswith('darwin'):
+        if uname == 'darwin':
             icon_ext = 'icns'
         self.icon = "%s.%s" % (icon, icon_ext)
         self.terminal = terminal
         bindir = 'bin'
-        if uname.startswith('win'):
+        if uname == 'win':
             bindir = 'Scripts'
 
         self.bindir = os.path.join(sys.prefix, bindir)
-        self.icondir = os.path.join(larchdir, 'icons')
 
     def create_shortcut(self):
         try:
             script =os.path.join(self.bindir, self.script)
             scut = Shortcut(script, name=self.name, folder='Larch')
             make_shortcut(script, name=self.name,
-                          icon=os.path.join(self.icondir, self.icon),
+                          icon=os.path.join(icondir, self.icon),
                           terminal=self.terminal,
                           folder='Larch')
-            if uname.startswith('linux'):
+            if uname == 'linux':
                 os.chmod(scut.target, 493)
         except:
             print("Warning: could not create shortcut to ", self.script)
@@ -77,52 +76,50 @@ def make_desktop_shortcuts():
     for app in APPS:
         app.create_shortcut()
 
-
 # entry points:
 def run_gse_mapviewer():
     """GSE Mapviewer """
     use_mpl_wxagg()
-    from larch_plugins.wx import MapViewer
+    from larch.wxmap import MapViewer
     MapViewer().MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
     use_mpl_wxagg()
-    from larch_plugins.wx import DTViewer
+    from larch.wxmap import DTViewer
     DTViewer().MainLoop()
-
 
 def run_xas_viewer():
     """XAS Viewer """
     use_mpl_wxagg()
-    from larch_plugins.xasgui import XASViewer
+    from larch.wxxas import XASViewer
     XASViewer().MainLoop()
 
 
 def run_xrfdisplay():
     """ XRF Display"""
     use_mpl_wxagg()
-    from larch_plugins.wx import XRFApp
+    from larch.wxlib import XRFApp
     XRFApp().MainLoop()
 
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
     use_mpl_wxagg()
-    from larch_plugins.epics import EpicsXRFApp
+    from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
 
 def run_xrd1d_viewer():
     """XRD Display for 1D patternss"""
     use_mpl_wxagg()
-    from larch_plugins.diFFit.XRD1Dviewer import XRD1DViewer
+    from larch.wxxrd import XRD1DViewer
     XRD1DViewer().MainLoop()
 
 def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
     use_mpl_wxagg()
-    from larch_plugins.diFFit.XRD2Dviewer import XRD2DViewer
+    from larch.wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
 def run_dioptas_larch():
@@ -130,18 +127,15 @@ def run_dioptas_larch():
     from dioptas import main
     main()
 
-def run_gse_dtcorrect():
-    """GSE Deadtime corrections"""
-    use_mpl_wxagg()
-    from larch_plugins.wx import DTViewer
-    DTViewer().MainLoop()
-
+def run_feff6l():
+    "run feff6l"
+    from larch.xafs.feffrunner import feff6l_cli
+    feff6l_cli()
 
 def run_feff8l():
     "run feff8l"
-    from larch_plugins.xafs.feffrunner import feff8l_cli
+    from larch.xafs.feffrunner import feff8l_cli
     feff8l_cli()
-
 
 def run_larch_server():
     "run larch XMLRPC server"

@@ -1,0 +1,7 @@
+These shared libraries and executables here were modified using
+`install_name_tool` so that the local versions of the gfortran libs are
+found and used.  The resulting libs and executables rely only on each other
+and on /usr/lib/libSystem.B.dylib
+
+Use `pathfix.py` to generate the install_name_tool commands used to make
+this fix.

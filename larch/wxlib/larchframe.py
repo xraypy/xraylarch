@@ -7,7 +7,7 @@ from functools import partial
 import wx
 import numpy
 import scipy
-import matplotlib
+
 import larch
 
 from wxutils import (MenuItem, Font, Button, Choice)
@@ -18,9 +18,10 @@ from .columnframe import ColumnDataFileFrame
 from .athena_importer import AthenaImporter
 from . import inputhook
 
-from larch_plugins.io import (read_ascii, read_xdi, read_gsexdi,
-                              gsescan_group, fix_varname,
-                              is_athena_project, AthenaProject)
+from larch.io import (read_ascii, read_xdi, read_gsexdi,
+                      gsescan_group, fix_varname,
+                      is_athena_project, AthenaProject)
+from larch.version import make_banner
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
@@ -122,7 +123,7 @@ class LarchWxShell(object):
             return
         if self.textstyle is None:
             self.set_textstyle()
-        
+
         if self.output is None or self.textstyle is None:
             self.write_sys(text)
         else:
@@ -235,7 +236,7 @@ class LarchPanel(wx.Panel):
 
         self.objtree.SetRootObject(self.larchshell.symtable)
         self.larchshell.set_textstyle('text2')
-        self.larchshell.write(larch.make_banner())
+        self.larchshell.write(make_banner())
         self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
         root = self.objtree.tree.GetRootItem()
@@ -253,10 +254,11 @@ class LarchPanel(wx.Panel):
             wx.CallAfter(self.larchshell.eval, text)
 
 class LarchFrame(wx.Frame):
-    def __init__(self,  parent=None, _larch=None,
-                 historyfile='history_larchgui.lar',
-                 with_inspection=False, exit_on_close=False, **kwds):
+    def __init__(self, parent=None, _larch=None, is_standalone=True,
+                 historyfile='history_larchgui.lar', with_inspection=False,
+                 exit_on_close=False, **kwds):
 
+        self.is_standalone = is_standalone
         self.with_inspection = with_inspection
         self.parent = parent
         self.historyfile = historyfile
@@ -295,7 +297,8 @@ class LarchFrame(wx.Frame):
         self.BuildMenus()
 
         larchdir = larch.site_config.larchdir
-        fico = os.path.join(larchdir, 'icons', ICON_FILE)
+
+        fico = os.path.join(larch.site_config.icondir, ICON_FILE)
         if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
 
@@ -304,9 +307,12 @@ class LarchFrame(wx.Frame):
         self.Raise()
 
     def BuildMenus(self):
+        menuBar = wx.MenuBar()
+
         fmenu = wx.Menu()
-        MenuItem(self, fmenu, "&Read Data File\tCtrl+O",
-                 "Read Data File", self.onReadData)
+        if self.is_standalone:
+            MenuItem(self, fmenu, "&Read Data File\tCtrl+O",
+                     "Read Data File", self.onReadData)
         MenuItem(self, fmenu, "&Read and Run Larch Script\tCtrl+R",
                  "Read and Execute a Larch Script", self.onRunScript)
         MenuItem(self, fmenu, "&Save Session History\tCtrl+S",
@@ -326,9 +332,11 @@ class LarchFrame(wx.Frame):
         if self.parent is None:
             MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
 
-        appmenu = wx.Menu()
+        menuBar.Append(fmenu, '&File')
+
         _sys = self.larchshell.symtable._sys
-        if hasattr(_sys, 'gui_apps'):
+        if self.is_standalone and hasattr(_sys, 'gui_apps'):
+            appmenu = wx.Menu()
             x_apps = _sys.gui_apps.keys()
             for appname in sorted(x_apps):
                 label, creator = _sys.gui_apps[appname]
@@ -336,14 +344,11 @@ class LarchFrame(wx.Frame):
                 MenuItem(self, appmenu, label, label,
                          partial(self.show_subframe,
                                  name=appname, creator=creator))
+            menuBar.Append(appmenu, 'Applications')
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, '&About',
                  'Information about this program',  self.onAbout)
-
-        menuBar = wx.MenuBar()
-        menuBar.Append(fmenu, '&File')
-        menuBar.Append(appmenu, 'Applications')
         menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
 

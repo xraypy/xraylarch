@@ -21,7 +21,8 @@ from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
-from .utils import Closure
+from .closure import Closure
+from .utils import debugtime
 
 UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__globals__', '__code__',
                 '__closure__', '__func__', '__self__', '__module__',
@@ -99,8 +100,8 @@ class Interpreter:
 
     def __init__(self, symtable=None, input=None, writer=None,
                  with_plugins=True, historyfile=None, maxhistory=5000):
-
         self.symtable   = symtable or SymbolTable(larch=self)
+
         self.input      = input or InputText(_larch=self,
                                              historyfile=historyfile,
                                              maxhistory=maxhistory)
@@ -118,7 +119,6 @@ class Interpreter:
 
         # system-specific settings
         enable_plugins()
-
         site_config.system_settings()
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
@@ -134,16 +134,37 @@ class Interpreter:
         for fname, sym in list(builtins.numpy_renames.items()):
             setattr(mathgroup, fname, getattr(numpy, sym))
 
-        for groupname, entries in builtins.local_funcs.items():
-            group = getattr(self.symtable, groupname, None)
-            if group is not None:
-                for fname, fcn in list(entries.items()):
-                    setattr(group, fname,
-                            Closure(func=fcn, _larch=self, _name=fname))
+        core_groups = ['_main', '_sys', '_builtin', '_math']
+        for groupname, entries in builtins.init_builtins.items():
+            if groupname not in core_groups:
+                core_groups.append(groupname)
+            if self.symtable.has_group(groupname):
+                group = getattr(self.symtable, groupname, None)
+            else:
+                group = self.symtable.set_symbol(groupname,
+                                                 value=Group(__name__=groupname))
+            for fname, fcn in list(entries.items()):
+                setattr(group, fname,
+                        Closure(func=fcn, _larch=self, _name=fname))
+
+        self.symtable._sys.core_groups = core_groups
+        self.symtable._fix_searchGroups(force=True)
 
         # set valid commands from builtins
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
+
+        # run any initialization routines
+        for fcn in builtins.init_funcs:
+            if callable(fcn):
+                fcn(_larch=self)
+
+        for grp in builtins.init_groups:
+            self.symtable._sys.saverestore_groups.append(grp)
+
+        for groupname, docstring in builtins.init_moddocs.items():
+            group = self.symtable.get_group(groupname)
+            group.__doc__ = docstring
 
         self.on_try = self.on_tryexcept
         self.on_tryfinally = self.on_tryexcept
@@ -151,14 +172,8 @@ class Interpreter:
                                    for node in self.supported_nodes))
 
         if with_plugins: # add all plugins in standard plugins folder
-            plugins_dir = os.path.join(site_config.larchdir, 'plugins')
+            plugins_dir = os.path.join(site_config.usr_larchdir, 'plugins')
             loaded_plugins = []
-            for pname in site_config.core_plugins:
-                pdir = os.path.join(plugins_dir, pname)
-                if os.path.isdir(pdir):
-                    builtins._addplugin(pdir, _larch=self)
-                    loaded_plugins.append(pname)
-
             for pname in sorted(os.listdir(plugins_dir)):
                 if pname not in loaded_plugins:
                     pdir = os.path.join(plugins_dir, pname)
@@ -169,7 +184,6 @@ class Interpreter:
         reset_fiteval = getattr(mathgroup, 'reset_fiteval', None)
         if callable(reset_fiteval):
             reset_fiteval(_larch=self)
-
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
@@ -786,15 +800,9 @@ class Interpreter:
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
-        if sys.version_info[0] == 3:
-            excnode  = node.exc
-            msgnode  = node.cause
-        else:
-            excnode  = node.type
-            msgnode  = node.inst
-        out  = self.run(excnode)
+        out  = self.run(node.exc)
         msg = ' '.join(out.args)
-        msg2 = self.run(msgnode)
+        msg2 = self.run(node.cause)
         if msg2 not in (None, 'None'):
             msg = "%s: %s" % (msg, msg2)
         self.raise_exception(None, exc=out.__class__, msg=msg, expr='')

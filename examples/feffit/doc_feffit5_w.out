@@ -1,12 +1,12 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
-   nvarys, npts       = 7, 33120
-   n_independent      = 17.106
-   chi_square         = 514.771
-   reduced chi_square = 50.9348
-   r-factor           = 0.00659
-   Akaike info crit   = 72.235
-   Bayesian info crit = 78.1112
+   nvarys, npts       =  7, 33120
+   n_independent      =  17.106
+   chi_square         =  514.771493
+   reduced chi_square =  50.9347944
+   r-factor           =  0.00658874
+   Akaike info crit   =  72.2350047
+   Bayesian info crit =  78.1112062
  
 [[Data]]
    fit space          = 'w'
@@ -15,18 +15,18 @@
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.000995, std=0.002695)
-   epsilon_r          = 0.018803
+   epsilon_k          = Array(mean=9.9542e-04, std=0.00269518)
+   epsilon_r          = 0.01880273
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.585631 +/- 0.703238   (init= -1.186615)
-   delr_1         = -0.030202 +/- 0.007218   (init= -0.028279)
-   delr_2         =  0.047365 +/- 0.005778   (init=  0.049909)
-   n1             =  4.776567 +/- 0.859693   (init=  4.550833)
-   n2             =  11.505340 +/- 0.958908   (init=  10.986155)
-   sig2_1         =  0.011025 +/- 0.002265   (init=  0.010405)
-   sig2_2         =  0.012943 +/- 0.000820   (init=  0.012472)
+   de0            = -1.58563189 +/- 0.70323846   (init= -1.18661513)
+   delr_1         = -0.03020166 +/- 0.00721800   (init= -0.02827909)
+   delr_2         =  0.04736464 +/- 0.00577769   (init=  0.04990917)
+   n1             =  4.77656748 +/- 0.85969258   (init=  4.55083273)
+   n2             =  11.5053401 +/- 0.95890779   (init=  10.9861555)
+   sig2_1         =  0.01102487 +/- 0.00226469   (init=  0.01040495)
+   sig2_2         =  0.01294340 +/- 8.2024e-04   (init=  0.01247205)
  
 [[Correlations]]    (unreported correlations are <  0.500)
    n2, sig2_2           =  0.945

@@ -2,7 +2,8 @@
 """
  json utilities for larch objects
 """
-from .. import isParameter, Parameter, isgroup, Group
+from .. import isgroup, Group
+from ..fitting import isParameter, Parameter
 
 import numpy as np
 

@@ -1,0 +1,28 @@
+add_plugin('xrf_decon')
+
+a = read_gsemca('arab_seed3.mca')
+xrf_plot(a.energy, a.counts, mca=a)
+
+a.predict_pileup()
+xrf_oplot(a.energy, a.pileup)
+
+# en = a.energy
+# npts = len(en)
+# nhalf = int(npts/2) + 1
+#
+# pileup = convolve(a.counts/1.e4, a.counts/1e6, 'full')
+#
+# scale = max(a.counts[nhalf:])/max(pileup[nhalf:npts])
+#
+# pileup = scale*pileup[:npts+5]
+#
+# # print(len(pileup), scale)
+#
+# epileup = en[0] + arange(len(pileup))*(en[1] - en[0])
+#
+# a.pileup = interp(epileup, pileup, a.energy, kind='cubic')
+
+# xrf_deconvolve(a, form='gaussian', esigma=80.0)
+
+# plot(a.energy, a.counts, win=1, ylog_scale=True, new=True)
+# xrf_oplot(a.energy, a.deconv)

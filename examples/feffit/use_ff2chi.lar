@@ -1,19 +1,12 @@
-p1 = feffpath('feff0001.dat')
-
-p1.e0 = param('e0shift')
-p1.sigma2 = 0.008
-
-p2 = feffpath('feff0002.dat')
-
+p1 = feffpath('feff0001.dat', e0=0, sigma2=0.010)
 
 for i in range(5):
-    e0shift = -7 + 3*i
-    p1._calc_chi()
-    plot(p1.k, p1.chi*p1.k**2, label='e0= % .1f' % e0shift, new=i==0)
-endfor
+    e0 = -6 + 3*i
+    p1._calc_chi(e0=e0)
+    plot(p1.k, p1.chi*p1.k**2, label='e0= % .1f' % e0, new=i==0)
+#endfor
 
-p2.e0 = param('e0shift')
-p2.sigma2 = 0.008
+p2 = feffpath('feff0002.dat', e0=e0, sigma2=0.015)
 
 total = ff2chi([p1, p2])
 

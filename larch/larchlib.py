@@ -11,14 +11,16 @@ import inspect
 from collections import OrderedDict
 import ctypes
 import ctypes.util
-from .utils import Closure
+
 from .symboltable import Group, isgroup
-from .site_config import larchdir, usr_larchdir
+from .site_config import usr_larchdir
+from .closure import Closure
+from .utils import uname, bindir
 
 HAS_TERMCOLOR = False
 try:
     from termcolor import colored
-    if os.name == 'nt':
+    if uname == 'win':
         # HACK (hopefully temporary):
         # disable color output for Windows command terminal
         # because it interferes with wx event loop.
@@ -348,30 +350,12 @@ class Procedure(object):
         del lgroup
         return retval
 
-def plugin_path(val):
-    """return absolute path of a plugin folder - a convenience
-    for adding these paths to sys.path, as with
-
-    sys.path.insert(0, plugin_path('std'))
-    """
-    return os.path.abspath(os.path.join(larchdir, 'plugins', val))
-
-def use_plugin_path(val):
-    """include the specifed Larch plugin path in a module:
-
-    sys.path.insert(0, plugin_path(val))
-    """
-    ppath = plugin_path(val)
-    if ppath not in sys.path:
-        sys.path.insert(0, ppath)
-
 def enable_plugins():
     """add all available Larch plugin paths
     """
     if 'larch_plugins' not in sys.modules:
-        sys.path.insert(1, os.path.abspath(larchdir))
-        import plugins
-        sys.modules['larch_plugins'] = plugins
+        import larch
+        sys.modules['larch_plugins'] = larch
     return sys.modules['larch_plugins']
 
 def add2path(envvar='PATH', dirname='.'):
@@ -379,7 +363,7 @@ def add2path(envvar='PATH', dirname='.'):
     DYLD_LIBRARY_PATH, LD_LIBRARY_PATH environmental variables,
     returns previous definition of PATH, for restoration"""
     sep = ':'
-    if os.name == 'nt':
+    if uname == 'win':
         sep = ';'
     oldpath = os.environ.get(envvar, '')
     if oldpath == '':
@@ -390,21 +374,6 @@ def add2path(envvar='PATH', dirname='.'):
         os.environ[envvar] = sep.join(paths)
     return oldpath
 
-def get_dlldir():
-    import  os, sys
-    from platform import uname, architecture
-    system, node, release, version, mach, processor = uname()
-    arch = architecture()[0]
-    dlldir = None
-    suff = '32'
-    if arch.startswith('64'):  suff = '64'
-    if os.name == 'nt':
-        return 'win%s' % suff
-    elif system.lower().startswith('linux'):
-        return 'linux%s' % suff
-    elif system.lower().startswith('darwin'):
-        return 'darwin64'
-    return ''
 
 def isNamedClass(obj, cls):
     """this is essentially a replacement for
@@ -416,32 +385,17 @@ def isNamedClass(obj, cls):
 
 def get_dll(libname):
     """find and load a shared library"""
-    _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
-    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so', 'linux': 'lib%s.so',
+    _dylib_formats = {'win': '%s.dll', 'linux': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
 
-    thisdir = os.path.abspath(os.path.join(larchdir, 'dlls',
-                                           get_dlldir()))
-
-    dirs = [thisdir]
-
     loaddll = ctypes.cdll.LoadLibrary
-
-    if sys.platform == 'win32':
+    if uname == 'win':
         loaddll = ctypes.windll.LoadLibrary
-        dirs.append(larchdir)
-
-    if hasattr(sys, 'frozen'): # frozen with py2exe!!
-        dirs.append(os.path.dirname(sys.executable))
-
-    for key in _paths:
-        for d in dirs:
-            _paths[key] = add2path(key, d)
 
     # normally, we expect the dll to be here in the larch dlls tree
     # if we find it there, use that one
-    fname = _dylib_formats[sys.platform] % libname
-    dllpath = os.path.join(thisdir, fname)
+    fname = _dylib_formats[uname] % libname
+    dllpath = os.path.join(bindir, fname)
     if os.path.exists(dllpath):
         return loaddll(dllpath)
 
@@ -661,3 +615,12 @@ def ValidateLarchPlugin(fcn):
     wrapper.__filename__ = fcn.__code__.co_filename
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
+
+
+def ensuremod(_larch, modname=None):
+    "ensure that a group exists"
+    if _larch is not None:
+        symtable = _larch.symtable
+        if modname is not None and not symtable.has_group(modname):
+            symtable.newgroup(modname)
+        return symtable

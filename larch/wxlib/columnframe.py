@@ -19,7 +19,7 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
                      FRAMESTYLE, HLine, Font)
 
 import larch
-from larch import Group, Interpreter
+from larch import Group
 from larch.utils.strutils import fix_varname, file2groupname
 
 CEN |=  wx.ALL
@@ -35,7 +35,7 @@ CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
 
-class AddColumnsFrame(wx.Frame) :
+class AddColumnsFrame(wx.Frame):
     """Add Column Labels for a larch grouop"""
     def __init__(self, parent, group, on_ok=None):
         self.parent = parent
@@ -547,7 +547,7 @@ class ColumnDataFileFrame(wx.Frame) :
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
         _larch = self._larch
-        if (not isinstance(_larch, Interpreter) and
+        if (not isinstance(_larch, larch.Interpreter) and
             hasattr(_larch, '_larch')):
             _larch = _larch._larch
         try:
