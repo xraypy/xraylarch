@@ -1199,7 +1199,7 @@ class GSEXRM_MapFile(object):
             en  = 1.0*offset[0] + slope[0]*1.0*en_index
             self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
                                                      'cal_slope': slope[0]})
-            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.float32,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan), **self.compress_args)
 
