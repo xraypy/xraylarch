@@ -32,7 +32,7 @@ except ImportError:
 class shell(cmd.Cmd):
     def __init__(self,  completekey='tab', debug=False, quiet=False,
                  stdin=None, stdout=None, banner_msg=None,
-                 maxhist=5000, with_wx=False, with_plugins=True):
+                 maxhist=25000, with_wx=False, with_plugins=True):
 
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
