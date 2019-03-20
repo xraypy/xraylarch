@@ -1199,7 +1199,7 @@ class GSEXRM_MapFile(object):
             en  = 1.0*offset[0] + slope[0]*1.0*en_index
             self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
                                                      'cal_slope': slope[0]})
-            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.float32,
+            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.float64,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan), **self.compress_args)
 
@@ -2312,15 +2312,14 @@ class GSEXRM_MapFile(object):
         nx, ny = (xmax-xmin), (ymax-ymin)
         NCHUNKSIZE = 16384 # 8192
         use_chunks = nx*ny > NCHUNKSIZE
-        step = int((nx*ny)/NCHUNKSIZE)
-
+        step = 1 + int((nx*ny)/NCHUNKSIZE)
         if not use_chunks:
             try:
-                if hasattr(callback , '__call__'):
+                if callable(callback):
                     callback(1, 1, nx*ny)
                 counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
-                                           mapdat=mapdat, area=area,
-                                           dtcorrect=dtcorrect)
+                                              mapdat=mapdat, area=area,
+                                              dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
         if use_chunks:
@@ -2330,7 +2329,7 @@ class GSEXRM_MapFile(object):
                     x1 = xmin + int(i*nx/step)
                     x2 = min(xmax, xmin + int((i+1)*nx/step))
                     if x1 >= x2: break
-                    if hasattr(callback , '__call__'):
+                    if callable(callback):
                         callback(i, step, (x2-x1)*ny)
                     counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
                                                 det=det, area=area,
@@ -2340,7 +2339,8 @@ class GSEXRM_MapFile(object):
                     y1 = ymin + int(i*ny/step)
                     y2 = min(ymax, ymin + int((i+1)*ny/step))
                     if y1 >= y2: break
-                    if hasattr(callback , '__call__'):
+                    print(y1, y2, xmin, xmax)
+                    if callable(callback):
                         callback(i, step, nx*(y2-y1))
                     counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
                                                 det=det, area=area,
@@ -2418,7 +2418,6 @@ class GSEXRM_MapFile(object):
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-
         nchan = None
         try:
             ix, iy, nchan = mapdat['counts'].shape
@@ -2435,7 +2434,7 @@ class GSEXRM_MapFile(object):
         if mapdat is None or 'sum' in det:
             counts = np.zeros(counts.shape)
             if dtcorrect:
-                for _idet in range(1, self.ndet):
+                for _idet in range(1, self.ndet+1):
                     _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
@@ -2444,7 +2443,7 @@ class GSEXRM_MapFile(object):
                     dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
                     counts += _cts * dtfact
             else:
-                for _idet in range(1, self.ndet):
+                for _idet in range(1, self.ndet+1):
                     _md    = self._det_group(_idet)
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
@@ -2455,9 +2454,9 @@ class GSEXRM_MapFile(object):
                 dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
                 dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
                 counts = counts * dtfact
-            #else:
-            #    cell   = mapdat['counts'].regionref[sy, sx, :]
-            #    counts = mapdat['counts'][cell].reshape(ny, nx)
+            else:
+                cell   = mapdat['counts'].regionref[sy, sx, :]
+                counts = mapdat['counts'][cell].reshape(ny, nx, nchan)
 
         if area is not None:
             counts = counts[area[sy, sx]]
@@ -2970,7 +2969,6 @@ class GSEXRM_MapFile(object):
 
     def get_roimap(self, roiname, det=None, hotcols=False, dtcorrect=True):
         '''extract roi map for a pre-defined roi by name
-
         Parameters
         ---------
         roiname    :  str                       ROI name
@@ -2982,7 +2980,6 @@ class GSEXRM_MapFile(object):
         -------
         ndarray for ROI data
         '''
-
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
@@ -2992,12 +2989,11 @@ class GSEXRM_MapFile(object):
                 out = out[1:-1]
             return out
         if det is None:
-            dtcorrect = False
+            dtcorrect = True
         else:
             dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         roi, detaddr = self.check_roi(roiname, det)
-
         ext = 'cor' if dtcorrect else 'raw'
         if detaddr.startswith('scal'):
             ext = ''
@@ -3008,7 +3004,6 @@ class GSEXRM_MapFile(object):
                 roi_ext = '%s/' + ext
             else:
                 roi_ext = '%s_' + ext if ext is 'raw' else '%s'
-
             roiaddr =  roi_ext % roi
             out = self.xrmmap[detaddr][roiaddr][:]
             if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
@@ -3019,8 +3014,6 @@ class GSEXRM_MapFile(object):
                 # print(" cache roimap ", detaddr, roiaddr, nrow, ncol, out.max(), out.mean())
                 self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                 self.xrmmap[detaddr][roiaddr][:, :] = out
-
-
         else:  # version1
             detname = '%s%s' % (detaddr, ext)
             out = self.xrmmap[detname][:, :, roi]
