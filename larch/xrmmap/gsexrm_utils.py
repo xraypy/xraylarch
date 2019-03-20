@@ -428,12 +428,12 @@ class GSEXRM_MapRow:
             self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
             self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
 
-            iy, ix = self.dtfactor.shape
-            self.total = (self.counts * self.dtfactor.reshape(iy, ix, 1)).sum(axis=1)
             self.dtfactor = self.dtfactor.astype('float32').swapaxes(0, 1)
             self.inpcounts= self.inpcounts.swapaxes(0, 1)
             self.outcounts= self.outcounts.swapaxes(0, 1)
             self.livetime = self.livetime.swapaxes(0, 1)
             self.realtime = self.realtime.swapaxes(0, 1)
             self.counts   = self.counts.swapaxes(0, 1)
+            iy, ix = self.dtfactor.shape
+            self.total = (self.counts * self.dtfactor.reshape(iy, ix, 1)).sum(axis=0)
         self.read_ok = True
