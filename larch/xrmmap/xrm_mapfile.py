@@ -2352,8 +2352,8 @@ class GSEXRM_MapFile(object):
                                               dtcorrect=dtcorrect)
 
         counts = counts[area[ymin:ymax, xmin:xmax]]
-        ltime = ltime[area[ymin:ymax, xmin:xmax]]
-        rtime = rtime[area[ymin:ymax, xmin:xmax]]
+        ltime = ltime[area[ymin:ymax, xmin:xmax]].sum()
+        rtime = rtime[area[ymin:ymax, xmin:xmax]].sum()
 
         return self._getmca(dgroup, counts, areaname, npixels=npixels,
                             real_time=rtime, live_time=ltime)
@@ -2385,7 +2385,7 @@ class GSEXRM_MapFile(object):
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect)
         return self._getmca(dgroup, counts, name, npixels=npix,
-                            real_time=rtime, live_time=ltime)
+                            real_time=rtime.sum(), live_time=ltime.sum())
 
     def get_counts_rect_old(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
                         area=None, dtcorrect=True, tomo=False):
@@ -2525,8 +2525,8 @@ class GSEXRM_MapFile(object):
             livetime = dmap['livetime'][sy, sx]
             realtime = dmap['realtime'][sy, sx]
 
-        livetime = 1.e-6*livetime.sum()
-        realtime = 1.e-6*realtime.sum()
+        livetime = 1.e-6*livetime
+        realtime = 1.e-6*realtime
         return livetime, realtime
 
     def _getmca(self, dgroup, counts, name, npixels=None, tomo=False, **kws):
