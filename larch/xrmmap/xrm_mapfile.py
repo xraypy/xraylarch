@@ -217,6 +217,25 @@ def ensure_subgroup(subgroup,group):
 
 
 
+def get_tomo_detector(xrmmap, mapversion, det):
+    tomogrp = ensure_subgroup('tomo', xrmmap)
+    detlist = build_detector_list(tomogrp)
+    if len(detlist) < 1:
+        return None
+
+    if det in detlist:
+        detname = det
+    elif det is None:
+        detname = detlist[0]
+    elif (type(det) is str and det.isdigit()) or type(det) is int:
+        det = int(det)
+        detname = 'det%i' % det
+        if version_ge(self.version, '2.0.0'):
+            detname = detname.replace('det','mca')
+    else:
+        return None
+
+    return 'tomo/%s' % detname
 
 def build_datapath_list(xrmmap):
 
@@ -2252,7 +2271,48 @@ class GSEXRM_MapFile(object):
         ny, nx, npos = self.xrmmap['positions/pos'].shape
         return ny, nx
 
-    def get_mca_area(self, areaname, det=None, dtcorrect=True, callback=None, tomo=False):
+    def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None,
+                        det=None, dtcorrect=True):
+        '''return counts for a map rectangle, optionally
+        applying area mask and deadtime correction
+
+        Parameters
+        ---------
+        ymin :       int       low y index
+        ymax :       int       high y index
+        xmin :       int       low x index
+        xmax :       int       high x index
+        mapdat :     optional, None or map data
+        det :        optional, None or int         index of detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+
+        Returns
+        -------
+        ndarray for XRF counts in rectangle
+
+        Does *not* check for errors!
+
+        Note:  if mapdat is None, the map data is taken from the 'det' parameter
+        '''
+        if mapdat is None:
+            if det is None:
+                return None
+            mapdat = self._det_group(det)
+
+        nx, ny = (xmax-xmin, ymax-ymin)
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
+
+        if len(mapdat['counts'].shape) == 4:
+            counts = mapdat['counts'][sy, sx, :, :]
+        else:
+            counts = mapdat['counts'][sy, sx, :]
+
+        if dtcorrect and 'dtfactor' in mapdat.keys():
+            counts *= mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
+        return counts
+
+    def get_mca_area(self, areaname, det=None, dtcorrect=True, tomo=False):
         '''return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
 
@@ -2266,89 +2326,38 @@ class GSEXRM_MapFile(object):
         MCA object for XRF counts in area
 
         '''
-
         try:
             area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
+        npixels = area.sum()
+        if npixels < 1:
+            return None
+
         if tomo:
-            tomogrp = ensure_subgroup('tomo',self.xrmmap)
-            detlist = build_detector_list(tomogrp)
-            if len(detlist) < 1:
+            det = get_tomo_detector(self.xrmmap, self.version, det)
+            dtcorrect = False
+            if dgroup is None:
                 return
-
-            if det in detlist:
-                detname = det
-            elif det is None:
-                detname = detlist[0]
-            elif (type(det) is str and det.isdigit()) or type(det) is int:
-                det = int(det)
-                detname = 'det%i' % det
-                if version_ge(self.version, '2.0.0'):
-                    detname = detname.replace('det','mca')
-            else:
-                return
-
-            dgroup = 'tomo/%s' % detname
-
-            try:
-                mapdat = self.xrmmap[dgroup]
-                dtcorrect = False
-            except:
-                return
-
+            dgroup = det
         else:
             dgroup = self._det_name(det)
-            mapdat = self._det_group(det)
 
-        ix, iy, nmca = mapdat['counts'].shape
+        # first get data for bounding rectangle
+        _ay, _ax = np.where(area)
+        ymin, ymax, xmin, xmax = _ay.min(), _ay.max()+1, _ax.min(), _ax.max()+1
 
-        npix = len(np.where(area)[0])
-        if npix < 1:
-            return None
-        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
-        nx, ny = (xmax-xmin), (ymax-ymin)
-        NCHUNKSIZE = 16384 # 8192
-        use_chunks = nx*ny > NCHUNKSIZE
-        step = 1 + int((nx*ny)/NCHUNKSIZE)
-        if not use_chunks:
-            try:
-                if callable(callback):
-                    callback(1, 1, nx*ny)
-                counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
-                                              mapdat=mapdat, area=area,
-                                              dtcorrect=dtcorrect)
-            except MemoryError:
-                use_chunks = True
-        if use_chunks:
-            counts = np.zeros(nmca)
-            if nx > ny:
-                for i in range(step+1):
-                    x1 = xmin + int(i*nx/step)
-                    x2 = min(xmax, xmin + int((i+1)*nx/step))
-                    if x1 >= x2: break
-                    if callable(callback):
-                        callback(i, step, (x2-x1)*ny)
-                    counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
-                                                det=det, area=area,
-                                                dtcorrect=dtcorrect)
-            else:
-                for i in range(step+1):
-                    y1 = ymin + int(i*ny/step)
-                    y2 = min(ymax, ymin + int((i+1)*ny/step))
-                    if y1 >= y2: break
-                    print(y1, y2, xmin, xmax)
-                    if callable(callback):
-                        callback(i, step, nx*(y2-y1))
-                    counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
-                                                det=det, area=area,
-                                                dtcorrect=dtcorrect)
-
+        counts = self.get_counts_rect(ymin, ymax, xmin, xmax, det=det,
+                                      dtcorrect=dtcorrect)
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
-                                              dtcorrect=dtcorrect, area=area)
-        return self._getmca(dgroup, counts, areaname, npixels=npix,
+                                              dtcorrect=dtcorrect)
+
+        counts = counts[area[ymin:ymax, xmin:xmax]]
+        ltime = ltime[area[ymin:ymax, xmin:xmax]]
+        rtime = rtime[area[ymin:ymax, xmin:xmax]]
+
+        return self._getmca(dgroup, counts, areaname, npixels=npixels,
                             real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
@@ -2376,12 +2385,11 @@ class GSEXRM_MapFile(object):
         name = 'rect(y=[%i:%i], x==[%i:%i])' % (ymin, ymax, xmin, xmax)
         npix = (ymax-ymin+1)*(xmax-xmin+1)
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
-                                              dtcorrect=dtcorrect, area=None)
-
+                                              dtcorrect=dtcorrect)
         return self._getmca(dgroup, counts, name, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
-    def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
+    def get_counts_rect_old(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
                         area=None, dtcorrect=True, tomo=False):
         '''return counts for a map rectangle, optionally
         applying area mask and deadtime correction
@@ -2405,7 +2413,7 @@ class GSEXRM_MapFile(object):
 
         Note:  if mapdat is None, the map data is taken from the 'det' parameter
         '''
-
+        dt = debugtime()
         if mapdat is None:
             mapdat = self._det_group(det)
         det = os.path.split(mapdat.name)[-1]
@@ -2423,15 +2431,21 @@ class GSEXRM_MapFile(object):
             ix, iy, nchan = mapdat['counts'].shape
         except:
             ix, iy, pixx, pixy = mapdat['counts'].shape
-        cell   = mapdat['counts'].regionref[sy, sx, :]
-        counts = mapdat['counts'][cell]
 
+        dt.add('got shapes ')
+
+        cell   = mapdat['counts'].regionref[sy, sx, :]
+        dt.add('got regionref ')
+        counts = mapdat['counts'][cell]
+        dt.add('got counts: %s, %s' % (det, mapdat.name) )
+        print("Counts 1 ", det, mapdat.name, counts.sum())
         if nchan is None:
             counts = counts.reshape(ny, nx, pixx, pixy)
         else:
             counts = counts.reshape(ny, nx, nchan)
-
-        if mapdat is None or 'sum' in det:
+        dt.add('reshaped ')
+        if (mapdat is None or 'sum' in det):
+            dt.add('sum...  ')
             counts = np.zeros(counts.shape)
             if dtcorrect:
                 for _idet in range(1, self.ndet+1):
@@ -2448,7 +2462,9 @@ class GSEXRM_MapFile(object):
                     cell   = _md['counts'].regionref[sy, sx, :]
                     _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
                     counts += _cts
+            dt.add(' got counts(sum)')
         elif mapdat is not None:
+            dt.add(' not sum')
             if dtcorrect:
                 cell   = mapdat['dtfactor'].regionref[sy, sx]
                 dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
@@ -2457,15 +2473,20 @@ class GSEXRM_MapFile(object):
             else:
                 cell   = mapdat['counts'].regionref[sy, sx, :]
                 counts = mapdat['counts'][cell].reshape(ny, nx, nchan)
+            dt.add(' got counts(no sum)')
 
         if area is not None:
             counts = counts[area[sy, sx]]
         else:
             counts = counts.sum(axis=0)
-        return counts.sum(axis=0)
+        out = counts.sum(axis=0)
+        dt.add(' summed and read\n')
+        dt.show()
+        print("Counts 2 ", det, mapdat.name, out.sum())
+        return out
 
     def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None,
-                          area=None, dtcorrect=True):
+                          dtcorrect=True):
         '''return livetime, realtime for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2477,7 +2498,6 @@ class GSEXRM_MapFile(object):
         xmax :       int       high x index
         det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
-        area :       optional, None or area object  area for mask
 
         Returns
         -------
@@ -2506,9 +2526,6 @@ class GSEXRM_MapFile(object):
             dmap = self._det_group(det)
             livetime = dmap['livetime'][sy, sx]
             realtime = dmap['realtime'][sy, sx]
-        if area is not None:
-            livetime = livetime[area[sy, sx]]
-            realtime = realtime[area[sy, sx]]
 
         livetime = 1.e-6*livetime.sum()
         realtime = 1.e-6*realtime.sum()
@@ -2592,67 +2609,36 @@ class GSEXRM_MapFile(object):
         diffraction pattern for given area
 
         '''
-
         try:
             area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
-        npix = len(np.where(area)[0])
+        npix = area.sum()
         if npix < 1:
             return None
 
         stps, xpix, ypix, qdat = 0,0,0,None
 
-        xrddir   = 'xrd1d' if '1' in xrd else 'xrd2d'
+        xrddir   = 'xrd1d' if '1d' in xrd.lower() else 'xrd2d'
         mapdat   = self.xrmmap[xrddir]
         xrdshape = mapdat['counts'].shape
         mapname  = mapdat.name
 
-        try:
-            qdat = mapdat['q']
-        except:
-            pass
+        qdat = mapdat['q']
 
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
-        NCHUNKSIZE = 16384 # 8192
-        use_chunks = nx*ny > NCHUNKSIZE
-        step = int((nx*ny)/NCHUNKSIZE)
 
-        if not use_chunks:
-            try:
-                if hasattr(callback , '__call__'):
-                    callback(1, 1, nx*ny)
-                counts = self.get_counts_rect(ymin, ymax, xmin, xmax, area=area,
-                                                mapdat=mapdat, dtcorrect=False)
-            except MemoryError:
-                use_chunks = True
-        if use_chunks:
-            counts = np.zeros(xrdshape[2:])
-            if nx > ny:
-                for i in range(step+1):
-                    x1 = xmin + int(i*nx/step)
-                    x2 = min(xmax, xmin + int((i+1)*nx/step))
-                    if x1 >= x2: break
-                    if hasattr(callback , '__call__'):
-                        callback(i, step, (x2-x1)*ny)
-                    counts += self.get_counts_rect(ymin, ymax, x1, x2, area=area,
-                                                     mapdat=mapdat, dtcorrect=False)
-            else:
-                for i in range(step+1):
-                    y1 = ymin + int(i*ny/step)
-                    y2 = min(ymax, ymin + int((i+1)*ny/step))
-                    if y1 >= y2: break
-                    if hasattr(callback , '__call__'):
-                        callback(i, step, nx*(y2-y1))
-                    counts += self.get_counts_rect(y1, y2, xmin, xmax, area=area,
-                                                     mapdat=mapdat, dtcorrect=False)
+        counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
+                                      mapdat=mapdat, dtcorrect=False)
+        counts = counts[area[ymin:ymax, xmin:xmax]]
+
         if qdat is not None:
-            counts = np.array([qdat,counts])
-
+            counts = np.array([qdat, counts])
         return self._getXRD(mapname, counts, areaname, xrddir, **kws)
+
 
     def _getXRD(self, mapname, data, areaname, xrddir, **kws):
 
