@@ -2295,8 +2295,6 @@ class GSEXRM_MapFile(object):
         Note:  if mapdat is None, the map data is taken from the 'det' parameter
         '''
         if mapdat is None:
-            if det is None:
-                return None
             mapdat = self._det_group(det)
 
         nx, ny = (xmax-xmin, ymax-ymin)
