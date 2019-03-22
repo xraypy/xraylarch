@@ -2350,11 +2350,11 @@ class GSEXRM_MapFile(object):
                                       dtcorrect=dtcorrect)
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect)
-
         counts = counts[area[ymin:ymax, xmin:xmax]]
         ltime = ltime[area[ymin:ymax, xmin:xmax]].sum()
         rtime = rtime[area[ymin:ymax, xmin:xmax]].sum()
-
+        while(len(counts.shape) > 1):
+            counts = counts.sum(axis=0)
         return self._getmca(dgroup, counts, areaname, npixels=npixels,
                             real_time=rtime, live_time=ltime)
 
@@ -2387,101 +2387,6 @@ class GSEXRM_MapFile(object):
         return self._getmca(dgroup, counts, name, npixels=npix,
                             real_time=rtime.sum(), live_time=ltime.sum())
 
-    def get_counts_rect_old(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
-                        area=None, dtcorrect=True, tomo=False):
-        '''return counts for a map rectangle, optionally
-        applying area mask and deadtime correction
-
-        Parameters
-        ---------
-        ymin :       int       low y index
-        ymax :       int       high y index
-        xmin :       int       low x index
-        xmax :       int       high x index
-        mapdat :     optional, None or map data
-        det :        optional, None or int         index of detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        area :       optional, None or area object  area for mask
-
-        Returns
-        -------
-        ndarray for XRF counts in rectangle
-
-        Does *not* check for errors!
-
-        Note:  if mapdat is None, the map data is taken from the 'det' parameter
-        '''
-        dt = debugtime()
-        if mapdat is None:
-            mapdat = self._det_group(det)
-        det = os.path.split(mapdat.name)[-1]
-
-        if bytes2str(mapdat.attrs.get('type', '')).startswith('xrd'):
-            dtcorrect = False
-        elif tomo:
-            dtcorrect = False
-
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-        nchan = None
-        try:
-            ix, iy, nchan = mapdat['counts'].shape
-        except:
-            ix, iy, pixx, pixy = mapdat['counts'].shape
-
-        dt.add('got shapes ')
-
-        cell   = mapdat['counts'].regionref[sy, sx, :]
-        dt.add('got regionref ')
-        counts = mapdat['counts'][cell]
-        dt.add('got counts: %s, %s' % (det, mapdat.name) )
-        print("Counts 1 ", det, mapdat.name, counts.sum())
-        if nchan is None:
-            counts = counts.reshape(ny, nx, pixx, pixy)
-        else:
-            counts = counts.reshape(ny, nx, nchan)
-        dt.add('reshaped ')
-        if (mapdat is None or 'sum' in det):
-            dt.add('sum...  ')
-            counts = np.zeros(counts.shape)
-            if dtcorrect:
-                for _idet in range(1, self.ndet+1):
-                    _md    = self._det_group(_idet)
-                    cell   = _md['counts'].regionref[sy, sx, :]
-                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                    cell   = _md['dtfactor'].regionref[sy, sx]
-                    dtfact = _md['dtfactor'][cell].reshape(ny, nx)
-                    dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                    counts += _cts * dtfact
-            else:
-                for _idet in range(1, self.ndet+1):
-                    _md    = self._det_group(_idet)
-                    cell   = _md['counts'].regionref[sy, sx, :]
-                    _cts   = _md['counts'][cell].reshape(ny, nx, nchan)
-                    counts += _cts
-            dt.add(' got counts(sum)')
-        elif mapdat is not None:
-            dt.add(' not sum')
-            if dtcorrect:
-                cell   = mapdat['dtfactor'].regionref[sy, sx]
-                dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = counts * dtfact
-            else:
-                cell   = mapdat['counts'].regionref[sy, sx, :]
-                counts = mapdat['counts'][cell].reshape(ny, nx, nchan)
-            dt.add(' got counts(no sum)')
-
-        if area is not None:
-            counts = counts[area[sy, sx]]
-        else:
-            counts = counts.sum(axis=0)
-        out = counts.sum(axis=0)
-        dt.add(' summed and read\n')
-        dt.show()
-        print("Counts 2 ", det, mapdat.name, out.sum())
-        return out
 
     def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None,
                           dtcorrect=True):
