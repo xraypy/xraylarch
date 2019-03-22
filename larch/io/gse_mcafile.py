@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 
 from larch import Group
-
+from larch.xrf import MCA, ROI
 
 def str2floats(s, delim='&'):
     s = s.replace('&', ' ')
@@ -37,7 +37,6 @@ class GSEMCA_File(Group):
     """
     def __init__(self, filename=None, bad=None, **kws):
 
-        from larch.xrf import MCA, ROI
 
         kwargs = {'name': 'GSE MCA File: %s' % filename}
         kwargs.update(kws)
@@ -119,6 +118,7 @@ class GSEMCA_File(Group):
 
     def read(self, filename=None, bad=None):
         """read GSE MCA file"""
+
         self.filename = filename
         if bad is None:
             bad = self.bad
