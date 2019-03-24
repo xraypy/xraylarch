@@ -21,9 +21,24 @@ from numpy import gradient, ndarray, diff, where, arange
 from larch import Group
 from larch.math import (index_of, index_nearest, interp)
 
-from ..wxlib.plotter import (_getDisplay, _plot, _oplot, _newplot,
-                             _fitplot, _plot_text, _plot_marker,
-                             _plot_arrow, _plot_axvline, _plot_axhline)
+try:
+    import wx
+    HAS_WXPYTHON = True
+except ImportError:
+    HAS_WXPYTHON = False
+
+if HAS_WXPYTHON:
+    from ..wxlib.plotter import (_getDisplay, _plot, _oplot, _newplot,
+                                 _fitplot, _plot_text, _plot_marker,
+                                 _plot_arrow, _plot_axvline, _plot_axhline)
+else:
+    def nullfunc(*args, **kws): pass
+
+    _getDisplay = _plot = _oplot = _newplot = nullfunc
+    _fitplot = _plot_text = _plot_marker = nullfunc
+    _plot_arrow = _plot_axvline = _plot_axhline = nullfunc
+
+
 
 LineColors = ('#1f77b4', '#d62728', '#2ca02c', '#ff7f0e', '#9467bd',
               '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')

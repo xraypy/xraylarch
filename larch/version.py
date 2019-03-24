@@ -25,11 +25,12 @@ def make_banner():
 
     reqs = []
     for mod in (numpy, scipy, matplotlib, lmfit, wx):
-        try:
-            vers = "%s %s" % (mod.__name__, mod.__version__)
-        except:
-            vers = "%s not available" % (mod.__name__)
-        reqs.append(vers)
+        if mod is not None:
+            try:
+                vers = "%s %s" % (mod.__name__, mod.__version__)
+            except:
+                vers = "%s not available" % (mod.__name__)
+            reqs.append(vers)
     lines.append(', '.join(reqs))
 
     linelen = max([len(line) for line in lines])

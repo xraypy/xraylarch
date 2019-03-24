@@ -42,11 +42,12 @@ try:
 except ImportError:
     HAS_WXPYTHON = False
 
+from . import wxlib
+__core_modules.extend([wxlib])
 if HAS_WXPYTHON:
-    from . import wxlib
     from .wxlib import plotter
     from . import wxmap, wxxas, wxxrd
-    __core_modules.extend([wxlib, plotter, wxmap, wxxas, wxxrd])
+    __core_modules.extend([plotter, wxmap, wxxas, wxxrd])
 
 
 PLUGINSTXT = 'plugins.txt'

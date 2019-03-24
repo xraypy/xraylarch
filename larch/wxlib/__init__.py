@@ -132,3 +132,36 @@ if HAS_WXPYTHON:
         os.system = my_system
         os.startfile = my_startfile
     #############################
+
+else:
+    def nullfunc(*args, **kws):
+        pass
+
+    _larch_builtins = {'_sys.wx': dict(gcd=nullfunc,
+                                       databrowser=nullfunc,
+                                       filepromspt=nullfunc,
+                                       wx_update=nullfunc)}
+
+    _larch_builtins['_plotter'] = dict(plot=nullfunc,
+                                       oplot=nullfunc,
+                                       newplot=nullfunc,
+                                       plot_text=nullfunc,
+                                       plot_marker=nullfunc,
+                                       plot_arrow=nullfunc,
+                                       plot_setlimits=nullfunc,
+                                       plot_axvline=nullfunc,
+                                       plot_axhline=nullfunc,
+                                       scatterplot=nullfunc,
+                                       hist=nullfunc,
+                                       update_trace=nullfunc,
+                                       save_plot=nullfunc,
+                                       save_image=nullfunc,
+                                       get_display=nullfunc,
+                                       close_all_displays=nullfunc,
+                                       get_cursor=nullfunc,
+                                       last_cursor_pos=nullfunc,
+                                       imshow=nullfunc,
+                                       contour=nullfunc,
+                                       xrf_plot=nullfunc,
+                                       xrf_oplot=nullfunc,
+                                       fit_plot=nullfunc)
