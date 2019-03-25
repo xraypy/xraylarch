@@ -328,9 +328,8 @@ class MapPanel(GridPanel):
         if xrmfile is None:
             xrmfile = self.owner.current_file
 
-        args={'hotcols'   : self.owner.hotcols,
-              'dtcorrect' : self.owner.dtcor}
-
+        args={'hotcols'   : xrmfile.hotcols,
+              'dtcorrect' : xrmfile.dtcorrect}
 
         det_name,roi_name = [],[]
         plt_name = []
@@ -420,10 +419,11 @@ class MapPanel(GridPanel):
 
     def ShowCorrel(self, xrmfile=None, new=True):
 
-        if xrmfile is None: xrmfile = self.owner.current_file
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
 
-        args={'hotcols'   : self.owner.hotcols,
-              'dtcorrect' : self.owner.dtcor}
+        args={'hotcols'   : xrmfile.hotcols,
+              'dtcorrect' : xrmfile.dtcorrect}
         det_name,roi_name = [],[]
         plt_name = []
 
@@ -1334,7 +1334,7 @@ class MapViewerFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
         self.files_in_progress = []
 
-        self.hotcols = False
+        # self.hotcols = False
         self.dtcor   = True
         self.showxrd = False
 
@@ -1622,7 +1622,12 @@ class MapViewerFrame(wx.Frame):
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
                     det=None, subtitles=None, xrmfile=None, with_savepos=True):
         """display a map in an available image display"""
-        if x is not None and self.hotcols and map.shape[1] != x.shape[0]:
+
+        if xrmfile is None:
+            hotcols = False
+        else:
+            hotcols = xrmfile.hotcols
+        if x is not None and hotcols and map.shape[1] != x.shape[0]:
             x = x[1:-1]
 
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
@@ -1741,40 +1746,11 @@ class MapViewerFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
 
-        MenuItem(self, fmenu, '&Open XRM Map File\tCtrl+O',
-                 'Read XRM Map File',  self.onReadFile)
-        MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F',
-                 'Read XRM Map Folder',  self.onReadFolder)
-        MenuItem(self, fmenu, 'Change &Working Folder',
-                  'Choose working directory',
-                  self.onFolderSelect)
+        MenuItem(self, fmenu, '&Open XRM Map File\tCtrl+O',  'Read XRM Map File',  self.onReadFile)
+        MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F', 'Read XRM Map Folder',  self.onReadFolder)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
-                 'Show Larch Programming Buffer',
-                 self.onShowLarchBuffer)
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Define new ROI',
-                 'Define new ROI',  self.defineROI)
-        MenuItem(self, fmenu, 'Load ROI File for 1DXRD',
-                 'Load ROI File for 1DXRD',  self.add1DXRDFile)
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Load XRD calibration file',
-                 'Load XRD calibration file',  self.openPONI)
-        MenuItem(self, fmenu, 'Add 1DXRD for HDF5 file',
-                 'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
-        fmenu.AppendSeparator()
-
-        cmenu = fmenu.Append(-1, 'Correct Deadtime',
-                             'Correct Deadtime',
-                             kind=wx.ITEM_CHECK)
-        fmenu.Check(cmenu.Id, self.dtcor) ## True
-        self.Bind(wx.EVT_MENU, self.onCorrectDeadtime, id=cmenu.Id)
-
-        cmenu = fmenu.Append(-1, 'Ignore First/Last Columns',
-                             'Ignore First/Last Columns',
-                             kind=wx.ITEM_CHECK)
-        fmenu.Check(cmenu.Id, self.hotcols) ## False
-        self.Bind(wx.EVT_MENU, self.onHotColumns, id=cmenu.Id)
+        MenuItem(self, fmenu, 'Change &Working Folder',    'Choose working directory',        self.onFolderSelect)
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L', 'Show Larch Programming Buffer',  self.onShowLarchBuffer)
 
         cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W',
                              'Watch HDF5 Files',
@@ -1782,20 +1758,34 @@ class MapViewerFrame(wx.Frame):
         fmenu.Check(cmenu.Id, self.watch_files) ## False
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=cmenu.Id)
 
-        cmenu = fmenu.Append(-1, 'Display 1DXRD for areas',
-                            'Display 1DXRD for areas',
-                             kind=wx.ITEM_CHECK)
-        fmenu.Check(cmenu.Id, self.showxrd) ## False
-        self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=cmenu.Id)
-
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, '&Quit\tCtrl+Q',
                   'Quit program', self.onClose)
+
+        rmenu = wx.Menu()
+        MenuItem(self, rmenu, 'Define new ROI',
+                 'Define new ROI',  self.defineROI)
+        MenuItem(self, rmenu, 'Load ROI File for 1DXRD',
+                 'Load ROI File for 1DXRD',  self.add1DXRDFile)
+        rmenu.AppendSeparator()
+        MenuItem(self, rmenu, 'Load XRD calibration file',
+                 'Load XRD calibration file',  self.openPONI)
+        MenuItem(self, rmenu, 'Add 1DXRD for HDF5 file',
+                 'Calculate 1DXRD for HDF5 file',  self.add1DXRD)
+
+
+        # cmenu = fmenu.Append(-1, 'Display 1DXRD for areas',
+        #                    'Display 1DXRD for areas',
+        #                     kind=wx.ITEM_CHECK)
+        #fmenu.Check(cmenu.Id, self.showxrd) ## False
+        #self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=cmenu.Id)
+
         hmenu = wx.Menu()
         cmenu = hmenu.Append(-1, '&About', 'About GSECARS MapViewer')
         self.Bind(wx.EVT_MENU, self.onAbout, id=cmenu.Id)
 
         self.menubar.Append(fmenu, '&File')
+        self.menubar.Append(rmenu, '&ROIs')
         self.menubar.Append(hmenu, '&Help')
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
@@ -2080,25 +2070,23 @@ class MapViewerFrame(wx.Frame):
         self.message(msg)
         ##print(msg)
 
-    def onCorrectDeadtime(self, event=None):
-
-        self.dtcor = event.IsChecked()
-        if self.dtcor:
-            msg = 'Using deadtime corrected data...'
-        else:
-            msg = 'Using raw data...'
-        self.message(msg)
-        ##print(msg)
-
-    def onHotColumns(self, event=None):
-
-        self.hotcols = event.IsChecked()
-        if self.hotcols:
-            msg = 'Ignoring first/last data columns.'
-        else:
-            msg = 'Using all data columns'
-        self.message(msg)
-        ##print(msg)
+#     def onCorrectDeadtime(self, event=None):
+#         self.dtcor = event.IsChecked()
+#         if self.dtcor:
+#             msg = 'Using deadtime corrected data...'
+#         else:
+#             msg = 'Using raw data...'
+#         self.message(msg)
+#         ##print(msg)
+#
+#     def onHotColumns(self, event=None):
+#         self.hotcols = event.IsChecked()
+#         if self.hotcols:
+#             msg = 'Ignoring first/last data columns.'
+#         else:
+#             msg = 'Using all data columns'
+#         self.message(msg)
+#         ##print(msg)
 
     def onWatchFiles(self, event=None):
 
