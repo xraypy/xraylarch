@@ -281,8 +281,6 @@ def build_detector_list(group):
 
 
 
-
-
 class GSEXRM_MapFile(object):
     '''
     Access to GSECARS X-ray Microprobe Map File:
@@ -321,60 +319,59 @@ class GSEXRM_MapFile(object):
     XRDCALFile = 'XRD.poni'
     MasterFile = 'Master.dat'
 
-    def __init__(self, filename=None, folder=None, root=None, chunksize=None,
-                 xrdcal=None, xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None,
-                 azwdgs=0, qstps=STEPS, flip=True, bkgdscale=1.,
-                 has_xrf=True, has_xrd1d=False, has_xrd2d=False,
-                 compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
-                 facility='APS', beamline='13-ID-E', run='', proposal='', user='',
+    def __init__(self, filename=None, folder=None, hotcols=False,
+                 dtcorrect=True, root=None, chunksize=None, xrdcal=None,
+                 xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None, azwdgs=0,
+                 qstps=STEPS, flip=True, bkgdscale=1., has_xrf=True,
+                 has_xrd1d=False, has_xrd2d=False, compression=COMPRESSION,
+                 compression_opts=COMPRESSION_OPTS, facility='APS',
+                 beamline='13-ID-E', run='', proposal='', user='',
                  scandb=None, **kws):
 
-        self.filename         = filename
-        self.folder           = folder
-        self.root             = root
-        self.chunksize        = chunksize
-        self.status           = GSEXRM_FileStatus.err_notfound
-        self.dimension        = None
-        self.ndet             = None
-        self.start_time       = None
-        self.xrmmap           = None
-        self.h5root           = None
-        self.last_row         = -1
-        self.rowdata          = []
-        self.npts             = None
-        self.roi_slices       = None
-        self._pixeltime       = None
-        self.masterfile       = None
-        self.masterfile_mtime = -1
-        self.scandb = scandb
+        self.filename      = filename
+        self.folder        = folder
+        self.root          = root
+        self.chunksize     = chunksize
+        self.hotcols       = hotcols   # whether to remove first and last columns from data
+        self.dtcorrect     = dtcorrect
+        self.scandb        = scandb
 
+        self.status        = GSEXRM_FileStatus.err_notfound
+        self.dimension     = None
+        self.ndet          = None
+        self.start_time    = None
+        self.xrmmap        = None
+        self.h5root        = None
+        self.last_row      = -1
+        self.rowdata       = []
+        self.npts          = None
+        self.roi_slices    = None
+        self._pixeltime    = None
+        self.masterfile    = None
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
 
-        self.mono_energy  = None
-        self.has_xrf     = has_xrf
-        self.has_xrd1d   = has_xrd1d
-        self.has_xrd2d   = has_xrd2d
+        self.mono_energy   = None
+        self.has_xrf       = has_xrf
+        self.has_xrd1d     = has_xrd1d
+        self.has_xrd2d     = has_xrd2d
 
         ## used for XRD
-        self.bkgd_xrd2d     = None
-        self.bkgd_xrd1d     = None
-        self.mask_xrd2d     = None
-        self.xrdcalfile     = None
-        self.xrd2dmaskfile  = None
-        self.xrd2dbkgdfile  = None
-        self.xrd1dbkgdfile  = None
-
-        self.bkgdscale = bkgdscale if bkgdscale > 0 else 1.
-
-        self.azwdgs      = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
-        self.qstps       = int(qstps)
-        self.flip        = flip
+        self.bkgd_xrd2d    = None
+        self.bkgd_xrd1d    = None
+        self.mask_xrd2d    = None
+        self.xrdcalfile    = None
+        self.xrd2dmaskfile = None
+        self.xrd2dbkgdfile = None
+        self.xrd1dbkgdfile = None
+        self.bkgdscale     = bkgdscale if bkgdscale > 0 else 1.
+        self.azwdgs        = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
+        self.qstps         = int(qstps)
+        self.flip          = flip
 
         ## used for tomography orientation
         self.x           = None
-        self.ome         = None
         self.reshape     = None
 
         self.notes = {'facility'   : facility,
@@ -1874,9 +1871,10 @@ class GSEXRM_MapFile(object):
 
         return roidata
 
-    def get_translation_axis(self,hotcols=False):
+    def get_translation_axis(self, hotcols=None):
+        if hotcols is None:
+            hotcols = self.hotcols
         posnames = [bytes2str(n.lower()) for n in self.xrmmap['positions/name']]
-        # print(" Get Translation axes ", posnames, 'x' in posnames)
         if 'x' in posnames:
             x = self.get_pos('x', mean=True)
         elif 'fine x' in posnames:
@@ -1890,7 +1888,9 @@ class GSEXRM_MapFile(object):
 
         return x
 
-    def get_rotation_axis(self, axis=None, hotcols=False):
+    def get_rotation_axis(self, axis=None, hotcols=None):
+        if hotcols is None:
+            hotcols = self.hotcols
         posnames = [bytes2str(n.lower()) for n in self.xrmmap['positions/name']]
         if axis is not None:
             if axis in posnames or type(axis) == int:
@@ -1930,21 +1930,31 @@ class GSEXRM_MapFile(object):
 
         self.h5root.flush()
 
-    def get_sinogram(self, roi_name, det=None, trim_sino=False, hotcols=False, **kws):
+    def get_sinogram(self, roi_name, det=None, trim_sino=False,
+                     hotcols=None, dtcorrect=None, **kws):
         '''extract roi map for a pre-defined roi by name
 
         Parameters
         ---------
-        roiname    :  str                       ROI name
-        det        :  str                       detector name
-        dtcorrect  :  optional, bool [True]     dead-time correct data
-        hotcols    :  optional, bool [False]    suppress hot columns
+        roiname    :  str                  ROI name
+        det        :  str                  detector name
+        dtcorrect  :  None or bool [None]  deadtime correction
+        hotcols    :  None or bool [None]  suppress hot columns
 
         Returns
         -------
         sinogram for ROI data
         sinogram_order (needed for knowing shape of sinogram)
+
+        Notes
+        -----
+        if dtcorrect or hotcols is None, they are taken from
+        self.dtcorrect and self.hotcols
         '''
+        if hotcols is None:
+            hotcols = self.hotcols
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
 
         sino  = self.get_roimap(roi_name, det=det, hotcols=hotcols, **kws)
         x     = self.get_translation_axis(hotcols=hotcols)
@@ -1959,10 +1969,12 @@ class GSEXRM_MapFile(object):
 
         return reshape_sinogram(sino,x,omega)
 
-    def get_tomograph(self, sino, omega=None, center=None, hotcols=False, **kws):
+    def get_tomograph(self, sino, omega=None, center=None, hotcols=None, **kws):
         '''
         returns tomo_center, tomo
         '''
+        if hotcols is None:
+            hotcols = self.hotcols
         if center is None:
             center = self.get_tomography_center()
         if omega  is None:
@@ -1975,11 +1987,15 @@ class GSEXRM_MapFile(object):
         return tomo
 
     def save_tomograph(self, datapath, algorithm='gridrec',
-                       filter_name='shepp', num_iter=1, dtcorrect=False,
-                       hotcols=False, **kws):
+                       filter_name='shepp', num_iter=1, dtcorrect=None,
+                       hotcols=None, **kws):
         '''
         saves group for tomograph for selected detector
         '''
+        if hotcols is None:
+            hotcols = self.hotcols
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
 
         ## check to make sure the selected detector exists for reconstructions
         detlist = self.get_datapath_list(remove=None)
@@ -2119,7 +2135,6 @@ class GSEXRM_MapFile(object):
             return
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
-        self.masterfile_mtime = mtime
         # print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
         def toppath(pname, n=4):
             words = []
@@ -2272,7 +2287,7 @@ class GSEXRM_MapFile(object):
         return ny, nx
 
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None,
-                        det=None, dtcorrect=True):
+                        det=None, dtcorrect=None):
         '''return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2284,7 +2299,7 @@ class GSEXRM_MapFile(object):
         xmax :       int       high x index
         mapdat :     optional, None or map data
         det :        optional, None or int         index of detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
+        dtcorrect :  optional, bool [None]         dead-time correct data
 
         Returns
         -------
@@ -2294,6 +2309,8 @@ class GSEXRM_MapFile(object):
 
         Note:  if mapdat is None, the map data is taken from the 'det' parameter
         '''
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
         if mapdat is None:
             mapdat = self._det_group(det)
 
@@ -2310,14 +2327,14 @@ class GSEXRM_MapFile(object):
             counts *= mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
         return counts
 
-    def get_mca_area(self, areaname, det=None, dtcorrect=True, tomo=False):
+    def get_mca_area(self, areaname, det=None, dtcorrect=None, tomo=False):
         '''return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
 
         Parameters
         ---------
         areaname :   str       name of area
-        dtcorrect :  optional, bool [True]         dead-time correct data
+        dtcorrect :  optional, bool [None]       dead-time correct data
 
         Returns
         -------
@@ -2328,7 +2345,8 @@ class GSEXRM_MapFile(object):
             area = self.get_area(areaname).value
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
-
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
         npixels = area.sum()
         if npixels < 1:
             return None
@@ -2358,7 +2376,7 @@ class GSEXRM_MapFile(object):
         return self._getmca(dgroup, counts, areaname, npixels=npixels,
                             real_time=rtime, live_time=ltime)
 
-    def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
+    def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=None):
         '''return mca counts for a map rectangle, optionally
 
         Parameters
@@ -2368,14 +2386,15 @@ class GSEXRM_MapFile(object):
         xmin :       int       low x index
         xmax :       int       high x index
         det :        optional, None or int         index of detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
+        dtcorrect :  optional, bool [None]         dead-time correct data
 
         Returns
         -------
         MCA object for XRF counts in rectangle
 
         '''
-
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
         dgroup = self._det_name(det)
         mapdat = self._det_group(det)
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
@@ -2388,8 +2407,7 @@ class GSEXRM_MapFile(object):
                             real_time=rtime.sum(), live_time=ltime.sum())
 
 
-    def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None,
-                          dtcorrect=True):
+    def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None, **kws):
         '''return livetime, realtime for a map rectangle, optionally
         applying area mask and deadtime correction
 
@@ -2399,8 +2417,7 @@ class GSEXRM_MapFile(object):
         ymax :       int       high y index
         xmin :       int       low x index
         xmax :       int       high x index
-        det :        optional, None or int         index of detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
+        det :        optional, None or int      index of detector
 
         Returns
         -------
@@ -2856,19 +2873,23 @@ class GSEXRM_MapFile(object):
         return roiname, detname
 
 
-    def get_roimap(self, roiname, det=None, hotcols=False, dtcorrect=True):
+    def get_roimap(self, roiname, det=None, hotcols=None, dtcorrect=None):
         '''extract roi map for a pre-defined roi by name
         Parameters
         ---------
-        roiname    :  str                       ROI name
-        det        :  str                       detector name
-        dtcorrect  :  optional, bool [True]     dead-time correct data
-        hotcols    :  optional, bool [False]    suppress hot columns
+        roiname    :  str                     ROI name
+        det        :  str                     detector name
+        dtcorrect  :  optional, bool [None]   dead-time correct data
+        hotcols    :  optional, bool [None]   suppress hot columns
 
         Returns
         -------
         ndarray for ROI data
         '''
+        if hotcols is None:
+            hotcols = self.hotcols
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
@@ -2877,9 +2898,7 @@ class GSEXRM_MapFile(object):
             if hotcolse:
                 out = out[1:-1]
             return out
-        if det is None:
-            dtcorrect = True
-        else:
+        if det is not None:
             dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         roi, detaddr = self.check_roi(roiname, det)
@@ -2912,7 +2931,7 @@ class GSEXRM_MapFile(object):
         return out
 
 
-    def get_mca_erange(self, det=None, dtcorrect=True,
+    def get_mca_erange(self, det=None, dtcorrect=None,
                        emin=None, emax=None, by_energy=True):
         '''extract map for an ROI set here, by energy range:
 
@@ -2921,7 +2940,7 @@ class GSEXRM_MapFile(object):
         pass
 
     def get_rgbmap(self, rroi, groi, broi, det=None, rdet=None, gdet=None, bdet=None,
-                   hotcols=True, dtcorrect=True, scale_each=True, scales=None):
+                   hotcols=None, dtcorrect=None, scale_each=True, scales=None):
         '''return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
 
@@ -2931,8 +2950,8 @@ class GSEXRM_MapFile(object):
         groi :       str    name of ROI for green channel
         broi :       str    name of ROI for blue channel
         det  :       optional, None or int [None]  index for detector
-        dtcorrect :  optional, bool [True]         dead-time correct data
-        hotcols   :  optional, bool [True]         suppress hot columns
+        dtcorrect :  optional, bool [None]         dead-time correct data
+        hotcols   :  optional, bool [None]         suppress hot columns
         scale_each : optional, bool [True]
                      scale each map separately to span the full color range.
         scales :     optional, None or 3 element tuple [None]
@@ -2945,11 +2964,17 @@ class GSEXRM_MapFile(object):
         (1/max intensity of all maps)
 
         '''
-        if det is not None: rdet = gdet = bdet = det
+        if hotcols is None:
+            hotcols = self.hotcols
+        if dtcorrect is None:
+            dtcorrect = self.dtcorrect
+        if det is not None:
+            rdet = gdet = bdet = det
 
-        rmap = self.get_roimap(rroi, det=rdet, hotcols=hotcols, dtcorrect=dtcorrect)
-        gmap = self.get_roimap(groi, det=gdet, hotcols=hotcols, dtcorrect=dtcorrect)
-        bmap = self.get_roimap(broi, det=bdet, hotcols=hotcols, dtcorrect=dtcorrect)
+        kws = dict(hotcols=hotcols, dtcorrect=dtcorrect)
+        rmap = self.get_roimap(rroi, det=rdet, **kws)
+        gmap = self.get_roimap(groi, det=gdet, **kws)
+        bmap = self.get_roimap(broi, det=bdet, **kws)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())
