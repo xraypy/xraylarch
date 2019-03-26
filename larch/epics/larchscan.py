@@ -223,8 +223,8 @@ def connect_scandb(dbname=None, _larch=None, **kwargs):
         _larch.symtable.set_symbol(SCANDB_NAME, _scandb)
 
     if _instdb is None:
-        instdb = InstrumentDB(_scandb)
+        _instdb = InstrumentDB(_scandb)
+        
         if _larch is not None:
             _larch.symtable.set_symbol(INSTDB_NAME, _instdb)
-
     return _scandb
