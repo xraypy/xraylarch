@@ -139,104 +139,96 @@ class MapPanel(GridPanel):
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1))]
+
         self.roi_choice = [Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
+
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
         self.det_label = [SimpleText(self,''),
                           SimpleText(self,''),
-                          SimpleText(self,'')]
+                          SimpleText(self,''),
+                          SimpleText(self, 'Normalization')]
         self.roi_label = [SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-        self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
-
-        fopts = dict(minval=-20000, precision=0, size=(70, -1))
+        fopts = dict(minval=-50000, precision=0, size=(70, -1))
         self.lims = [FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts),
                      FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts)]
 
-        for wid in self.lims: wid.Disable()
+        for wid in self.lims:
+            wid.Disable()
+
+        self.use_dtcorr  = Check(self, default=True,
+                                 label='Correct for Detector Deadtime',
+                                 action=self.onDTCorrect)
+        self.use_hotcols = Check(self, default=False,
+                                 label='Remove First and Last columns',
+                                 action=self.onHotCols)
 
         self.limrange  = Check(self, default=False,
                                label=' Limit Map Range to Pixel Range:',
                                action=self.onLimitRange)
-        self.range_txt = [SimpleText(self, 'X Range:'),
-                          SimpleText(self, ':'),
-                          SimpleText(self, 'Y Range:'),
-                          SimpleText(self, ':')]
 
-        self.map_show = [Button(self, 'Show New',     size=(100, -1),
+        self.map_show = [Button(self, 'Show New Map',     size=(125, -1),
                                action=partial(self.onROIMap, new=True)),
-                          Button(self, 'Replace Last', size=(100, -1),
+                          Button(self, 'Replace Last Map', size=(125, -1),
                                action=partial(self.onROIMap, new=False))]
 
-        #################################################################################
-        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
-                                                               style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,''),self.det_label[0],
-                       self.det_label[1],self.det_label[2]),   style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],
-                       self.det_choice[1],self.det_choice[2]), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
+                     style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''), self.det_label[0],
+                      self.det_label[1], self.det_label[2], self.det_label[3]),
+                     style=LEFT,  newrow=True)
+
+        self.AddMany((SimpleText(self,'Detector:'), self.det_choice[0],
+                      self.det_choice[1], self.det_choice[2], self.det_choice[3]),
+                     style=LEFT,  newrow=True)
+
         self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],
-                       self.roi_choice[1],self.roi_choice[2]), style=LEFT,  newrow=True)
+                       self.roi_choice[1],self.roi_choice[2], self.roi_choice[3]),
+                     style=LEFT,  newrow=True)
+
         self.AddMany((SimpleText(self,''),self.roi_label[0],
-                       self.roi_label[1],self.roi_label[2]),   style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
-                                                               style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
-                                                               style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
-        #################################################################################
-        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
-        self.Add(self.limrange,                        dcol=4, style=LEFT,  newrow=True)
-        self.Add(self.range_txt[0],                    dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.lims[0],                         dcol=1, style=LEFT)
-        self.Add(self.range_txt[1],                    dcol=1, style=LEFT)
-        self.Add(self.lims[1],                         dcol=1, style=LEFT)
-        self.Add(self.range_txt[2],                    dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.lims[2],                         dcol=1, style=LEFT)
-        self.Add(self.range_txt[3],                    dcol=1, style=LEFT)
-        self.Add(self.lims[3],                         dcol=1, style=LEFT)
-        #################################################################################
-        self.Add(HLine(self, size=(500, 4)),          dcol=8, style=LEFT,  newrow=True)
-        #################################################################################
-        self.Add(SimpleText(self,'ROI Map:'),          dcol=1, style=RIGHT, newrow=True)
-        self.Add(self.map_show[0],                     dcol=1, style=LEFT)
-        self.Add(self.map_show[1],                     dcol=1, style=LEFT)
-        #################################################################################
+                      self.roi_label[1],self.roi_label[2], self.roi_label[3]),
+                     style=LEFT,  newrow=True)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self,'Display:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.map_show[0],              dcol=1, style=LEFT)
+        self.Add(self.map_show[1],              dcol=1, style=LEFT)
+
+        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
+        self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.use_hotcols,              dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.limrange,                 dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self, 'X Range:'),  dcol=1, style=LEFT)
+        self.Add(self.lims[0],                  dcol=1, style=LEFT)
+        self.Add(self.lims[1],                  dcol=1, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self, 'Y Range:'),  dcol=1, style=LEFT)
+        self.Add(self.lims[2],                  dcol=1, style=LEFT)
+        self.Add(self.lims[3],                  dcol=1, style=LEFT)
+        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
         self.pack()
 
-        self.disable_options()
+    def onDTCorrect(self, event=None):
+        self.owner.current_file.dtcorrect = self.use_dtcorr.IsChecked()
 
-    def disable_options(self):
-        all_choices = [self.plot_choice]+self.det_choice+self.roi_choice+[self.oper]
-        for chc in all_choices: chc.Disable()
-        self.limrange.Disable()
-        for btn in self.map_show: btn.Disable()
-
-    def enable_options(self):
-        self.plot_choice.Enable()
-
-        self.det_choice[0].Enable()
-        self.det_choice[-1].Enable()
-        self.roi_choice[0].Enable()
-        self.roi_choice[-1].Enable()
-
-        self.oper.Enable()
-
-        self.limrange.Enable()
-        for btn in self.map_show: btn.Enable()
+    def onHotCols(self, event=None):
+        self.owner.current_file.hotcols = self.use_hotcols.IsChecked()
 
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
@@ -244,8 +236,6 @@ class MapPanel(GridPanel):
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-
-        self.enable_options()
         self.set_det_choices()
         self.plotSELECT()
 
@@ -258,7 +248,6 @@ class MapPanel(GridPanel):
                 wid.Disable()
 
     def detSELECT(self,idet,event=None):
-
         self.set_roi_choices(idet=idet)
 
     def roiSELECT(self,iroi,event=None):
@@ -320,10 +309,8 @@ class MapPanel(GridPanel):
                 pass
 
     def ShowMap(self,xrmfile=None,new=True):
-
         subtitles = None
-        plt3 = (self.plot_choice.GetSelection() == 1)
-        oprtr = self.oper.GetStringSelection()
+        plt3 = 'three' in self.plot_choice.GetStringSelection().lower()
 
         if xrmfile is None:
             xrmfile = self.owner.current_file
@@ -331,9 +318,8 @@ class MapPanel(GridPanel):
         args={'hotcols'   : xrmfile.hotcols,
               'dtcorrect' : xrmfile.dtcorrect}
 
-        det_name,roi_name = [],[]
-        plt_name = []
-        for det,roi in zip(self.det_choice, self.roi_choice):
+        det_name, roi_name, plt_name = [], [], []
+        for det, roi in zip(self.det_choice, self.roi_choice):
             det_name += [det.GetStringSelection()]
             roi_name += [roi.GetStringSelection()]
             if det_name[-1] == 'scalars':
@@ -341,12 +327,10 @@ class MapPanel(GridPanel):
             else:
                 plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
 
+        mapx = 1.0
         if roi_name[-1] != '1':
             mapx = xrmfile.get_roimap(roi_name[-1], det=det_name[-1], **args)
-            ## remove negative background counts for dividing
-            if oprtr == '/': mapx[np.where(mapx==0)] = 1.
-        else:
-            mapx = 1.
+            mapx[np.where(mapx==0)] = 1.
 
         r_map = xrmfile.get_roimap(roi_name[0], det=det_name[0], **args)
         if plt3:
@@ -357,34 +341,28 @@ class MapPanel(GridPanel):
         y = xrmfile.get_pos(1, mean=True)
 
         pref, fname = os.path.split(xrmfile.filename)
+
         if plt3:
-            if   oprtr == '+': map = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
-            elif oprtr == '-': map = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
-            elif oprtr == '*': map = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
-            elif oprtr == '/': map = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            map = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
             map = np.einsum('kij->ijk', map)
 
             title = fname
             info = ''
-            if roi_name[-1] == '1' and oprtr == '/':
+            if roi_name[-1] == '1':
                 subtitles = {'red':   'Red: %s'   % plt_name[0],
                              'green': 'Green: %s' % plt_name[1],
                              'blue':  'Blue: %s'  % plt_name[2]}
             else:
-                subtitles = {'red':   'Red: %s %s %s'   % (plt_name[0],oprtr,plt_name[-1]),
-                             'green': 'Green: %s %s %s' % (plt_name[1],oprtr,plt_name[-1]),
-                             'blue':  'Blue: %s %s %s'  % (plt_name[2],oprtr,plt_name[-1])}
+                subtitles = {'red':   'Red: %s / %s'   % (plt_name[0], plt_name[-1]),
+                             'green': 'Green: %s / %s' % (plt_name[1], plt_name[-1]),
+                             'blue':  'Blue: %s / %s'  % (plt_name[2], plt_name[-1])}
 
         else:
-            if   oprtr == '+': map = r_map+mapx
-            elif oprtr == '-': map = r_map-mapx
-            elif oprtr == '*': map = r_map*mapx
-            elif oprtr == '/': map = r_map/mapx
-
-            if roi_name[-1] == '1' and oprtr == '/':
+            map = r_map/mapx
+            if roi_name[-1] == '1':
                 title = plt_name[0]
             else:
-                title = '%s %s %s' % (plt_name[0],oprtr,plt_name[-1])
+                title = '%s / %s' % (plt_name[0], plt_name[-1])
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
             subtitle = None
