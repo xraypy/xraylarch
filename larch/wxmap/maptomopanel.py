@@ -81,20 +81,30 @@ class TomographyPanel(GridPanel):
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1)),
                            Choice(self, size=(125, -1))]
+
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
+
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
         self.det_label = [SimpleText(self,''),
                           SimpleText(self,''),
-                          SimpleText(self,'')]
+                          SimpleText(self,''),
+                          SimpleText(self,'Normalization')]
         self.roi_label = [SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-        self.oper = Choice(self, choices=PLOT_OPERS, size=(80, -1))
+
+        self.use_dtcorr  = Check(self, default=True,
+                                 label='Correct for Detector Deadtime',
+                                 action=self.onDTCorrect)
+        self.use_hotcols = Check(self, default=False,
+                                 label='Remove First and Last columns',
+                                 action=self.onHotCols)
+
 
         self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowTomograph, new=True)),
@@ -111,73 +121,79 @@ class TomographyPanel(GridPanel):
         self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.center_value.SetIncrement(0.25)
-        self.refine_center = wx.CheckBox(self, label='Refine center')
+        self.refine_center = wx.CheckBox(self, label='Refine')
         self.refine_center.SetValue(False)
 
-        self.sino_data   = Choice(self, size=(250, -1))
+        self.sino_data   = Choice(self, size=(200, -1))
         self.tomo_save   = Button(self, 'Save reconstruction',     size=(150, -1),
                                action=self.onSaveTomograph)
 
 
         #################################################################################
         self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
-                                                               style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,''),self.det_label[0],
-                        self.det_label[1],self.det_label[2]),  style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[0],
-                      self.det_choice[1],self.det_choice[2]),  style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[0],
-                      self.roi_choice[1],self.roi_choice[2]),  style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,''),self.roi_label[0],
-                        self.roi_label[1],self.roi_label[2]),  style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Operator:'),self.oper), style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'Detector:'),self.det_choice[-1]),
-                                                               style=LEFT,  newrow=True)
-        self.AddMany((SimpleText(self,'ROI:'),self.roi_choice[-1]),
-                                                               style=LEFT,  newrow=True)
+                     style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,''), self.det_label[0],
+                        self.det_label[1], self.det_label[2], self.det_label[3]),
+                     style=LEFT,  newrow=True)
 
-        self.AddMany((SimpleText(self,''),self.roi_label[-1]), style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'Detector:'), self.det_choice[0],
+                      self.det_choice[1], self.det_choice[2], self.det_choice[3]),
+                      style=LEFT,  newrow=True)
 
-        self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'ROI:'), self.roi_choice[0],
+                      self.roi_choice[1], self.roi_choice[2], self.roi_choice[3]),
+                     style=LEFT,  newrow=True)
 
-        self.Add(SimpleText(self,' '),         dcol=1, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Algorithm'), dcol=1, style=LEFT)
-        self.Add(SimpleText(self,'Filter'),    dcol=1, style=LEFT)
-        self.Add(SimpleText(self,'# Iterations'), dcol=1, style=LEFT)
+        self.AddMany((SimpleText(self,''), self.roi_label[0],
+                        self.roi_label[1], self.roi_label[2], self.roi_label[3]),
+                     style=LEFT,  newrow=True)
 
-        self.Add(SimpleText(self,'Reconstruct: '), dcol=1, style=LEFT,  newrow=True)
-        self.AddMany((self.tomo_algo, self.tomo_filt, self.tomo_niter))
-        self.Add(SimpleText(self,'Center: '),         dcol=1, style=LEFT,  newrow=True)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self,'Display:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.tomo_show[0],             dcol=1, style=LEFT)
+        self.Add(self.tomo_show[1],             dcol=1, style=LEFT)
+
+        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.use_hotcols,              dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+
+        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
+
+        self.Add(SimpleText(self,'Reconstruction '), dcol=2, style=LEFT,  newrow=True)
+
+        self.Add((5, 5),                            dcol=1, style=LEFT,  newrow=True)
+        self.Add(SimpleText(self,'Algorithm:'),     dcol=1, style=LEFT)
+        self.Add(self.tomo_algo,                    dcol=1, style=LEFT)
+        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self,'Filter: '),       dcol=1, style=LEFT)
+        self.Add(self.tomo_filt,                    dcol=1, style=LEFT)
+        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self,'# Iterations'),   dcol=1, style=LEFT)
+        self.Add(self.tomo_niter,                   dcol=1, style=LEFT)
+        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
+        self.Add(SimpleText(self,'Center Pixel:'),      dcol=1, style=LEFT)
         self.Add(self.center_value, dcol=1, style=LEFT)
         self.Add(self.refine_center, dcol=1, style=LEFT)
 
-        self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
 
-        self.Add(SimpleText(self,'Display:'),          dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.tomo_show[0],                    dcol=1, style=LEFT)
-        self.Add(self.tomo_show[1],                    dcol=1, style=LEFT)
+        self.Add(HLine(self, size=(600, 5)),     dcol=8, style=LEFT,  newrow=True)
 
-        self.Add(HLine(self, size=(500, 4)),           dcol=8, style=LEFT,  newrow=True)
 
         self.Add(SimpleText(self,'Data:'),             dcol=1, style=LEFT,  newrow=True)
         self.Add(self.sino_data,                       dcol=2, style=LEFT)
-        self.Add(self.tomo_save,                       dcol=1, style=LEFT)
+        self.Add(self.tomo_save,                       dcol=2, style=LEFT)
 
         #################################################################################
         self.pack()
 
-    def enable_options(self):
-        # print(" tomo panel enable options ")
-        self.plot_choice.Enable()
+    def onDTCorrect(self, event=None):
+        self.owner.current_file.dtcorrect = self.use_dtcorr.IsChecked()
 
-        self.det_choice[0].Enable()
-        self.det_choice[-1].Enable()
-        self.sino_data.Enable()
-        self.roi_choice[0].Enable()
-        self.roi_choice[-1].Enable()
-
-        self.oper.Enable()
-
+    def onHotCols(self, event=None):
+        self.owner.current_file.hotcols = self.use_hotcols.IsChecked()
 
     def update_xrmmap(self, xrmfile=None):
 
@@ -193,7 +209,6 @@ class TomographyPanel(GridPanel):
             self.center_value.SetValue(0)
             return
 
-        self.enable_options()
         self.set_det_choices()
 
         try:
@@ -293,8 +308,7 @@ class TomographyPanel(GridPanel):
         returns slice as [slices, x, 2th]
         '''
         subtitles = None
-        plt3 = ('three' in self.plot_choice.GetStringSelection().lower())
-        oprtr = self.oper.GetStringSelection()
+        plt3 = 'three' in self.plot_choice.GetStringSelection().lower()
 
         det_name, roi_name, plt_name = [], [], []
         for det, roi in zip(self.det_choice,self.roi_choice):
@@ -337,42 +351,33 @@ class TomographyPanel(GridPanel):
             g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1], **args)
             b_map, sino_order = xrmfile.get_sinogram(roi_name[2], det=det_name[2], **args)
 
+        mapx = 1.
         if roi_name[-1] != '1':
             mapx, sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
-
-            ## remove negative background counts for dividing
-            if oprtr == '/': mapx[np.where(mapx==0)] = 1.
-        else:
-            mapx = 1.
+            mapx[np.where(mapx==0)] = 1.
 
         pref, fname = os.path.split(xrmfile.filename)
         if plt3:
-            if   oprtr == '+': sino = np.array([r_map+mapx, g_map+mapx, b_map+mapx])
-            elif oprtr == '-': sino = np.array([r_map-mapx, g_map-mapx, b_map-mapx])
-            elif oprtr == '*': sino = np.array([r_map*mapx, g_map*mapx, b_map*mapx])
-            elif oprtr == '/': sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
             sino.resize(tuple(i for i in sino.shape if i!=1))
             title = fname
             info = ''
-            if roi_name[-1] == '1' and oprtr == '/':
+            if roi_name[-1] == '1':
                 subtitles = {'red':   'Red: %s'   % plt_name[0],
                              'green': 'Green: %s' % plt_name[1],
                              'blue':  'Blue: %s'  % plt_name[2]}
             else:
-                subtitles = {'red':   'Red: %s %s %s'   % (plt_name[0],oprtr,plt_name[-1]),
-                             'green': 'Green: %s %s %s' % (plt_name[1],oprtr,plt_name[-1]),
-                             'blue':  'Blue: %s %s %s'  % (plt_name[2],oprtr,plt_name[-1])}
+                subtitles = {'red':   'Red: %s / %s'   % (plt_name[0], plt_name[-1]),
+                             'green': 'Green: %s / %s' % (plt_name[1], plt_name[-1]),
+                             'blue':  'Blue: %s / %s'  % (plt_name[2], plt_name[-1])}
 
         else:
-            if   oprtr == '+': sino = r_map+mapx
-            elif oprtr == '-': sino = r_map-mapx
-            elif oprtr == '*': sino = r_map*mapx
-            elif oprtr == '/': sino = r_map/mapx
+            sino = r_map/mapx
 
-            if roi_name[-1] == '1' and oprtr == '/':
+            if roi_name[-1] == '1':
                 title = plt_name[0]
             else:
-                title = '%s %s %s' % (plt_name[0],oprtr,plt_name[-1])
+                title = '%s / %s' % (plt_name[0] , plt_name[-1])
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None
