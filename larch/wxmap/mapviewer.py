@@ -118,7 +118,7 @@ PLOT_OPERS = ('/', '*', '-', '+')
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
 if ESCAN_CRED is not None:
     try:
-        from ..epics.larchscan import connect_scandb
+        from ..epics.scandb_plugin import connect_scandb
     except ImportError:
         ESCAN_CRED = None
 
@@ -534,7 +534,6 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['Scan Time'].SetLabel( time_str )
         self.wids['File Compression'].SetLabel(bytes2str(xrmmap.attrs.get('Compression','')))
 
-
         comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
         for i, comm in enumerate(comments):
             self.wids['User Comments %i' %(i+1)].SetLabel(comm)
@@ -884,7 +883,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if version_ge(version, '2.0.0'):
             d_pref = 'mca'
             d_scas = [d for d in xrmmap['scalars']]
-            detnames = ["%s%i" % (d_pref, i) for i in range(1, xrmfile.ndet+1)]
+            detnames = ["%s%i" % (d_pref, i) for i in range(1, xrmfile.nmca+1)]
             d_rois = xrmfile.get_roi_list(detnames[0])
 
         else:
@@ -893,7 +892,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             d_pref = 'det'
 
 
-        for i in range(1, xrmfile.ndet+1):
+        for i in range(1, xrmfile.nmca+1):
             tname = '%s%i/realtime' % (d_pref, i)
             rtime = xrmmap[tname].value
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
@@ -1521,11 +1520,9 @@ class MapViewerFrame(wx.Frame):
         # make sure we can save position into database
         if self.scandb is None or self.instdb is None:
             return
-
         samplestage = self.instdb.get_instrument(self.inst_name)
         if samplestage is None:
             return
-
         allpvs = [pv.name for pv in samplestage.pv]
 
         pvn  = pv_fullname
@@ -1684,6 +1681,7 @@ class MapViewerFrame(wx.Frame):
             pass
 
         self.Raise()
+
         self.onFolderSelect()
 
         if ESCAN_CRED is not None:
@@ -2139,7 +2137,7 @@ class MapViewerFrame(wx.Frame):
             if (wx.ID_YES == Popup(self, NOT_OWNER_MSG % fname,
                                    'Not Owner of HDF5 File',
                                    style=wx.YES_NO)):
-                self.filemap[fname].claim_hostid()
+                self.filemap[fname].take_ownership()
         return self.filemap[fname].check_hostid()
 
 class OpenPoniFile(wx.Dialog):
