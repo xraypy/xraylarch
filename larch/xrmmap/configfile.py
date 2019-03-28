@@ -3,13 +3,8 @@
 import os
 import sys
 import time
-import six
-if sys.version[0] == '2':
-    from ConfigParser import  ConfigParser
-    from cStringIO import StringIO
-elif sys.version[0] == '3':
-    from configparser import  ConfigParser
-    from io import StringIO
+from configparser import  ConfigParser
+from io import StringIO
 
 from larch.utils import OrderedDict
 
@@ -34,58 +29,43 @@ __c = (('general', ('mapdb', 'struck', 'scaler', 'xmap', 'mono',
 
 conf_objs = OrderedDict(__c)
 
-conf_files = ('MapDefault.ini',
-              '//cars5/Data/xas_user/config/FastMap/Default.ini')
+conf_files = ('Scan.ini',)
 
-
-##struck = 13IDC:str:
-##scaler = 13IDC:scaler2
 
 default_conf = """# FastMap configuration file (default)
 [general]
-mapdb = 13XRM:map:
-mono = 13IDA:
-struck = 13IDE:SIS1
-scaler = 13IDE:scaler1
-xmap = dxpMercury:
-fileplugin = netCDF1:
-basedir = //cars5/Data/xas_user/June2011/_Setup
-scandir = Scan00001
-envfile = //cars5/Data/xas_user/config/XRM_XMAP_PVS_IDE.DAT
+basedir=
+envfile =
 [xps]
 type = NewportXPS
-mode = XYGroup
-host = 164.54.160.180
-user   = Administrator
-passwd = Administrator
-group = FINE
-positioners= X, Y
+mode =
+host =
+user =
+passwd =
+group =
+positioners=
 [scan]
 filename = scan.001
 dimension = 2
-pos1 = 13XRM:m1
+pos1 =
 start1 = -1.0
 stop1 = 1.0
 step1 = 0.01
 time1 = 20.0
-pos2 = 13XRM:m2
+pos2 =
 start2 = -1.0
 stop2 = 1.0
 step2 = 0.01
 [fast_positioners]
-1 = 13XRM:m1 | X
-2 = 13XRM:m2 | Y
+1 = X | X
+2 = Y | Y
 [slow_positioners]
-1 = 13XRM:m1  | X
-2 = 13XRM:m2  | Y
-3 = 13XRM:m3  | Theta
-4 = 13XRM:pm1 | Stage Z (focus)
-5 = 13XRM:pm2 | Stage X
-6 = 13XRM:m6  | Stage Y (vert)
+1 = X | X
+2 = Y | Y
 """
 
 class FastMapConfig(object):
-    def __init__(self,filename=None,conftext=None):
+    def __init__(self, filename=None, conftext=None):
         self.config = {}
         self.cp =  ConfigParser()
         conf_found = False
@@ -147,7 +127,7 @@ class FastMapConfig(object):
                 for opt in optlist:
                     try:
                         val = cnf[sect].get(opt,'<unknown>')
-                        if not isinstance(val, six.string_types):
+                        if not isinstance(val, str):
                             val = str(val)
                         o.append("%s = %s" % (opt,val))
                     except:
@@ -172,7 +152,7 @@ class FastMapConfig(object):
         for opt in optlist:
             val = scan.get(opt,None)
             if val is not None:
-                if not isinstance(val, six.string_types):
+                if not isinstance(val, str):
                     val = str(val)
                 o.append("%s = %s" % (opt,val))
         o.append('#------------------#\n')
