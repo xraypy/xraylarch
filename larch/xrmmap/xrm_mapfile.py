@@ -23,7 +23,7 @@ from .configfile import FastMapConfig
 from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, parseEnviron)
 
-from .gsexrm_utils import (GSEXRM_Detector, GSEXRM_Area, GSEXRM_Exception,
+from .gsexrm_utils import (GSEXRM_MCADetector, GSEXRM_Area, GSEXRM_Exception,
                            GSEXRM_MapRow, GSEXRM_FileStatus)
 
 from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
@@ -282,13 +282,13 @@ class GSEXRM_MapFile(object):
 
         self.status        = GSEXRM_FileStatus.err_notfound
         self.dimension     = None
-        self.ndet          = None
+        self.nmca          = None
+        self.npts          = None
         self.start_time    = None
         self.xrmmap        = None
         self.h5root        = None
         self.last_row      = -1
         self.rowdata       = []
-        self.npts          = None
         self.roi_slices    = None
         self._pixeltime    = None
         self.masterfile    = None
@@ -301,6 +301,8 @@ class GSEXRM_MapFile(object):
         self.has_xrd1d     = has_xrd1d
         self.has_xrd2d     = has_xrd2d
 
+        self.pos_desc = []
+        self.pos_addr = []
         ## used for XRD
         self.bkgd_xrd2d    = None
         self.bkgd_xrd1d    = None
@@ -328,8 +330,6 @@ class GSEXRM_MapFile(object):
         # initialize from filename or folder
         if self.filename is not None:
             self.getFileStatus(root=root)
-            # see if file contains name of folder
-            # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
@@ -398,12 +398,16 @@ class GSEXRM_MapFile(object):
             create_xrmmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
 
+            # cfile = FastMapConfig()
+            # self.add_map_config(cfile.config, nmca=nmca)
+
             self.notes['h5_create_time'] = isotime()
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
-            for xkey,xval in zip(self.xrmmap.attrs.keys(),self.xrmmap.attrs.values()):
-                if xkey == 'Version': self.version = xval
+            for xkey, xval in zip(self.xrmmap.attrs.keys(), self.xrmmap.attrs.values()):
+                if xkey == 'Version':
+                    self.version = xval
 
             self.add_XRDfiles(xrdcalfile=xrdcal,
                               xrd2dmaskfile=xrd2dmask,
@@ -413,6 +417,14 @@ class GSEXRM_MapFile(object):
               self.status == GSEXRM_FileStatus.err_notfound and create_empty):
             self.h5root = h5py.File(self.filename)
             create_xrmmap(self.h5root, root=None, dimension=2, start_time=self.start_time)
+            self.notes['h5_create_time'] = isotime()
+            self.xrmmap = self.h5root[DEFAULT_ROOTNAME]
+            self.take_ownership()
+            # self.status = GSEXRM_FileStatus.created
+            cfile = FastMapConfig()
+            self.add_map_config(cfile.config, nmca=1)
+            self.open(self.filename, root=self.root, check_status=False)
+            self.reset_flags()
 
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
@@ -474,17 +486,11 @@ class GSEXRM_MapFile(object):
         fh.close()
         return
 
-
     def get_det(self, index):
-        return GSEXRM_Detector(self.xrmmap, index=index)
+        return GSEXRM_MCADetector(self.xrmmap, index=index)
 
     def area_obj(self, index, det=None):
         return GSEXRM_Area(self.xrmmap, index, det=det)
-
-    def get_scanconfig(self):
-        '''return scan configuration from file'''
-        conftext = self.xrmmap['config/scan/text'].value
-        return FastMapConfig(conftext=conftext)
 
     def get_coarse_stages(self):
         '''return coarse stage positions for map'''
@@ -534,8 +540,8 @@ class GSEXRM_MapFile(object):
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
 
-        if self.ndet is None:
-            self.ndet = self.xrmmap.attrs.get('N_Detectors', None)
+        if self.nmca is None:
+            self.nmca = self.xrmmap.attrs.get('N_Detectors', None)
 
     def close(self):
         if self.check_hostid():
@@ -586,18 +592,20 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
 
     def add_data(self, group, name, data, attrs=None, **kws):
-        ''' creata an hdf5 dataset'''
+        ''' creata an hdf5 dataset, replacing existing dataset if needed'''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         kws.update(self.compress_args)
+        if name in group:
+            del group[name]
         d = group.create_dataset(name, data=data, **kws)
         if isinstance(attrs, dict):
             for key, val in attrs.items():
                 d.attrs[key] = val
         return d
 
-    def add_map_config(self, config):
+    def add_map_config(self, config, nmca=None):
         '''add configuration from Map Folder to HDF5 file
         ROI, DXP Settings, and Config data
         '''
@@ -605,22 +613,32 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         group = self.xrmmap['config']
-        scantext = open(os.path.join(self.folder, self.ScanFile), 'r').read()
         for name, sect in (('scan', 'scan'),
                            ('general', 'general'),
                            ('positioners', 'slow_positioners'),
                            ('motor_controller', 'xps')):
             for key, val in config[sect].items():
+                if key in group[name]:
+                    del group[name][key]
                 group[name].create_dataset(key, data=val)
 
+        scanfile = os.path.join(self.folder, self.ScanFile)
+        if os.path.exists(scanfile):
+            scantext = open(scanfile, 'r').read()
+        else:
+            scantext = ''
+        if 'text' in group['scan']:
+            del group['scan']['text']
         group['scan'].create_dataset('text', data=scantext)
 
         roifile = os.path.join(self.folder, self.ROIFile)
-        self.ndet = 0
+        self.nmca = 0
+        if nmca is not None:
+            self.nmca = nmca
+
         if os.path.exists(roifile):
             roidat, calib, extra = readROIFile(roifile)
-            self.ndet = len(calib['slope'])
-            self.xrmmap.attrs['N_Detectors'] = self.ndet
+            self.xrmmap.attrs['N_Detectors'] = self.nmca = len(calib['slope'])
             roi_desc, roi_addr, roi_lim = [], [], []
             roi_slices = []
 
@@ -629,12 +647,11 @@ class GSEXRM_MapFile(object):
                 try:
                     xrf_prefix = config['xrf']['prefix']
                 except KeyError: # very old map files
-                    xrf_prefix = config['general']['xmap']
+                    xrf_prefix = 'xrf_det:'
                 roi_addr.append("%smca%%i.R%i" % (xrf_prefix, iroi))
-                roi_lim.append([lims[i] for i in range(self.ndet)])
-                roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
+                roi_lim.append([lims[i] for i in range(self.nmca)])
+                roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.nmca)])
             roi_lim = np.array(roi_lim)
-
             self.add_data(group['rois'], 'name',     [six.b(a) for a in roi_desc])
             self.add_data(group['rois'], 'address',  [six.b(a) for a in roi_addr])
             self.add_data(group['rois'], 'limits',   roi_lim)
@@ -652,8 +669,22 @@ class GSEXRM_MapFile(object):
             self.roi_addr = roi_addr
             self.roi_slices = roi_slices
             self.calib = calib
+        else:
+            nmca = self.nmca
+            roilims = np.array([ [[0, 1]] for i in range(nmca)])
+            self.add_data(group['rois'], 'name',     [b'roi1']*nmca)
+            self.add_data(group['rois'], 'address',  [b'addr%i.ROI1']*nmca)
+            self.add_data(group['rois'], 'limits',   roilims)
+            self.add_data(group['mca_calib'], 'offset', [0.00]*nmca)
+            self.add_data(group['mca_calib'], 'slope',  [0.01]*nmca)
+            self.add_data(group['mca_calib'], 'quad',   [0.00]*nmca)
+
         # add env data
-        envdat = readEnvironFile(os.path.join(self.folder, self.EnvFile))
+        envfile = os.path.join(self.folder, self.EnvFile)
+        if os.path.exists(envfile):
+            envdat = readEnvironFile(envfile)
+        else:
+            envdat = ['Facility.Ring_Current (UnknownPV) = 0']
         env_desc, env_addr, env_val = parseEnviron(envdat)
 
         self.add_data(group['environ'], 'name',     [six.b(a) for a in env_desc])
@@ -672,7 +703,6 @@ class GSEXRM_MapFile(object):
         possible once at least 1 row of raw data is available
         in the scan folder.
         '''
-        print("initialize_xrmmap")
         self.starttime = time.time()
         if self.status == GSEXRM_FileStatus.hasdata:
             return
@@ -690,6 +720,7 @@ class GSEXRM_MapFile(object):
             return
 
         self.last_row = -1
+        print(" Initialize XRMMAP -> Add Map Config ", self.mapconf)
         self.add_map_config(self.mapconf)
 
         self.process_row(0, flush=True, callback=callback)
@@ -697,18 +728,15 @@ class GSEXRM_MapFile(object):
         self.status = GSEXRM_FileStatus.hasdata
 
     def process_row(self, irow, flush=False, callback=None):
-
         row = self.read_rowdata(irow)
         if irow == 0:
-            nmca, nchan = 2048, 1
+            nmca, nchan = 1, 2048
             if row.counts is not None:
                 nmca, xnpts, nchan = row.counts.shape
             xrd2d_shape = None
             if row.xrd2d is not None:
                 xrd2d_shape = rows.xrd2d.shape
-            # print(" -> build schema ", row)
-            # print(row.npts, nmca, nchan, xrd2d_shape)
-            # print(row.scaler_names, row.scaler_addrs)
+
             self.build_schema(row.npts, nmca=nmca, nchan=nchan,
                               scaler_names=row.scaler_names,
                               scaler_addrs=row.scaler_addrs,
@@ -728,12 +756,13 @@ class GSEXRM_MapFile(object):
 
     def process(self, maxrow=None, force=False, callback=None):
         "look for more data from raw folder, process if needed"
-
+        print("PROCESS ", maxrow)
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
+            print(" process -> initialize_xrmmap")
             self.initialize_xrmmap(callback=callback)
         if (force or len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
@@ -747,14 +776,7 @@ class GSEXRM_MapFile(object):
             irow = self.last_row + 1
             while irow < nrows:
                 self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
-                # if irow > 2 and (irow+1) % 25 == 0:
-                #   self.set_roidata(current_row, self.last_row)
-                #   current_row = self.last_row
                 irow  = irow + 1
-
-        # self.set_roidata(current_row)
-        # print("End: %s" % isotime())
-
 
     def set_roidata(self, row_start=0, row_end=None):
         if row_end is None:
@@ -1126,7 +1148,7 @@ class GSEXRM_MapFile(object):
         # dt.show()
 
 
-    def build_schema(self, npts, nmca=2048, nchan=1,
+    def build_schema(self, npts, nmca=1, nchan=2048,
                      scaler_names=None, scaler_addrs=None,
                      xrd2d_shape=None, verbose=False):
         '''build schema for detector and scan data'''
@@ -1135,6 +1157,10 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         xrmmap = self.xrmmap
+        for xkey, xval in xrmmap.attrs.items():
+            if xkey == 'Version':
+                self.version = xval
+
         if scaler_names is None:
             scaler_names = []
         if scaler_addrs is None:
@@ -1161,6 +1187,23 @@ class GSEXRM_MapFile(object):
         pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
                            maxshape=(None, npts, npos), **self.compress_args)
 
+        ##
+        # cfile = FastMapConfig()
+        # print(" build_schema -> mapconfig")
+        # self.add_map_config(cfile.config, nmca=nmca)
+        conf = xrmmap['config']
+
+        offset = conf['mca_calib/offset'].value
+        slope  = conf['mca_calib/slope'].value
+        quad = np.array([0.0]*len(offset))
+        if 'quad' in conf['mca_calib']:
+            quad   = conf['mca_calib/quad'].value
+
+        _ex = np.arange(nchan, dtype=np.float64)
+        enarr = []
+        for i in range(len(offset)):
+            enarr.append(offset[i] + slope[i]*_ex + quad[i]*_ex**2)
+
         if version_ge(self.version, '2.0.0'):
             sismap = xrmmap['scalars']
             sismap.attrs['type'] = 'scalar detectors'
@@ -1168,20 +1211,12 @@ class GSEXRM_MapFile(object):
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
-
             roi_names = [h5str(s) for s in conf['rois/name']]
             roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
 
-            offset = conf['mca_calib/offset'].value
-            slope  = conf['mca_calib/slope'].value
-            quad   = conf['mca_calib/quad'].value
-
-            en_index = np.arange(nchan)
-
-            if self.nrows_expected is None: self.nrows_expected = -1
             if verbose:
-                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                print(prtxt % (self.nrows_expected, npts, nmca, nchan))
+                msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i)'
+                print(msg % (npts, nmca, nchan))
 
             ## mca1 to mcaN
             for i in range(nmca):
@@ -1192,9 +1227,10 @@ class GSEXRM_MapFile(object):
                     dgrp.attrs['desc'] = imca
 
                 dgrp = xrmmap[imca]
-                en  = 1.0*offset[i] + slope[i]*1.0*en_index
-                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[i],
-                                                         'cal_slope': slope[i]})
+                self.add_data(dgrp, 'energy', enarr[i],
+                              attrs={'cal_offset':offset[i],
+                                     'cal_slope': slope[i],
+                                     'cal_quad': quad[i]})
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
                                     chunks=self.chunksize,
                                     maxshape=(None, npts, nchan), **self.compress_args)
@@ -1215,7 +1251,7 @@ class GSEXRM_MapFile(object):
                         rgrp.create_dataset(aname, (1, npts), dtype,
                                             chunks=self.chunksize[:-1],
                                             maxshape=(None, npts), **self.compress_args)
-                    lmtgrp = rgrp.create_dataset('limits', data=en[rlimit])
+                    lmtgrp = rgrp.create_dataset('limits', data=enarr[i][rlimit])
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
 
@@ -1226,9 +1262,10 @@ class GSEXRM_MapFile(object):
                 dgrp.attrs['desc'] = 'sum of detectors'
 
             dgrp = xrmmap['mcasum']
-            en  = 1.0*offset[0] + slope[0]*1.0*en_index
-            self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
-                                                     'cal_slope': slope[0]})
+            self.add_data(dgrp, 'energy', enarr[0],
+                          attrs={'cal_offset':offset[0],
+                                 'cal_slope': slope[0],
+                                 'cal_quad': quad[0]})
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.float64,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan), **self.compress_args)
@@ -1241,7 +1278,7 @@ class GSEXRM_MapFile(object):
                     rgrp.create_dataset(aname, (1, npts), dtype,
                                         chunks=self.chunksize[:-1],
                                         maxshape=(None, npts), **self.compress_args)
-                lmtgrp = rgrp.create_dataset('limits', data=en[rlimit], **self.compress_args)
+                lmtgrp = rgrp.create_dataset('limits', data=enarr[0][rlimit], **self.compress_args)
                 lmtgrp.attrs['type'] = 'energy'
                 lmtgrp.attrs['units'] = 'keV'
 
@@ -1297,12 +1334,6 @@ class GSEXRM_MapFile(object):
                 msg = '--- Build XRF Schema: {:d}  MCA: ({:d}, {:d})'
                 print(msg.format(npts, nmca, nchan))
 
-            en_index = np.arange(nchan)
-
-            offset = conf['mca_calib/offset'].value
-            slope  = conf['mca_calib/slope'].value
-            quad   = conf['mca_calib/quad'].value
-
             roi_names = [h5str(s) for s in conf['rois/name']]
             roi_addrs = [h5str(s) for s in conf['rois/address']]
             roi_limits = conf['rois/limits'].value
@@ -1311,9 +1342,10 @@ class GSEXRM_MapFile(object):
                 dgrp = xrmmap.create_group(dname)
                 dgrp.attrs['type'] = 'mca detector'
                 dgrp.attrs['desc'] = 'mca%i' % (imca+1)
-                en  = 1.0*offset[imca] + slope[imca]*1.0*en_index
-                self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[imca],
-                                                         'cal_slope': slope[imca]})
+                self.add_data(dgrp, 'energy', enarr[imca],
+                              attrs={'cal_offset':offset[imca],
+                                     'cal_slope': slope[imca],
+                                     'cal_quad': quad[imca]})
                 self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
                 self.add_data(dgrp, 'roi_address', [six.b(s % (imca+1)) for s in roi_addrs])
                 self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
@@ -1333,9 +1365,10 @@ class GSEXRM_MapFile(object):
             dgrp = xrmmap.create_group('detsum')
             dgrp.attrs['type'] = 'virtual mca'
             dgrp.attrs['desc'] = 'deadtime corrected sum of detectors'
-            en = 1.0*offset[0] + slope[0]*1.0*en_index
-            self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
-                                                     'cal_slope': slope[0]})
+            self.add_data(dgrp, 'energy', enarr[0],
+                          attrs={'cal_offset':offset[0],
+                                 'cal_slope': slope[0],
+                                 'cal_quad': quad[0]})
             self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
             self.add_data(dgrp, 'roi_address', [six.b(s % 1) for s in roi_addrs])
             self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
@@ -1396,8 +1429,8 @@ class GSEXRM_MapFile(object):
             if self.has_xrd2d:
                 xrdpts, xpixx, xpixy = xrd2d_shape # row.xrd2d.shape
                 if verbose:
-                    prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
-                    print(prtxt % (self.nrows_expected, npts, xpixx, xpixy))
+                    prtxt = '--- Build XRD Schema: %i ---- 2D XRD:  (%i, %i)'
+                    print(prtxt % (npts, xpixx, xpixy))
 
                 xrdgrp = ensure_subgroup('xrd2d',xrmmap)
 
@@ -1451,6 +1484,7 @@ class GSEXRM_MapFile(object):
             pass
 
         self.h5root.flush()
+
 
     def add_xrd1d(self, qstps=None):
 
@@ -1587,11 +1621,11 @@ class GSEXRM_MapFile(object):
 
             dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
             if 'mca' in dettype:
-                self.has_xrf   = self.check_flag(detgrp)
+                self.has_xrf   = 'counts' in detgrp
             elif 'xrd2d' in dettype:
-                self.has_xrd2d = self.check_flag(detgrp)
+                self.has_xrd2d = 'counts' in detgrp
             elif 'xrd1d' in dettype:
-                self.has_xrd1d = self.check_flag(detgrp)
+                self.has_xrd1d = 'counts' in detgrp
             elif det == 'xrd': ## compatible with old version
                 try:
                     detgrp['data1d']
@@ -1603,13 +1637,6 @@ class GSEXRM_MapFile(object):
                     self.has_xrd2d = True
                 except:
                     pass
-
-    def check_flag(self,detgrp):
-        try:
-            detgrp['counts']
-            return True
-        except:
-            return False
 
     def print_flags(self):
         print('   HAS XRF, XRD1D, XRD2D: %s, %s, %s' % (self.has_xrf,
@@ -2050,11 +2077,10 @@ class GSEXRM_MapFile(object):
         elif dtcorrect:
             if 'sum' in datapath:
                 sino = np.zeros(np.shape(np.einsum('jki->ijk', datagroup.value)))
-                for i in range(4):
-                ##for i in range(self.ndet):
-                    idatapath = datapath.replace('sum',str(i+1))
+                for i in range(self.nmca):
+                    idatapath = datapath.replace('sum', str(i+1))
                     idatagroup = self.xrmmap[idatapath]
-                    idetpath  = detpath.replace('sum',str(i+1))
+                    idetpath  = detpath.replace('sum', str(i+1))
                     idetgroup = self.xrmmap[idetpath]
                     sino += np.einsum('jki->ijk', idatagroup.value) * idetgroup['dtfactor'].value
 
@@ -2092,10 +2118,6 @@ class GSEXRM_MapFile(object):
             tomogrp.attrs[key] = val
 
         self.h5root.flush()
-
-    def claim_hostid(self):
-        "claim ownership of file"
-        self.take_ownership()
 
     def take_ownership(self):
         "claim ownership of file"
@@ -2142,7 +2164,7 @@ class GSEXRM_MapFile(object):
             return
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
-        # print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
+        print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
         def toppath(pname, n=4):
             words = []
             for i in range(n):
@@ -2227,14 +2249,13 @@ class GSEXRM_MapFile(object):
 
         cfile = FastMapConfig()
         cfile.Read(os.path.join(self.folder, self.ScanFile))
-        self.mapconf = cfile.config
+        mapconf = self.mapconf = cfile.config
 
         if self.filename is None:
-            self.filename = self.mapconf['scan']['filename']
+            self.filename = mapconf['scan']['filename']
         if not self.filename.endswith('.h5'):
             self.filename = "%s.h5" % self.filename
 
-        mapconf = self.mapconf
         slow_pos = mapconf['slow_positioners']
         fast_pos = mapconf['fast_positioners']
 
@@ -2264,13 +2285,13 @@ class GSEXRM_MapFile(object):
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
         dgroup = '%ssum' % mcastr
 
-        if isinstance(det,six.string_types):
+        if isinstance(det, str):
             for d in build_detector_list(self.xrmmap):
                 if det.lower() == d.lower():
                     dgroup = d
         elif isinstance(det, int):
-            if det in range(1, self.ndet+1):
-                dgroup = '%s%i' % (mcastr,det)
+            if det in range(1, self.nmca+1):
+                dgroup = '%s%i' % (mcastr, det)
 
         return dgroup
 
@@ -2443,12 +2464,12 @@ class GSEXRM_MapFile(object):
         if det is None or 'sum' in str(det):
             livetime = np.zeros((ny, nx))
             realtime = np.zeros((ny, nx))
-            for d in range(1, self.ndet+1):
+            for d in range(1, self.nmca+1):
                 dmap = self._det_group(d)
                 livetime += dmap['livetime'][sy, sx]
                 realtime += dmap['realtime'][sy, sx]
-            livetime /= (1.0*self.ndet)
-            realtime /= (1.0*self.ndet)
+            livetime /= (1.0*self.mca)
+            realtime /= (1.0*self.nmca)
         else:
             dmap = self._det_group(det)
             livetime = dmap['livetime'][sy, sx]
@@ -2862,7 +2883,7 @@ class GSEXRM_MapFile(object):
                         if roi.startswith(roiname):
                             roiname = roi
 
-            if detname in ['det%d' % (i+1) for i in range(self.ndet)]:
+            if detname in ['det%d' % (i+1) for i in range(self.nmca)]:
                 idet = int(''.join([i for i in detname if i.isdigit()]))
                 detname = 'roimap/det_'
 
