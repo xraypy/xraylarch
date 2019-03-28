@@ -41,7 +41,7 @@ class GSEXRM_Exception(Exception):
     pass
 
 
-class GSEXRM_Detector(object):
+class GSEXRM_MCADetector(object):
     '''Detector class, representing 1 detector element (real or virtual)
     has the following properties (many of these as runtime-calculated properties)
 
@@ -59,15 +59,16 @@ class GSEXRM_Detector(object):
     outputcount    array of output count
 
     '''
-    def __init__(self, xrmmap, index=None):
+    def __init__(self, xrmmap, prefix='mca', index=None):
         self.xrmmap = xrmmap
+        self.prefix = prefix
         self.__ndet =  xrmmap.attrs.get('N_Detectors', 0)
         self.det = None
         self.rois = []
-        detname = 'det1'
+        detname = '%s1' % prefix
         if index is not None:
-            self.det = self.xrmmap['det%i' % index]
-            detname = 'det%i' % index
+            detname = '%s%i' % (prefix, index)
+            self.det = self.xrmmap[detname]
 
         self.shape =  self.xrmmap['%s/livetime' % detname].shape
 
@@ -84,9 +85,9 @@ class GSEXRM_Detector(object):
 
     def __getval(self, param):
         if self.det is None:
-            out = self.xrmmap['det1/%s' % (param)].value
+            out = self.xrmmap['%s1/%s' % (self.prefix, param)].value
             for i in range(2, self.__ndet):
-                out += self.xrmmap['det%i/%s' % (i, param)].value
+                out += self.xrmmap['%s%i/%s' % (self.prefix, i, param)].value
             return out
         return self.det[param].value
 
