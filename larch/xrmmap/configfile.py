@@ -46,6 +46,7 @@ group =
 positioners=
 [scan]
 filename = scan.001
+comments =
 dimension = 2
 pos1 =
 start1 = -1.0
