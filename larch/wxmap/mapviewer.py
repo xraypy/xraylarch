@@ -118,7 +118,7 @@ PLOT_OPERS = ('/', '*', '-', '+')
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
 if ESCAN_CRED is not None:
     try:
-        from ..epics.scandb_plugin import connect_scandb
+        from ..epics.larchscan import connect_scandb
     except ImportError:
         ESCAN_CRED = None
 
@@ -1521,9 +1521,11 @@ class MapViewerFrame(wx.Frame):
         # make sure we can save position into database
         if self.scandb is None or self.instdb is None:
             return
+
         samplestage = self.instdb.get_instrument(self.inst_name)
         if samplestage is None:
             return
+
         allpvs = [pv.name for pv in samplestage.pv]
 
         pvn  = pv_fullname
@@ -1682,7 +1684,6 @@ class MapViewerFrame(wx.Frame):
             pass
 
         self.Raise()
-
         self.onFolderSelect()
 
         if ESCAN_CRED is not None:
