@@ -541,7 +541,7 @@ class GSEXRM_MapFile(object):
             self.read_master()
 
         if self.nmca is None:
-            self.nmca = self.xrmmap.attrs.get('N_Detectors', None)
+            self.nmca = self.xrmmap.attrs.get('N_Detectors', 1)
 
     def close(self):
         if self.check_hostid():
@@ -1161,6 +1161,7 @@ class GSEXRM_MapFile(object):
             if xkey == 'Version':
                 self.version = xval
 
+        self.xrmmap.attrs['N_Detectors'] = nmca
         if scaler_names is None:
             scaler_names = []
         if scaler_addrs is None:
@@ -2454,7 +2455,7 @@ class GSEXRM_MapFile(object):
         Does *not* check for errors!
 
         '''
-        # need real size, not just slice values, for np.zeros()
+        # need real size, not just slice values, for np.zeros()2
         shape = self._det_group(1)['livetime'].shape
         if ymax < 0: ymax += shape[0]
         if xmax < 0: xmax += shape[1]
@@ -2468,7 +2469,7 @@ class GSEXRM_MapFile(object):
                 dmap = self._det_group(d)
                 livetime += dmap['livetime'][sy, sx]
                 realtime += dmap['realtime'][sy, sx]
-            livetime /= (1.0*self.mca)
+            livetime /= (1.0*self.nmca)
             realtime /= (1.0*self.nmca)
         else:
             dmap = self._det_group(det)
