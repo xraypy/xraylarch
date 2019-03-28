@@ -13,7 +13,7 @@ from functools import partial
 
 import larch
 from larch.utils import debugtime, isotime
-from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
+from larch.utils.strutils import fix_filename, bytes2str, version_ge
 
 from larch.io import (nativepath, new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
@@ -37,9 +37,7 @@ COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
 NOT_OWNER = "Not Owner of HDF5 file %s"
-STEPS = 4096
-STEPS = 2048
-
+QSTEPS = 2048
 
 H5ATTRS = {'Type': 'XRM 2D Map',
            'Version': '2.1.0',
@@ -65,68 +63,6 @@ def h5str(obj):
     return out
 
 
-def parse_sisnames(text):
-    return [fix_varname(s.strip()) for s in text.replace('#', '').split('|')]
-
-
-def getFileStatus(filename, root=None, folder=None):
-    '''return status, top-level group, and version'''
-    # set defaults for file does not exist
-    # print(" Get Status ", filename, folder)
-    if folder is not None:
-        folder = os.path.abspath(folder)
-        parent, folder = os.path.split(folder)
-    status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
-    if root not in ('', None):
-        top = root
-    # see if file exists:
-    if (not os.path.exists(filename) or
-        not os.path.isfile(filename) ):
-        return status, top, vers
-
-    # see if file is empty/too small(signifies "read from folder")
-    if os.stat(filename).st_size < 1024:
-        return GSEXRM_FileStatus.empty, top, vers
-
-    if not os.access(filename, os.W_OK):
-        return GSEXRM_FileStatus.err_nowrite, top, vers
-    # see if file is an H5 file
-    try:
-        fh = h5py.File(filename)
-    except IOError:
-        return GSEXRM_FileStatus.err_nothdf5, top, vers
-
-    status =  GSEXRM_FileStatus.no_xrfmap
-    ##
-    def test_h5group(group, folder=None):
-        valid = ('config' in group and 'roimap' in group)
-        for attr in  ('Version', 'Map_Folder',
-                      'Dimension', 'Start_Time'):
-            valid = valid and attr in group.attrs
-        if not valid:
-            return None, None
-        status = GSEXRM_FileStatus.hasdata
-        vers = group.attrs.get('Version','')
-        fullpath = group.attrs.get('Map_Folder','')
-        _parent, _folder = os.path.split(fullpath)
-
-        if folder is not None and folder != _folder:
-            status = GSEXRM_FileStatus.wrongfolder
-        return status, vers
-
-    if root is not None and root in fh:
-        s, v = test_h5group(fh[root], folder=folder)
-        if s is not None:
-            status, top, vers = s, root, v
-    else:
-        # print( 'Root was None ', fh.items())
-        for name, group in fh.items():
-            s, v = test_h5group(group, folder=folder)
-            if s is not None:
-                status, top, vers = s, name, v
-                break
-    fh.close()
-    return status, top, vers
 
 def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
@@ -148,6 +84,22 @@ def isGSEXRM_MapFolder(fname):
     except:
         pass
     return has_xrmdata
+
+
+def test_h5group(group, folder=None):
+    "test h5 group as a XRM Map"
+    valid = ('config' in group and 'roimap' in group)
+    for attr in  ('Version', 'Map_Folder', 'Dimension', 'Start_Time'):
+        valid = valid and attr in group.attrs
+    if not valid:
+        return None, None
+    status = GSEXRM_FileStatus.hasdata
+    vers = group.attrs.get('Version','')
+    fullpath = group.attrs.get('Map_Folder','')
+    _parent, _folder = os.path.split(fullpath)
+    if folder is not None and folder != _folder:
+        status = GSEXRM_FileStatus.wrongfolder
+    return status, vers
 
 
 def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
@@ -253,32 +205,23 @@ def build_datapath_list(xrmmap):
         return sub_list
 
     for det in det_list:
-        for idet in find_detector(xrmmap[det]):
+       for idet in find_detector(xrmmap[det]):
             data_list += [idet]
 
     return data_list
 
 
 def build_detector_list(group):
-
-    det_list = []
-    for key in group.keys():
-        try:
-            is_det = bytes2str(group[key].attrs.get('type', '')).find('det') > -1
-            if not is_det:
-               is_det = bytes2str(group[key].attrs.get('type', '')).find('mca') > -1
-        except:
-            is_det = False
-        if is_det and key not in det_list:
-            det_list += [key]
-    det_list = sorted(det_list)
-
-    for i,det in enumerate(det_list):
-        if 'sum' in det.lower():
-            det_list = [det_list[i]] + det_list[:i] + det_list[i+1:]
-
-    return det_list
-
+    dlist, out = [], []
+    for key, grp in group.items():
+        if ('det' in bytes2str(grp.attrs.get('type', '')) or
+            'mca' in bytes2str(grp.attrs.get('type', ''))):
+            if 'sum' in key.lower():
+                out.append(key)
+            else:
+                dlist.append(key)
+    out.extend(dlist)
+    return out
 
 
 class GSEXRM_MapFile(object):
@@ -319,11 +262,12 @@ class GSEXRM_MapFile(object):
     XRDCALFile = 'XRD.poni'
     MasterFile = 'Master.dat'
 
-    def __init__(self, filename=None, folder=None, hotcols=False,
-                 dtcorrect=True, root=None, chunksize=None, xrdcal=None,
-                 xrd2dmask=None, xrd2dbkgd=None, xrd1dbkgd=None, azwdgs=0,
-                 qstps=STEPS, flip=True, bkgdscale=1., has_xrf=True,
-                 has_xrd1d=False, has_xrd2d=False, compression=COMPRESSION,
+    def __init__(self, filename=None, folder=None, create_empty=False,
+                 hotcols=False, dtcorrect=True, root=None, chunksize=None,
+                 xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
+                 xrd1dbkgd=None, azwdgs=0, qstps=QSTEPS, flip=True,
+                 bkgdscale=1., has_xrf=True, has_xrd1d=False,
+                 has_xrd2d=False, compression=COMPRESSION,
                  compression_opts=COMPRESSION_OPTS, facility='APS',
                  beamline='13-ID-E', run='', proposal='', user='',
                  scandb=None, **kws):
@@ -383,8 +327,7 @@ class GSEXRM_MapFile(object):
         nmaster = -1
         # initialize from filename or folder
         if self.filename is not None:
-            self.status, self.root, self.version = getFileStatus(self.filename,
-                                                                 root=root)
+            self.getFileStatus(root=root)
             # see if file contains name of folder
             # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
@@ -395,14 +338,18 @@ class GSEXRM_MapFile(object):
                 ftmp.close()
                 os.unlink(self.filename)
 
+        if (self.status==GSEXRM_FileStatus.err_notfound and
+            self.filename is not None and self.folder is None and
+            isGSEXRM_MapFolder(self.filename)):
+                self.folder = self.filename
+                self.filename = None
+
         if isGSEXRM_MapFolder(self.folder):
             nmaster = self.read_master()
             if self.filename is None:
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
-            self.status, self.root, self.version = \
-                getFileStatus(self.filename, root=root,
-                              folder=self.folder)
+            self.getFileStatus(root=root)
 
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
@@ -430,6 +377,7 @@ class GSEXRM_MapFile(object):
                 self.status =  GSEXRM_FileStatus.err_notfound
             except (IOError, ValueError):
                 pass
+
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
@@ -451,8 +399,6 @@ class GSEXRM_MapFile(object):
                           folder=self.folder, start_time=self.start_time)
 
             self.notes['h5_create_time'] = isotime()
-            # print("XRM Map File>  ", self.filename, self.folder, self.status)
-
             self.status = GSEXRM_FileStatus.created
             self.open(self.filename, root=self.root, check_status=False)
 
@@ -463,14 +409,71 @@ class GSEXRM_MapFile(object):
                               xrd2dmaskfile=xrd2dmask,
                               xrd2dbkgdfile=xrd2dbkgd,
                               xrd1dbkgdfile=xrd1dbkgd)
+        elif (self.filename is not None and
+              self.status == GSEXRM_FileStatus.err_notfound and create_empty):
+            self.h5root = h5py.File(self.filename)
+            create_xrmmap(self.h5root, root=None, dimension=2, start_time=self.start_time)
+
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
+        # print("Initialized done ", self.status, self.version, self.root)
 
     def __repr__(self):
         fname = ''
         if self.filename is not None:
             fpath, fname = os.path.split(self.filename)
         return "GSEXRM_MapFile('%s')" % fname
+
+
+    def getFileStatus(self, filename=None, root=None, folder=None):
+        '''return status, top-level group, and version'''
+        if filename is not None:
+            self.filename = filename
+        filename = self.filename
+        folder = self.folder
+        if folder is not None:
+            folder = os.path.abspath(folder)
+            parent, folder = os.path.split(folder)
+        self.status = GSEXRM_FileStatus.err_notfound
+        self.top, self.version = '', ''
+        if root not in ('', None):
+            self.top = root
+        # see if file exists:
+        if not (os.path.exists(filename) and os.path.isfile(filename)):
+            return
+
+        # see if file is empty/too small(signifies "read from folder")
+        if os.stat(filename).st_size < 1024:
+            self.status = GSEXRM_FileStatus.empty
+            return
+
+        if not os.access(filename, os.W_OK):
+            self.status = GSEXRM_FileStatus.err_nowrite
+            return
+
+        # see if file is an H5 file
+        try:
+            fh = h5py.File(filename, 'r')
+        except IOError:
+            self.status = GSEXRM_FileStatus.err_nothdf5
+            return
+
+        status =  GSEXRM_FileStatus.no_xrfmap
+        if root is not None and root in fh:
+            stat, vers = test_h5group(fh[root], folder=folder)
+            if stat is not None:
+                self.status = stat
+                self.top, self.version = root, vers
+        else:
+            for root, group in fh.items():
+                stat, vers = test_h5group(group, folder=folder)
+                if stat is not None:
+                    self.status = stat
+                    self.top, self.version = root, vers
+                    break
+        fh.close()
+        return
+
 
     def get_det(self, index):
         return GSEXRM_Detector(self.xrmmap, index=index)
@@ -509,8 +512,7 @@ class GSEXRM_MapFile(object):
         if root in ('', None):
             root = DEFAULT_ROOTNAME
         if check_status:
-            self.status, self.root, self.version = \
-                         getFileStatus(filename, root=root)
+            self.getFileStatus(filename, root=root)
             if self.status not in (GSEXRM_FileStatus.hasdata,
                                    GSEXRM_FileStatus.created):
                 raise GSEXRM_Exception(
@@ -670,6 +672,7 @@ class GSEXRM_MapFile(object):
         possible once at least 1 row of raw data is available
         in the scan folder.
         '''
+        print("initialize_xrmmap")
         self.starttime = time.time()
         if self.status == GSEXRM_FileStatus.hasdata:
             return
@@ -696,9 +699,20 @@ class GSEXRM_MapFile(object):
     def process_row(self, irow, flush=False, callback=None):
 
         row = self.read_rowdata(irow)
-
         if irow == 0:
-            self.build_schema(row, verbose=True)
+            nmca, nchan = 2048, 1
+            if row.counts is not None:
+                nmca, xnpts, nchan = row.counts.shape
+            xrd2d_shape = None
+            if row.xrd2d is not None:
+                xrd2d_shape = rows.xrd2d.shape
+            # print(" -> build schema ", row)
+            # print(row.npts, nmca, nchan, xrd2d_shape)
+            # print(row.scaler_names, row.scaler_addrs)
+            self.build_schema(row.npts, nmca=nmca, nchan=nchan,
+                              scaler_names=row.scaler_names,
+                              scaler_addrs=row.scaler_addrs,
+                              xrd2d_shape=xrd2d_shape, verbose=True)
 
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
@@ -878,7 +892,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         thisrow = self.last_row + 1
-
+        # print("Add RowData ", row.sishead[-1], row.scaler_names)
         if hasattr(callback, '__call__'):
             callback(row=(thisrow+1), maxrow=len(self.rowdata), filename=self.filename)
 
@@ -910,7 +924,7 @@ class GSEXRM_MapFile(object):
 
             dt.add(" resized ")
             sclrgrp = self.xrmmap['scalars']
-            for ai, aname in enumerate(parse_sisnames(row.sishead[-1])):
+            for ai, aname in enumerate(row.scaler_names):
                 sclrgrp[aname][thisrow,  :npts] = row.sisdata[:npts].transpose()[ai]
             dt.add(" add scaler group")
             if self.has_xrf:
@@ -1112,29 +1126,29 @@ class GSEXRM_MapFile(object):
         # dt.show()
 
 
-    def build_schema(self, row, verbose=False):
+    def build_schema(self, npts, nmca=2048, nchan=1,
+                     scaler_names=None, scaler_addrs=None,
+                     xrd2d_shape=None, verbose=False):
         '''build schema for detector and scan data'''
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
-        # print('XRM Map Folder: %s' % self.folder)
         xrmmap = self.xrmmap
+        if scaler_names is None:
+            scaler_names = []
+        if scaler_addrs is None:
+            scaler_addrs = [''] * len(scaler_names)
 
         conf = xrmmap['config']
         for key in self.notes:
             conf['notes'].attrs[key] = self.notes[key]
 
         if self.npts is None:
-            self.npts = row.npts
-        npts = self.npts
-        if self.has_xrf:
-            nmca, xnpts, nchan = row.counts.shape
-        else:
-            nmca, xnpts, nchan = 1, self.npts, 1
+            self.npts = npts
 
         if self.chunksize is None:
-            self.chunksize = (1, min(2048, xnpts), nchan)
+            self.chunksize = (1, min(2048, npts), nchan)
 
         # positions
         pos = xrmmap['positions']
@@ -1150,7 +1164,7 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             sismap = xrmmap['scalars']
             sismap.attrs['type'] = 'scalar detectors'
-            for aname in parse_sisnames(row.sishead[-1]):
+            for aname in scaler_names:
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
@@ -1167,7 +1181,7 @@ class GSEXRM_MapFile(object):
             if self.nrows_expected is None: self.nrows_expected = -1
             if verbose:
                 prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                print(prtxt % (self.nrows_expected, row.npts, nmca, nchan))
+                print(prtxt % (self.nrows_expected, npts, nmca, nchan))
 
             ## mca1 to mcaN
             for i in range(nmca):
@@ -1233,8 +1247,8 @@ class GSEXRM_MapFile(object):
 
             if version_ge(self.version, '2.1.0'):  # NEW ROI RAW DAT
                 rdat = xrmmap['roimap']
-                det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
-                det_desc = [i.strip() for i in row.sishead[-1][1:].split('|')]
+                det_addr = [i.strip() for i in scaler_addrs]
+                det_desc = [i.strip() for i in scaler_names]
                 for addr in conf['rois/address']:
                     det_addr.extend([h5str(addr) % (i+1) for i in range(nmca)])
 
@@ -1276,15 +1290,12 @@ class GSEXRM_MapFile(object):
                                         ):
                     rdat.create_dataset(name, (NINIT, npts, nx), dtype,
                                         chunks=(2, npts, nx),
-                                        maxshape=(None, npts, nx), **self.compress_args)
-
-
-
+                                       maxshape=(None, npts, nx), **self.compress_args)
 
         else:  # version 1.*
             if verbose:
-                prtxt = '--- Build XRF Schema: %i, %i ---- MCA: (%i, %i)'
-                print(prtxt % (npts, row.npts, nmca, nchan))
+                msg = '--- Build XRF Schema: {:d}  MCA: ({:d}, {:d})'
+                print(msg.format(npts, nmca, nchan))
 
             en_index = np.arange(nchan)
 
@@ -1333,8 +1344,8 @@ class GSEXRM_MapFile(object):
                                 maxshape=(None, npts, nchan), **self.compress_args)
             # roi map data
             scan = xrmmap['roimap']
-            det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
-            det_desc = [i.strip() for i in row.sishead[-1][1:].split('|')]
+            det_addr = [i.strip() for i in scaler_addrs]
+            det_desc = [i.strip() for i in scaler_names]
             for addr in roi_addrs:
                 det_addr.extend([addr % (i+1) for i in range(nmca)])
 
@@ -1383,10 +1394,10 @@ class GSEXRM_MapFile(object):
 
         if self.has_xrd2d or self.has_xrd1d:
             if self.has_xrd2d:
-                xrdpts, xpixx, xpixy = row.xrd2d.shape
+                xrdpts, xpixx, xpixy = xrd2d_shape # row.xrd2d.shape
                 if verbose:
                     prtxt = '--- Build XRD Schema: %i, %i ---- 2D XRD:  (%i, %i)'
-                    print(prtxt % (self.nrows_expected, row.npts, xpixx, xpixy))
+                    print(prtxt % (self.nrows_expected, npts, xpixx, xpixy))
 
                 xrdgrp = ensure_subgroup('xrd2d',xrmmap)
 
@@ -1402,9 +1413,7 @@ class GSEXRM_MapFile(object):
                                       maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
 
             if self.has_xrd1d:
-
                 xrdgrp = ensure_subgroup('xrd1d',xrmmap)
-
                 xrdgrp.attrs['type'] = 'xrd1d detector'
                 xrdgrp.attrs['desc'] = 'pyFAI calculation from xrd2d data'
 
@@ -1452,8 +1461,6 @@ class GSEXRM_MapFile(object):
             try:
                 nrows, npts , xpixx, xpixy = self.xrmmap['xrd2d/counts'].shape
             except:
-                #if version_ge(self.version, '2.0.0'):
-                #    print('Only compatible with newest hdf5 mapfile version.')
                 return
 
             if qstps is not None: self.qstps = qstps

@@ -6,7 +6,7 @@ import larch
 
 from larch.io import (read_xsp3_hdf5, read_xrf_netcdf,
                       read_xrd_netcdf, read_xrd_hdf5)
-
+from larch.utils.strutils import fix_varname
 from .asciifiles import (readASCII, readMasterFile, readROIFile,
                          readEnvironFile, read1DXRDFile, parseEnviron)
 
@@ -21,6 +21,8 @@ def fix_xrd1d_filename(xrd_file):
         return xrd1d_file
     return None
 
+def parse_sisnames(text):
+    return [fix_varname(s.strip()) for s in text.replace('#', '').split('|')]
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
@@ -157,7 +159,6 @@ class GSEXRM_MapRow:
                  wdg=0, steps=4096, flip=True,
                  has_xrf=True, has_xrd2d=False, has_xrd1d=False):
 
-
         self.read_ok = False
         self.nrows_expected = nrows_expected
 
@@ -178,6 +179,7 @@ class GSEXRM_MapRow:
         self.xpsfile = xpsfile
         self.sisfile = sisfile
         self.xrdfile = xrdfile
+        self.counts  = None
 
         self.xrd2d     = None
         self.xrdq      = None
@@ -242,7 +244,22 @@ class GSEXRM_MapRow:
         gnpts, ngather  = gdata.shape
 
         self.sishead = shead
-        if dtime is not None:  dtime.add('maprow: read ascii files')
+        self.scaler_names = parse_sisnames(self.sishead[-1])
+        self.scaler_addrs = ['']*len(self.scaler_names)
+        for sline in shead:
+            if sline.startswith('# Column'):
+                l, val = sline.split(': ')
+                val = val.strip()
+                label, addr, formula = [x.strip() for x in val.split('|')]
+                if label in self.scaler_names:
+                    i = self.scaler_names.index(label)
+                    self.scaler_addrs[i] = addr
+
+        # print(" Read Scalers for row: ")
+        # print(self.scaler_names)
+        # print(self.scaler_addrs)
+        if dtime is not None:
+            dtime.add('maprow: read ascii files')
         t0 = time.time()
 
         atime = -1
