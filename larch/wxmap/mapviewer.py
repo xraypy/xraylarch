@@ -118,7 +118,7 @@ PLOT_OPERS = ('/', '*', '-', '+')
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
 if ESCAN_CRED is not None:
     try:
-        from ..epics.scandb_plugin import connect_scandb
+        from ..epics.larchscan import connect_scandb
     except ImportError:
         ESCAN_CRED = None
 
