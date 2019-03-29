@@ -6,7 +6,7 @@ from .xafsutils import set_xafsGroup
 from .pre_edge import preedge
 
 def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
-              angout=45,  _larch=None, **pre_kws):
+              angout=45, _larch=None, **pre_kws):
     """correct over-absorption (self-absorption) for fluorescene XAFS
     using the FLUO alogrithm of D. Haskel.
 
@@ -37,30 +37,37 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='fluo_corr')
+    # gather pre-edge options
+    pre_opts = {'e0': None, 'nnorm': 1, 'nvict': 0,
+                'pre1': None, 'pre2': -30,
+                'norm1': 100, 'norm2': None}
+    if hasattr(group, 'pre_edge_details'):
+        uopts = getattr(group.pre_edge_details, 'call_args', {})
+        for attr in pre_opts:
+            if attr in uopts:
+                pre_opts[attr] = uopts[attr]
+    pre_opts.update(pre_kws)
+    pre_opts['step'] = None
+    pre_opts['nvict'] = 0
 
     # generate normalized mu for correction
-    preinp   = preedge(energy, mu, **pre_kws)
-    mu_inp   = preinp['norm']
+    preinp   = preedge(energy, mu, **pre_opts)
 
-    anginp   = max(1.e-7, np.deg2rad(anginp))
-    angout   = max(1.e-7, np.deg2rad(angout))
+    ang_corr = (np.sin(max(1.e-7, np.deg2rad(anginp))) /
+                np.sin(max(1.e-7, np.deg2rad(angout))))
 
     # find edge energies and fluorescence line energy
-    e_edge   = xray_edge(elem, edge)[0]
-    e_fluor  = xray_line(elem, edge)[0]
+    e_edge  = xray_edge(elem, edge)[0]
+    e_fluor = xray_line(elem, edge)[0]
 
     # calculate mu(E) for fluorescence energy, above, below edge
-    energies = np.array([e_fluor, e_edge-10.0, e_edge+10.0])
-    muvals   = material_mu(formula, energies, density=1)
+    muvals  = material_mu(formula,
+                         np.array([e_fluor, e_edge-10.0, e_edge+10.0]),
+                         density=1)
 
-    mu_fluor = muvals[0] * np.sin(anginp)/np.sin(angout)
-    mu_below = muvals[1]
-    mu_celem = muvals[2] - muvals[1]
-
-    alpha    = (mu_fluor + mu_below)/mu_celem
-    mu_corr  = mu_inp*alpha/(alpha + 1 - mu_inp)
-    preout   = preedge(energy, mu_corr, **pre_kws)
-
+    alpha   = (muvals[0]*ang_corr + muvals[1])/(muvals[2] - muvals[1])
+    mu_corr = mu*alpha/(alpha + 1 - preinp['norm'])
+    preout  = preedge(energy, mu_corr, **pre_opts)
     if group is not None:
         if _larch is not None:
             group = set_xafsGroup(group, _larch=_larch)
