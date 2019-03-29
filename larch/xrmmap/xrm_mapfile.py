@@ -720,7 +720,7 @@ class GSEXRM_MapFile(object):
             return
 
         self.last_row = -1
-        print(" Initialize XRMMAP -> Add Map Config ", self.mapconf)
+        # print(" Initialize XRMMAP -> Add Map Config ", self.mapconf)
         self.add_map_config(self.mapconf)
 
         self.process_row(0, flush=True, callback=callback)
@@ -2165,7 +2165,7 @@ class GSEXRM_MapFile(object):
             return
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
-        print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
+        # print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
         def toppath(pname, n=4):
             words = []
             for i in range(n):
