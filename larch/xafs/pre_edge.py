@@ -170,9 +170,9 @@ def preedge(energy, mu, e0=None, step=None,
 
     if nnorm is None:
         nnorm = 0
-        if nnorm2-nnorm1 > 100:
+        if norm2-norm1 > 100:
             nnorm = 1
-        if nnorm2-nnorm1 > 400:
+        if norm2-norm1 > 400:
             nnorm = 2
     nnorm = max(min(nnorm, MAX_NNORM), 0)
 
