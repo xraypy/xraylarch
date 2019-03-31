@@ -88,7 +88,7 @@ def flat_resid(pars, en, mu):
 
 
 def preedge(energy, mu, e0=None, step=None,
-            nnorm=2, nvict=0, pre1=None, pre2=-50,
+            nnorm=None, nvict=0, pre1=None, pre2=-50,
             norm1=100, norm2=None):
     """pre edge subtraction, normalization for XAFS (straight python)
 
@@ -110,7 +110,7 @@ def preedge(energy, mu, e0=None, step=None,
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
-             post-edge normalization curve. Default=2 (quadratic), max=5
+             post-edge normalization curve. Default=None -- see note.
     Returns
     -------
       dictionary with elements (among others)
@@ -122,19 +122,20 @@ def preedge(energy, mu, e0=None, step=None,
 
     Notes
     -----
-     1 nvict gives an exponent to the energy term for the fits to the pre-edge
+    1  nvict gives an exponent to the energy term for the fits to the pre-edge
        and the post-edge region.  For the pre-edge, a line (m * energy + b) is
        fit to mu(energy)*energy**nvict over the pre-edge region,
        energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
        nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
        energy=[e0+norm1, e0+norm2].
+    2  nnorm will default to 2 in norm2-norm1>300, to 1 if 100>norm2-norm1>300, and
+       to 0 in norm2-norm1<100.
 
     """
     energy = remove_dups(energy)
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
         e0 = _finde0(energy, mu)
 
-    nnorm = max(min(nnorm, MAX_NNORM), 0)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
@@ -167,15 +168,20 @@ def preedge(energy, mu, e0=None, step=None,
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
-    # reduce dimension to linear if less than 75 eV given
-    if abs(norm2-norm1) < 75.0:
-        nnorm = min(nnorm, 1)
+    if nnorm is None:
+        nnorm = 0
+        if nnorm2-nnorm1 > 100:
+            nnorm = 1
+        if nnorm2-nnorm1 > 400:
+            nnorm = 2
+    nnorm = max(min(nnorm, MAX_NNORM), 0)
 
-    coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
-    post_edge = 0
+    presub = (mu-pre_edge)[p1:p2]
+    coefs = polyfit(energy[p1:p2], presub, nnorm)
+    post_edge = 1.0*pre_edge
     norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):
-        post_edge += c * energy**(n-nvict)
+        post_edge += c * energy**(n)
         norm_coefs.append(c)
     edge_step = step
     if edge_step is None:
@@ -192,7 +198,7 @@ def preedge(energy, mu, e0=None, step=None,
 
 @Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
-             nnorm=2, nvict=0, pre1=None, pre2=-50,
+             nnorm=None, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, make_flat=True, _larch=None):
     """pre edge subtraction, normalization for XAFS
 
@@ -215,7 +221,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
-             post-edge normalization curve. Default=2 (quadratic), max=5
+             post-edge normalization curve. Default=None (see note)
     make_flat: boolean (Default True) to calculate flattened output.
 
 
@@ -236,14 +242,15 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
 
     Notes
     -----
-     1 nvict gives an exponent to the energy term for the fits to the pre-edge
+    1  nvict gives an exponent to the energy term for the fits to the pre-edge
        and the post-edge region.  For the pre-edge, a line (m * energy + b) is
        fit to mu(energy)*energy**nvict over the pre-edge region,
        energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
        nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
        energy=[e0+norm1, e0+norm2].
-
-     2 If the first argument is a Group, it must contain 'energy' and 'mu'.
+    2  nnorm will default to 2 in norm2-norm1>400,  to 1 if 100>norm2-norm1>300, and
+       to 0 in norm2-norm1<100.
+    3  If the first argument is a Group, it must contain 'energy' and 'mu'.
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
     """
