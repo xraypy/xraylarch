@@ -27,7 +27,7 @@ _larch_builtins = {}
 
 FONTSIZE = 10
 if platform.system() == 'Windows':
-    FONTSIZE = 11
+    FONTSIZE = 10
 if platform.system() == 'Darwin':
     FONTSIZE = 12
 
