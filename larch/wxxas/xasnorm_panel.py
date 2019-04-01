@@ -637,8 +637,6 @@ class XASNormPanel(TaskPanel):
                                    ('norm_poly', PLOTOPTS_2, 'polynomial')]
 
         dgroup.plot_ylabel = lab
-        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
-        dgroup.plot_extras = []
 
         needs_proc = False
         force_mback = False
@@ -649,6 +647,9 @@ class XASNormPanel(TaskPanel):
         if needs_proc:
             self.process(dgroup=dgroup, force_mback=force_mback, noskip=True)
 
+        y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
+        dgroup.plot_extras = []
+
         if form['show_e0']:
             ie0 = index_of(dgroup.energy, dgroup.e0)
             dgroup.plot_extras.append(('marker', dgroup.e0, y4e0[ie0], {}))
@@ -657,7 +658,6 @@ class XASNormPanel(TaskPanel):
              multi=False, new=True, zoom_out=True, with_extras=True, **kws):
         if self.skip_plotting:
             return
-        self.get_plot_arrays(dgroup)
         ppanel = self.controller.get_display(stacked=False).panel
         viewlims = ppanel.get_viewlimits()
         plotcmd = ppanel.oplot
@@ -678,6 +678,7 @@ class XASNormPanel(TaskPanel):
              getattr(dgroup, 'dmude', None) is None or
              getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
+        self.get_plot_arrays(dgroup)
 
         if plot_yarrays is None and hasattr(dgroup, 'plot_yarrays'):
             plot_yarrays = dgroup.plot_yarrays
