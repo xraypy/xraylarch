@@ -5,11 +5,10 @@ XANES Normalization panel
 import os
 import time
 import wx
-import six
 import numpy as np
 
 from functools import partial
-from collections import OrderedDict
+
 from lmfit.printfuncs import gformat
 from larch.math import index_of
 from larch.xray import guess_edge, atomic_number
@@ -32,29 +31,27 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
-                               (six.u('Normalized \u03BC(E)'), 'norm'),
-                               (six.u('d\u03BC(E)/dE'), 'dmude'),
-                               (six.u('Raw \u03BC(E) + d\u03BC(E)/dE'), 'mu+dmude'),
-                               (six.u('Normalized \u03BC(E) + d\u03BC(E)/dE'), 'norm+dnormde'),
-                               (six.u('Flattened \u03BC(E)'), 'flat'),
-                               (six.u('\u03BC(E) + Pre-/Post-edge'), 'prelines'),
-                               (six.u('\u03BC(E) + MBACK tabulated \u03BC(E)'), 'mback_norm'),
-                               (six.u('MBACK v. Poly Normalized \u03BC(E)'), 'mback_poly'),
-                              ))
+PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
+                   'Normalized \u03BC(E)': 'norm',
+                   '\u03BC(E) + Pre-/Post-edge': 'prelines',
+                   'Flattened \u03BC(E)': 'flat',
+                   '\u03BC(E) + MBACK tabulated \u03BC(E)': 'mback_norm',
+                   'MBACK + Poly Normalized \u03BC(E)': 'mback_poly',
+                   'd\u03BC(E)/dE': 'dmude',
+                   'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
+                   'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde'}
 
-PlotSel_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
-                               (six.u('Normalized \u03BC(E)'), 'norm'),
-                               (six.u('Flattened \u03BC(E)'), 'flat'),
-                               (six.u('d\u03BC(E)/dE (raw)'), 'dmude'),
-                               (six.u('d\u03BC(E)/dE (normalized)'), 'dnormde')))
+PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
+                   'Normalized \u03BC(E)': 'norm',
+                   'Flattened \u03BC(E)': 'flat',
+                   'd\u03BC(E)/dE (raw)': 'dmude',
+                   'd\u03BC(E)/dE (normalized)': 'dnormde'}
 
-PlotOne_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
-                                      ('Derivative', 'dmude'),
-                                      ('Data + Derivative', 'norm+dmude')))
+PlotOne_Choices_nonxas = {'Raw Data': 'mu',
+                          'Derivative': 'dmude',
+                          'Data + Derivative': 'norm+dmude'}
 
-PlotSel_Choices_nonxas = OrderedDict((('Raw Data', 'mu'),
-                                      ('Derivative', 'dmude')))
+PlotSel_Choices_nonxas = {'Raw Data': 'mu', 'Derivative': 'dmude'}
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
@@ -77,9 +74,9 @@ class XASNormPanel(TaskPanel):
         self.wids = {}
 
         self.plotone_op = Choice(xas, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(175, -1))
+                                 action=self.onPlotOne, size=(225, -1))
         self.plotsel_op = Choice(xas, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(175, -1))
+                                 action=self.onPlotSel, size=(225, -1))
 
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
