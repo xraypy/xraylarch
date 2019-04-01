@@ -13,17 +13,54 @@ from glob import glob
 import numpy as np
 from numpy.random import randint
 
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, NMF
 
 from .. import Group
 from .utils import interp, index_of
 
 from lmfit import minimize, Parameters
 
-from .lincombo_fitting import get_arrays, get_label
+from .lincombo_fitting import get_arrays, get_label, groups2matrix
+
+
+def nmf_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf,
+              solver='cd', beta_loss=2):
+    """use a list of data groups to train a Non-negative model
+
+    Arguments
+    ---------
+      groups      list of groups to use as components
+      arrayname   string of array name to be fit (see Note 2) ['norm']
+      xmin        x-value for start of fit range [-inf]
+      xmax        x-value for end of fit range [+inf]
+      beta_loss   beta parameter for NMF [2]
+
+    Returns
+    -------
+      group with trained NMF model, to be used with pca_fit
+
+    Notes
+    -----
+     1.  The group members for the components must match each other
+         in data content and array names.
+     2.  arrayname can be one of `norm` or `dmude`
+    """
+    xdat, ydat = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
+
+    ydat[np.where(ydat<0)] = 0
+    opts = dict(n_components=len(groups), solver=solver)
+    if solver == 'mu':
+        opts.update(dict(beta_loss=beta_loss))
+    ret = NMF(**opts).fit(ydat)
+    labels = [get_label(g) for g  in groups]
+
+    return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
+                 components=ret.components_,
+                 xmin=xmin, xmax=xmax, model=ret)
+
 
 def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
-    """use a list of data groups to train a Principal Component Analysis model
+    """use a list of data groups to train a Principal Component Analysis
 
     Arguments
     ---------
@@ -34,7 +71,7 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
 
     Returns
     -------
-      group with trained PCA model, to be used with pca_fit
+      group with trained PCA or N model, to be used with pca_fit
 
     Notes
     -----
@@ -42,35 +79,15 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
          in data content and array names.
      2.  arrayname can be one of `norm` or `dmude`
     """
-
-    # get first nerate arrays and interpolate components onto the unknown x array
-    xdat, ydat = get_arrays(groups[0], arrayname)
-    if xdat is None or ydat is None:
-        raise ValueError("cannot get arrays for arrayname='%s'" % arrayname)
-
-    imin, imax = None, None
-    if xmin is not None:
-        imin = index_of(xdat, xmin)
-    if xmax is not None:
-        imax = index_of(xdat, xmax) + 1
-
-    xdat = xdat[slice(imin, imax)]
-    ydat = ydat[slice(imin, imax)]
-
-    # gather the rest of the components
-    ydat = [ydat]
-    for g in groups[1:]:
-        x, y = get_arrays(g, arrayname)
-        ydat.append(interp(x, y, xdat, kind='cubic'))
-    ydat = np.array(ydat)
+    xdat, ydat = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
 
     ret = PCA().fit(ydat)
     labels = [get_label(g) for g  in groups]
+
     return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
-                 xmin=xmin, xmax=xmax, pcamodel=ret, mean=ret.mean_,
+                 xmin=xmin, xmax=xmax, model=ret, mean=ret.mean_,
                  components=ret.components_,
                  variances=ret.explained_variance_ratio_)
-
 
 def _pca_scale_resid(params, ydat=None, pca_model=None, comps=None):
     scale = params['scale'].value
@@ -81,7 +98,7 @@ def _pca_scale_resid(params, ydat=None, pca_model=None, comps=None):
 
 def pca_fit(group, pca_model, ncomps=None, rescale=True, _larch=None):
     """
-    fit a spectrum from a group to a pca training model from pca_train()
+    fit a spectrum from a group to a PCA training model from pca_train()
 
     Arguments
     ---------
