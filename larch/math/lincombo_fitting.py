@@ -20,14 +20,14 @@ import lmfit
 from .. import Group
 from .utils import interp, index_of
 
-def get_arrays(group, arrayname):
+def get_arrays(group, arrayname, xname='energy'):
     y = None
-    x = getattr(group, 'energy', None)
     if arrayname == 'chik':
         x = getattr(group, 'k', None)
         y = getattr(group, 'chi', None)
     else:
-        y = getattr(group, 'norm', None)
+        x = getattr(group, xname, None)
+        y = getattr(group, arrayname, None)
     return x, y
 
 def get_label(group):
@@ -40,6 +40,47 @@ def get_label(group):
     if label is None:
         label = hex(id(group))
     return label
+
+
+def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.inf,
+                  interp_kind='cubic'):
+    """extract an array from a list of groups and construct a uniform 2d matrix
+    ready for linear analysis
+
+    Argumments
+    ----------
+    groups       list of groups, assumed to have similar naming conventions
+    yname        name of y-arrays to convert to matrix ['norm']
+    xname        name of x-array to use ['energy']
+    xmin         min x value [-inf]
+    xmax         max x value [+inf]
+    interp_kind  kind argument for interpolation ['cubic']
+
+    Returns
+    -------
+    xdat, ydat  where xdat has shape (nx,) and ydat has shape (nx, ngroups)
+    """
+    # get arrays from first group
+    xdat, ydat = get_arrays(groups[0], yname, xname=xname)
+    if xdat is None or ydat is None:
+        raise ValueError("cannot get arrays for arrayname='%s'" % yname)
+
+    imin, imax = None, None
+    if xmin is not None:
+        imin = index_of(xdat, xmin)
+    if xmax is not None:
+        imax = index_of(xdat, xmax) + 1
+
+    xsel = slice(imin, imax)
+    xdat = xdat[xsel]
+    ydat = ydat[xsel]
+
+    ydat = [ydat]
+    for g in groups[1:]:
+        x, y = get_arrays(g, yname, xname=xname)
+        ydat.append(interp(x, y, xdat, kind=interp_kind))
+    return xdat, np.array(ydat)
+
 
 def lincombo_fit(group, components, weights=None, minvals=None,
                  maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf,
@@ -73,28 +114,14 @@ def lincombo_fit(group, components, weights=None, minvals=None,
          components and groups.
     """
 
-    # first, generate arrays and interpolate components onto the unknown x array
-    xdat, ydat = get_arrays(group, arrayname)
-    if xdat is None or ydat is None:
-        raise ValueError("cannot get arrays for arrayname='%s'" % arrayname)
-
-    # trim fit range
-    imin, imax = None, None
-    if xmin is not None:
-        imin = index_of(xdat, xmin)
-    if xmax is not None:
-        imax = index_of(xdat, xmax) + 1
-
-    xdat = xdat[slice(imin, imax)]
-    ydat = ydat[slice(imin, imax)]
-
-    # gather components
-    ycomps = []
-    for comp in components:
-        x, y = get_arrays(comp, arrayname)
-        ycomps.append(interp(x, y, xdat, kind='cubic'))
-    ycomps = np.array(ycomps).transpose()
+    # first, gather components
     ncomps = len(components)
+    allgroups = [group]
+    allgroups.extend(components)
+    xdat, yall = groups2matrix(allgroups, yname=arrayname,
+                               xname='energy', xmin=xmin, xmax=xmax)
+    ydat   = yall[0, :]
+    ycomps = yall[1:, :].transpose()
 
     # second use unconstrained linear algebra to estimate weights
     ls_out = np.linalg.lstsq(ycomps, ydat, rcond=-1)
