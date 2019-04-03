@@ -1,6 +1,5 @@
 import time
 import os
-import six
 import numpy as np
 np.seterr(all='ignore')
 
@@ -221,8 +220,8 @@ class FitResultFrame(wx.Frame):
         sview.AppendTextColumn(' N_data', width=50)
         sview.AppendTextColumn(' N_vary', width=50)
         sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(six.u(' \u03c7\u00B2'), width=110)
-        sview.AppendTextColumn(six.u(' \u03c7\u00B2_reduced'), width=110)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=110)
         sview.AppendTextColumn(' Akaike Info', width=110)
         sview.AppendTextColumn(' Bayesian Info', width=110)
 

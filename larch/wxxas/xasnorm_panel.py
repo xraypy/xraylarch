@@ -192,8 +192,8 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
 
-        xas.Add(self.wids['is_frozen'], dcol=6, newrow=True)
-        xas.Add(saveconf, dcol=6, newrow=True)
+        xas.Add(self.wids['is_frozen'], dcol=1, newrow=True)
+        xas.Add(saveconf, dcol=4)
         xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)

@@ -4,8 +4,6 @@ Linear Combination panel
 """
 import os
 import time
-import six
-
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
@@ -29,9 +27,9 @@ from larch.math.lincombo_fitting import get_arrays
 np.seterr(all='ignore')
 
 # plot options:
-norm   = six.u('Normalized \u03bC(E)')
-dmude  = six.u('d\u03bC(E)/dE')
-chik   = six.u('\u03c7(k)')
+norm   = 'Normalized \u03bC(E)'
+dmude  = 'd\u03bC(E)/dE'
+chik   = '\u03c7(k)'d)
 noplot = '<no plot>'
 noname = '<none>'
 

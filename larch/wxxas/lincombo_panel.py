@@ -4,7 +4,7 @@ Linear Combination panel
 """
 import os
 import time
-import six
+
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
@@ -211,8 +211,8 @@ class ResultFrame(wx.Frame):
         sview.AppendTextColumn(' Fit #', width=50)
         sview.AppendTextColumn(' N_vary', width=50)
         sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(six.u(' \u03c7\u00B2'), width=110)
-        sview.AppendTextColumn(six.u(' \u03c7\u00B2_reduced'), width=110)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=110)
         sview.AppendTextColumn(' Akaike Info', width=110)
         sview.AppendTextColumn(' Bayesian Info', width=110)
 

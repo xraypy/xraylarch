@@ -1,7 +1,6 @@
 import os
 from collections import namedtuple, OrderedDict
 from functools import partial
-import six
 import numpy as np
 from lmfit import Parameters, minimize
 
@@ -535,7 +534,7 @@ class RebinDataDialog(wx.Dialog):
         panel.Add(wids['exafs1'])
         panel.Add(wids['exafs2'])
         panel.Add(wids['exafs_step'])
-        add_text(six.u('1/\u212B'), newrow=False)
+        add_text('1/\u212B', newrow=False)
 
         panel.Add(wids['apply'], dcol=2, newrow=True)
         panel.Add(wids['save_as'],  dcol=2, newrow=True)
