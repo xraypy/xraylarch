@@ -353,38 +353,38 @@ examples in the following sections in this chapter make use of these macros.
 :func:`plot_prepeaks_baseline`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: plot_prepeaks_baseline(dataset, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):
+.. function:: plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):
 
     Plot pre-edge peaks and baseline fit, as from :func:`pre_edge_baseline`
     or XAS Viewer GUI
 
 
-    :param dataset:      data group, after running :func:`pre_edge_baseline`
+    :param dgroup:      data group, after running :func:`pre_edge_baseline`
     :param subtract_baseline:  bool whether to subtract baseline for plot
     :param show_fitrange:  bool whether to show fit range as vertical bars
     :param show_peakrange:  bool whether to show pre-edge peak range with markers
     :param win:          integer plot window to use [1]
     :param kws:          additional keyword arguments are passed to plot()
 
-    The `dataset` group must have a `prepeaks` subgroup.
+    The `dgroup` group must have a `prepeaks` subgroup.
 
 
 :func:`plot_prepeaks_fit`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. function:: plot_prepeaks_fit(dataset, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):
+.. function:: plot_prepeaks_fit(dgroup, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):
 
     Plot pre-edge peaks and fit, as XAS Viewer GUI
 
 
-    :param dataset:      data group, after running pre-edge peak fit.
+    :param dgroup:      data group, after running pre-edge peak fit.
     :param show_init:    bool whether to show initial model, before fitting
     :param subtract_baseline:  bool whether to subtract baseline for plot
     :param show_residual:  bool whether to show residual as a stacked plot.
     :param win:          integer plot window to use [1]
     :param kws:          additional keyword arguments are passed to plot()
 
-    The `dataset` group must have a `peakfit_history` subgroup. Currently,
+    The `dgroup` group must have a `peakfit_history` subgroup. Currently,
     this is automatically generated only using the XAS Viewer GUI or
     scripts written (and possibly altered) by it.
 
