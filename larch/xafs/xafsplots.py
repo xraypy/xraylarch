@@ -758,7 +758,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     px0, px1, py0, py1 = extend_plotrange(dgroup.xdat, dgroup.ydat,
                                           xmin=ppeak.emin, xmax=ppeak.emax)
 
-    title = "pre_edge baesline\n %s" % dgroup.filename
+    title = "pre_edge baseline\n %s" % dgroup.filename
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
                  xlabel='Energy (eV)', ylabel='mu', delay_draw=True,
