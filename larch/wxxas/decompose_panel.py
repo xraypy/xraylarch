@@ -29,7 +29,7 @@ np.seterr(all='ignore')
 # plot options:
 norm   = 'Normalized \u03bC(E)'
 dmude  = 'd\u03bC(E)/dE'
-chik   = '\u03c7(k)'d)
+chik   = '\u03c7(k)'
 noplot = '<no plot>'
 noname = '<none>'
 
