@@ -81,10 +81,10 @@ class XASNormPanel(TaskPanel):
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(xas, 'Plot This Group', size=(150, -1),
+        plot_one = Button(xas, 'Plot This Group', size=(175, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(xas, 'Plot Selected Groups', size=(150, -1),
+        plot_sel = Button(xas, 'Plot Selected Groups', size=(175, -1),
                           action=self.onPlotSel)
 
         e0opts_panel = wx.Panel(xas)
@@ -133,7 +133,7 @@ class XASNormPanel(TaskPanel):
                           action=self.onSaveConfigBtn)
 
         def CopyBtn(name):
-            return Button(xas, 'Copy', size=(50, -1),
+            return Button(xas, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
 
         add_text = self.add_text
@@ -182,10 +182,10 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['norm_method'], dcol=5)
         xas.Add(CopyBtn('norm_method'))
 
-        add_text('    mback options: ')
-        add_text('      Element : ', newrow=False, dcol=2)
+        add_text('  mback options: ')
+        add_text('Element : ', newrow=False, dcol=2)
         xas.Add(self.wids['mback_elem'])
-        add_text(' Edge : ', newrow=False)
+        add_text('Edge : ', newrow=False)
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
 

@@ -32,10 +32,10 @@ from larch.io.columnfile import write_ascii
 np.seterr(all='ignore')
 
 # plot options:
-norm   = six.u('Normalized \u03bC(E)')
-rawmu  = six.u('Raw \u03bC(E)')
-dmude  = six.u('d\u03bC(E)/dE')
-chik   = six.u('\u03c7(k)')
+norm   = 'Normalized \u03bC(E)'
+rawmu  = 'Raw \u03bC(E)'
+dmude  = 'd\u03bC(E)/dE'
+chik   = '\u03c7(k)'
 noplot = '<no plot>'
 noname = '<none>'
 
@@ -629,15 +629,16 @@ class LinearComboPanel(TaskPanel):
         elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
         ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)
 
-        wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
+        wids['fit_group'] = Button(panel, 'Fit this Group', size=(175, -1),
                                    action=self.onFitOne)
-        wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(150, -1),
+        wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(175, -1),
                                       action=self.onFitAll)
 
-        wids['add_selected'] = Button(panel, 'Use Selected Groups as Components', size=(250, -1),
+        wids['add_selected'] = Button(panel, 'Use Selected Groups as Components',
+                                      size=(300, -1),
                                       action=self.onUseSelected)
 
-        wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(200, -1),
+        wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(225, -1),
                                   action=self.onSaveConfigBtn)
 
         opts = dict(default=True, size=(75, -1), action=self.onPlotOne)

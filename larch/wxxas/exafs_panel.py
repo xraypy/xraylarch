@@ -4,7 +4,6 @@ Linear Combination panel
 """
 import os
 import time
-import six
 import wx
 import numpy as np
 
@@ -26,13 +25,13 @@ from .taskpanel import TaskPanel
 np.seterr(all='ignore')
 
 # plot options:
-mu_bkg  = six.u('\u03bC(E) + \u03bc0(E)')
-chie    = six.u('\u03c7(E)')
-chik    = six.u('\u03c7(k)')
-chikwin = six.u('\u03c7(k) + Window(k)')
-chirmag = six.u('|\u03c7(R)|')
-chirre  = six.u('Re[\u03c7(R)]')
-chirmr  = six.u('|\u03c7(R)| + Re[\u03c7(R)]')
+mu_bkg  = '\u03bC(E) + \u03bc0(E)'
+chie    = '\u03c7(E)'
+chik    = '\u03c7(k)'
+chikwin = '\u03c7(k) + Window(k)'
+chirmag = '|\u03c7(R)|'
+chirre  = 'Re[\u03c7(R)]'
+chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
 noplot  = '<no plot>'
 
 PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]
@@ -92,10 +91,10 @@ class EXAFSPanel(TaskPanel):
         wids['plotsel_op'].SetStringSelection(chik)
         wids['plotalt_op'].SetStringSelection(noplot)
 
-        plot_one = Button(panel, 'Plot This Group', size=(150, -1),
+        plot_one = Button(panel, 'Plot This Group', size=(175, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
                           action=self.onPlotSel)
 
 
@@ -143,7 +142,7 @@ class EXAFSPanel(TaskPanel):
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.onProcess, size=(125, -1))
+                                     action=self.onProcess, size=(150, -1))
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -173,7 +172,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, ' Background subtraction',
                              **titleopts), dcol=2, newrow=True)
 
-        panel.Add(Button(panel, 'Copy To Selected Groups', size=(175, -1),
+        panel.Add(Button(panel, 'Copy To Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'bkg')),
                   dcol=2)
 
@@ -201,7 +200,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, ' Fourier transform',
                              **titleopts), dcol=2, newrow=True)
 
-        panel.Add(Button(panel, 'Copy to Selected Groups', size=(175, -1),
+        panel.Add(Button(panel, 'Copy to Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'fft')),
                   dcol=2)
 

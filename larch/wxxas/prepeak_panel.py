@@ -78,10 +78,10 @@ ModelFuncs = {'constant': 'ConstantModel',
               'step': 'StepModel',
               'rectangle': 'RectangleModel'}
 
-Array_Choices = OrderedDict(((six.u('Raw \u03BC(E)'), 'mu'),
-                             (six.u('Normalized \u03BC(E)'), 'norm'),
-                             (six.u('Deconvolved \u03BC(E)'), 'deconv'),
-                             (six.u('Derivative \u03BC(E)'), 'dmude')))
+Array_Choices = {'Raw \u03BC(E)': 'mu',
+                 'Normalized \u03BC(E)': 'norm',
+                 'Deconvolved \u03BC(E)': 'deconv',
+                 'Derivative \u03BC(E)': 'dmude'}
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
@@ -553,10 +553,10 @@ class PrePeakPanel(TaskPanel):
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(150, -1))
         self.loadmodel_btn = Button(pan, 'Load Saved Model',
-                                    action=self.onLoadFitResult,  size=(150, 25))
+                                    action=self.onLoadFitResult,  size=(150, -1))
         self.fitmodel_btn.Disable()
 
-        self.array_choice = Choice(pan, size=(150, -1),
+        self.array_choice = Choice(pan, size=(175, -1),
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 

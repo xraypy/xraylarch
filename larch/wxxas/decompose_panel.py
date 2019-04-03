@@ -93,7 +93,7 @@ class PCAPanel(TaskPanel):
                                     increment=1, with_pin=False, min_val=0)
 
         b_build_model = Button(panel, 'Build Model With Selected Groups',
-                                     size=(225, -1),  action=self.onBuildPCAModel)
+                                     size=(275, -1),  action=self.onBuildPCAModel)
 
         wids['fit_group'] = Button(panel, 'Test Current Group with Model', size=(225, -1),
                                    action=self.onFitGroup)
@@ -149,7 +149,7 @@ class PCAPanel(TaskPanel):
         add_text('Max Components:', dcol=1, newrow=True)
         panel.Add(w_mcomps)
 
-        panel.Add(Button(panel, 'Copy To Selected Groups', size=(175, -1),
+        panel.Add(Button(panel, 'Copy To Selected Groups', size=(200, -1),
                          action=partial(self.onCopyParam, 'pca')),
                   dcol=2)
 
