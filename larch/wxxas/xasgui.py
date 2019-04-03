@@ -571,6 +571,13 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "Merge Selected Groups",
                  "Merge Selected Groups", self.onMergeData)
 
+        group_menu.AppendSeparator()
+
+        MenuItem(self, group_menu, "Freeze Selected Groups",
+                 "Freeze Selected Groups", self.onFreezeGroups)
+
+        MenuItem(self, group_menu, "UnFreeze Selected Groups",
+                 "UnFreeze Selected Groups", self.onUnFreezeGroups)
 
         MenuItem(self, data_menu, "Deglitch Data",  "Deglitch Data",
                  self.onDeglitchData)
@@ -738,6 +745,23 @@ class XASFrame(wx.Frame):
             for name in all_fnames:
                 filelist.Append(name)
 
+    def onFreezeGroups(self, event=None):
+        self._freeze_handler(True)
+
+    def onUnFreezeGroups(self, event=None):
+        self._freeze_handler(False)
+
+    def _freeze_handler(self, freeze):
+        current_filename = self.current_filename
+        reproc_group = None
+        for fname in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(fname)]
+            dgroup = self.controller.get_group(groupname)
+            if fname == current_filename:
+                reproc_group = groupname
+            dgroup.is_frozen = freeze
+        if reproc_group is not None:
+            self.ShowFile(groupname=reproc_group, process=True)
 
     def onMergeData(self, event=None):
         groups = OrderedDict()
@@ -762,7 +786,6 @@ class XASFrame(wx.Frame):
                                          outgroup=gname)
             self.install_group(gname, fname, overwrite=False)
             self.controller.filelist.SetStringSelection(fname)
-
 
     def onDeglitchData(self, event=None):
         DeglitchDialog(self, self.controller).Show()

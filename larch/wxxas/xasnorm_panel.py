@@ -100,12 +100,12 @@ class XASNormPanel(TaskPanel):
         self.wids['auto_step'] = Check(xas, default=True, label='auto?',
                                       action=self.onNormMethod)
 
-        self.wids['vict'] = Choice(xas, choices=('0', '1', '2', '3'),
-                                   size=(60, -1), action=self.onNormMethod,
-                                   default=0)
-        self.wids['nnor'] = Choice(xas, choices=('0', '1', '2', '3'),
-                                   size=(60, -1), action=self.onNormMethod,
-                                   default=1)
+        self.wids['nvict'] = Choice(xas, choices=('0', '1', '2', '3'),
+                                    size=(60, -1), action=self.onNormMethod,
+                                    default=0)
+        self.wids['nnorm'] = Choice(xas, choices=('0', '1', '2', '3'),
+                                    size=(60, -1), action=self.onNormMethod,
+                                    default=1)
 
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges}
@@ -128,6 +128,9 @@ class XASNormPanel(TaskPanel):
 
         self.wids['mback_elem'] = Choice(xas, choices=atsyms, size=(75, -1))
         self.wids['mback_edge'] = Choice(xas, choices=mback_edges, size=(60, -1))
+
+        self.wids['is_frozen'] = Check(xas, default=False, label='Freeze Group',
+                                    action=self.onFreezeGroup)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -167,7 +170,7 @@ class XASNormPanel(TaskPanel):
         add_text(' : ', newrow=False)
         xas.Add(xas_pre2)
         xas.Add(SimpleText(xas, 'Victoreen:'))
-        xas.Add(self.wids['vict'])
+        xas.Add(self.wids['nvict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
 
         add_text('Normalization range: ')
@@ -175,7 +178,7 @@ class XASNormPanel(TaskPanel):
         add_text(' : ', newrow=False)
         xas.Add(xas_norm2)
         xas.Add(SimpleText(xas, 'Poly Order:'))
-        xas.Add(self.wids['nnor'])
+        xas.Add(self.wids['nnorm'])
         xas.Add(CopyBtn('xas_normpoly'), style=RCEN)
 
         add_text('Normalization method: ')
@@ -189,6 +192,7 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
 
+        xas.Add(self.wids['is_frozen'], dcol=6, newrow=True)
         xas.Add(saveconf, dcol=6, newrow=True)
         xas.pack()
 
@@ -216,8 +220,8 @@ class XASNormPanel(TaskPanel):
                 conf['pre2'] = getattr(dgroup.bkg_params, 'pre2', conf['pre2'])
                 conf['norm1'] = getattr(dgroup.bkg_params, 'norm1', conf['norm1'])
                 conf['norm2'] = getattr(dgroup.bkg_params, 'norm2', conf['norm2'])
-                conf['nnorm'] = getattr(dgroup.bkg_params, 'nnor', conf['nnorm'])
-                conf['nvict'] = getattr(dgroup.bkg_params, 'nvic', conf['nvict'])
+                conf['nnorm'] = getattr(dgroup.bkg_params, 'nnorm', conf['nnorm'])
+                conf['nvict'] = getattr(dgroup.bkg_params, 'nvict', conf['nvict'])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
             if hasattr(dgroup, 'mback_params'): # from mback
                 conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', conf['mback_elem'])
@@ -254,15 +258,14 @@ class XASNormPanel(TaskPanel):
             self.wids['pre2'].SetValue(opts['pre2'])
             self.wids['norm1'].SetValue(opts['norm1'])
             self.wids['norm2'].SetValue(opts['norm2'])
-            self.wids['vict'].SetSelection(opts['nvict'])
-            self.wids['nnor'].SetSelection(opts['nnorm'])
+            self.wids['nvict'].SetSelection(opts['nvict'])
+            self.wids['nnorm'].SetSelection(opts['nnorm'])
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])
             self.wids['mback_edge'].SetStringSelection(opts['mback_edge'].title())
             self.wids['mback_elem'].SetStringSelection(opts['mback_elem'].title())
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
-
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
@@ -270,6 +273,20 @@ class XASNormPanel(TaskPanel):
             self.plotsel_op.SetStringSelection('Raw Data')
             for k in self.wids.values():
                 k.Disable()
+
+        frozen = opts.get('is_frozen', False)
+        if hasattr(dgroup, 'is_frozen'):
+            frozen = dgroup.is_frozen
+        else:
+            dgroup.is_frozen = frozen
+        self.wids['is_frozen'].SetValue(frozen)
+        enable = not frozen
+        self.plotone_op.Enable(enable)
+        self.plotsel_op.Enable(enable)
+        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict', 'nnorm',
+                      'showe0', 'auto_e0', 'auto_step', 'norm_method', 'mback_edge',
+                      'mback_elem'):
+            self.wids[wattr].Enable(enable)
 
         wx.CallAfter(self.unset_skip_process)
 
@@ -285,8 +302,8 @@ class XASNormPanel(TaskPanel):
         form_opts['pre2'] = self.wids['pre2'].GetValue()
         form_opts['norm1'] = self.wids['norm1'].GetValue()
         form_opts['norm2'] = self.wids['norm2'].GetValue()
-        form_opts['nnorm'] = int(self.wids['nnor'].GetSelection())
-        form_opts['nvict'] = int(self.wids['vict'].GetSelection())
+        form_opts['nnorm'] = int(self.wids['nnorm'].GetSelection())
+        form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
 
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
@@ -311,6 +328,21 @@ class XASNormPanel(TaskPanel):
                 self.wids['mback_edge'].SetStringSelection(edge)
                 self.wids['mback_elem'].SetStringSelection(atsym)
         self.onReprocess()
+
+    def onFreezeGroup(self, evt=None):
+        freeze = evt.IsChecked()
+        try:
+            dgroup = self.controller.get_group()
+            dgroup.is_frozen = freeze
+        except:
+            pass
+        enable = not freeze
+        self.plotone_op.Enable(enable)
+        self.plotsel_op.Enable(enable)
+        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict', 'nnorm',
+                      'showe0', 'auto_e0', 'auto_step', 'norm_method', 'mback_edge',
+                      'mback_elem'):
+            self.wids[wattr].Enable(enable)
 
     def onPlotOne(self, evt=None):
         self.plot(self.controller.get_group())
@@ -382,7 +414,7 @@ class XASNormPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
-            if grp != self.controller.group:
+            if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
                 self.process(grp, noskip=True)

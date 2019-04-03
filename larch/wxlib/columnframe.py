@@ -642,7 +642,8 @@ class ColumnDataFileFrame(wx.Frame) :
         read_cmd = "%s('{path}', labels='%s')" % (self.reader, labels)
 
         buff = ["{group} = %s" % read_cmd,
-                "{group}.path = '{path}'"]
+                "{group}.path = '{path}'",
+                "{group}.is_frozen = False"]
 
         for label, selection in self.extra_sums.items():
             buff.append("{group}.array_labels.append('%s')" % label)
