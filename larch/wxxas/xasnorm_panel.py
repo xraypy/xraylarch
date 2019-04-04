@@ -130,7 +130,7 @@ class XASNormPanel(TaskPanel):
         self.wids['mback_edge'] = Choice(xas, choices=mback_edges, size=(60, -1))
 
         self.wids['is_frozen'] = Check(xas, default=False, label='Freeze Group',
-                                    action=self.onFreezeGroup)
+                                       action=self.onFreezeGroup)
 
         saveconf = Button(xas, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
@@ -192,15 +192,18 @@ class XASNormPanel(TaskPanel):
         xas.Add(self.wids['mback_edge'])
         xas.Add(CopyBtn('xas_mback'), style=RCEN)
 
+        xas.Add((10, 10), newrow=True)
         xas.Add(self.wids['is_frozen'], dcol=1, newrow=True)
         xas.Add(saveconf, dcol=4)
+        xas.Add((10, 10), newrow=True)
+        xas.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
         xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(xas, 0, LCEN, 3)
         sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(HLine(self, size=(600, 2)), 0, LCEN, 3)
+
         pack(self, sizer)
 
     def get_config(self, dgroup=None):
@@ -277,18 +280,11 @@ class XASNormPanel(TaskPanel):
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
             frozen = dgroup.is_frozen
-        else:
-            dgroup.is_frozen = frozen
-        self.wids['is_frozen'].SetValue(frozen)
-        enable = not frozen
-        self.plotone_op.Enable(enable)
-        self.plotsel_op.Enable(enable)
-        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict', 'nnorm',
-                      'showe0', 'auto_e0', 'auto_step', 'norm_method', 'mback_edge',
-                      'mback_elem'):
-            self.wids[wattr].Enable(enable)
 
+        self.wids['is_frozen'].SetValue(frozen)
+        self._set_frozen(frozen)
         wx.CallAfter(self.unset_skip_process)
+
 
     def unset_skip_process(self):
         self.skip_process = False
@@ -329,20 +325,19 @@ class XASNormPanel(TaskPanel):
                 self.wids['mback_elem'].SetStringSelection(atsym)
         self.onReprocess()
 
-    def onFreezeGroup(self, evt=None):
-        freeze = evt.IsChecked()
+    def _set_frozen(self, frozen):
         try:
             dgroup = self.controller.get_group()
-            dgroup.is_frozen = freeze
+            dgroup.is_frozen = frozen
         except:
             pass
-        enable = not freeze
-        self.plotone_op.Enable(enable)
-        self.plotsel_op.Enable(enable)
         for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict', 'nnorm',
                       'showe0', 'auto_e0', 'auto_step', 'norm_method', 'mback_edge',
                       'mback_elem'):
-            self.wids[wattr].Enable(enable)
+            self.wids[wattr].Enable(not frozen)
+
+    def onFreezeGroup(self, evt=None):
+        self._set_frozen(evt.IsChecked())
 
     def onPlotOne(self, evt=None):
         self.plot(self.controller.get_group())

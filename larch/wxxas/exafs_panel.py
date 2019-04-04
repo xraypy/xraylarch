@@ -144,6 +144,9 @@ class EXAFSPanel(TaskPanel):
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
                                      action=self.onProcess, size=(150, -1))
 
+        self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
+                                       action=self.onFreezeGroup)
+
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
@@ -170,11 +173,11 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction',
-                             **titleopts), dcol=2, newrow=True)
+                             **titleopts), dcol=1, newrow=True)
 
         panel.Add(Button(panel, 'Copy To Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'bkg')),
-                  dcol=2)
+                  dcol=3)
 
         add_text('R bkg: ')
         panel.Add(wids['rbkg'])
@@ -198,11 +201,11 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform',
-                             **titleopts), dcol=2, newrow=True)
+                             **titleopts), dcol=1, newrow=True)
 
         panel.Add(Button(panel, 'Copy to Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'fft')),
-                  dcol=2)
+                  dcol=3)
 
         panel.Add(SimpleText(panel, 'k min: '), newrow=True)
         panel.Add(fft_kmin)
@@ -218,9 +221,12 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, ' dk : '))
         panel.Add(wids['fft_dk'])
 
-        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+        panel.Add((10, 10), newrow=True)
+        panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
+        panel.Add(saveconf, dcol=4)
+        panel.Add((10, 10), newrow=True)
+        panel.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
 
-        panel.Add(saveconf, dcol=4, newrow=True)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -253,6 +259,15 @@ class EXAFSPanel(TaskPanel):
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
+
+
+        frozen = opts.get('is_frozen', False)
+        if hasattr(dgroup, 'is_frozen'):
+            frozen = dgroup.is_frozen
+
+        self.wids['is_frozen'].SetValue(frozen)
+        self._set_frozen(frozen)
+
         self.skip_process = False
 
     def read_form(self, dgroup=None):
@@ -304,7 +319,24 @@ class EXAFSPanel(TaskPanel):
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(groupname)
-            self.update_config(out, dgroup=dgroup)
+            if not dgroup.is_frozen:
+                self.update_config(out, dgroup=dgroup)
+
+    def _set_frozen(self, frozen):
+        try:
+            dgroup = self.controller.get_group()
+            dgroup.is_frozen = frozen
+        except:
+            pass
+
+        for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight',
+                     'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
+                     'bkg_clamplo', 'bkg_clamphi', 'fft_kwindow'):
+            self.wids[attr].Enable(not frozen)
+
+    def onFreezeGroup(self, evt=None):
+        self._set_frozen(evt.IsChecked())
+
 
     def onProcess(self, event=None):
         """ handle process events"""
