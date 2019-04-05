@@ -1,0 +1,71 @@
+%%
+%% emission line table
+
+\tikzset{glevel/.style={line width=0.8mm, draw=black!40}}
+\tikzset{blevel/.style={line width=0.8mm, draw=blue!80}}
+\tikzset{rlevel/.style={line width=0.8mm, draw=red!80}}
+\tikzset{xray/.style={*->,>=triangle 45, line width=1mm,  font={\sffamily\Large}}}
+\tikzset{sieg/.style={fill=white, font={\sffamily\huge}}}
+\tikzset{frac/.style={above,fill=white}}
+\tikzset{edge/.style={left, font={\sffamily\Large}}}
+\tikzset{orbital/.style={right, font={\sffamily\Large}}}
+\tikzset{xjoin/.style={*-, line width=1mm}}
+
+\begin{scope}[shift={(-18.5:51.5cm)}]
+  {\Huge{
+       \draw[rlevel] (0,   0mm) node[edge]{$K$}    --  ++(29, 0) node[orbital]  {$1s$};
+       \draw[blevel] (0,  40mm) node[edge]{$L_1$}  --  ++(29, 0) node[orbital] {$2s$};
+       \draw[blevel] (0,  45mm) node[edge]{$L_2$}  --  ++(29, 0) node[orbital] {$2p_{1/2}$};
+       \draw[rlevel] (0,  50mm) node[edge]{$L_3$}  --  ++(29, 0) node[orbital] {$2p_{3/2}$};
+
+       \draw[glevel] (0,  80mm) node[edge] {$M_1$} --  ++(29, 0) node[orbital] {$3s$};
+       \draw[glevel] (0,  85mm) node[edge] {}      --  ++(29, 0) node[orbital] {$3p_{1/2}$};
+       \draw[glevel] (0,  90mm) node[edge] {$M_3$} --  ++(29, 0) node[orbital] {$3p_{3/2}$};
+       \draw[glevel] (0,  95mm) node[edge] {}      --  ++(29, 0) node[orbital] {$3d_{3/2}$};
+       \draw[rlevel] (0, 100mm) node[edge] {$M_5$} --  ++(29, 0) node[orbital] {$3d_{5/2}$};
+
+       \draw[glevel] (0, 120mm) node[edge] {$N_1$} --  ++(29, 0) node[orbital] {$4s$};
+       \draw[glevel] (0, 125mm) node[edge] {}      --  ++(29, 0) node[orbital] {$4p_{1/2}$};
+       \draw[glevel] (0, 130mm) node[edge] {$N_3$} --  ++(29, 0) node[orbital] {$4p_{3/2}$};
+       \draw[glevel] (0, 135mm) node[edge] {}      --  ++(29, 0) node[orbital] {$4d_{3/2}$};
+       \draw[glevel] (0, 140mm) node[edge] {$N_5$} --  ++(29, 0) node[orbital] {$4d_{5/2}$};
+       \draw[glevel] (0, 145mm) node[edge] {}      --  ++(29, 0) node[orbital] {$4f_{5/2}$};
+       \draw[glevel] (0, 150mm) node[edge] {$N_7$} --  ++(29, 0) node[orbital] {$4f_{7/2}$};
+
+       % m lines
+       \draw[xjoin, draw=black, fill=black] (5mm, 152mm) -- ++(5mm, -7mm){};
+       \draw[xray, draw=black] (10mm, 147mm)  -- node[sieg] {$M_{\alpha}$} (10mm, 120mm)   -- (10mm,  100mm) ;
+       \draw[xray, draw=black] (25mm, 147mm)  -- node[sieg] {$M_{\beta}$}  (25mm, 97mm)  -- (25mm,  95mm) ;
+
+       % l3 lines
+       \draw[xray, draw=black!05, fill=black!05] (35mm,   82mm)  -- node[sieg] {$L_l$}          (35mm,  62mm)  -- node[frac] {0.003}  (35mm,  50mm) ;
+       \draw[xray, draw=black!10, fill=black!10] (50mm,   92mm)  -- node[sieg] {$L_{\alpha_2}$}  (50mm,  64mm)  -- node[frac] {0.09}  (50mm,  50mm) ;
+       \draw[xray, draw=black!90, fill=black!90] (65mm,  102mm)  -- node[sieg] {$L_{\alpha_1}$}  (65mm,  69mm)  -- node[frac] {0.80}  (65mm,  50mm) ;
+
+       \draw[xjoin, draw=black!20, fill=black!20](75mm, 142mm) -- (80mm, 135mm){};
+       \draw[xray, draw=black!20, fill=black!20] (80mm, 137mm)  -- node[sieg] {$L_{\beta_2}$}  (80mm, 77mm)  -- node[frac] {0.11}  (80mm,  50mm) ;
+
+       % l2
+       \draw[xray, draw=black]                   (105mm, 97mm)  -- node[sieg] {$L_{\beta_1}$}  (105mm, 58mm) -- node[frac] {0.88}  (105mm, 45mm) ;
+       \draw[xray, draw=black!20, fill=black!20] (120mm, 137mm) -- node[sieg] {$L_{\gamma_1}$} (120mm, 69mm) -- node[frac] {0.09}  (120mm, 45mm) ;
+
+       % l1
+       \draw[xray, draw=black!70, fill=black!70] (145mm, 87mm)  -- node[sieg] {$L_{\beta_4}$}  (145mm, 55mm) -- node[frac] {0.32}  (145mm, 40mm) ;
+       \draw[xray, draw=black!95, fill=black!95] (160mm, 92mm)  -- node[sieg] {$L_{\beta_3}$}  (160mm, 61mm) -- node[frac] {0.50}  (160mm, 40mm) ;
+       \draw[xray, draw=black!25, fill=black!25] (175mm, 127mm) -- node[sieg] {$L_{\gamma_2}$} (175mm,67mm) -- node[frac] {0.08}  (175mm, 40mm) ;
+       \draw[xray, draw=black!25, fill=black!25](190mm, 132mm) -- node[sieg] {$L_{\gamma_3}$} (190mm, 79mm) -- node[frac] {0.10}  (190mm, 40mm) ;
+
+       % k
+       \draw[xray, draw=black!65, fill=black!65] (215mm, 47mm)  -- node[sieg] {$K_{\alpha_2}$}  (215mm, 16mm) -- node[frac] {0.29} (215mm,  0mm) ;
+       \draw[xray, draw=black]                   (230mm, 52mm)  -- node[sieg] {$K_{\alpha_1}$}  (230mm,  23mm) -- node[frac] {0.54} (230mm,  0mm) ;
+       \draw[xray, draw=black!15, fill=black!15] (245mm, 87mm)  -- node[sieg] {$K_{\beta_3}$}   (245mm,  30mm) -- node[frac] {0.05} (245mm,  0mm);
+       \draw[xray, draw=black!25, fill=black!25] (260mm, 92mm)  -- node[sieg] {$K_{\beta_1}$}   (260mm,  36mm) -- node[frac] {0.09} (260mm,  0mm);
+
+       \draw[xjoin, draw=black!10, fill=black!10] (270mm, 132mm) -- ++(5mm, -7mm){};
+       \draw[xray, draw=black!10, fill=black!10] (275mm, 127mm)  -- node[sieg] {$K_{\beta_2}$}  (275mm, 48mm)  -- node[frac] {0.03}  (275mm,  0mm) ;
+
+
+       }}
+   \end{scope}
+%%
+

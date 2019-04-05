@@ -1,0 +1,281 @@
+%%
+%%  Periodic Table of X-ray absorption edges and emission lines
+%%
+%%  using data from Elam, Ravel, and Sieber,
+%%  Radiation Physics and Chemistry 63 (2002)
+%%
+%%  latex sources based on periodic_table  from Ivan Griffin,
+%%
+%%  M Newville, 2019
+%%
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[]{article}
+
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage[active,tightpage]{preview}
+
+\usetikzlibrary{shapes,calc,arrows}
+
+\begin{document}
+\begin{preview}
+
+%% Select Image of Scientist here:
+
+  \pgfdeclareimage[height=34mm]{Barkla}{images/Charles_Barkla}
+  \pgfdeclareimage[height=35mm]{Curie}{images/Marie_Curie}
+  \pgfdeclareimage[height=34mm]{Mendeleev}{images/Dmitri_Mendeleev}
+  \pgfdeclareimage[height=34mm]{Moseley}{images/Henry_Moseley}
+  \pgfdeclareimage[width=20mm]{qrcode}{images/xraytable_qr}
+
+ \newcommand{\Barkla}{\pgfbox[center,bottom]{\pgfuseimage{Barkla}}\\   Charles G. Barkla\\}
+ \newcommand{\Curie}{\pgfbox[center,bottom]{\pgfuseimage{Curie}}\\   Marie Sklodowska Curie\\ }
+ \newcommand{\Mendeleev}{\pgfbox[center,bottom]{\pgfuseimage{Mendeleev}}\\      Dmitri Mendeleev \\}
+ \newcommand{\Moseley}{ \pgfbox[center,bottom]{\pgfuseimage{Moseley}}\\   Henry Moseley \\}
+
+\newcommand{\ScientistPhoto}{\Curie}
+
+%% Note on Size:
+%%   with scale=1.00, the poster made is (roughly)
+%%     127.5 cm x  61 cm    (~50.4 in x 24.2 in)
+%%
+%%  To make a poster of a different size, set scale appropriately:
+%%      scale=0.22  for letter size paper (11in width)
+%%      scale=0.78  for 1 meter width
+%%      scale=0.714 for 36 inch width
+
+
+\begin{tikzpicture}[font=\sffamily, scale=0.714, transform shape]
+%% \begin{tikzpicture}[font=\sffamily, scale=1.0, transform shape]
+
+%% Fill Color Styles
+  \tikzstyle{ElementFill} = [fill=yellow!6]
+  \tikzstyle{Element} = [draw=black, ElementFill,
+  minimum width=70mm, minimum height=70mm, node distance=70mm]
+
+  \tikzstyle{SpaceFill} = [fill=white]
+  \tikzstyle{Space} = [draw=white, SpaceFill,
+  minimum width=5mm, minimum height=5mm, node distance=5mm]
+
+  \tikzstyle{TitleLabel} = [font={\sffamily\Huge\bfseries}, scale=3.50]
+  \tikzstyle{SubTitleLabel} = [font={\Huge}, scale=2.50]
+
+  \definecolor{MedRed}{rgb}{0.8,0,0}
+  \definecolor{MedBlue}{rgb}{0,0,0.8}
+  \definecolor{DeepBlue}{rgb}{0,0,0.6}
+
+  \newcommand{\Color}[2]{{\textcolor{#1}{#2}}}
+  \newcommand{\BRed}[1]{{\Color{MedRed}{\textbf{#1}}}}
+  \newcommand{\BBlue}[1]{{\Color{MedBlue}{\textbf{#1}}}}
+  \newcommand{\Red}[1]{{\Color{MedRed}{#1}}}
+  \newcommand{\Blue}[1]{{\Color{MedBlue}{#1}}}
+  \newcommand{\Name}[1]{{\Color{DeepBlue}{\textsf{\textbf{#1}}}}}
+
+
+
+  \input{atoms}
+
+%% Group 1 - IA
+  \node[name=H, Element] {\ElemH};
+  \node[name=Li, below of=H,  Element] {\ElemLi};
+  \node[name=Na, below of=Li, Element] {\ElemNa};
+  \node[name=K, below of=Na, Element] {\ElemK};
+  \node[name=Rb, below of=K, Element] {\ElemRb};
+  \node[name=Cs, below of=Rb, Element] {\ElemCs};
+  \node[name=Fr, below of=Cs, Element] {\ElemFr};
+
+%% Group 2 - IIA
+  \node[name=Be, right of=Li, Element] {\ElemBe};
+  \node[name=Mg, below of=Be, Element] {\ElemMg};
+  \node[name=Ca, below of=Mg, Element] {\ElemCa};
+  \node[name=Sr, below of=Ca, Element] {\ElemSr};
+  \node[name=Ba, below of=Sr, Element] {\ElemBa};
+  \node[name=Ra, below of=Ba, Element] {\ElemRa};
+
+%% Group 3 - IIIB
+  \node[name=Sc, right of=Ca, Element] {\ElemSc};
+  \node[name=Y, below of=Sc, Element] {\ElemY};
+  \node[name=La, below of=Y, Element] {\ElemLa};
+  \node[name=Ac, below of=La, Element]{\ElemAc};
+
+%% Group 4 - IVB
+  \node[name=Ti, right of=Sc, Element] {\ElemTi};
+  \node[name=Zr, below of=Ti, Element] {\ElemZr};
+  \node[name=Hf, below of=Zr, Element] {\ElemHf};
+
+%% Group 5 - VB
+  \node[name=V, right of=Ti, Element] {\ElemV};
+  \node[name=Nb, below of=V, Element] {\ElemNb};
+  \node[name=Ta, below of=Nb, Element] {\ElemTa};
+
+%% Group 6 - VIB
+  \node[name=Cr, right of=V, Element] {\ElemCr};
+  \node[name=Mo, below of=Cr, Element] {\ElemMo};
+  \node[name=W, below of=Mo, Element] {\ElemW};
+
+%% Group 7 - VIIB
+  \node[name=Mn, right of=Cr, Element] {\ElemMn};
+  \node[name=Tc, below of=Mn, Element] {\ElemTc};
+  \node[name=Re, below of=Tc, Element] {\ElemRe};
+
+%% Group 8 - VIIIB
+  \node[name=Fe, right of=Mn, Element] {\ElemFe};
+  \node[name=Ru, below of=Fe, Element] {\ElemRu};
+  \node[name=Os, below of=Ru, Element] {\ElemOs};
+
+%% Group 9 - VIIIB
+  \node[name=Co, right of=Fe, Element] {\ElemCo};
+  \node[name=Rh, below of=Co, Element] {\ElemRh};
+  \node[name=Ir, below of=Rh, Element] {\ElemIr};
+
+%% Group 10 - VIIIB
+  \node[name=Ni, right of=Co, Element] {\ElemNi};
+  \node[name=Pd, below of=Ni, Element] {\ElemPd};
+  \node[name=Pt, below of=Pd, Element] {\ElemPt};
+
+%% Group 11 - IB
+  \node[name=Cu, right of=Ni, Element] {\ElemCu};
+  \node[name=Ag, below of=Cu, Element] {\ElemAg};
+  \node[name=Au, below of=Ag, Element] {\ElemAu};
+
+%% Group 12 - IIB
+  \node[name=Zn, right of=Cu, Element] {\ElemZn};
+  \node[name=Cd, below of=Zn, Element] {\ElemCd};
+  \node[name=Hg, below of=Cd, Element] {\ElemHg};
+
+%% Group 13 - IIIA
+  \node[name=Ga, right of=Zn, Element] {\ElemGa};
+  \node[name=Al, above of=Ga, Element] {\ElemAl};
+  \node[name=B, above of=Al, Element] {\ElemB};
+  \node[name=In, below of=Ga, Element] {\ElemIn};
+  \node[name=Tl, below of=In, Element] {\ElemTl};
+
+%% Group 14 - IVA
+  \node[name=C, right of=B, Element] {\ElemC};
+  \node[name=Si, below of=C, Element] {\ElemSi};
+  \node[name=Ge, below of=Si, Element] {\ElemGe};
+  \node[name=Sn, below of=Ge, Element] {\ElemSn};
+  \node[name=Pb, below of=Sn, Element] {\ElemPb};
+
+%% Group 15 - VA
+  \node[name=N, right of=C, Element] {\ElemN};
+  \node[name=P, below of=N, Element] {\ElemP};
+  \node[name=As, below of=P, Element] {\ElemAs};
+  \node[name=Sb, below of=As, Element] {\ElemSb};
+  \node[name=Bi, below of=Sb, Element] {\ElemBi};
+
+%% Group 16 - VIA
+  \node[name=O, right of=N, Element] {\ElemO};
+  \node[name=S, below of=O, Element] {\ElemS};
+  \node[name=Se, below of=S, Element] {\ElemSe};
+  \node[name=Te, below of=Se, Element] {\ElemTe};
+  \node[name=Po, below of=Te, Element] {\ElemPo};
+
+%% Group 17 - VIIA
+  \node[name=F, right of=O, Element] {\ElemF};
+  \node[name=Cl, below of=F, Element] {\ElemCl};
+  \node[name=Br, below of=Cl, Element] {\ElemBr};
+  \node[name=I, below of=Br, Element] {\ElemI};
+  \node[name=At, below of=I, Element] {\ElemAt};
+
+%% Group 18 - VIIIA
+  \node[name=Ne, right of=F, Element] {\ElemNe};
+  \node[name=He, above of=Ne, Element] {\ElemHe};
+  \node[name=Ar, below of=Ne, Element] {\ElemAr};
+  \node[name=Kr, below of=Ar, Element] {\ElemKr};
+  \node[name=Xe, below of=Kr, Element] {\ElemXe};
+  \node[name=Rn, below of=Xe, Element] {\ElemRn};
+
+
+%% Lanthanide
+  \node[name=Ce, below of=Hf, Element,
+            xshift=35mm, yshift=-35mm] {\ElemCe};
+  \node[name=Pr, right of=Ce, Element] {\ElemPr};
+  \node[name=Nd, right of=Pr, Element] {\ElemNd};
+  \node[name=Pm, right of=Nd, Element] {\ElemPm};
+  \node[name=Sm, right of=Pm, Element] {\ElemSm};
+  \node[name=Eu, right of=Sm, Element] {\ElemEu};
+  \node[name=Gd, right of=Eu, Element] {\ElemGd};
+  \node[name=Tb, right of=Gd, Element] {\ElemTb};
+  \node[name=Dy, right of=Tb, Element] {\ElemDy};
+  \node[name=Ho, right of=Dy, Element] {\ElemHo};
+  \node[name=Er, right of=Ho, Element] {\ElemEr};
+  \node[name=Tm, right of=Er, Element] {\ElemTm};
+  \node[name=Yb, right of=Tm, Element] {\ElemYb};
+  \node[name=Lu, right of=Yb, Element] {\ElemLu};
+
+%% Actinide
+  \node[name=Th, below of=Ce, Element] {\ElemTh};
+  \node[name=Pa, right of=Th, Element] {\ElemPa};
+  \node[name=U, right of=Pa, Element] {\ElemU};
+  \node[name=Np, right of=U, Element] {\ElemNp};
+  \node[name=Pu, right of=Np, Element] {\ElemPu};
+  \node[name=Am, right of=Pu, Element] {\ElemAm};
+  \node[name=Cm, right of=Am, Element] {\ElemCm};
+  \node[name=Bk, right of=Cm, Element] {\ElemBk};
+  \node[name=Cf, right of=Bk, Element] {\ElemCf};
+  \node[name=Es, right of=Cf, Element] {\ElemEs};
+  \node[name=Fm, right of=Es, Element] {\ElemFm};
+  \node[name=Md, right of=Fm, Element] {\ElemMd};
+  \node[name=No, right of=Md, Element] {\ElemNo};
+  \node[name=Lr, right of=No, Element] {\ElemLr};
+
+% Title, subtitle, key
+  \node at ($(H.west -| Co.north) + (0mm, 15mm)$) [name=diagramTitle, TitleLabel]
+    {X-ray Absorption and Emission Energies of the Elements};
+
+  \node at ($(Na.west -| V.north) + (-7em, 7em)$) [name=diagramTitle, SubTitleLabel]
+  {\small{\textsf{
+      \begin{tabular*}{5mm}{l}
+        Atomic Data and Energies from \\%
+        W. T. Elam, B. D. Ravel and  J. R. Sieber, \hfil\\%
+        {\emph{Radiation Physics and Chemistry}}
+        {\bf{63}}, pp 121-128 (2002)  \\%
+        \noalign{\smallskip} \\%
+        Common oxidation states from wikipedia.org, after\\%
+        N. N. Greenwood and A. Earnshaw, \\
+      {\emph{Chemistry of the Elements}}, 2nd  ed. (1997).\\%
+        \noalign{\smallskip} \\%
+        {All energies in eV.} \hfil\\%
+        {Emission line strengths are approximate, and vary with element.} \hfil\\%
+      \end{tabular*}
+    }}};
+
+ \node at ($(Mg.west -| Ti.north) + (0em,7em)$) [name=elementKey, Element]{\ElemKey};
+
+%% add some extra space around table
+  \node at ($(Lr.south -| Rn.east) + (2em, -2em)$)  [name=Space1, Space]{ };
+  \node at ($(H.north  -|  H.west) - (2em, -2em)$)  [name=Space2, Space]{ };
+
+
+\node at ($(Th.south -| Fr.west) + (35mm, 7mm)$) [name=diagramTitle,
+SubTitleLabel]{  {\small{\textsf{ \begin{tabular}{c}  \ScientistPhoto \end{tabular} }}}  };
+
+   \node at ($(Ce.south -| Ac.west) + (15mm, 5mm)$) [name=diagramTitle,
+   SubTitleLabel]{
+     {\small{\textsf{
+           \begin{tabular}{l}
+             This Periodic Table is available at:\\
+             https://gsecars.uchicago.edu/page/xraytable \hfil \\
+             \noalign{\smallskip}
+             Version 4, 04-April-2019\\
+             \noalign{\smallskip}
+             \hspace{25mm} \pgfbox[center,top]{\pgfuseimage{qrcode}}\\
+           \end{tabular}
+           }}}};
+
+%% add emission line table
+  \input{elines}
+
+\end{tikzpicture}
+\end{preview}
+\end{document}

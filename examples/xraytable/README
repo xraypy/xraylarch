@@ -1,0 +1,28 @@
+
+The files here generate a poster-sized Periodic Table of X-ray absorption
+edges and emission lines using data from Elam, Ravel, and Sieber, Radiation
+Physics and Chemistry 63 (2002).
+
+The latex source file used is heavily derived from the periodic tables of
+the elememts by Ivan Griffin in the tikZ example set
+    http://texample.net/tikz/examples/periodic-table-of-chemical-elements/
+
+Building the Xray Periodic Table
+=================================
+
+The PDF version of the periodic table can then be generated with
+   make
+
+This assumes a few things:
+   a) latex and a reasonably modern version of the TikZ package are installed.
+   b) XrayDB from the xraylarch package has been installed. XrayDB
+      contains the daata from Elam, et al. used to generate the table.
+      The gen_atoms.py script uses this to extract the data and write out
+      latex paragraphs for each element into the file atoms.tex.
+
+          python gen_atoms.py > atoms.tex
+
+   c) edit the top of xray_table.tex to select image of scientist and poster size.
+
+
+Matt Newville, April 2019
