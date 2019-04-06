@@ -51,7 +51,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
                           EnergyCalibrateDialog, SmoothDataDialog,
                           OverAbsorptionDialog, DeconvolutionDialog,
-                          QuitDialog)
+                          SpectraCalcDialog,  QuitDialog)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname, groups2csv,
@@ -595,8 +595,12 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Deconvolve Data",
                  "Deconvolution of Data",  self.onDeconvolveData)
 
-        MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
+        MenuItem(self, data_menu, "Correct Over-absorption",
+                 "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
+
+        MenuItem(self, data_menu, "Add and Subtract Sepctra",
+                 "Calculations of Spectra",  self.onSpectraCalc)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
@@ -798,6 +802,9 @@ class XASFrame(wx.Frame):
 
     def onCorrectOverAbsorptionData(self, event=None):
         OverAbsorptionDialog(self, self.controller).Show()
+
+    def onSpectraCalc(self, event=None):
+        SpectraCalcDialog(self, self.controller).Show()
 
     def onEnergyCalibrateData(self, event=None):
         EnergyCalibrateDialog(self, self.controller).Show()

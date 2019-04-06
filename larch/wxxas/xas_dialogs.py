@@ -8,6 +8,7 @@ import wx
 
 from larch.math import index_of, index_nearest, interp
 from larch.xray import guess_edge
+from larch.utils.strutils import file2groupname
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, get_icon, SimpleText, Choice,
@@ -1137,6 +1138,199 @@ clear undo history''')
                          label='original', show_legend=True)
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
+
+
+class SpectraCalcDialog(wx.Dialog):
+    """dialog for adding and subtracting spectra"""
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        groupnames = list(self.controller.file_groups.keys())
+        groupnames.insert(0, 'None')
+
+        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
+        xmin = min(self.dgroup.energy)
+        xmax = max(self.dgroup.energy)
+        e0val = getattr(self.dgroup, 'e0', xmin)
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+                           title="Spectra Calculations: Add, Subtract Spectra")
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        self.wids = wids = {}
+        array_choices = ('Normalized \u03BC(E)', 'Raw \u03BC(E)')
+
+        wids['array'] = Choice(panel, choices=array_choices, size=(250, -1))
+
+        add_text('Array to use ',  newrow=True)
+        panel.Add(wids['array'], dcol=2)
+
+        for gname in ('a', 'b', 'c', 'd', 'e'):
+            wname = 'group_%s' % gname
+            wids[wname] = Choice(panel, choices=groupnames, size=(250, -1))
+            wids[wname].SetSelection(0)
+            if gname == 'a':
+                wids[wname].SetStringSelection(self.dgroup.filename)
+            add_text('%s = ' % gname,  newrow=True)
+            panel.Add(wids[wname], dcol=2)
+
+        wids['formula'] = wx.TextCtrl(panel, -1, 'a-b', size=(250, -1))
+        add_text('Expression = ',  newrow=True)
+        panel.Add(wids['formula'], dcol=2)
+
+        wids['docalc'] = Button(panel, 'Calculate',
+                                size=(150, -1), action=self.on_docalc)
+
+        panel.Add(wids['docalc'], dcol=2, newrow=True)
+
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+                           action=self.on_saveas)
+        SetTip(wids['save_as'], 'Save as new group')
+
+        wids['save_as_name'] = wx.TextCtrl(panel, -1,
+                                           self.dgroup.filename + '_calc',
+                                           size=(250, -1))
+        panel.Add(wids['save_as'], newrow=True)
+        panel.Add(wids['save_as_name'], dcol=2)
+
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
+        panel.pack()
+        self.plot_results()
+
+    def onDone(self, event=None):
+        self.Destroy()
+
+    def on_docalc(self, event=None):
+        expr = self.wids['formula'].GetValue()
+
+        yname = 'mu'
+        if self.wids['array'].GetStringSelection().lower().startswith('norm'):
+            yname = 'norm'
+
+        groups = {}
+        a1 = None
+        for aname in ('a', 'b', 'c', 'd', 'e'):
+            fname = self.wids['group_%s' % aname].GetStringSelection()
+            if fname not in (None, 'None'):
+                grp = self.controller.get_group(fname)
+                groups[aname] = grp
+                if a1 is None:
+                    a1 = aname
+
+
+        group1 = groups.pop(a1)
+        print("Calc: ", yname, group1, groups)
+
+        new_fname =self.wids['save_as_name'].GetValue()
+        _larch = self.controller.larch
+        new_gname = file2groupname(new_fname, slen=5, symtable=_larch.symtable)
+
+        xname = 'energy'
+        if not hasattr(group1, xname):
+            xname = 'xdat'
+
+        cmds = ['a = b = c = d = e = None',
+                '%s = %s.%s' % (a1, group1.groupname, yname)]
+        fmt = '%s = interp(%s.%s, %s.%s, %s.%s)'
+        for key, group in groups.items():
+            cmds.append(fmt % (key, group.groupname, xname,
+                               group.groupname, yname,
+                               group1.groupname, xname))
+
+        cmds.append('%s = copy_group(%s)' % (new_gname, group1.groupname))
+        cmds.append('%s.filename = %s' % (new_gname, new_fname))
+        cmds.append('%s.%s = %s' % (new_gname, yname, expr))
+
+        cmds.append('del _x, a, b, c, d, e')
+        print('# SCRIPT:  ')
+        print('\n'.join(cmds))
+
+        ngroup = getattr(_larch.symtable, new_gname, None)
+        print(' -> New group ', new_gname, ngroup)
+
+        #         ngroup.xdat = ngroup.energy = eshift + ngroup.energy[:]
+        #         self.parent.onNewGroup(ngroup)
+
+
+
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['group_a'].GetStringSelection()
+        print(" save as ", fname)
+
+        #         new_fname = wids['save_as_name'].GetValue()
+        #         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        #
+        #         eshift = self.wids['eshift'].GetValue()
+        #         ngroup.xdat = ngroup.energy = eshift + ngroup.energy[:]
+        #         self.parent.onNewGroup(ngroup)
+
+    def plot_results(self, event=None):
+        ppanel = self.controller.get_display(stacked=False).panel
+        ppanel.oplot
+        dgroup = self.dgroup
+
+
+#         path, fname = os.path.split(dgroup.filename)
+#
+#         wids = self.wids
+#         e0_old = wids['e0_old'].GetValue()
+#         e0_new = wids['e0_new'].GetValue()
+#
+#         xmin = min(e0_old, e0_new) - 25
+#         xmax = max(e0_old, e0_new) + 50
+#
+#         use_deriv = self.plottype.GetStringSelection().lower().startswith('deriv')
+#
+#         ylabel = plotlabels.norm
+#         if use_deriv:
+#             ynew = np.gradient(ynew)/np.gradient(xnew)
+#             ylabel = plotlabels.dmude
+#
+#         opts = dict(xmin=xmin, xmax=xmax, linewidth=3,
+#                     ylabel=ylabel, xlabel=plotlabels.energy,
+#                     delay_draw=True, show_legend=True)
+#
+#         ppanel.plot(xnew, ynew, zorder=20, marker=None,
+#                     title='Energy Calibration:\n %s' % fname,
+#                     label='shifted', **opts)
+#
+#
+#         xold, yold = self.dgroup.energy, self.dgroup.norm
+#         if use_deriv:
+#             yold = np.gradient(yold)/np.gradient(xold)
+#
+#         ppanel.oplot(xold, yold, zorder=10, marker='o', markersize=3,
+#                      label='original', **opts)
+#
+#         if wids['reflist'].GetStringSelection() != 'None':
+#             refgroup = self.controller.get_group(wids['reflist'].GetStringSelection())
+#             xref, yref = refgroup.energy, refgroup.norm
+#             if use_deriv:
+#                 yref = np.gradient(yref)/np.gradient(xref)
+#             ppanel.oplot(xref, yref, style='short dashed', zorder=5,
+#                          marker=None, label=refgroup.filename, **opts)
+#
+#         axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
+#                         zorder=1, label='_nolegend_')
+#
+#         color1 = ppanel.conf.traces[0].color
+#         color2 = ppanel.conf.traces[1].color
+#         ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
+#         ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
+#         ppanel.canvas.draw()
+#         ppanel.conf.draw_legend(show=True)
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
