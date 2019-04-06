@@ -30,17 +30,7 @@ def copy_group(group, _larch=None):
                 copied_from=getattr(group, 'groupname', repr(group)))
 
     for attr in dir(group):
-        val = getattr(group, attr)
-        do_copy = True
-        if isinstance(val, np.ndarray):
-            val = 1.0*val
-        else:
-            try:
-                val = copy.deepcopy(getattr(group, attr))
-            except ValueError:
-                do_copy = False
-        if do_copy:
-            setattr(out, attr, val)
+        setattr(out, attr, copy.deepcopy(getattr(group, attr)))
     return out
 
 
