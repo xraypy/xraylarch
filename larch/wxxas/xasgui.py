@@ -954,7 +954,7 @@ class XASFrame(wx.Frame):
             if self.larch.symtable.has_group(gid):
                 count, prefix = 0, gname[:3]
                 while count < 1e7 and self.larch.symtable.has_group(gid):
-                    gid = pref + make_hashkey(length=7)
+                    gid = prefix + make_hashkey(length=7)
                     count += 1
 
             self.larch.eval(script.format(group=gid, prjgroup=gname))
