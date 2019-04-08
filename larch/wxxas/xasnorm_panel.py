@@ -36,7 +36,8 @@ PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
                    '\u03BC(E) + Pre-/Post-edge': 'prelines',
                    'Flattened \u03BC(E)': 'flat',
                    '\u03BC(E) + MBACK tabulated \u03BC(E)': 'mback_norm',
-                   'MBACK + Poly Normalized \u03BC(E)': 'mback_poly',
+                   'MBACK- + Poly-Normalized \u03BC(E)': 'mback_poly',
+                   'Area- + Poly-Normalized \u03BC(E)': 'area_norm',
                    'd\u03BC(E)/dE': 'dmude',
                    'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
                    'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde'}
@@ -55,7 +56,7 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu', 'Derivative': 'dmude'}
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
-                norm_method='polynomial', mback_edge='K', mback_elem='H',
+                norm_method='polynomial', edge='K', atsym='H',
                 nvict=0, nnorm=1,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
@@ -120,14 +121,14 @@ class XASNormPanel(TaskPanel):
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
 
-        self.wids['norm_method'] = Choice(xas, choices=('polynomial', 'mback'),
+        self.wids['norm_method'] = Choice(xas, choices=('polynomial', 'mback', 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         atsyms = self.larch.symtable._xray._xraydb.atomic_symbols
-        mback_edges = ('K', 'L3', 'L2', 'L1', 'M5')
+        edges = ('K', 'L3', 'L2', 'L1', 'M5')
 
-        self.wids['mback_elem'] = Choice(xas, choices=atsyms, size=(75, -1))
-        self.wids['mback_edge'] = Choice(xas, choices=mback_edges, size=(60, -1))
+        self.wids['atsym'] = Choice(xas, choices=atsyms, size=(75, -1))
+        self.wids['edge'] = Choice(xas, choices=edges, size=(60, -1))
 
         self.wids['is_frozen'] = Check(xas, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
@@ -153,6 +154,12 @@ class XASNormPanel(TaskPanel):
         xas.Add((10, 10))
         xas.Add(CopyBtn('plotone_op'), style=RCEN)
 
+        add_text('Element : ', newrow=True)
+        xas.Add(self.wids['atsym'])
+        add_text('Edge : ', newrow=False, dcol=2)
+        xas.Add(self.wids['edge'])
+        xas.Add(CopyBtn('atsym'), style=RCEN)
+
         add_text('E0 : ')
         xas.Add(xas_e0)
         xas.Add(e0opts_panel, dcol=3)
@@ -172,6 +179,11 @@ class XASNormPanel(TaskPanel):
         xas.Add(SimpleText(xas, 'Victoreen:'))
         xas.Add(self.wids['nvict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
+        xas.Add((10, 10), newrow=True)
+        xas.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
+        add_text('Normalization method: ')
+        xas.Add(self.wids['norm_method'], dcol=5)
+        xas.Add(CopyBtn('norm_method'))
 
         add_text('Normalization range: ')
         xas.Add(xas_norm1)
@@ -180,17 +192,6 @@ class XASNormPanel(TaskPanel):
         xas.Add(SimpleText(xas, 'Poly Order:'))
         xas.Add(self.wids['nnorm'])
         xas.Add(CopyBtn('xas_normpoly'), style=RCEN)
-
-        add_text('Normalization method: ')
-        xas.Add(self.wids['norm_method'], dcol=5)
-        xas.Add(CopyBtn('norm_method'))
-
-        add_text('  mback options: ')
-        add_text('Element : ', newrow=False, dcol=2)
-        xas.Add(self.wids['mback_elem'])
-        add_text('Edge : ', newrow=False)
-        xas.Add(self.wids['mback_edge'])
-        xas.Add(CopyBtn('xas_mback'), style=RCEN)
 
         xas.Add((10, 10), newrow=True)
         xas.Add(self.wids['is_frozen'], dcol=1, newrow=True)
@@ -226,9 +227,17 @@ class XASNormPanel(TaskPanel):
                 conf['nnorm'] = getattr(dgroup.bkg_params, 'nnorm', conf['nnorm'])
                 conf['nvict'] = getattr(dgroup.bkg_params, 'nvict', conf['nvict'])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
-            if hasattr(dgroup, 'mback_params'): # from mback
-                conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', conf['mback_elem'])
-                conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', conf['mback_edge'])
+            conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
+            conf['edge'] = getattr(dgroup,'edge', conf['edge'])
+
+            if hasattr(dgroup, 'e0') and conf['atsym'] == 'H':
+                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+                conf['atsym'] = atsym
+                conf['edge'] = edge
+
+            if hasattr(dgroup, 'mback_params'):
+                conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
+                conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
 
         setattr(dgroup, self.configname, conf)
         return conf
@@ -266,8 +275,8 @@ class XASNormPanel(TaskPanel):
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])
-            self.wids['mback_edge'].SetStringSelection(opts['mback_edge'].title())
-            self.wids['mback_elem'].SetStringSelection(opts['mback_elem'].title())
+            self.wids['edge'].SetStringSelection(opts['edge'].title())
+            self.wids['atsym'].SetStringSelection(opts['atsym'].title())
             self.wids['norm_method'].SetStringSelection(opts['norm_method'].lower())
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
@@ -309,8 +318,8 @@ class XASNormPanel(TaskPanel):
         form_opts['auto_step'] = self.wids['auto_step'].IsChecked()
 
         form_opts['norm_method'] = self.wids['norm_method'].GetStringSelection().lower()
-        form_opts['mback_edge'] = self.wids['mback_edge'].GetStringSelection().title()
-        form_opts['mback_elem'] = self.wids['mback_elem'].GetStringSelection().title()
+        form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
+        form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
 
         return form_opts
 
@@ -318,11 +327,11 @@ class XASNormPanel(TaskPanel):
         method = self.wids['norm_method'].GetStringSelection().lower()
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
-            cur_elem = self.wids['mback_elem'].GetStringSelection()
+            cur_elem = self.wids['atsym'].GetStringSelection()
             if hasattr(dgroup, 'e0') and cur_elem == 'H':
                 atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
-                self.wids['mback_edge'].SetStringSelection(edge)
-                self.wids['mback_elem'].SetStringSelection(atsym)
+                self.wids['edge'].SetStringSelection(edge)
+                self.wids['atsym'].SetStringSelection(atsym)
         self.onReprocess()
 
     def _set_frozen(self, frozen):
@@ -331,9 +340,11 @@ class XASNormPanel(TaskPanel):
             dgroup.is_frozen = frozen
         except:
             pass
-        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2', 'nvict', 'nnorm',
-                      'showe0', 'auto_e0', 'auto_step', 'norm_method', 'mback_edge',
-                      'mback_elem'):
+
+        for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
+                      'nvict', 'nnorm', 'showe0', 'auto_e0', 'auto_step',
+                      'norm_method', 'edge', 'atsym'):
+
             self.wids[wattr].Enable(not frozen)
 
     def onFreezeGroup(self, evt=None):
@@ -359,6 +370,16 @@ class XASNormPanel(TaskPanel):
         ytitle = self.plotsel_op.GetStringSelection()
         yarray_name = plot_choices[ytitle]
         ylabel = getattr(plotlabels, yarray_name, ytitle)
+
+        if yarray_name == 'norm':
+            form = self.read_form()
+            norm_method = form['norm_method'].lower()
+            if norm_method.startswith('mback'):
+                yarray_name = 'norm_mback'
+                ylabel = "%s (MBACK)" % ylabel
+            elif  norm_method.startswith('area'):
+                yarray_name = 'norm_area'
+                ylabel = "%s (Area)" % ylabel
 
         for checked in group_ids:
             groupname = self.controller.file_groups[str(checked)]
@@ -401,8 +422,8 @@ class XASNormPanel(TaskPanel):
             copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'xas_normpoly':
             copy_attrs('nnorm', 'norm1', 'norm2')
-        elif name == 'xas_mback':
-            copy_attrs('mback_elem', 'mback_edge')
+        elif name == 'atsym':
+            copy_attrs('atsym', 'edge')
         elif name == 'norm_method':
             copy_attrs('norm_method')
 
@@ -530,18 +551,15 @@ class XASNormPanel(TaskPanel):
             copts.append("%s=%.2f" % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
-
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
 
-        use_mback = form['norm_method'].lower().startswith('mback')
+        norm_method = form['norm_method'].lower()
         form['normmeth'] = 'poly'
-        if use_mback:
+        if force_mback or norm_method.startswith('mback'):
             form['normmeth'] = 'mback'
-
-        if force_mback or use_mback:
             copts = [dgroup.groupname]
-            copts.append("z=%d" % atomic_number(form['mback_elem']))
-            copts.append("edge='%s'" % form['mback_edge'])
+            copts.append("z=%d" % atomic_number(form['atsym']))
+            copts.append("edge='%s'" % form['edge'])
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
                 copts.append("%s=%.2f" % (attr, form[attr]))
 
@@ -555,6 +573,13 @@ class XASNormPanel(TaskPanel):
                 norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
 {group:s}.norm *= {group:s}.edge_step_{normmeth:s}/{edge_step:.8f}"""
                 self.larch_eval(norm_expr.format(**form))
+
+        if norm_method.startswith('area'):
+            form['normmeth'] = 'area'
+            expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}
+{group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
+            self.larch_eval(expr.format(**form))
+
 
         self.make_dnormde(dgroup)
 
@@ -573,17 +598,15 @@ class XASNormPanel(TaskPanel):
         self.wids['norm2'].SetValue(dgroup.pre_edge_details.norm2)
 
         conf = {}
+
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
         for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
             conf[attr] = getattr(dgroup.pre_edge_details, attr)
 
         if hasattr(dgroup, 'mback_params'): # from mback
-            conf['mback_elem'] = getattr(dgroup.mback_params, 'atsym', 'H')
-            conf['mback_edge'] = getattr(dgroup.mback_params, 'edge', 'K')
-        else:
-            conf['mback_elem'] = 'H'
-            conf['mback_edge'] = 'K'
+            conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
+            conf['edge'] = getattr(dgroup.mback_params, 'edge')
         self.update_config(conf, dgroup=dgroup)
         wx.CallAfter(self.unset_skip_process)
 
@@ -648,28 +671,32 @@ class XASNormPanel(TaskPanel):
             req_attrs.append('mback_norm')
             lab = r'$\mu$'
             if not hasattr(dgroup, 'mback_mu'):
-                self.process(dgroup=dgroup)
+                self.process(dgroup=dgroup, force_mback=True)
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
+
 
         elif pchoice == 'mback_poly':
             req_attrs.append('mback_norm')
             lab = plotlabels.norm
             if not hasattr(dgroup, 'mback_mu'):
-                self.process(dgroup=dgroup)
+                self.process(dgroup=dgroup, force_mback=True)
             dgroup.plot_yarrays = [('norm_mback', PLOTOPTS_1, 'mback'),
                                    ('norm_poly', PLOTOPTS_2, 'polynomial')]
+
+        elif pchoice == 'area_norm':
+            dgroup.plot_yarrays = [('norm_area', PLOTOPTS_1, 'area'),
+                                   ('norm_poly', PLOTOPTS_2, 'polynomial')]
+
 
         dgroup.plot_ylabel = lab
 
         needs_proc = False
-        force_mback = False
         for attr in req_attrs:
             needs_proc = needs_proc or (not hasattr(dgroup, attr))
-            force_mback = force_mback or attr.startswith('mback')
 
         if needs_proc:
-            self.process(dgroup=dgroup, force_mback=force_mback, noskip=True)
+            self.process(dgroup=dgroup, noskip=True)
 
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
@@ -763,7 +790,7 @@ class XASNormPanel(TaskPanel):
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.process(force_mback=True, noskip=True)
+                self.process(noskip=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname), **popts)
             plotcmd = ppanel.oplot
