@@ -79,14 +79,10 @@ def is_athena_project(filename):
     return _test_athena_text(text)
 
 
-def make_hashkey():
+def make_hashkey(length=5):
     """generate an 'athena hash key': 5 random lower-case letters
     """
-    a = []
-    for i in range(5):
-        a.append(chr(randint(97, 122)))
-    return ''.join(a)
-
+    return ''.join([chr(randint(97, 122)) for i in range(length)])
 
 def make_athena_args(group, hashkey=None, **kws):
     """make athena args line from a group"""

@@ -55,7 +55,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname, groups2csv,
-                      is_athena_project, AthenaProject)
+                      is_athena_project, AthenaProject, make_hashkey)
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
@@ -951,6 +951,12 @@ class XASFrame(wx.Frame):
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
             gid = str(getattr(this, 'athena_id', gname))
+            if self.larch.symtable.has_group(gid):
+                count, prefix = 0, gname[:3]
+                while count < 1e7 and self.larch.symtable.has_group(gid):
+                    gid = pref + make_hashkey(length=7)
+                    count += 1
+
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
