@@ -227,6 +227,7 @@ class XASNormPanel(TaskPanel):
                 conf['nnorm'] = getattr(dgroup.bkg_params, 'nnorm', conf['nnorm'])
                 conf['nvict'] = getattr(dgroup.bkg_params, 'nvict', conf['nvict'])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
+
             conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
             conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
@@ -325,6 +326,7 @@ class XASNormPanel(TaskPanel):
 
     def onNormMethod(self, evt=None):
         method = self.wids['norm_method'].GetStringSelection().lower()
+        self.update_config({'norm_method': method})
         if method.startswith('mback'):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
@@ -332,6 +334,7 @@ class XASNormPanel(TaskPanel):
                 atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
                 self.wids['edge'].SetStringSelection(edge)
                 self.wids['atsym'].SetStringSelection(atsym)
+                self.update_config({'edge': edge, 'atsym': atsym})
         self.onReprocess()
 
     def _set_frozen(self, frozen):
