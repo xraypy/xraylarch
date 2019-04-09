@@ -1014,7 +1014,7 @@ class XASFrame(wx.Frame):
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
             self.larch.eval(script.format(group=gname, path=path))
-            self.install_group(gname, filename, overwrite=True)
+            self.install_group(gname, filename, overwrite=ovewrite)
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
@@ -1030,15 +1030,13 @@ class XASFrame(wx.Frame):
         datatype = getattr(thisgroup, 'datatype', 'raw')
         # file /group may already exist in list
         if filename in self.controller.file_groups and not overwrite:
-            for i in range(1, 101):
-                ftest = "%s (%i)"  % (filename, i)
-                if ftest not in self.controller.file_groups:
-                    filename = ftest
-                    break
+            fbase, i = filename, 0
+            while i < 10000 and filename in self.controller.file_plugins:
+                filename = "%s_%d" % (fbase, i)
+                i += 1
 
-        if filename not in self.controller.file_groups:
-            self.controller.filelist.Append(filename)
-            self.controller.file_groups[filename] = groupname
+        self.controller.filelist.Append(filename)
+        self.controller.file_groups[filename] = groupname
 
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, process=process, plot=plot)
