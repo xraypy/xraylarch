@@ -146,7 +146,7 @@ def E_from_lambda(wavelength,E_units='keV',lambda_units='A'):
         return (PLANCK_HC/wavelength)    # eV
 
 
-def lambda_from_E(E,E_units='keV',lambda_units='A'):
+def lambda_from_E(E, E_units='keV', lambda_units='A'):
     '''
     Converts lambda into energy
     E = hf ; E = hc/lambda

@@ -1,7 +1,7 @@
 import logging
 logging.getLogger('pyFAI').setLevel(logging.CRITICAL)
 
-from .xrd import XRD, xrd1d, read_xrd_data, create_xrd, create_xrd1d
+from .xrd import XRD, xrd1d, read_xrd_data, create_xrd, create_xrd1d, calculate_xvalues
 from .xrd_bgr import xrd_background
 
 from .xrd_fitting import (peakfinder, peaklocater, peakfitter, peakfilter,
