@@ -59,7 +59,7 @@ from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
 from larch.site_config import icondir
 
-from ..xrd import lambda_from_E, xrd1d,save1D
+from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 from ..epics import pv_fullname
 from ..wxlib.xrfdisplay import XRFDisplayFrame
@@ -1180,7 +1180,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
-    def onXRD(self, event=None, save=False, show=False, xrd1d=False, xrd2d=False, verbose=True):
+    def onXRD(self, event=None, save=False, show=False,
+              xrd1d=False, xrd2d=False, verbose=True):
 
         try:
             aname = self._getarea()
@@ -1218,16 +1219,16 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         kwargs = dict(filename=self.owner.current_file.filename,
                       npixels = len(area.value[np.where(area.value)]),
                       energy = self.owner.current_energy,
-                      calfile = ponifile, title = title, xrd = '1D')
+                      calfile = ponifile, title = title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
             kwargs['xrd'] = '1D'
-            self._getxrd_area(aname,**kwargs)
+            self._xrd = xrmfile.get_xrd_area(aname, **kwargs)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                self.owner.display_1Dxrd(self._xrd.data1D, self._xrd.energy,
-                                         label=label)
+                self.owner.display_xrd1d(self._xrd.data1D, self._xrd.q,
+                                         self._xrd.energy, label=label)
             if save:
                 wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
                 dlg = wx.FileDialog(self, 'Save file as...',
@@ -1271,10 +1272,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
             if xrd1d and ponifile is not None:
                 self._xrd.calc_1D(save=save,verbose=True)
-
-                if show:
-                    label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                    self.owner.display_1Dxrd(self._xrd.data1D,self._xrd.energy,label=label)
+                print("show 1D XRD from 2D XRD")
+                # if show:
+                    #  label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
+                    # self.owner.display_xrd1d(self._xrd.data1D,
+                    #                          self._xrd.energy,label=label)
 
 
 class MapViewerFrame(wx.Frame):
@@ -1650,24 +1652,23 @@ class MapViewerFrame(wx.Frame):
             self.xrddisplay2D.plot2Dxrd(label,map)
         self.xrddisplay2D.Show()
 
-    def display_1Dxrd(self, xy, energy, label='dataset 0', xrmfile=None):
+    def display_xrd1d(self, counts, q, energy, label='dataset 0', xrmfile=None):
         '''
         displays 1D XRD pattern in diFFit viewer
         '''
-        data1dxrd = xrd1d(label=label,
-                          energy=energy,
-                          wavelength=lambda_from_E(energy))
+        wavelength = lambda_from_E(energy, E_units='keV')
 
-        data1dxrd.xrd_from_2d(xy,'q')
+        xdat = xrd1d(label=label, energy=energy, wavelength=wavelength)
+        xdat.set_xy_data(np.array([q, counts]), 'q')
 
         if self.xrddisplay1D is None:
             self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
         try:
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
             self.xrddisplay1D.Show()
         except PyDeadObjectError:
             self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
-            self.xrddisplay1D.xrd1Dviewer.add1Ddata(data1dxrd)
+            self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
             self.xrddisplay1D.Show()
 
     def init_larch(self):
