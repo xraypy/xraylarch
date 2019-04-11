@@ -69,8 +69,8 @@ class xrd1d(larch.Group):
     mkak 2017.03.15
     '''
 
-    def __init__(self,file=None,label=None,x=None,xtype=None,I=None,
-                 wavelength=None,energy=None):
+    def __init__(self, file=None, label=None, x=None, xtype=None, I=None,
+                 wavelength=None, energy=None):
 
         self.filename = file
         self.label    = label
@@ -126,9 +126,9 @@ class xrd1d(larch.Group):
 
 
     def xrd_from_2d(self,xy,xtype,verbose=True):
-        self.set_xy_data(xy,xtype)
+        self.set_xy_data(xy, xtype)
 
-    def xrd_from_file(self,filename,verbose=True):
+    def xrd_from_file(self, filename, verbose=True):
 
         try:
             from ..xrmmap import read1DXRDFile
@@ -180,15 +180,14 @@ class xrd1d(larch.Group):
         ## data
         self.set_xy_data(dat,xtype)
 
-    def set_xy_data(self,xy,xtype):
-
+    def set_xy_data(self, xy, xtype):
         if xy is not None:
             xy = np.array(xy)
             if xy.shape[0] > xy.shape[1]:
                 x,y = np.split(xy,2,axis=1)
             else:
-                x,y = np.split(xy,2,axis=0)
-            self.q,self.twth,self.d = calculate_xvalues(x,xtype,self.wavelength)
+                x,y = np.split(xy, 2, axis=0)
+            self.q, self.twth, self.d = calculate_xvalues(x, xtype, self.wavelength)
             self.I = np.array(y).squeeze()
 
             self.imin,self.imax = 0,len(self.q)
