@@ -279,7 +279,7 @@ class GSEXRM_MapFile(object):
         self.hotcols       = hotcols   # whether to remove first and last columns from data
         self.dtcorrect     = dtcorrect
         self.scandb        = scandb
-
+        self.envvar        = None
         self.status        = GSEXRM_FileStatus.err_notfound
         self.dimension     = None
         self.nmca          = None
@@ -2315,6 +2315,26 @@ class GSEXRM_MapFile(object):
         ny, nx, npos = self.xrmmap['positions/pos'].shape
         return ny, nx
 
+    def get_envvar(self, name):
+        """get environment value by name"""
+        if self.envvar is None:
+            self.envvar = {}
+            env_names = list(self.xrmmap['config/environ/name'])
+            env_vals  = list(self.xrmmap['config/environ/value'])
+            for name, val in zip(env_names, env_vals):
+                name = h5str(name).lower()
+                val = h5str(val)
+                try:
+                    fval = float(val)
+                except:
+                    fval = val
+
+                self.envvar[name] = fval
+        name = name.lower()
+        if name in self.envvar:
+            return self.envvar[name]
+
+
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None,
                         det=None, dtcorrect=None):
         '''return counts for a map rectangle, optionally
@@ -2546,7 +2566,7 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def get_xrd_area(self, areaname, xrd='2D', callback=None, **kws):
+    def get_xrd_area(self, areaname, xrd2d=False, callback=None, **kws):
         '''return 1D or 2D XRD pattern for a pre-defined area
 
         Parameters
@@ -2567,45 +2587,37 @@ class GSEXRM_MapFile(object):
         if npix < 1:
             return None
 
-        stps, xpix, ypix, qdat = 0,0,0,None
-
-        xrddir   = 'xrd1d' if '1d' in xrd.lower() else 'xrd2d'
-        mapdat   = self.xrmmap[xrddir]
-        xrdshape = mapdat['counts'].shape
-        mapname  = mapdat.name
-
-        qdat = mapdat['q']
-
+        stps, xpix, ypix, qdat = 0, 0, 0, None
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
 
+        xrdgroup = 'xrd2d' if xrd2d else 'xrd1d'
+        mapdat = self.xrmmap[xrdgroup]
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
                                       mapdat=mapdat, dtcorrect=False)
         counts = counts[area[ymin:ymax, xmin:xmax]]
 
-        if qdat is not None:
-            counts = np.array([qdat, counts])
-        return self._getXRD(mapname, counts, areaname, xrddir, **kws)
+        name = '%s: %s' % (xrdgroup, areaname)
+        kws['energy'] = energy = self.get_envvar('mono.energy')/1000.0
+        kws['wavelength'] = lambda_from_E(energy, E_units='keV')
 
+        if xrdgroup == 'xrd1d':
+            counts = counts.sum(axis=0)
+            xrd = XRD(data1D=counts, steps=len(counts), name=name, **kws)
+        else:
+            xpix, ypix = counts.shape
+            xrd = XRD(data2D=counts, xpixels=xpix, ypixels=ypix, name=name, **kws)
 
-    def _getXRD(self, mapname, data, areaname, xrddir, **kws):
-
-        name = '%s : %s' % (xrddir,areaname)
-
-        if xrddir == 'xrd1d':
-            _xrd = XRD(data1D=data, steps=data.shape[-1], name=name, **kws)
-        else: #elif  xrddir == 'xrd2d':
-            xpix,ypix = data.shape
-            _xrd = XRD(data2D=data, xpixels=xpix, ypixels=ypix, name=name, **kws)
-
-        _xrd.areaname = _xrd.title = name
         path, fname = os.path.split(self.filename)
-        _xrd.filename = fname
+        xrd.filename = fname
+        xrd.areaname = xrd.title = name
+        xrd.mapname = mapdat.name
         fmt = "Data from File '%s', detector '%s', area '%s'"
-        _xrd.info  =  fmt % (self.filename, mapname, name)
+        xrd.info  =  fmt % (self.filename, mapdat.name, name)
+        xrd.q = mapdat['q'].value
 
-        return _xrd
+        return xrd
 
     def get_pos(self, name, mean=True):
         '''return  position by name (matching 'roimap/pos_name' if
@@ -2696,15 +2708,11 @@ class GSEXRM_MapFile(object):
             return
 
         if self.mono_energy is None:
-            env_names = list(self.xrmmap['config/environ/name'])
-            env_vals  = list(self.xrmmap['config/environ/value'])
-            for name, val in zip(env_names, env_vals):
-                name = str(name).lower()
-            if ('mono.energy' in name or 'mono energy' in name):
-                self.mono_energy = float(val)/1000.
+            self.mono_energy = self.get_envvar('mono.energy')
 
         if unit.startswith('2th'): ## 2th to 1/A
-            qrange = q_from_twth(xrange, lambda_from_E(self.mono_energy))
+            qrange = q_from_twth(xrange,
+                                 lambda_from_E(self.mono_energy, E_units='eV'))
         elif unit == 'd':           ## A to 1/A
             qrange = q_from_d(xrange)
         else:
