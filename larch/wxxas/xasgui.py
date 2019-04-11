@@ -51,11 +51,11 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
                           EnergyCalibrateDialog, SmoothDataDialog,
                           OverAbsorptionDialog, DeconvolutionDialog,
-                          QuitDialog)
+                          SpectraCalcDialog,  QuitDialog)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname, groups2csv,
-                      is_athena_project, AthenaProject)
+                      is_athena_project, AthenaProject, make_hashkey)
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
@@ -595,8 +595,12 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Deconvolve Data",
                  "Deconvolution of Data",  self.onDeconvolveData)
 
-        MenuItem(self, data_menu, "Correct Over-absorption", "Correct Over-absorption",
+        MenuItem(self, data_menu, "Correct Over-absorption",
+                 "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
+
+        MenuItem(self, data_menu, "Add and Subtract Sepctra",
+                 "Calculations of Spectra",  self.onSpectraCalc)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
@@ -799,6 +803,9 @@ class XASFrame(wx.Frame):
     def onCorrectOverAbsorptionData(self, event=None):
         OverAbsorptionDialog(self, self.controller).Show()
 
+    def onSpectraCalc(self, event=None):
+        SpectraCalcDialog(self, self.controller).Show()
+
     def onEnergyCalibrateData(self, event=None):
         EnergyCalibrateDialog(self, self.controller).Show()
 
@@ -944,6 +951,12 @@ class XASFrame(wx.Frame):
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
             gid = str(getattr(this, 'athena_id', gname))
+            if self.larch.symtable.has_group(gid):
+                count, prefix = 0, gname[:3]
+                while count < 1e7 and self.larch.symtable.has_group(gid):
+                    gid = prefix + make_hashkey(length=7)
+                    count += 1
+
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
@@ -1001,7 +1014,7 @@ class XASFrame(wx.Frame):
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
             self.larch.eval(script.format(group=gname, path=path))
-            self.install_group(gname, filename, overwrite=True)
+            self.install_group(gname, filename, overwrite=ovewrite)
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
@@ -1017,15 +1030,13 @@ class XASFrame(wx.Frame):
         datatype = getattr(thisgroup, 'datatype', 'raw')
         # file /group may already exist in list
         if filename in self.controller.file_groups and not overwrite:
-            for i in range(1, 101):
-                ftest = "%s (%i)"  % (filename, i)
-                if ftest not in self.controller.file_groups:
-                    filename = ftest
-                    break
+            fbase, i = filename, 0
+            while i < 10000 and filename in self.controller.file_plugins:
+                filename = "%s_%d" % (fbase, i)
+                i += 1
 
-        if filename not in self.controller.file_groups:
-            self.controller.filelist.Append(filename)
-            self.controller.file_groups[filename] = groupname
+        self.controller.filelist.Append(filename)
+        self.controller.file_groups[filename] = groupname
 
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, process=process, plot=plot)

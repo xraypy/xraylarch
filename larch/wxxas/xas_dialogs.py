@@ -8,6 +8,7 @@ import wx
 
 from larch.math import index_of, index_nearest, interp
 from larch.xray import guess_edge
+from larch.utils.strutils import file2groupname
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, get_icon, SimpleText, Choice,
@@ -1137,6 +1138,142 @@ clear undo history''')
                          label='original', show_legend=True)
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
+
+    def GetResponse(self):
+        raise AttributError("use as non-modal dialog!")
+
+
+class SpectraCalcDialog(wx.Dialog):
+    """dialog for adding and subtracting spectra"""
+    def __init__(self, parent, controller, **kws):
+
+        self.parent = parent
+        self.controller = controller
+        self.dgroup = self.controller.get_group()
+        self.group_a = None
+        groupnames = list(self.controller.file_groups.keys())
+
+        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
+        xmin = min(self.dgroup.energy)
+        xmax = max(self.dgroup.energy)
+        e0val = getattr(self.dgroup, 'e0', xmin)
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+                           title="Spectra Calculations: Add, Subtract Spectra")
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+
+        def add_text(text, dcol=1, newrow=True):
+            panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
+
+        self.wids = wids = {}
+        array_choices = ('Normalized \u03BC(E)', 'Raw \u03BC(E)')
+
+        wids['array'] = Choice(panel, choices=array_choices, size=(250, -1))
+
+        add_text('Array to use: ',  newrow=True)
+        panel.Add(wids['array'], dcol=2)
+
+        # group 'a' cannot be none, and defaults to current group
+        gname = 'a'
+        wname = 'group_%s' % gname
+        wids[wname] = Choice(panel, choices=groupnames, size=(250, -1))
+        wids[wname].SetStringSelection(self.dgroup.filename)
+        add_text('   %s = ' % gname,  newrow=True)
+        panel.Add(wids[wname], dcol=2)
+
+        groupnames.insert(0, 'None')
+        for gname in ('b', 'c', 'd', 'e', 'f', 'g'):
+            wname = 'group_%s' % gname
+            wids[wname] = Choice(panel, choices=groupnames, size=(250, -1))
+            wids[wname].SetSelection(0)
+            add_text('   %s = ' % gname,  newrow=True)
+            panel.Add(wids[wname], dcol=2)
+
+        wids['formula'] = wx.TextCtrl(panel, -1, 'a-b', size=(250, -1))
+        add_text('Expression = ',  newrow=True)
+        panel.Add(wids['formula'], dcol=2)
+
+        wids['docalc'] = Button(panel, 'Calculate',
+                                size=(150, -1), action=self.on_docalc)
+
+        panel.Add(wids['docalc'], dcol=2, newrow=True)
+
+        wids['save_as'] = Button(panel, 'Save As New Group: ', size=(150, -1),
+                           action=self.on_saveas)
+        SetTip(wids['save_as'], 'Save as new group')
+
+        wids['save_as_name'] = wx.TextCtrl(panel, -1,
+                                           self.dgroup.filename + '_calc',
+                                           size=(250, -1))
+        panel.Add(wids['save_as'], newrow=True)
+        panel.Add(wids['save_as_name'], dcol=2)
+        wids['save_as'].Disable()
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
+                  newrow=True)
+        panel.pack()
+
+    def onDone(self, event=None):
+        self.Destroy()
+
+    def on_docalc(self, event=None):
+        self.expr = self.wids['formula'].GetValue()
+
+        self.yname = 'mu'
+        if self.wids['array'].GetStringSelection().lower().startswith('norm'):
+            self.yname = 'norm'
+
+        groups = {}
+        for aname in ('a', 'b', 'c', 'd', 'e', 'f', 'g'):
+            fname = self.wids['group_%s' % aname].GetStringSelection()
+            if fname not in (None, 'None'):
+                grp = self.controller.get_group(fname)
+                groups[aname] = grp
+
+        self.group_map = {key: group.groupname for key, group in groups.items()}
+        # note: 'a' cannot be None, all others can be None
+        group_a = self.group_a = groups.pop('a')
+        xname = 'energy'
+        if not hasattr(group_a, xname):
+            xname = 'xdat'
+
+        cmds = ['#From SpectraCalc dialog: ',
+                'a = b = c = d = e = f = g = None',
+                '_x = %s.%s' % (group_a.groupname, xname),
+                'a = %s.%s' % (group_a.groupname, self.yname)]
+        fmt = '%s = interp(%s.%s, %s.%s, _x)'
+        for key, group in groups.items():
+            cmds.append(fmt % (key, group.groupname, xname,
+                               group.groupname, self.yname))
+        cmds.append('_y = %s' % self.expr)
+        cmds.append("""plot(_x, _y, label='%s', new=True,
+   show_legend=True, xlabel='%s', title='Spectral Calculation')"""
+                    % (self.expr, xname))
+
+        self.controller.larch.eval('\n'.join(cmds))
+        self.wids['save_as'].Enable()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        _larch = self.controller.larch
+        fname = wids['group_a'].GetStringSelection()
+        new_fname =self.wids['save_as_name'].GetValue()
+        new_gname = file2groupname(new_fname, slen=5, symtable=_larch.symtable)
+
+        cmds = ['%s = copy_group(%s)' % (new_gname, self.group_a.groupname),
+                '%s.groupname = \'%s\'' % (new_gname, new_gname),
+                '%s.filename = \'%s\'' % (new_gname, new_fname),
+                '%s.calc_groups = %s' % (new_gname, repr(self.group_map)),
+                '%s.calc_expr = \'%s\'' % (new_gname, self.expr),
+                '%s.%s = %s' % (new_gname, self.yname, self.expr),
+                'del _x, _y, a, b, c, d, e, f, g']
+
+        _larch.eval('\n'.join(cmds))
+
+        ngroup = getattr(_larch.symtable, new_gname, None)
+        if ngroup is not None:
+            self.parent.install_group(ngroup.groupname, ngroup.filename)
+            self.parent.ShowFile(groupname=ngroup.groupname)
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")

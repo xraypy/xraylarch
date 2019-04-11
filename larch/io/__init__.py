@@ -29,7 +29,7 @@ from .gse_mcafile import gsemca_group, GSEMCA_File
 from .save_restore import save, restore
 from .tifffile import TIFFfile
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
-                             extract_athenagroup)
+                             extract_athenagroup, make_hashkey)
 from .csvfiles import groups2csv
 from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups

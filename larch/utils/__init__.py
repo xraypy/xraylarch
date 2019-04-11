@@ -2,13 +2,14 @@
 import time
 from datetime import datetime
 from collections import OrderedDict
-
+import numpy as np
+import copy
 from .paths import uname, bindir, nativepath, get_homedir
 from .debugtime import debugtime, debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,
                        fix_varname, isLiteralStr, strip_comments,
-                       find_delims, version_ge)
+                       find_delims, version_ge, unique_name)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
@@ -20,6 +21,18 @@ def group2dict(group, _larch=None):
 def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
+
+
+def copy_group(group, _larch=None):
+    from larch import Group
+
+    out = Group(datatype=getattr(group, 'datatype', 'unknown'),
+                copied_from=getattr(group, 'groupname', repr(group)))
+
+    for attr in dir(group):
+        setattr(out, attr, copy.deepcopy(getattr(group, attr)))
+    return out
+
 
 def isotime(t=None, with_tzone=False):
     if t is None:
@@ -40,5 +53,5 @@ def _larch_init(_larch):
 _larch_builtins = dict(copy=_copy, deepcopy=_deepcopy, more= _more,
                        parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
                        cwd=_cwd, group2dict=group2dict,
-                       dict2group=dict2group, debugtimer=debugtimer,
-                       isotime=isotime)
+                       copy_group=copy_group, dict2group=dict2group,
+                       debugtimer=debugtimer, isotime=isotime)

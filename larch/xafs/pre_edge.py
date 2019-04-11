@@ -6,6 +6,7 @@
 import numpy as np
 from scipy import polyfit
 from scipy.signal import find_peaks_cwt
+from scipy.integrate import simps
 
 from lmfit import Parameters, Minimizer
 from lmfit.models import (LorentzianModel, GaussianModel,
@@ -21,6 +22,7 @@ from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
 # now we can reliably import other std and xafs modules...
 
+from larch.xray import guess_edge, xray_edge, core_width
 from larch.math import (index_of, index_nearest,
                          remove_dups, remove_nans2)
 from .xafsutils import set_xafsGroup
@@ -199,7 +201,8 @@ def preedge(energy, mu, e0=None, step=None,
 @Make_CallArgs(["energy","mu"])
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=None, nvict=0, pre1=None, pre2=-50,
-             norm1=100, norm2=None, make_flat=True, _larch=None):
+             norm1=100, norm2=None, make_flat=True, emin_area=None,
+             _larch=None):
     """pre edge subtraction, normalization for XAFS
 
     This performs a number of steps:
@@ -207,13 +210,14 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
        2. fit a line of polymonial to the region below the edge
        3. fit a polymonial to the region above the edge
        4. extrapolae the two curves to E0 to determine the edge jump
+       5. estimate area from emin_area to norm2, to get norm_area
 
     Arguments
     ----------
     energy:  array of x-ray energies, in eV, or group (see note)
     mu:      array of mu(E)
     group:   output group
-    e0:      edge energy, in eV.  If None, it will be determined here.
+    e0:      edge energy, in eV. If None, it will be determined here.
     step:    edge jump.  If None, it will be determined here.
     pre1:    low E range (relative to E0) for pre-edge fit
     pre2:    high E range (relative to E0) for pre-edge fit
@@ -223,6 +227,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
              post-edge normalization curve. Default=None (see note)
     make_flat: boolean (Default True) to calculate flattened output.
+    emin_area: energy threshold for area normalization (see note)
 
 
     Returns
@@ -232,7 +237,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     The following attributes will be written to the output group:
         e0          energy origin
         edge_step   edge step
-        norm        normalized mu(E)
+        norm        normalized mu(E), using polynomial
+        norm_area   normalized mu(E), using integrated area
         flat        flattened, normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
@@ -242,17 +248,21 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
 
     Notes
     -----
-    1  nvict gives an exponent to the energy term for the fits to the pre-edge
+    1  If the first argument is a Group, it must contain 'energy' and 'mu'.
+       If it exists, group.e0 will be used as e0.
+       See First Argrument Group in Documentation
+    2  nvict gives an exponent to the energy term for the fits to the pre-edge
        and the post-edge region.  For the pre-edge, a line (m * energy + b) is
        fit to mu(energy)*energy**nvict over the pre-edge region,
        energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
        nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
        energy=[e0+norm1, e0+norm2].
-    2  nnorm will default to 2 in norm2-norm1>400,  to 1 if 100>norm2-norm1>300, and
-       to 0 in norm2-norm1<100.
-    3  If the first argument is a Group, it must contain 'energy' and 'mu'.
-       If it exists, group.e0 will be used as e0.
-       See First Argrument Group in Documentation
+    3  nnorm will default to 2 in norm2-norm1>400, to 1 if 100>norm2-norm1>300,
+       and to 0 in norm2-norm1<100.
+    4  norm_area will be estimated so that the area between emin_area and norm2
+       is equal to (norm2-emin_area).  By default emin_area will be set to the
+       *nominal* edge energy for the element and edge - 3*core_level_width
+
     """
 
 
@@ -306,9 +316,11 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
 
     group.e0 = e0
     group.norm = norm
+    group.norm_poly = 1.0*norm
     group.flat = flat
     group.dmude = np.gradient(mu)/np.gradient(energy)
     group.edge_step  = pre_dat['edge_step']
+    group.edge_step_poly = pre_dat['edge_step']
     group.pre_edge   = pre_dat['pre_edge']
     group.post_edge  = pre_dat['post_edge']
 
@@ -329,6 +341,28 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
             delattr(group, 'norm_c%i' % i)
     for i, c in enumerate(pre_dat['norm_coefs']):
         setattr(group.pre_edge_details, 'norm_c%i' % i, c)
+
+    # guess element and edge
+    group.atsym = getattr(group, 'atsym', None)
+    group.edge = getattr(group, 'edge', None)
+
+    if group.atsym is None or group.edge is None:
+        _atsym, _edge = guess_edge(group.e0, _larch=_larch)
+        if group.atsym is None: group.atsym = _atsym
+        if group.edge is None:  group.edge = _edge
+
+    # calcuate area-normalization
+    if emin_area is None:
+        emin_area = (xray_edge(group.atsym, group.edge).edge
+                     - 2*core_width(group.atsym, group.edge))
+    i1 = index_of(energy, emin_area)
+    i2 = index_of(energy, e0+norm2)
+    en = energy[i1:i2]
+    area_step = max(1.e-15, simps(norm[i1:i2], en) / en.ptp())
+    group.edge_step_area = group.edge_step_poly * area_step
+    group.norm_area = norm/area_step
+    group.pre_edge_details.emin_area = emin_area
+
     return
 
 
