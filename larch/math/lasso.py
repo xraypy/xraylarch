@@ -71,9 +71,9 @@ def lasso_train(groups, varname='lassoval', arrayname='norm',
 
     ypred = model.predict(spectra)
 
-    rmse = sqrt(((ydat - ypred)**2).mean())
+    rmse = np.sqrt(((ydat - ypred)**2).mean())
 
-    return Group(x=xdat, spectra=spectra, ydat=ydat, alpha=alpha,
+    return Group(x=xdat, spectra=spectra, ydat=ydat, ypred=ypred, alpha=alpha,
                  active=model.active_, coef=model.coef_, rmse=rmse,
                  model=model, varname=varname, arrayname=arrayname,
                  fit_intercept=fit_intercept, normalize=normalize,
