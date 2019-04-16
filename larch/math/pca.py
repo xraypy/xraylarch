@@ -8,7 +8,6 @@ import time
 
 from itertools import combinations
 from collections import OrderedDict
-from glob import glob
 
 import numpy as np
 from numpy.random import randint
