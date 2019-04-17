@@ -42,10 +42,9 @@ from larch.site_config import icondir
 from .prepeak_panel import PrePeakPanel
 from .xasnorm_panel import XASNormPanel
 from .lincombo_panel import LinearComboPanel
-from .decompose_panel import PCAPanel
+from .pca_panel import PCAPanel
 from .exafs_panel import EXAFSPanel
-
-# LASSOPanel,
+from .lasso_panel import LASSOPanel
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -71,7 +70,7 @@ NB_PANELS = OrderedDict((('XAS Normalization', XASNormPanel),
                          ('Pre-edge Peaks', PrePeakPanel),
                          ('PCA',  PCAPanel),
                          ('Linear Combinations', LinearComboPanel),
-                         # ('LASSO', LASSOPanel),
+                         ('LASSO', LASSOPanel),
                          ('EXAFS', EXAFSPanel)))
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.

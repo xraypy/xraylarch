@@ -2,7 +2,7 @@ from .taskpanel  import TaskPanel, FONTSIZE
 from .xasnorm_panel import XASNormPanel
 from .prepeak_panel import PrePeakPanel
 from .lincombo_panel import LinearComboPanel
-from .decompose_panel import PCAPanel
+from .pca_panel import PCAPanel
 from .lasso_panel import LASSOPanel
 from .exafs_panel import EXAFSPanel
 
