@@ -143,61 +143,66 @@ class XASNormPanel(TaskPanel):
         add_text = self.add_text
 
         xas.Add(SimpleText(xas, ' XAS Pre-edge subtraction and Normalization',
-                           **titleopts), dcol=4)
+                           **titleopts), dcol=3)
         xas.Add(SimpleText(xas, 'Copy to Selected Groups?'), style=RCEN, dcol=3)
 
         xas.Add(plot_sel, newrow=True)
-        xas.Add(self.plotsel_op, dcol=6)
+        xas.Add(self.plotsel_op, dcol=3)
 
         xas.Add(plot_one, newrow=True)
-        xas.Add(self.plotone_op, dcol=4)
-        xas.Add((10, 10))
+        xas.Add(self.plotone_op, dcol=3)
         xas.Add(CopyBtn('plotone_op'), style=RCEN)
 
-        add_text('Element : ', newrow=True)
+        xas.Add((10, 10), newrow=True)
+        xas.Add(HLine(self, size=(550, 3)), dcol=5, newrow=True)
+
+        add_text('Element and Edge: ', newrow=True)
         xas.Add(self.wids['atsym'])
-        add_text('Edge : ', newrow=False, dcol=2)
-        xas.Add(self.wids['edge'])
+        xas.Add(self.wids['edge'], dcol=2)
         xas.Add(CopyBtn('atsym'), style=RCEN)
 
         add_text('E0 : ')
         xas.Add(xas_e0)
-        xas.Add(e0opts_panel, dcol=3)
-        xas.Add((10, 1))
+        xas.Add(e0opts_panel, dcol=2)
         xas.Add(CopyBtn('xas_e0'), style=RCEN)
 
         add_text('Edge Step: ')
         xas.Add(xas_step)
-        xas.Add(self.wids['auto_step'], dcol=3)
-        xas.Add((10, 1))
+        xas.Add(self.wids['auto_step'], dcol=2)
         xas.Add(CopyBtn('xas_step'), style=RCEN)
+
+        xas.Add((10, 10), newrow=True)
+        xas.Add(HLine(self, size=(550, 3)), dcol=5, newrow=True)
 
         add_text('Pre-edge range: ')
         xas.Add(xas_pre1)
         add_text(' : ', newrow=False)
         xas.Add(xas_pre2)
-        xas.Add(SimpleText(xas, 'Victoreen:'))
-        xas.Add(self.wids['nvict'])
         xas.Add(CopyBtn('xas_pre'), style=RCEN)
+
+        xas.Add(SimpleText(xas, 'Victoreen order:'), newrow=True)
+        xas.Add(self.wids['nvict'], dcol=3)
+
+
         xas.Add((10, 10), newrow=True)
-        xas.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
+        xas.Add(HLine(self, size=(550, 3)), dcol=5, newrow=True)
+
         add_text('Normalization method: ')
-        xas.Add(self.wids['norm_method'], dcol=5)
-        xas.Add(CopyBtn('norm_method'))
+        xas.Add(self.wids['norm_method'], dcol=3)
+        xas.Add(CopyBtn('xas_norm'), style=RCEN)
 
         add_text('Normalization range: ')
         xas.Add(xas_norm1)
         add_text(' : ', newrow=False)
         xas.Add(xas_norm2)
-        xas.Add(SimpleText(xas, 'Poly Order:'))
-        xas.Add(self.wids['nnorm'])
-        xas.Add(CopyBtn('xas_normpoly'), style=RCEN)
+        xas.Add(SimpleText(xas, 'Polynomial Order:'), newrow=True)
+        xas.Add(self.wids['nnorm'], dcol=2)
 
         xas.Add((10, 10), newrow=True)
-        xas.Add(self.wids['is_frozen'], dcol=1, newrow=True)
-        xas.Add(saveconf, dcol=4)
+        xas.Add(self.wids['is_frozen'], newrow=True)
+        xas.Add(saveconf, dcol=3)
         xas.Add((10, 10), newrow=True)
-        xas.Add(HLine(self, size=(500, 3)), dcol=8, newrow=True)
+        xas.Add(HLine(self, size=(550, 3)), dcol=5, newrow=True)
         xas.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -423,12 +428,10 @@ class XASNormPanel(TaskPanel):
             copy_attrs('edge_step', 'auto_step')
         elif name == 'xas_pre':
             copy_attrs('pre1', 'pre2', 'nvict')
-        elif name == 'xas_normpoly':
-            copy_attrs('nnorm', 'norm1', 'norm2')
         elif name == 'atsym':
             copy_attrs('atsym', 'edge')
-        elif name == 'norm_method':
-            copy_attrs('norm_method')
+        elif name == 'xas_norm':
+            copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -489,7 +492,8 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         except TypeError:
             return
-
+        if not hasattr(dgroup, self.configname):
+            return
         form = self.read_form()
         changed = []
         for attr, val in getattr(dgroup, self.configname).items():
