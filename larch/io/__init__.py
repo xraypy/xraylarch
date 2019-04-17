@@ -30,7 +30,7 @@ from .save_restore import save, restore
 from .tifffile import TIFFfile
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
                              extract_athenagroup, make_hashkey)
-from .csvfiles import groups2csv
+from .csvfiles import groups2csv, read_csv
 from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups
 from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
@@ -61,6 +61,7 @@ __exports__ = dict(increment_filename=increment_filename,
                    write_ascii=write_ascii,
                    write_group=write_group,
                    groups2csv=groups2csv,
+                   read_csv=read_csv,
                    read_xdi=read_xdi,
                    read_athena=read_athena,
                    create_athena=create_athena,

@@ -8,10 +8,11 @@ import os
 import time
 import json
 import platform
-
+import csv
 from collections import OrderedDict
 
 import numpy as np
+from dateutil.parser import parse as dateparse
 from larch import Group
 from larch.math import interp
 from larch.utils.strutils import bytes2str, fix_varname
@@ -64,3 +65,66 @@ def groups2csv(grouplist, filename,
         fh.write("\n".join(buff))
 
     print("Wrote %i groups to %s" % (len(columns)-1, filename))
+
+
+def str2float(word, allow_times=True):
+    """convert a work to a float
+
+    Arguments
+    ---------
+      word          str, word to be converted
+      allow_times   bool, whether to support time stamps [True]
+
+    Returns
+    -------
+      either a float or text
+
+    Notes
+    -----
+      The `allow_times` will try to support common date-time strings
+      using the dateutil module, returning a numerical value as the
+      Unix timestamp, using
+          time.mktime(dateutil.parser.parse(word).timetuple())
+    """
+    mktime = time.mktime
+    val = word
+    try:
+        val = float(word)
+    except ValueError:
+        try:
+            val = mktime(dateparse(word).timetuple())
+        except ValueError:
+            pass
+    return val
+
+def read_csv(filename):
+    """read CSV file, return group with data as columns"""
+    csvfile = open(filename, 'r')
+    dialect = csv.Sniffer().sniff(csvfile.read(1024),  [',',';', '\t'])
+    csvfile.seek(0)
+
+    data = None
+    isfloat = None
+    for row in csv.reader(csvfile, dialect):
+        if data is None:
+            ncols = len(row)
+            data = [[] for i in range(ncols)]
+            isfloat =[None]*ncols
+        for i, word in enumerate(row):
+            data[i].append(str2float(word))
+            if isfloat[i] is None:
+                try:
+                    _ = float(word)
+                    isfloat[i] = True
+                except ValueError:
+                    isfloat[i] = False
+
+    out = Group(filename=filename, data=data)
+    for icol in range(ncols):
+        cname = 'col_%2.2d' % (icol+1)
+        val = data[icol]
+        if isfloat[icol]:
+            val = np.array(val)
+        setattr(out, cname, val)
+
+    return out
