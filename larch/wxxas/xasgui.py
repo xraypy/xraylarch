@@ -159,6 +159,10 @@ class XASController():
     def get_iconfile(self):
         return os.path.join(icondir, ICON_FILE)
 
+    def write_message(self, msg, panel=0):
+        """write a message to the Status Bar"""
+        self.wxparent.statusbar.SetStatusText(msg, panel)
+
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
         # if stacked:
@@ -382,9 +386,9 @@ class XASFrame(wx.Frame):
         self.larch_buffer.Hide()
         self.createMainPanel()
         self.createMenus()
-        self.statusbar = self.CreateStatusBar(2, 0)
+        self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
         self.statusbar.SetStatusWidths([-3, -1])
-        statusbar_fields = ["Initializing....", " "]
+        statusbar_fields = [" ", "initializing...."]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
@@ -458,7 +462,7 @@ class XASFrame(wx.Frame):
         self.controller.filelist.select_none()
 
     def init_larch(self):
-        self.SetStatusText('initializing Larch')
+        self.SetStatusText('initializing Larch', 1)
         self.title.SetLabel('')
 
         self.controller.init_larch()
@@ -469,12 +473,12 @@ class XASFrame(wx.Frame):
         plotframe.SetPosition((xpos+xsiz+5, ypos))
         plotframe.SetSize((ysiz, ysiz))
 
-        self.SetStatusText('ready')
+        self.SetStatusText('ready', 1)
         self.Raise()
 
-    def write_message(self, s, panel=0):
+    def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
-        self.SetStatusText(s, panel)
+        self.statusbar.SetStatusText(msg, panel)
 
     def RemoveFile(self, fname=None, **kws):
         if fname is not None:
@@ -518,7 +522,6 @@ class XASFrame(wx.Frame):
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
-        #
         fmenu = wx.Menu()
         group_menu = wx.Menu()
         data_menu = wx.Menu()
@@ -622,7 +625,7 @@ class XASFrame(wx.Frame):
                         default_file='xas_viewer_history.lar')
         if path is not None:
             self.larch._larch.input.history.save(path, session_only=True)
-            self.SetStatusText("Wrote %s" % path, 0)
+            self.write_message("Wrote history %s" % path, 0)
 
     def onExportCSV(self, evt=None):
         filenames = self.controller.filelist.GetCheckedStrings()
@@ -642,6 +645,7 @@ class XASFrame(wx.Frame):
                     savegroups.append(dgroup)
             groups2csv(savegroups, res.filename, x='energy', y=res.yarray,
                        _larch=self.larch)
+            self.write_message("Exported CSV file %s" % (res.filename))
 
     def onExportAthena(self, evt=None):
         groups = []
@@ -680,6 +684,7 @@ class XASFrame(wx.Frame):
             aprj.add_group(grp)
 
         aprj.save(use_gzip=True)
+        self.write_message("Saved project file %s" % (outfile))
 
     def onConfigDataProcessing(self, event=None):
         pass
@@ -960,7 +965,7 @@ class XASFrame(wx.Frame):
             dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
-
+        self.write_message("read %d datasets from %s" % (len(namelist), path))
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
                   overwrite=False):
@@ -1014,6 +1019,8 @@ class XASFrame(wx.Frame):
             gname = file2groupname(filename, symtable=self.larch.symtable)
             self.larch.eval(script.format(group=gname, path=path))
             self.install_group(gname, filename, overwrite=overwrite)
+
+        self.write_message("read %s" % (filename))
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
