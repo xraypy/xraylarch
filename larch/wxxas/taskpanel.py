@@ -67,6 +67,9 @@ class TaskPanel(wx.Panel):
             self.fill_form(dgroup)
             self.process(dgroup=dgroup)
 
+    def write_message(self, msg, panel=0):
+        self.controller.write_message(msg, panel=panel)
+
     def larch_eval(self, cmd):
         """eval"""
         self.controller.larch.eval(cmd)
@@ -133,8 +136,8 @@ class TaskPanel(wx.Panel):
         form_opts = {'groupname': dgroup.groupname}
         for name, wid in self.wids.items():
             val = None
-            for method in ('GetStringSelection', 'IsChecked',
-                           'GetValue', 'GetLabel'):
+            for method in ('GetValue', 'GetStringSelection', 'IsChecked',
+                           'GetLabel'):
                 meth = getattr(wid, method, None)
                 if callable(meth):
                     try:
