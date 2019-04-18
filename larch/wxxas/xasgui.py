@@ -1013,7 +1013,7 @@ class XASFrame(wx.Frame):
             filedir, filename = os.path.split(path)
             gname = file2groupname(filename, symtable=self.larch.symtable)
             self.larch.eval(script.format(group=gname, path=path))
-            self.install_group(gname, filename, overwrite=ovewrite)
+            self.install_group(gname, filename, overwrite=overwrite)
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
@@ -1030,7 +1030,7 @@ class XASFrame(wx.Frame):
         # file /group may already exist in list
         if filename in self.controller.file_groups and not overwrite:
             fbase, i = filename, 0
-            while i < 10000 and filename in self.controller.file_plugins:
+            while i < 10000 and filename in self.controller.file_groups:
                 filename = "%s_%d" % (fbase, i)
                 i += 1
 
