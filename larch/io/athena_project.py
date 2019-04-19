@@ -143,16 +143,12 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('update_bkg', '1'), ('update_columns', '0'),
                  ('update_data', '0'), ('update_fft', '1'),
                  ('update_norm', '1'), ('xdi_will_be_cloned', '0'),
-                 ('xdifile', ''), ('xmu_string', '')):
+                 ('xdifile', ''), ('xmu_string', ''),
+                 ('valence', ''), ('lasso_yvalue', ''),
+                 ('atsym', ''), ('edge', '') ):
         args[k] = v
 
-
-    args['datagroup'] = args['tag'] = hashkey
-    args['source'] = args['file'] = getattr(group, 'filename', 'unknown')
-    args['label'] = getattr(group, 'filename', hashkey)
-
-    # args['titles'] = []
-
+    args['datagroup'] = args['tag'] = args['label'] = hashkey
 
     en = getattr(group, 'energy', [])
     args['npts'] = len(en)
@@ -160,21 +156,39 @@ def make_athena_args(group, hashkey=None, **kws):
         args['xmin'] = '%.1f' % min(en)
         args['xmax'] = '%.1f' % max(en)
 
-    args['bkg_e0'] = group.e0
-    args['bkg_step'] = args['bkg_fitted_step'] = group.edge_step
+    main_map = dict(source='filename', file='filename', label='filename',
+                    bkg_e0='e0', bkg_step='edge_step',
+                    bkg_fitted_step='edge_step', valence='valence',
+                    lasso_yvalue='lasso_yvalue', atsym='atsym',
+                    edge='edge')
 
-    args['bkg_nnorm'] = int(group.pre_edge_details.nnorm)
-    # args['bkg_nvict'] = int(group.pre_edge_details.nvict)
-    args['bkg_nor1'] = group.pre_edge_details.norm1
-    args['bkg_nor2'] = group.pre_edge_details.norm2
-    args['bkg_pre1'] = group.pre_edge_details.pre1
-    args['bkg_pre2'] = group.pre_edge_details.pre2
+    for aname, lname in main_map.items():
+        val = getattr(group, lname, None)
+        if val is not None:
+            args[aname] = val
+
+    bkg_map = dict(nnorm='nnorm', nor1='norm1', nor2='norm2', pre1='pre1',
+                   pre2='pre2')
+
+    if hasattr(group, 'pre_edge_details'):
+        for aname, lname in bkg_map.items():
+            val = getattr(group.pre_edge_details, lname, None)
+            if val is not None:
+                args['bkg_%s' % aname] = val
 
     emax = max(group.energy) - group.e0
     args['bkg_spl1e'] = '0'
     args['bkg_spl2e'] = '%.5f' % emax
     args['bkg_spl1'] = '0'
     args['bkg_spl2'] = '%.5f' % etok(emax)
+
+    if hasattr(group, 'fft_params'):
+        for aname  in ('dk', 'kmin', 'kmax', 'kwindow', 'pc', 'edge',
+                       'pc', 'pcpathgroup', 'pctype'):
+            val = getattr(group.fft_params, aname, None)
+            if val is not None:
+                args['fft_%s' % aname] = val
+
     args.update(kws)
     return args
 
@@ -277,6 +291,11 @@ def parse_perlathena(text, filename):
                     setattr(this.fft_params, key[4:], asfloat(val))
                 elif key == 'label':
                     label = this.label = val
+                elif key in ('valence', 'lasso_yvalue',
+                             'epsk', 'epsr', 'importance'):
+                    setattr(this, key, asfloat(val))
+                elif key in ('atsym', 'edge', 'provenance'):
+                    setattr(this, key, val)
                 else:
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
