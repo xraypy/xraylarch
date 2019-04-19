@@ -133,7 +133,7 @@ class ExtVarTableGrid(wxgrid.Grid):
         self.EnableDragRowSize()
         self.EnableDragColSize()
         self.AutoSizeColumns(False)
-        self.SetColSize(0, 275)
+        self.SetColSize(0, 225)
         self.SetColSize(1, 100)
         self.SetColSize(2, 100)
 
@@ -251,11 +251,11 @@ class LASSOPanel(TaskPanel):
         panel.Add((5, 5), newrow=True)
         add_text('Train Model : ')
         panel.Add(wids['train_model'], dcol=3)
-        panel.Add(wids['save_model'])
+        panel.Add(wids['load_model'])
 
         add_text('Use This Model : ')
         panel.Add(wids['fit_group'], dcol=3)
-        panel.Add(wids['load_model'])
+        panel.Add(wids['save_model'])
         add_text('Statistics : ')
         panel.Add(wids['stats'], dcol=4)
         panel.pack()
@@ -361,8 +361,11 @@ class LASSOPanel(TaskPanel):
 
         grid_data = self.wids['table'].table.data
         gent = {}
-        for i, row in enumerate(grid_data):
-            gent[row[0]] = i
+        if len(grid_data[0][0].strip()) == 0:
+            grid_data = []
+        else:
+            for i, row in enumerate(grid_data):
+                gent[row[0]] = i
 
         for fname in self.controller.filelist.GetCheckedStrings():
             gname = self.controller.file_groups[fname]
