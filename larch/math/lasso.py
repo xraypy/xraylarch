@@ -95,9 +95,10 @@ def lasso_predict(group, lasso_model, _larch=None):
       predict value of external variable for the group
     """
     # get first nerate arrays and interpolate components onto the unknown x array
-    xdat, spectra = get_arrays(group, lasso_model.arrayname)
+    xdat, ydat = get_arrays(group, lasso_model.arrayname)
     if xdat is None or ydat is None:
         raise ValueError("cannot get arrays for arrayname='%s'" % arrayname)
 
-    spectra = interp(xdat, spectra, lasso_model.x, kind='cubic')
-    return lasso_model.predict(spectra)
+    spectra = interp(xdat, ydat, lasso_model.x, kind='cubic')
+    spectra.shape = (1, len(spectra))
+    return lasso_model.model.predict(spectra)[0]
