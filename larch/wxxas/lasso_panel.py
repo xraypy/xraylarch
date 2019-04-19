@@ -30,15 +30,46 @@ noplot = '<no plot>'
 noname = '<none>'
 
 FILE_WILDCARDS = "CSV Files(*.csv,*.dat)|*.csv*;*.dat|All files (*.*)|*.*"
-
 FitSpace_Choices = [norm, dmude, chik]
-Plot_Choices = ['Mean Spectrum + Active Energies', 'Spectra Stack',
+Plot_Choices = ['Mean Spectrum + Active Energies',
+                'Spectra Stack',
                 'Predicted External Varliable']
 
 defaults = dict(fitspace=norm, fit_intercept=True, alpha=0.01,
                 varname='valence', xmin=-5.e5, xmax=5.e5)
 
 NROWS = 5000
+
+def make_steps(max=1, decades=8):
+    steps = [1.0]
+    for i in range(6):
+        steps.extend([(j*10**(-(1+i))) for j in (5, 2, 1)])
+    return steps
+
+class NumericCombo(wx.ComboBox):
+    """
+    Numeric Combo: ComboBox with numeric-only choices
+    """
+    def __init__(self, parent, choices, default=None, width=100):
+        self.choices  = choices
+        schoices = ["%.6g"%(x) for x in choices]
+        wx.ComboBox.__init__(self, parent, -1, '', (-1, -1), (width, -1),
+                             schoices, wx.CB_DROPDOWN|wx.TE_PROCESS_ENTER)
+        if default is None or default not in choices:
+            default = choices[0]
+        self.SetStringSelection("%.6g" % default)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+
+    def OnEnter(self, event=None):
+        thisval = float(event.GetString())
+        if thisval not in self.choices:
+            self.choices.append(thisval)
+            self.choices.sort()
+        self.choices.reverse()
+        self.Clear()
+        self.AppendItems(["%.6g" % x for x in self.choices])
+        self.SetSelection(self.choices.index(thisval))
+
 class ExtVarDataTable(wxgrid.GridTableBase):
     def __init__(self):
         wxgrid.GridTableBase.__init__(self)
@@ -106,6 +137,7 @@ class ExtVarTableGrid(wxgrid.Grid):
             self.EnableCellEditControl()
 
 
+
 class LASSOPanel(TaskPanel):
     """LASSO Panel"""
     def __init__(self, parent, controller, **kws):
@@ -138,52 +170,48 @@ class LASSOPanel(TaskPanel):
 
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
-        w_alpha = self.add_floatspin('alpha', digits=5,
-                                     value=defaults['alpha'],
-                                     increment=0.0002, with_pin=False,
-                                     min_val=0, max_val=1.0)
+        wids['alpha'] =  NumericCombo(panel, make_steps(), default=0.01, width=100)
 
         wids['auto_alpha'] = Check(panel, default=False, label='auto?')
 
         wids['fit_intercept'] = Check(panel, default=True, label='fit intercept?')
 
-        wids['save_csv'] = Button(panel, 'Save CSV File', size=(150, -1),
+        wids['save_csv'] = Button(panel, 'Save CSV File', size=(125, -1),
                                     action=self.onSaveCSV)
-        wids['load_csv'] = Button(panel, 'Load CSV File', size=(150, -1),
+        wids['load_csv'] = Button(panel, 'Load CSV File', size=(125, -1),
                                     action=self.onLoadCSV)
+
+        wids['save_model'] = Button(panel, 'Save Model', size=(125, -1),
+                                    action=self.onSaveLassoModel)
+        wids['save_model'].Disable()
+
+        wids['load_model'] = Button(panel, 'Load Model', size=(125, -1),
+                                    action=self.onLoadLassoModel)
+
 
         wids['train_model'] = Button(panel, 'Train Model From These Data',
                                      size=(250, -1),  action=self.onTrainLassoModel)
 
-        wids['fit_group'] = Button(panel, 'Predict Variable for Selected Groups', size=(275, -1),
-                                   action=self.onPredictGroups)
+        wids['fit_group'] = Button(panel, 'Predict Variable for Selected Groups',
+                                   size=(250, -1), action=self.onPredictGroups)
         wids['fit_group'].Disable()
 
-
-        wids['save_model'] = Button(panel, 'Save Lasso Model', size=(200, -1),
-                                    action=self.onSaveLassoModel)
-        wids['save_model'].Disable()
-
-        wids['load_model'] = Button(panel, 'Load Lasso Model', size=(200, -1),
-                                    action=self.onLoadLassoModel)
-
         wids['varname'] = wx.TextCtrl(panel, -1, 'valence', size=(150, -1))
+        wids['stats'] =  SimpleText(panel, ' ')
 
         wids['table'] = ExtVarTableGrid(panel)
-        wids['table'].SetMinSize((550, 200))
+        wids['table'].SetMinSize((525, 225))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
-                                     size=(200, -1),  action=self.onFillLassoTable)
+                                     size=(175, -1),  action=self.onFillLassoTable)
 
         panel.Add(SimpleText(panel, 'LASSO, Linear Feature Selection',
                              font=Font(12), colour='#AA0000'), dcol=4)
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=3)
-        panel.Add(wids['load_model'])
 
         add_text('Plot : ', newrow=True)
         panel.Add(wids['plotchoice'], dcol=3)
-        panel.Add(wids['save_model'])
 
         add_text('Fit Energy Range: ')
         panel.Add(w_xmin)
@@ -192,28 +220,38 @@ class LASSOPanel(TaskPanel):
 
         add_text('Alpha: ')
         panel.Add(wids['alpha'])
-        panel.Add(wids['auto_alpha'])
+        panel.Add(wids['auto_alpha'], dcol=2)
         panel.Add(wids['fit_intercept'])
 
         panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
-        panel.Add((10, 10), newrow=True)
-        add_text('Set External Variable for each Data Set: ', newrow=True, dcol=2)
 
-        add_text('Attribute : ')
-        panel.Add(wids['varname'], dcol=2)
+        add_text('External Variable for each Data Set: ', newrow=True, dcol=2)
+        panel.Add(wids['use_selected'],   dcol=4)
+        add_text('Attribute Name: ')
+        panel.Add(wids['varname'], dcol=4)
 
-        panel.Add(wids['use_selected'],  dcol=2)
+        panel.Add(wids['table'], newrow=True, dcol=5, drow=3)
 
-        panel.Add(wids['table'], newrow=True, dcol=5)
-        panel.Add(wids['load_csv'], newrow=True, dcol=2)
-        panel.Add(wids['save_csv'], newrow=False, dcol=2)
+        icol = panel.icol
+        irow = panel.irow
+        pstyle, ppad = panel.itemstyle, panel.pad
 
-        panel.Add(wids['train_model'], dcol=3, newrow=True)
+        panel.sizer.Add(wids['load_csv'], (irow,   icol), (1, 1), pstyle, ppad)
+        panel.sizer.Add(wids['save_csv'], (irow+1, icol), (1, 1), pstyle, ppad)
+
+        panel.irow += 2
 
         panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
-        panel.Add((10, 10), newrow=True)
+        panel.Add((5, 5), newrow=True)
+        add_text('Train Model : ')
+        panel.Add(wids['train_model'], dcol=3)
+        panel.Add(wids['load_model'])
+
         add_text('Use This Model : ')
         panel.Add(wids['fit_group'], dcol=3)
+        panel.Add(wids['save_model'])
+        add_text('Statistics : ')
+        panel.Add(wids['stats'], dcol=4)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -238,6 +276,8 @@ class LASSOPanel(TaskPanel):
         for attr in ('xmin', 'xmax', 'alpha'):
             val = opts.get(attr, None)
             if val is not None:
+                if attr == 'alpha':
+                    val = "%.6g" % val
                 wids[attr].SetValue(val)
 
         for attr in ('fitspace',):
@@ -253,16 +293,13 @@ class LASSOPanel(TaskPanel):
         for fname in self.controller.filelist.GetCheckedStrings():
             gname = self.controller.file_groups[fname]
             grp = self.controller.get_group(gname)
-            grid_data.append((fname, getattr(grp, varname, 0.0)))
+            grid_data.append([fname, getattr(grp, varname, 0.0)])
 
         self.wids['table'].table.data = grid_data
         self.wids['table'].table.View.Refresh()
 
     def onTrainLassoModel(self, event=None):
-        print("train")
         opts = self.read_form()
-        print(" train ", opts)
-        print(" Varname: ")
         varname = opts['varname']
 
         grid_data = self.wids['table'].table.data
@@ -272,8 +309,6 @@ class LASSOPanel(TaskPanel):
             grp = self.controller.get_group(gname)
             setattr(grp, varname, yval)
             groups.append(gname)
-
-        print("groups ", groups, varname)
 
         cmds = ['# train lasso model',
                'lasso_traingroups = [%s]' % ', '.join(groups)]
@@ -285,18 +320,29 @@ class LASSOPanel(TaskPanel):
         if opts['auto_alpha']:
             copts.append('alpha=None')
         else:
-            copts.append('alpha=%.4f' % opts['alpha'])
+            copts.append('alpha=%s' % opts['alpha'])
         if opts['fit_intercept']:
             copts.append('fit_intercept=True')
         else:
             copts.append('fit_intercept=False')
-
-
+        arrname = 'norm'
+        if opts['fitspace'] == dmude:
+            arrname = 'dmude'
+        elif opts['fitspace'] == chik:
+            arrname = 'chi'
+        copts.append("arrayname='%s'" % arrname)
         cmds.append("lasso_model = lasso_train(lasso_traingroups, %s)" % ', '.join(copts))
-        print(cmds)
         self.larch_eval('\n'.join(cmds))
-
-
+        lasso_model = self.larch_get('lasso_model')
+        if lasso_model is not None:
+            self.write_message('LASSO model trained ' )
+            statfmt = "Alpha = %s, RMSE = %s, %d active components"
+            self.wids['stats'].SetLabel(statfmt % ("%.6g" % (lasso_model.alpha),
+                                                   "%.4f" % (lasso_model.rmse),
+                                                   len(lasso_model.active)))
+            self.onPlotModel(model=lasso_model)
+            self.wids['save_model'].Enable()
+            self.wids['fit_group'].Enable()
 
     def onPredictGroups(self, event=None):
         print("predict groups")
@@ -319,7 +365,7 @@ class LASSOPanel(TaskPanel):
         if fname is None:
             return
 
-        self.save_filename = fname
+        self.save_filename = os.path.split(fname)[1]
         varname = fix_varname(self.wids['varname'].GetValue())
         csvgroup = read_csv(fname)
         script = []
@@ -338,6 +384,7 @@ class LASSOPanel(TaskPanel):
         self.write_message('Read CSV File %s ' % fname)
 
     def onSaveCSV(self, event=None):
+        print("Save CSV ", self.save_filename)
         dlg = wx.FileDialog(self, message="Save CSV Data File",
                             defaultDir=os.getcwd(),
                             defaultFile=self.save_filename,
@@ -349,7 +396,7 @@ class LASSOPanel(TaskPanel):
         dlg.Destroy()
         if fname is None:
             return
-        self.save_filename = fname
+        self.save_filename = os.path.split(fname)[1]
 
         buff = []
         for  row in self.wids['table'].table.data:
@@ -359,8 +406,57 @@ class LASSOPanel(TaskPanel):
             fh.write('\n'.join(buff))
         self.write_message('Wrote CSV File %s ' % fname)
 
-    def onPlot(self, event=None):
-        print("on Plot")
+    def onPlotModel(self, event=None, model=None):
+        opts = self.read_form()
+        print("on PlotModel")
+        print(opts)
+        if model is None:
+            return
+        pchoice = opts['plotchoice'].lower()
+        if pchoice.startswith('mean spec'):
+            ppanel = self.controller.get_display(win=1).panel
+            viewlims = ppanel.get_viewlimits()
+            plotcmd = ppanel.plot
+
+            ppanel.plot(model.x, model.spectra.mean(axis=0), win=1,
+                        label='mean spectra', xlabel='Energy (eV)',
+                        ylabel=opts['fitspace'], show_legend=True)
+            axes = ppanel.axes
+            xlims = axes.get_xlim()
+            ylims = axes.get_ylim()
+
+            ymax = ylims[1]
+            active_coefs = abs(model.coef[model.active])
+            active_coefs = active_coefs/max(active_coefs)
+
+            axes.bar(model.x[model.active], active_coefs,
+                     2.0, color='#9f9f9f88', label='coefficients')
+            ppanel.canvas.draw()
+            ngoups = len(model.groupnames)
+            indices = np.arange(len(model.groupnames))
+            diff = model.ydat - model.ypred
+            sx = np.argsort(model.ydat)
+
+            ppanel = self.controller.get_display(win=2).panel
+
+            ppanel.plot(model.ydat[sx], indices, xlabel='valence',
+                        label='experimental', linewidth=0, marker='o',
+                        markersize=8, win=2, new=True)
+
+            ppanel.oplot(model.ypred[sx], indices, label='predicted',
+                        labelfontsize=7, markersize=6, marker='o',
+                        linewidth=0, show_labels=True, new=False)
+
+            ppanel.axes.barh(indices, diff[sx], 0.5, color='#9f9f9f88')
+            ppanel.axes.set_yticks(indices)
+            ppanel.axes.set_yticklabels([model.groupnames[o] for o in sx])
+            ppanel.canvas.draw()
+
+        elif pchoice.startswith('spectra stack'):
+            print('spectra stack')
+        else:
+            print('predicted var')
+
 
     def onCopyParam(self, name=None, evt=None):
         print("on Copy Param")
