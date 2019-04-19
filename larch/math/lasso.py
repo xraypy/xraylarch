@@ -22,7 +22,7 @@ from .lincombo_fitting import get_arrays, get_label, groups2matrix
 
 def lasso_train(groups, varname='lassoval', arrayname='norm',
                 alpha=None, use_lars=True, fit_intercept=True,
-                normalize=True, xmin=-np.inf, xmax=np.inf, **kws):
+                normalize=True, xmin=-np.inf, xmax=np.inf, _larch=None, **kws):
 
     """use a list of data groups to train a Lasso/LassoLars analysis
 
@@ -50,9 +50,11 @@ def lasso_train(groups, varname='lassoval', arrayname='norm',
          be set using LassoLarsSCV
     """
     xdat, spectra = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
-
+    groupnames = []
     ydat = []
     for g in groups:
+        groupnames.append(getattr(g, 'filename',
+                                  getattr(g, 'groupname', repr(g))))
         val = getattr(g, varname, None)
         if val is None:
             raise Value("group '%s' does not have attribute '%s'" % (g, varname))
@@ -77,9 +79,9 @@ def lasso_train(groups, varname='lassoval', arrayname='norm',
                  active=model.active_, coef=model.coef_, rmse=rmse,
                  model=model, varname=varname, arrayname=arrayname,
                  fit_intercept=fit_intercept, normalize=normalize,
-                 keywords=kws)
+                 groupnames=groupnames, keywords=kws)
 
-def lasso_predict(group, lasso_model):
+def lasso_predict(group, lasso_model, _larch=None):
     """
     Predict the external value for a group based on a Lasso model
 
