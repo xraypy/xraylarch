@@ -150,7 +150,7 @@ class LASSOPanel(TaskPanel):
                            configname='lasso_config', config=defaults,
                            title='LASSO, Linear Feature Selection', **kws)
         self.result = None
-        self.save_csvfile = 'LassoData.csv'
+        self.save_csvfile   = 'LassoData.csv'
         self.save_modelfile = 'LassoModel.lasso'
 
     def process(self, dgroup, **kws):
@@ -295,11 +295,13 @@ class LASSOPanel(TaskPanel):
     def onFillLassoTable(self, event=None):
         selected_groups = self.controller.filelist.GetCheckedStrings()
         varname = fix_varname(self.wids['varname'].GetValue())
+        predname = varname + '_predicted'
         grid_data = []
         for fname in self.controller.filelist.GetCheckedStrings():
             gname = self.controller.file_groups[fname]
             grp = self.controller.get_group(gname)
-            grid_data.append([fname, getattr(grp, varname, 0.0)])
+            grid_data.append([fname, getattr(grp, varname, 0.0),
+                              getattr(grp, predname, 0.0)])
 
         self.wids['table'].table.data = grid_data
         self.wids['table'].table.View.Refresh()
@@ -307,13 +309,15 @@ class LASSOPanel(TaskPanel):
     def onTrainLassoModel(self, event=None):
         opts = self.read_form()
         varname = opts['varname']
+        predname = varname + '_predicted'
 
         grid_data = self.wids['table'].table.data
         groups = []
-        for fname, yval in grid_data:
+        for fname, yval, pval in grid_data:
             gname = self.controller.file_groups[fname]
             grp = self.controller.get_group(gname)
             setattr(grp, varname, yval)
+            setattr(grp, predname, pval)
             groups.append(gname)
 
         cmds = ['# train lasso model',
