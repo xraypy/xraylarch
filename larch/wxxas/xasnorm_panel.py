@@ -56,7 +56,7 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu', 'Derivative': 'dmude'}
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
-                norm_method='polynomial', edge='K', atsym='H',
+                norm_method='polynomial', edge='K', atsym='?',
                 nvict=0, nnorm=1,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
@@ -124,7 +124,7 @@ class XASNormPanel(TaskPanel):
         self.wids['norm_method'] = Choice(xas, choices=('polynomial', 'mback', 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
-        atsyms = self.larch.symtable._xray._xraydb.atomic_symbols
+        atsyms = ['?'] + self.larch.symtable._xray._xraydb.atomic_symbols
         edges = ('K', 'L3', 'L2', 'L1', 'M5')
 
         self.wids['atsym'] = Choice(xas, choices=atsyms, size=(75, -1))
@@ -218,7 +218,6 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return self.get_defaultconfig()
-
         if hasattr(dgroup, self.configname):
             conf = getattr(dgroup, self.configname)
         else:
@@ -233,17 +232,16 @@ class XASNormPanel(TaskPanel):
                 conf['nvict'] = getattr(dgroup.bkg_params, 'nvict', conf['nvict'])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
 
-            conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
-            conf['edge'] = getattr(dgroup,'edge', conf['edge'])
+        conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
+        conf['edge'] = getattr(dgroup,'edge', conf['edge'])
+        if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
+            atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+            conf['atsym'] = atsym
+            conf['edge'] = edge
 
-            if hasattr(dgroup, 'e0') and conf['atsym'] == 'H':
-                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
-                conf['atsym'] = atsym
-                conf['edge'] = edge
-
-            if hasattr(dgroup, 'mback_params'):
-                conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
-                conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
+        if hasattr(dgroup, 'mback_params'):
+            conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
+            conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
 
         setattr(dgroup, self.configname, conf)
         return conf
@@ -266,6 +264,11 @@ class XASNormPanel(TaskPanel):
             edge_step = opts.get('edge_step', None)
             if edge_step is None:
                 edge_step = 1.0
+
+            if hasattr(dgroup, 'e0') and opts['atsym'] == '?':
+                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+                opts['atsym'] = atsym
+                opts['edge'] = edge
 
             ndigits = int(2 - round(np.log10(abs(edge_step))))
             self.wids['step'].SetDigits(ndigits+1)
@@ -486,6 +489,7 @@ class XASNormPanel(TaskPanel):
 
     def onReprocess(self, evt=None, value=None, **kws):
         "handle request reprocess"
+
         if self.skip_process:
             return
         try:
@@ -495,13 +499,8 @@ class XASNormPanel(TaskPanel):
         if not hasattr(dgroup, self.configname):
             return
         form = self.read_form()
-        changed = []
-        for attr, val in getattr(dgroup, self.configname).items():
-            if form.get(attr, None) != val:
-                changed.append(attr)
-        if len(changed) > 0:
-            self.process(dgroup=dgroup)
-            self.plot(dgroup)
+        self.process(dgroup=dgroup)
+        self.plot(dgroup)
 
     def make_dnormde(self, dgroup):
         form = dict(group=dgroup.groupname)
@@ -510,6 +509,7 @@ class XASNormPanel(TaskPanel):
     def process(self, dgroup=None, force_mback=False, noskip=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
+
         if self.skip_process and not noskip:
             return
         if dgroup is None:
@@ -603,6 +603,9 @@ class XASNormPanel(TaskPanel):
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
         self.wids['norm1'].SetValue(dgroup.pre_edge_details.norm1)
         self.wids['norm2'].SetValue(dgroup.pre_edge_details.norm2)
+
+        self.wids['atsym'].SetStringSelection(dgroup.atsym)
+        self.wids['edge'].SetStringSelection(dgroup.edge)
 
         conf = {}
 
