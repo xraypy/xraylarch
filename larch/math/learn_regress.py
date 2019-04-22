@@ -7,7 +7,7 @@ These methods are built on the methods from scikit-learn
 """
 import numpy as np
 
-from sklearn.cross_decomposition import PLSRegression
+from sklearn.cross_decomposition import PLSRegression, PLSCanonical, PLSSVD, CCA
 from sklearn.model_selection import KFold, RepeatedKFold
 from sklearn.linear_model import LassoLarsCV, LassoLars, LassoCV, Lasso
 
@@ -16,7 +16,7 @@ from .utils import interp
 from .lincombo_fitting import get_arrays, groups2matrix
 
 def pls_train(groups, varname='valence', arrayname='norm', scale=True,
-              cv_folds=None, cv_repeats=None, skip_cv=False,
+              ncomps=2, cv_folds=None, cv_repeats=None, skip_cv=False,
               xmin=-np.inf, xmax=np.inf, _larch=None, **kws):
 
     """use a list of data groups to train a Partial Least Squares model
@@ -26,6 +26,7 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
       groups      list of groups to use as components
       varname     name of characteristic value to model ['valence']
       arrayname   string of array name to be fit (see Note 3) ['norm']
+      ncomps      number of independent components  [2]
       xmin        x-value for start of fit range [-inf]
       xmax        x-value for end of fit range [+inf]
       scale       bool to scale data [True]
@@ -61,8 +62,10 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
 
     nvals = len(groups)
 
-    kws.update(dict(scale=scale))
-    model = PLSRegression(n_components=1, **kws)
+    kws['scale'] = scale
+    kws['n_components'] = ncomps
+
+    model = PLSRegression(**kws)
 
     rmse_cv = None
     if not skip_cv:
@@ -81,6 +84,7 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
         rmse_cv = np.sqrt( (resid**2).mean() )
 
     # final fit without cross-validation
+    model = PLSRegression(**kws)
     out = model.fit(spectra, ydat)
 
     ypred = model.predict(spectra)[:, 0]
