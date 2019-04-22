@@ -16,7 +16,7 @@ from .fitpeak import fit_peak
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix
 from .pca import pca_train, pca_fit, nmf_train
-from .lasso import lasso_train, lasso_predict
+from .learn_regress import pls_train, pls_predict, lasso_train, lasso_predict
 from .gridxyz import gridxyz
 from .spline import spline_rep, spline_eval
 from . import transformations as trans
@@ -37,6 +37,8 @@ _larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
                                  glinbroad=glinbroad, gridxyz=gridxyz,
                                  pca_train=pca_train, pca_fit=pca_fit,
                                  nmf_train=nmf_train,
+                                 pls_train=pls_train,
+                                 pls_predict=pls_predict,
                                  lasso_train=lasso_train,
                                  lasso_predict=lasso_predict,
                                  groups2matrix=groups2matrix,
