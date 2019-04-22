@@ -44,7 +44,7 @@ from .xasnorm_panel import XASNormPanel
 from .lincombo_panel import LinearComboPanel
 from .pca_panel import PCAPanel
 from .exafs_panel import EXAFSPanel
-from .lasso_panel import LASSOPanel
+from .regress_panel import RegressionPanel
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -63,14 +63,14 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-XASVIEW_SIZE = (950, 625)
+XASVIEW_SIZE = (975, 800)
 PLOTWIN_SIZE = (550, 550)
 
 NB_PANELS = OrderedDict((('XAS Normalization', XASNormPanel),
                          ('Pre-edge Peaks', PrePeakPanel),
                          ('PCA',  PCAPanel),
                          ('Linear Combinations', LinearComboPanel),
-                         ('LASSO', LASSOPanel),
+                         ('Regression', RegressionPanel),
                          ('EXAFS', EXAFSPanel)))
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.

@@ -3,7 +3,7 @@ from .xasnorm_panel import XASNormPanel
 from .prepeak_panel import PrePeakPanel
 from .lincombo_panel import LinearComboPanel
 from .pca_panel import PCAPanel
-from .lasso_panel import LASSOPanel
+from .regress_panel import RegressionPanel
 from .exafs_panel import EXAFSPanel
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
