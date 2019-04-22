@@ -1,0 +1,87 @@
+
+projectfile = read_athena('Vglasses.prj', do_fft=False, do_bkg=False)
+
+tqyjo = extract_athenagroup(projectfile.ALL_0_NNO_0_71)
+egghv = extract_athenagroup(projectfile.ALL_15_NNO_0_8)
+wpwwn = extract_athenagroup(projectfile.ALL_25_NNO_1_8)
+tikzo = extract_athenagroup(projectfile.ALL_35_NNO_2_8)
+nuldi = extract_athenagroup(projectfile.ALL_45_NNO_3_8)
+szulj = extract_athenagroup(projectfile.ALL__05_NNO_1_2)
+yjiev = extract_athenagroup(projectfile.ALL__15_NNO_2_2)
+mlehb = extract_athenagroup(projectfile.ALL__25_NNO_3_3)
+uoowi = extract_athenagroup(projectfile.ALL__35_NNO_4_2)
+vhuea = extract_athenagroup(projectfile.Duffresne_NNO_0_85)
+cocbr = extract_athenagroup(projectfile.Duffresne_NNO_1_71D)
+hhpkn = extract_athenagroup(projectfile.Duffresne_NNO_1_72)
+bempb = extract_athenagroup(projectfile.Duffresne_NNO_2_45)
+ewqkz = extract_athenagroup(projectfile.Duffresne_NNO_2_50D)
+sofam = extract_athenagroup(projectfile.Duffresne_NNO_3_28)
+dcbur = extract_athenagroup(projectfile.Duffresne_NNO_3_29D)
+iettr = extract_athenagroup(projectfile.Duffresne_NNO_4_73)
+pxaax = extract_athenagroup(projectfile.FAD_Cr_Vsh_NNO_8_1)
+talqn = extract_athenagroup(projectfile.FAD_V3_NNO_1_7)
+mlksf = extract_athenagroup(projectfile.FAD_V4_NNO_3_3)
+xqllu = extract_athenagroup(projectfile.FAD_V_1a_NNO_0_7)
+iedbn = extract_athenagroup(projectfile.FAD_V_2A_NNO_5_3)
+yxqqm = extract_athenagroup(projectfile.LW_0_NNO_0_68)
+fsqab = extract_athenagroup(projectfile.LW_10_NNO_0_3)
+iejhs = extract_athenagroup(projectfile.LW_20_NNO_1_3)
+vzdow = extract_athenagroup(projectfile.LW__20_NNO_2_7)
+tvdyl = extract_athenagroup(projectfile.LW__30_NNO_3_9)
+qivuy = extract_athenagroup(projectfile.NASA_FADV_NNO_6_9)
+
+# set valence
+tqyjo.valence = -0.710000
+egghv.valence = 0.800000
+wpwwn.valence = 1.800000
+tikzo.valence = 2.800000
+nuldi.valence = 3.800000
+szulj.valence = -1.200000
+yjiev.valence = -2.200000
+mlehb.valence = -3.300000
+uoowi.valence = -4.200000
+talqn.valence = 1.700000
+mlksf.valence = -3.300000
+xqllu.valence = -0.700000
+iedbn.valence = -5.300000
+pxaax.valence = -8.100000
+yxqqm.valence = -0.680000
+fsqab.valence = 0.300000
+iejhs.valence = 1.300000
+vzdow.valence = -2.700000
+tvdyl.valence = -3.900000
+qivuy.valence = -6.900000
+tqyjo.valence = -0.710000
+egghv.valence = 0.800000
+wpwwn.valence = 1.800000
+tikzo.valence = 2.800000
+nuldi.valence = 3.800000
+szulj.valence = -1.200000
+yjiev.valence = -2.200000
+mlehb.valence = -3.300000
+uoowi.valence = -4.200000
+vhuea.valence = 0.850000
+cocbr.valence = -1.710000
+hhpkn.valence = -1.720000
+bempb.valence = 2.450000
+ewqkz.valence = 2.500000
+sofam.valence = -3.280000
+dcbur.valence = -3.290000
+iettr.valence = 4.730000
+
+
+groups = [talqn, mlksf, xqllu, iedbn, pxaax, yxqqm, fsqab,
+          iejhs, vzdow, tvdyl, qivuy, tqyjo, egghv, wpwwn,
+          tikzo, nuldi, szulj, yjiev, mlehb, uoowi, vhuea,
+          cocbr, hhpkn, bempb, ewqkz, sofam, dcbur, iettr]
+
+for g in groups:
+    pre_edge(g, pre1=-100, pre2=-25, nvict=0, nnorm=0, norm1=75, norm2=125)
+#endfor
+
+pls_model = pls_train(groups, arrayname='norm', varname='valence',
+                      xmin=5430.0, xmax=5580.0, scale=True)
+
+lasso_model = lasso_train(groups, arrayname='norm', varname='valence',
+                          xmin=5430.0, xmax=5580.0, alpha=0.01,
+                          fit_intercept=True)
