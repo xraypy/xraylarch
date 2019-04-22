@@ -214,14 +214,14 @@ class RegressionPanel(TaskPanel):
                                        value=0, increment=1, min_val=-1)
 
         wids['varname'] = wx.TextCtrl(panel, -1, 'valence', size=(150, -1))
-        wids['stats'] =  SimpleText(panel, ' ')
+        wids['stat1'] =  SimpleText(panel, ' - - - ')
+        wids['stat2'] =  SimpleText(panel, ' - - - ')
 
         wids['table'] = ExtVarTableGrid(panel)
         wids['table'].SetMinSize((550, 200))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                      size=(175, -1),  action=self.onFillTable)
-
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
                              font=Font(12), colour='#AA0000'), dcol=4)
         add_text('Array to Use: ', newrow=True)
@@ -273,8 +273,10 @@ class RegressionPanel(TaskPanel):
         add_text('Use This Model : ')
         panel.Add(wids['fit_group'], dcol=3)
         panel.Add(wids['save_model'])
-        add_text('Statistics : ')
-        panel.Add(wids['stats'], dcol=4)
+        add_text('Fit Statistics : ')
+        panel.Add(wids['stat1'], dcol=4)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(wids['stat2'], dcol=4)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -377,17 +379,19 @@ class RegressionPanel(TaskPanel):
             rmse_cv = reg_model.rmse_cv
             if rmse_cv is not None:
                 rmse_cv = "%.4f" % rmse_cv
-            stat = ["RMSE_CV = %s, RMSE = %.4f" % (rmse_cv, reg_model.rmse), '']
+            stat = "RMSE_CV = %s, RMSE = %.4f" % (rmse_cv, reg_model.rmse)
+            self.wids['stat1'].SetLabel(stat)
             if self.method == 'lasso':
-                stat[1] = "Alpha = %.4f, %d active components"
-                stat[1]= stat[1] % (reg_model.alpha, len(reg_model.active))
-            self.wids['stats'].SetLabel(", ".join(stat))
+                stat = "Alpha = %.4f, %d active components"
+                self.wids['stat2'].SetLabel(stat % (reg_model.alpha,
+                                                    len(reg_model.active)))
+            else:
+                self.wids['stat2'].SetLabel('- - - ')
 
             for i, row in enumerate(grid_data):
                 grid_data[i] = [row[0], row[1], reg_model.ypred[i]]
             self.wids['table'].table.data = grid_data
             self.wids['table'].table.View.Refresh()
-
             self.onPlotModel(model=reg_model)
             self.wids['save_model'].Enable()
             self.wids['fit_group'].Enable()
@@ -578,7 +582,7 @@ class RegressionPanel(TaskPanel):
         ppanel.axes.barh(indices, diff[sx], 0.5, color='#9f9f9f88')
         ppanel.axes.set_yticks(indices)
         ppanel.axes.set_yticklabels([model.groupnames[o] for o in sx])
-        ppanel.conf.set_margins(left=0.3)
+        ppanel.conf.set_margins(left=0.35)
         ppanel.canvas.draw()
 
 
