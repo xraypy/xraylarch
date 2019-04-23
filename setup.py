@@ -11,6 +11,7 @@ from setuptools import setup, find_packages
 
 cmdline_args = sys.argv[1:]
 INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
+DEVELOP =  len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
 
 uname = sys.platform.lower()
 if os.name == 'nt':
@@ -196,7 +197,7 @@ def fix_darwin_exes():
 # on install, after setup
 #   fix darwin exes to run with pythonw
 #   create desktop icons
-if INSTALL:
+if INSTALL or DEVELOP:
     if uname == 'darwin':
         fix_darwin_exes()
     subprocess.check_call((pjoin(sys.exec_prefix, pyexe),
