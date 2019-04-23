@@ -67,7 +67,9 @@ class NumericCombo(wx.ComboBox):
         self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
 
     def OnEnter(self, event=None):
-        thisval = float(event.GetString())
+        self.add_choice(float(event.GetString()))
+
+    def add_choice(self, thisval):
         if thisval not in self.choices:
             self.choices.append(thisval)
             self.choices.sort()
@@ -180,10 +182,11 @@ class RegressionPanel(TaskPanel):
 
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
-        wids['alpha'] =  NumericCombo(panel, make_steps(), default=0.01, width=100)
+        wids['alpha'] =  NumericCombo(panel, make_steps(), default=0.01,
+                                     width=100)
 
-        wids['auto_scale_pls'] = Check(panel, default=False, label='auto scale?')
-        wids['auto_alpha'] = Check(panel, default=False, label='auto?')
+        wids['auto_scale_pls'] = Check(panel, default=True, label='auto scale?')
+        wids['auto_alpha'] = Check(panel, default=False, label='auto alpha?')
 
         wids['fit_intercept'] = Check(panel, default=True, label='fit intercept?')
 
@@ -393,6 +396,10 @@ class RegressionPanel(TaskPanel):
                 stat = "Alpha = %.4f, %d active components"
                 self.wids['stat2'].SetLabel(stat % (reg_model.alpha,
                                                     len(reg_model.active)))
+
+                if opts['auto_alpha']:
+                    self.wids['alpha'].add_choice(reg_model.alpha)
+
             else:
                 self.wids['stat2'].SetLabel('- - - ')
 
@@ -573,7 +580,7 @@ class RegressionPanel(TaskPanel):
                                  color='#1f77b433')
         if self.method == 'lasso':
             ppanel.axes.bar(model.x[model.active], active_coefs,
-                            1.5, color='#9f9f9f88',
+                            1.0, color='#9f9f9f88',
                             label='coefficients')
         else:
             _, ncomps = model.coefs.shape
