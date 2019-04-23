@@ -182,9 +182,10 @@ class RegressionPanel(TaskPanel):
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
         wids['alpha'] =  NumericCombo(panel, make_steps(), default=0.01, width=100)
 
+        wids['auto_scale_pls'] = Check(panel, default=False, label='auto scale?')
         wids['auto_alpha'] = Check(panel, default=False, label='auto?')
 
-        # wids['fit_intercept'] = Check(panel, default=True, label='fit intercept?')
+        wids['fit_intercept'] = Check(panel, default=True, label='fit intercept?')
 
         wids['save_csv'] = Button(panel, 'Save CSV File', size=(125, -1),
                                     action=self.onSaveCSV)
@@ -241,9 +242,11 @@ class RegressionPanel(TaskPanel):
         panel.Add(wids['method'], dcol=4)
         add_text('PLS # components: ')
         panel.Add(w_ncomps)
+        panel.Add(wids['auto_scale_pls'], dcol=2)
         add_text('Lasso Alpha: ')
         panel.Add(wids['alpha'])
         panel.Add(wids['auto_alpha'], dcol=2)
+        panel.Add(wids['fit_intercept'])
 
         add_text('Cross Validation: ')
         add_text(' # folds: ', newrow=False)
@@ -369,10 +372,10 @@ class RegressionPanel(TaskPanel):
                 copts.append('use_lars=True')
             else:
                 copts.append('use_lars=False')
-            copts.append('fit_intercept=True')
+            copts.append('fit_intercept=%s' % repr(opts['fit_intercept']))
         else:
-            copts.append('scale=True')
             copts.append('ncomps=%d' % opts['ncomps'])
+            copts.append('scale=%s' % repr(opts['auto_scale_pls']))
 
         copts = ', '.join(copts)
         cmds.append("reg_model = %s_train(training_groups, %s)" %
