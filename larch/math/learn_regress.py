@@ -26,13 +26,13 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
       groups      list of groups to use as components
       varname     name of characteristic value to model ['valence']
       arrayname   string of array name to be fit (see Note 3) ['norm']
-      ncomps      number of independent components  [2]
       xmin        x-value for start of fit range [-inf]
       xmax        x-value for end of fit range [+inf]
       scale       bool to scale data [True]
       cv_folds    None or number of Cross-Validation folds (Seee Note 4) [None]
       cv_repeats  None or number of Cross-Validation repeats (Seee Note 4) [None]
       skip_cv     bool to skip doing Cross-Validation [None]
+      ncomps      number of independent components  (See Note 5) [2]
 
     Returns
     -------
@@ -47,6 +47,8 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
      4.  Cross-Validation:  if cv_folds is None, sqrt(len(groups)) will be used
             (rounded to integer).  if cv_repeats is None, sqrt(len(groups))-1
             will be used (rounded).
+     5.  The optimal number of components may be best found from PCA. If set to None,
+         a search will be done for ncomps that gives the lowest RMSE_CV.
     """
     xdat, spectra = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
     groupnames = []
@@ -92,7 +94,7 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
     rmse = np.sqrt(((ydat - ypred)**2).mean())
 
     return Group(x=xdat, spectra=spectra, ydat=ydat, ypred=ypred,
-                 coefs=model.x_weights_[:, 0],
+                 coefs=model.x_weights_, loadings=model.x_loadings_,
                  cv_folds=cv_folds, cv_repeats=cv_repeats, rmse_cv=rmse_cv,
                  rmse=rmse, model=model, varname=varname,
                  arrayname=arrayname, scale=scale, groupnames=groupnames,
