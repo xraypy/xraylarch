@@ -164,8 +164,10 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
 
         cv = RepeatedKFold(n_splits=cv_folds, n_repeats=cv_repeats)
         if alpha is None:
-            alpha = LassoLarsCV(cv=cv, max_n_alphas=1e7,
-                                max_iter=1e7, eps=1.e-12, **kws).alpha_
+            lcvmod = LassoLarsCV(cv=cv, max_n_alphas=1e7,
+                                 max_iter=1e7, eps=1.e-12, **kws)
+            lcvmod.fit(spectra, ydat)
+            alpha = lcvmod.alpha_
 
         model = creator(alpha=alpha, **kws)
         resid = []
