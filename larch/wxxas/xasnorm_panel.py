@@ -146,71 +146,73 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, name))
 
         add_text = self.add_text
-
+        HLINEWID = 650
         panel.Add(SimpleText(panel, ' XAS Pre-edge subtraction and Normalization',
-                             **titleopts), dcol=5)
+                             **titleopts), dcol=7)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Vertical offset:'))
-        panel.Add(plot_voff)
+        panel.Add(SimpleText(panel, '  Vertical offset:'), style=RCEN)
+        panel.Add(plot_voff, style=RCEN)
 
-        panel.Add((5, 5), dcol=2, newrow=True)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups?'), style=RCEN, dcol=3)
+        panel.Add((5, 5), dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
+                  style=RCEN, dcol=3)
         panel.Add(plot_one, newrow=True)
-        panel.Add(self.plotone_op, dcol=3)
-        panel.Add(CopyBtn('plotone_op'), style=RCEN)
+        panel.Add(self.plotone_op, dcol=4)
+        panel.Add(CopyBtn('plotone_op'), dcol=1, style=RCEN)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(self.wids['atsym'])
-        panel.Add(self.wids['edge'], dcol=2)
-        panel.Add(CopyBtn('atsym'), style=RCEN)
+        panel.Add(self.wids['edge'], dcol=3)
+        panel.Add(CopyBtn('atsym'), dcol=1, style=RCEN)
 
         add_text('E0 : ')
         panel.Add(xas_e0)
-        panel.Add(e0panel, dcol=2)
-        panel.Add(CopyBtn('xas_e0'), style=RCEN)
+        panel.Add(e0panel, dcol=3)
+        panel.Add(CopyBtn('xas_e0'), dcol=1, style=RCEN)
 
         add_text('Edge Step: ')
         panel.Add(xas_step)
         panel.Add(self.wids['auto_step'], dcol=2)
-        panel.Add(CopyBtn('xas_step'), style=RCEN)
+        panel.Add(CopyBtn('xas_step'), dcol=2, style=RCEN)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
         add_text('Pre-edge range: ')
         panel.Add(xas_pre1)
         add_text(' : ', newrow=False)
-        panel.Add(xas_pre2, dcol=1)
-        panel.Add(CopyBtn('xas_pre'), style=RCEN)
+        panel.Add(xas_pre2, dcol=2)
+        panel.Add(CopyBtn('xas_pre'), dcol=2, style=RCEN)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
         panel.Add(self.wids['nvict'], dcol=3)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
         add_text('Normalization method: ')
         panel.Add(self.wids['norm_method'], dcol=3)
-        panel.Add(CopyBtn('xas_norm'), style=RCEN)
+        panel.Add(CopyBtn('xas_norm'), dcol=2, style=RCEN)
 
         add_text('Normalization range: ')
         panel.Add(xas_norm1)
         add_text(' : ', newrow=False)
-        panel.Add(xas_norm2)
+        panel.Add(xas_norm2, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Order:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=2)
 
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
-        panel.Add(saveconf, dcol=3)
+        panel.Add(saveconf, dcol=4)
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(600, 3)), dcol=6, newrow=True)
+        panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
