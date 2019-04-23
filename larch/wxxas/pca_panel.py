@@ -312,8 +312,8 @@ class PCAPanel(TaskPanel):
         wmin = form['weight_min']
         nsig = len(np.where(r.variances > wmin)[0])
 
-        status = " PCA model built, %d components, %d with weight > %.3f"
-        self.wids['status'].SetLabel(status %  (ncomps, nsig, wmin))
+        status = " Model built, %d of %d components have weight > %.4f"
+        self.wids['status'].SetLabel(status %  (nsig, ncomps, wmin))
         self.wids['max_components'].SetValue(min(ncomps, 1+nsig))
 
         for b in ('fit_group',): # , 'save_model'):
