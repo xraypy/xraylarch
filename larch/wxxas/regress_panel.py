@@ -213,6 +213,9 @@ class RegressionPanel(TaskPanel):
         w_cvreps  = self.add_floatspin('cv_repeats', digits=0, with_pin=False,
                                        value=0, increment=1, min_val=-1)
 
+        w_ncomps  = self.add_floatspin('ncomps', digits=0, with_pin=False,
+                                       value=3, increment=1, min_val=1)
+
         wids['varname'] = wx.TextCtrl(panel, -1, 'valence', size=(150, -1))
         wids['stat1'] =  SimpleText(panel, ' - - - ')
         wids['stat2'] =  SimpleText(panel, ' - - - ')
@@ -222,38 +225,40 @@ class RegressionPanel(TaskPanel):
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                      size=(175, -1),  action=self.onFillTable)
+
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
                              font=Font(12), colour='#AA0000'), dcol=4)
         add_text('Array to Use: ', newrow=True)
-        panel.Add(wids['fitspace'], dcol=3)
+        panel.Add(wids['fitspace'], dcol=4)
 
         # add_text('Plot : ', newrow=True)
         # panel.Add(wids['plotchoice'], dcol=3)
-
         add_text('Fit Energy Range: ')
         panel.Add(w_xmin)
         add_text(' : ', newrow=False)
-        panel.Add(w_xmax)
+        panel.Add(w_xmax, dcol=3)
         add_text('Regression Method:')
-        panel.Add(wids['method'], dcol=3)
+        panel.Add(wids['method'], dcol=4)
+        add_text('PLS # components: ')
+        panel.Add(w_ncomps)
         add_text('Lasso Alpha: ')
         panel.Add(wids['alpha'])
         panel.Add(wids['auto_alpha'], dcol=2)
 
         add_text('Cross Validation: ')
         add_text(' # folds: ', newrow=False)
-        panel.Add(w_cvfolds)
+        panel.Add(w_cvfolds, dcol=2)
         add_text(' # repeats: ', newrow=False)
         panel.Add(w_cvreps)
 
-        panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(600, 2)), dcol=6, newrow=True)
 
         add_text('External Variable for each Data Set: ', newrow=True, dcol=2)
         panel.Add(wids['use_selected'],   dcol=4)
         add_text('Attribute Name: ')
         panel.Add(wids['varname'], dcol=4)
 
-        panel.Add(wids['table'], newrow=True, dcol=4, drow=3)
+        panel.Add(wids['table'], newrow=True, dcol=5, drow=3)
 
         icol = panel.icol
         irow = panel.irow
@@ -344,8 +349,7 @@ class RegressionPanel(TaskPanel):
 
         copts = ["varname='%s'" % varname,
                  "xmin=%.4f" % opts['xmin'],
-                 "xmax=%.4f" % opts['xmax'],
-                 ]
+                 "xmax=%.4f" % opts['xmax']]
 
         arrname = 'norm'
         if opts['fitspace'] == dmude:
@@ -368,6 +372,7 @@ class RegressionPanel(TaskPanel):
             copts.append('fit_intercept=True')
         else:
             copts.append('scale=True')
+            copts.append('ncomps=%d' % opts['ncomps'])
 
         copts = ', '.join(copts)
         cmds.append("reg_model = %s_train(training_groups, %s)" %
@@ -392,9 +397,16 @@ class RegressionPanel(TaskPanel):
                 grid_data[i] = [row[0], row[1], reg_model.ypred[i]]
             self.wids['table'].table.data = grid_data
             self.wids['table'].table.View.Refresh()
-            self.onPlotModel(model=reg_model)
+
+            if reg_model.cv_folds not in (0, None):
+                self.wids['cv_folds'].SetValue(reg_model.cv_folds)
+            if reg_model.cv_repeats not in (0, None):
+                self.wids['cv_repeats'].SetValue(reg_model.cv_repeats)
+
             self.wids['save_model'].Enable()
             self.wids['fit_group'].Enable()
+
+            wx.CallAfter(self.onPlotModel, model=reg_model)
 
     def onPredictGroups(self, event=None):
         opts = self.read_form()
@@ -547,20 +559,23 @@ class RegressionPanel(TaskPanel):
         ymin = ymin - 0.02*(ymax-ymin)
         ymax = ymax + 0.02*(ymax-ymin)
 
-        ppanel.plot(model.x, d_ave, win=1,
+
+        title = '%s Regresion results' % (self.method.upper())
+
+        ppanel.plot(model.x, d_ave, win=1, title=title,
                     label='mean spectra', xlabel='Energy (eV)',
                     ylabel=opts['fitspace'], show_legend=True,
                     ymin=ymin, ymax=ymax)
         ppanel.axes.fill_between(model.x, d_ave-d_std, d_ave+d_std,
-                                 color='#d6272844')
+                                 color='#1f77b433')
         if self.method == 'lasso':
             ppanel.axes.bar(model.x[model.active], active_coefs,
                             1.5, color='#9f9f9f88',
                             label='coefficients')
         else:
-            ppanel.oplot(model.x, model.coefs, linewidth=0,
-                         marker='o', color='#9f9f9f88',
-                         label='coefficients')
+            _, ncomps = model.coefs.shape
+            for i in range(ncomps):
+                ppanel.oplot(model.x, model.coefs[:, i], label='coef %d' % (i+1))
 
         ppanel.canvas.draw()
 
@@ -573,7 +588,7 @@ class RegressionPanel(TaskPanel):
 
         ppanel.plot(model.ydat[sx], indices, xlabel='valence',
                     label='experimental', linewidth=0, marker='o',
-                    markersize=8, win=2, new=True)
+                    markersize=8, win=2, new=True, title=title)
 
         ppanel.oplot(model.ypred[sx], indices, label='predicted',
                     labelfontsize=7, markersize=6, marker='o',
@@ -582,7 +597,8 @@ class RegressionPanel(TaskPanel):
         ppanel.axes.barh(indices, diff[sx], 0.5, color='#9f9f9f88')
         ppanel.axes.set_yticks(indices)
         ppanel.axes.set_yticklabels([model.groupnames[o] for o in sx])
-        ppanel.conf.set_margins(left=0.35)
+        ppanel.conf.auto_margins = False
+        ppanel.conf.set_margins(left=0.35, right=0.05, bottom=0.15, top=0.1)
         ppanel.canvas.draw()
 
 
