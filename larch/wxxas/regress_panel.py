@@ -39,10 +39,11 @@ Plot_Choices = ['Mean Spectrum + Active Energies',
                 'Spectra Stack',
                 'Predicted External Varliable']
 
-Regress_Choices = ['Partial Least Squares', 'LassoLars', 'Lasso']
+Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
-defaults = dict(fitspace=norm, fit_intercept=True, alpha=0.01,
-                varname='valence', xmin=-5.e5, xmax=5.e5)
+defaults = dict(fitspace=norm, varname='valence', xmin=-5.e5, xmax=5.e5,
+                scale=True, cv_folds=None, cv_repeats=3, fit_intercept=True,
+                use_lars=True, alpha=0.01)
 
 NROWS = 5000
 
@@ -151,7 +152,7 @@ class RegressionPanel(TaskPanel):
     """Regression Panel"""
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='lasso_config', config=defaults,
+                           configname='regression_config', config=defaults,
                            title='Regression and Feature Selection', **kws)
         self.result = None
         self.save_csvfile   = 'RegressionData.csv'
@@ -371,10 +372,7 @@ class RegressionPanel(TaskPanel):
                 copts.append('alpha=None')
             else:
                 copts.append('alpha=%s' % opts['alpha'])
-            if 'lars' in opts['method'].lower():
-                copts.append('use_lars=True')
-            else:
-                copts.append('use_lars=False')
+            copts.append('use_lars=%s' % repr('lars' in opts['method'].lower()))
             copts.append('fit_intercept=%s' % repr(opts['fit_intercept']))
         else:
             copts.append('ncomps=%d' % opts['ncomps'])
