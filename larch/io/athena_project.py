@@ -111,8 +111,7 @@ def make_athena_args(group, hashkey=None, **kws):
                  ('bkg_rbkg', '1.0'), ('bkg_slope', '0'),
                  ('bkg_pre1', '-150'), ('bkg_pre2', '-30'),
                  ('bkg_nor1', '150'), ('bkg_nor2', '800'),
-                 ('bkg_nnorm', '2'),
-                 # ('bkg_nvict', '1'),
+                 ('bkg_nnorm', '1'),
                  ('prjrecord', 'athena.prj, 1'),  ('chi_column', ''),
                  ('chi_string', ''), ('collided', '0'), ('columns', ''),
                  ('daq', ''), ('denominator', '1'), ('display', '0'),
@@ -181,7 +180,6 @@ def make_athena_args(group, hashkey=None, **kws):
     args['bkg_spl2e'] = '%.5f' % emax
     args['bkg_spl1'] = '0'
     args['bkg_spl2'] = '%.5f' % etok(emax)
-
     if hasattr(group, 'fft_params'):
         for aname  in ('dk', 'kmin', 'kmax', 'kwindow', 'pc', 'edge',
                        'pc', 'pcpathgroup', 'pctype'):
@@ -418,6 +416,10 @@ class AthenaProject(object):
         if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
             pre_edge(group, _larch=self._larch)
         group.args = make_athena_args(group, hashkey)
+
+        # fix parameters that are incompatible with athena
+        group.args['bkg_nnorm'] = max(1, min(3, int(group.args['bkg_nnorm'])))
+
         _elem, _edge = guess_edge(group.e0, _larch=self._larch)
         group.args['bkg_z'] = _elem
         group.x = x
