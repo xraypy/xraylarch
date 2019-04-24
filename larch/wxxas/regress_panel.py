@@ -138,9 +138,9 @@ class ExtVarTableGrid(wxgrid.Grid):
         self.EnableDragRowSize()
         self.EnableDragColSize()
         self.AutoSizeColumns(False)
-        self.SetColSize(0, 275)
-        self.SetColSize(1, 125)
-        self.SetColSize(2, 125)
+        self.SetColSize(0, 300)
+        self.SetColSize(1, 120)
+        self.SetColSize(2, 120)
 
         self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
 
@@ -175,7 +175,8 @@ class RegressionPanel(TaskPanel):
         # wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
         #                           size=(250, -1), action=self.onPlot)
 
-        wids['method'] = Choice(panel, choices=Regress_Choices, size=(250, -1))
+        wids['method'] = Choice(panel, choices=Regress_Choices, size=(250, -1),
+                                action=self.onRegressMethod)
 
         add_text = self.add_text
 
@@ -226,7 +227,7 @@ class RegressionPanel(TaskPanel):
         wids['stat2'] =  SimpleText(panel, ' - - - ')
 
         wids['table'] = ExtVarTableGrid(panel)
-        wids['table'].SetMinSize((600, 200))
+        wids['table'].SetMinSize((625, 200))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                      size=(150, -1),  action=self.onFillTable)
@@ -251,11 +252,13 @@ class RegressionPanel(TaskPanel):
         panel.Add(wids['alpha'])
         panel.Add(wids['auto_alpha'], dcol=2)
         panel.Add(wids['fit_intercept'])
+        wids['alpha'].Disable()
+        wids['auto_alpha'].Disable()
+        wids['fit_intercept'].Disable()
 
         add_text('Cross Validation: ')
         add_text(' # folds, # repeats: ', newrow=False)
         panel.Add(w_cvfolds, dcol=2)
-        # add_text(' # repeats: ', newrow=False)
         panel.Add(w_cvreps)
 
         panel.Add(HLine(panel, size=(600, 2)), dcol=6, newrow=True)
@@ -265,21 +268,12 @@ class RegressionPanel(TaskPanel):
         add_text('Attribute Name: ', newrow=False)
         panel.Add(wids['varname'], dcol=4)
 
-        add_text('Read/Save Model: ', newrow=True)
+        add_text('Read/Save Data: ', newrow=True)
         panel.Add(wids['load_csv'], dcol=3)
         panel.Add(wids['save_csv'], dcol=2)
 
         panel.Add(wids['table'], newrow=True, dcol=5) # , drow=3)
 
-#         icol = panel.icol
-#         irow = panel.irow
-#         pstyle, ppad = panel.itemstyle, panel.pad
-#
-#         panel.sizer.Add(wids['load_csv'], (irow,   icol), (1, 1), pstyle, ppad)
-#         panel.sizer.Add(wids['save_csv'], (irow+1, icol), (1, 1), pstyle, ppad)
-#
-#         panel.irow += 2
-#
         panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
         panel.Add((5, 5), newrow=True)
         add_text('Train Model : ')
@@ -300,6 +294,17 @@ class RegressionPanel(TaskPanel):
         sizer.Add(panel, 1, LCEN, 3)
         pack(self, sizer)
         self.skip_process = False
+
+    def onRegressMethod(self, evt=None):
+        meth = self.wids['method'].GetStringSelection()
+        use_lasso = meth.lower().startswith('lasso')
+        self.wids['alpha'].Enable(use_lasso)
+        self.wids['auto_alpha'].Enable(use_lasso)
+        self.wids['fit_intercept'].Enable(use_lasso)
+        self.wids['fit_intercept'].Enable(use_lasso)
+        self.wids['auto_scale_pls'].Enable(not use_lasso)
+        self.wids['ncomps'].Enable(not use_lasso)
+
 
     def fill_form(self, dgroup):
         opts = self.get_config(dgroup)
