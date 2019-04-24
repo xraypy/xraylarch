@@ -37,7 +37,7 @@ PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
                    'Flattened \u03BC(E)': 'flat',
                    '\u03BC(E) + MBACK tabulated \u03BC(E)': 'mback_norm',
                    'MBACK- + Poly-Normalized \u03BC(E)': 'mback_poly',
-                   'Area- + Poly-Normalized \u03BC(E)': 'area_norm',
+                   # 'Area- + Poly-Normalized \u03BC(E)': 'area_norm',
                    'd\u03BC(E)/dE': 'dmude',
                    'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
                    'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde'}
@@ -82,10 +82,10 @@ class XASNormPanel(TaskPanel):
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot This Group', size=(175, -1),
+        plot_one = Button(panel, 'Plot This Group', size=(150, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
                           action=self.onPlotSel)
 
         e0panel = wx.Panel(panel)
@@ -105,8 +105,9 @@ class XASNormPanel(TaskPanel):
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
                                     size=(60, -1), action=self.onNormMethod,
                                     default=0)
-        self.wids['nnorm'] = Choice(panel, choices=('0', '1', '2', '3'),
-                                    size=(60, -1), action=self.onNormMethod,
+        self.wids['nnorm'] = Choice(panel, choices=('constant', 'linear',
+                                                    'quadratic', 'cubic'),
+                                    size=(100, -1), action=self.onNormMethod,
                                     default=1)
 
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
@@ -126,7 +127,7 @@ class XASNormPanel(TaskPanel):
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
 
-        self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback', 'area'),
+        self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         atsyms = ['?'] + self.larch.symtable._xray._xraydb.atomic_symbols
@@ -146,7 +147,7 @@ class XASNormPanel(TaskPanel):
                           action=partial(self.onCopyParam, name))
 
         add_text = self.add_text
-        HLINEWID = 650
+        HLINEWID = 600
         panel.Add(SimpleText(panel, ' XAS Pre-edge subtraction and Normalization',
                              **titleopts), dcol=7)
 
@@ -203,7 +204,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(xas_norm1)
         add_text(' : ', newrow=False)
         panel.Add(xas_norm2, dcol=2)
-        panel.Add(SimpleText(panel, 'Polynomial Order:'), newrow=True)
+        panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
