@@ -138,7 +138,7 @@ class ExtVarTableGrid(wxgrid.Grid):
         self.EnableDragRowSize()
         self.EnableDragColSize()
         self.AutoSizeColumns(False)
-        self.SetColSize(0, 225)
+        self.SetColSize(0, 275)
         self.SetColSize(1, 125)
         self.SetColSize(2, 125)
 
@@ -191,16 +191,16 @@ class RegressionPanel(TaskPanel):
 
         wids['fit_intercept'] = Check(panel, default=True, label='fit intercept?')
 
-        wids['save_csv'] = Button(panel, 'Save CSV File', size=(125, -1),
+        wids['save_csv'] = Button(panel, 'Save CSV File', size=(150, -1),
                                     action=self.onSaveCSV)
-        wids['load_csv'] = Button(panel, 'Load CSV File', size=(125, -1),
+        wids['load_csv'] = Button(panel, 'Load CSV File', size=(150, -1),
                                     action=self.onLoadCSV)
 
-        wids['save_model'] = Button(panel, 'Save Model', size=(125, -1),
+        wids['save_model'] = Button(panel, 'Save Model', size=(150, -1),
                                     action=self.onSaveModel)
         wids['save_model'].Disable()
 
-        wids['load_model'] = Button(panel, 'Load Model', size=(125, -1),
+        wids['load_model'] = Button(panel, 'Load Model', size=(150, -1),
                                     action=self.onLoadModel)
 
 
@@ -226,10 +226,10 @@ class RegressionPanel(TaskPanel):
         wids['stat2'] =  SimpleText(panel, ' - - - ')
 
         wids['table'] = ExtVarTableGrid(panel)
-        wids['table'].SetMinSize((550, 200))
+        wids['table'].SetMinSize((600, 200))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
-                                     size=(175, -1),  action=self.onFillTable)
+                                     size=(150, -1),  action=self.onFillTable)
 
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
                              font=Font(12), colour='#AA0000'), dcol=4)
@@ -253,29 +253,33 @@ class RegressionPanel(TaskPanel):
         panel.Add(wids['fit_intercept'])
 
         add_text('Cross Validation: ')
-        add_text(' # folds: ', newrow=False)
+        add_text(' # folds, # repeats: ', newrow=False)
         panel.Add(w_cvfolds, dcol=2)
-        add_text(' # repeats: ', newrow=False)
+        # add_text(' # repeats: ', newrow=False)
         panel.Add(w_cvreps)
 
         panel.Add(HLine(panel, size=(600, 2)), dcol=6, newrow=True)
 
-        add_text('External Variable for each Data Set: ', newrow=True, dcol=2)
-        panel.Add(wids['use_selected'],   dcol=4)
-        add_text('Attribute Name: ')
+        add_text('Build Model: ', newrow=True)
+        panel.Add(wids['use_selected'],   dcol=2)
+        add_text('Attribute Name: ', newrow=False)
         panel.Add(wids['varname'], dcol=4)
 
-        panel.Add(wids['table'], newrow=True, dcol=5, drow=3)
+        add_text('Read/Save Model: ', newrow=True)
+        panel.Add(wids['load_csv'], dcol=3)
+        panel.Add(wids['save_csv'], dcol=2)
 
-        icol = panel.icol
-        irow = panel.irow
-        pstyle, ppad = panel.itemstyle, panel.pad
+        panel.Add(wids['table'], newrow=True, dcol=5) # , drow=3)
 
-        panel.sizer.Add(wids['load_csv'], (irow,   icol), (1, 1), pstyle, ppad)
-        panel.sizer.Add(wids['save_csv'], (irow+1, icol), (1, 1), pstyle, ppad)
-
-        panel.irow += 2
-
+#         icol = panel.icol
+#         irow = panel.irow
+#         pstyle, ppad = panel.itemstyle, panel.pad
+#
+#         panel.sizer.Add(wids['load_csv'], (irow,   icol), (1, 1), pstyle, ppad)
+#         panel.sizer.Add(wids['save_csv'], (irow+1, icol), (1, 1), pstyle, ppad)
+#
+#         panel.irow += 2
+#
         panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
         panel.Add((5, 5), newrow=True)
         add_text('Train Model : ')
