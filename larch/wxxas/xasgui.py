@@ -473,7 +473,7 @@ class XASFrame(wx.Frame):
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz+5, ypos))
-        # plotframe.SetSize((ysiz, ysiz))
+        plotframe.SetSize((600, 650))
 
         self.SetStatusText('ready', 1)
         self.Raise()
