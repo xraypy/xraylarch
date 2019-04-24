@@ -45,7 +45,7 @@ defaults = dict(fitspace=norm, varname='valence', xmin=-5.e5, xmax=5.e5,
                 scale=True, cv_folds=None, cv_repeats=3, fit_intercept=True,
                 use_lars=True, alpha=0.01)
 
-NROWS = 5000
+NROWS = 1000
 
 def make_steps(max=1, decades=8):
     steps = [1.0]
@@ -133,7 +133,7 @@ class ExtVarTableGrid(wxgrid.Grid):
 
         self.table = ExtVarDataTable()
         self.SetTable(self.table, True)
-        self.SetRowLabelSize(30)
+        self.SetRowLabelSize(35)
         self.SetMargins(10, 10)
         self.EnableDragRowSize()
         self.EnableDragColSize()
@@ -227,13 +227,13 @@ class RegressionPanel(TaskPanel):
         wids['stat2'] =  SimpleText(panel, ' - - - ')
 
         wids['table'] = ExtVarTableGrid(panel)
-        wids['table'].SetMinSize((625, 200))
+        wids['table'].SetMinSize((625, 175))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
                                      size=(150, -1),  action=self.onFillTable)
 
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
-                             font=Font(12), colour='#AA0000'), dcol=4)
+                             **self.titleopts), dcol=4)
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=4)
 

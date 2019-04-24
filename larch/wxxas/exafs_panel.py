@@ -14,7 +14,7 @@ from larch.math import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
-                         Check, CEN, RCEN, LCEN, Font)
+                         Check, CEN, RCEN, LCEN)
 
 from larch.xafs.xafsutils import etok, ktoe
 from larch.xafs.xafsplots import plotlabels
@@ -75,7 +75,6 @@ class EXAFSPanel(TaskPanel):
         self.last_plot = 'one'
 
     def build_display(self):
-        titleopts = dict(font=Font(12), colour='#AA0000')
         panel = self.panel
         wids = self.wids
         self.skip_process = True
@@ -150,7 +149,7 @@ class EXAFSPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
-        panel.Add(SimpleText(panel, ' EXAFS Processing', **titleopts), dcol=5)
+        panel.Add(SimpleText(panel, ' EXAFS Processing', **self.titleopts), dcol=5)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.wids['plotsel_op'], dcol=2)
@@ -173,7 +172,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction',
-                             **titleopts), dcol=1, newrow=True)
+                             **self.titleopts), dcol=1, newrow=True)
 
         panel.Add(Button(panel, 'Copy To Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'bkg')),
@@ -201,7 +200,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform',
-                             **titleopts), dcol=1, newrow=True)
+                             **self.titleopts), dcol=1, newrow=True)
 
         panel.Add(Button(panel, 'Copy to Selected Groups', size=(225, -1),
                          action=partial(self.onCopyParam, 'fft')),

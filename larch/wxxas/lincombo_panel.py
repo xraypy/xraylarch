@@ -21,8 +21,8 @@ from larch import Group
 from larch.math import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
-                         GridPanel, get_icon, SimpleText, pack, Button,
-                         HLine, Choice, Check, CEN, RCEN, LCEN, Font,
+                         GridPanel, get_icon, SimpleText, pack, Button, HLine,
+                         Choice, Check, CEN, RCEN, LCEN, Font, FONTSIZE,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox)
 
@@ -144,7 +144,8 @@ class ResultFrame(wx.Frame):
 
         # title row
         self.wids = wids = {}
-        title = SimpleText(panel, 'Linear Combination Results',  font=Font(12),
+        title = SimpleText(panel, 'Linear Combination Results',
+                           font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
 
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
@@ -158,7 +159,7 @@ class ResultFrame(wx.Frame):
                                       choices=['%d' % i for i in range(1, 21)])
         wids['plot_nchoice'].SetStringSelection('5')
 
-        wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(12),
+        wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(FONTSIZE+2),
                                         colour=self.colors.title, style=LCEN)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
@@ -175,7 +176,8 @@ class ResultFrame(wx.Frame):
 
 
         irow += 1
-        self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',  font=Font(12),
+        self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',
+                                              font=Font(FONTSIZE+2),
                                               colour=self.colors.title, style=LCEN)
         sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 1), LCEN)
 
@@ -227,7 +229,7 @@ class ResultFrame(wx.Frame):
         sview.SetMinSize((675, 175))
 
         irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
+        title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
@@ -238,7 +240,7 @@ class ResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Weights]]',  font=Font(12),
+        title = SimpleText(panel, '[[Weights]]', font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
         self.wids['weightspanel'] = ppan = wx.Panel(panel)
@@ -649,7 +651,7 @@ class LinComboTableGrid(wxgrid.Grid):
 
         self.table =  LinComboDataTable()
         self.SetTable(self.table, True)
-        self.SetRowLabelSize(30)
+        self.SetRowLabelSize(35)
         self.SetMargins(10, 10)
         self.EnableDragRowSize()
         self.EnableDragColSize()
@@ -679,7 +681,6 @@ class LinearComboPanel(TaskPanel):
         return self.read_form()
 
     def build_display(self):
-        titleopts = dict(font=Font(12), colour='#AA0000')
         panel = self.panel
         wids = self.wids
         self.skip_process = True
@@ -687,15 +688,11 @@ class LinearComboPanel(TaskPanel):
         wids['fitspace'] = Choice(panel, choices=FitSpace_Choices,
                                   size=(175, -1))
         wids['fitspace'].SetStringSelection(norm)
-#         wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
-#                                   size=(175, -1), action=self.onPlot)
-#         wids['plotchoice'].SetSelection(1)
 
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0, relative_e0=False) # True)
 
-        # e0_wids = self.add_floatspin('e0', value=0, **opts)
         elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
         ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)
 
@@ -713,19 +710,16 @@ class LinearComboPanel(TaskPanel):
 
         opts = dict(default=True, size=(75, -1), action=self.onPlotOne)
 
-        # wids['show_e0']       = Check(panel, label='show?', **opts)
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
 
-        panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=4)
+        panel.Add(SimpleText(panel, ' Linear Combination Analysis',
+                             **self.titleopts), dcol=4)
 
         add_text('Array to Fit: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=3)
-
-        # add_text('Plot : ', newrow=True)
-        # panel.Add(wids['plotchoice'], dcol=3)
 
         add_text('Fit Energy Range: ')
         panel.Add(elo_wids)
@@ -734,10 +728,10 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['show_fitrange'])
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
-        add_text('Run Fit')
+        add_text('Run Fit: ')
         panel.Add(wids['fit_group'], dcol=2)
         panel.Add(wids['fit_selected'], dcol=3)
-        add_text('Fit Options')
+        add_text('Fit Options: ')
         panel.Add(wids['sum_to_one'], dcol=2)
         panel.Add(wids['all_combos'], dcol=3)
 

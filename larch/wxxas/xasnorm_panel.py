@@ -17,7 +17,7 @@ from larch.xafs.xafsplots import plotlabels
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         GridPanel, CEN, RCEN, LCEN, Font)
+                         GridPanel, CEN, RCEN, LCEN)
 
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
@@ -69,8 +69,6 @@ class XASNormPanel(TaskPanel):
                            config=defaults, **kws)
 
     def build_display(self):
-        titleopts = dict(font=Font(12), colour='#AA0000')
-
         panel = self.panel
         self.wids = {}
 
@@ -82,10 +80,10 @@ class XASNormPanel(TaskPanel):
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot This Group', size=(150, -1),
+        plot_one = Button(panel, 'Plot This Group', size=(175, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(150, -1),
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
                           action=self.onPlotSel)
 
         e0panel = wx.Panel(panel)
@@ -149,7 +147,7 @@ class XASNormPanel(TaskPanel):
         add_text = self.add_text
         HLINEWID = 600
         panel.Add(SimpleText(panel, ' XAS Pre-edge subtraction and Normalization',
-                             **titleopts), dcol=7)
+                             **self.titleopts), dcol=7)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)

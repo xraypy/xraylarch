@@ -31,8 +31,8 @@ from larch.io.export_modelresult import export_modelresult
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
-                         CEN, RCEN, LCEN, FRAMESTYLE, Font, FileSave,
-                         FileOpen, flatnotebook)
+                         CEN, RCEN, LCEN, FRAMESTYLE, Font, FONTSIZE,
+                         FileSave, FileOpen, flatnotebook)
 
 from larch.wxlib.parameter import ParameterWidgets, ParameterPanel
 from larch.wxlib.plotter import last_cursor_pos
@@ -155,17 +155,17 @@ class FitResultFrame(wx.Frame):
 
         # title row
         self.wids = wids = {}
-        title = SimpleText(panel, 'Fit Results',  font=Font(12),
+        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
 
-        wids['data_title'] = SimpleText(panel, '< > ',  font=Font(12),
+        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
                                              colour=self.colors.title, style=LCEN)
 
-        wids['hist_info'] = SimpleText(panel, ' ___ ',  font=Font(12),
+        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
                                        colour=self.colors.title, style=LCEN)
 
         wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
-                                       font=Font(12), colour=self.colors.title,
+                                       font=Font(FONTSIZE+2), colour=self.colors.title,
                                        style=LCEN)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
@@ -192,7 +192,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
 
         irow += 1
-        wids['model_desc'] = SimpleText(panel, '<Model>',  font=Font(11),
+        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
                                         size=(700, 50), style=LCEN)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
@@ -210,7 +210,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(12),
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
@@ -241,7 +241,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(12),
+        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 1), LCEN)
 
@@ -275,7 +275,7 @@ class FitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Correlations]]',  font=Font(12),
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LCEN)
 
         self.wids['all_correl'] = Button(panel, 'Show All',
@@ -587,8 +587,8 @@ class PrePeakPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
-        titleopts = dict(font=Font(12), colour='#AA0000')
-        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting', **titleopts), dcol=5)
+        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting',
+                           **self.titleopts), dcol=5)
         add_text(' Run Fit:', newrow=False)
 
         add_text('Array to fit: ')

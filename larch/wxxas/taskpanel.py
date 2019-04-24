@@ -22,6 +22,7 @@ from larch.utils import group2dict
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
 
+
 class TaskPanel(wx.Panel):
     """generic panel for main tasks.
     meant to be subclassed
@@ -39,6 +40,8 @@ class TaskPanel(wx.Panel):
         self.wids = {}
         self.subframes = {}
         self.SetFont(Font(FONTSIZE))
+        self.titleopts = dict(font=Font(FONTSIZE+2), colour='#AA0000')
+
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
@@ -81,7 +84,6 @@ class TaskPanel(wx.Panel):
     def build_display(self):
         """build display"""
 
-        titleopts = dict(font=Font(FONTSIZE+1), colour='#AA0000')
         self.panel.Add(SimpleText(self.panel, self.title, **titleopts),
                        dcol=7)
         self.panel.Add(SimpleText(self.panel, ' coming soon....'),

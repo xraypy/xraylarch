@@ -20,6 +20,7 @@ from wx.richtext import RichTextCtrl
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
+WX_DEBUG = True
 
 import larch
 from larch import Group
@@ -33,6 +34,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SimpleText, pack, Button, Popup, HLine, FileSave,
                          Choice, Check, MenuItem, GUIColors, CEN, RCEN,
                          LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
+
 from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
 from larch.fitting import fit_report
@@ -63,20 +65,19 @@ CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
-XASVIEW_SIZE = (975, 800)
+XASVIEW_SIZE = (950, 750)
 PLOTWIN_SIZE = (550, 550)
 
-NB_PANELS = OrderedDict((('XAS Normalization', XASNormPanel),
-                         ('Pre-edge Peaks', PrePeakPanel),
+NB_PANELS = OrderedDict((('Normalization', XASNormPanel),
+                         ('Pre-edge Peak', PrePeakPanel),
                          ('PCA',  PCAPanel),
-                         ('Linear Combinations', LinearComboPanel),
+                         ('Linear Combo', LinearComboPanel),
                          ('Regression', RegressionPanel),
                          ('EXAFS', EXAFSPanel)))
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
 
-WX_DEBUG = False
 
 def assign_gsescan_groups(group):
     labels = group.array_labels
@@ -179,6 +180,7 @@ class XASController():
                     pos = p1.GetPosition()
                     pos[0] += int(siz[0]/4)
                     pos[1] += int(siz[1]/4)
+                    print("Setting Plotter size ", pos)
                     out.SetSize(pos)
                     if not stacked:
                         out.SetSize(siz)
@@ -437,7 +439,7 @@ class XASFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.title = SimpleText(panel, 'initializing...', size=(300, -1))
-        self.title.SetFont(Font(FONTSIZE+1))
+        self.title.SetFont(Font(FONTSIZE+2))
 
         ir = 0
         sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
@@ -471,7 +473,7 @@ class XASFrame(wx.Frame):
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz+5, ypos))
-        plotframe.SetSize((ysiz, ysiz))
+        # plotframe.SetSize((ysiz, ysiz))
 
         self.SetStatusText('ready', 1)
         self.Raise()

@@ -63,7 +63,6 @@ class PCAPanel(TaskPanel):
         form = self.read_form()
 
     def build_display(self):
-        titleopts = dict(font=Font(12), colour='#AA0000')
         panel = self.panel
         wids = self.wids
         self.skip_process = True
@@ -125,7 +124,8 @@ class PCAPanel(TaskPanel):
         wids['fit_dscale'] = SimpleText(panel, '1.000', font=rfont)
 
 
-        panel.Add(SimpleText(panel, ' Principal Component Analysis', **titleopts), dcol=4)
+        panel.Add(SimpleText(panel, ' Principal Component Analysis',
+                             **self.titleopts), dcol=4)
 
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=2)
