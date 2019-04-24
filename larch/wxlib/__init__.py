@@ -25,7 +25,7 @@ except ImportError:
 _larch_name = '_sys.wx'
 _larch_builtins = {}
 
-FONTSIZE = 10
+FONTSIZE = 9
 if platform.system() == 'Windows':
     FONTSIZE = 10
 if platform.system() == 'Darwin':
