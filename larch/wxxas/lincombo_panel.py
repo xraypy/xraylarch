@@ -8,7 +8,7 @@ import time
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
-
+import wx.grid as wxgrid
 import numpy as np
 
 from functools import partial
@@ -48,7 +48,7 @@ defaults = dict(elo=-5.e5, ehi=5.e5, elo_rel=-40, ehi_rel=110,
                 fitspace=norm, all_combos=True, sum_to_one=True,
                 show_e0=False, show_fitrange=True)
 
-MAX_COMPONENTS = 10
+MAX_COMPONENTS = 20
 
 def make_lcfplot(dgroup, form, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
@@ -70,7 +70,7 @@ def make_lcfplot(dgroup, form, nfit=0):
     emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}')"""]
 
     if hasattr(dgroup, 'lcf_result'):
-        with_comps = "Components" in form['plotchoice']
+        with_comps = True # "Components" in form['plotchoice']
         delay = 'delay_draw=True' if with_comps else 'delay_draw=False'
         xarr = "{group:s}.lcf_result[{nfit:d}].xdata"
         yfit = "{group:s}.lcf_result[{nfit:d}].yfit"
@@ -450,7 +450,6 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'Components: ']
         for key, val in result.weights.items():
@@ -488,7 +487,6 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi']),
                   'N_Data: %d' % len(results[0].xdata)]
 
@@ -536,7 +534,6 @@ class ResultFrame(wx.Frame):
                   'Dataset filename: %s ' % dgroup.filename,
                   'Larch group: %s ' % dgroup.groupname,
                   'Array name: %s' %  form['arrayname'],
-                  # 'E0:  %f '  % form['e0'],
                   'Energy fit range: [%f, %f]' % (form['elo'], form['ehi'])]
 
         label = [' energy         ',  ' data           ']
@@ -595,6 +592,79 @@ class ResultFrame(wx.Frame):
             fh.write('\n'.join(out))
 
 
+
+class LinComboDataTable(wxgrid.GridTableBase):
+    def __init__(self):
+        self.ncols = 4
+        self.nrows = MAX_COMPONENTS
+        wxgrid.GridTableBase.__init__(self)
+        self.colLabels = [' File /Group Name   ',
+                          'weight', 'min', 'max']
+        self.dataTypes = [wxgrid.GRID_VALUE_STRING,
+                          wxgrid.GRID_VALUE_FLOAT+ ':12,4',
+                          wxgrid.GRID_VALUE_FLOAT+ ':12,4',
+                          wxgrid.GRID_VALUE_FLOAT+ ':12,4']
+
+        self.data = []
+        for i in range(self.nrows):
+            self.data.append(['', 1.0/MAX_COMPONENTS, 0.0, 1.0])
+
+    def GetNumberRows(self):
+        return self.nrows
+
+    def GetNumberCols(self):
+        return self.ncols
+
+    def GetValue(self, row, col):
+        try:
+            return self.data[row][col]
+        except IndexError:
+            return ''
+
+    def SetValue(self, row, col, value):
+        self.data[row][col] = value
+
+    def GetColLabelValue(self, col):
+        return self.colLabels[col]
+
+    def GetRowLabelValue(self, row):
+        return "%d" % (row+1)
+
+    def GetTypeName(self, row, col):
+        return self.dataTypes[col]
+
+    def CanGetValueAs(self, row, col, typeName):
+        colType = self.dataTypes[col].split(':')[0]
+        if typeName == colType:
+            return True
+        else:
+            return False
+
+    def CanSetValueAs(self, row, col, typeName):
+        return self.CanGetValueAs(row, col, typeName)
+
+class LinComboTableGrid(wxgrid.Grid):
+    def __init__(self, parent):
+        wxgrid.Grid.__init__(self, parent, -1)
+
+        self.table =  LinComboDataTable()
+        self.SetTable(self.table, True)
+        self.SetRowLabelSize(30)
+        self.SetMargins(10, 10)
+        self.EnableDragRowSize()
+        self.EnableDragColSize()
+        self.AutoSizeColumns(False)
+        self.SetColSize(0, 300)
+        self.SetColSize(1,  80)
+        self.SetColSize(2,  80)
+        self.SetColSize(3,  80)
+
+        self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
+
+    def OnLeftDClick(self, evt):
+        if self.CanEnableCellControl():
+            self.EnableCellEditControl()
+
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
     def __init__(self, parent, controller, **kws):
@@ -617,9 +687,9 @@ class LinearComboPanel(TaskPanel):
         wids['fitspace'] = Choice(panel, choices=FitSpace_Choices,
                                   size=(175, -1))
         wids['fitspace'].SetStringSelection(norm)
-        wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
-                                  size=(175, -1), action=self.onPlot)
-        wids['plotchoice'].SetSelection(1)
+#         wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
+#                                   size=(175, -1), action=self.onPlot)
+#         wids['plotchoice'].SetSelection(1)
 
         add_text = self.add_text
 
@@ -650,19 +720,12 @@ class LinearComboPanel(TaskPanel):
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
 
         panel.Add(SimpleText(panel, ' Linear Combination Analysis', **titleopts), dcol=4)
-        add_text('Run Fit', newrow=False)
 
         add_text('Array to Fit: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=3)
-        panel.Add(wids['fit_group'])
 
-        add_text('Plot : ', newrow=True)
-        panel.Add(wids['plotchoice'], dcol=3)
-        panel.Add(wids['fit_selected'])
-
-        # add_text('E0: ')
-        # panel.Add(e0_wids, dcol=3)
-        # panel.Add(wids['show_e0'])
+        # add_text('Plot : ', newrow=True)
+        # panel.Add(wids['plotchoice'], dcol=3)
 
         add_text('Fit Energy Range: ')
         panel.Add(elo_wids)
@@ -670,37 +733,25 @@ class LinearComboPanel(TaskPanel):
         panel.Add(ehi_wids)
         panel.Add(wids['show_fitrange'])
 
-        panel.Add(wids['sum_to_one'], dcol=2, newrow=True)
+        panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
+        add_text('Run Fit')
+        panel.Add(wids['fit_group'], dcol=2)
+        panel.Add(wids['fit_selected'], dcol=3)
+        add_text('Fit Options')
+        panel.Add(wids['sum_to_one'], dcol=2)
         panel.Add(wids['all_combos'], dcol=3)
 
-        panel.Add(HLine(panel, size=(500, 2)), dcol=5, newrow=True)
+
+        panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
 
         add_text('Components: ')
         panel.Add(wids['add_selected'], dcol=4)
 
-        groupnames = [noname] + list(self.controller.file_groups.keys())
-        sgrid = GridPanel(panel, nrows=6)
+        wids['table'] = LinComboTableGrid(panel)
+        wids['table'].SetMinSize((625, 225))
+        panel.Add(wids['table'], newrow=True, dcol=6)
 
-        sgrid.Add(SimpleText(sgrid, "#"))
-        sgrid.Add(SimpleText(sgrid, "Group"))
-        sgrid.Add(SimpleText(sgrid, "Initial Weight"))
-        sgrid.Add(SimpleText(sgrid, "Min Weight"))
-        sgrid.Add(SimpleText(sgrid, "Max Weight"))
-
-        fopts = dict(minval=-10, maxval=20, precision=4, size=(75, -1))
-        for i in range(1, 1+MAX_COMPONENTS):
-            si = ("comp", "_%2.2d" % i)
-            sgrid.Add(SimpleText(sgrid, "%2i" % i), newrow=True)
-            wids['%schoice%s' % si] = Choice(sgrid, choices=groupnames, size=(200, -1),
-                                           action=partial(self.onComponent, comp=i))
-            wids['%sval%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
-            wids['%smin%s' % si] = FloatCtrl(sgrid, value=0, **fopts)
-            wids['%smax%s' % si] = FloatCtrl(sgrid, value=1, **fopts)
-            for cname in ('choice', 'val', 'min', 'max'):
-                sgrid.Add(wids[("%%s%s%%s" % cname) % si])
-        sgrid.pack()
-        panel.Add(sgrid, dcol=5, newrow=True)
-        panel.Add(HLine(panel, size=(500, 2)), dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
         panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
 
@@ -760,18 +811,18 @@ class LinearComboPanel(TaskPanel):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 
-        groupnames = [noname] + list(self.controller.file_groups.keys())
-        for wname, wid in wids.items():
-            if wname.startswith('compchoice'):
-                cur = wid.GetStringSelection()
-                wid.Clear()
-                wid.AppendItems(groupnames)
-                if cur in groupnames:
-                    wid.SetStringSelection(cur)
-                else:
-                    wid.SetSelection(0)
-            elif wname.startswith('comp'):
-                wid.SetValue(opts.get(wname, wid.GetValue()))
+#         groupnames = [noname] + list(self.controller.file_groups.keys())
+#         for wname, wid in wids.items():
+#             if wname.startswith('compchoice'):
+#                 cur = wid.GetStringSelection()
+#                 wid.Clear()
+#                 wid.AppendItems(groupnames)
+#                 if cur in groupnames:
+#                     wid.SetStringSelection(cur)
+#                 else:
+#                     wid.SetSelection(0)
+#             elif wname.startswith('comp'):
+#                 wid.SetValue(opts.get(wname, wid.GetValue()))
         self.skip_process = False
 
     def read_form(self, dgroup=None):
@@ -785,7 +836,7 @@ class LinearComboPanel(TaskPanel):
         for attr in ('elo', 'ehi'):
             opts[attr] = wids[attr].GetValue()
 
-        for attr in ('fitspace', 'plotchoice'):
+        for attr in ('fitspace', ): # 'plotchoice'):
             opts[attr] = wids[attr].GetStringSelection()
         for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
             opts[attr] = wids[attr].GetValue()
@@ -797,15 +848,17 @@ class LinearComboPanel(TaskPanel):
                 opts[attr] = wid.GetValue()
 
         comps, cnames, wval, wmin, wmax = [], [], [], [], []
-        for i in range(MAX_COMPONENTS):
-            scomp = "_%2.2d" % (i+1)
-            cname = opts['compchoice%s' % scomp]
-            if cname != noname:
-                wval.append(str(opts['compval%s' % scomp]))
-                wmin.append(str(opts['compmin%s' % scomp]))
-                wmax.append(str(opts['compmax%s' % scomp]))
-                comps.append(self.controller.file_groups[cname])
-                cnames.append(cname)
+
+        table_data = self.wids['table'].table.data
+        for _cname, _wval, _wmin, _wmax in table_data:
+            if _cname.strip() in ('', None) or len(_cname) < 1:
+                break
+            cnames.append(_cname)
+            comps.append(self.controller.file_groups[_cname])
+            wval.append("%.5f" % _wval)
+            wmin.append("%.5f" % _wmin)
+            wmax.append("%.5f" % _wmax)
+
         opts['comp_names'] = cnames
         opts['comps']   = ', '.join(comps)
         opts['weights'] = ', '.join(wval)
@@ -841,15 +894,12 @@ class LinearComboPanel(TaskPanel):
             selected_groups = selected_groups[:MAX_COMPONENTS]
         weight = 1.0/len(selected_groups)
 
-        for i in range(MAX_COMPONENTS):
-            si = "_%2.2d" % (i+1)
-            self.wids['compchoice%s' % si].SetStringSelection(noname)
-            self.wids['compval%s' % si].SetValue(0.0)
+        grid_data = []
+        for grp in selected_groups:
+            grid_data.append([grp, weight, 0, 1])
 
-        for i, sel in enumerate(selected_groups):
-            si = "_%2.2d" % (i+1)
-            self.wids['compchoice%s' % si].SetStringSelection(sel)
-            self.wids['compval%s' % si].SetValue(weight)
+        self.wids['table'].table.data = grid_data
+        self.wids['table'].table.View.Refresh()
         self.skip_process = False
 
 
