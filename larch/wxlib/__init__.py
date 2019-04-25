@@ -46,11 +46,8 @@ if HAS_WXPYTHON:
                          get_icon, GUIColors, OkCancel, FileOpen, FileSave,
                          SelectWorkdir, fix_filename, SavedParameterDialog,
                          FileCheckList, FileDropTarget, GridPanel, RowPanel,
-                         make_steps, set_float, FloatCtrl, NumericCombo)
-
-
-    from .floatspin import FloatSpin, FloatSpinWithPin
-
+                         make_steps, set_float, FloatCtrl, NumericCombo,
+                         FloatSpin, FloatSpinWithPin)
 
     from .notebooks import flatnotebook
 
