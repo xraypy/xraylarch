@@ -186,7 +186,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(xas_pre1)
         add_text(' : ', newrow=False)
         panel.Add(xas_pre2, dcol=2)
-        panel.Add(CopyBtn('xas_pre'), dcol=2, style=RCEN)
+        panel.Add(CopyBtn('xas_pre'), dcol=1, style=RCEN)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
         panel.Add(self.wids['nvict'], dcol=3)
@@ -195,8 +195,8 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
 
         add_text('Normalization method: ')
-        panel.Add(self.wids['norm_method'], dcol=3)
-        panel.Add(CopyBtn('xas_norm'), dcol=2, style=RCEN)
+        panel.Add(self.wids['norm_method'], dcol=4)
+        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RCEN)
 
         add_text('Normalization range: ')
         panel.Add(xas_norm1)

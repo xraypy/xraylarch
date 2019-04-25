@@ -34,7 +34,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          CEN, RCEN, LCEN, FRAMESTYLE, Font, FONTSIZE,
                          FileSave, FileOpen, flatnotebook)
 
-from larch.wxlib.parameter import ParameterWidgets, ParameterPanel
+from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
 
@@ -546,13 +546,13 @@ class PrePeakPanel(TaskPanel):
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                                    size=(150, -1))
+                                    size=(125, -1))
         self.plotmodel_btn = Button(pan, 'Plot Model',
-                                   action=self.onPlotModel,  size=(150, -1))
+                                   action=self.onPlotModel,  size=(125, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
-                                   action=self.onFitModel,  size=(150, -1))
-        self.loadmodel_btn = Button(pan, 'Load Saved Model',
-                                    action=self.onLoadFitResult,  size=(150, -1))
+                                   action=self.onFitModel,  size=(125, -1))
+        self.loadmodel_btn = Button(pan, 'Load Model',
+                                    action=self.onLoadFitResult,  size=(125, -1))
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
@@ -817,7 +817,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
             minst = mclass(prefix=prefix)
 
-        panel = GridPanel(self.mod_nb, ncols=2, nrows=5, pad=2, itemstyle=CEN)
+        panel = GridPanel(self.mod_nb, ncols=2, nrows=5, pad=1, itemstyle=CEN)
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label,
@@ -827,11 +827,11 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         if isbkg:
             bkgbox.SetValue(1)
 
-        delbtn = Button(panel, 'Delete Component', size=(125, -1),
+        delbtn = Button(panel, 'Delete This Component', size=(200, -1),
                         action=partial(self.onDeleteComponent, prefix=prefix))
 
         pick2msg = SimpleText(panel, "    ", size=(125, -1))
-        pick2btn = Button(panel, 'Pick Values from Data', size=(150, -1),
+        pick2btn = Button(panel, 'Pick Values from Plotted Data', size=(200, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
@@ -841,15 +841,14 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
 
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
-                  dcol=3,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox, dcol=1)
-        panel.Add(bkgbox, dcol=2, style=LCEN)
-        panel.Add(delbtn, dcol=1, style=wx.ALIGN_LEFT)
+                  dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(usebox, dcol=2)
+        panel.Add(bkgbox, dcol=1, style=RCEN)
 
         panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(pick2msg, dcol=2, style=wx.ALIGN_RIGHT)
+        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
+        panel.Add(delbtn, dcol=2, style=wx.ALIGN_RIGHT)
 
-        # panel.Add((10, 10), newrow=True)
         # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
@@ -881,7 +880,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             if 'expr' in hints:
                 par.expr = hints['expr']
 
-            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=125,
+            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=150,
                                      float_size=80, prefix=prefix,
                                      widgets=('name', 'value',  'minval',
                                               'maxval', 'vary', 'expr'))
@@ -895,13 +894,13 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             pname = "%s%s" % (prefix, sname)
             if 'expr' in hint and pname not in parnames:
                 par = Parameter(name=pname, value=0, expr=hint['expr'])
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=225,
+                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
                                          float_size=80, prefix=prefix,
                                          widgets=('name', 'value', 'expr'))
                 parwids[par.name] = pwids
                 panel.Add(pwids.name, newrow=True)
                 panel.Add(pwids.value)
-                panel.Add(pwids.expr, dcol=4, style=wx.ALIGN_RIGHT)
+                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
                 pwids.value.Disable()
 
         fgroup = Group(prefix=prefix, title=title, mclass=mclass,
