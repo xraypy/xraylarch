@@ -18,7 +18,7 @@ from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         CEN, RCEN, LCEN, Font)
+                         NumericCombo, CEN, RCEN, LCEN, Font)
 from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 
@@ -52,32 +52,6 @@ def make_steps(max=1, decades=8):
     for i in range(6):
         steps.extend([(j*10**(-(1+i))) for j in (5, 2, 1)])
     return steps
-
-class NumericCombo(wx.ComboBox):
-    """
-    Numeric Combo: ComboBox with numeric-only choices
-    """
-    def __init__(self, parent, choices, default=None, width=100):
-        self.choices  = choices
-        schoices = ["%.6g"%(x) for x in choices]
-        wx.ComboBox.__init__(self, parent, -1, '', (-1, -1), (width, -1),
-                             schoices, wx.CB_DROPDOWN|wx.TE_PROCESS_ENTER)
-        if default is None or default not in choices:
-            default = choices[0]
-        self.SetStringSelection("%.6g" % default)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
-
-    def OnEnter(self, event=None):
-        self.add_choice(float(event.GetString()))
-
-    def add_choice(self, thisval):
-        if thisval not in self.choices:
-            self.choices.append(thisval)
-            self.choices.sort()
-        self.choices.reverse()
-        self.Clear()
-        self.AppendItems(["%.6g" % x for x in self.choices])
-        self.SetSelection(self.choices.index(thisval))
 
 class ExtVarDataTable(wxgrid.GridTableBase):
     def __init__(self):
@@ -184,8 +158,8 @@ class RegressionPanel(TaskPanel):
 
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
-        wids['alpha'] =  NumericCombo(panel, make_steps(), default=0.01,
-                                     width=100)
+        wids['alpha'] =  NumericCombo(panel, make_steps(), fmt='%.6g',
+                                      default_val=0.01, width=100)
 
         wids['auto_scale_pls'] = Check(panel, default=True, label='auto scale?')
         wids['auto_alpha'] = Check(panel, default=False, label='auto alpha?')
