@@ -2,8 +2,7 @@ import wx
 
 import wx.lib.agw.flatnotebook as flat_nb
 
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS|flat_nb.FNB_SMART_TABS
-
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_NO_NAV_BUTTONS
 
 def flatnotebook(parent, paneldict, panelkws={},
                  on_change=None, drag_tabs=True, selection=0):
@@ -16,6 +15,7 @@ def flatnotebook(parent, paneldict, panelkws={},
     nb.SetActiveTabColour(wx.Colour(254, 254, 195))
     nb.SetNonActiveTabTextColour(wx.Colour(10, 10, 128))
     nb.SetActiveTabTextColour(wx.Colour(128, 0, 0))
+    nb.SetPadding(wx.Size(4, -1))
     nb.DeleteAllPages()
     nb.pagelist = []
     for name, creator in paneldict.items():
