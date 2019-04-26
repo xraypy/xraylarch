@@ -61,6 +61,12 @@ defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
 
+def set_fs_increment(wid, value):
+    "set increment for floatspin to be ~0.002 X current value"
+    ndig = int(2 - round(np.log10(abs(value))))
+    wid.SetDigits(1+ndig)
+    wid.SetIncrement(2.0*10**(-ndig))
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -232,15 +238,13 @@ class XASNormPanel(TaskPanel):
         else:
             conf = self.get_defaultconfig()
             if hasattr(dgroup, 'bkg_params'): # from Athena
-                conf['e0']   = getattr(dgroup.bkg_params, 'e0', conf['e0'])
-                conf['pre1'] = getattr(dgroup.bkg_params, 'pre1', conf['pre1'])
-                conf['pre2'] = getattr(dgroup.bkg_params, 'pre2', conf['pre2'])
-                conf['norm1'] = getattr(dgroup.bkg_params, 'norm1', conf['norm1'])
-                conf['norm2'] = getattr(dgroup.bkg_params, 'norm2', conf['norm2'])
-                conf['nnorm'] = getattr(dgroup.bkg_params, 'nnorm', conf['nnorm'])
-                conf['nvict'] = getattr(dgroup.bkg_params, 'nvict', conf['nvict'])
+                for attr in ('e0', 'pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
+                    conf[attr]   = getattr(dgroup.bkg_params, attr, conf[attr])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
+                conf['edge_step'] = getattr(dgroup.bkg_params, 'step', conf['edge_step'])
 
+        if conf['edge_step'] is None:
+            conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
@@ -251,7 +255,6 @@ class XASNormPanel(TaskPanel):
         if hasattr(dgroup, 'mback_params'):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
             conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
-
 
         setattr(dgroup, self.configname, conf)
         return conf
@@ -280,10 +283,8 @@ class XASNormPanel(TaskPanel):
                 opts['atsym'] = atsym
                 opts['edge'] = edge
 
-            ndigits = int(2 - round(np.log10(abs(edge_step))))
-            self.wids['step'].SetDigits(ndigits+1)
-            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
             self.wids['step'].SetValue(edge_step)
+            set_fs_increment(self.wids['step'], edge_step)
 
             self.wids['pre1'].SetValue(opts['pre1'])
             self.wids['pre2'].SetValue(opts['pre2'])
@@ -466,9 +467,11 @@ class XASNormPanel(TaskPanel):
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
+        edge_step = self.wids['step'].GetValue()
         self.wids['auto_step'].SetValue(0)
-        self.update_config({'edge_step': self.wids['step'].GetValue(),
-                            'auto_step': False})
+        self.update_config({'edge_step': edge_step, 'auto_step': False})
+        set_fs_increment(self.wids['step'], edge_step)
+
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -609,10 +612,7 @@ class XASNormPanel(TaskPanel):
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step']:
             self.wids['step'].SetValue(dgroup.edge_step)
-            ndigits = int(2 - round(np.log10(abs(edge_step))))
-            self.wids['step'].SetDigits(ndigits+1)
-            self.wids['step'].SetIncrement(2.0*10**(-ndigits))
-
+            set_fs_increment(self.wids['step'], dgroup.edge_step)
 
         self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
@@ -815,7 +815,8 @@ class XASNormPanel(TaskPanel):
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.process(noskip=True)
+                print(" -- need norm_mback ! " )
+                self.process(dgroup=dgroup, noskip=True, force_mback=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, **popts)
             plotcmd = ppanel.oplot
