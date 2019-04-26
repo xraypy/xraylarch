@@ -28,9 +28,9 @@ except ImportError:
     HAS_WXPYTHON = False
 
 if HAS_WXPYTHON:
-    from ..wxlib.plotter import (_getDisplay, _plot, _oplot, _newplot,
-                                 _fitplot, _plot_text, _plot_marker,
-                                 _plot_arrow, _plot_axvline, _plot_axhline)
+    from .plotter import (_getDisplay, _plot, _oplot, _newplot, _fitplot,
+                          _plot_text, _plot_marker, _plot_arrow,
+                          _plot_axvline, _plot_axhline)
 else:
     def nullfunc(*args, **kws): pass
 
