@@ -3,9 +3,12 @@
 """
   Larch: a scientific data processing macro language based on python
 """
+import time
 import os
 import sys
 import numpy
+from distutils.version import StrictVersion
+
 import warnings
 warnings.simplefilter('ignore')
 
@@ -23,33 +26,31 @@ except ImportError:
 #    import matplotlib.pyplot as plt
 # we have to set the matplotlib backend before import lmfit / pyplot
 import matplotlib
-import warnings
-try:
-    import wx
-except ImportError:
-    pass
-
-with warnings.catch_warnings():
-    warnings.filterwarnings('error')
+import lmfit
+if StrictVersion(lmfit.__version__.split('+')[0]) < StrictVersion('0.9.13'):
     try:
-        matplotlib.use("WXAgg")
+        import wx
+        with warnings.catch_warnings():
+            warnings.filterwarnings('error')
+            matplotlib.use("WXAgg")
     except:
         pass
 
-import lmfit, matplotlib
 from .version import __date__, __version__
 from .symboltable import Group, isgroup
 from .larchlib import (ValidateLarchPlugin, Make_CallArgs, enable_plugins,
                        parse_group_args, isNamedClass)
+
 from .site_config import show_site_config
 from . import builtins
 from .inputText import InputText
-
 from .interpreter import Interpreter
-from . import shell, larchlib, utils, version, site_config, apps
+from . import larchlib, utils, version, site_config, apps
 
 from . import fitting, math, io
 from .fitting import Parameter, isParameter, param_value
+
+from . import shell
 
 # from . import apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
 #                    run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,

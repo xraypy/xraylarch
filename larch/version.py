@@ -1,40 +1,54 @@
 #!/usr/bin/env python
 __date__    = '2019-March-6'
 __version__ = '0.9.43a'
+__authors__ = "M. Newville, M. Koker, B. Ravel, and others"
 
 import sys
 import numpy
 import scipy
 import matplotlib
 import lmfit
+from collections import OrderedDict
 
-try:
-    import wx
-except:
-    wx = None
 
-def make_banner():
-    authors = "M. Newville, M. Koker, B. Ravel, and others"
+def version_data(mods=None):
     sysvers = sys.version
     if '\n' in sysvers:
         sysvers = sysvers.split('\n')[0]
 
+    vdat = OrderedDict()
+    vdat['larch'] = "%s (%s) %s" % (__version__, __date__, __authors__)
+    vdat['python'] = "%s" % (sysvers)
 
-    lines = ["Larch %s (%s) %s" % (__version__, __date__, authors),
-             "Python: %s" % (sysvers)]
+    allmods = [numpy, scipy, matplotlib, lmfit]
+    if mods is not None:
+        for m in mods:
+            if m not in allmods:
+                allmods.append(m)
+
+    for mod in allmods:
+        if mod is not None:
+            mname = mod.__name__
+            try:
+                vers = mod.__version__
+            except:
+                vers = "unavailable"
+            vdat[mname] = vers
+    return vdat
+
+def make_banner(mods=None):
+    vdat = version_data(mods=mods)
+
+    lines = ['Larch %s' % vdat.pop('larch'),
+             'Python %s' % vdat.pop('python')]
 
     reqs = []
-    for mod in (numpy, scipy, matplotlib, lmfit, wx):
-        if mod is not None:
-            try:
-                vers = "%s %s" % (mod.__name__, mod.__version__)
-            except:
-                vers = "%s not available" % (mod.__name__)
-            reqs.append(vers)
+    for name, vstr in vdat.items():
+        reqs.append('%s %s' % (name, vstr))
     lines.append(', '.join(reqs))
 
     linelen = max([len(line) for line in lines])
-    border = '='*min(linelen, 75)
+    border = '='*max(linelen, 75)
     lines.insert(0, border)
     lines.append(border)
 

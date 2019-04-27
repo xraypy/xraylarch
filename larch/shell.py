@@ -26,7 +26,7 @@ try:
     import wx
     HAS_WXPYTHON = True
 except ImportError:
-    pass
+    wx = None
 
 
 class shell(cmd.Cmd):
@@ -77,7 +77,7 @@ class shell(cmd.Cmd):
         self.color_writer = uname != 'win' and hasattr(writer, 'set_textstyle')
         if not quiet:
             if banner_msg is None:
-                banner_msg = make_banner()
+                banner_msg = make_banner(mods=[wx])
             if self.color_writer:
                 writer.set_textstyle('error')
             writer.write(banner_msg)
