@@ -17,7 +17,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
-from numpy import gradient, ndarray, diff, where, arange
+from numpy import gradient, ndarray, diff, where, arange, argmin
 from larch import Group
 from larch.math import (index_of, index_nearest, interp)
 
@@ -906,20 +906,21 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
            ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
 
-def plot_pca_components(result, max_components=None, min_weight=0,
-                        win=1, _larch=None, **kws):
+def _pca_ncomps(result, min_weight=0, ncomps=None):
+    if ncomps is None:
+        if min_weight > 1.e-12:
+            ncomps = where(result.variances < min_weight)[0][0]
+        else:
+            ncomps = argmin(result.ind)
+    return ncomps
+
+
+def plot_pca_components(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
     """Plot components from PCA result
 
     result must be output of `pca_train`
     """
-
-    if max_components is None:
-        max_components = len(result.components)
-    else:
-        max_components = max(1, min(len(result.components), max_components))
-
-    title = "PCA model components"
-
+    title = "PCA components"
     popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
@@ -927,51 +928,50 @@ def plot_pca_components(result, max_components=None, min_weight=0,
                  win=win, _larch=_larch)
 
     popts.update(kws)
+    ncomps = _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
 
     _plot(result.x, result.mean, label='Mean', **popts)
-    for i, comp in enumerate(result.components[:max_components]):
-        label = 'Comp #%d' % (i+1)
-        if result.variances[i] > min_weight:
-            _oplot(result.x, comp, label=label, **popts)
+    for i, comp in enumerate(result.components[:ncomps+1]):
+        label = 'Comp# %d (%.4f)' % (i+1, result.variances[i])
+        _oplot(result.x, comp, label=label, **popts)
 
     redraw(win=win, show_legend=True, _larch=_larch)
 
-def plot_pca_weights(result, max_components=None, min_weight=0,
-                        win=1, _larch=None, **kws):
+def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
     """Plot component weights from PCA result (aka SCREE plot)
 
     result must be output of `pca_train`
     """
-    if max_components is None:
-        max_components = len(result.components)
-    else:
-        max_components = max(1, min(len(result.components), max_components))
+    max_comps = len(result.components)
 
-    title = "PCA model weights (SCREE)"
+    title = "PCA Variances (SCREE) and Indicator Values"
 
-    popts = dict(xmin=0.25, ymax=1.0, title=title, xlabel='Component #',
-                 zorder=10, ylabel='weight', style='solid',
-                 ylog_scale=True, show_legend=True, linewidth=1, new=True,
-                 marker='o', markersize=8, win=win, _larch=_larch)
+    popts = dict(title=title, xlabel='Component #', zorder=10,
+                 xmax=max_comps+1.5, xmin=0.25, ymax=1, ylabel='variance',
+                 style='solid', ylog_scale=True, show_legend=True,
+                 linewidth=1, new=True, marker='o', win=win, _larch=_larch)
 
     popts.update(kws)
 
-    nsig = len(where(result.variances > min_weight)[0])
-    nsig = min(nsig, max_components)
+    ncomps = _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
 
-    x = 1 + arange(nsig)
-    y = result.variances[:nsig]
+    x = 1 + arange(ncomps)
+    y = result.variances[:ncomps]
     _plot(x, y, label='significant', **popts)
 
-    nextra = len(where(result.variances < min_weight)[0]) - 1
-    if nextra > 0:
-        x = 1 + arange(nsig-1, nsig+nextra)
-        y = result.variances[nsig-1:nsig+nextra]
+    xe = 1 + arange(ncomps-1, max_comps)
+    ye = result.variances[ncomps-1:ncomps+max_comps]
 
-        popts.update(dict(new=False, xmax=max(x)+0.5,
-                          ymin=0.25*min(y), zorder=5,
-                          style='short dashed', color='#B34050'))
-        _plot(x, y, label='not significant', **popts)
+    popts.update(dict(new=False, zorder=5, style='short dashed',
+                      color='#B34050', ymin=2.e-3*result.variances[ncomps]))
+    _plot(xe, ye, label='not significant', **popts)
+
+    xi = 1 + arange(len(result.ind)-2)
+
+    _plot(xi, result.ind[1:len(xi)+1], zorder=15, y2label='Indicator Value',
+          label='IND', style='solid', win=win, show_legend=True,
+          linewidth=1, marker='o', side='right', _larch=_larch)
+
 
 
 def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
