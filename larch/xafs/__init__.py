@@ -46,7 +46,7 @@ from .estimate_noise import estimate_noise
 from .rebin_xafs import rebin_xafs, sort_xafs
 from .sigma2_models import sigma2_eins, sigma2_debye, sigma2_correldebye
 
-from . import xafsplots
+
 
 ####################################################
 ## sigma2_eins and sigma2_debye are set here as
@@ -95,7 +95,7 @@ def sigma2_debye(t, theta):
 """
 def _larch_init(_larch):
     """initialize xafs"""
-    _larch.symtable._xafs.plotlabels  = xafsplots.plotlabels
+    # _larch.symtable._xafs.plotlabels  = xafsplots.plotlabels
 
     fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
     if fiteval_init is None:
