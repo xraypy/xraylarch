@@ -235,7 +235,7 @@ class LarchPanel(wx.Panel):
 
         self.objtree.SetRootObject(self.larchshell.symtable)
         self.larchshell.set_textstyle('text2')
-        self.larchshell.write(make_banner())
+        self.larchshell.write(make_banner([wx]))
         self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
         root = self.objtree.tree.GetRootItem()
@@ -511,7 +511,7 @@ class LarchFrame(wx.Frame):
 
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
-        %s""" % (larch.make_banner())
+        %s""" % (make_banner([wx]))
 
         dlg = wx.MessageDialog(self, about_msg,
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
