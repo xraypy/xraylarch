@@ -14,10 +14,10 @@ from larch.math import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
-                         Check, CEN, RCEN, LCEN)
+                         plotlabels, Check, CEN, RCEN, LCEN)
 
 from larch.xafs.xafsutils import etok, ktoe
-from larch.xafs.xafsplots import plotlabels
+
 
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel
