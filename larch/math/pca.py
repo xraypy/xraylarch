@@ -58,7 +58,7 @@ def nmf_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf,
                  xmin=xmin, xmax=xmax, model=ret)
 
 
-def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
+def pca_train_sklearn(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
     """use a list of data groups to train a Principal Component Analysis
 
     Arguments
@@ -87,6 +87,102 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
                  xmin=xmin, xmax=xmax, model=ret, mean=ret.mean_,
                  components=ret.components_,
                  variances=ret.explained_variance_ratio_)
+
+
+def pca_athena(groups, arrayname='norm', subtract_mean=True,
+               normalize=True, xmin=-np.inf, xmax=np.inf):
+    xdat, data = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
+    if subtract_mean:
+        data = data - data.mean(axis=0)
+
+    data = data.T
+    data = data - data.mean(axis=0)
+    if normalize:
+        data = data / data.std(axis=0)
+
+    cor = np.dot(data.T, data) / data.shape[0]
+    evals, var = np.linalg.eigh(cor)
+    iorder = np.argsort(evals)[::-1]
+    evals = evals[iorder]
+    evec = np.dot(data, var)[:, iorder]
+    return evec, evals
+
+def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
+    """use a list of data groups to train a Principal Component Analysis
+
+    Arguments
+    ---------
+      groups      list of groups to use as components
+      arrayname   string of array name to be fit (see Note 2) ['norm']
+      xmin        x-value for start of fit range [-inf]
+      xmax        x-value for end of fit range [+inf]
+
+    Returns
+    -------
+      group with trained PCA or N model, to be used with pca_fit
+
+    Notes
+    -----
+     1.  The group members for the components must match each other
+         in data content and array names.
+     2.  arrayname can be one of `norm` or `dmude`
+    """
+    xdat, ydat = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
+    labels = [get_label(g) for g  in groups]
+    narr, nfreq = ydat.shape
+
+    ymean = ydat.mean(axis=0)
+    ynorm = ydat - ymean
+
+    # normalize data to be centered at 0 with unit standard deviation
+    ynorm = (ynorm.T - ynorm.mean(axis=1)) / ynorm.std(axis=1)
+    eigval, eigvec_ = np.linalg.eigh(np.dot(ynorm.T, ynorm) / narr)
+    eigvec = (np.dot(ynorm, -eigvec_)/narr).T
+    eigvec, eigval = eigvec[::-1, :], eigval[::-1]
+
+    variances = eigval/eigval.sum()
+
+    # calculate IND statistic
+    ind = None
+    for r in range(narr-1):
+        nr = narr - r - 1
+        indval = np.sqrt(eigval[r:].sum()/ (nfreq*nr))/nr**2
+        if ind is None:
+            ind = [indval]
+        ind.append(indval)
+    ind = np.array(ind)
+
+    return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
+                 xmin=xmin, xmax=xmax, mean=ymean, components=eigvec,
+                 eigenvalues=eigval, variances=variances, ind=ind)
+
+def pca_statistics(pca_model):
+    """return PCA arrays of statistics IND and F
+
+    For data of shape (p, n) (that is, p frequencies/energies, n spectra)
+
+    For index r, and eigv = eigenvalues
+
+      IND(r) =  sqrt( eigv[r:].sum() / (p*(n-r))) / (n-r)**2
+
+      F1R(r) = eigv[r] / (p+1-r)*(n+1-r) / sum_i=r^n-1 (eigv[i] / ((p+1-i)*(n+1-i)))
+    """
+    p, n = pca_model.ydat.shape
+    eigv = pca_model.eigenvalues
+    ind, f1r = [], []
+    for r in range(n-1):
+        nr = n-r-1
+        ind.append( np.sqrt(eigv[r:].sum()/ (p*nr))/nr**2)
+        f1sum = 0
+        for i in range(r, n):
+            f1sum += eigv[i]/((p+1-i)*(n+1-i))
+        f1sum = max(1.e-10, f1sum)
+        f1r.append(eigv[r] / (max(1, (p+1-r)*(n-r+1)) * f1sum))
+
+    pca_model.ind = np.array(ind)
+    pca_model.f1r = np.array(f1r)
+
+    return pca_model.ind, pca_model.f1r
 
 def _pca_scale_resid(params, ydat=None, pca_model=None, comps=None):
     scale = params['scale'].value
