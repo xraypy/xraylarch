@@ -146,15 +146,16 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
     ind = None
     for r in range(narr-1):
         nr = narr - r - 1
-        indval = np.sqrt(eigval[r:].sum()/ (nfreq*nr))/nr**2
+        indval = np.sqrt(nfreq*eigval[r:].sum()/nr)/nr**2
         if ind is None:
             ind = [indval]
         ind.append(indval)
     ind = np.array(ind)
 
+    nsig = np.argmin(ind)
     return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
                  xmin=xmin, xmax=xmax, mean=ymean, components=eigvec,
-                 eigenvalues=eigval, variances=variances, ind=ind)
+                 eigenvalues=eigval, variances=variances, ind=ind, nsig=nsig)
 
 def pca_statistics(pca_model):
     """return PCA arrays of statistics IND and F
