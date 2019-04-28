@@ -20,7 +20,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
 
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, autoset_fs_increment
 
 np.seterr(all='ignore')
 
@@ -59,12 +59,6 @@ defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 nvict=0, nnorm=1,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
-
-def set_fs_increment(wid, value):
-    "set increment for floatspin to be ~0.002 X current value"
-    ndig = int(2 - round(np.log10(abs(value))))
-    wid.SetDigits(1+ndig)
-    wid.SetIncrement(2.0*10**(-ndig))
 
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
@@ -283,7 +277,7 @@ class XASNormPanel(TaskPanel):
                 opts['edge'] = edge
 
             self.wids['step'].SetValue(edge_step)
-            set_fs_increment(self.wids['step'], edge_step)
+            autoset_fs_increment(self.wids['step'], edge_step)
 
             self.wids['pre1'].SetValue(opts['pre1'])
             self.wids['pre2'].SetValue(opts['pre2'])
@@ -469,7 +463,7 @@ class XASNormPanel(TaskPanel):
         edge_step = self.wids['step'].GetValue()
         self.wids['auto_step'].SetValue(0)
         self.update_config({'edge_step': edge_step, 'auto_step': False})
-        set_fs_increment(self.wids['step'], edge_step)
+        autoset_fs_increment(self.wids['step'], edge_step)
 
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
@@ -611,7 +605,7 @@ class XASNormPanel(TaskPanel):
             self.wids['e0'].SetValue(dgroup.e0)
         if form['auto_step']:
             self.wids['step'].SetValue(dgroup.edge_step)
-            set_fs_increment(self.wids['step'], dgroup.edge_step)
+            autoset_fs_increment(self.wids['step'], dgroup.edge_step)
 
         self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
         self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
