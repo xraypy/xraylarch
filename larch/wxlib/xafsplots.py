@@ -912,7 +912,7 @@ def _pca_ncomps(result, min_weight=0, ncomps=None):
             ncomps = where(result.variances < min_weight)[0][0]
         else:
             ncomps = argmin(result.ind)
-    return ncomps
+    return ncomps - 1
 
 
 def plot_pca_components(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
