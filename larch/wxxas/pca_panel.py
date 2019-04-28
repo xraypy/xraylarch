@@ -21,7 +21,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RCEN,
                          LCEN, Font)
 
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, autoset_fs_increment, DataTableGrid
 from larch.math.lincombo_fitting import get_arrays
 
 np.seterr(all='ignore')
@@ -39,11 +39,11 @@ FitSpace_Choices = [norm, dmude, chik]
 Plot_Choices = ['PCA Components', 'Component Weights', 'Data + Fit',
                 'Data + Fit + Components']
 
-defaults = dict(xmin=-5.e5, xmax=5.e5, fitspace=norm, weight_min=0.003,
-                max_components=50)
+defaults = dict(xmin=-5.e5, xmax=5.e5, fitspace=norm, weight_min=0.002,
+                weight_auto=True, max_components=50)
 
 # max number of *reported* PCA weights after fit
-NWTS = 10
+MAX_ROWS = 50
 
 class PCAPanel(TaskPanel):
     """PCA Panel"""
@@ -83,7 +83,14 @@ class PCAPanel(TaskPanel):
         w_wmin = self.add_floatspin('weight_min', digits=4,
                                     value=defaults['weight_min'],
                                     increment=0.001, with_pin=False,
-                                    min_val=0, max_val=0.5)
+                                    min_val=0,  max_val=0.5,
+                                    action=self.onSet_WeightMin)
+
+        autoset_fs_increment(self.wids['weight_min'], defaults['weight_min'])
+
+
+        self.wids['weight_auto'] = Check(panel, default=True, label='auto?')
+
 
         w_mcomps = self.add_floatspin('max_components', digits=0,
                                     value=defaults['max_components'],
@@ -104,17 +111,33 @@ class PCAPanel(TaskPanel):
         wids['load_model'].Disable()
         wids['save_model'].Disable()
 
-        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        sview.AppendTextColumn(' Component',    width=75)
-        sview.AppendTextColumn(' Weight',       width=100)
-        sview.AppendTextColumn(' Significant?', width=75)
+        collabels = [' Variance ', ' IND value ', ' IND / IND_Best',
+                     ' Factor Weight' ]
 
-        for col in range(sview.ColumnCount):
-            this = sview.Columns[col]
-            align = wx.ALIGN_LEFT if col == 0 else wx.ALIGN_RIGHT
-            this.Sortable = False
-            this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((275, 250))
+        colsizes = [100, 100, 100, 200]
+        coltypes = ['float:12,6', 'float:12,6', 'float:12,5', 'string']
+        coldefs  = [0.0, 0.0, 1.0, '0.0']
+
+        wids['table'] = DataTableGrid(panel, nrows=MAX_ROWS,
+                                      collabels=collabels,
+                                      datatypes=coltypes,
+                                      defaults=coldefs,
+                                      colsizes=colsizes, rowlabelsize=60)
+
+        wids['table'].SetMinSize((625, 175))
+        wids['table'].EnableEditing(False)
+#
+#         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+#         sview.AppendTextColumn(' Component',    width=75)
+#         sview.AppendTextColumn(' Weight',       width=100)
+#         sview.AppendTextColumn(' Significant?', width=75)
+#
+#         for col in range(sview.ColumnCount):
+#             this = sview.Columns[col]
+#             align = wx.ALIGN_LEFT if col == 0 else wx.ALIGN_RIGHT
+#             this.Sortable = False
+#             this.Alignment = this.Renderer.Alignment = align
+#         sview.SetMinSize((275, 250))
 
         wids['status'] = SimpleText(panel, ' ')
         rfont = self.GetFont()
@@ -122,7 +145,6 @@ class PCAPanel(TaskPanel):
 
         wids['fit_chi2'] = SimpleText(panel, '0.000', font=rfont)
         wids['fit_dscale'] = SimpleText(panel, '1.000', font=rfont)
-
 
         panel.Add(SimpleText(panel, ' Principal Component Analysis',
                              **self.titleopts), dcol=4)
@@ -144,6 +166,7 @@ class PCAPanel(TaskPanel):
 
         add_text('Min Weight: ')
         panel.Add(w_wmin)
+        panel.Add(wids['weight_auto'])
         add_text('Max Components:', dcol=1, newrow=True)
         panel.Add(w_mcomps)
 
@@ -151,45 +174,53 @@ class PCAPanel(TaskPanel):
                          action=partial(self.onCopyParam, 'pca')),
                   dcol=2)
 
-
-
         add_text('Status: ')
         panel.Add(wids['status'], dcol=3)
 
         panel.Add(HLine(panel, size=(550, 2)), dcol=5, newrow=True)
 
-        panel.Add(b_build_model, dcol=3, newrow=True)
-        panel.Add(wids['fit_group'], dcol=3)
+        panel.Add(b_build_model, dcol=5, newrow=True)
 
-        panel.Add(wids['stats'], dcol=3, drow=15, newrow=True)
-        panel.Add(SimpleText(panel, 'chi-square = ', font=rfont))
+        panel.Add(wids['table'], dcol=5, newrow=True)
+        panel.Add(wids['fit_group'], dcol=3, newrow=True)
+
+        add_text('chi-square: ')
         panel.Add(wids['fit_chi2'])
+        add_text('scale factor: ')
+        panel.Add(wids['fit_dscale'])
 
-        ## add weights report: slightly tricky layout
-        ## working with GridBagSizer under gridpanel...
-        icol = panel.icol - 2
-        irow = panel.irow
-        pstyle, ppad = panel.itemstyle, panel.pad
-
-        panel.sizer.Add(SimpleText(panel, 'data scalefactor = '),
-                        (irow+1, icol), (1, 1), pstyle, ppad)
-        panel.sizer.Add(wids['fit_dscale'],
-                        (irow+1, icol+1), (1, 1), pstyle, ppad)
-        irow +=1
-        for i in range(1, NWTS+1):
-            wids['fit_wt%d' % i] = SimpleText(panel, '--', font=rfont)
-            panel.sizer.Add(SimpleText(panel, 'weight_%d ='%i, font=rfont),
-                            (irow+i, icol), (1, 1), pstyle, ppad)
-            panel.sizer.Add(wids['fit_wt%d'%i],
-                            (irow+i, icol+1), (1, 1), pstyle, ppad)
-
+#
+#         ## add weights report: slightly tricky layout
+#         ## working with GridBagSizer under gridpanel...
+#         icol = panel.icol - 2
+#         irow = panel.irow
+#         pstyle, ppad = panel.itemstyle, panel.pad
+#
+#         panel.sizer.Add(SimpleText(panel, 'data scalefactor = '),
+#                         (irow+1, icol), (1, 1), pstyle, ppad)
+#         panel.sizer.Add(wids['fit_dscale'],
+#                         (irow+1, icol+1), (1, 1), pstyle, ppad)
+#         irow +=1
+#         for i in range(1, NWTS+1):
+#             wids['fit_wt%d' % i] = SimpleText(panel, '--', font=rfont)
+#             panel.sizer.Add(SimpleText(panel, 'weight_%d ='%i, font=rfont),
+#                             (irow+i, icol), (1, 1), pstyle, ppad)
+#             panel.sizer.Add(wids['fit_wt%d'%i],
+#                             (irow+i, icol+1), (1, 1), pstyle, ppad)
+#
         panel.pack()
-
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LCEN, 3)
         sizer.Add(panel, 1, LCEN, 3)
         pack(self, sizer)
         self.skip_process = False
+
+    def onSet_WeightMin(self, evt=None, value=None):
+        "handle setting edge step"
+        wmin = self.wids['weight_min'].GetValue()
+        self.wids['weight_auto'].SetValue(0)
+        self.update_config({'weight_min': wmin})
+        autoset_fs_increment(self.wids['weight_min'], wmin)
 
     def fill_form(self, dgroup):
         opts = self.get_config(dgroup)
@@ -232,7 +263,7 @@ class PCAPanel(TaskPanel):
         if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
-        cmd = "plot_pca_weights(pca_result, max_components=%d, min_weight=%.3f, win=%d)"
+        cmd = "plot_pca_weights(pca_result, ncomps=%d, min_weight=%.3f, win=%d)"
         max_comps = form['max_components']
         min_weight = form['weight_min']
         self.larch_eval(cmd % (max_comps, min_weight, win))
@@ -241,7 +272,7 @@ class PCAPanel(TaskPanel):
         if self.result is None or self.skip_plotting:
             return
         form = self.read_form()
-        cmd = "plot_pca_components(pca_result, max_components=%d, min_weight=%.3f, win=%d)"
+        cmd = "plot_pca_components(pca_result, ncomps=%d, min_weight=%.3f, win=%d)"
         max_comps = form['max_components']
         min_weight = form['weight_min']
         self.larch_eval(cmd % (max_comps, min_weight, win))
@@ -281,16 +312,15 @@ class PCAPanel(TaskPanel):
         self.wids['fit_chi2'].SetLabel(gformat(dgroup.pca_result.chi_square))
         self.wids['fit_dscale'].SetLabel(gformat(dgroup.pca_result.data_scale))
 
-        weights = dgroup.pca_result.weights
-        for i in range(NWTS):
-            if i < len(weights):
-                val = gformat(weights[i])
-            else:
-                val = '--'
-            self.wids['fit_wt%d'%(i+1)].SetLabel(val)
+        grid_data = self.wids['table'].table.data
+        for g in grid_data: g[3] = '-'
 
+        for i, wt in enumerate(dgroup.pca_result.weights):
+            grid_data[i][3] = gformat(wt)
+
+        self.wids['table'].table.data = grid_data
+        self.wids['table'].table.View.Refresh()
         self.plot_pca_fit()
-
 
     def onBuildPCAModel(self, event=None):
         self.wids['status'].SetLabel(" training model...")
@@ -310,19 +340,26 @@ class PCAPanel(TaskPanel):
         r = self.result = self.larch_get('pca_result')
         ncomps = len(r.components)
         wmin = form['weight_min']
-        nsig = len(np.where(r.variances > wmin)[0])
+        if self.wids['weight_auto'].GetValue():
+            nsig = r.nsig
+            wmin = r.variances[nsig-1]
+            self.wids['weight_min'].SetValue(wmin)
 
         status = " Model built, %d of %d components have weight > %.4f"
         self.wids['status'].SetLabel(status %  (nsig, ncomps, wmin))
-        self.wids['max_components'].SetValue(min(ncomps, 1+nsig))
+        self.wids['max_components'].SetValue(nsig+1)
 
-        for b in ('fit_group',): # , 'save_model'):
+        for b in ('fit_group',):
             self.wids[b].Enable()
 
-        self.wids['stats'].DeleteAllItems()
-        for i, val in enumerate(r.variances):
-            sig = {True: 'Yes', False: 'No'}[val > wmin]
-            self.wids['stats'].AppendItem((' #%d' % (i+1), gformat(val), sig))
+        grid_data = []
+        ind = [i for i in r.ind]
+        ind.extend([0,0,0])
+        ind_best = ind[r.nsig]
+        for i, var in enumerate(r.variances):
+            grid_data.append([var, ind[i+1], ind[i+1]/ind_best,  '0.0'])
+        self.wids['table'].table.data = grid_data
+        self.wids['table'].table.View.Refresh()
 
         self.plot_pca_components()
         self.plot_pca_weights()
