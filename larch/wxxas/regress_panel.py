@@ -22,7 +22,7 @@ from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
 from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, DataTableGrid
 
 # plot options:
 norm   = 'Normalized \u03bC(E)'
@@ -45,82 +45,13 @@ defaults = dict(fitspace=norm, varname='valence', xmin=-5.e5, xmax=5.e5,
                 scale=True, cv_folds=None, cv_repeats=3, fit_intercept=True,
                 use_lars=True, alpha=0.01)
 
-NROWS = 1000
+MAX_ROWS = 1000
 
 def make_steps(max=1, decades=8):
     steps = [1.0]
     for i in range(6):
         steps.extend([(j*10**(-(1+i))) for j in (5, 2, 1)])
     return steps
-
-class ExtVarDataTable(wxgrid.GridTableBase):
-    def __init__(self):
-        wxgrid.GridTableBase.__init__(self)
-        self.colLabels = [' File /Group Name   ',
-                          'External Value', 'Predicted Value']
-        self.dataTypes = [wxgrid.GRID_VALUE_STRING,
-                          wxgrid.GRID_VALUE_FLOAT+ ':12,4',
-                          wxgrid.GRID_VALUE_FLOAT+ ':12,4']
-
-
-        self.data = []
-        for i in range(NROWS):
-            self.data.append([' ', 0, 0])
-
-    def GetNumberRows(self):
-        return NROWS
-
-    def GetNumberCols(self):
-        return 3
-
-    def GetValue(self, row, col):
-        try:
-            return self.data[row][col]
-        except IndexError:
-            return ''
-
-    def SetValue(self, row, col, value):
-        self.data[row][col] = value
-
-    def GetColLabelValue(self, col):
-        return self.colLabels[col]
-
-    def GetRowLabelValue(self, row):
-        return "%d" % (row+1)
-
-    def GetTypeName(self, row, col):
-        return self.dataTypes[col]
-
-    def CanGetValueAs(self, row, col, typeName):
-        colType = self.dataTypes[col].split(':')[0]
-        if typeName == colType:
-            return True
-        else:
-            return False
-
-    def CanSetValueAs(self, row, col, typeName):
-        return self.CanGetValueAs(row, col, typeName)
-
-class ExtVarTableGrid(wxgrid.Grid):
-    def __init__(self, parent):
-        wxgrid.Grid.__init__(self, parent, -1)
-
-        self.table = ExtVarDataTable()
-        self.SetTable(self.table, True)
-        self.SetRowLabelSize(35)
-        self.SetMargins(10, 10)
-        self.EnableDragRowSize()
-        self.EnableDragColSize()
-        self.AutoSizeColumns(False)
-        self.SetColSize(0, 300)
-        self.SetColSize(1, 120)
-        self.SetColSize(2, 120)
-
-        self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
-
-    def OnLeftDClick(self, evt):
-        if self.CanEnableCellControl():
-            self.EnableCellEditControl()
 
 class RegressionPanel(TaskPanel):
     """Regression Panel"""
@@ -200,11 +131,23 @@ class RegressionPanel(TaskPanel):
         wids['stat1'] =  SimpleText(panel, ' - - - ')
         wids['stat2'] =  SimpleText(panel, ' - - - ')
 
-        wids['table'] = ExtVarTableGrid(panel)
+
+        collabels = [' File /Group Name ', 'External Value',
+                     'Predicted Value']
+        colsizes = [300, 120, 120]
+        coltypes = ['str', 'float:12,4', 'float:12,4']
+        coldefs  = ['', 0.0, 0.0]
+
+        wids['table'] = DataTableGrid(panel, nrows=MAX_ROWS,
+                                      collabels=collabels,
+                                      datatypes=coltypes,
+                                      defaults=coldefs,
+                                      colsizes=colsizes)
+
         wids['table'].SetMinSize((625, 175))
 
         wids['use_selected'] = Button(panel, 'Use Selected Groups',
-                                     size=(150, -1),  action=self.onFillTable)
+                                      size=(150, -1),  action=self.onFillTable)
 
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
                              **self.titleopts), dcol=4)

@@ -8,7 +8,6 @@ import time
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
-import wx.grid as wxgrid
 import numpy as np
 
 from functools import partial
@@ -26,7 +25,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox)
 
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, DataTableGrid
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
@@ -593,80 +592,6 @@ class ResultFrame(wx.Frame):
         with open(path, 'w') as fh:
             fh.write('\n'.join(out))
 
-
-
-class LinComboDataTable(wxgrid.GridTableBase):
-    def __init__(self):
-        self.ncols = 4
-        self.nrows = MAX_COMPONENTS
-        wxgrid.GridTableBase.__init__(self)
-        self.colLabels = [' File /Group Name   ',
-                          'weight', 'min', 'max']
-        self.dataTypes = [wxgrid.GRID_VALUE_STRING,
-                          wxgrid.GRID_VALUE_FLOAT+ ':12,4',
-                          wxgrid.GRID_VALUE_FLOAT+ ':12,4',
-                          wxgrid.GRID_VALUE_FLOAT+ ':12,4']
-
-        self.data = []
-        for i in range(self.nrows):
-            self.data.append(['', 1.0/MAX_COMPONENTS, 0.0, 1.0])
-
-    def GetNumberRows(self):
-        return self.nrows
-
-    def GetNumberCols(self):
-        return self.ncols
-
-    def GetValue(self, row, col):
-        try:
-            return self.data[row][col]
-        except IndexError:
-            return ''
-
-    def SetValue(self, row, col, value):
-        self.data[row][col] = value
-
-    def GetColLabelValue(self, col):
-        return self.colLabels[col]
-
-    def GetRowLabelValue(self, row):
-        return "%d" % (row+1)
-
-    def GetTypeName(self, row, col):
-        return self.dataTypes[col]
-
-    def CanGetValueAs(self, row, col, typeName):
-        colType = self.dataTypes[col].split(':')[0]
-        if typeName == colType:
-            return True
-        else:
-            return False
-
-    def CanSetValueAs(self, row, col, typeName):
-        return self.CanGetValueAs(row, col, typeName)
-
-class LinComboTableGrid(wxgrid.Grid):
-    def __init__(self, parent):
-        wxgrid.Grid.__init__(self, parent, -1)
-
-        self.table =  LinComboDataTable()
-        self.SetTable(self.table, True)
-        self.SetRowLabelSize(35)
-        self.SetMargins(10, 10)
-        self.EnableDragRowSize()
-        self.EnableDragColSize()
-        self.AutoSizeColumns(False)
-        self.SetColSize(0, 300)
-        self.SetColSize(1,  80)
-        self.SetColSize(2,  80)
-        self.SetColSize(3,  80)
-
-        self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
-
-    def OnLeftDClick(self, evt):
-        if self.CanEnableCellControl():
-            self.EnableCellEditControl()
-
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
     def __init__(self, parent, controller, **kws):
@@ -741,7 +666,16 @@ class LinearComboPanel(TaskPanel):
         add_text('Components: ')
         panel.Add(wids['add_selected'], dcol=4)
 
-        wids['table'] = LinComboTableGrid(panel)
+        collabels = [' File /Group Name   ', 'weight', 'min', 'max']
+        colsizes = [300, 80, 80, 80]
+        coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
+        coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
+
+        wids['table'] = DataTableGrid(panel, nrows=MAX_COMPONENTS,
+                                      collabels=collabels,
+                                      datatypes=coltypes, defaults=coldefs,
+                                      colsizes=colsizes)
+
         wids['table'].SetMinSize((625, 225))
         panel.Add(wids['table'], newrow=True, dcol=6)
 

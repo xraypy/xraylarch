@@ -8,6 +8,7 @@ import numpy as np
 np.seterr(all='ignore')
 
 import wx
+import wx.grid as wxgrid
 
 from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
@@ -21,6 +22,107 @@ from larch.utils import group2dict
 
 LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN |=  wx.ALL
+
+def autoset_fs_increment(wid, value):
+    """set increment for floatspin to be
+    1, 2, or 5 x 10^(integer) and ~0.02 X current value
+    """
+    if abs(value) < 1.e-20:
+        return
+    ndig = int(1-round(np.log10(abs(value*0.5))))
+    wid.SetDigits(ndig+1)
+    c, inc = 0, 10.0**(-ndig)
+    while (inc/abs(value) > 0.02):
+        scale = 0.5 if (c % 2 == 0) else 0.4
+        inc *= scale
+        c += 1
+    wid.SetIncrement(inc)
+
+class DataTable(wxgrid.GridTableBase):
+    def __init__(self, nrows=50, collabels=['a', 'b'],
+                 datatypes=['str', 'float:12,4'],
+                 defaults=[None, None]):
+
+        wxgrid.GridTableBase.__init__(self)
+
+        self.ncols = len(collabels)
+        self.nrows = nrows
+        self.colLabels = collabels
+        self.dataTypes = []
+        for i, d in enumerate(datatypes):
+            if d.lower().startswith('str'):
+                self.dataTypes.append(wxgrid.GRID_VALUE_STRING)
+                defval = ''
+            elif d.lower().startswith('float:'):
+                xt, opt = d.split(':')
+                self.dataTypes.append(wxgrid.GRID_VALUE_FLOAT+':%s' % opt)
+                defval = 0.0
+            if defaults[i] is None:
+                defaults[i] = defval
+
+        self.data = []
+        for i in range(self.nrows):
+            self.data.append(defaults)
+
+    def GetNumberRows(self):
+        return self.nrows
+
+    def GetNumberCols(self):
+        return self.ncols
+
+    def GetValue(self, row, col):
+        try:
+            return self.data[row][col]
+        except IndexError:
+            return ''
+
+    def SetValue(self, row, col, value):
+        self.data[row][col] = value
+
+    def GetColLabelValue(self, col):
+        return self.colLabels[col]
+
+    def GetRowLabelValue(self, row):
+        return "%d" % (row+1)
+
+    def GetTypeName(self, row, col):
+        return self.dataTypes[col]
+
+    def CanGetValueAs(self, row, col, typeName):
+        colType = self.dataTypes[col].split(':')[0]
+        if typeName == colType:
+            return True
+        else:
+            return False
+
+    def CanSetValueAs(self, row, col, typeName):
+        return self.CanGetValueAs(row, col, typeName)
+
+class DataTableGrid(wxgrid.Grid):
+    def __init__(self, parent, nrows=50, rowlabelsize=35, collabels=['a', 'b'],
+                 datatypes=['str', 'float:12,4'],
+                 defaults=[None, None],
+                 colsizes=[200, 100]):
+
+        wxgrid.Grid.__init__(self, parent, -1)
+
+        self.table = DataTable(nrows=nrows, collabels=collabels,
+                                datatypes=datatypes, defaults=defaults)
+
+        self.SetTable(self.table, True)
+        self.SetRowLabelSize(rowlabelsize)
+        self.SetMargins(10, 10)
+        self.EnableDragRowSize()
+        self.EnableDragColSize()
+        self.AutoSizeColumns(False)
+        for i, csize in enumerate(colsizes):
+            self.SetColSize(i, csize)
+
+        self.Bind(wxgrid.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
+
+    def OnLeftDClick(self, evt):
+        if self.CanEnableCellControl():
+            self.EnableCellEditControl()
 
 
 class TaskPanel(wx.Panel):
