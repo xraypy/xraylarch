@@ -3,10 +3,15 @@
 """
   Larch: a scientific data processing macro language based on python
 """
-import time
 import os
 import sys
+# note: may need to set CONDA env *before* loading numpy!
+if os.name == 'nt':
+    os.environ['CONDA_DLL_SEARCH_MODIFICATION_ENABLE'] = '1'
+
 import numpy
+import time
+
 from distutils.version import StrictVersion
 
 import warnings
