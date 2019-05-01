@@ -15,7 +15,8 @@ attempt_hardlinks: True
 
 installer_type: pkg [osx]
 
-post_install: post_install.sh [unix]
+post_install: post_install_linux.sh [linux]
+post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
@@ -61,7 +62,7 @@ specs:
     - asteval
     - wxutils>=0.2.3
     - wxmplot>=0.9.34
-    - tomopy>=1.4.0     # [linux64 or osx]
+    - tomopy>=1.4.0
     - dioptas
     - pyFAI>=0.17.1
     - fabio
