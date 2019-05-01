@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2019-April-28'
-__version__ = '0.9.43rc1'
+__date__    = '2019-April-30'
+__version__ = '0.9.43'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
 
 import sys
@@ -9,7 +9,6 @@ import scipy
 import matplotlib
 import lmfit
 from collections import OrderedDict
-
 
 def version_data(mods=None):
     sysvers = sys.version
