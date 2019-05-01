@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>9.7. XAFS: Reading and using Feff Paths &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -74,13 +72,13 @@
   <ul>
 <li><a class="reference internal" href="#">9.7. XAFS: Reading and using Feff Paths</a><ul>
 <li><a class="reference internal" href="#running-feff">9.7.1. Running Feff</a><ul>
-<li><a class="reference internal" href="#running-feff6l-with-feff6l">9.7.1.1. Running Feff6l with <code class="docutils literal notranslate"><span class="pre">feff6l()</span></code></a></li>
-<li><a class="reference internal" href="#running-feff8l-with-feff8l">9.7.1.2. Running Feff8l with <code class="docutils literal notranslate"><span class="pre">feff8l()</span></code></a></li>
-<li><a class="reference internal" href="#running-feff8l-with-feffrunner">9.7.1.3. Running Feff8l with <code class="docutils literal notranslate"><span class="pre">feffrunner()</span></code></a></li>
+<li><a class="reference internal" href="#running-feff6l-with-feff6l">9.7.1.1. Running Feff6l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a></li>
+<li><a class="reference internal" href="#running-feff8l-with-feff8l">9.7.1.2. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a></li>
+<li><a class="reference internal" href="#running-feff8l-with-feffrunner">9.7.1.3. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffrunner()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#feffpath-and-feffpath-groups">9.7.2. <code class="docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">9.7.3. <code class="docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li><a class="reference internal" href="#feffpath-and-feffpath-groups">9.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
+<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">9.7.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">9.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">9.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
 <li><a class="reference internal" href="#models-for-calculating-sigma-2">9.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
@@ -110,8 +108,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -138,7 +134,7 @@ Larch.</p>
 incorporate Feff8l into Larch.  Feff8L provideds a free version of Feff
 Version 8.5 for EXAFS calculations (not XANES or other spectroscopies), and
 is being developed in parallel to Larch at <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a>
-<a class="footnote-reference" href="#onfeff8-names" id="id4"><sup>1</sup></a>. Part of the goal for this project is to replace Feff
+<a class="footnote-reference superscript" href="#onfeff8-names" id="id4">1</a>. Part of the goal for this project is to replace Feff
 Version 6l as a robust and easy-to-use EXAFS calculation engine for EXAFS
 Analysis.  A larger goal for <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a> and Larch is to be able to
 create the potentials and scattering factors needed for the EXAFS
@@ -160,22 +156,18 @@ such that the input for one cannot be used for running the other.</p>
 <dt id="_xafs.feff6l">
 <code class="descclassname">_xafs.</code><code class="descname">feff6l</code><span class="sig-paren">(</span><em>folder='.'</em>, <em>feffinp='feff.inp'</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feff6l" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff6 in the supplied folder.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>folder</strong> – name of folder containing the Feff6 input file, and where to put the output files [‘.’, the current working directory]</li>
-<li><strong>feffinp</strong> – name of <em>feff.inp</em> file within the supplied folder [‘feff.inp’]</li>
-<li><strong>verbose</strong> – flag controlling screen output from Feff [True]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – name of folder containing the Feff6 input file, and where to put the output files [‘.’, the current working directory]</p></li>
+<li><p><strong>feffinp</strong> – name of <em>feff.inp</em> file within the supplied folder [‘feff.inp’]</p></li>
+<li><p><strong>verbose</strong> – flag controlling screen output from Feff [True]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a FeffRunner Group.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a FeffRunner Group.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>This will generate a number of outputs, including the <em>feffNNNN.dat</em> files
@@ -187,22 +179,18 @@ containing the data for each scattering path.</p>
 <dt id="_xafs.feff8l">
 <code class="descclassname">_xafs.</code><code class="descname">feff8l</code><span class="sig-paren">(</span><em>folder='.'</em>, <em>feffinp='feff.inp'</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feff8l" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff8L in the supplied folder.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>folder</strong> – name of folder containing the Feff6 input file, and where to put the output files [‘.’, the current working directory]</li>
-<li><strong>feffinp</strong> – name of <em>feff.inp</em> file within the supplied folder [‘feff.inp’]</li>
-<li><strong>verbose</strong> – flag controlling screen output from Feff [True]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – name of folder containing the Feff6 input file, and where to put the output files [‘.’, the current working directory]</p></li>
+<li><p><strong>feffinp</strong> – name of <em>feff.inp</em> file within the supplied folder [‘feff.inp’]</p></li>
+<li><p><strong>verbose</strong> – flag controlling screen output from Feff [True]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a FeffRunner Group.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a FeffRunner Group.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>As with <a class="reference internal" href="#_xafs.feff6l" title="_xafs.feff6l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a>, this will generate a number of outputs, including the <em>feffNNNN.dat</em> files
@@ -219,42 +207,36 @@ other versions of Feff that you might have on your computer.</p>
 <dt id="_xafs.feffrunner">
 <code class="descclassname">_xafs.</code><code class="descname">feffrunner</code><span class="sig-paren">(</span><em>feffinp=None</em>, <em>verbose=True</em>, <em>repo=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffrunner" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a FeffRunner Group from a <em>feff.inp</em> file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>feffinp</strong> – name (full path of) <em>feff.inp</em> file</li>
-<li><strong>verbose</strong> – flag controlling screen output from Feff [True]</li>
-<li><strong>repo</strong> – full path of the location of the Feff8l repository [None]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feffinp</strong> – name (full path of) <em>feff.inp</em> file</p></li>
+<li><p><strong>verbose</strong> – flag controlling screen output from Feff [True]</p></li>
+<li><p><strong>repo</strong> – full path of the location of the Feff8l repository [None]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a FeffRunner Group.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a FeffRunner Group.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.feffrunner.run">
 <code class="descclassname">feffrunner.</code><code class="descname">run</code><span class="sig-paren">(</span><em>exe</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffrunner.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff for FeffRunner Group.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>exe</strong> – the name of the Feff program to be run [run all of Feff8l]</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None when Feff is run successfully or an Exception when a problem in encoiuntered</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exe</strong> – the name of the Feff program to be run [run all of Feff8l]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None when Feff is run successfully or an Exception when a problem in encoiuntered</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>The simplest example of its use is</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -265,7 +247,7 @@ various modules of <a class="reference external" href="https://github.com/xraypy
 much like the monolithic Feff executables of yore.</p>
 <p>The <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a> modules (<em>rdinp</em>, <em>pot</em>, <em>xsph</em>, <em>pathfinder</em>,
 <em>genfmt</em>, and <em>ff2x</em>) can be be run individually</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;rdinp&#39;</span><span class="p">)</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;pot&#39;</span><span class="p">)</span>
 <span class="c1">## and so on ...</span>
@@ -273,7 +255,7 @@ much like the monolithic Feff executables of yore.</p>
 </div>
 <p>To specifically use the <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a> modules from a local copy of
 the feff8l repository, do</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">repo</span> <span class="o">=</span> <span class="s1">&#39;/home/bruce/git/feff85exafs&#39;</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
@@ -285,14 +267,14 @@ so that the just-compiled versions of the programs get used.</p>
 that in your shell’s execution path and it is called something like
 <em>feff6</em>, <em>feff7</em>, or any other name than begins with <em>feff</em>, that can
 be run as</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
 <span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;feff6&#39;</span><span class="p">)</span> <span class="c1"># or whatever your executable is called</span>
 </pre></div>
 </div>
 <p>If the <em>_xafs._feff_executable</em> symbol in Larch’s symbol table is set
 to a valid executable, then you can use that by doing</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
-<span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feff</span> <span class="o">=</span> <span class="n">feffrunner</span><span class="p">(</span><span class="s1">&#39;path/to/feff.inp&#39;</span><span class="p">)</span>
+<span class="n">feff</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <em>feff.inp</em> file need not be called by that name.  FeffRunner will
@@ -354,90 +336,90 @@ values or fitting Parameters as defined by <a class="reference internal" href=".
 Finally, the sub-group <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> contains the low-level data as read
 directly from the <em>feffNNNN.dat</em> file, which is detailed in the next
 section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std std-ref">9.7.4</span></a>.</p>
-<table border="1" class="docutils">
+<table class="docutils align-center">
 <colgroup>
-<col width="20%" />
-<col width="20%" />
-<col width="60%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 60%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute name</th>
-<th class="head">category</th>
-<th class="head">description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute name</p></th>
+<th class="head"><p>category</p></th>
+<th class="head"><p>description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>filename</td>
-<td>Info</td>
-<td>name of <em>feffNNNN.dat</em> file</td>
+<tbody>
+<tr class="row-even"><td><p>filename</p></td>
+<td><p>Info</p></td>
+<td><p>name of <em>feffNNNN.dat</em> file</p></td>
 </tr>
-<tr class="row-odd"><td>label</td>
-<td>Info</td>
-<td>path description</td>
+<tr class="row-odd"><td><p>label</p></td>
+<td><p>Info</p></td>
+<td><p>path description</p></td>
 </tr>
-<tr class="row-even"><td>geom</td>
-<td>Info</td>
-<td>path geometry: list of (symbol, ipot, x, y, z)</td>
+<tr class="row-even"><td><p>geom</p></td>
+<td><p>Info</p></td>
+<td><p>path geometry: list of (symbol, ipot, x, y, z)</p></td>
 </tr>
-<tr class="row-odd"><td>reff</td>
-<td>Numerical</td>
-<td><span class="math notranslate nohighlight">\(R_{\rm eff}\)</span>, nominal path length</td>
+<tr class="row-odd"><td><p>reff</p></td>
+<td><p>Numerical</p></td>
+<td><p><span class="math notranslate nohighlight">\(R_{\rm eff}\)</span>, nominal path length</p></td>
 </tr>
-<tr class="row-even"><td>nleg</td>
-<td>Numerical</td>
-<td>number of path legs (1+number of scatterers)</td>
+<tr class="row-even"><td><p>nleg</p></td>
+<td><p>Numerical</p></td>
+<td><p>number of path legs (1+number of scatterers)</p></td>
 </tr>
-<tr class="row-odd"><td>degen</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(N\)</span>, path degeneracy</td>
+<tr class="row-odd"><td><p>degen</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(N\)</span>, path degeneracy</p></td>
 </tr>
-<tr class="row-even"><td>s02</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(S_0^2\)</span>, amplitude reduction factor</td>
+<tr class="row-even"><td><p>s02</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(S_0^2\)</span>, amplitude reduction factor</p></td>
 </tr>
-<tr class="row-odd"><td>e0</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(E_0\)</span>, energy origin</td>
+<tr class="row-odd"><td><p>e0</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(E_0\)</span>, energy origin</p></td>
 </tr>
-<tr class="row-even"><td>deltar</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(\Delta R\)</span>, shift in path length</td>
+<tr class="row-even"><td><p>deltar</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(\Delta R\)</span>, shift in path length</p></td>
 </tr>
-<tr class="row-odd"><td>sigma2</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(\sigma^2\)</span>, mean-square displacement</td>
+<tr class="row-odd"><td><p>sigma2</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(\sigma^2\)</span>, mean-square displacement</p></td>
 </tr>
-<tr class="row-even"><td>third</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(c_3\)</span>,  third cumulant</td>
+<tr class="row-even"><td><p>third</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(c_3\)</span>,  third cumulant</p></td>
 </tr>
-<tr class="row-odd"><td>fourth</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(c_4\)</span>, the fourth cumulant</td>
+<tr class="row-odd"><td><p>fourth</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(c_4\)</span>, the fourth cumulant</p></td>
 </tr>
-<tr class="row-even"><td>ei</td>
-<td>Adjustable</td>
-<td><span class="math notranslate nohighlight">\(E_i\)</span>, imaginary energy shift.</td>
+<tr class="row-even"><td><p>ei</p></td>
+<td><p>Adjustable</p></td>
+<td><p><span class="math notranslate nohighlight">\(E_i\)</span>, imaginary energy shift.</p></td>
 </tr>
-<tr class="row-odd"><td>k</td>
-<td>Output array</td>
-<td><span class="math notranslate nohighlight">\(k\)</span>, photo-electron wavenumber</td>
+<tr class="row-odd"><td><p>k</p></td>
+<td><p>Output array</p></td>
+<td><p><span class="math notranslate nohighlight">\(k\)</span>, photo-electron wavenumber</p></td>
 </tr>
-<tr class="row-even"><td>chi</td>
-<td>Output array</td>
-<td><span class="math notranslate nohighlight">\(\chi\)</span>, the EXAFS</td>
+<tr class="row-even"><td><p>chi</p></td>
+<td><p>Output array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\chi\)</span>, the EXAFS</p></td>
 </tr>
-<tr class="row-odd"><td>chi_imag</td>
-<td>Output array</td>
-<td><span class="math notranslate nohighlight">\(\rm{Im}(\chi)\)</span>, imaginary EXAFS</td>
+<tr class="row-odd"><td><p>chi_imag</p></td>
+<td><p>Output array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\rm{Im}(\chi)\)</span>, imaginary EXAFS</p></td>
 </tr>
-<tr class="row-even"><td>p</td>
-<td>Output array</td>
-<td><span class="math notranslate nohighlight">\(p\)</span>, complex photo-electron wavenumber</td>
+<tr class="row-even"><td><p>p</p></td>
+<td><p>Output array</p></td>
+<td><p><span class="math notranslate nohighlight">\(p\)</span>, complex photo-electron wavenumber</p></td>
 </tr>
-<tr class="row-odd"><td>_feffdat</td>
-<td>Group</td>
-<td>a Group containing raw data from <em>feffNNNN.dat</em></td>
+<tr class="row-odd"><td><p>_feffdat</p></td>
+<td><p>Group</p></td>
+<td><p>a Group containing raw data from <em>feffNNNN.dat</em></p></td>
 </tr>
 </tbody>
 </table>
@@ -446,29 +428,25 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 <dt id="_xafs.feffpath">
 <code class="descclassname">_xafs.</code><code class="descname">feffpath</code><span class="sig-paren">(</span><em>filename</em>, <em>label=None</em>, <em>s02=None</em>, <em>degen=None</em>, <em>e0=None</em>, <em>deltar=None</em>, <em>sigma2=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.feffpath" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a FeffPath Group from a <em>feffNNNN.dat</em> file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> – name (full path of) <em>feffNNNN.dat</em> file</li>
-<li><strong>label</strong> – label for path   [file name]</li>
-<li><strong>degen</strong> – path degeneracy, <span class="math notranslate nohighlight">\(N\)</span> [taken from file]</li>
-<li><strong>s02</strong> – <span class="math notranslate nohighlight">\(S_0^2\)</span>    value or parameter [1.0]</li>
-<li><strong>e0</strong> – <span class="math notranslate nohighlight">\(E_0\)</span>      value or parameter [0.0]</li>
-<li><strong>deltar</strong> – <span class="math notranslate nohighlight">\(\Delta R\)</span> value or parameter [0.0]</li>
-<li><strong>sigma2</strong> – <span class="math notranslate nohighlight">\(\sigma^2\)</span> value or parameter [0.0]</li>
-<li><strong>third</strong> – <span class="math notranslate nohighlight">\(c_3\)</span>      value or parameter [0.0]</li>
-<li><strong>fourth</strong> – <span class="math notranslate nohighlight">\(c_4\)</span>      value or parameter [0.0]</li>
-<li><strong>ei</strong> – <span class="math notranslate nohighlight">\(E_i\)</span>      value or parameter [0.0]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name (full path of) <em>feffNNNN.dat</em> file</p></li>
+<li><p><strong>label</strong> – label for path   [file name]</p></li>
+<li><p><strong>degen</strong> – path degeneracy, <span class="math notranslate nohighlight">\(N\)</span> [taken from file]</p></li>
+<li><p><strong>s02</strong> – <span class="math notranslate nohighlight">\(S_0^2\)</span>    value or parameter [1.0]</p></li>
+<li><p><strong>e0</strong> – <span class="math notranslate nohighlight">\(E_0\)</span>      value or parameter [0.0]</p></li>
+<li><p><strong>deltar</strong> – <span class="math notranslate nohighlight">\(\Delta R\)</span> value or parameter [0.0]</p></li>
+<li><p><strong>sigma2</strong> – <span class="math notranslate nohighlight">\(\sigma^2\)</span> value or parameter [0.0]</p></li>
+<li><p><strong>third</strong> – <span class="math notranslate nohighlight">\(c_3\)</span>      value or parameter [0.0]</p></li>
+<li><p><strong>fourth</strong> – <span class="math notranslate nohighlight">\(c_4\)</span>      value or parameter [0.0]</p></li>
+<li><p><strong>ei</strong> – <span class="math notranslate nohighlight">\(E_i\)</span>      value or parameter [0.0]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a FeffPath Group.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a FeffPath Group.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>For all the options described above with <strong>value or parameter</strong> either a
@@ -480,24 +458,20 @@ numerical value or a Parameter (as created by <a class="reference internal" href
 <dt id="_xafs.path2chi">
 <code class="descclassname">_xafs.</code><code class="descname">path2chi</code><span class="sig-paren">(</span><em>path</em>, <em>paramgroup=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em>, <em>k=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.path2chi" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a single Feff Path.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>path</strong> – a FeffPath Group</li>
-<li><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
-<li><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</li>
-<li><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</li>
-<li><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – a FeffPath Group</p></li>
+<li><p><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
+<li><p><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</p></li>
+<li><p><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</p></li>
+<li><p><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>If <code class="docutils literal notranslate"><span class="pre">k</span></code> is specified, that will be used as the set of <span class="math notranslate nohighlight">\(k\)</span> values at which
@@ -517,25 +491,21 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-parame
 <dt id="_xafs.ff2chi">
 <code class="descclassname">_xafs.</code><code class="descname">ff2chi</code><span class="sig-paren">(</span><em>pathlist</em>, <em>paramgroup=None</em>, <em>group=None</em>, <em>k=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ff2chi" title="Permalink to this definition">¶</a></dt>
 <dd><p>sum the <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a list of FeffPath Groups.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pathlist</strong> – a list of FeffPath Groups</li>
-<li><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
-<li><strong>group</strong> – a Group to which the outputs are written  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
-<li><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</li>
-<li><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</li>
-<li><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pathlist</strong> – a list of FeffPath Groups</p></li>
+<li><p><strong>paramgroup</strong> – a Parameter Group for calculating Path Parameters [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
+<li><p><strong>group</strong> – a Group to which the outputs are written  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
+<li><p><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [20].</p></li>
+<li><p><strong>kstep</strong> – step in <span class="math notranslate nohighlight">\(k\)</span> value for <span class="math notranslate nohighlight">\(\chi\)</span> calculation [0.05].</p></li>
+<li><p><strong>k</strong> – explicit array of <span class="math notranslate nohighlight">\(k\)</span> values to calculate <span class="math notranslate nohighlight">\(\chi\)</span>.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>This essentially calls <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> for each of the paths in the
@@ -556,85 +526,85 @@ you really know what you’re doing.</p>
 <blockquote id="xafs-feffdat-table">
 <div><p>Table of Feff.dat components.  Listed here is the component read from
 the Feff.dat file and stored in the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for each FeffPath.</p>
-<table border="1" class="docutils">
+<table class="docutils align-center">
 <colgroup>
-<col width="20%" />
-<col width="80%" />
+<col style="width: 20%" />
+<col style="width: 80%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute</th>
-<th class="head">description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute</p></th>
+<th class="head"><p>description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>amp</td>
-<td>array: total amplitude,   <span class="math notranslate nohighlight">\(F_{\rm eff}(k)\)</span></td>
+<tbody>
+<tr class="row-even"><td><p>amp</p></td>
+<td><p>array: total amplitude,   <span class="math notranslate nohighlight">\(F_{\rm eff}(k)\)</span></p></td>
 </tr>
-<tr class="row-odd"><td>degen</td>
-<td>path degeneracy (coordination number)</td>
+<tr class="row-odd"><td><p>degen</p></td>
+<td><p>path degeneracy (coordination number)</p></td>
 </tr>
-<tr class="row-even"><td>edge</td>
-<td>energy threshold relative to atomic valu (a poor estimate)</td>
+<tr class="row-even"><td><p>edge</p></td>
+<td><p>energy threshold relative to atomic valu (a poor estimate)</p></td>
 </tr>
-<tr class="row-odd"><td>exch</td>
-<td>string describing electronic exchange model</td>
+<tr class="row-odd"><td><p>exch</p></td>
+<td><p>string describing electronic exchange model</p></td>
 </tr>
-<tr class="row-even"><td>filename</td>
-<td>File name</td>
+<tr class="row-even"><td><p>filename</p></td>
+<td><p>File name</p></td>
 </tr>
-<tr class="row-odd"><td>gam_ch</td>
-<td>core level energy width</td>
+<tr class="row-odd"><td><p>gam_ch</p></td>
+<td><p>core level energy width</p></td>
 </tr>
-<tr class="row-even"><td>geom</td>
-<td>path geometry: list of (Symbol, Z, ipot, x, y, z)</td>
+<tr class="row-even"><td><p>geom</p></td>
+<td><p>path geometry: list of (Symbol, Z, ipot, x, y, z)</p></td>
 </tr>
-<tr class="row-odd"><td>k</td>
-<td>array: k values, <span class="math notranslate nohighlight">\(k_{\rm feff}\)</span></td>
+<tr class="row-odd"><td><p>k</p></td>
+<td><p>array: k values, <span class="math notranslate nohighlight">\(k_{\rm feff}\)</span></p></td>
 </tr>
-<tr class="row-even"><td>kf</td>
-<td>k value at Fermi level</td>
+<tr class="row-even"><td><p>kf</p></td>
+<td><p>k value at Fermi level</p></td>
 </tr>
-<tr class="row-odd"><td>lam</td>
-<td>array: mean-free path,  <span class="math notranslate nohighlight">\(\lambda(k)\)</span></td>
+<tr class="row-odd"><td><p>lam</p></td>
+<td><p>array: mean-free path,  <span class="math notranslate nohighlight">\(\lambda(k)\)</span></p></td>
 </tr>
-<tr class="row-even"><td>mag_feff</td>
-<td>array: magnitude of Feff</td>
+<tr class="row-even"><td><p>mag_feff</p></td>
+<td><p>array: magnitude of Feff</p></td>
 </tr>
-<tr class="row-odd"><td>mu</td>
-<td>Fermi level, eV</td>
+<tr class="row-odd"><td><p>mu</p></td>
+<td><p>Fermi level, eV</p></td>
 </tr>
-<tr class="row-even"><td>pha</td>
-<td>array: total phase shift, <span class="math notranslate nohighlight">\(\delta(k)\)</span></td>
+<tr class="row-even"><td><p>pha</p></td>
+<td><p>array: total phase shift, <span class="math notranslate nohighlight">\(\delta(k)\)</span></p></td>
 </tr>
-<tr class="row-odd"><td>pha_feff</td>
-<td>array: scattring phase shift</td>
+<tr class="row-odd"><td><p>pha_feff</p></td>
+<td><p>array: scattring phase shift</p></td>
 </tr>
-<tr class="row-even"><td>potentials</td>
-<td>path potentials: list of (ipot, z, r_MuffinTin, r_Norman)</td>
+<tr class="row-even"><td><p>potentials</p></td>
+<td><p>path potentials: list of (ipot, z, r_MuffinTin, r_Norman)</p></td>
 </tr>
-<tr class="row-odd"><td>real_phc</td>
-<td>array: central atom phase shift</td>
+<tr class="row-odd"><td><p>real_phc</p></td>
+<td><p>array: central atom phase shift</p></td>
 </tr>
-<tr class="row-even"><td>red_fact</td>
-<td>array: amplitude reduction factor</td>
+<tr class="row-even"><td><p>red_fact</p></td>
+<td><p>array: amplitude reduction factor</p></td>
 </tr>
-<tr class="row-odd"><td>rep</td>
-<td>array: real part of p, <span class="math notranslate nohighlight">\(p_{\rm real}(k)\)</span></td>
+<tr class="row-odd"><td><p>rep</p></td>
+<td><p>array: real part of p, <span class="math notranslate nohighlight">\(p_{\rm real}(k)\)</span></p></td>
 </tr>
-<tr class="row-even"><td>rnorman</td>
-<td>Norman radius</td>
+<tr class="row-even"><td><p>rnorman</p></td>
+<td><p>Norman radius</p></td>
 </tr>
-<tr class="row-odd"><td>rs_int</td>
-<td>interstitial radius</td>
+<tr class="row-odd"><td><p>rs_int</p></td>
+<td><p>interstitial radius</p></td>
 </tr>
-<tr class="row-even"><td>title</td>
-<td>user title</td>
+<tr class="row-even"><td><p>title</p></td>
+<td><p>user title</p></td>
 </tr>
-<tr class="row-odd"><td>version</td>
-<td>Feff version</td>
+<tr class="row-odd"><td><p>version</p></td>
+<td><p>Feff version</p></td>
 </tr>
-<tr class="row-even"><td>vint</td>
-<td>interstitial potential</td>
+<tr class="row-even"><td><p>vint</p></td>
+<td><p>interstitial potential</p></td>
 </tr>
 </tbody>
 </table>
@@ -721,27 +691,23 @@ return a value of <span class="math notranslate nohighlight">\(\sigma^2\)</span>
 well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
 organic ligands.</p>
-<dl class="docutils">
-<dt>..versionchanged:: 0.9.34</dt>
-<dd>removed <cite>_sys.paramGroup</cite>, now using <cite>fiteval</cite></dd>
+<dl class="simple">
+<dt>..versionchanged:: 0.9.34</dt><dd><p>removed <cite>_sys.paramGroup</cite>, now using <cite>fiteval</cite></p>
+</dd>
 </dl>
 <dl class="function">
 <dt id="_xafs.sigma2_eins">
 <code class="descclassname">_xafs.</code><code class="descname">sigma2_eins</code><span class="sig-paren">(</span><em>t</em>, <em>theta</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.sigma2_eins" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Einstein model.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>t</strong> – sample temperature (in K)</li>
-<li><strong>theta</strong> – Einstein temperature (in K)</li>
-<li><strong>path</strong> – a FeffPath Group  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – sample temperature (in K)</p></li>
+<li><p><strong>theta</strong> – Einstein temperature (in K)</p></li>
+<li><p><strong>path</strong> – a FeffPath Group  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <p>The <cite>path</cite> argument can be left <code class="docutils literal notranslate"><span class="pre">None</span></code>.  This will try to use the
@@ -752,19 +718,15 @@ updated during fits with <a class="reference internal" href="feffit.html#_xafs.f
 <dt id="_xafs.sigma2_debye">
 <code class="descclassname">_xafs.</code><code class="descname">sigma2_debye</code><span class="sig-paren">(</span><em>t</em>, <em>theta</em>, <em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.sigma2_debye" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Debye model.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>t</strong> – sample temperature (in K)</li>
-<li><strong>theta</strong> – Debye temperature (in K)</li>
-<li><strong>path</strong> – a FeffPath Group  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – sample temperature (in K)</p></li>
+<li><p><strong>theta</strong> – Debye temperature (in K)</p></li>
+<li><p><strong>path</strong> – a FeffPath Group  [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <p>As with <code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_eins,</span> <span class="pre">the</span> <span class="pre">`path()</span></code> argument can be left <code class="docutils literal notranslate"><span class="pre">None</span></code>, and the
@@ -822,7 +784,7 @@ calculate <span class="math notranslate nohighlight">\(\chi\)</span> for this pa
 <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> is called.</p>
 <div class="figure align-center" id="id8">
 <span id="xafs-fig12"></span><a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.7.1 </span><span class="caption-text">Calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a Feff Path.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.1 </span><span class="caption-text">Calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a Feff Path.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>We can also use the data from the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -848,7 +810,7 @@ like this:</p>
 <p>which will produce a plot like this:</p>
 <div class="figure align-center" id="id9">
 <span id="xafs-fig13"></span><a class="reference external image-reference" href="../_images/feffdat_example2.png"><img alt="../_images/feffdat_example2.png" src="../_images/feffdat_example2.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.7.2 </span><span class="caption-text">Components of <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for a Feff Path.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.2 </span><span class="caption-text">Components of <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for a Feff Path.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 <p>You can see here that the arrays in the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group are sampled at
 varying <span class="math notranslate nohighlight">\(k\)</span> spacing, and that this spacing becomes fairly large at
@@ -906,7 +868,7 @@ for each path to be summed, so that the <code class="docutils literal notranslat
 group is up to date.</p>
 <div class="figure align-center" id="id10">
 <span id="xafs-fig14"></span><a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.7.3 </span><span class="caption-text">Results for sum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for list of paths.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.7.3 </span><span class="caption-text">Results for sum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for list of paths.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="example-using-path-parameters-when-adding-feff-files">
@@ -974,9 +936,9 @@ evaluating any mathematical expressions we’ve defined for the path
 parameters.   At this point, the strings <code class="docutils literal notranslate"><span class="pre">del_e0</span></code> and <code class="docutils literal notranslate"><span class="pre">amp</span></code> for the
 path parameters for path 1 and 2 are converted into Parameters and
 evaluated.</p>
-<dl class="docutils">
-<dt>..versionchanged:: 0.9.34</dt>
-<dd>removed <cite>_sys.paramGroup</cite>, now using <cite>fiteval</cite></dd>
+<dl class="simple">
+<dt>..versionchanged:: 0.9.34</dt><dd><p>removed <cite>_sys.paramGroup</cite>, now using <cite>fiteval</cite></p>
+</dd>
 </dl>
 <p id="index-5">After plotting the results, we then change the values of the parameters.
 We could re-run <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>, but we can also just run <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a>
@@ -985,7 +947,7 @@ specify the <code class="docutils literal notranslate"><span class="pre">paramgr
 <div class="figure align-center" id="id11">
 <span id="xafs-fig15"></span><a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.7.4 </span><span class="caption-text">Results for making 2 different sums of paths using parameterized Path
-Parameters</span></p>
+Parameters</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
 </div>
 <p>The resulting plot shows the effect of changing <span class="math notranslate nohighlight">\(E_0\)</span> and
 <span class="math notranslate nohighlight">\(S_0^2\)</span> for a sum of paths.  The same result could be shown by just
@@ -994,41 +956,30 @@ use of parameters makes this somewhat more general.  As we will see in the
 next section, the use of parameters also allows us to easily refine their
 values in a fit of XAFS data to such a sum of paths.</p>
 <p class="rubric">Footnotes</p>
-<table class="docutils footnote" frame="void" id="onfeff8-names" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[1]</a></td><td>There have been several names used for “Free version of
+<dl class="footnote superscript">
+<dt class="label" id="onfeff8-names"><span class="superscript"><a class="fn-backref" href="#id4">1</a></span></dt>
+<dd><p>There have been several names used for “Free version of
 Feff Version 8.5 for EXAFS only”, including <cite>Feff8l</cite>, <cite>Feff8lite</cite>,
 <cite>Feff85exafs</cite>.  These all refer to the same project and code, which is
 based on but distinct from the Feff 8 and 9 from the University of
-Washington group in that the free version can calculate only EXAFS.</td></tr>
-</tbody>
-</table>
+Washington group in that the free version can calculate only EXAFS.</p>
+</dd>
+</dl>
 <p class="rubric">References</p>
-<p id="bibtex-bibliography-xafs/feffpaths-0"><table class="docutils citation" frame="void" id="feffpaths-feff6-rehr" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Feff_1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id5">2</a>)</em> J.&nbsp;J. Rehr, J.&nbsp;Mustre~de~Leon, S.&nbsp;I. Zabinsky, and R.&nbsp;C. Albers. Theoretical x-ray absorption fine structure standards. <em>Journal of the American Chemical Society</em>, 113(14):5135–5140, 1991. <a class="reference external" href="https://doi.org/10.1021/ja00014a001">doi:10.1021/ja00014a001</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="feffpaths-feff6-siz" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Feff_2]</a></td><td>S.&nbsp;I. Zabinsky, J.&nbsp;J. Rehr, A.&nbsp;Ankudinov, R.&nbsp;C. Albers, and M.&nbsp;J. Eller. Multiple-scattering calculations of x-ray-absorption spectra. <em>Physical Rev. B</em>, 52(4):2995–3009, 1995. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.52.2995">doi:10.1103/PhysRevB.52.2995</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="feffpaths-rehralbers-rmp" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Feff_3]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id7">2</a>)</em> J.&nbsp;J. Rehr and R.&nbsp;C. Albers. Theoretical approaches to x-ray absorption fine-structure. <em>Reviews of Modern Physics</em>, 72(3):621–654, 2000. <a class="reference external" href="https://doi.org/10.1103/RevModPhys.72.621">doi:10.1103/RevModPhys.72.621</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="feffpaths-sevillano" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id6">[Feff_4]</a></td><td>E.&nbsp;Sevillano, H.&nbsp;Meuth, and J.&nbsp;J. Rehr. Extended x-ray absorption fine structure Debye-Waller factors. I. Monatomic crystals. <em>Physical Review B</em>, 20(12):4908–4911, 1979. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.20.4908">doi:10.1103/PhysRevB.20.4908</a>.</td></tr>
-</tbody>
-</table>
+<p id="bibtex-bibliography-xafs/feffpaths-0"><dl class="citation">
+<dt class="label" id="feffpaths-feff6-rehr"><span class="brackets">Feff_1</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id5">2</a>)</span></dt>
+<dd><p>J. J. Rehr, J. Mustre~de~Leon, S. I. Zabinsky, and R. C. Albers. Theoretical x-ray absorption fine structure standards. <em>Journal of the American Chemical Society</em>, 113(14):5135–5140, 1991. <a class="reference external" href="https://doi.org/10.1021/ja00014a001">doi:10.1021/ja00014a001</a>.</p>
+</dd>
+<dt class="label" id="feffpaths-feff6-siz"><span class="brackets"><a class="fn-backref" href="#id2">Feff_2</a></span></dt>
+<dd><p>S. I. Zabinsky, J. J. Rehr, A. Ankudinov, R. C. Albers, and M. J. Eller. Multiple-scattering calculations of x-ray-absorption spectra. <em>Physical Rev. B</em>, 52(4):2995–3009, 1995. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.52.2995">doi:10.1103/PhysRevB.52.2995</a>.</p>
+</dd>
+<dt class="label" id="feffpaths-rehralbers-rmp"><span class="brackets">Feff_3</span><span class="fn-backref">(<a href="#id3">1</a>,<a href="#id7">2</a>)</span></dt>
+<dd><p>J. J. Rehr and R. C. Albers. Theoretical approaches to x-ray absorption fine-structure. <em>Reviews of Modern Physics</em>, 72(3):621–654, 2000. <a class="reference external" href="https://doi.org/10.1103/RevModPhys.72.621">doi:10.1103/RevModPhys.72.621</a>.</p>
+</dd>
+<dt class="label" id="feffpaths-sevillano"><span class="brackets"><a class="fn-backref" href="#id6">Feff_4</a></span></dt>
+<dd><p>E. Sevillano, H. Meuth, and J. J. Rehr. Extended x-ray absorption fine structure Debye-Waller factors. I. Monatomic crystals. <em>Physical Review B</em>, 20(12):4908–4911, 1979. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.20.4908">doi:10.1103/PhysRevB.20.4908</a>.</p>
+</dd>
+</dl>
 </p>
 </div>
 </div>
@@ -1062,8 +1013,8 @@ Washington group in that the free version can calculate only EXAFS.</td></tr>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

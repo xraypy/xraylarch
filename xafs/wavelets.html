@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.6. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>9.6. XAFS: Wavelet Transforms for XAFS &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -73,7 +71,7 @@
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">9.6. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#cauchy-wavelet">9.6.1. <code class="docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
+<li><a class="reference internal" href="#cauchy-wavelet">9.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
 <li><a class="reference internal" href="#wavelet-example">9.6.2. Wavelet Example</a></li>
 </ul>
 </li>
@@ -98,8 +96,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -130,53 +126,49 @@ is implemented as the function <a class="reference internal" href="#_xafs.cauchy
 <dt id="_xafs.cauchy_wavelet">
 <code class="descclassname">_xafs.</code><code class="descname">cauchy_wavelet</code><span class="sig-paren">(</span><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>kweight=0</em>, <em>rmax_out=10</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></li>
-<li><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></li>
-<li><strong>group</strong> – output Group</li>
-<li><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate nohighlight">\(\rm\AA\)</span>)</li>
-<li><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(k^{\rm kweight}\)</span></li>
-<li><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></p></li>
+<li><p><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></p></li>
+<li><p><strong>group</strong> – output Group</p></li>
+<li><p><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate nohighlight">\(\rm\AA\)</span>)</p></li>
+<li><p><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(k^{\rm kweight}\)</span></p></li>
+<li><p><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
+</dd>
+</dl>
 <p>If a <code class="docutils literal notranslate"><span class="pre">group</span></code> argument is provided of if the first argument is a
 Group, the following data arrays are put into it:</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-center">
 <colgroup>
-<col width="21%" />
-<col width="79%" />
+<col style="width: 21%" />
+<col style="width: 79%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">array name</th>
-<th class="head">meaning</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>array name</p></th>
+<th class="head"><p>meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>r</td>
-<td>uniform array of <span class="math notranslate nohighlight">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</td>
+<tbody>
+<tr class="row-even"><td><p>r</p></td>
+<td><p>uniform array of <span class="math notranslate nohighlight">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td>wcauchy</td>
-<td>complex array cauchy transform of <span class="math notranslate nohighlight">\(R\)</span> and <span class="math notranslate nohighlight">\(k\)</span></td>
+<tr class="row-odd"><td><p>wcauchy</p></td>
+<td><p>complex array cauchy transform of <span class="math notranslate nohighlight">\(R\)</span> and <span class="math notranslate nohighlight">\(k\)</span></p></td>
 </tr>
-<tr class="row-even"><td>wcaychy_mag</td>
-<td>magnitude of cauchy transform</td>
+<tr class="row-even"><td><p>wcaychy_mag</p></td>
+<td><p>magnitude of cauchy transform</p></td>
 </tr>
-<tr class="row-odd"><td>wcauchy_re</td>
-<td>real part of cauchy transform</td>
+<tr class="row-odd"><td><p>wcauchy_re</p></td>
+<td><p>real part of cauchy transform</p></td>
 </tr>
-<tr class="row-even"><td>wcauchy_im</td>
-<td>imaginary part of cauchy transform</td>
+<tr class="row-even"><td><p>wcauchy_im</p></td>
+<td><p>imaginary part of cauchy transform</p></td>
 </tr>
 </tbody>
 </table>
@@ -228,32 +220,31 @@ along the horizontal axis extending to 16 <span class="math notranslate nohighli
 <span class="math notranslate nohighlight">\(R\)</span> along the vertical axis, increasing from 0 at the bottom to 10
 <span class="math notranslate nohighlight">\(\rm\AA\)</span> at the top.</p>
 <div class="figure compound align-center" id="fig_xafswft">
-<div style="width: 45%" class="subfigure" id="fig-xafswt-1">
+<div style="width: 45%" class="subfigure align-center" id="fig-xafswt-1">
 <a class="reference external image-reference" href="../_images/xwt_mag.png"><img alt="../_images/xwt_mag.png" src="../_images/xwt_mag.png" style="width: 100%;" /></a>
 </div>
-<div style="width: 45%" class="subfigure" id="fig-xafswt-2">
+<div style="width: 45%" class="subfigure align-center" id="fig-xafswt-2">
 <a class="reference external image-reference" href="../_images/xwt_re.png"><img alt="../_images/xwt_re.png" src="../_images/xwt_re.png" style="width: 100%;" /></a>
 </div>
 <p class="caption"><span class="caption-text">The Cauchy Wavelet transforms, with magnitude on the left hand panel
 and real part on the right hand panel.</span></p>
 </div><p id="fig_xafswft">The projection of the wavelets to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span> space looks like:</p>
 <div class="figure compound align-center" id="fig_xafswft_proj">
-<div style="width: 45%" class="subfigure" id="fig-xafswt-3">
+<div style="width: 45%" class="subfigure align-center" id="fig-xafswt-3">
 <a class="reference external image-reference" href="../_images/xwt_ksp.png"><img alt="../_images/xwt_ksp.png" src="../_images/xwt_ksp.png" style="width: 100%;" /></a>
 </div>
-<div style="width: 45%" class="subfigure" id="fig-xafswt-4">
+<div style="width: 45%" class="subfigure align-center" id="fig-xafswt-4">
 <a class="reference external image-reference" href="../_images/xwt_rsp.png"><img alt="../_images/xwt_rsp.png" src="../_images/xwt_rsp.png" style="width: 100%;" /></a>
 </div>
 <p class="caption"><span class="caption-text">The Cauchy Wavelet transform projected to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
 space.  In the left hand panel, the original EXAFS <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span>
 is shown for comparison.</span></p>
 </div><p class="rubric" id="fig_xafswft_proj">References</p>
-<p id="bibtex-bibliography-xafs/wavelets-0"><table class="docutils citation" frame="void" id="munoz-wavelet" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Larch_12]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> M.&nbsp;Munoz, P.&nbsp;Argoul, and F.&nbsp;Farges. Continuous Cauchy wavelet transform analyses of EXAFS spectra: A qualitative approach. <em>American Mineralogist</em>, 88(4):694–700, 2003.</td></tr>
-</tbody>
-</table>
+<p id="bibtex-bibliography-xafs/wavelets-0"><dl class="citation">
+<dt class="label" id="munoz-wavelet"><span class="brackets">Larch_12</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>)</span></dt>
+<dd><p>M. Munoz, P. Argoul, and F. Farges. Continuous Cauchy wavelet transform analyses of EXAFS spectra: A qualitative approach. <em>American Mineralogist</em>, 88(4):694–700, 2003.</p>
+</dd>
+</dl>
 </p>
 </div>
 </div>
@@ -287,8 +278,8 @@ is shown for comparison.</span></p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

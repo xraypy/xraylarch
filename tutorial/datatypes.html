@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>5.2. Tutorial: Basic and Complex Data Types &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>5.2. Tutorial: Basic and Complex Data Types &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -113,8 +111,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -402,36 +398,37 @@ principle starting groups are describe in
 <a class="reference internal" href="#tutor-topgroups-table"><span class="std std-ref">Table of Basic Larch Groups</span></a></p>
 <blockquote id="tutor-topgroups-table">
 <span id="index-0"></span><div><blockquote>
-<div>Table of Basic Larch Groups.  These groups are listed in order of how
-they will be searched for functions and data.</div></blockquote>
-<table border="1" class="docutils">
+<div><p>Table of Basic Larch Groups.  These groups are listed in order of how
+they will be searched for functions and data.</p>
+</div></blockquote>
+<table class="docutils align-center">
 <colgroup>
-<col width="29%" />
-<col width="71%" />
+<col style="width: 29%" />
+<col style="width: 71%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>Group Name</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Group Name</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>_builtin</td>
-<td>basic builtin functions.</td>
+<tbody>
+<tr class="row-even"><td><p>_builtin</p></td>
+<td><p>basic builtin functions.</p></td>
 </tr>
-<tr class="row-odd"><td>_math</td>
-<td>mathematical and array functions.</td>
+<tr class="row-odd"><td><p>_math</p></td>
+<td><p>mathematical and array functions.</p></td>
 </tr>
-<tr class="row-even"><td>_sys</td>
-<td>larch system-wide variables.</td>
+<tr class="row-even"><td><p>_sys</p></td>
+<td><p>larch system-wide variables.</p></td>
 </tr>
-<tr class="row-odd"><td>_io</td>
-<td>file input/output functions.</td>
+<tr class="row-odd"><td><p>_io</p></td>
+<td><p>file input/output functions.</p></td>
 </tr>
-<tr class="row-even"><td>_plotter</td>
-<td>plotting and image display functions.</td>
+<tr class="row-even"><td><p>_plotter</p></td>
+<td><p>plotting and image display functions.</p></td>
 </tr>
-<tr class="row-odd"><td>_xafs</td>
-<td>XAFS-specific functions.</td>
+<tr class="row-odd"><td><p>_xafs</p></td>
+<td><p>XAFS-specific functions.</p></td>
 </tr>
 </tbody>
 </table>
@@ -519,15 +516,15 @@ appending to it with the ‘append’ method:</p>
 <p>All lists will have an ‘append’ method, as well as several others:</p>
 <blockquote>
 <div><ul class="simple">
-<li>append – add an element to the end of the list</li>
-<li>count – to return the number of times a particular element occurs in the list</li>
-<li>extend – to extend a list with another list</li>
-<li>index – to find the first occurance of an element</li>
-<li>insert – to insert an element in a particular place.</li>
-<li>pop – to remove and return the last element (or other specified index).</li>
-<li>remove – remove a particular element</li>
-<li>reverse – reverse the order of elements</li>
-<li>sort – sort the elements.</li>
+<li><p>append – add an element to the end of the list</p></li>
+<li><p>count – to return the number of times a particular element occurs in the list</p></li>
+<li><p>extend – to extend a list with another list</p></li>
+<li><p>index – to find the first occurance of an element</p></li>
+<li><p>insert – to insert an element in a particular place.</p></li>
+<li><p>pop – to remove and return the last element (or other specified index).</p></li>
+<li><p>remove – remove a particular element</p></li>
+<li><p>reverse – reverse the order of elements</p></li>
+<li><p>sort – sort the elements.</p></li>
 </ul>
 </div></blockquote>
 <p>Note that the methods that change the list do so <em>IN PLACE</em> and return
@@ -729,24 +726,25 @@ separating different elements:</p>
 <p>Dictionaries have several methods.  These include</p>
 <blockquote>
 <div><ul class="simple">
-<li>clear – remove all elements from a dictionary.</li>
-<li>copy – make a copy of a dictionary.</li>
-<li>get – get an element by name.</li>
-<li>has_key – return whether a dictionary has a key.</li>
-<li>items – return a list of (key, value) tuples</li>
-<li>keys  – return a list of keys.</li>
-<li>values – return a list of values.</li>
-<li>pop – remove an element by key, return the value.</li>
-<li>popitem – remove the “next” item, return (key, value)</li>
-<li>update – add or overwrite items from another dictionary.</li>
+<li><p>clear – remove all elements from a dictionary.</p></li>
+<li><p>copy – make a copy of a dictionary.</p></li>
+<li><p>get – get an element by name.</p></li>
+<li><p>has_key – return whether a dictionary has a key.</p></li>
+<li><p>items – return a list of (key, value) tuples</p></li>
+<li><p>keys  – return a list of keys.</p></li>
+<li><p>values – return a list of values.</p></li>
+<li><p>pop – remove an element by key, return the value.</p></li>
+<li><p>popitem – remove the “next” item, return (key, value)</p></li>
+<li><p>update – add or overwrite items from another dictionary.</p></li>
 </ul>
 </div></blockquote>
 <p>For example:</p>
 <blockquote>
-<div>larch&gt; atomic_weight.keys()
+<div><p>larch&gt; atomic_weight.keys()
 [‘Be’, ‘C’, ‘B’, ‘H’, ‘Li’, ‘He’]
 larch&gt; atomic_weight.values()
-[9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]</div></blockquote>
+[9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]</p>
+</div></blockquote>
 <p>Note that the keys and values are not in the order they were entered.  If
 you add more elements to the dictionary, the new order can be unrelated to
 the old order.  What is guaranteed is that the order of the list of keys
@@ -769,10 +767,10 @@ actually work quite differently from those languages.  What we’re aiming to
 cover here includes:</p>
 <blockquote>
 <div><ul class="simple">
-<li>what variable assignment really means.</li>
-<li>mutable and immutable objects.</li>
-<li>object identity.</li>
-<li>the difference between equality and identity.</li>
+<li><p>what variable assignment really means.</p></li>
+<li><p>mutable and immutable objects.</p></li>
+<li><p>object identity.</p></li>
+<li><p>the difference between equality and identity.</p></li>
 </ul>
 </div></blockquote>
 <p>As mentioned above, each named quantity in Larch is simply a Python object
@@ -950,8 +948,8 @@ another variable that points to the same value.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

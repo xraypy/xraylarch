@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>9.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -100,8 +98,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -185,11 +181,11 @@ peaks.  Still, it is not always so simple to identify several aspects of
 pre-edge peak fitting.  These challenges include</p>
 <blockquote>
 <div><ul class="simple">
-<li>identifying and removing the background due to the main absorption
-edge.</li>
-<li>identifying the proper shape of the peaks.</li>
-<li>making sure that the peaks overlap but do not exchange or become
-coincident.</li>
+<li><p>identifying and removing the background due to the main absorption
+edge.</p></li>
+<li><p>identifying the proper shape of the peaks.</p></li>
+<li><p>making sure that the peaks overlap but do not exchange or become
+coincident.</p></li>
 </ul>
 </div></blockquote>
 <p>The XAS Viewer application helps with each of the tasks, and it is highly
@@ -206,35 +202,31 @@ makeup of the unknown sample is an important analysis method.</p>
 <dt id="_math.lincombo_fit">
 <code class="descclassname">_math.</code><code class="descname">lincombo_fit</code><span class="sig-paren">(</span><em>group</em>, <em>components</em>, <em>weights=None</em>, <em>minvals=None</em>, <em>maxvals=None</em>, <em>arrayname='norm'</em>, <em>xmin=-np.inf</em>, <em>xmax=np.inf</em>, <em>sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.lincombo_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fitting for a group</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>group</strong> – Group to be fitted</li>
-<li><strong>components</strong> – List of groups to use as components (see Note 1)</li>
-<li><strong>weights</strong> – array of starting  weights (see Note)</li>
-<li><strong>minvals</strong> – array of min weights (or None to mean -inf)</li>
-<li><strong>maxvals</strong> – array of max weights (or None to mean +inf)</li>
-<li><strong>arrayname</strong> – string of array name to be fit  [‘norm’] (see Note 2)</li>
-<li><strong>xmin</strong> – x-value for start of fit range [-inf]</li>
-<li><strong>xmax</strong> – x-value for end of fit range [+inf]</li>
-<li><strong>sum_to_one</strong> – bool, whether to force weights to sum to 1.0 [True]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> – Group to be fitted</p></li>
+<li><p><strong>components</strong> – List of groups to use as components (see Note 1)</p></li>
+<li><p><strong>weights</strong> – array of starting  weights (see Note)</p></li>
+<li><p><strong>minvals</strong> – array of min weights (or None to mean -inf)</p></li>
+<li><p><strong>maxvals</strong> – array of max weights (or None to mean +inf)</p></li>
+<li><p><strong>arrayname</strong> – string of array name to be fit  [‘norm’] (see Note 2)</p></li>
+<li><p><strong>xmin</strong> – x-value for start of fit range [-inf]</p></li>
+<li><p><strong>xmax</strong> – x-value for end of fit range [+inf]</p></li>
+<li><p><strong>sum_to_one</strong> – bool, whether to force weights to sum to 1.0 [True]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">group with resulting weights and fit statistics</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>group with resulting weights and fit statistics</p>
+</dd>
+</dl>
 <p>Notes:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>The names of Group members for the components must match those of the
-group to be fitted.</li>
-<li>use <code class="docutils literal notranslate"><span class="pre">None</span></code> to use basic linear alg solution)</li>
-<li>arrayname can be one of  <cite>norm</cite> or <cite>dmude</cite></li>
+<li><p>The names of Group members for the components must match those of the
+group to be fitted.</p></li>
+<li><p>use <code class="docutils literal notranslate"><span class="pre">None</span></code> to use basic linear alg solution)</p></li>
+<li><p>arrayname can be one of  <cite>norm</cite> or <cite>dmude</cite></p></li>
 </ol>
 </div></blockquote>
 </dd></dl>
@@ -244,29 +236,25 @@ group to be fitted.</li>
 <code class="descclassname">_math.</code><code class="descname">lincombo_fitall</code><span class="sig-paren">(</span><em>group</em>, <em>components</em>, <em>weights=None</em>, <em>minvals=None</em>, <em>maxvals=None</em>, <em>arrayname='norm'</em>, <em>xmin=-np.inf</em>, <em>xmax=np.inf</em>, <em>sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.lincombo_fitall" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fittings for a group with all combinations
 of 2 or more of the components given</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>group</strong> – Group to be fitted</li>
-<li><strong>components</strong> – List of groups to use as components (see Note)</li>
-<li><strong>weights</strong> – array of starting  weights (see Note)</li>
-<li><strong>minvals</strong> – array of min weights (or None to mean -inf)</li>
-<li><strong>maxvals</strong> – array of max weights (or None to mean +inf)</li>
-<li><strong>arrayname</strong> – string of array name to be fit (see Note 2)</li>
-<li><strong>xmin</strong> – x-value for start of fit range [-inf]</li>
-<li><strong>xmax</strong> – x-value for end of fit range [+inf]</li>
-<li><strong>sum_to_one</strong> – bool, whether to force weights to sum to 1.0 [True]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> – Group to be fitted</p></li>
+<li><p><strong>components</strong> – List of groups to use as components (see Note)</p></li>
+<li><p><strong>weights</strong> – array of starting  weights (see Note)</p></li>
+<li><p><strong>minvals</strong> – array of min weights (or None to mean -inf)</p></li>
+<li><p><strong>maxvals</strong> – array of max weights (or None to mean +inf)</p></li>
+<li><p><strong>arrayname</strong> – string of array name to be fit (see Note 2)</p></li>
+<li><p><strong>xmin</strong> – x-value for start of fit range [-inf]</p></li>
+<li><p><strong>xmax</strong> – x-value for end of fit range [+inf]</p></li>
+<li><p><strong>sum_to_one</strong> – bool, whether to force weights to sum to 1.0 [True]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list of groups with resulting weights and fit statistics,
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of groups with resulting weights and fit statistics,
 ordered by reduced chi-square (best first)</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>See notes for <a class="reference internal" href="#_math.lincombo_fit" title="_math.lincombo_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lincombo_fit()</span></code></a>.</p>
 </dd></dl>
 
@@ -281,73 +269,69 @@ collection.</p>
 <dt id="_math.pca_train">
 <code class="descclassname">_math.</code><code class="descname">pca_train</code><span class="sig-paren">(</span><em>groups</em>, <em>arrayname='norm'</em>, <em>xmin=-np.inf</em>, <em>xmax=np.inf</em>, <em>sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.pca_train" title="Permalink to this definition">¶</a></dt>
 <dd><p>use a list of data groups to train a Principal Component Analysis model</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>groups</strong> – list of groups to use as components</li>
-<li><strong>arrayname</strong> – string of array name to be fit (see Note) [‘norm’]</li>
-<li><strong>xmin</strong> – x-value for start of fit range [-inf]</li>
-<li><strong>xmax</strong> – x-value for end of fit range [+inf]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>groups</strong> – list of groups to use as components</p></li>
+<li><p><strong>arrayname</strong> – string of array name to be fit (see Note) [‘norm’]</p></li>
+<li><p><strong>xmin</strong> – x-value for start of fit range [-inf]</p></li>
+<li><p><strong>xmax</strong> – x-value for end of fit range [+inf]</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>group with trained PCA model, to be used with <a class="reference internal" href="#_math.pca_fit" title="_math.pca_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>group with trained PCA model, to be used with <a class="reference internal" href="#_math.pca_fit" title="_math.pca_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></p>
 <ol class="arabic simple">
-<li>The group members for the components must match each other
-in data content and array names.</li>
-<li>arrayname can be one of  <cite>norm</cite> or <cite>dmude</cite></li>
+<li><p>The group members for the components must match each other
+in data content and array names.</p></li>
+<li><p>arrayname can be one of  <cite>norm</cite> or <cite>dmude</cite></p></li>
 </ol>
 </p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <p>The trained PCA group returned will have the following members:</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-center">
 <colgroup>
-<col width="18%" />
-<col width="82%" />
+<col style="width: 18%" />
+<col style="width: 82%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">name</th>
-<th class="head">meaning</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>x</td>
-<td>x or energy value from model</td>
+<tbody>
+<tr class="row-even"><td><p>x</p></td>
+<td><p>x or energy value from model</p></td>
 </tr>
-<tr class="row-odd"><td>arrayname</td>
-<td>array name used to train model</td>
+<tr class="row-odd"><td><p>arrayname</p></td>
+<td><p>array name used to train model</p></td>
 </tr>
-<tr class="row-even"><td>labels</td>
-<td>list of labels (filenames for each input group)</td>
+<tr class="row-even"><td><p>labels</p></td>
+<td><p>list of labels (filenames for each input group)</p></td>
 </tr>
-<tr class="row-odd"><td>ydat</td>
-<td>2D array of input components, interpolated to <cite>x</cite></td>
+<tr class="row-odd"><td><p>ydat</p></td>
+<td><p>2D array of input components, interpolated to <cite>x</cite></p></td>
 </tr>
-<tr class="row-even"><td>xmin</td>
-<td>minimum <cite>x</cite> value used.</td>
+<tr class="row-even"><td><p>xmin</p></td>
+<td><p>minimum <cite>x</cite> value used.</p></td>
 </tr>
-<tr class="row-odd"><td>xmax</td>
-<td>maximum <cite>x</cite> value used.</td>
+<tr class="row-odd"><td><p>xmax</p></td>
+<td><p>maximum <cite>x</cite> value used.</p></td>
 </tr>
-<tr class="row-even"><td>pcamodel</td>
-<td>raw return value from scikit-learn <code class="xref py py-meth docutils literal notranslate"><span class="pre">PCA.fit()</span></code>.</td>
+<tr class="row-even"><td><p>pcamodel</p></td>
+<td><p>raw return value from scikit-learn <code class="xref py py-meth docutils literal notranslate"><span class="pre">PCA.fit()</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td>mean</td>
-<td>mean value of <cite>ydat</cite>.</td>
+<tr class="row-odd"><td><p>mean</p></td>
+<td><p>mean value of <cite>ydat</cite>.</p></td>
 </tr>
-<tr class="row-even"><td>components</td>
-<td>list of components, ordered by variance score</td>
+<tr class="row-even"><td><p>components</p></td>
+<td><p>list of components, ordered by variance score</p></td>
 </tr>
-<tr class="row-odd"><td>variances</td>
-<td>list of weights for each component.</td>
+<tr class="row-odd"><td><p>variances</p></td>
+<td><p>list of weights for each component.</p></td>
 </tr>
 </tbody>
 </table>
@@ -356,53 +340,49 @@ in data content and array names.</li>
 <dt id="_math.pca_fit">
 <code class="descclassname">_math.</code><code class="descname">pca_fit</code><span class="sig-paren">(</span><em>group</em>, <em>pca_model</em>, <em>ncomps=None</em>, <em>_larch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.pca_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit a spectrum from a group to a pca training model from pca_train()</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>group</strong> – group with data to fit</li>
-<li><strong>pca_model</strong> – PCA model as found from <a class="reference internal" href="#_math.pca_train" title="_math.pca_train"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_train()</span></code></a></li>
-<li><strong>ncomps</strong> – number of components to included</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> – group with data to fit</p></li>
+<li><p><strong>pca_model</strong> – PCA model as found from <a class="reference internal" href="#_math.pca_train" title="_math.pca_train"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_train()</span></code></a></p></li>
+<li><p><strong>ncomps</strong> – number of components to included</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><cite>None</cite>.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>None</cite>.</p>
+</dd>
+</dl>
 <p>On success, the input group will have a subgroup name <cite>pca_result</cite>
 created with the following members:</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-center">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col style="width: 19%" />
+<col style="width: 81%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">name</th>
-<th class="head">meaning</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>x</td>
-<td>x or energy value from model</td>
+<tbody>
+<tr class="row-even"><td><p>x</p></td>
+<td><p>x or energy value from model</p></td>
 </tr>
-<tr class="row-odd"><td>ydat</td>
-<td>input data interpolated onto <cite>x</cite></td>
+<tr class="row-odd"><td><p>ydat</p></td>
+<td><p>input data interpolated onto <cite>x</cite></p></td>
 </tr>
-<tr class="row-even"><td>yfit</td>
-<td>linear least-squares fit using model components</td>
+<tr class="row-even"><td><p>yfit</p></td>
+<td><p>linear least-squares fit using model components</p></td>
 </tr>
-<tr class="row-odd"><td>weights</td>
-<td>weights for PCA components</td>
+<tr class="row-odd"><td><p>weights</p></td>
+<td><p>weights for PCA components</p></td>
 </tr>
-<tr class="row-even"><td>chi_square</td>
-<td>goodness-of-fit measure</td>
+<tr class="row-even"><td><p>chi_square</p></td>
+<td><p>goodness-of-fit measure</p></td>
 </tr>
-<tr class="row-odd"><td>pca_model</td>
-<td>the input PCA model</td>
+<tr class="row-odd"><td><p>pca_model</p></td>
+<td><p>the input PCA model</p></td>
 </tr>
 </tbody>
 </table>
@@ -480,12 +460,12 @@ and is on a log scale).</p>
 <div class="figure compound align-center" id="fig_xanes_pca1">
 <div style="width: 45%" class="subfigure align-center" id="id1">
 <span id="fig-xanes-pca1a"></span><a class="reference external image-reference" href="../_images/PCA_model_components.png"><img alt="../_images/PCA_model_components.png" src="../_images/PCA_model_components.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.3.1 </span><span class="caption-text">Mean and 4 most important components.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.3.1 </span><span class="caption-text">Mean and 4 most important components.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 45%" class="subfigure align-center" id="id2">
 <span id="fig-xanes-pca1b"></span><a class="reference external image-reference" href="../_images/PCA_model_weights.png"><img alt="../_images/PCA_model_weights.png" src="../_images/PCA_model_weights.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-number">Figure 9.3.2 </span><span class="caption-text">Fractional weights or variances for the 4 most important components of
-the Au XANES spectra – not including the mean spectrum.</span></p>
+the Au XANES spectra – not including the mean spectrum.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p class="caption"><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.</span></p>
 </div><p id="fig_xanes_pca1">We also print out the weights of the components which will give:</p>
@@ -513,7 +493,7 @@ but gives a slightly firmer foundation for using that number of components.</p>
 <p class="caption"><span class="caption-number">Figure 9.3.3 </span><span class="caption-text">Fit to unknown Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectrum to a linear combination
 of the mean and 4 principle components of the training set.  The fit
 looks good enough to conclude that this spectrum probably is explained
-by the variances seen in the main 4 components from the training set.</span></p>
+by the variances seen in the main 4 components from the training set.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
@@ -547,8 +527,8 @@ by the variances seen in the main 4 components from the training set.</span></p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

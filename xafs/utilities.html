@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>9.1. XAFS Functions: Overview and Naming Conventions &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -79,22 +77,22 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#plotting-macros-for-xafs">9.1.2. Plotting Macros for XAFS</a><ul>
-<li><a class="reference internal" href="#plot-mu">9.1.2.1. <code class="docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
-<li><a class="reference internal" href="#plot-bkg">9.1.2.2. <code class="docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chik">9.1.2.3. <code class="docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chir">9.1.2.4. <code class="docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chifit">9.1.2.5. <code class="docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
-<li><a class="reference internal" href="#plot-path-k">9.1.2.6. <code class="docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
-<li><a class="reference internal" href="#plot-path-r">9.1.2.7. <code class="docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
-<li><a class="reference internal" href="#plot-paths-k">9.1.2.8. <code class="docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
-<li><a class="reference internal" href="#plot-paths-r">9.1.2.9. <code class="docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-baseline">9.1.2.10. <code class="docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-fit">9.1.2.11. <code class="docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
+<li><a class="reference internal" href="#plot-mu">9.1.2.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
+<li><a class="reference internal" href="#plot-bkg">9.1.2.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chik">9.1.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chir">9.1.2.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chifit">9.1.2.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-k">9.1.2.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-r">9.1.2.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-k">9.1.2.8. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-r">9.1.2.9. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-baseline">9.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-fit">9.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#utility-functions-for-xafs">9.1.3. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#ktoe-and-etok">9.1.3.1. <code class="docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
-<li><a class="reference internal" href="#estimate-noise">9.1.3.2. <code class="docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
+<li><a class="reference internal" href="#ktoe-and-etok">9.1.3.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
+<li><a class="reference internal" href="#estimate-noise">9.1.3.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -120,8 +118,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -163,145 +159,145 @@ data arrays and scalars within a Group.  This is summarized in the
 scalars for various data associated with XAFS, including FEFF calculations.  Given are the name,
 the physical quantity described, and the name of function that will generate this value.</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-center">
 <colgroup>
-<col width="17%" />
-<col width="9%" />
-<col width="33%" />
-<col width="41%" />
+<col style="width: 17%" />
+<col style="width: 9%" />
+<col style="width: 33%" />
+<col style="width: 41%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">name</th>
-<th class="head">type</th>
-<th class="head">meaning</th>
-<th class="head">created by</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>meaning</p></th>
+<th class="head"><p>created by</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>energy</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(E\)</span> in eV</td>
-<td>original data</td>
+<tbody>
+<tr class="row-even"><td><p>energy</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(E\)</span> in eV</p></td>
+<td><p>original data</p></td>
 </tr>
-<tr class="row-odd"><td>mu</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\mu\)</span></td>
-<td>original data</td>
+<tr class="row-odd"><td><p>mu</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mu\)</span></p></td>
+<td><p>original data</p></td>
 </tr>
-<tr class="row-even"><td>e0</td>
-<td>scalar</td>
-<td><span class="math notranslate nohighlight">\(E_0\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>, <a class="reference internal" href="preedge.html#find_e0" title="find_e0"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code></a></td>
+<tr class="row-even"><td><p>e0</p></td>
+<td><p>scalar</p></td>
+<td><p><span class="math notranslate nohighlight">\(E_0\)</span></p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>, <a class="reference internal" href="preedge.html#find_e0" title="find_e0"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>edge_step</td>
-<td>scalar</td>
-<td><span class="math notranslate nohighlight">\(\Delta \mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-odd"><td><p>edge_step</p></td>
+<td><p>scalar</p></td>
+<td><p><span class="math notranslate nohighlight">\(\Delta \mu\)</span></p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>dmude</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(d\mu/dE\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-even"><td><p>dmude</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(d\mu/dE\)</span></p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>norm</td>
-<td>array</td>
-<td>normalized <span class="math notranslate nohighlight">\(\mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-odd"><td><p>norm</p></td>
+<td><p>array</p></td>
+<td><p>normalized <span class="math notranslate nohighlight">\(\mu\)</span></p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>flat</td>
-<td>array</td>
-<td>flattened <span class="math notranslate nohighlight">\(\mu\)</span></td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-even"><td><p>flat</p></td>
+<td><p>array</p></td>
+<td><p>flattened <span class="math notranslate nohighlight">\(\mu\)</span></p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>pre_edge</td>
-<td>array</td>
-<td>pre-edge curve</td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-odd"><td><p>pre_edge</p></td>
+<td><p>array</p></td>
+<td><p>pre-edge curve</p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>post_edge</td>
-<td>array</td>
-<td>normalization curve</td>
-<td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></td>
+<tr class="row-even"><td><p>post_edge</p></td>
+<td><p>array</p></td>
+<td><p>normalization curve</p></td>
+<td><p><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>bkg</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\mu_0(E)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></td>
+<tr class="row-odd"><td><p>bkg</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mu_0(E)\)</span></p></td>
+<td><p><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chie</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\chi(E)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></td>
+<tr class="row-even"><td><p>chie</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\chi(E)\)</span></p></td>
+<td><p><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>k</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(k\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></td>
+<tr class="row-odd"><td><p>k</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(k\)</span></p></td>
+<td><p><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chi</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\chi(k)\)</span></td>
-<td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></td>
+<tr class="row-even"><td><p>chi</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\chi(k)\)</span></p></td>
+<td><p><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>kwin</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\Omega(k)\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, <a class="reference internal" href="xafsft.html#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a></td>
+<tr class="row-odd"><td><p>kwin</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\Omega(k)\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, <a class="reference internal" href="xafsft.html#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>r</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(R\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></td>
+<tr class="row-even"><td><p>r</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(R\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>chir</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\chi(R)\)</span> (complex)</td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></td>
+<tr class="row-odd"><td><p>chir</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\chi(R)\)</span> (complex)</p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chir_mag</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(|\chi(R)|\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></td>
+<tr class="row-even"><td><p>chir_mag</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(|\chi(R)|\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>chir_re</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\rm Re[\chi(R)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></td>
+<tr class="row-odd"><td><p>chir_re</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\rm Re[\chi(R)]\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chir_im</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\rm Im[\chi(R)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></td>
+<tr class="row-even"><td><p>chir_im</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\rm Im[\chi(R)]\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>rwin</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\Omega(R)\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-odd"><td><p>rwin</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\Omega(R)\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>q</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(q\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-even"><td><p>q</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(q\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>chiq</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\chi(q)\)</span> (complex)</td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-odd"><td><p>chiq</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\chi(q)\)</span> (complex)</p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chiq_mag</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(|\chi(q)|\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-even"><td><p>chiq_mag</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(|\chi(q)|\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td>chiq_re</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\rm Re[\chi(q)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-odd"><td><p>chiq_re</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\rm Re[\chi(q)]\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td>chiq_im</td>
-<td>array</td>
-<td><span class="math notranslate nohighlight">\(\rm Im[\chi(q)]\)</span></td>
-<td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></td>
+<tr class="row-even"><td><p>chiq_im</p></td>
+<td><p>array</p></td>
+<td><p><span class="math notranslate nohighlight">\(\rm Im[\chi(q)]\)</span></p></td>
+<td><p><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftr()</span></code></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -379,29 +375,26 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_mu">
 <code class="descclassname">_xafs.</code><code class="descname">plot_mu</code><span class="sig-paren">(</span><em>dgroup</em>, <em>norm=False</em>, <em>deriv=False</em>, <em>show_pre=False</em>, <em>show_post=False</em>, <em>show_e0=False</em>, <em>emin=None</em>, <em>emax=None</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_mu" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
-<div>Plot <span class="math notranslate nohighlight">\(\mu(E)\)</span> for an XAFS data group in various forms</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dgroup</strong> – group of XAFS data after <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> results (see note below)</li>
-<li><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>deriv</strong> – bool whether to show derivative of XAFS data [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_pre</strong> – bool whether to show pre-edge curve [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_post</strong> – bool whether to show post-edge curve [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_deriv</strong> – bool whether to show deriv together with mu [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>emin</strong> – min energy to show, relative to E0 [<code class="docutils literal notranslate"><span class="pre">None</span></code>, start of data]</li>
-<li><strong>emax</strong> – max energy to show, relative to E0 [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘mu’, ‘dmu/dE’, or ‘mu norm’]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
+<div><p>Plot <span class="math notranslate nohighlight">\(\mu(E)\)</span> for an XAFS data group in various forms</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – group of XAFS data after <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> results (see note below)</p></li>
+<li><p><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>deriv</strong> – bool whether to show derivative of XAFS data [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_pre</strong> – bool whether to show pre-edge curve [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_post</strong> – bool whether to show post-edge curve [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_deriv</strong> – bool whether to show deriv together with mu [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>emin</strong> – min energy to show, relative to E0 [<code class="docutils literal notranslate"><span class="pre">None</span></code>, start of data]</p></li>
+<li><p><strong>emax</strong> – max energy to show, relative to E0 [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘mu’, ‘dmu/dE’, or ‘mu norm’]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The input data group must have the following attributes: <cite>energy</cite>, <cite>mu</cite>,
 <cite>norm</cite>, <cite>e0</cite>, <cite>pre_edge</cite>, <cite>edge_step</cite>, <cite>filename</cite></p>
 </dd></dl>
@@ -413,24 +406,20 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_bkg">
 <code class="descclassname">_xafs.</code><code class="descname">plot_bkg</code><span class="sig-paren">(</span><em>dgroup</em>, <em>norm=True</em>, <em>emin=None</em>, <em>emax=None</em>, <em>show_e0=False</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_bkg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> for XAFS data group</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</li>
-<li><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>emin</strong> – min energy to show, relative to <span class="math notranslate nohighlight">\(E_0\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>, start of data]</li>
-<li><strong>emax</strong> – max energy to show, relative to <span class="math notranslate nohighlight">\(E_0\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘mu’]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</p></li>
+<li><p><strong>norm</strong> – bool whether to show normalized data [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>emin</strong> – min energy to show, relative to <span class="math notranslate nohighlight">\(E_0\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>, start of data]</p></li>
+<li><p><strong>emax</strong> – max energy to show, relative to <span class="math notranslate nohighlight">\(E_0\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>show_e0</strong> – bool whether to show E0 [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘mu’]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The input data group must have the following attributes: <cite>energy</cite>, <cite>mu</cite>,
 <cite>bkg</cite>, <cite>norm</cite>, <cite>e0</cite>, <cite>pre_edge</cite>, <cite>edge_step</cite>, <cite>filename</cite></p>
 </dd></dl>
@@ -442,23 +431,19 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_chik">
 <code class="descclassname">_xafs.</code><code class="descname">plot_chik</code><span class="sig-paren">(</span><em>dgroup</em>, <em>kweight=None</em>, <em>kmax=None</em>, <em>show_window=True</em>, <em>label=None</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chik" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> for XAFS data group</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</li>
-<li><strong>kweight</strong> – k-weighting for plot [read from last <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, or 0]</li>
-<li><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>show_window</strong> – bool whether to also plot k-window [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘chi’]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – group of XAFS data after autobk() results (see note below)</p></li>
+<li><p><strong>kweight</strong> – k-weighting for plot [read from last <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, or 0]</p></li>
+<li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>show_window</strong> – bool whether to also plot k-window [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘chi’]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The input data group must have the following attributes: <cite>k</cite>, <cite>chi</cite>,
 <cite>kwin</cite>, <cite>filename</cite>.</p>
 </dd></dl>
@@ -470,24 +455,20 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_chir">
 <code class="descclassname">_xafs.</code><code class="descname">plot_chir</code><span class="sig-paren">(</span><em>dgroup</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=False</em>, <em>rmax=None</em>, <em>label=True</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for XAFS data group</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dgroup</strong> – group of XAFS data after xftf() results (see note below)</li>
-<li><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘chir’]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – group of XAFS data after xftf() results (see note below)</p></li>
+<li><p><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>label</strong> – string for label [<code class="docutils literal notranslate"><span class="pre">None</span></code>:  ‘chir’]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The input data group must have the following attributes: <cite>r</cite>,
 <cite>chir_mag</cite>, <cite>chir_im</cite>, <cite>chir_re</cite>, <cite>kweight</cite>, <cite>filename</cite></p>
 </dd></dl>
@@ -499,25 +480,21 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_chifit">
 <code class="descclassname">_xafs.</code><code class="descname">plot_chifit</code><span class="sig-paren">(</span><em>dataset</em>, <em>kmin=0</em>, <em>kmax=None</em>, <em>rmax=None</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=False</em>, <em>new=True</em>, <em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_chifit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\chi(R)\)</span> for fit to feffit dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>.</li>
-<li><strong>kmin</strong> – min k to show [0]</li>
-<li><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>.</p></li>
+<li><p><strong>kmin</strong> – min k to show [0]</p></li>
+<li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -527,25 +504,21 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_path_k">
 <code class="descclassname">_xafs.</code><code class="descname">plot_path_k</code><span class="sig-paren">(</span><em>dataset</em>, <em>ipath</em>, <em>kmin=0</em>, <em>kmax=None</em>, <em>offset=0</em>, <em>label=None</em>, <em>new=False</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_path_k" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a single Path of a feffit dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li><strong>ipath</strong> – index of path, starting count at 0 [0]</li>
-<li><strong>kmin</strong> – min k to show [0]</li>
-<li><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>offset</strong> – vertical offset to use for plot [0]</li>
-<li><strong>label</strong> – path label [‘path I’]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
+<li><p><strong>ipath</strong> – index of path, starting count at 0 [0]</p></li>
+<li><p><strong>kmin</strong> – min k to show [0]</p></li>
+<li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>offset</strong> – vertical offset to use for plot [0]</p></li>
+<li><p><strong>label</strong> – path label [‘path I’]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -555,27 +528,23 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt id="_xafs.plot_path_r">
 <code class="descclassname">_xafs.</code><code class="descname">plot_path_r</code><span class="sig-paren">(</span><em>dataset</em>, <em>ipath</em>, <em>rmax=None</em>, <em>offset=0</em>, <em>label=None</em>, <em>show_mag=True</em>, <em>show_real=False</em>, <em>show_imag=True</em>, <em>new=False</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.plot_path_r" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for a single Path of a feffit dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li><strong>ipath</strong> – index of path, starting count at 0 [0]</li>
-<li><strong>kmax</strong> – max k to show [None, end of data]</li>
-<li><strong>offset</strong> – vertical offset to use for plot [0]</li>
-<li><strong>label</strong> – path label [‘path I’]</li>
-<li><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
+<li><p><strong>ipath</strong> – index of path, starting count at 0 [0]</p></li>
+<li><p><strong>kmax</strong> – max k to show [None, end of data]</p></li>
+<li><p><strong>offset</strong> – vertical offset to use for plot [0]</p></li>
+<li><p><strong>label</strong> – path label [‘path I’]</p></li>
+<li><p><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -585,23 +554,19 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt>
 <code class="descname">plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):</code></dt>
 <dd><p>Plot k-weighted <cite>chi(k)</cite> for model and all paths of a feffit dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li><strong>kmin</strong> – min k to show [0]</li>
-<li><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>offset</strong> – vertical offset to use for paths for plot [-1]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
+<li><p><strong>kmin</strong> – min k to show [0]</p></li>
+<li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>offset</strong> – vertical offset to use for paths for plot [-1]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -611,25 +576,21 @@ examples in the following sections in this chapter make use of these macros.</p>
 <dt>
 <code class="descname">plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False, show_imag=False, new=True, win=1, **kws):</code></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for model and all paths of a feffit dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – feffit dataset, after running func:<cite>feffit</cite></li>
-<li><strong>offset</strong> – vertical offset to use for paths for plot [-0.5]</li>
-<li><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</li>
-<li><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [T``rue``]</li>
-<li><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</li>
-<li><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – feffit dataset, after running func:<cite>feffit</cite></p></li>
+<li><p><strong>offset</strong> – vertical offset to use for paths for plot [-0.5]</p></li>
+<li><p><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
+<li><p><strong>show_mag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(|\chi(R)|\)</span> [T``rue``]</p></li>
+<li><p><strong>show_real</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Re[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>show_imag</strong> – bool whether to plot <span class="math notranslate nohighlight">\(Im[\chi(R)]\)</span> [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>new</strong> – bool whether to start a new plot [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -637,26 +598,22 @@ examples in the following sections in this chapter make use of these macros.</p>
 <h3>9.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code><a class="headerlink" href="#plot-prepeaks-baseline" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
-<code class="descname">plot_prepeaks_baseline(dataset, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):</code></dt>
+<code class="descname">plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):</code></dt>
 <dd><p>Plot pre-edge peaks and baseline fit, as from <a class="reference internal" href="preedge.html#pre_edge_baseline" title="pre_edge_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a>
 or XAS Viewer GUI</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – data group, after running <a class="reference internal" href="preedge.html#pre_edge_baseline" title="pre_edge_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a></li>
-<li><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</li>
-<li><strong>show_fitrange</strong> – bool whether to show fit range as vertical bars</li>
-<li><strong>show_peakrange</strong> – bool whether to show pre-edge peak range with markers</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – data group, after running <a class="reference internal" href="preedge.html#pre_edge_baseline" title="pre_edge_baseline"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code></a></p></li>
+<li><p><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</p></li>
+<li><p><strong>show_fitrange</strong> – bool whether to show fit range as vertical bars</p></li>
+<li><p><strong>show_peakrange</strong> – bool whether to show pre-edge peak range with markers</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>The <cite>dataset</cite> group must have a <cite>prepeaks</cite> subgroup.</p>
+</dd>
+</dl>
+<p>The <cite>dgroup</cite> group must have a <cite>prepeaks</cite> subgroup.</p>
 </dd></dl>
 
 </div>
@@ -664,25 +621,21 @@ or XAS Viewer GUI</p>
 <h3>9.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code><a class="headerlink" href="#plot-prepeaks-fit" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
-<code class="descname">plot_prepeaks_fit(dataset, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):</code></dt>
+<code class="descname">plot_prepeaks_fit(dgroup, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):</code></dt>
 <dd><p>Plot pre-edge peaks and fit, as XAS Viewer GUI</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dataset</strong> – data group, after running pre-edge peak fit.</li>
-<li><strong>show_init</strong> – bool whether to show initial model, before fitting</li>
-<li><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</li>
-<li><strong>show_residual</strong> – bool whether to show residual as a stacked plot.</li>
-<li><strong>win</strong> – integer plot window to use [1]</li>
-<li><strong>kws</strong> – additional keyword arguments are passed to plot()</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgroup</strong> – data group, after running pre-edge peak fit.</p></li>
+<li><p><strong>show_init</strong> – bool whether to show initial model, before fitting</p></li>
+<li><p><strong>subtract_baseline</strong> – bool whether to subtract baseline for plot</p></li>
+<li><p><strong>show_residual</strong> – bool whether to show residual as a stacked plot.</p></li>
+<li><p><strong>win</strong> – integer plot window to use [1]</p></li>
+<li><p><strong>kws</strong> – additional keyword arguments are passed to plot()</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>The <cite>dataset</cite> group must have a <cite>peakfit_history</cite> subgroup. Currently,
+</dd>
+</dl>
+<p>The <cite>dgroup</cite> group must have a <cite>peakfit_history</cite> subgroup. Currently,
 this is automatically generated only using the XAS Viewer GUI or
 scripts written (and possibly altered) by it.</p>
 </dd></dl>
@@ -749,54 +702,50 @@ wavenumber can be a single number or array of numbers.</p>
 <dt id="_xafs.estimate_noise">
 <code class="descclassname">_xafs.</code><code class="descname">estimate_noise</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically estimate the noise level in a <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>k</strong> – 1-d array of <span class="math notranslate nohighlight">\(k\)</span></li>
-<li><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></li>
-<li><strong>group</strong> – output group.</li>
-<li><strong>rmin</strong> – minimum <span class="math notranslate nohighlight">\(R\)</span> value for noise estimate.</li>
-<li><strong>rmax</strong> – maximum <span class="math notranslate nohighlight">\(R\)</span> value for noise estimate.</li>
-<li><strong>kweight</strong> – exponent for weighting spectra by k**kweight [1]</li>
-<li><strong>kmin</strong> – starting k for FT Window [0]</li>
-<li><strong>kmax</strong> – ending k for FT Window  [20]</li>
-<li><strong>dk</strong> – tapering parameter for FT Window [4]</li>
-<li><strong>dk2</strong> – second tapering parameter for FT Window [None]</li>
-<li><strong>window</strong> – name of window type [‘kaiser’]</li>
-<li><strong>nfft</strong> – value to use for N_fft [2048].</li>
-<li><strong>kstep</strong> – value to use for delta_k ( Ang^-1) [0.05]</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> – 1-d array of <span class="math notranslate nohighlight">\(k\)</span></p></li>
+<li><p><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></p></li>
+<li><p><strong>group</strong> – output group.</p></li>
+<li><p><strong>rmin</strong> – minimum <span class="math notranslate nohighlight">\(R\)</span> value for noise estimate.</p></li>
+<li><p><strong>rmax</strong> – maximum <span class="math notranslate nohighlight">\(R\)</span> value for noise estimate.</p></li>
+<li><p><strong>kweight</strong> – exponent for weighting spectra by k**kweight [1]</p></li>
+<li><p><strong>kmin</strong> – starting k for FT Window [0]</p></li>
+<li><p><strong>kmax</strong> – ending k for FT Window  [20]</p></li>
+<li><p><strong>dk</strong> – tapering parameter for FT Window [4]</p></li>
+<li><p><strong>dk2</strong> – second tapering parameter for FT Window [None]</p></li>
+<li><p><strong>window</strong> – name of window type [‘kaiser’]</p></li>
+<li><p><strong>nfft</strong> – value to use for N_fft [2048].</p></li>
+<li><p><strong>kstep</strong> – value to use for delta_k ( Ang^-1) [0.05]</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The method uses an XAFS Fourier transform, and many of arguments
 (<strong>kmin</strong>, <strong>kmax</strong>, etc) are identical to those of <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.</p>
 <p>This function follows the First Argument Group convention with arrarys named <cite>k</cite> and <cite>chi</cite>.
 The following outputs are written to the supplied <strong>group</strong> (or <cite>_sys.xafsGroup</cite> if
 <strong>group</strong> is not supplied):</p>
 <blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-center">
 <colgroup>
-<col width="18%" />
-<col width="82%" />
+<col style="width: 18%" />
+<col style="width: 82%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute</th>
-<th class="head">meaning</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute</p></th>
+<th class="head"><p>meaning</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>epsilon_k</td>
-<td>estimated noise level in <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</td>
+<tbody>
+<tr class="row-even"><td><p>epsilon_k</p></td>
+<td><p>estimated noise level in <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p></td>
 </tr>
-<tr class="row-odd"><td>epsilon_r</td>
-<td>estimated noise level in <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</td>
+<tr class="row-odd"><td><p>epsilon_r</p></td>
+<td><p>estimated noise level in <span class="math notranslate nohighlight">\(\chi(R)\)</span>.</p></td>
 </tr>
-<tr class="row-even"><td>kmax_suggest</td>
-<td>suggested highest <span class="math notranslate nohighlight">\(k\)</span> value for which <span class="math notranslate nohighlight">\(|\chi(k)| &gt; \epsilon_k\)</span></td>
+<tr class="row-even"><td><p>kmax_suggest</p></td>
+<td><p>suggested highest <span class="math notranslate nohighlight">\(k\)</span> value for which <span class="math notranslate nohighlight">\(|\chi(k)| &gt; \epsilon_k\)</span></p></td>
 </tr>
 </tbody>
 </table>
@@ -853,8 +802,8 @@ small, the estimate may not be that bad.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>

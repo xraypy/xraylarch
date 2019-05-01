@@ -346,12 +346,23 @@ and so on are then given.
 .. function:: chemparse(formula)
 
    parse a chemical formula, returning a dictionary with element symbols as
-   keys and number for each element as values.  For example::
+   keys and number for each element as values.  For example, in Larch::
 
         larch> chemparse("H2O")
         {'H': 2.0, 'O': 1}
         larch> chemparse("Mg0.2Fe0.8(SO4)2")
         {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
+
+   or in Python:
+
+        >>> import larch
+	>>> from larch_plugins.xray import chemparse
+        >>> chemparse("H2O")
+        {'H': 2.0, 'O': 1}
+        >>> chemparse("Mg0.2Fe0.8(SO4)2")
+        {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
+
+
 
    Note that factional weights and scientific notation for weights is
    supported, as long as the weight begins with a number and not '.'.  That
@@ -361,9 +372,15 @@ and so on are then given.
 .. function:: material_get(name)
 
    look up chemical compound by naming returning formula (not parsed!) and
-   density.  For example::
+   density.  For example, in Larch::
 
         larch> material_get('kapton')
+        ('C22H10N2O5', 1.43)
+
+   in python::
+
+	>>> from larch_plugins.xray import material_get
+	>>> material_get('kapton')
         ('C22H10N2O5', 1.43)
 
    material names are not case sensitive.
@@ -396,9 +413,9 @@ and so on are then given.
 
     uses :func:`mu_elam`. Example::
 
-      larch> print material_mu('water', 10000.0)
+      larch> print(material_mu('water', 10000.0))
       5.32986401658495
-      larch> print material_mu('H2O', 10000.0, density=1.0)
+      larch> print(material_mu('H2O', 10000.0, density=1.0))
       5.32986401658495
 
 .. function:: material_mu_components(name_or_formula, energy, density=None)
@@ -461,6 +478,6 @@ and so on are then given.
 .. rubric:: References
 
 .. bibliography:: ../larch.bib
+   :labelprefix: Xray
    :style: unsrt
-   :labelprefix: Xray_
    :filter: docname in docnames

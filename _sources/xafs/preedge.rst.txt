@@ -300,8 +300,8 @@ pre-edge peaks.
     :param group:     output group
     :param elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
     :param ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
-    :param emax:      max energy (eV) to use for baesline fit [e0-5]
-    :param emin:      min energy (eV) to use for baesline fit [e0-40]
+    :param emax:      max energy (eV) to use for baseline fit [e0-5]
+    :param emin:      min energy (eV) to use for baseline fit [e0-40]
     :param form:      form used for baseline (see note 2)  ['lorentzian']
     :param with_line: whether to include linear component in baseline [``True``]
 

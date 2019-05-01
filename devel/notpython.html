@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>12.1. Differences between Larch and Python &#8212; larch 0.9.42 documentation</title>
+    <meta charset="utf-8" />
+    <title>12.1. Differences between Larch and Python &#8212; larch 0.9.43 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -100,8 +98,6 @@
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -127,10 +123,10 @@ on either Larch’s or Python’s parts – they have different goals.  The
 principle differences with Python are:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Using ‘end*’ instead of significant white-space for code blocks.</li>
-<li>Groups versus Modules</li>
-<li>Changing the lookup rules for finding symbol names</li>
-<li>Not implementing several python concepts, notably Class, and lambda.</li>
+<li><p>Using ‘end*’ instead of significant white-space for code blocks.</p></li>
+<li><p>Groups versus Modules</p></li>
+<li><p>Changing the lookup rules for finding symbol names</p></li>
+<li><p>Not implementing several python concepts, notably Class, and lambda.</p></li>
 </ol>
 </div></blockquote>
 <p>Each of these is discussed in more detail below.</p>
@@ -165,11 +161,11 @@ core functionality is fewer than 3000 lines of code).</p>
 and how the differences with Python arise:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The Larch-to-Python translation step converts the ‘end*’ keywords into
-significant whitespace (‘commenting out ‘endif’ etc if needed).</li>
-<li>The lookup for symbols in <strong>Name(‘c’)</strong> is done at run-time, allowing
-changes from the standard Python name lookup rules.</li>
-<li>Unimplemented Python constructs (class, lambda, etc) are parsed, but</li>
+<li><p>The Larch-to-Python translation step converts the ‘end*’ keywords into
+significant whitespace (‘commenting out ‘endif’ etc if needed).</p></li>
+<li><p>The lookup for symbols in <strong>Name(‘c’)</strong> is done at run-time, allowing
+changes from the standard Python name lookup rules.</p></li>
+<li><p>Unimplemented Python constructs (class, lambda, etc) are parsed, but</p></li>
 </ul>
 </div></blockquote>
 <p>You can also see that Python’s syntax is followed very closely, so that the
@@ -288,7 +284,7 @@ themselves).  These will be changed as the program runs.  They can be
 changed dynamically, this is not encouraged (and can lead to Larch not
 being able to work well).</p>
 <div class="versionchanged">
-<p><span class="versionmodified">Changed in version 0.9.34: </span><cite>_sys.paramGroup</cite> is no longer used.</p>
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><cite>_sys.paramGroup</cite> is no longer used.</p>
 </div>
 <p>Larch also has 2 special variables that it uses to hold references to
 groups that are <em>always</em> included in the search of names.  These are
@@ -303,12 +299,12 @@ as Python, so we left a few things out.  These include (this may not be an
 exhaustive list):</p>
 <blockquote>
 <div><ul class="simple">
-<li>eval – Larch <em>is</em> sort of a Python eval</li>
-<li>lambda</li>
-<li>class</li>
-<li>global</li>
-<li>generators, yield</li>
-<li>decorators</li>
+<li><p>eval – Larch <em>is</em> sort of a Python eval</p></li>
+<li><p>lambda</p></li>
+<li><p>class</p></li>
+<li><p>global</p></li>
+<li><p>generators, yield</p></li>
+<li><p>decorators</p></li>
 </ul>
 </div></blockquote>
 </div>
@@ -343,8 +339,8 @@ exhaustive list):</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
     </div>
   </body>
 </html>
