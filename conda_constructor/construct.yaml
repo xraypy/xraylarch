@@ -1,11 +1,11 @@
 name:  xraylarch
-version: 0.9.43rc1
+version: 0.9.43
 
 channels:
+    - https://conda.anaconda.org/gsecars/
     - http://repo.continuum.io/pkgs/main
     - http://repo.continuum.io/pkgs/free
     - http://repo.continuum.io/pkgs/msys2 [win]
-    - https://conda.anaconda.org/gsecars/
 
 welcome_image: larch_3cones.png   [win]
 
@@ -67,4 +67,4 @@ specs:
     - fabio
     - silx
     - tifffile
-    - xraylarch>=0.9
+    - xraylarch>=0.9.42
