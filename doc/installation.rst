@@ -11,11 +11,11 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.42-docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43.tar.gz
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-docs-examples.zip
 
 The latest release version of Larch is |release|.
 
@@ -76,21 +76,21 @@ If you need a versions for 32-bit Windows or Linux, contact the authors.
 
 For Windows, download the executable installer::
 
-    xraylarch-0.9.42-Windows-x86_64.exe
+    xraylarch-0.9.43-Windows-x86_64.exe
 
 and double-click to run it to install Larch
 
 For Mac OSX, download the package installer::
 
 
-    xraylarch-0.9.42-MacOSX-x86_64.pkg
+    xraylarch-0.9.43-MacOSX-x86_64.pkg
 
 and double-click to run it to install Larch.
 
 For Linux, download the shell installer file, then open a Terminal, use
 `cd` to move to the download folder (typically `Downloads`) and run::
 
-    bash xraylarch-0.9.42-Linux-x86_64.sh
+    bash xraylarch-0.9.43-Linux-x86_64.sh
 
 Once installed, you will be able to upgrade to future versions of Larch using::
 
@@ -124,11 +124,12 @@ includes a robust package manager called *conda* that makes it easy to
 update the packages it manages, including Larch.
 
 Start by installing the latest version of Anaconda Python from the
-`Anaconda Downloads`_ site.  Python 3.7 or 3.6 is recommended.  Larch will
-work with Python 2.7 too, but we're not promising it will work past version 0.9.41.
+`Anaconda Downloads`_ site.  Python 3.7 is recommended.  Larch should work
+with Python 3.6, may work with Python 3.5, but will no longer work with
+Python 2.7.
 
-Once that is installed, you can open a Terminal (on Linux or Mac OSX) or the
-Anaconda prompt (on Windows) and type::
+Once Anaconda Python is installed, you can open a Terminal (on Linux or Mac
+OSX) or the Anaconda prompt (on Windows) and type::
 
     conda install -yc GSECARS xraylarch
 
@@ -140,8 +141,8 @@ Applications (MacOS) for the main Larch applications, you can then type::
     larch -m
 
 
-If that complains that it does not find `larch`, you may have to do something
-like::
+If that complains that it does not find `larch`, you may have to explicitly
+give the path to Python and/or Larch::
 
    $HOME/xraylarch/bin/larch -m
 
@@ -152,9 +153,9 @@ from Linux or MacOSX or::
 from Windows.
 
 
-By using Anaconda Python, updates are very easy for us to make and for you
-to install.  As new releases of Larch and the required packages are
-released, you can get the latest versions with::
+Anaconda Python makes updates very easy for us to provide and for you to
+install.  As new releases of Larch and the required packages are released,
+you can get the latest versions with::
 
    conda update --all
 
@@ -162,20 +163,14 @@ released, you can get the latest versions with::
 Python Versions: 3.7, 3.6, or 2.7?
 ============================================
 
-As of this writing (February, 2019) there are three main supported versions of
+As of this writing (April, 2019) there are three main supported versions of
 Python: Version 3.7, Version 3.6, and Version 2.7.  We have moved to using
-Python 3 by default.  The installers above use Python 3.6.  Most of the
-dependencies and tools will work with Python 3.7, but we have not gotten all
-the tools working together with Python 3.7 yet.  We expect that Larch 0.9.43
-will use 3.7.
+Python 3 by default.  The installers above use Python 3.7.  Most of the
+dependencies and tools will work with Python 3.6, and perhaps even with
+Python 3.5, though we are no longer testing with Python 3.5.
 
-Up to version 0.9.41, Larch still works with Python 2.7.  With the release
-of Larch 0.9.41, we stopped testing and supporting Python 2.7, but promised
-to not intentionally break anything until 0.9.42 is relasead.
+Python 2.7 is no longer supported.
 
-With Larch version 0.9.42, Python 2.7 is no longer supported.  You may be
-able to get Larch to work with Python 2.7 or 3.5, but we cannot help you if
-things do no work properly.
 
 
 Source Installation
@@ -199,7 +194,6 @@ There are several required packages and a few "highly recommended" packages
 for Larch.  These are listed in the next section.
 
 
-
 Prerequisites
 ~~~~~~~~~~~~~~~~~~~
 
@@ -221,11 +215,11 @@ normally be installed by default or are easily available from with `conda` or
   +================+=============+=============================+
   | numpy          | 1.15        | required                    |
   +----------------+-------------+-----------------------------+
-  | scipy          | 0.19        | required                    |
+  | scipy          | 1.1         | required                    |
   +----------------+-------------+-----------------------------+
   | six            | 1.10        | required                    |
   +----------------+-------------+-----------------------------+
-  | matplotlib     | 2.0         | required                    |
+  | matplotlib     | 3.0         | required                    |
   +----------------+-------------+-----------------------------+
   | sqlalchemy     | 0.9         | required                    |
   +----------------+-------------+-----------------------------+
@@ -241,7 +235,7 @@ normally be installed by default or are easily available from with `conda` or
   +----------------+-------------+-----------------------------+
   | asteval        | 0.9.13      | required                    |
   +----------------+-------------+-----------------------------+
-  | lmfit          | 0.9.12      | required                    |
+  | lmfit          | 0.9.13      | required                    |
   +----------------+-------------+-----------------------------+
   | uncertainties  | 3.0.3       | required                    |
   +----------------+-------------+-----------------------------+
@@ -257,33 +251,33 @@ normally be installed by default or are easily available from with `conda` or
   +----------------+-------------+-----------------------------+
   | wxutils        | 0.2.3       | required for GUIs           |
   +----------------+-------------+-----------------------------+
+  | scikit-image   |             | needed for tomography maps  |
+  +----------------+-------------+-----------------------------+
+  | tomopy         | 1.3.0       | recommended for tomography  |
+  +----------------+-------------+-----------------------------+
+  | silx           | 0.9.0       | needed to read Spec files   |
+  +----------------+-------------+-----------------------------+
+  | pyFAI          |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
+  | fabio          |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
+  | PyCifRW        |             | needed for XRD              |
+  +----------------+-------------+-----------------------------+
   | pyepics        | 3.3.3       | needed for using Epics      |
   +----------------+-------------+-----------------------------+
-  |scikit-image    |             | needed for tomography maps  |
+  |epicsscan       | 0.5         | needed for epics scanning   |
   +----------------+-------------+-----------------------------+
-  |tomopy          | 1.3.0       | recommended for tomography  |
-  +----------------+-------------+-----------------------------+
-  |pyFAI           |             | needed for XRD              |
-  +----------------+-------------+-----------------------------+
-  |fabio           |             | needed for XRD              |
-  +----------------+-------------+-----------------------------+
-  |PyCifRW         |             | needed for XRD              |
-  +----------------+-------------+-----------------------------+
-  |epicsscan       |             | needed for epics scanning   |
-  +----------------+-------------+-----------------------------+
-  |psycopg2        |             | needed for epics scanning   |
-  +----------------+-------------+-----------------------------+
-  |silx            |             | needed to read Spec files   |
+  | psycopg2       |             | needed for epics scanning   |
   +----------------+-------------+-----------------------------+
 
 
-These are all available from PyPI (the Python Package Index), and for Anaconda
-Python 3.7 and 3.6.  The packages not included with core
+All of these modules are available from PyPI (the Python Package Index),
+and for Anaconda Python 3.7 and 3.6.  The packages not included with core
 Anaconda packages are available on the GSECARS conda channel, and will be
 installed with `conda install -c GSECARS xraylarch`.  If you're installing
 from source or using a Python distribution other than Anaconda, all these
-packages are also available from PyPI and can be installed with `pip install
-<packagename>` or `conda install -c GSECARS <packagename>`.
+packages are also available from PyPI and can be installed with `pip
+install <packagename>` or `conda install -c GSECARS <packagename>`.
 
 Optional Modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
