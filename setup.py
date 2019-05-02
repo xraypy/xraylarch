@@ -53,8 +53,7 @@ xrd_modules  = {'pyFAI': 'pyFAI', 'CifFile' : 'PyCifRW', 'fabio': 'fabio',
                 'dioptas': 'Dioptas'}
 
 tomo_modules = {'tomopy': 'tomopy', 'skimage': 'scikit-image'}
-epics_modules = {'epics': 'pyepics', 'epicsscan': 'epicsscan',
-                 'psycopg2': 'psycopg2'}
+epics_modules = {'epics': 'pyepics'}
 
 spec_modules = {'silx': 'silx'}
 pca_modules = {'sklearn': 'scikit-learn'}
@@ -153,6 +152,8 @@ if INSTALL:
         if os.path.exists(fname):
             shutil.rmtree(fname)
 
+with open('requirements.txt', 'r') as f:
+    install_reqs = f.read().splitlines()
 
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
@@ -163,6 +164,8 @@ setup(name = 'xraylarch',
       download_url = 'http://xraypy.github.io/xraylarch/',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
+      python_requires='>=3.5.1',
+      install_requires=install_reqs,
       packages = packages,
       package_data={'larch': package_data},
       entry_points = {'console_scripts' : larch_apps},
@@ -170,6 +173,7 @@ setup(name = 'xraylarch',
       classifiers=['Intended Audience :: Science/Research',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
+                   'License :: OSI Approved :: BSD License',
                    'Topic :: Scientific/Engineering'],
       )
 
