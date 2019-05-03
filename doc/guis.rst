@@ -19,38 +19,40 @@ interacting, and processing data.  The main GUIs for Larch are
 
   * :ref:`XAS Viewer <xasviewer-chapter>`: Visualization and Analysis of  XAS data.
   * :ref:`GSE_Mapviewer <gsemapviewer-chapter>`: visualization and Analysis of XRF and XRD maps.
-  * `larch_gui`: simple command-line + data browser for Larch.
+  * :ref:`larch_gui <larchgui-section>`: simple command-line + data browser for Larch.
 
+.. _larchgui-section:
 
 Basic Larch GUI
 ==========================
 
 
-The simplest and most common Graphical Interface to Larch provides a simple
-interactive view of a Larch session, showing data and methods and the Larch
-commands entered into the session.
+The simplest Graphical Interface to Larch provides a basic interactive
+Larch session, showing data and methods and commands using the Larch DSL
+entered into the session.
 
 .. image::  _images/LarchGUI.png
    :target: _images/LarchGUI.png
    :width: 45%
 
-This Graphical Interface enables an interactive Larch session, with a
-command-line interface at the bottom of the screen.  In this window, you
-can copy or type Larch commands.  When you hit Enter or Return, the command
+This Graphical Interface shows a command-line interface at the bottom of
+the screen.  In this window, you can copy or type Larch commands -- that is
+commands in the Larch language.  When you hit Enter or Return, the command
 will be executed.  The history of the commands and any outputs written by
 the command will be displayed in the output panel taking up most of the
 bottom half of the main window.  The top part of the window shows a Data
-Browser, from which you can browse through the various groups for modules
-and datasets, and examine their contents, view function documentation and
-so on.
+Browser which allows you to browse through the various groups for modules
+and datasets, and examine their contents and view function documentation
+and so on.
 
 This Graphical User Interface is deliberately basic, giving a low-level
-interface to Larch commands and data.  This is mainly intended for
-scripting analysis and debugging.  From the File Menu you can read in data
-from text column files (using one of :func:`_io.read_ascii`, :func:`_io.read_xdi`,
-or :func:`_io.read_gsexdi` as appropriate) or from Athena Project files (using
-:func:`_io.read_athena` and :func:`_io.extract_athenagroup`).  You can also load
-and run a text file of commands or save the commands run in a session to a file.
+interface to Larch commands and data, and is mainly intended for scripting
+analysis and debugging.  From the File Menu you can read in data from text
+column files (using one of :func:`_io.read_ascii`, :func:`_io.read_xdi`, or
+:func:`_io.read_gsexdi` as appropriate) or from Athena Project files (using
+:func:`_io.read_athena` and :func:`_io.extract_athenagroup`).  You can also
+load and run a text file of commands or save the commands run in a session
+to a file.
 
 The main Larch GUI also provides simple launchers for several of the main
 Larch Applications, including XAS Viewer.
