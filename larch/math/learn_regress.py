@@ -11,7 +11,8 @@ from sklearn.cross_decomposition import PLSRegression, PLSCanonical, PLSSVD, CCA
 from sklearn.model_selection import KFold, RepeatedKFold
 from sklearn.linear_model import LassoLarsCV, LassoLars, LassoCV, Lasso
 
-from .. import Group
+from .. import Group, isgroup
+
 from .utils import interp
 from .lincombo_fitting import get_arrays, groups2matrix
 
@@ -225,9 +226,12 @@ def lasso_predict(group, model, _larch=None):
     -------
       predict value of external variable for the group
     """
-    if not model.__repr__().startswith('Lasso'):
-        raise ValueError("pls_predict needs a Lasso training model")
-    return _predict(group, model)
+    valid = (isgroup(model) and hasattr(model, 'model') and
+             hasattr(model, 'x') and hasattr(model, 'arrayname') and
+             model.model.__repr__().startswith('PLS'))
+    if not valid:
+        raise ValueError("lasso_predict needs a Lasso training model")
+    return _predict(group, mod)
 
 def pls_predict(group, model, _larch=None):
     """
@@ -242,6 +246,9 @@ def pls_predict(group, model, _larch=None):
     -------
       predict value of external variable for the group
     """
-    if not model.__repr__().startswith('PLS'):
+    valid = (isgroup(model) and hasattr(model, 'model') and
+             hasattr(model, 'x') and hasattr(model, 'arrayname') and
+             model.model.__repr__().startswith('PLS'))
+    if not valid:
         raise ValueError("pls_predict needs a PLS training model")
     return _predict(group, model)
