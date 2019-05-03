@@ -180,7 +180,6 @@ class XASController():
                     pos = p1.GetPosition()
                     pos[0] += int(siz[0]/4)
                     pos[1] += int(siz[1]/4)
-                    print("Setting Plotter size ", pos)
                     out.SetSize(pos)
                     if not stacked:
                         out.SetSize(siz)
