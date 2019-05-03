@@ -14,7 +14,7 @@ wxapps='gse_dtcorrect gse_mapviewer larch xas_viewer xrd1d_viewer xrd2d_viewer x
 for wapp in $wxapps; do
     sed 's|bin/python|python.app/Contents/MacOS/python|g' $PREFIX/bin/$wapp > TMP
     mv TMP $PREFIX/bin/$wapp
-    chomd +x $PREFIX/bin/$wapp
+    chmod +x $PREFIX/bin/$wapp
 done
 
 
