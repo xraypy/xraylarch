@@ -26,6 +26,6 @@ More details and screenshots are shown in the following pages.
 .. toctree::
    :maxdepth: 2
 
-   larch_gui
-   mapviewer
-   xasviewer
+   xasviewer/index.html
+   gse_mapviewer/index.html
+   larch_gui/index.html

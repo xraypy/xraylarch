@@ -1,4 +1,4 @@
-.. _guis-mapviewer:
+.. _gsemapviewer-chapter:
 
 ==========================
 GSECARS Mapviewr

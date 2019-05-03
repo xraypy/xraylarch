@@ -5,7 +5,7 @@
     :width: 18pt
     :height: 18pt
 
-.. _guis-xas_viewer:
+.. _xasviewer-chapter:
 
 XASViewer
 =======================
