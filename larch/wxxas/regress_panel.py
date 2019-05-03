@@ -356,8 +356,8 @@ class RegressionPanel(TaskPanel):
 
         for fname in self.controller.filelist.GetCheckedStrings():
             gname = self.controller.file_groups[fname]
-            cmd = "%s.%s = %s_predict(%s, lasso_model)" % (gname, varname,
-                                                           self.method, gname)
+            cmd = "%s.%s = %s_predict(%s, reg_model)" % (gname, varname,
+                                                         self.method, gname)
             self.larch_eval(cmd)
             val = self.larch_get('%s.%s' % (gname, varname))
             if fname in gent:
