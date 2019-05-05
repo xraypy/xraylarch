@@ -462,7 +462,7 @@ class FitResultFrame(wx.Frame):
         model_repr = result.model._reprstring(long=True)
         for word in model_repr.split('Model('):
             if ',' in word:
-                pref, suff = word.split(', ')
+                pref, suff = word.split(', ', 1)
                 parts.append( ("%sModel(%s" % (pref.title(), suff) ))
             else:
                 parts.append(word)
@@ -802,8 +802,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         mclass_kws = {'prefix': prefix}
         if 'step' in model.lower():
             form = model.lower().replace('step', '').strip()
-
-            if form.startswith('err'): form = 'erf'
+            if form.startswith('err'):
+                form = 'erf'
             label = "Step(form='%s', prefix='%s')" % (form, prefix)
             title = "%s: Step %s" % (prefix[:-1], form[:3])
             mclass = lm_models.StepModel
@@ -1108,9 +1108,10 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                         _cen = this.name
                     elif parwids.param.name.endswith('_amplitude'):
                         _amp = this.name
+                compargs = ["%s='%s'" % (k,v) for k,v in comp.mclass_kws.items()]
+                modcmds.append("peakmodel %s %s(%s)" % (modop, comp.mclass.__name__,
+                                                        ', '.join(compargs)))
 
-                modcmds.append("peakmodel %s %s(prefix='%s')" % (modop, comp.mclass.__name__,
-                                                                 comp.mclass_kws['prefix']))
                 modop = "+="
                 if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
                     peaks.append((_amp, _cen))
