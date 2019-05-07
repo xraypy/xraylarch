@@ -506,7 +506,7 @@ class FitResultFrame(wx.Frame):
 class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='prepreaks_config',
+                           configname='prepeaks_config',
                            config=defaults, **kws)
 
         self.fit_components = OrderedDict()
@@ -769,6 +769,13 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
         opts = self.read_form()
+        dgroup = self.controller.get_group()
+
+        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
+prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
+                  elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
+        self.larch_eval(pcmd.format(**opts))
+
         cmd = "plot_prepeaks_fit"
         args = ['{gname}']
         if baseline_only:
@@ -916,6 +923,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
+        self.fitmodel_btn.Enable()
+
 
     def onDeleteComponent(self, evt=None, prefix=None):
         fgroup = self.fit_components.get(prefix, None)
@@ -930,6 +939,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             setattr(fgroup, attr, None)
 
         self.fit_components.pop(prefix)
+        if len(self.fit_components) < 1:
+            self.fitmodel_btn.Disable()
 
         # sx,sy = self.GetSize()
         # self.SetSize((sx, sy+1))
@@ -1089,6 +1100,12 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         modcmds = ["## define pre-edge peak model"]
         modop = " ="
         opts = self.read_form()
+
+        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
+prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
+               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
+        self.larch_eval(pcmd.format(**opts))
+
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1122,7 +1139,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
 
         cmds.extend(modcmds)
-
         cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
                                                user_opts=repr(opts)))
 
@@ -1131,7 +1147,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
     def onFitSelected(self, event=None):
         dgroup = self.controller.get_group()
         self.build_fitmodel(dgroup)
-        # print("fitting selected groups in progress")
 
     def onFitModel(self, event=None):
         dgroup = self.controller.get_group()
@@ -1139,6 +1154,16 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
             return
         self.build_fitmodel(dgroup)
         opts = self.read_form()
+
+        dgroup = self.controller.get_group()
+        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
+prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
+               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
+        self.larch_eval(pcmd.format(**opts))
+
+        ppeaks = dgroup.prepeaks
+
+
         # add bkg_component to saved user options
         bkg_comps = []
         for label, comp in self.fit_components.items():
