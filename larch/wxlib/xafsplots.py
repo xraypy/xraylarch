@@ -873,24 +873,26 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
         ncolor = 1
 
     if ycomps is not None:
+        ncomps = len(ycomps)
         if not subtract_baseline:
             ncolor += 1
             _oplot(xdat, baseline, label='baseline', delay_draw=True,
                    style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], **popts)
 
-        for label, ycomp in ycomps.items():
+        for icomp, label in enumerate(ycomps):
+            ycomp = ycomps[label]
             if label in opts['bkg_components']:
                 continue
             ncolor =  (ncolor+1) % 10
-            _oplot(xdat, ycomp, label=label, delay_draw=True,
+            _oplot(xdat, ycomp, label=label, delay_draw=(icomp != ncomps-1),
                    style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], **popts)
 
     if opts['show_fitrange']:
         for attr in ('emin', 'emax'):
             _plot_axvline(opts[attr], ymin=0, ymax=1,
-                          delay_draw=True, color='#DDDDCC',
+                          delay_draw=False, color='#DDDDCC',
                           label='_nolegend_', **popts)
 
     if opts['show_centroid']:
@@ -900,10 +902,10 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             if pcen is not None:
                 pcen = pcen.value
         if pcen is not None:
-            _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
+            _plot_axvline(pcen, delay_draw=False, ymin=0, ymax=1,
                           color='#EECCCC', label='_nolegend_', **popts)
 
-    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0), stacked=show_residual,
+    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
            ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
 
 def _pca_ncomps(result, min_weight=0, ncomps=None):
