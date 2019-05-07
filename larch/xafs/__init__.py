@@ -25,7 +25,7 @@ from scipy import constants
 
 from .xafsutils import KTOE, ETOK, set_xafsGroup, etok, ktoe, guess_energy_units
 from .xafsft import xftf, xftr, xftf_fast, xftr_fast, ftwindow, xftf_prep
-from .pre_edge import pre_edge, preedge, find_e0, pre_edge_baseline
+from .pre_edge import pre_edge, preedge, find_e0, pre_edge_baseline, prepeaks_setup
 from .feffdat import FeffDatFile, FeffPathGroup, feffpath, path2chi, ff2chi
 from .feffit import (FeffitDataSet, TransformGroup, feffit,
                      feffit_dataset, feffit_transform, feffit_report)
@@ -122,6 +122,7 @@ _larch_builtins = {'_xafs': dict(autobk=autobk, etok=etok, ktoe=ktoe,
                                  xftf_prep=xftf_prep, xftf_fast=xftf_fast,
                                  xftr_fast=xftr_fast, ftwindow=ftwindow,
                                  find_e0=find_e0, pre_edge=pre_edge,
+                                 prepeaks_setup=prepeaks_setup,
                                  pre_edge_baseline=pre_edge_baseline,
                                  mback=mback, mback_norm=mback_norm,
                                  cauchy_wavelet=cauchy_wavelet,
