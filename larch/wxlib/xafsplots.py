@@ -903,7 +903,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
             _plot_axvline(pcen, delay_draw=True, ymin=0, ymax=1,
                           color='#EECCCC', label='_nolegend_', **popts)
 
-    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0),
+    redraw(win=win, xmin=dx0, xmax=dx1, ymin=min(dy0, fy0), stacked=show_residual,
            ymax=max(dy1, fy1), show_legend=True, _larch=_larch)
 
 def _pca_ncomps(result, min_weight=0, ncomps=None):
