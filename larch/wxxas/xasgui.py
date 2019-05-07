@@ -966,6 +966,10 @@ class XASFrame(wx.Frame):
             dgroup = self.install_group(gid, gname, process=True, plot=False)
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
+
+        if len(namelist) > 0:
+            gname = self.controller.file_groups[namelist[0]]
+            self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
 
     def onRead_OK(self, script, path, groupname=None, array_sel=None,
