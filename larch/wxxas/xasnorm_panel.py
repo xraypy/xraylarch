@@ -120,7 +120,7 @@ class XASNormPanel(TaskPanel):
                                        action=self.onVoffset, **opts)
 
 
-        xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0, **opts)
+        xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val, **opts)
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
                                       with_pin=False, **opts)
 
@@ -451,10 +451,18 @@ class XASNormPanel(TaskPanel):
                 self.process(grp, noskip=True)
 
     def onSet_XASE0(self, evt=None, value=None):
+        "handle setting auto e0 / show e0"
+        auto_e0  = self.wids['auto_e0'].GetValue()
+        self.update_config({'e0': self.wids['e0'].GetValue(),
+                           'auto_e0':self.wids['auto_e0'].GetValue()})
+        time.sleep(0.01)
+        wx.CallAfter(self.onReprocess)
+
+    def onSet_XASE0Val(self, evt=None, value=None):
         "handle setting e0"
         self.wids['auto_e0'].SetValue(0)
         self.update_config({'e0': self.wids['e0'].GetValue(),
-                           'auto_e0': False})
+                            'auto_e0':self.wids['auto_e0'].GetValue()})
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -464,7 +472,6 @@ class XASNormPanel(TaskPanel):
         self.wids['auto_step'].SetValue(0)
         self.update_config({'edge_step': edge_step, 'auto_step': False})
         autoset_fs_increment(self.wids['step'], edge_step)
-
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
