@@ -761,7 +761,7 @@ def plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True,
     title = "pre_edge baseline\n %s" % dgroup.filename
 
     popts = dict(xmin=px0, xmax=px1, ymin=py0, ymax=py1, title=title,
-                 xlabel='Energy (eV)', ylabel='mu', delay_draw=True,
+                 xlabel='Energy (eV)', ylabel='mu (normalized)', delay_draw=True,
                  show_legend=True, style='solid', linewidth=3,
                  label='data', new=True,
                  marker='None', markersize=4, win=win, _larch=_larch)
@@ -822,7 +822,7 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     opts = result.user_options
     xeps = min(diff(dgroup.xdat)) / 5.
     xdat = 1.0*result.energy
-    ydat = 1.0*result.mu
+    ydat = 1.0*result.norm
 
     xdat_full = 1.0*dgroup.xdat
     ydat_full = 1.0*dgroup.ydat
