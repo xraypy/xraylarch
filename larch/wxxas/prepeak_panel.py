@@ -114,16 +114,18 @@ prepeaks_setup(energy={group:s}.energy, norm={group:s}.ydat, group={group:s},
                elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 """
 
-COMMANDS['set_yerr_const'] = "{group}.prepeaks.dmu = {group}.yerr*ones(len({group}.prepeaks.mu))"
-COMMANDS['set_yerr_array'] = """{group}.prepeaks.dmu = 1.0*{group}.yerr[{imin:d}:{imax:d}]
+COMMANDS['set_yerr_const'] = "{group}.prepeaks.norm_std = {group}.yerr*ones(len({group}.prepeaks.norm))"
+COMMANDS['set_yerr_array'] = """
+{group}.prepeaks.norm_std = 1.0*{group}.yerr[{imin:d}:{imax:d}]
 yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
-{group}.prepeaks.dmu[where({group}.yerr < yerr_min)] = yerr_min"""
+{group}.prepeaks.norm_std[where({group}.yerr < yerr_min)] = yerr_min
+"""
 
 COMMANDS['dofit'] = """# do fit
-peakresult = peakmodel.fit({group}.prepeaks.mu, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.dmu)
+peakresult = peakmodel.fit({group}.prepeaks.norm, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.norm_std)
 peakresult.energy   = {group}.prepeaks.energy[:]
-peakresult.mu       = {group}.prepeaks.mu[:]
-peakresult.dmu      = {group}.prepeaks.dmu[:]
+peakresult.norm     = {group}.prepeaks.norm[:]
+peakresult.norm_std = {group}.prepeaks.norm_std[:]
 peakresult.ycomps   = peakmodel.eval_components(params=peakresult.params, x={group}.prepeaks.energy)
 peakresult.init_fit = {group}.prepeaks.init_fit[:]
 peakresult.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
@@ -1176,16 +1178,24 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         imin, imax = self.get_xranges(dgroup.xdat)
 
-        if not hasattr(dgroup, 'yerr'):
-            dgroup.yerr = 1.0
+        cmds = ["## do peak fit: "]
 
         yerr_type = 'set_yerr_const'
-        if  isinstance(dgroup.yerr, np.ndarray):
-            yerr_type = 'set_yerr_array'
+        if getattr(dgroup, 'yerr', 1.0)  == 1.0:
+            if hasattr(dgroup, 'norm_std'):
+                cmds.append("{group}.yerr = {group}.norm_std")
+                yerr_type = 'set_yerr_array'
+            elif hasattr(dgroup, 'mu_std'):
+                cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
+                yerr_type = 'set_yerr_array'
+            else:
+                cmds.append("{group}.yerr = 1")
+        else:
+            if isinstance(dgroup.yerr, np.ndarray):
+                yerr_type = 'set_yerr_array'
 
-        cmds = ["## do peak fit: ",
-                COMMANDS[yerr_type],
-                COMMANDS['dofit']]
+
+        cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
 
         cmd = '\n'.join(cmds)
         self.larch_eval(cmd.format(group=dgroup.groupname,
