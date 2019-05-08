@@ -344,6 +344,9 @@ class PCAPanel(TaskPanel):
             nsig = r.nsig
             wmin = r.variances[nsig-1]
             self.wids['weight_min'].SetValue(wmin)
+        else:
+            nsig = np.where(r.variances < wmin)[0][0] - 1
+
 
         status = " Model built, %d of %d components have weight > %.4f"
         self.wids['status'].SetLabel(status %  (nsig, ncomps, wmin))
