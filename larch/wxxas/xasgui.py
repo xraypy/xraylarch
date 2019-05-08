@@ -208,7 +208,8 @@ class XASController():
     def merge_groups(self, grouplist, master=None, yarray='mu', outgroup=None):
         """merge groups"""
         cmd = """%s = merge_groups(%s, master=%s,
-        xarray='energy', yarray='%s', kind='cubic', trim=True)"""
+        xarray='energy', yarray='%s', kind='cubic', trim=True)
+        """
         glist = "[%s]" % (', '.join(grouplist))
         outgroup = fix_varname(outgroup.lower())
         if outgroup is None:
@@ -1038,8 +1039,6 @@ class XASFrame(wx.Frame):
         """add groupname / filename to list of available data groups"""
 
         thisgroup = getattr(self.larch.symtable, groupname)
-        thisgroup.groupname = groupname
-        thisgroup.filename = filename
 
         datatype = getattr(thisgroup, 'datatype', 'raw')
         # file /group may already exist in list
@@ -1048,6 +1047,11 @@ class XASFrame(wx.Frame):
             while i < 10000 and filename in self.controller.file_groups:
                 filename = "%s_%d" % (fbase, i)
                 i += 1
+
+        cmds = ["%s.groupname = '%s'" % (groupname, groupname),
+               "%s.filename = '%s'" % (groupname, filename)]
+
+        self.larch.eval('\n'.join(cmds))
 
         self.controller.filelist.Append(filename)
         self.controller.file_groups[filename] = groupname
