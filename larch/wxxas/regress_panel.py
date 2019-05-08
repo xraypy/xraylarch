@@ -356,6 +356,8 @@ class RegressionPanel(TaskPanel):
 
         for fname in self.controller.filelist.GetCheckedStrings():
             gname = self.controller.file_groups[fname]
+            grp   = self.controller.get_group(gname)
+            extval = getattr(grp, opts['varname'], 0)
             cmd = "%s.%s = %s_predict(%s, reg_model)" % (gname, varname,
                                                          self.method, gname)
             self.larch_eval(cmd)
@@ -363,7 +365,7 @@ class RegressionPanel(TaskPanel):
             if fname in gent:
                 grid_data[gent[fname]][2] = val
             else:
-                grid_data.append([fname, 0, val])
+                grid_data.append([fname, extval, val])
             self.wids['table'].table.data = grid_data
             self.wids['table'].table.View.Refresh()
 
