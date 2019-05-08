@@ -11,7 +11,9 @@ Table of Contents
    installation.rst
    community.rst
    overview.rst
-   guis/index.rst
+   guis.rst
+   xasviewer/index.rst
+   gsemapviewer/index.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst
