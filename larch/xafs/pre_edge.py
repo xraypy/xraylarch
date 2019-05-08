@@ -392,7 +392,7 @@ def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
     A group named 'prepeaks' will be created in the output group, with the following
     attributes:
         energy        energy array for pre-edge peaks = energy[emin:emax]
-        mu            spectrum over pre-edge peak energies
+        norm          spectrum over pre-edge peak energies
 
     Notes
     -----
@@ -449,20 +449,22 @@ def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
     imax = index_of(energy, emax+dele)
 
     edat = energy[imin: imax+1]
-    mu   = norm[imin:imax+1]
+    norm = norm[imin:imax+1]
 
     if not hasattr(group, 'prepeaks'):
-        group.prepeaks = Group(energy=edat, mu=mu,
+        group.prepeaks = Group(energy=edat, norm=norm,
                                emin=emin, emax=emax,
                                elo=elo, ehi=ehi)
     else:
         group.prepeaks.energy = edat
-        group.prepeaks.mu = mu
+        group.prepeaks.norm = norm
         group.prepeaks.emin = emin
         group.prepeaks.emax = emax
         group.prepeaks.elo = elo
         group.prepeaks.ehi = ehi
 
+    group.prepeaks.xdat = edat
+    group.prepeaks.ydat = norm
     return
 
 @Make_CallArgs(["energy", "norm"])
@@ -495,9 +497,8 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     attributes:
         energy        energy array for pre-edge peaks = energy[emin:emax]
         baseline      fitted baseline array over pre-edge peak energies
-        mu            spectrum over pre-edge peak energies
+        norm          spectrum over pre-edge peak energies
         peaks         baseline-subtraced spectrum over pre-edge peak energies
-        dmu           estimated uncertainty in peaks from fit
         centroid      estimated centroid of pre-edge peaks (see note 3)
         peak_energies list of predicted peak energies (see note 4)
         fit_details   details of fit to extract pre-edge peaks.
@@ -578,18 +579,18 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
 
     # energy including pre-edge peaks, for output
     edat = energy[imin: imax+1]
-    mu   = norm[imin:imax+1]
-    bline = peaks = dpeaks = mu*0.0
+    norm = norm[imin:imax+1]
+    bline = peaks = dpeaks = norm*0.0
 
-    # get baseline and resulting mu over edat range
+    # get baseline and resulting norm over edat range
     if result is not None:
         bline = result.eval(result.params, x=edat)
-        peaks = mu-bline
+        peaks = norm-bline
 
         # estimate centroid
         cen = (edat*peaks).sum() / peaks.sum()
 
-        # uncertainty in mu includes only uncertainties in baseline fit
+        # uncertainty in norm includes only uncertainties in baseline fit
         # and uncertainty in centroid:
         try:
             dpeaks = result.eval_uncertainty(result.params, x=edat)
@@ -606,7 +607,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
             peak_energies = [edat[pid] for pid in peak_ids]
 
     group = set_xafsGroup(group, _larch=_larch)
-    group.prepeaks = Group(energy=edat, mu=mu, baseline=bline,
+    group.prepeaks = Group(energy=edat, norm=norm, baseline=bline,
                            peaks=peaks, delta_peaks=dpeaks,
                            centroid=cen, delta_centroid=dcen,
                            peak_energies=peak_energies,
