@@ -59,7 +59,7 @@ and so "fits in" with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.
 
 These three of these approaches are exposed in the XAS Viewer application
-described in Chapter :ref:`guis-xas_viewer`, and the documentation here
+described in Chapter :ref:`xasviewer-chapter`, and the documentation here
 largely reflects the operations done there.
 
 But first a note for all XANES analysis.  All these methods rely on

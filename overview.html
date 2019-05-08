@@ -1,11 +1,13 @@
 
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
-    <title>3. Larch: Motivation and Overview &#8212; larch 0.9.43 documentation</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3. Larch: Motivation and Overview &#8212; larch 0.9.44 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -18,7 +20,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="4. Larch GUIs" href="guis/index.html" />
+    <link rel="next" title="4. Larch GUIs" href="guis.html" />
     <link rel="prev" title="2. Larch Community and Support" href="community.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
@@ -50,7 +52,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="guis/index.html" title="4. Larch GUIs"
+          <a href="guis.html" title="4. Larch GUIs"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="community.html" title="2. Larch Community and Support"
@@ -80,7 +82,7 @@
   <p class="topless"><a href="community.html"
                         title="previous chapter">2. Larch Community and Support</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="guis/index.html"
+  <p class="topless"><a href="guis.html"
                         title="next chapter">4. Larch GUIs</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -95,6 +97,8 @@
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -165,9 +169,9 @@ write code that is both valid Python and Larch.</p>
 points should be made:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p>All data items in Larch are really Python objects.</p></li>
-<li><p>All Larch code is translated into Python and then run using builtin
-Python tools.</p></li>
+<li>All data items in Larch are really Python objects.</li>
+<li>All Larch code is translated into Python and then run using builtin
+Python tools.</li>
 </ol>
 </div></blockquote>
 <p>In a sense, Larch is a dialect of Python.  Thus an understanding Larch and
@@ -224,26 +228,26 @@ Parameters to determine its value as a constrained value.</p>
 <p>At this writing, Larch has the following general capabilities:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>a full suite of mathematical functionality, with array handling
-builtin (so that functions work on full arrays).</p></li>
-<li><p>a general purpose language with flow-control (for and while loops),
-and conditional evaluation (if-then-else).</p></li>
-<li><p>some built-in I/O functionality for ASCII files and HDF5.</p></li>
-<li><p>simple line plots, with customizable line properties.</p></li>
-<li><p>simple 2-D image dispays, with some rudimentary customization.</p></li>
-<li><p>general-purpose minimization and curve-fitting.</p></li>
+<li>a full suite of mathematical functionality, with array handling
+builtin (so that functions work on full arrays).</li>
+<li>a general purpose language with flow-control (for and while loops),
+and conditional evaluation (if-then-else).</li>
+<li>some built-in I/O functionality for ASCII files and HDF5.</li>
+<li>simple line plots, with customizable line properties.</li>
+<li>simple 2-D image dispays, with some rudimentary customization.</li>
+<li>general-purpose minimization and curve-fitting.</li>
 </ul>
 </div></blockquote>
 <p>For XAFS analysis in particular, Larch is able to do essentially all the data processing
 and analysis steps that Ifeffit can do, including:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>pre-edge background subtraction and normalization</p></li>
-<li><p>background subtraction for isolating chi(k)</p></li>
-<li><p>XAFS Fourier transforms</p></li>
-<li><p>reading and manipulating Feff Path files</p></li>
-<li><p>fitting Feff Paths to XAFS data</p></li>
-<li><p>general-purpose minimization and curve-fitting.</p></li>
+<li>pre-edge background subtraction and normalization</li>
+<li>background subtraction for isolating chi(k)</li>
+<li>XAFS Fourier transforms</li>
+<li>reading and manipulating Feff Path files</li>
+<li>fitting Feff Paths to XAFS data</li>
+<li>general-purpose minimization and curve-fitting.</li>
 </ul>
 </div></blockquote>
 </div>
@@ -262,7 +266,7 @@ and analysis steps that Ifeffit can do, including:</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="guis/index.html" title="4. Larch GUIs"
+          <a href="guis.html" title="4. Larch GUIs"
              >next</a> |</li>
         <li class="right" >
           <a href="community.html" title="2. Larch Community and Support"
@@ -278,7 +282,7 @@ and analysis steps that Ifeffit can do, including:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.0.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
   </body>
 </html>
