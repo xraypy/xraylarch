@@ -134,7 +134,10 @@ class XASController():
 
         for key, value in config.items():
             setattr(_larch.symtable._sys.xas_viewer, key, value)
-        os.chdir(config['workdir'])
+        try:
+            os.chdir(config['workdir'])
+        except:
+            pass
         self.wxparent.SetIcon(wx.Icon(self.get_iconfile(), wx.BITMAP_TYPE_ICO))
 
     def make_default_config(self):
