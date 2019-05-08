@@ -441,11 +441,13 @@ def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
     if ehi > emax:
         ehi, emax = emax, ehi
 
+    dele = 1.e-13 + min(np.diff(energy))/5.0
 
-    ilo  = index_of(energy, elo)
-    ihi  = index_of(energy, ehi)
-    imin = index_of(energy, emin)
-    imax = index_of(energy, emax)
+    ilo  = index_of(energy, elo+dele)
+    ihi  = index_of(energy, ehi+dele)
+    imin = index_of(energy, emin+dele)
+    imax = index_of(energy, emax+dele)
+
     edat = energy[imin: imax+1]
     mu   = norm[imin:imax+1]
 
@@ -460,6 +462,7 @@ def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
         group.prepeaks.emax = emax
         group.prepeaks.elo = elo
         group.prepeaks.ehi = ehi
+
     return
 
 @Make_CallArgs(["energy", "norm"])
@@ -532,10 +535,12 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     elo = group.prepeaks.elo
     ehi = group.prepeaks.ehi
 
-    imin = index_of(energy, emin)
-    ilo  = index_of(energy, elo)
-    ihi  = index_of(energy, ehi)
-    imax = index_of(energy, emax)
+    dele = 1.e-13 + min(np.diff(energy))/5.0
+
+    imin = index_of(energy, emin+dele)
+    ilo  = index_of(energy, elo+dele)
+    ihi  = index_of(energy, ehi+dele)
+    imax = index_of(energy, emax+dele)
 
     # build xdat, ydat: dat to fit (skipping pre-edge peaks)
     xdat = np.concatenate((energy[imin:ilo+1], energy[ihi:imax+1]))
@@ -568,12 +573,14 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
 
     result = model.fit(ydat, params, x=xdat)
 
-    bline = peaks = dpeaks = cen = dcen = 0.
+    cen = dcen = 0.
     peak_energies = []
 
     # energy including pre-edge peaks, for output
     edat = energy[imin: imax+1]
     mu   = norm[imin:imax+1]
+    bline = peaks = dpeaks = mu*0.0
+
     # get baseline and resulting mu over edat range
     if result is not None:
         bline = result.eval(result.params, x=edat)
@@ -597,7 +604,6 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
         if HAS_PEAKUTILS:
             peak_ids = peakutils.peak.indexes(peaks, thres=0.05, min_dist=2)
             peak_energies = [edat[pid] for pid in peak_ids]
-
 
     group = set_xafsGroup(group, _larch=_larch)
     group.prepeaks = Group(energy=edat, mu=mu, baseline=bline,
