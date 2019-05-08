@@ -75,7 +75,7 @@ As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
 complex analysis, batch processing, and scripting of analysis.  To do this,
 essentially all the real processing work in XAS Viewer is done through the
-Larch Buffer (as shown in :ref:`guis-larch_gui`) which records the commands
+Larch Buffer (as shown in :ref:`larchgui-section`) which records the commands
 that it executes.  If, at any point you want to know exactly what XAS
 Viewer is "really doing", you can open the Larch Buffer and see.  You can
 also copy the code from the Larch buffer to reproduce the analysis steps,
