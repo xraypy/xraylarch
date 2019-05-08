@@ -100,11 +100,18 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 MIN_CORREL = 0.10
 
 COMMANDS = {}
-COMMANDS['prepfit'] = """
+COMMANDS['prepfit'] = """# prepare fit
 {group}.prepeaks.user_options = {user_opts:s}
 {group}.prepeaks.init_fit = peakmodel.eval(peakpars, x={group}.prepeaks.energy)
 {group}.prepeaks.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
 if not hasattr({group}.prepeaks, 'fit_history'): {group}.prepeaks.fit_history = []
+"""
+
+COMMANDS['prepeaks_setup'] = """# setup prepeaks
+{group:s}.xdat = 1.0*{group:s}.energy
+{group:s}.ydat = 1.0*{group:s}.{array_name:s}
+prepeaks_setup(energy={group:s}.energy, norm={group:s}.ydat, group={group:s},
+               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})
 """
 
 COMMANDS['set_yerr_const'] = "{group}.prepeaks.dmu = {group}.yerr*ones(len({group}.prepeaks.mu))"
@@ -112,7 +119,7 @@ COMMANDS['set_yerr_array'] = """{group}.prepeaks.dmu = 1.0*{group}.yerr[{imin:d}
 yerr_min = 1.e-9*{group}.prepeaks.ydat.mean()
 {group}.prepeaks.dmu[where({group}.yerr < yerr_min)] = yerr_min"""
 
-COMMANDS['dofit'] = """
+COMMANDS['dofit'] = """# do fit
 peakresult = peakmodel.fit({group}.prepeaks.mu, params=peakpars, x={group}.prepeaks.energy, weights=1.0/{group}.prepeaks.dmu)
 peakresult.energy   = {group}.prepeaks.energy[:]
 peakresult.mu       = {group}.prepeaks.mu[:]
@@ -771,10 +778,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         opts = self.read_form()
         dgroup = self.controller.get_group()
 
-        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
-prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
-                  elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
-        self.larch_eval(pcmd.format(**opts))
+        opts['group'] = opts['gname']
+        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
         cmd = "plot_prepeaks_fit"
         args = ['{gname}']
@@ -1101,10 +1106,10 @@ prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         modop = " ="
         opts = self.read_form()
 
-        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
-prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
-               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
-        self.larch_eval(pcmd.format(**opts))
+
+        opts['group'] = opts['gname']
+        self.larch_eval(COMMANDS['peaks_setup'].format(**opts))
+
 
         for comp in self.fit_components.values():
             _cen, _amp = None, None
@@ -1156,10 +1161,8 @@ prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         opts = self.read_form()
 
         dgroup = self.controller.get_group()
-        pcmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
-prepeaks_setup(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
-               elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
-        self.larch_eval(pcmd.format(**opts))
+        opts['group'] = opts['gname']
+        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
         ppeaks = dgroup.prepeaks
 
