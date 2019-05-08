@@ -1108,7 +1108,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
 
         opts['group'] = opts['gname']
-        self.larch_eval(COMMANDS['peaks_setup'].format(**opts))
+        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
 
         for comp in self.fit_components.values():
