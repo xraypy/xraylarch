@@ -58,6 +58,5 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     grp = Group()
     setattr(grp, xarray, xout)
     setattr(grp, yarray, yave)
-    setattr(grp, 'd' + yarray, ystd)
-
+    setattr(grp, yarray + '_std', ystd)
     return grp
