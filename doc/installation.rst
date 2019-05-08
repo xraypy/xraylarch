@@ -12,11 +12,11 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.43-docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.44.tar.gz
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.44-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.44-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.44-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.44-docs-examples.zip
 
 The latest release version of Larch is |release|.
 
@@ -80,21 +80,21 @@ If you need a versions for 32-bit Windows or Linux, contact the authors.
 
 For Windows, download the executable installer::
 
-    xraylarch-0.9.43-Windows-x86_64.exe
+    xraylarch-0.9.44-Windows-x86_64.exe
 
 and double-click to run it to install Larch
 
 For Mac OSX, download the package installer::
 
 
-    xraylarch-0.9.43-MacOSX-x86_64.pkg
+    xraylarch-0.9.44-MacOSX-x86_64.pkg
 
 and double-click to run it to install Larch.
 
 For Linux, download the shell installer file, then open a Terminal, use
 `cd` to move to the download folder (typically `Downloads`) and run::
 
-    bash xraylarch-0.9.43-Linux-x86_64.sh
+    bash xraylarch-0.9.44-Linux-x86_64.sh
 
 
 You will be able to completely uninstall simply by removing the
@@ -110,7 +110,9 @@ Once installed, you may be able to upgrade to future versions of Larch using::
     conda update -yc GSECARS xraylarch
 
 .. note::
-   `conda update --all` will *not* work to upgrade from 0.9.42 to 0.9.43.
+   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.43 or
+   to 0.9.44, but it *will* work to upgrade from 0.9.43 to 0.9.44.
+
 
 
 Installing with Anaconda Python
