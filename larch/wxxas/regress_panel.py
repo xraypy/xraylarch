@@ -496,7 +496,7 @@ class RegressionPanel(TaskPanel):
         ymax = ymax + 0.02*(ymax-ymin)
 
 
-        title = '%s Regresion results' % (self.method.upper())
+        title = '%s Regression results' % (self.method.upper())
 
         ppanel.plot(model.x, d_ave, win=1, title=title,
                     label='mean spectra', xlabel='Energy (eV)',
