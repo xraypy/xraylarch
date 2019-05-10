@@ -93,7 +93,6 @@ if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
 
 
 pjoin = os.path.join
-psplit = os.path.split
 pexists = os.path.exists
 
 bindir = 'bin'
@@ -104,7 +103,6 @@ if uname == 'win':
     bindir = 'Scripts'
     pyexe = 'python.exe'
     larchbin = 'larch-script.py'
-
 
 # list of top level scripts to add to Python's bin/
 scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer',
@@ -177,33 +175,8 @@ setup(name = 'xraylarch',
                    'Topic :: Scientific/Engineering'],
       )
 
-def fix_darwin_exes():
-    "fix anaconda python apps on MacOs to launch with pythonw"
-
-    pyapp = pjoin(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
-    if not pexists(pyapp):
-        return
-    for script in scripts:
-        appname = os.path.join(sys.exec_prefix, bindir, script)
-        if os.path.exists(appname):
-            with open(appname, 'r') as fh:
-                try:
-                    lines = fh.readlines()
-                except IOError:
-                    lines = ['-']
-            time.sleep(.025)
-            if len(lines) > 1:
-                text = ["#!%s\n" % pyapp]
-                text.extend(lines[1:])
-                with open(appname, 'w') as fh:
-                    fh.write("".join(text))
-
-# on install, after setup
-#   fix darwin exes to run with pythonw
-#   create desktop icons
+# create desktop icons
 if INSTALL or DEVELOP:
-    if uname == 'darwin':
-        fix_darwin_exes()
     subprocess.check_call((pjoin(sys.exec_prefix, pyexe),
                            pjoin(sys.exec_prefix, bindir, larchbin), '-m'))
 

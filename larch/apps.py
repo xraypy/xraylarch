@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy
-
+import time
 from pyshortcuts import make_shortcut
 from pyshortcuts.shortcut import Shortcut
 
@@ -27,6 +27,29 @@ def use_mpl_wxagg():
             pass
     return False
 
+def fix_darwin_shebang(script):
+    """
+    fix anaconda python apps on MacOs to launch with pythonw
+    """
+    pyapp = os.path.join(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
+    # strip off any arguments:
+    script = script.split(' ', 1)[0]
+    if not os.path.exists(script):
+        script = os.path.join(sys.exec_prefix, 'bin', script)
+
+    if uname == 'darwin' and os.path.exists(pyapp) and os.path.exists(script):
+        with open(script, 'r') as fh:
+            try:
+                lines = fh.readlines()
+            except IOError:
+                lines = ['-']
+
+        if len(lines) > 1:
+            text = ["#!%s\n" % pyapp]
+            text.extend(lines[1:])
+            time.sleep(.05)
+            with open(script, 'w') as fh:
+                fh.write("".join(text))
 
 class LarchApp:
     """
@@ -47,8 +70,8 @@ class LarchApp:
         self.bindir = os.path.join(sys.prefix, bindir)
 
     def create_shortcut(self):
+        script =os.path.join(self.bindir, self.script)
         try:
-            script =os.path.join(self.bindir, self.script)
             scut = Shortcut(script, name=self.name, folder='Larch')
             make_shortcut(script, name=self.name,
                           icon=os.path.join(icondir, self.icon),
@@ -57,7 +80,12 @@ class LarchApp:
             if uname == 'linux':
                 os.chmod(scut.target, 493)
         except:
-            print("Warning: could not create shortcut to ", self.script)
+            print("Warning: could not create shortcut to ", script)
+        if uname == 'darwin':
+            try:
+                fix_darwin_shebang(script)
+            except:
+                print("Warning: could not fix Mac exe for ", script)
 
 
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
