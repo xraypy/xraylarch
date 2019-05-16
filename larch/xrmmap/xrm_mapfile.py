@@ -730,7 +730,7 @@ class GSEXRM_MapFile(object):
     def process_row(self, irow, flush=False, callback=None):
         row = self.read_rowdata(irow)
         if irow == 0:
-            nmca, nchan = 1, 2048
+            nmca, nchan = 0, 2048
             if row.counts is not None:
                 nmca, xnpts, nchan = row.counts.shape
             xrd2d_shape = None
@@ -1212,8 +1212,14 @@ class GSEXRM_MapFile(object):
                 sismap.create_dataset(aname, (NINIT, npts), np.float32,
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
-            roi_names = [h5str(s) for s in conf['rois/name']]
-            roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
+
+            roishape = conf['rois/name'].shape
+            if roishape[0] > 0:
+                roi_names = [h5str(s) for s in conf['rois/name']]
+                roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
+            else:
+                roi_names = ['_']
+                roi_limits = np.array([[[0, 2]]])
 
             if verbose:
                 msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i)'
@@ -1263,6 +1269,10 @@ class GSEXRM_MapFile(object):
                 dgrp.attrs['desc'] = 'sum of detectors'
 
             dgrp = xrmmap['mcasum']
+            if len(enarr) == 0:
+                enarr = [np.zeros(nchan)]
+                counts = [np.zeros(nchan)]
+                offset = slope = quad =  [0.0]
             self.add_data(dgrp, 'energy', enarr[0],
                           attrs={'cal_offset':offset[0],
                                  'cal_slope': slope[0],
@@ -1272,7 +1282,7 @@ class GSEXRM_MapFile(object):
                                 maxshape=(None, npts, nchan), **self.compress_args)
 
             dgrp = xrmmap['roimap']['mcasum']
-            for rname,rlimit in zip(roi_names,roi_limits[0]):
+            for rname, rlimit in zip(roi_names, roi_limits[0]):
                 rgrp = dgrp.create_group(rname)
                 for aname,dtype in (('raw', np.uint32),
                                     ('cor', np.float32)):
