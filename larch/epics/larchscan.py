@@ -125,7 +125,7 @@ def scan_from_db(scanname, filename='scan.001',  _larch=None):
     """
     global _scandb
     if _scandb is None:
-        print('need to connect to scandb!')
+        print('scan_from_db: need to connect to scandb!')
         return
     try:
         scan = _scandb.make_scan(scanname, larch=_larch)
@@ -156,7 +156,7 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     """
     global _scandb
     if _scandb is None:
-        print('need to connect to scandb!')
+        print('do_scan: need to connect to scandb!')
         return
     if nscans is not None:
         _scandb.set_info('nscans', nscans)
@@ -198,7 +198,7 @@ def get_dbinfo(key, default=None, as_int=False, as_bool=False,
     """
     global _scandb
     if _scandb is None:
-        print('need to connect to scandb!')
+        print('get_dbinfo: need to connect to scandb!')
         return
     return _scandb.get_info(key, default=default, full_row=full_row,
                             as_int=as_int, as_bool=as_bool, **kws)
@@ -209,22 +209,26 @@ def set_dbinfo(key, value, notes=None, _larch=None, **kws):
     """
     global _scandb
     if _scandb is None:
-        print('need to connect to scandb!')
+        print('set_dbinfo: need to connect to scandb!')
         return
     return _scandb.set_info(key, value, notes=notes)
 
-def connect_scandb(dbname=None, _larch=None, **kwargs):
+def connect_scandb(scandb=None, dbname=None, _larch=None, **kwargs):
     global _scandb, _instdb
     if _scandb is not None:
         return _scandb
+    if scandb is None and dbname is not None:
+        scandb = ScanDB(dbname=dbname, **kwargs)
 
-    _scandb = ScanDB(dbname=dbname, **kwargs)
+    if scandb is not None:
+        _scandb = scandb
+
     if _larch is not None:
         _larch.symtable.set_symbol(SCANDB_NAME, _scandb)
 
     if _instdb is None:
         _instdb = InstrumentDB(_scandb)
-        
+
         if _larch is not None:
             _larch.symtable.set_symbol(INSTDB_NAME, _instdb)
     return _scandb
