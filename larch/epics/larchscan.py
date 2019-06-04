@@ -217,7 +217,7 @@ def connect_scandb(scandb=None, dbname=None, _larch=None, **kwargs):
     global _scandb, _instdb
     if _scandb is not None:
         return _scandb
-    if scandb is None and dbname is not None:
+    if scandb is None: 
         scandb = ScanDB(dbname=dbname, **kwargs)
 
     if scandb is not None:
