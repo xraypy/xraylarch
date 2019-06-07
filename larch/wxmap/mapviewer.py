@@ -165,6 +165,8 @@ class MapPanel(GridPanel):
                      FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts)]
 
+        self.zigoff = FloatCtrl(self, value= 0, minval=-5, maxval=5,
+                                precision=0, size=(70, -1))
         for wid in self.lims:
             wid.Disable()
 
@@ -174,6 +176,9 @@ class MapPanel(GridPanel):
         self.use_hotcols = Check(self, default=False,
                                  label='Remove First and Last columns',
                                  action=self.onHotCols)
+
+        self.use_zigzag = Check(self, default=False, label='Fix ZigZag',
+                                action=self.onZigZag)
 
         self.limrange  = Check(self, default=False,
                                label=' Limit Map Range to Pixel Range:',
@@ -221,6 +226,10 @@ class MapPanel(GridPanel):
         self.Add(SimpleText(self, 'Y Range:'),  dcol=1, style=LEFT)
         self.Add(self.lims[2],                  dcol=1, style=LEFT)
         self.Add(self.lims[3],                  dcol=1, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.use_zigzag,               dcol=1, style=LEFT)
+        self.Add(self.zigoff,                   dcol=1, style=LEFT)
+
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
         self.pack()
 
@@ -229,6 +238,11 @@ class MapPanel(GridPanel):
 
     def onHotCols(self, event=None):
         self.owner.current_file.hotcols = self.use_hotcols.IsChecked()
+
+    def onZigZag(self, event=None):
+        self.owner.current_file.zigzag = 0
+        if self.use_zigzag.IsChecked():
+            self.owner.current_file.zigzag = int(self.zigoff.GetValue())
 
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
@@ -315,6 +329,8 @@ class MapPanel(GridPanel):
         if xrmfile is None:
             xrmfile = self.owner.current_file
 
+        self.onZigZag()
+
         args={'hotcols'   : xrmfile.hotcols,
               'dtcorrect' : xrmfile.dtcorrect}
 
@@ -399,7 +415,7 @@ class MapPanel(GridPanel):
 
         if xrmfile is None:
             xrmfile = self.owner.current_file
-
+        self.onZigZag()
         args={'hotcols'   : xrmfile.hotcols,
               'dtcorrect' : xrmfile.dtcorrect}
         det_name,roi_name = [],[]
