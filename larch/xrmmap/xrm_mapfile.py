@@ -263,20 +263,22 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, create_empty=False,
-                 hotcols=False, dtcorrect=True, root=None, chunksize=None,
-                 xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
+                 hotcols=False, zigzag=0, dtcorrect=True, root=None,
+                 chunksize=None, xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
                  xrd1dbkgd=None, azwdgs=0, qstps=QSTEPS, flip=True,
-                 bkgdscale=1., has_xrf=True, has_xrd1d=False,
-                 has_xrd2d=False, compression=COMPRESSION,
-                 compression_opts=COMPRESSION_OPTS, facility='APS',
-                 beamline='13-ID-E', run='', proposal='', user='',
-                 scandb=None, **kws):
+                 bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
+                 compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
+                 facility='APS', beamline='13-ID-E', run='', proposal='',
+                 user='', scandb=None, **kws):
 
         self.filename      = filename
         self.folder        = folder
         self.root          = root
         self.chunksize     = chunksize
-        self.hotcols       = hotcols   # whether to remove first and last columns from data
+        # whether to remove first and last columns from data
+        self.hotcols       = hotcols
+        # whether to shift rows to fix zig-zag
+        self.zigzag        = zigzag
         self.dtcorrect     = dtcorrect
         self.scandb        = scandb
         self.envvar        = None
@@ -2920,7 +2922,8 @@ class GSEXRM_MapFile(object):
         return roiname, detname
 
 
-    def get_roimap(self, roiname, det=None, hotcols=None, dtcorrect=None):
+    def get_roimap(self, roiname, det=None, hotcols=None, zigzag=None,
+                   dtcorrect=None):
         '''extract roi map for a pre-defined roi by name
         Parameters
         ---------
@@ -2935,6 +2938,8 @@ class GSEXRM_MapFile(object):
         '''
         if hotcols is None:
             hotcols = self.hotcols
+        if zigzag is None:
+            zigzag = self.zigzag
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
@@ -2973,7 +2978,20 @@ class GSEXRM_MapFile(object):
             detname = '%s%s' % (detaddr, ext)
             out = self.xrmmap[detname][:, :, roi]
 
-        if hotcols:
+        if zigzag is not None and zigzag != 0:
+            nrows, ncols = out.shape
+            tmp = 0.0 * out
+            even = 0
+            if zigzag < 0:
+                even = 1
+                zigzag = -zigzag
+            for i in range(nrows):
+                if (i % 2) == even:
+                    tmp[i, :-zigzag] = out[i, :-zigzag]
+                else:
+                    tmp[i, zigzag:]  = out[i, :-zigzag]
+            out = tmp[:, zigzag:-zigzag]
+        elif hotcols:
             out = out[:, 1:-1]
         return out
 
