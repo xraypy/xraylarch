@@ -110,7 +110,9 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
         ocounts[np.where(ocounts<0.1)] = 0.1
         out.outputCounts[:, i] = ocounts
 
-        dtfactor = clock_ticks/(clock_ticks - (all_events*event_width + reset_ticks))
+        denom = clock_ticks - (all_events*event_width + reset_ticks)
+        denom[np.where(denom<2.0)] = 1.0
+        dtfactor = clock_ticks/denom
         out.inputCounts[:, i] = dtfactor * ocounts
 
         if estimate_dtc:
