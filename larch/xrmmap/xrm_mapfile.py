@@ -758,7 +758,6 @@ class GSEXRM_MapFile(object):
 
     def process(self, maxrow=None, force=False, callback=None):
         "look for more data from raw folder, process if needed"
-        print("PROCESS ", maxrow)
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
@@ -787,7 +786,6 @@ class GSEXRM_MapFile(object):
         # print("Process ROIs for rows %d to %d " % (row_start+1, row_end+1))
         rows = slice(row_start, row_end+1)
         roigrp = self.xrmmap['roimap']
-        # print("Dir ROIMAP : ", list(roigrp.keys()))
         conf = self.xrmmap['config']
         roi_names = [h5str(s) for s in conf['rois/name']]
         roi_limits = conf['rois/limits'].value
@@ -878,7 +876,6 @@ class GSEXRM_MapFile(object):
             self.has_xrd2d = False
 
         # eiger XRD maps with 1D data
-        # print("XRDF :%s: "  % xrdf)
         if xrdf.startswith('eig') and xrdf.endswith('.h5'):
             self.has_xrd2d = False
             self.has_xrd1d = True
@@ -916,7 +913,6 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
         thisrow = self.last_row + 1
-        # print("Add RowData ", row.sishead[-1], row.scaler_names)
         if hasattr(callback, '__call__'):
             callback(row=(thisrow+1), maxrow=len(self.rowdata), filename=self.filename)
 
@@ -929,7 +925,6 @@ class GSEXRM_MapFile(object):
 
         dt.add(" ran callback, print, version  %s"  %self.version)
 
-        # print(" Version ", self.version, version_ge(self.version, '2.0.0'))
         if version_ge(self.version, '2.0.0'):
 
             mcasum_raw,mcasum_cor = [],[]
