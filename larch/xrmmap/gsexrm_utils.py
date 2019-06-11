@@ -243,7 +243,6 @@ class GSEXRM_MapRow:
         gather_extra = (2*gdata[-1] - gdata[-2]).reshape((1, gdata.shape[1]))
         gdata = np.concatenate((gdata, gather_extra))
         gnpts, ngather  = gdata.shape
-
         self.sishead = shead
         self.scaler_names = parse_sisnames(self.sishead[-1])
         self.scaler_addrs = ['']*len(self.scaler_names)
@@ -256,20 +255,13 @@ class GSEXRM_MapRow:
                     i = self.scaler_names.index(label)
                     self.scaler_addrs[i] = addr
 
-        # print(" Read Scalers for row: ")
-        # print(self.scaler_names)
-        # print(self.scaler_addrs)
         if dtime is not None:
             dtime.add('maprow: read ascii files')
         t0 = time.time()
-
         atime = -1
-
         xrf_dat, xrf_file = None, os.path.join(folder, xrffile)
         xrd_dat, xrd_file = None, os.path.join(folder, xrdfile)
-
         xrd1d_file = fix_xrd1d_filename(xrd_file)
-        # print("xrd files ", xrd_file, xrd1d_file, irow, has_xrd2d, has_xrd1d)
 
         while atime < 0 and time.time()-t0 < 10:
             try:
@@ -314,6 +306,7 @@ class GSEXRM_MapRow:
             dt_denom[np.where(dt_denom < 1)] = 1.0
             self.dtfactor  = self.inpcounts*self.realtime/dt_denom
             self.dtfactor[np.where(self.dtfactor < 0.5)] = 0.5
+            self.dtfactor[np.where(np.isnan(self.dtfactor))] = 1.0
 
         ## SPECIFIC TO XRD data
         if has_xrd2d or has_xrd1d:
