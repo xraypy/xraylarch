@@ -2947,7 +2947,7 @@ class GSEXRM_MapFile(object):
 
         if roiname == '1' or roiname == 1:
             out = np.ones((nrow, ncol))
-            if hotcolse:
+            if hotcols:
                 out = out[1:-1]
             return out
         if det is not None:
