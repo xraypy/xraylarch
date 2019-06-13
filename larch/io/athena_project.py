@@ -444,7 +444,9 @@ class AthenaProject(object):
             if not hasattr(dat, 'args'):
                 continue
             buff.append("")
-            buff.append("$old_group = '%s';" % dat.groupname)
+            groupname = getattr(dat, 'groupname', key)
+
+            buff.append("$old_group = '%s';" % groupname)
             buff.append("@args = (%s);" % format_dict(dat.args))
             buff.append("@x = (%s);" % format_array(dat.x))
             buff.append("@y = (%s);" % format_array(dat.y))
