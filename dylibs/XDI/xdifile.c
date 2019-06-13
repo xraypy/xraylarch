@@ -74,7 +74,7 @@ XDI_errorstring(int errcode) {
   } else if (errcode == ERR_NONNUMERIC) {
     return "non-numeric value in data table";
   } else if (errcode == ERR_ONLY_ONEROW) {
-    return "only one row in data table";
+    return "one or fewer rows in data table";
   } else if (errcode == WRN_IGNOREDMETA) {
     return "contains unrecognized header lines";
   }
@@ -407,9 +407,10 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   }
 
   npts_ = ilen - nheader + 1;
-
   nouter = npts_ - 1;
-  if (nouter < 1) {nouter = 1;}
+  if (nouter < 1) {
+    return ERR_ONLY_ONEROW;
+  }
   outer_arr = calloc(nouter, sizeof(double));
   outer_pts = calloc(nouter, sizeof(long));
   outer_arr[0] = outer_arr0;
