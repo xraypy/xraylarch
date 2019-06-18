@@ -98,22 +98,22 @@ if HAS_WXPYTHON:
                                     xrf_oplot=_xrf_oplot,
                                     fit_plot=_fitplot)
 
-    _larch_builtins['xafs'] = dict(redraw=xafsplots.redraw,
-                                   plot_mu=xafsplots.plot_mu,
-                                   plot_bkg=xafsplots.plot_bkg,
-                                   plot_chie=xafsplots.plot_chie,
-                                   plot_chik=xafsplots.plot_chik,
-                                   plot_chir=xafsplots.plot_chir,
-                                   plot_chifit=xafsplots.plot_chifit,
-                                   plot_path_k=xafsplots.plot_path_k,
-                                   plot_path_r=xafsplots.plot_path_r,
-                                   plot_paths_k=xafsplots.plot_paths_k,
-                                   plot_paths_r=xafsplots.plot_paths_r,
-                                   plot_prepeaks_fit=xafsplots.plot_prepeaks_fit,
-                                   plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
-                                   plot_pca_components=xafsplots.plot_pca_components,
-                                   plot_pca_weights=xafsplots.plot_pca_weights,
-                                   plot_pca_fit=xafsplots.plot_pca_fit)
+    _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
+                                    plot_mu=xafsplots.plot_mu,
+                                    plot_bkg=xafsplots.plot_bkg,
+                                    plot_chie=xafsplots.plot_chie,
+                                    plot_chik=xafsplots.plot_chik,
+                                    plot_chir=xafsplots.plot_chir,
+                                    plot_chifit=xafsplots.plot_chifit,
+                                    plot_path_k=xafsplots.plot_path_k,
+                                    plot_path_r=xafsplots.plot_path_r,
+                                    plot_paths_k=xafsplots.plot_paths_k,
+                                    plot_paths_r=xafsplots.plot_paths_r,
+                                    plot_prepeaks_fit=xafsplots.plot_prepeaks_fit,
+                                    plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
+                                    plot_pca_components=xafsplots.plot_pca_components,
+                                    plot_pca_weights=xafsplots.plot_pca_weights,
+                                    plot_pca_fit=xafsplots.plot_pca_fit)
 
 
     def _larch_init(_larch):

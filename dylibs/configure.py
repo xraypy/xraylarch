@@ -37,6 +37,6 @@ print('Writing Makefiles for %s' % (system))
 if dlldir is not None:
     os.system('cp ../conf/%s Mk.config' % (makefile))
     fout = open('Mk.install', 'w')
-    fout.write("INSTALLDIR=../../dlls/%s/" % dlldir)
+    fout.write("INSTALLDIR=../../larch/bin/%s/" % dlldir)
     fout.write("")
     fout.close()
