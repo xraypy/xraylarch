@@ -153,7 +153,7 @@ class GSEXRM_MapRow:
     read one row worth of data:
     '''
     def __init__(self, yvalue, xrffile, xrdfile, xpsfile, sisfile, folder,
-                 reverse=None, ixaddr=0, dimension=2, ioffset=0,
+                 reverse=False, ixaddr=0, dimension=2, ioffset=0,
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None,
                  xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
@@ -410,10 +410,11 @@ class GSEXRM_MapRow:
         # auto-reverse: counter-intuitively (because stage is upside-down and so
         # backwards wrt optical view), left-to-right scans from high to low value
         # so reverse those that go from low to high value
-        if reverse is None:
-            reverse = gdata[0, 0] < gdata[-1, 0]
-
         if reverse:
+            do_reverse = gdata[0, 0] < gdata[-1, 0]
+        else:
+            do_reverse = gdata[0, 0] > gdata[-1, 0]
+        if do_reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]
             if has_xrf:

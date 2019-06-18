@@ -883,11 +883,12 @@ class GSEXRM_MapFile(object):
         if '_unused_' in xrff:
             self.has_xrf = False
 
-        reverse = None
-
+        reverse = True
         ioffset = 0
         if scan_version > 1.35:
             ioffset = 1
+        if scan_version >= 2.0:
+            reverse = False
         if offset is not None:
             ioffset = offset
         self.has_xrf = self.has_xrf and xrff != '_unused_'
@@ -896,7 +897,9 @@ class GSEXRM_MapFile(object):
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=0, dimension=self.dimension,
-                             npts=self.npts, reverse=reverse, ioffset=ioffset,
+                             npts=self.npts, 
+                             reverse=reverse,
+                             ioffset=ioffset,
                              masterfile=self.masterfile, flip=self.flip,
                              xrdcal=self.xrdcalfile,
                              xrd2dmask=self.mask_xrd2d,
