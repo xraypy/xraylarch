@@ -897,7 +897,7 @@ class GSEXRM_MapFile(object):
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=0, dimension=self.dimension,
-                             npts=self.npts, 
+                             npts=self.npts,
                              reverse=reverse,
                              ioffset=ioffset,
                              masterfile=self.masterfile, flip=self.flip,
@@ -1561,12 +1561,12 @@ class GSEXRM_MapFile(object):
             return det_list
 
 
-    def get_roi_list(self,detname):
+    def get_roi_list(self, det_name):
         """get a list of rois from detector
         """
-
-        detname = self._det_name(detname)
-        roigrp = ensure_subgroup('roimap',self.xrmmap)
+        detname = self._det_name(det_name)
+        roigrp = ensure_subgroup('roimap', self.xrmmap)
+        # print("Get ROI List " , det_name, detname, roigrp, self.version)
 
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
@@ -1603,18 +1603,20 @@ class GSEXRM_MapFile(object):
         det_list = []
         if version_ge(self.version, '2.0.0'):
             det_list = build_detector_list(xrmmap['roimap'])
-            if 'scalars' in xrmmap:
-                det_list += ['scalars']
+            for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
+                if det in xrmmap:
+                    if len(xrmmap[det]) > 0:
+                        det_list.append(det)
         else:
             det_list = build_detector_list(xrmmap)
-            for det in ('scalars','xrd1d','xrd2d'):
+            for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
                  try:
                      det_list.pop(det_list.index(det))
                  except:
                      pass
             for det in build_detector_list(xrmmap['roimap']):
                 if det not in det_list:
-                    det_list += [grp]
+                    det_list.append(det)
 
         if len(det_list) < 1:
             det_list = ['']
