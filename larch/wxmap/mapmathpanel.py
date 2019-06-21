@@ -199,12 +199,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 xrmfile.del_work_array(h5str(name))
             else:
                 return
-
+        # print("Add Work Array: ", name, info)
         xrmfile.add_work_array(self.map, h5str(name),
                                expression=h5str(expr),
                                info=json.dumps(info))
 
-        for p in self.owner.nbpanels.values():
+        for p in self.owner.nb.pagelist:
+            print("update ", p, hasattr(p, 'update_xrmmap'))
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 
@@ -247,7 +248,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
     def set_det_choices(self, varname=None):
 
         det_list = self.cfile.get_detector_list()
-
         if varname is None:
             for wid in self.vardet.values():
                 wid.SetChoices(det_list)
