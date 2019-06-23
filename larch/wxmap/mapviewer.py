@@ -247,6 +247,7 @@ class MapPanel(GridPanel):
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
+        print("ROI Map update xrmmap ", xrmfile)
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
@@ -459,7 +460,7 @@ class MapPanel(GridPanel):
 
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
-        # print("map panel set_det_choices ", det_list, self.det_choice)
+        print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
@@ -485,7 +486,6 @@ class MapPanel(GridPanel):
 
 
     def update_roi(self, detname):
-
         return self.cfile.get_roi_list(detname)
 
 class MapInfoPanel(scrolled.ScrolledPanel):
@@ -872,13 +872,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         area = xrmfile.get_area(name=areaname)
         amask = area.value
 
-        ## do not calculate yet for tomography areas
-        ## will need to calculate each ROI, as well
-        ## mkak 2018.03.07
-        tomo_area = area.attrs.get('tomograph', False)
-        if tomo_area:
-           return
-
         def match_mask_shape(det, mask):
            if mask.shape[1] == det.shape[1] - 2: # hotcols
               det = det[:,1:-1]
@@ -1016,11 +1009,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             return
 
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-        tomo_area = area.attrs.get('tomograph', False)
+
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
 
-        mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
+        mca   = self.owner.current_file.get_mca_area(aname)
         dtime = mca.real_time
         info_fmt = '%i Pixels, %i ms/pixel, %.3f total seconds'
         buff = ['# Map %s, Area %s' % (self.owner.current_file.filename, aname),
@@ -1068,22 +1061,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         except:
             return
         area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-        tomo_area = area.attrs.get('tomograph',False)
         npix = len(area.value[np.where(area.value)])
         yvals, xvals = np.where(area.value)
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
-            mca   = self.owner.current_file.get_mca_area(aname,tomo=tomo_area)
+            mca   = self.owner.current_file.get_mca_area(aname)
             dtime = mca.real_time
         except:
             pass
 
         info1_fmt = '%i Pixels, %.3f seconds'
         info2_fmt = ' Range (pixels)   X: [%i:%i], Y: [%i:%i] '
-        if tomo_area:
-            info2_fmt = info2_fmt + '(tomography area)'
-
         self.info1.SetLabel(info1_fmt % (npix, dtime))
         self.info2.SetLabel(info2_fmt % (xvals.min(), xvals.max(),
                                          yvals.min(), yvals.max()))
@@ -1125,8 +1114,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             imd = self.owner.im_displays[-1]
             h, w = self.owner.current_file.get_shape()
             highlight = np.zeros((h, w))
-            # print("Area:  file shape: width, height = ", w, h)
-            # print("Area:  area shape ", area.value.shape)
+
             highlight[np.where(area.value)] = 1
             imd.panel.add_highlight_area(highlight, label=label)
 
@@ -1162,8 +1150,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             except:
                 pass
 
-    def _getmca_area(self, areaname, **kwargs):
+    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
+        if xrmfile is None:
+            xrmfile = self.current_file
+        aname = xrmfile.add_area(mask)
+        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
+    def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
     def _getxrd_area(self, areaname, **kwargs):
@@ -1175,7 +1168,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrmmap['areas/%s' % aname]
-        tomo_area = area.attrs.get('tomograph', False)
 
         label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
@@ -1183,7 +1175,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         mca_thread = Thread(target=self._getmca_area, args=(aname,),
-                            kwargs={'dtcorrect': self.owner.dtcor, 'tomo': tomo_area})
+                            kwargs={'dtcorrect': self.owner.dtcor})
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
@@ -1409,15 +1401,9 @@ class MapViewerFrame(wx.Frame):
         if callable(callback):
             callback()
 
-    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None, tomo=False):
-
-        if xrmfile is None:
-            xrmfile = self.current_file
-        aname = xrmfile.add_area(mask, tomo=tomo)
-        self.sel_mca = xrmfile.get_mca_area(aname, det=det, tomo=tomo)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
-                     tomo=False, **kws):
+                     **kws):
 
         if xrmfile is None:
             xrmfile = self.current_file
@@ -1427,8 +1413,8 @@ class MapViewerFrame(wx.Frame):
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             if mask.shape == (nx, ny): ## sinogram
                 mask = np.swapaxes(mask,0,1)
-            elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
-                tomo = True
+            # elif mask.shape == (ny, ny) or mask.shape == (nx, nx): ## tomograph
+            #    tomo = True
             else:
                 ym, xm = mask.shape
                 tmask = np.zeros((ny, nx)).astype(bool)
@@ -1439,7 +1425,7 @@ class MapViewerFrame(wx.Frame):
                         tmask[iy+yoff, xoff:xmax] = mask[iy]
                 mask = tmask
 
-        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det, tomo=tomo)
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff, det=det)
         mca_thread = Thread(target=self.get_mca_area,
                             args=(mask,), kwargs=kwargs)
         mca_thread.start()
@@ -1447,13 +1433,7 @@ class MapViewerFrame(wx.Frame):
         mca_thread.join()
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
-
-            try:
-                aname = self.sel_mca.areaname
-            except:
-                if tomo:
-                    print('\nNo tomograph data for detector %s saved!\n' % det)
-                return
+            aname = self.sel_mca.areaname
             area  = xrmfile.xrmmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
             self.sel_mca.filename = fname

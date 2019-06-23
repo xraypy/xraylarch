@@ -150,32 +150,10 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     h5root.flush()
 
 def ensure_subgroup(subgroup, group):
-
     if subgroup not in group.keys():
         return group.create_group(subgroup)
     else:
         return group[subgroup]
-
-
-# def get_tomo_detector(xrmmap, mapversion, det):
-#     tomogrp = ensure_subgroup('tomo', xrmmap)
-#     detlist = build_detector_list(tomogrp)
-#     if len(detlist) < 1:
-#         return None
-#
-#     if det in detlist:
-#         detname = det
-#     elif det is None:
-#         detname = detlist[0]
-#     elif (type(det) is str and det.isdigit()) or type(det) is int:
-#         det = int(det)
-#         detname = 'det%i' % det
-#         if version_ge(self.version, '2.0.0'):
-#             detname = detname.replace('det','mca')
-#     else:
-#         return None
-#
-#     return 'tomo/%s' % detname
 
 
 class GSEXRM_MapFile(object):
@@ -1769,7 +1747,7 @@ class GSEXRM_MapFile(object):
         workgroup = ensure_subgroup('work',self.xrmmap)
         return [h5str(g) for g in workgroup.keys()]
 
-    def add_area(self, amask, name=None, desc=None, tomo=False):
+    def add_area(self, amask, name=None, desc=None):
         '''add a selected area, with optional name
         the area is encoded as a boolean array the same size as the map
 
@@ -1790,14 +1768,14 @@ class GSEXRM_MapFile(object):
         if desc is None:
             desc = name
         ds.attrs['description'] = desc
-        ds.attrs['tomograph']   = tomo
+        # ds.attrs['tomograph']   = tomo
         self.h5root.flush()
         return name
 
-    def export_areas(self, filename=None, tomo=False):
+    def export_areas(self, filename=None):
         '''export areas to datafile '''
         if filename is None:
-            file_str = '%s_TomoAreas.npz' if tomo else '%s_Areas.npz'
+            file_str = '%s_Areas.npz'
             filename = file_str % self.filename
 
         base_grp = self.xrmmap
@@ -1809,19 +1787,18 @@ class GSEXRM_MapFile(object):
         np.savez(filename, **kwargs)
         return filename
 
-    def import_areas(self, filename, overwrite=False, tomo=False):
+    def import_areas(self, filename, overwrite=False):
         '''import areas from datafile exported by export_areas()'''
         npzdat = np.load(filename)
 
         othername = os.path.split(filename)[1]
-        for npz_str in ('.h5_Areas.npz','.h5_TomoAreas.npz'):
-            if othername.endswith(npz_str):
-                othername = othername.replace(npz_str, '')
+        if othername.endswith('.h5_Areas.npz'):
+            othername = othername.replace(npz_str, '')
 
         for aname in npzdat.files:
             amask = npzdat[aname]
             outname = '%s_%s' % (aname, othername)
-            self.add_area(amask, name=outname, desc=outname, tomo=tomo)
+            self.add_area(amask, name=outname, desc=outname)
 
     def get_area(self, name=None, desc=None):
         '''
@@ -1931,8 +1908,7 @@ class GSEXRM_MapFile(object):
         return omega
 
     def get_tomography_center(self):
-
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        tomogrp = ensure_subgroup('tomo', self.xrmmap)
         try:
             return tomogrp['center'].value
         except:
@@ -1944,7 +1920,7 @@ class GSEXRM_MapFile(object):
         if center is None:
             center = len(self.get_translation_axis())/2.
 
-        tomogrp = ensure_subgroup('tomo',self.xrmmap)
+        tomogrp = ensure_subgroup('tomo', self.xrmmap)
         try:
             del tomogrp['center']
         except:
@@ -2080,10 +2056,10 @@ class GSEXRM_MapFile(object):
 
         sino,order = reshape_sinogram(sino, x, omega)
 
-        center,tomo = tomo_reconstruction(sino, algorithm=algorithm,
-                                          filter_name=filter_name,
-                                          num_iter=num_iter, omega=omega,
-                                          center=center, sinogram_order=order)
+        center, tomo = tomo_reconstruction(sino, algorithm=algorithm,
+                                           filter_name=filter_name,
+                                           num_iter=num_iter, omega=omega,
+                                           center=center, sinogram_order=order)
 
         tomogrp.attrs['tomo_alg'] = '-'.join([str(t) for t in (algorithm, filter_name)])
         tomogrp.attrs['center'] = '%0.2f pixels' % (center)
@@ -2364,7 +2340,7 @@ class GSEXRM_MapFile(object):
             counts *= mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
         return counts
 
-    def get_mca_area(self, areaname, det=None, dtcorrect=None, tomo=False):
+    def get_mca_area(self, areaname, det=None, dtcorrect=None):
         '''return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
 
@@ -2388,36 +2364,7 @@ class GSEXRM_MapFile(object):
         if npixels < 1:
             return None
 
-        if tomo:
-            det_list = self.get_detector_list()
-
-            det = get_tomo_detector(self.xrmmap, self.version, det)
-
-#     tomogrp = ensure_subgroup('tomo', xrmmap)
-#     detlist = build_detector_list(tomogrp)
-#     if len(detlist) < 1:
-#         return None
-#
-#     if det in detlist:
-#         detname = det
-#     elif det is None:
-#         detname = detlist[0]
-#     elif (type(det) is str and det.isdigit()) or type(det) is int:
-#         det = int(det)
-#         detname = 'det%i' % det
-#         if version_ge(self.version, '2.0.0'):
-#             detname = detname.replace('det','mca')
-#     else:
-#         return None
-#
-#     return 'tomo/%s' % detname
-#
-            dtcorrect = False
-            if dgroup is None:
-                return
-            dgroup = det
-        else:
-            dgroup = self._det_name(det)
+        dgroup = self._det_name(det)
 
         # first get data for bounding rectangle
         _ay, _ax = np.where(area)
@@ -2510,9 +2457,9 @@ class GSEXRM_MapFile(object):
         realtime = 1.e-6*realtime
         return livetime, realtime
 
-    def _getmca(self, dgroup, counts, name, npixels=None, tomo=False, **kws):
+    def _getmca(self, dgroup, counts, name, npixels=None, **kws):
         '''return an MCA object for a detector group
-        (map is one of the  'det1', ... 'detsum')
+        (map is one of the  'mca1', ... 'mcasum')
         with specified counts array and a name
 
 
@@ -2527,10 +2474,6 @@ class GSEXRM_MapFile(object):
         MCA object
 
         '''
-        if dgroup.startswith('tomo/'):
-            tomo = True
-            dgroup = dgroup[5:]
-
         map  = self.xrmmap[dgroup]
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],
@@ -2548,7 +2491,6 @@ class GSEXRM_MapFile(object):
 
 
         if version_ge(self.version, '2.0.0'):
-
             for roi in self.xrmmap['roimap'][dgroup]:
                 emin,emax = self.xrmmap['roimap'][dgroup][roi]['limits'][:]
                 Eaxis = map['energy'][:]
@@ -2557,7 +2499,6 @@ class GSEXRM_MapFile(object):
                 imax = (np.abs(Eaxis-emax)).argmin()
                 _mca.add_roi(roi, left=imin, right=imax)
         else:
-
             # a workaround for poor practice -- some '1.3.0' files
             # were built with 'roi_names', some with 'roi_name'
             roiname = 'roi_name'
@@ -2668,7 +2609,7 @@ class GSEXRM_MapFile(object):
         for det, grp in self.xrmmap.items():
             if bytes2str(grp.attrs.get('type', '')).startswith(xrdtype):
                 detname = det
-                ds = ensure_subgroup(det,roigroup)
+                ds = ensure_subgroup(det, roigroup)
                 ds.attrs['type'] = xrdtype
         return roigroup, detname
 
