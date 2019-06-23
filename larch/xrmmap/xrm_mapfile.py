@@ -36,6 +36,7 @@ COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
+VALID_ROOTNAMES = ('xrmmap', 'xrfmap')
 NOT_OWNER = "Not Owner of HDF5 file %s"
 QSTEPS = 2048
 
@@ -94,7 +95,7 @@ def test_h5group(group, folder=None):
     if not valid:
         return None, None
     status = GSEXRM_FileStatus.hasdata
-    vers = group.attrs.get('Version','')
+    vers = h5str(group.attrs.get('Version',''))
     fullpath = group.attrs.get('Map_Folder','')
     _parent, _folder = os.path.split(fullpath)
     if folder is not None and folder != _folder:
@@ -148,80 +149,33 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
 
     h5root.flush()
 
-def ensure_subgroup(subgroup,group):
+def ensure_subgroup(subgroup, group):
 
     if subgroup not in group.keys():
         return group.create_group(subgroup)
     else:
         return group[subgroup]
 
-# def ensure_subgroup(subgroup,group,overwrite=False):
+
+# def get_tomo_detector(xrmmap, mapversion, det):
+#     tomogrp = ensure_subgroup('tomo', xrmmap)
+#     detlist = build_detector_list(tomogrp)
+#     if len(detlist) < 1:
+#         return None
 #
-#     if subgroup not in group.keys():
-#         grp = group.create_group(subgroup)
-#     elif overwrite:
-#         del group[subgroup]
-#         grp = group.create_group(subgroup)
+#     if det in detlist:
+#         detname = det
+#     elif det is None:
+#         detname = detlist[0]
+#     elif (type(det) is str and det.isdigit()) or type(det) is int:
+#         det = int(det)
+#         detname = 'det%i' % det
+#         if version_ge(self.version, '2.0.0'):
+#             detname = detname.replace('det','mca')
 #     else:
-#         grp = group[subgroup]
+#         return None
 #
-#     return grp
-
-
-
-def get_tomo_detector(xrmmap, mapversion, det):
-    tomogrp = ensure_subgroup('tomo', xrmmap)
-    detlist = build_detector_list(tomogrp)
-    if len(detlist) < 1:
-        return None
-
-    if det in detlist:
-        detname = det
-    elif det is None:
-        detname = detlist[0]
-    elif (type(det) is str and det.isdigit()) or type(det) is int:
-        det = int(det)
-        detname = 'det%i' % det
-        if version_ge(self.version, '2.0.0'):
-            detname = detname.replace('det','mca')
-    else:
-        return None
-
-    return 'tomo/%s' % detname
-
-def build_datapath_list(xrmmap):
-
-    det_list = build_detector_list(xrmmap)
-    data_list = []
-
-    def find_detector(group):
-
-        sub_list = []
-        if 'counts' in group.keys():
-            sub_list += [group['counts'].name]
-        elif 'scal' in group.name:
-            for key, val in dict(group).items():
-                sub_list += [group[key].name]
-        return sub_list
-
-    for det in det_list:
-       for idet in find_detector(xrmmap[det]):
-            data_list += [idet]
-
-    return data_list
-
-
-def build_detector_list(group):
-    dlist, out = [], []
-    for key, grp in group.items():
-        if ('det' in bytes2str(grp.attrs.get('type', '')) or
-            'mca' in bytes2str(grp.attrs.get('type', ''))):
-            if 'sum' in key.lower():
-                out.append(key)
-            else:
-                dlist.append(key)
-    out.extend(dlist)
-    return out
+#     return 'tomo/%s' % detname
 
 
 class GSEXRM_MapFile(object):
@@ -321,7 +275,6 @@ class GSEXRM_MapFile(object):
         ## used for tomography orientation
         self.x           = None
         self.reshape     = None
-
         self.notes = {'facility'   : facility,
                       'beamline'   : beamline,
                       'run'        : run,
@@ -353,10 +306,11 @@ class GSEXRM_MapFile(object):
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.getFileStatus(root=root)
 
+        # print("Found File or Folder ", self.status, self.filename, self.folder)
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
-            self.open(self.filename, root=self.root, check_status=False)
+            self.open(self.filename, root=self.root, check_status=True)
             self.reset_flags()
             return
 
@@ -441,6 +395,7 @@ class GSEXRM_MapFile(object):
 
     def getFileStatus(self, filename=None, root=None, folder=None):
         '''return status, top-level group, and version'''
+
         if filename is not None:
             self.filename = filename
         filename = self.filename
@@ -449,9 +404,9 @@ class GSEXRM_MapFile(object):
             folder = os.path.abspath(folder)
             parent, folder = os.path.split(folder)
         self.status = GSEXRM_FileStatus.err_notfound
-        self.top, self.version = '', ''
+        self.root, self.version = '', ''
         if root not in ('', None):
-            self.top = root
+            self.root = root
         # see if file exists:
         if not (os.path.exists(filename) and os.path.isfile(filename)):
             return
@@ -477,13 +432,13 @@ class GSEXRM_MapFile(object):
             stat, vers = test_h5group(fh[root], folder=folder)
             if stat is not None:
                 self.status = stat
-                self.top, self.version = root, vers
+                self.root, self.version = root, vers
         else:
             for root, group in fh.items():
                 stat, vers = test_h5group(group, folder=folder)
                 if stat is not None:
                     self.status = stat
-                    self.top, self.version = root, vers
+                    self.root, self.version = root, vers
                     break
         fh.close()
         return
@@ -1550,15 +1505,24 @@ class GSEXRM_MapFile(object):
                 if name.lower() == 'fine y' or name.lower() == 'finey':
                     return float(val)
 
-    def get_datapath_list(self,remove='raw'):
+    def get_datapath_list(self, remove='raw'):
 
-        det_list = build_datapath_list(self.xrmmap)
+        def find_detector(group):
+            sub_list = []
+            if 'counts' in group.keys():
+                sub_list += [group['counts'].name]
+            elif 'scal' in group.name:
+                for key, val in dict(group).items():
+                    sub_list += [group[key].name]
+            return sub_list
 
-        ## remove instances of detector with 'raw' in title
-        if isinstance(remove,str):
-            return [det for det in det_list if remove not in det]
-        else:
-            return det_list
+        dat_list = []
+        for det in self.get_detector_list():
+           for idet in find_detector(xrmmap[det]):
+               if not (remove in idet):
+                   data_list += [idet]
+
+        return data_list
 
 
     def get_roi_list(self, det_name):
@@ -1566,7 +1530,7 @@ class GSEXRM_MapFile(object):
         """
         detname = self._det_name(det_name)
         roigrp = ensure_subgroup('roimap', self.xrmmap)
-        # print("Get ROI List " , det_name, detname, roigrp, self.version)
+        print("Get ROI List " , det_name, detname, roigrp, self.version)
 
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
@@ -1599,24 +1563,37 @@ class GSEXRM_MapFile(object):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
         """
+        def build_dlist(group):
+            out, sumslist = [], []
+            for key, grp in group.items():
+                if ('det' in bytes2str(grp.attrs.get('type', '')) or
+                    'mca' in bytes2str(grp.attrs.get('type', ''))):
+                    if 'sum' in key.lower():
+                        sumslist.append(key)
+                    else:
+                        out.append(key)
+            out.extend(sumslist)
+            return out
+
+
         xrmmap = self.xrmmap
         det_list = []
         if version_ge(self.version, '2.0.0'):
-            det_list = build_detector_list(xrmmap['roimap'])
+            det_list = build_dlist(xrmmap['roimap'])
             for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
                 if det in xrmmap:
                     if len(xrmmap[det]) > 0:
                         det_list.append(det)
         else:
-            det_list = build_detector_list(xrmmap)
+            det_list = build_dlist(xrmmap)
+            for det in build_dlist(xrmmap['roimap']):
+                if det not in det_list:
+                    det_list.append(det)
             for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
                  try:
                      det_list.pop(det_list.index(det))
                  except:
                      pass
-            for det in build_detector_list(xrmmap['roimap']):
-                if det not in det_list:
-                    det_list.append(det)
 
         if len(det_list) < 1:
             det_list = ['']
@@ -1628,8 +1605,7 @@ class GSEXRM_MapFile(object):
         mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
 
-        detlist = build_detector_list(self.xrmmap)
-        for det in detlist:
+        for det in self.get_detector_list():
             detgrp = self.xrmmap[det]
 
             dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
@@ -2299,7 +2275,7 @@ class GSEXRM_MapFile(object):
         dgroup = '%ssum' % mcastr
 
         if isinstance(det, str):
-            for d in build_detector_list(self.xrmmap):
+            for d in self.get_detector_list():
                 if det.lower() == d.lower():
                     dgroup = d
         elif isinstance(det, int):
@@ -2413,7 +2389,29 @@ class GSEXRM_MapFile(object):
             return None
 
         if tomo:
+            det_list = self.get_detector_list()
+
             det = get_tomo_detector(self.xrmmap, self.version, det)
+
+#     tomogrp = ensure_subgroup('tomo', xrmmap)
+#     detlist = build_detector_list(tomogrp)
+#     if len(detlist) < 1:
+#         return None
+#
+#     if det in detlist:
+#         detname = det
+#     elif det is None:
+#         detname = detlist[0]
+#     elif (type(det) is str and det.isdigit()) or type(det) is int:
+#         det = int(det)
+#         detname = 'det%i' % det
+#         if version_ge(self.version, '2.0.0'):
+#             detname = detname.replace('det','mca')
+#     else:
+#         return None
+#
+#     return 'tomo/%s' % detname
+#
             dtcorrect = False
             if dgroup is None:
                 return
