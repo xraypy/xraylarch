@@ -1494,13 +1494,13 @@ class GSEXRM_MapFile(object):
                     sub_list += [group[key].name]
             return sub_list
 
-        dat_list = []
+        dlist = []
         for det in self.get_detector_list():
-           for idet in find_detector(xrmmap[det]):
+           for idet in find_detector(self.xrmmap[det]):
                if not (remove in idet):
-                   data_list += [idet]
+                   dlist.append(idet)
 
-        return data_list
+        return dlist
 
 
     def get_roi_list(self, det_name):
@@ -1508,7 +1508,6 @@ class GSEXRM_MapFile(object):
         """
         detname = self._det_name(det_name)
         roigrp = ensure_subgroup('roimap', self.xrmmap)
-        print("Get ROI List " , det_name, detname, roigrp, self.version)
 
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
@@ -1534,6 +1533,7 @@ class GSEXRM_MapFile(object):
             except:
                 pass
 
+        print("Get ROI List " , det_name, detname, rois, self.version)
         return rois
 
 
@@ -1542,16 +1542,15 @@ class GSEXRM_MapFile(object):
         ['mcasum', 'mca1', ..., 'scalars']
         """
         def build_dlist(group):
-            out, sumslist = [], []
+            detlist, sumslist = [], []
             for key, grp in group.items():
                 if ('det' in bytes2str(grp.attrs.get('type', '')) or
                     'mca' in bytes2str(grp.attrs.get('type', ''))):
                     if 'sum' in key.lower():
                         sumslist.append(key)
                     else:
-                        out.append(key)
-            out.extend(sumslist)
-            return out
+                        detlist.append(key)
+            return sumslist + detlist
 
 
         xrmmap = self.xrmmap
@@ -1572,7 +1571,6 @@ class GSEXRM_MapFile(object):
                      det_list.pop(det_list.index(det))
                  except:
                      pass
-
         if len(det_list) < 1:
             det_list = ['']
         return det_list
