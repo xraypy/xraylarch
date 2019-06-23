@@ -329,7 +329,7 @@ class TomographyPanel(GridPanel):
             xrmfile = self.owner.current_file
 
         args={'trim_sino' : flagxrd,
-              'hotcols'   : self.owner.hotcols,
+              'hotcols'   : False,
               'dtcorrect' : self.owner.dtcor}
 
         x     = xrmfile.get_translation_axis(hotcols=args['hotcols'])
@@ -399,14 +399,13 @@ class TomographyPanel(GridPanel):
                                filter_name=self.tomo_filt.GetStringSelection(),
                                num_iter=self.tomo_niter.GetValue(),
                                center=center, dtcorrect=self.owner.dtcor,
-                               hotcols=self.owner.hotcols)
+                               hotcols=xrmfile.hotcols)
         print('Saved.')
 
 
     def onShowTomograph(self, event=None, new=True):
         xrmfile = self.owner.current_file
         det = None
-
         title, subtitles, info, x, omega, sino_order, sino = self.calculateSinogram()
 
         algorithm = self.tomo_algo.GetStringSelection()
@@ -420,7 +419,7 @@ class TomographyPanel(GridPanel):
                                      filter_name=filter_name, num_iter=niter,
                                      center=center, omega=omega,
                                      sinogram_order=sino_order,
-                                     hotcols=self.owner.hotcols)
+                                     hotcols=xrmfile.hotcols)
 
         if refine_center:
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
