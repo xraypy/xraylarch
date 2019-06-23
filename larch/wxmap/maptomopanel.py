@@ -202,8 +202,7 @@ class TomographyPanel(GridPanel):
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-        # print("tomopanel update xrmmap ", xrmfile, self.cfile)
-        # print(" -- " , self.cfile.get_rotation_axis() )
+
 
         if self.cfile.get_rotation_axis() is None:
             self.center_value.SetValue(0)
