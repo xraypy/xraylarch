@@ -244,6 +244,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         for vfile in self.varfile.values():
             vfile.SetSelection(-1)
+        self.info1.SetLabel('')
+        self.info2.SetLabel('')
 
     def set_det_choices(self, varname=None):
 
