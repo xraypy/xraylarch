@@ -37,6 +37,7 @@ COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
 VALID_ROOTNAMES = ('xrmmap', 'xrfmap')
+EXTRA_DETGROUPS =  ('scalars', 'xrd1d', 'xrd2d', 'work')
 NOT_OWNER = "Not Owner of HDF5 file %s"
 QSTEPS = 2048
 
@@ -1502,7 +1503,6 @@ class GSEXRM_MapFile(object):
 
         return dlist
 
-
     def get_roi_list(self, det_name):
         """get a list of rois from detector
         """
@@ -1516,13 +1516,13 @@ class GSEXRM_MapFile(object):
                 roi_limits += [list(roidetgrp[name]['limits'][:])]
             return [x for (y,x) in sorted(zip(roi_limits,roi_name))]
 
-        rois = ['1']
+        rois = []
 
         if version_ge(self.version, '2.0.0'):
             if detname in roigrp.keys():
                 rois = sort_roi_limits(roigrp[detname])
 
-            elif detname.lower().startswith('scal'):
+            elif detname in EXTRA_DETGROUPS:
                 rois = rois+list(self.xrmmap[detname].keys())
 
         else:
@@ -1532,9 +1532,9 @@ class GSEXRM_MapFile(object):
                 rois = sort_roi_limits(roigrp[detname]) + rois
             except:
                 pass
+        rois.append('1')
 
-        print("Get ROI List " , det_name, detname, rois, self.version)
-        return rois
+        return [h5str(a) for a in rois]
 
 
     def get_detector_list(self):
@@ -1557,7 +1557,7 @@ class GSEXRM_MapFile(object):
         det_list = []
         if version_ge(self.version, '2.0.0'):
             det_list = build_dlist(xrmmap['roimap'])
-            for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
+            for det in EXTRA_DETGROUPS:
                 if det in xrmmap:
                     if len(xrmmap[det]) > 0:
                         det_list.append(det)
@@ -1566,7 +1566,7 @@ class GSEXRM_MapFile(object):
             for det in build_dlist(xrmmap['roimap']):
                 if det not in det_list:
                     det_list.append(det)
-            for det in ('scalars', 'xrd1d', 'xrd2d', 'work'):
+            for det in EXTRA_DETGROUPS:
                  try:
                      det_list.pop(det_list.index(det))
                  except:
@@ -2873,6 +2873,7 @@ class GSEXRM_MapFile(object):
         -------
         ndarray for ROI data
         '''
+        # print("Get ROI Map ", roiname, det, hotcols, zigzag, dtcorrect)
         if hotcols is None:
             hotcols = self.hotcols
         if zigzag is None:
@@ -2892,25 +2893,28 @@ class GSEXRM_MapFile(object):
 
         roi, detaddr = self.check_roi(roiname, det)
         ext = 'cor' if dtcorrect else 'raw'
-        if detaddr.startswith('scal'):
+        if det in EXTRA_DETGROUPS:
             ext = ''
 
         # print(" GetROIMAP %s|%s|%s|%s|%s|%s" % (roiname, roi, det, detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
-            if detaddr.startswith('roimap'):
-                roi_ext = '%s/' + ext
+            if det in EXTRA_DETGROUPS:
+                grp = self.xrmmap[det]
+                if roiname in grp:
+                    out = grp[roiname][:]
             else:
-                roi_ext = '%s_' + ext if ext is 'raw' else '%s'
-            roiaddr =  roi_ext % roi
-            out = self.xrmmap[detaddr][roiaddr][:]
-            if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
-                _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
-                detname = '%s%s' % (_detaddr, ext)
-                out = self.xrmmap[detname][:, :, _roi]
-                # save for next time
-                # print(" cache roimap ", detaddr, roiaddr, nrow, ncol, out.max(), out.mean())
-                self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
-                self.xrmmap[detaddr][roiaddr][:, :] = out
+                if detaddr.startswith('roimap'):
+                    roi_ext = '%s/' + ext
+                else:
+                    roi_ext = '%s_' + ext if ext is 'raw' else '%s'
+                roiaddr =  roi_ext % roi
+                out = self.xrmmap[detaddr][roiaddr][:]
+                if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
+                    _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
+                    detname = '%s%s' % (_detaddr, ext)
+                    out = self.xrmmap[detname][:, :, _roi]
+                    self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
+                    self.xrmmap[detaddr][roiaddr][:, :] = out
         else:  # version1
             detname = '%s%s' % (detaddr, ext)
             out = self.xrmmap[detname][:, :, roi]
