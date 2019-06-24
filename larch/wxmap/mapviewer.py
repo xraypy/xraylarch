@@ -165,7 +165,7 @@ class MapPanel(GridPanel):
                      FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts)]
 
-        self.zigoff = FloatCtrl(self, value= 0, minval=-5, maxval=5,
+        self.zigoff = FloatCtrl(self, value= 0, minval=-15, maxval=15,
                                 precision=0, size=(70, -1))
         for wid in self.lims:
             wid.Disable()
@@ -247,7 +247,7 @@ class MapPanel(GridPanel):
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
-        print("ROI Map update xrmmap ", xrmfile)
+        # print("ROI Map update xrmmap ", xrmfile)
 
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
@@ -294,17 +294,17 @@ class MapPanel(GridPanel):
         if len(self.owner.filemap) > 0:
             plot_type = self.plot_choice.GetStringSelection().lower()
             if 'single' in plot_type:
-                for i in (1,2):
+                for i in (1, 2):
                     self.det_choice[i].Disable()
                     self.roi_choice[i].Disable()
                     self.roi_label[i].SetLabel('')
-                for i,label in enumerate([' Map ', ' ', ' ']):
+                for i, label in enumerate([' Map ', ' ', ' ']):
                     self.det_label[i].SetLabel(label)
             elif 'three' in plot_type:
-                for i in (1,2):
+                for i in (1, 2):
                     self.det_choice[i].Enable()
                     self.roi_choice[i].Enable()
-                for i,label in enumerate(['Red', 'Green', 'Blue']):
+                for i, label in enumerate(['Red', 'Green', 'Blue']):
                     self.det_label[i].SetLabel(label)
                 self.set_roi_choices()
             elif 'correl' in plot_type:
@@ -312,7 +312,7 @@ class MapPanel(GridPanel):
                 self.roi_choice[1].Enable()
                 self.det_choice[2].Disable()
                 self.roi_choice[2].Disable()
-                for i,label in enumerate([' X ',' Y ', '']):
+                for i, label in enumerate([' X ',' Y ', '']):
                     self.det_label[i].SetLabel(label)
                 self.set_roi_choices()
 
@@ -460,7 +460,7 @@ class MapPanel(GridPanel):
 
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
-        print("map panel set_det_choices ", det_list, self.det_choice)
+        # print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
@@ -469,21 +469,23 @@ class MapPanel(GridPanel):
         self.set_roi_choices()
 
     def set_roi_choices(self, idet=None):
-
         if idet is None:
-            for idet,det_ch in enumerate(self.det_choice):
+            for idet, det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
                 rois = self.update_roi(detname)
-
+                cur = self.roi_choice[idet].GetStringSelection()
                 self.roi_choice[idet].SetChoices(rois)
+                if cur in rois:
+                    self.roi_choice[idet].SetStringSelection(cur)
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
             rois = self.update_roi(detname)
-
+            cur = self.roi_choice[idet].GetStringSelection()
             self.roi_choice[idet].SetChoices(rois)
+            if cur in rois:
+                self.roi_choice[idet].SetStringSelection(cur)
             self.roiSELECT(idet)
-
 
     def update_roi(self, detname):
         return self.cfile.get_roi_list(detname)
@@ -1962,7 +1964,6 @@ class MapViewerFrame(wx.Frame):
                 save_workdir(nativepath(parent))
             except:
                 pass
-
 
     def openPONI(self, evt=None):
         """
