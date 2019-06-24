@@ -92,12 +92,14 @@ class Epics_Xspress3(object):
     """
     MIN_FRAMETIME = 0.25
     MAX_FRAMES    = 12000
-    def __init__(self, prefix=None, nmca=4, version=2, **kws):
+    def __init__(self, prefix=None, nmca=4, version=2, use_sum=True, **kws):
 
         self.nmca = nmca
         self.prefix = prefix
         self.version = version
         self.mca_array_name = 'MCASUM%i:ArrayData'
+        if not use_sum:
+            self.mca_array_name = 'MCA%i:ArrayData'
         if version < 2:
             self.mca_array_name = 'ARRSUM%i:ArrayData'
         self.environ = []
@@ -123,7 +125,7 @@ class Epics_Xspress3(object):
         while rbv != self.MAX_FRAMES:
             self.MAX_FRAMES = self.MAX_FRAMES - 500.0
             self._xsp3._pvs['NumImages'].put(self.MAX_FRAMES, wait=True)
-            time.sleep(0.25)
+            time.sleep(0.1)
             rbv = self._xsp3.NumImages_RBV
             if self.MAX_FRAMES < 4000:
                 break
@@ -172,6 +174,11 @@ class Epics_Xspress3(object):
         except:
             dval = 0.0
         return dval
+
+    def set_usesum(self, use_sum=True):
+        self.mca_array_name = 'MCASUM%i:ArrayData'
+        if not use_sum:
+            self.mca_array_name = 'MCA%i:ArrayData'
 
     def set_dwelltime(self, dtime=1.0, **kws):
         self._xsp3.useInternalTrigger()
@@ -393,6 +400,9 @@ class Epics_MultiXMAP(object):
         self.frametime = value
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel(" %8.2f" % value)
+
+    def set_usesum(self, usesum=True):
+        pass
 
     def get_deadtime(self, mca=1):
         """return deadtime info"""

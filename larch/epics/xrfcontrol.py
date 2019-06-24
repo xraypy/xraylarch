@@ -417,43 +417,51 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=style)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
 
-        self.wids['bkg_det'] = Choice(pane, size=(75, -1), choices=bkg_choices,
+        self.wids['bkg_det'] = Choice(pane, size=(90, -1), choices=bkg_choices,
                                       action=self.onSelectDet)
 
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
                                            size=(80, -1), act_on_losefocus=True,
                                            action=self.onSetDwelltime)
-        self.wids['elapsed']   = SimpleText(pane, ' ', size=(80, -1),  style=style)
+        self.wids['elapsed'] = SimpleText(pane, ' ', size=(80, -1),  style=style)
 
-        b1 =  Button(pane, 'Start',      size=(100, 30), action=self.onStart)
-        b2 =  Button(pane, 'Stop',       size=(100, 30), action=self.onStop)
-        b3 =  Button(pane, 'Erase',      size=(100, 30), action=self.onErase)
-        b4 =  Button(pane, 'Continuous', size=(100, 30), action=partial(self.onStart,
-                                                                       dtime=0))
+        self.wids['mca_sum'] = Choice(pane, size=(95, -1),
+                                      choices=['Single', 'Accumulate'],
+                                      action=self.onMcaSumChoice,
+                                      default=1 )
 
+        b1 =  Button(pane, 'Start',      size=(90, -1), action=self.onStart)
+        b2 =  Button(pane, 'Stop',       size=(90, -1), action=self.onStop)
+        b3 =  Button(pane, 'Erase',      size=(90, -1), action=self.onErase)
+        b4 =  Button(pane, 'Continuous', size=(90, -1), action=partial(self.onStart,
+                                                                       dtime=0.0))
+
+        sum_lab = SimpleText(pane, 'Accumulate Mode:',   size=(150, -1))
         bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
-        pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
+        pre_lab = SimpleText(pane, 'Dwell Time (s):',   size=(125, -1))
         ela_lab = SimpleText(pane, 'Elapsed Time (s):', size=(125, -1))
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
         dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
 
 
         psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
-        psizer.Add(self.wids['bkg_det'],   (1, 2), (1, 1), style, 1)
-        psizer.Add(pre_lab,                (0, 3), (1, 1),  style, 1)
-        psizer.Add(ela_lab,                (1, 3), (1, 1),  style, 1)
-        psizer.Add(self.wids['dwelltime'], (0, 4), (1, 1),  style, 1)
-        psizer.Add(self.wids['elapsed'],   (1, 4), (1, 1),  style, 1)
+        psizer.Add(self.wids['bkg_det'],   (0, 3), (1, 1), style, 1)
+        psizer.Add(sum_lab,                (1, 2), (1, 1), style, 1)
+        psizer.Add(self.wids['mca_sum'],   (1, 3), (1, 1), style, 1)
+        psizer.Add(pre_lab,                (0, 4), (1, 1),  style, 1)
+        psizer.Add(ela_lab,                (1, 4), (1, 1),  style, 1)
+        psizer.Add(self.wids['dwelltime'], (0, 5), (1, 1),  style, 1)
+        psizer.Add(self.wids['elapsed'],   (1, 5), (1, 1),  style, 1)
 
-        psizer.Add(b1, (0, 5), (1, 1), style, 1)
-        psizer.Add(b4, (0, 6), (1, 1), style, 1)
-        psizer.Add(b2, (1, 5), (1, 1), style, 1)
-        psizer.Add(b3, (1, 6), (1, 1), style, 1)
+        psizer.Add(b1, (0, 6), (1, 1), style, 1)
+        psizer.Add(b4, (0, 7), (1, 1), style, 1)
+        psizer.Add(b2, (1, 6), (1, 1), style, 1)
+        psizer.Add(b3, (1, 7), (1, 1), style, 1)
 
-        psizer.Add(sta_lab,                  (0, 7), (1, 1), style, 1)
-        psizer.Add(self.wids['det_status'],  (0, 8), (1, 1), style, 1)
-        psizer.Add(dea_lab,                  (1, 7), (1, 1), style, 1)
-        psizer.Add(self.wids['deadtime'],    (1, 8), (1, 1), style, 1)
+        psizer.Add(sta_lab,                  (0, 8), (1, 1), style, 1)
+        psizer.Add(self.wids['det_status'],  (0, 9), (1, 1), style, 1)
+        psizer.Add(dea_lab,                  (1, 8), (1, 1), style, 1)
+        psizer.Add(self.wids['deadtime'],    (1, 9), (1, 1), style, 1)
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
         self.det.connect_displays(status=self.wids['det_status'],
@@ -472,6 +480,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.show_mca()
         # self.elapsed_real = self.det.elapsed_real
         self.mca.real_time = self.det.elapsed_real
+        # print("Update Data  ", force, self.det.needs_refresh)
 
         if force or self.det.needs_refresh:
             self.det.needs_refresh = False
@@ -558,6 +567,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['bkg_det'].SetSelection(fore)
         self.onSelectDet(index=back)
 
+    def onMcaSumChoice(self, event=None):
+        wid = self.wids['mca_sum']
+        self.det.set_usesum('accum' in wid.GetStringSelection().lower())
+
     def onSetDwelltime(self, event=None, **kws):
         if 'dwelltime' in self.wids:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
@@ -578,7 +591,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onStop(self, event=None, **kws):
         self.det.stop()
         self.det.needs_refresh = True
-        time.sleep(0.125)
+        time.sleep(0.05)
         self.UpdateData(event=None, force=True)
 
     def onErase(self, event=None, **kws):
