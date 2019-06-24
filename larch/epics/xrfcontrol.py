@@ -417,7 +417,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=style)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
 
-        self.wids['bkg_det'] = Choice(pane, size=(90, -1), choices=bkg_choices,
+        self.wids['bkg_det'] = Choice(pane, size=(100, -1), choices=bkg_choices,
                                       action=self.onSelectDet)
 
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
@@ -425,7 +425,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                            action=self.onSetDwelltime)
         self.wids['elapsed'] = SimpleText(pane, ' ', size=(80, -1),  style=style)
 
-        self.wids['mca_sum'] = Choice(pane, size=(95, -1),
+        self.wids['mca_sum'] = Choice(pane, size=(100, -1),
                                       choices=['Single', 'Accumulate'],
                                       action=self.onMcaSumChoice,
                                       default=1 )
