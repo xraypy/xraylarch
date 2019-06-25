@@ -198,7 +198,6 @@ class TaskPanel(wx.Panel):
 
     def set_defaultconfig(self, config):
         """set the default configuration for this session"""
-        # print("SET DEFAULT CONFIG ", self.configname, config)
         conf = self.controller.larch.symtable._sys.xas_viewer
         setattr(conf, self.configname, {key:val for key, val in config.items()})
 
@@ -258,7 +257,6 @@ class TaskPanel(wx.Panel):
         if self.skip_process:
             return
         self.skip_process = True
-        # form = self.read_form()
 
     def add_text(self, text, dcol=1, newrow=True):
         self.panel.Add(SimpleText(self.panel, text),
@@ -308,3 +306,6 @@ class TaskPanel(wx.Panel):
             if relative_e0 and 'e0' in self.wids and opt is not 'e0':
                 _x -= self.wids['e0'].GetValue()
             self.wids[opt].SetValue(_x)
+            cb = getattr(self, 'onProcess', None)
+            if callable(cb):
+                cb(event=None)
