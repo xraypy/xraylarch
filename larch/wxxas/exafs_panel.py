@@ -73,6 +73,8 @@ class EXAFSPanel(TaskPanel):
                            config=defaults, **kws)
         self.skip_process = False
         self.last_plot = 'one'
+        self.last_process_bkg = {}
+        self.last_process_fft = {}
 
     def build_display(self):
         panel = self.panel
@@ -149,6 +151,11 @@ class EXAFSPanel(TaskPanel):
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
+        def CopyBtn(name):
+            return Button(panel, 'Copy', size=(60, -1),
+                          action=partial(self.onCopyParam, name))
+
+
         panel.Add(SimpleText(panel, ' EXAFS Processing', **self.titleopts), dcol=5)
 
         panel.Add(plot_sel, newrow=True)
@@ -172,53 +179,64 @@ class EXAFSPanel(TaskPanel):
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Background subtraction',
-                             **self.titleopts), dcol=1, newrow=True)
+                             **self.titleopts), dcol=3, newrow=True)
 
-        panel.Add(Button(panel, 'Copy To Selected Groups', size=(225, -1),
-                         action=partial(self.onCopyParam, 'bkg')),
-                  dcol=3)
+        panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
+                  style=RCEN, dcol=2)
+
+
+        add_text('E0: ')
+        panel.Add(wids['e0'])
+        panel.Add((10, 10), dcol=2)
+        panel.Add(CopyBtn('e0'), style=RCEN)
+
 
         add_text('R bkg: ')
         panel.Add(wids['rbkg'])
-
-        add_text('E0: ', newrow=False)
-        panel.Add(wids['e0'])
+        panel.Add((10, 10), dcol=2)
+        panel.Add(CopyBtn('rbkg'), style=RCEN)
 
         add_text('k min: ')
         panel.Add(bkg_kmin)
         add_text('k max:',newrow=False)
         panel.Add(bkg_kmax)
+        panel.Add(CopyBtn('bkg_krange'), style=RCEN)
 
         add_text('kweight: ', newrow=True)
-        panel.Add(wids['bkg_kweight'], dcol=1)
+        panel.Add(wids['bkg_kweight'])
+        panel.Add((10, 10), dcol=2)
+        panel.Add(CopyBtn('bkg_kweight'), style=RCEN)
+
 
         add_text('Clamps Low E: ', newrow=True)
         panel.Add( wids['bkg_clamplo'])
         add_text('high E: ',  newrow=False)
         panel.Add( wids['bkg_clamphi'])
+        panel.Add(CopyBtn('bkg_clamp'), style=RCEN)
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
         panel.Add(SimpleText(panel, ' Fourier transform',
-                             **self.titleopts), dcol=1, newrow=True)
-
-        panel.Add(Button(panel, 'Copy to Selected Groups', size=(225, -1),
-                         action=partial(self.onCopyParam, 'fft')),
-                  dcol=3)
+                             **self.titleopts), dcol=2, newrow=True)
 
         panel.Add(SimpleText(panel, 'k min: '), newrow=True)
         panel.Add(fft_kmin)
 
         panel.Add(SimpleText(panel, 'k max:'))
         panel.Add(fft_kmax)
+        panel.Add(CopyBtn('fft_krange'), style=RCEN)
 
         panel.Add(SimpleText(panel, 'k weight : '), newrow=True)
         panel.Add(wids['fft_kweight'])
+        panel.Add((10, 10), dcol=2)
+        panel.Add(CopyBtn('fft_kweight'), style=RCEN)
+
 
         panel.Add(SimpleText(panel, 'K window : '), newrow=True)
         panel.Add(wids['fft_kwindow'])
         panel.Add(SimpleText(panel, ' dk : '))
         panel.Add(wids['fft_dk'])
+        panel.Add(CopyBtn('fft_kwindow'), style=RCEN)
 
         panel.Add((10, 10), newrow=True)
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
@@ -234,6 +252,32 @@ class EXAFSPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
+    def get_config(self, dgroup=None):
+        """get and set processing configuration for a group"""
+        if dgroup is None:
+            dgroup = self.controller.get_group()
+        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+
+        bkg_kmax = conf.get('bkg_kmax', None)
+        fft_kmax = conf.get('fft_kmax', None)
+
+        if None in (bkg_kmax, fft_kmax):
+            e0 = conf.get('e0', -1)
+            emin = min(dgroup.energy)
+            if e0 is None or e0 < emin:
+                e0 = getattr(dgroup, 'e0',  emin)
+            kmax = etok(max(dgroup.energy) - e0)
+
+            if bkg_kmax is None or bkg_kmax < 0:
+                conf['bkg_kmax'] = kmax + 0.1
+            if fft_kmax is None or fft_kmax < 0:
+                conf['fft_kmax'] = kmax - 1
+
+        if dgroup is not None:
+            setattr(dgroup, self.configname, conf)
+        return conf
+
+
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
@@ -246,10 +290,6 @@ class EXAFSPanel(TaskPanel):
             val = getattr(dgroup, attr, None)
             if val is None:
                 val = opts.get(attr, -1)
-                if attr == 'bkg_kmax':
-                    val = 0.25 + etok(max(dgroup.energy) - dgroup.e0)
-                elif attr == 'fft_kmax':
-                    val = -1.0 + etok(max(dgroup.energy) - dgroup.e0)
             wids[attr].SetValue(val)
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
@@ -294,32 +334,43 @@ class EXAFSPanel(TaskPanel):
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             form_opts[attr] = wids[attr].GetStringSelection()
         time.sleep(0.001)
+        conf = self.get_config()
+
+        conf.update(form_opts)
+
         self.skip_process = skip_save
         return form_opts
 
+
     def onSaveConfigBtn(self, evt=None):
-        conf = self.get_config()
-        conf.update(self.read_form())
+        self.read_form()
         self.set_defaultconfig(conf)
 
     def onCopyParam(self, name=None, evt=None):
+
+        self.read_form()
         conf = self.get_config()
-        conf.update(self.read_form())
+        opts = {}
+        def copy_attrs(*args):
+            return {a: conf[a] for a in args}
 
-        attrs =  ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
-                  'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi')
-
-        if name.startswith('fft'):
-            attrs = ('fft_kmin', 'fft_kmax',
-                     'fft_kweight', 'fft_dk', 'fft_kwindow')
-
-        out = {a: conf[a] for a in attrs}
+        name = str(name)
+        if name in ('e0', 'rkbg', 'bkg_kweight', 'fft_kweight'):
+            opts = copy_attrs(name)
+        elif name == 'bkg_krange':
+            opts = copy_attrs('bkg_kmin', 'bkg_kmax')
+        elif name == 'bkg_clamp':
+            opts = copy_attrs('bkg_clamplo', 'bkg_clamphi')
+        elif name == 'fft_krange':
+            opts = copy_attrs('fft_kmin', 'fft_kmax')
+        elif name == 'fft_kwindow':
+            opts = copy_attrs('fft_kwindow', 'fft_dk')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
-            dgroup = self.controller.get_group(groupname)
-            if not dgroup.is_frozen:
-                self.update_config(out, dgroup=dgroup)
+            grp = self.controller.get_group(groupname)
+            if grp != self.controller.group and not grp.is_frozen:
+                self.update_config(opts, dgroup=grp)
 
     def _set_frozen(self, frozen):
         try:
@@ -342,56 +393,66 @@ class EXAFSPanel(TaskPanel):
         if self.skip_process:
             return
         self.skip_process = True
-
-        form = self.read_form()
-        self.process(dgroup=self.dgroup, opts=form)
+        self.read_form()
+        self.process(dgroup=self.dgroup)
         self.skip_process = False
 
         plotter = self.onPlotOne
         if self.last_plot == 'selected':
             plotter = self.onPlotSel
-        wx.CallAfter(partial(plotter, form=form))
+        wx.CallAfter(partial(plotter))
 
-    def process(self, dgroup=None, opts=None, fast_process=False, **kws):
-        if opts is None:
-            opts = self.read_form()
+    def process(self, dgroup=None, **kws):
         if dgroup is not None:
             self.dgroup = dgroup
-            opts['group'] = dgroup.groupname
 
-        opts.update(kws)
-        pars = [int(opts.get(attr, 0)*1000) for attr in
-                ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
-                 'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi',
-                 'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk')]
-        if not 'fft_kwindow' in opts:
+        conf = self.get_config(self.dgroup)
+        conf['group'] = self.dgroup.groupname
+
+        conf.update(kws)
+        if not 'fft_kwindow' in conf:
             return
 
-        pars.append(opts['fft_kwindow'])
+        bkgpars = []
+        for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
+                     'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi'):
+            val = conf.get(attr, 0.0)
+            if val is None:
+                val = -1.0
+            bkgpars.append("%.3f" % val)
+        bkgpars = ':'.join(bkgpars)
 
-        lpars = getattr(dgroup, 'exafs_formvals', False)
+        if bkgpars != self.last_process_bkg.get(self.dgroup.groupname, ''):
+            self.larch_eval(autobk_cmd.format(**conf))
+            self.last_process_bkg[self.dgroup.groupname] = bkgpars
+            self.last_process_fft[self.dgroup.groupname] = ''
 
-        if pars != lpars and not fast_process:
-            self.larch_eval(autobk_cmd.format(**opts))
-            self.larch_eval(xftf_cmd.format(**opts))
-            dgroup.exafs_formvals = pars
-            self.update_config(opts, dgroup=dgroup)
+        fftpars = [conf['fft_kwindow']]
+        for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk'):
+            fftpars.append("%.3f" % conf.get(attr, 0.0))
+        fftpars = ':'.join(fftpars)
+
+        if fftpars != self.last_process_fft.get(self.dgroup.groupname, ''):
+            self.larch_eval(xftf_cmd.format(**conf))
+            self.last_process_fft[self.dgroup.groupname] = fftpars
+
+        setattr(dgroup, self.configname, conf)
 
     def plot(self, dgroup=None):
         if self.skip_plotting:
             return
         self.onPlotOne(dgroup=dgroup)
 
-    def onPlotOne(self, evt=None, form=None, dgroup=None):
+    def onPlotOne(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
-        if form is None:
-            form = self.read_form()
+        form = self.read_form()
         if len(form) == 0:
             return
         if dgroup is not None:
             self.dgroup = dgroup
             form['group'] = dgroup.groupname
+        self.process(dgroup=self.dgroup)
         form['title'] = '"%s"' % self.dgroup.filename
 
         cmd = PlotCmds[form['plotone_op']] + ", win=1, title={title:s})"
@@ -409,15 +470,14 @@ class EXAFSPanel(TaskPanel):
         if evt is not None:
             evt.Skip()
 
-    def onPlotSel(self, evt=None, form=None):
+    def onPlotSel(self, evt=None):
         if self.skip_plotting:
             return
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
-        if form is None:
-            form = self.read_form()
 
+        form = self.read_form()
         bcmd = PlotCmds[form['plotsel_op']]
         form['new'] = 'True'
         offset = form['plot_voffset']
@@ -428,8 +488,7 @@ class EXAFSPanel(TaskPanel):
                 form['group'] = dgroup.groupname
                 form['label'] = dgroup.filename
                 form['offset'] = offset * i
-                if not (hasattr(dgroup, 'chir_mag') and hasattr(dgroup, 'r')):
-                    self.process(dgroup=dgroup, opts=form)
+                self.process(dgroup=dgroup)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{label:s}', new={new:s})"""
