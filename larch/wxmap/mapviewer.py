@@ -1152,12 +1152,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             except:
                 pass
 
-    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
-        if xrmfile is None:
-            xrmfile = self.current_file
-        aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
-
     def _getmca_area(self, areaname, **kwargs):
         self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
 
@@ -1403,6 +1397,11 @@ class MapViewerFrame(wx.Frame):
         if callable(callback):
             callback()
 
+    def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
+        if xrmfile is None:
+            xrmfile = self.current_file
+        aname = xrmfile.add_area(mask)
+        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
     def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
                      **kws):
