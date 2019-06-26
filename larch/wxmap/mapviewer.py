@@ -184,10 +184,14 @@ class MapPanel(GridPanel):
                                label=' Limit Map Range to Pixel Range:',
                                action=self.onLimitRange)
 
-        self.map_show = [Button(self, 'Show New Map',     size=(125, -1),
-                               action=partial(self.onROIMap, new=True)),
-                          Button(self, 'Replace Last Map', size=(125, -1),
-                               action=partial(self.onROIMap, new=False))]
+        self.map_show = [Button(self, 'New Map',     size=(125, -1),
+                                action=partial(self.onROIMap, new=True)),
+                         Button(self, 'Update Map', size=(125, -1),
+                                action=partial(self.onROIMap, new=False)),
+                         Button(self, 'Build Map', size=(125, -1),
+                                action=partial(self.onROIMap, plot=False,
+                                               max_new_rows=16777216)),
+        ]
 
         self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
                      style=LEFT,  newrow=True)
@@ -210,6 +214,8 @@ class MapPanel(GridPanel):
         self.Add(SimpleText(self,'Display:'),   dcol=1, style=LEFT, newrow=True)
         self.Add(self.map_show[0],              dcol=1, style=LEFT)
         self.Add(self.map_show[1],              dcol=1, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT)
+        self.Add(self.map_show[2],              dcol=1, style=LEFT)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
@@ -451,16 +457,17 @@ class MapPanel(GridPanel):
         self.owner.plot_displays.append(correl_plot)
 
 
-    def onROIMap(self, event=None, new=True):
+    def onROIMap(self, event=None, new=True, plot=True, max_new_rows=25):
         plot_type = self.plot_choice.GetStringSelection().lower()
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
-        self.owner.process_file(fname, max_new_rows=25)
+        self.owner.process_file(fname, max_new_rows=max_new_rows)
 
-        if 'correlation' in plot_type:
-            self.ShowCorrel(new=new)
-        else:
-            self.ShowMap(new=new)
+        if plot:
+            if 'correlation' in plot_type:
+                self.ShowCorrel(new=new)
+            else:
+                self.ShowMap(new=new)
 
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
@@ -1960,6 +1967,7 @@ class MapViewerFrame(wx.Frame):
             self.filelist.Append(fname)
         if self.check_ownership(fname):
             self.process_file(fname, max_new_rows=50)
+
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
             try:
@@ -2083,6 +2091,7 @@ class MapViewerFrame(wx.Frame):
             if (filename not in self.files_in_progress and
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename, max_new_rows=50)
+
                 thispanel = self.nb.GetCurrentPage()
                 if hasattr(thispanel, 'onROIMap'):
                     thispanel.onROIMap(event=None, new=False)
