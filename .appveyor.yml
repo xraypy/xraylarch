@@ -12,7 +12,7 @@ install:
     - conda config --set always_yes True
     - conda config --add channels gsecars
     - conda update conda
-    - conda install python=%PYTHON_VERSION% --file requirementstxt
+    - conda install python=%PYTHON_VERSION% --file requirements.txt
     - conda info -a
     - "%PYTHON%\\python.exe setup.py install"
 
