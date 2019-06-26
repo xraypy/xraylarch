@@ -1580,28 +1580,29 @@ class GSEXRM_MapFile(object):
         Reads hdf5 file for data and sets the flags.
         mkak 2016.08.30 // rewritten mkak 2017.08.03 // rewritten mkak 2017.12.05
         '''
-
         for det in self.get_detector_list():
-            detgrp = self.xrmmap[det]
+            if det in self.xrmmap:
 
-            dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
-            if 'mca' in dettype:
-                self.has_xrf   = 'counts' in detgrp
-            elif 'xrd2d' in dettype:
-                self.has_xrd2d = 'counts' in detgrp
-            elif 'xrd1d' in dettype:
-                self.has_xrd1d = 'counts' in detgrp
-            elif det == 'xrd': ## compatible with old version
-                try:
-                    detgrp['data1d']
-                    self.has_xrd1d = True
-                except:
-                    pass
-                try:
-                    detgrp['data2D']
-                    self.has_xrd2d = True
-                except:
-                    pass
+                detgrp = self.xrmmap[det]
+
+                dettype = bytes2str(detgrp.attrs.get('type', '')).lower()
+                if 'mca' in dettype:
+                    self.has_xrf   = 'counts' in detgrp
+                elif 'xrd2d' in dettype:
+                    self.has_xrd2d = 'counts' in detgrp
+                elif 'xrd1d' in dettype:
+                    self.has_xrd1d = 'counts' in detgrp
+                elif det == 'xrd': ## compatible with old version
+                    try:
+                        detgrp['data1d']
+                        self.has_xrd1d = True
+                    except:
+                        pass
+                    try:
+                        detgrp['data2D']
+                        self.has_xrd2d = True
+                    except:
+                        pass
 
     def print_flags(self):
         print('   HAS XRF, XRD1D, XRD2D: %s, %s, %s' % (self.has_xrf,
