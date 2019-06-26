@@ -1,9 +1,11 @@
-
 Larch:  Data Analysis for X-ray Spectroscopies and More
 ====================================================
 
 .. image:: https://travis-ci.org/xraypy/xraylarch.png
    :target: https://travis-ci.org/xraypy/xraylarch
+
+.. image:: https://ci.appveyor.com/api/projects/status/weagcmcq6lfclit9
+   :target: https://ci.appveyor.com/project/newville/xraylarch
 
 .. _scipy: http://scipy.org/
 .. _numpy: http://numpy.scipy.org/
