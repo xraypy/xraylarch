@@ -16,4 +16,4 @@ install:
 
 test_script:
     - cd tests
-    - "%PYTHON%\\python.exe -m pytest"
+    - "python -m pytest"
