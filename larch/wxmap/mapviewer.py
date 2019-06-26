@@ -323,7 +323,7 @@ class MapPanel(GridPanel):
             except:
                 pass
 
-    def ShowMap(self,xrmfile=None,new=True):
+    def ShowMap(self, xrmfile=None, new=True):
         subtitles = None
         plt3 = 'three' in self.plot_choice.GetStringSelection().lower()
 
@@ -453,6 +453,10 @@ class MapPanel(GridPanel):
 
     def onROIMap(self, event=None, new=True):
         plot_type = self.plot_choice.GetStringSelection().lower()
+        xrmfile = self.owner.current_file
+        pref, fname = os.path.split(xrmfile.filename)
+        self.owner.process_file(fname, max_new_rows=25)
+
         if 'correlation' in plot_type:
             self.ShowCorrel(new=new)
         else:
@@ -1703,7 +1707,7 @@ class MapViewerFrame(wx.Frame):
             return
         if (self.check_ownership(filename) and
             self.filemap[filename].folder_has_newdata()):
-            self.process_file(filename)
+            self.process_file(filename, max_new_rows=50)
 
         self.current_file = self.filemap[filename]
         ny, nx = self.filemap[filename].get_shape()
@@ -1955,7 +1959,7 @@ class MapViewerFrame(wx.Frame):
         if fname not in self.filelist.GetItems():
             self.filelist.Append(fname)
         if self.check_ownership(fname):
-            self.process_file(fname)
+            self.process_file(fname, max_new_rows=50)
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
             try:
@@ -2078,12 +2082,12 @@ class MapViewerFrame(wx.Frame):
         for filename in self.filemap:
             if (filename not in self.files_in_progress and
                 self.filemap[filename].folder_has_newdata()):
-                self.process_file(filename)
+                self.process_file(filename, max_new_rows=50)
                 thispanel = self.nb.GetCurrentPage()
                 if hasattr(thispanel, 'onROIMap'):
                     thispanel.onROIMap(event=None, new=False)
 
-    def process_file(self, filename):
+    def process_file(self, filename, max_new_rows=None):
         """Request processing of map file.
         This can take awhile, so is done in a separate thread,
         with updates displayed in message bar
@@ -2100,10 +2104,14 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_fname = filename
             self.h5convert_done = False
             self.htimer.Start(150)
+            maxrow = None
+            if max_new_rows is not None:
+                maxrow = max_new_rows + xrmfile.last_row + 1
 
             ## this calls process function of xrm_mapfile class
             self.h5convert_thread = Thread(target=xrmfile.process,
-                                           kwargs={'callback':self.updateTimer})
+                                           kwargs={'callback':self.updateTimer,
+                                                   'maxrow': maxrow})
             self.h5convert_thread.start()
 
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
