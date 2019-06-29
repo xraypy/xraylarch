@@ -70,17 +70,17 @@ class TomographyPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=PLOT_TYPES[:-1], size=(125, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES[:-1], size=(140, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1))]
-        self.roi_choice = [Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1))]
+        self.det_choice = [Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1))]
+        self.roi_choice = [Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1))]
 
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
@@ -111,9 +111,9 @@ class TomographyPanel(GridPanel):
                           Button(self, 'Replace Last', size=(100, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(125, -1),
+        self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(140, -1),
                                 action=self.onALGchoice)
-        self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(125, -1))
+        self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(140, -1))
         self.tomo_niter = wx.SpinCtrl(self, min=1, max=500, initial=1,
                                       size=(100, -1),
                                       style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
