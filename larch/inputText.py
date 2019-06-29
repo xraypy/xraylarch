@@ -170,11 +170,14 @@ class HistoryBuffer(object):
         if trim_last:
             end_ = -1
 
-        fout = open(filename, 'w')
-        fout.write("# %s saved %s\n\n" % (self.title, time.ctime()))
-        fout.write('\n'.join([str(s) for s in self.buffer[start_:end_]]))
-        fout.write("\n")
-        fout.close()
+        comment = "# %s saved" % (self.title)
+        out = ["%s %s" % (comment, time.ctime())]
+        for bline in self.buffer[start_:end_]:
+            if not (bline.startswith(comment) or len(bline) < 0):
+                out.append(str(bline))
+        out.append('')
+        with open(filename, 'w') as fh:
+            fh.write('\n'.join(out))
 
 class InputText:
     """input text for larch, with history"""
