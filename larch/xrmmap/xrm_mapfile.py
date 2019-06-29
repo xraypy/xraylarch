@@ -156,6 +156,13 @@ def ensure_subgroup(subgroup, group):
     else:
         return group[subgroup]
 
+def toppath(pname, n=4):
+    words = []
+    for i in range(n):
+        pname, f = os.path.split(pname)
+        words.append(f)
+    return '/'.join(words)
+
 
 class GSEXRM_MapFile(object):
     '''
@@ -250,6 +257,7 @@ class GSEXRM_MapFile(object):
         self.azwdgs        = 0 if azwdgs > 36 or azwdgs < 2 else int(azwdgs)
         self.qstps         = int(qstps)
         self.flip          = flip
+        self.master_modtime = -1
 
         ## used for tomography orientation
         self.x           = None
@@ -697,7 +705,6 @@ class GSEXRM_MapFile(object):
 
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
-            print(" process -> initialize_xrmmap")
             self.initialize_xrmmap(callback=callback)
         if (force or len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
@@ -2127,25 +2134,20 @@ class GSEXRM_MapFile(object):
         if self.folder is None or not isGSEXRM_MapFolder(self.folder):
             return
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
-        mtime = int(os.stat(self.masterfile).st_mtime)
-        # print("READ MASTER has xrd 1d, 1d = ", self.has_xrd1d, self.has_xrd2d)
-        def toppath(pname, n=4):
-            words = []
-            for i in range(n):
-                pname, f = os.path.split(pname)
-                words.append(f)
-            return '/'.join(words)
 
-        header, rows = [], []
+
+        header, rows, mtime = [], [], -1
         if self.scandb is not None:
+            # check that this map folder is the one currently running from scandb:
             try:
                 db_folder = toppath(self.scandb.get_info('map_folder'))
             except:
                 db_folder = None
             disk_folder = toppath(os.path.abspath(self.folder))
 
-            if (db_folder == disk_folder):
+            if db_folder == disk_folder: # this is the current map
                 mastertext = self.scandb.get_slewscanstatus()
+                mtime = time.time()
                 header, rows = [], []
                 for srow in mastertext:
                     line = str(srow.text.strip())
@@ -2153,17 +2155,24 @@ class GSEXRM_MapFile(object):
                         header.append(line)
                     else:
                         rows.append(line.split())
-                # print("Read Master from DB: %d rows " % len(rows))
 
-        if len(header) < 1:
+        if len(header) < 1 or mtime < 0:  # this is *not* the map that is currently being collected:
+            # if file the master file is not new, the current row data is OK:
+
             try:
                 header, rows = readMasterFile(self.masterfile)
-                # print("Read Master from Disk: %d rows " % len(rows))
             except IOError:
-                raise GSEXRM_Exception(
-                    "cannot read Master file from '%s'" % self.masterfile)
+                raise GSEXRM_Exception("cannot read Master file from '%s'" %
+                                       self.masterfile)
 
-        self.notes['end_time'] = isotime(os.stat(self.masterfile).st_ctime)
+            mtime = os.stat(self.masterfile).st_mtime
+            if mtime < (self.master_modtime+1.0) and len(self.rowdata) > 1:
+                # print("READ MASTER not a new masterfile ", len(self.rowdata), len(rows))
+                return len(self.rowdata)
+
+        self.master_modtime = mtime
+
+        self.notes['end_time'] = isotime(mtime)
         self.master_header = header
         # carefully read rows to avoid repeated rows due to bad collection
         self.rowdata = []
@@ -2178,8 +2187,7 @@ class GSEXRM_MapFile(object):
             # skip repeated rows in master file
             if yval != _yl and (xrff != _xl or sisf != _s1):
                 self.rowdata.append(row)
-            #else:
-            #    print(" skip row ", yval, xrff, sisf)
+
         self.scan_version = 1.00
         self.nrows_expected = None
         self.start_time = time.ctime()
@@ -2195,9 +2203,7 @@ class GSEXRM_MapFile(object):
         self.scan_version = float(self.scan_version)
 
         # print("read_master scan version = ", self.scan_version)
-
-        self.folder_modtime = os.stat(self.masterfile).st_mtime
-        self.stop_time = time.ctime(self.folder_modtime)
+        self.stop_time = time.ctime(self.master_modtime)
         try:
             last_file = os.path.join(self.folder,rows[-1][2])
             self.stop_time = time.ctime(os.stat(last_file).st_ctime)
