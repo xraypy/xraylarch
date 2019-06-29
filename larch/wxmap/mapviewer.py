@@ -132,18 +132,18 @@ class MapPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(125, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(140, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1))]
+        self.det_choice = [Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1))]
 
-        self.roi_choice = [Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1)),
-                           Choice(self, size=(125, -1))]
+        self.roi_choice = [Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1)),
+                           Choice(self, size=(140, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
 
@@ -184,14 +184,13 @@ class MapPanel(GridPanel):
                                label=' Limit Map Range to Pixel Range:',
                                action=self.onLimitRange)
 
-        self.map_show = [Button(self, 'New Map',     size=(125, -1),
-                                action=partial(self.onROIMap, new=True)),
-                         Button(self, 'Update Map', size=(125, -1),
-                                action=partial(self.onROIMap, new=False)),
-                         Button(self, 'Build Map', size=(125, -1),
-                                action=partial(self.onROIMap, plot=False,
-                                               max_new_rows=16777216)),
-        ]
+        map_shownew = Button(self, 'New Map',     size=(140, -1),
+                               action=partial(self.onROIMap, new=True))
+        map_update  =  Button(self, 'Replace', size=(140, -1),
+                              action=partial(self.onROIMap, new=False))
+        map_process =  Button(self, 'Add Rows from Raw Data', size=(250, -1),
+                              action=self.onProcessMap)
+        self.map_process = map_process
 
         self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
                      style=LEFT,  newrow=True)
@@ -211,11 +210,10 @@ class MapPanel(GridPanel):
                       self.roi_label[1],self.roi_label[2], self.roi_label[3]),
                      style=LEFT,  newrow=True)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Display:'),   dcol=1, style=LEFT, newrow=True)
-        self.Add(self.map_show[0],              dcol=1, style=LEFT)
-        self.Add(self.map_show[1],              dcol=1, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT)
-        self.Add(self.map_show[2],              dcol=1, style=LEFT)
+        self.Add(SimpleText(self, 'Display:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(map_shownew,      dcol=1, style=LEFT)
+        self.Add(map_update,       dcol=1, style=LEFT)
+        self.Add(map_process,      dcol=2, style=LEFT)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
@@ -253,8 +251,6 @@ class MapPanel(GridPanel):
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
-        # print("ROI Map update xrmmap ", xrmfile)
-
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
         self.set_det_choices()
@@ -456,13 +452,19 @@ class MapPanel(GridPanel):
         correl_plot.Raise()
         self.owner.plot_displays.append(correl_plot)
 
+    def onProcessMap(self, event=None, max_new_rows=None):
+        try:
+            xrmfile = self.owner.current_file
+            pref, fname = os.path.split(xrmfile.filename)
+            self.owner.process_file(fname, max_new_rows=max_new_rows)
+        except:
+            pass
 
-    def onROIMap(self, event=None, new=True, plot=True, max_new_rows=25):
+    def onROIMap(self, event=None, new=True, plot=True):
         plot_type = self.plot_choice.GetStringSelection().lower()
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
-        self.owner.process_file(fname, max_new_rows=max_new_rows)
-
+        self.owner.process_file(fname, max_new_rows=10)
         if plot:
             if 'correlation' in plot_type:
                 self.ShowCorrel(new=new)
@@ -961,7 +963,10 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         self.report.DeleteAllItems()
         self.report_data = []
-        self.onSelect()
+        try:
+            self.onSelect()
+        except:
+            pass
 
     def set_enabled_btns(self, xrmfile=None):
         if xrmfile is None:
@@ -1309,6 +1314,7 @@ class MapViewerFrame(wx.Frame):
         self.im_displays = []
         self.tomo_displays = []
         self.plot_displays = []
+        self.current_file = None
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
@@ -1326,6 +1332,7 @@ class MapViewerFrame(wx.Frame):
         self.watch_files = False
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
+
         self.files_in_progress = []
 
         # self.hotcols = False
@@ -1421,6 +1428,8 @@ class MapViewerFrame(wx.Frame):
             xrmfile = self.current_file
 
         ny, nx = xrmfile.get_shape()
+        if mask.sum() < 1:
+            return
 
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             if mask.shape == (nx, ny): ## sinogram
@@ -1519,7 +1528,6 @@ class MapViewerFrame(wx.Frame):
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
         xrmfile.add_area(tmask, name=name)
-
         for page in self.nb.pagelist:
             if hasattr(page, 'update_xrmmap'):
                 page.update_xrmmap(xrmfile=xrmfile)
@@ -1706,7 +1714,7 @@ class MapViewerFrame(wx.Frame):
                 print('Could not connect to ScanDB: %s' % (emsg))
                 self.scandb = self.instdb = None
 
-    def ShowFile(self, evt=None, filename=None,  **kws):
+    def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
 
@@ -1714,14 +1722,14 @@ class MapViewerFrame(wx.Frame):
             return
         if (self.check_ownership(filename) and
             self.filemap[filename].folder_has_newdata()):
-            self.process_file(filename, max_new_rows=50)
+            if process_file:
+                self.process_file(filename, max_new_rows=25)
 
         self.current_file = self.filemap[filename]
         ny, nx = self.filemap[filename].get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
         fnames = self.filelist.GetItems()
-
         for page in self.nb.pagelist:
             if hasattr(page, 'update_xrmmap'):
                 page.update_xrmmap(xrmfile=self.current_file)
@@ -1738,9 +1746,7 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Change &Working Folder',    'Choose working directory',        self.onFolderSelect)
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L', 'Show Larch Programming Buffer',  self.onShowLarchBuffer)
 
-        cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W',
-                             'Watch HDF5 Files',
-                             kind=wx.ITEM_CHECK)
+        cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W', 'Watch HDF5 Files', kind=wx.ITEM_CHECK)
         fmenu.Check(cmenu.Id, self.watch_files) ## False
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=cmenu.Id)
 
@@ -1965,8 +1971,10 @@ class MapViewerFrame(wx.Frame):
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():
             self.filelist.Append(fname)
+            self.filelist.SetStringSelection(fname)
+
         if self.check_ownership(fname):
-            self.process_file(fname, max_new_rows=50)
+            self.process_file(fname, max_new_rows=25)
 
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
@@ -2075,26 +2083,20 @@ class MapViewerFrame(wx.Frame):
 #         ##print(msg)
 
     def onWatchFiles(self, event=None):
-
         self.watch_files = event.IsChecked()
         if not self.watch_files:
             self.file_timer.Stop()
             msg = 'Watching Files/Folders for Changes: Off'
         else:
-            self.file_timer.Start(5000)
+            self.file_timer.Start(10000)
             msg = 'Watching Files/Folders for Changes: On'
         self.message(msg)
-        ##print(msg)
 
     def onFileWatchTimer(self, event=None):
-        for filename in self.filemap:
-            if (filename not in self.files_in_progress and
-                self.filemap[filename].folder_has_newdata()):
-                self.process_file(filename, max_new_rows=50)
+        if self.current_file is not None and len(self.files_in_progress) == 0:
+            if self.current_file.folder_has_newdata():
+                self.process_file(fname, max_new_rows=1200300)
 
-                thispanel = self.nb.GetCurrentPage()
-                if hasattr(thispanel, 'onROIMap'):
-                    thispanel.onROIMap(event=None, new=False)
 
     def process_file(self, filename, max_new_rows=None):
         """Request processing of map file.
@@ -2108,11 +2110,13 @@ class MapViewerFrame(wx.Frame):
         if xrmfile.dimension is None and isGSEXRM_MapFolder(self.folder):
             xrmfile.read_master()
 
-        if xrmfile.folder_has_newdata():
+        if (xrmfile.folder_has_newdata() and self.h5convert_done
+            and filename not in self.files_in_progress):
+
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
-            self.htimer.Start(150)
+            self.htimer.Start(1500)
             maxrow = None
             if max_new_rows is not None:
                 maxrow = max_new_rows + xrmfile.last_row + 1
@@ -2137,7 +2141,7 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_thread.join()
             self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
-            self.ShowFile(filename=self.h5convert_fname)
+            self.ShowFile(filename=self.h5convert_fname, process_file=True)
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
