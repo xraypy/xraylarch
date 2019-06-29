@@ -104,7 +104,8 @@ class TomographyPanel(GridPanel):
         self.use_hotcols = Check(self, default=False,
                                  label='Remove First and Last columns',
                                  action=self.onHotCols)
-
+        self.i1trans = Check(self, default=True,
+                             label='Column labeled "i1" is transmission data')
 
         self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
                                action=partial(self.onShowTomograph, new=True)),
@@ -158,6 +159,8 @@ class TomographyPanel(GridPanel):
         self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(self.use_hotcols,              dcol=2, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.i1trans,                  dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
@@ -345,19 +348,36 @@ class TomographyPanel(GridPanel):
         if abs(omega[-1] - omega[0]) > 360+2*domega:
             omega = omega[1:-1]
             args['hotcols'] = True
+
+        def normalize_map(xmap, normmap, roiname):
+            xmap /= normmap
+            label = ''
+            if self.i1trans.IsChecked() and roiname.lower().startswith('i1'):
+                xmap = -np.log(xmap)
+                xmrange = xmap.max()-xmap.min()
+                xmap = (xmap - xmap.min() + 1.e-6*xmrange)/xmrange
+                label = '-log'
+            return xmap, label
+
+        normmap = 1.
+        if roi_name[-1] != '1':
+            normmap, sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1], **args)
+            normmap[np.where(normmap==0)] = 1.
+
         r_map, sino_order = xrmfile.get_sinogram(roi_name[0], det=det_name[0], **args)
+        r_map, r_lab = normalize_map(r_map, normmap, roi_name[0])
+
+
         if plt3:
             g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1], **args)
             b_map, sino_order = xrmfile.get_sinogram(roi_name[2], det=det_name[2], **args)
+            g_map, g_lab = normalize_map(g_map, normmap, roi_name[1])
+            b_map, b_lab = normalize_map(b_map, normmap, roi_name[2])
 
-        mapx = 1.
-        if roi_name[-1] != '1':
-            mapx, sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1],**args)
-            mapx[np.where(mapx==0)] = 1.
 
         pref, fname = os.path.split(xrmfile.filename)
         if plt3:
-            sino = np.array([r_map/mapx, g_map/mapx, b_map/mapx])
+            sino = np.array([r_map, g_map, b_map])
             sino.resize(tuple(i for i in sino.shape if i!=1))
             title = fname
             info = ''
@@ -366,17 +386,16 @@ class TomographyPanel(GridPanel):
                              'green': 'Green: %s' % plt_name[1],
                              'blue':  'Blue: %s'  % plt_name[2]}
             else:
-                subtitles = {'red':   'Red: %s / %s'   % (plt_name[0], plt_name[-1]),
-                             'green': 'Green: %s / %s' % (plt_name[1], plt_name[-1]),
-                             'blue':  'Blue: %s / %s'  % (plt_name[2], plt_name[-1])}
+                subtitles = {'red':   'Red: %s(%s/%s)'   % (r_lab, plt_name[0], plt_name[-1]),
+                             'green': 'Green: %s(%s/%s)' % (g_lab, plt_name[1], plt_name[-1]),
+                             'blue':  'Blue: %s(%s/%s)'  % (b_lab, plt_name[2], plt_name[-1])}
 
         else:
-            sino = r_map/mapx
-
+            sino = r_map
             if roi_name[-1] == '1':
                 title = plt_name[0]
             else:
-                title = '%s / %s' % (plt_name[0] , plt_name[-1])
+                title = '%s(%s/%s)' % (r_lab, plt_name[0] , plt_name[-1])
             title = '%s: %s' % (fname, title)
             info  = 'Intensity: [%g, %g]' %(sino.min(), sino.max())
             subtitle = None

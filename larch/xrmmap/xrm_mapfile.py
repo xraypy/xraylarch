@@ -1970,9 +1970,9 @@ class GSEXRM_MapFile(object):
             return
 
         if trim_sino:
-            sino, x, omega = trim_sinogram(sino,x,omega)
+            sino, x, omega = trim_sinogram(sino, x, omega)
 
-        return reshape_sinogram(sino,x,omega)
+        return reshape_sinogram(sino, x, omega)
 
     def get_tomograph(self, sino, omega=None, center=None, hotcols=None, **kws):
         '''
@@ -1987,9 +1987,10 @@ class GSEXRM_MapFile(object):
         if omega is None:
             print('\n** Cannot compute tomography: no rotation axis specified in map. **')
             return
-        center, tomo = tomo_reconstruction(sino, omega, center=center, **kws)
+
+        center, recon = tomo_reconstruction(sino, omega, center=center, **kws)
         self.set_tomography_center(center=center)
-        return tomo
+        return recon
 
     def save_tomograph(self, datapath, algorithm='gridrec',
                        filter_name='shepp', num_iter=1, dtcorrect=None,
