@@ -7,9 +7,14 @@ These methods are built on the methods from scikit-learn
 """
 import numpy as np
 
-from sklearn.cross_decomposition import PLSRegression, PLSCanonical, PLSSVD, CCA
-from sklearn.model_selection import KFold, RepeatedKFold
-from sklearn.linear_model import LassoLarsCV, LassoLars, LassoCV, Lasso
+try:
+    from sklearn.cross_decomposition import PLSRegression, PLSCanonical, PLSSVD, CCA
+    from sklearn.model_selection import KFold, RepeatedKFold
+    from sklearn.linear_model import LassoLarsCV, LassoLars, LassoCV, Lasso
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
+
 
 from .. import Group, isgroup
 
@@ -51,6 +56,9 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
      5.  The optimal number of components may be best found from PCA. If set to None,
          a search will be done for ncomps that gives the lowest RMSE_CV.
     """
+    if not HAS_SKLEARN:
+        raise ImportError("scikit-learn not installed")
+
     xdat, spectra = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
     groupnames = []
     ydat = []
@@ -138,6 +146,8 @@ def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
      5.  alpha is the regularization parameter. if alpha is None it will
          be set using LassoLarsSCV
     """
+    if not HAS_SKLEARN:
+        raise ImportError("scikit-learn not installed")
     xdat, spectra = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
     groupnames = []
     ydat = []

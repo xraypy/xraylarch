@@ -12,7 +12,12 @@ from collections import OrderedDict
 import numpy as np
 from numpy.random import randint
 
-from sklearn.decomposition import PCA, NMF
+try:
+    from sklearn.decomposition import PCA
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
+
 
 from .. import Group
 from .utils import interp, index_of
@@ -79,6 +84,8 @@ def pca_train_sklearn(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
      2.  arrayname can be one of `norm` or `dmude`
     """
     xdat, ydat = groups2matrix(groups, arrayname, xmin=xmin, xmax=xmax)
+    if not HAS_SKLEARN:
+        raise ImportError("scikit-learn not installed")
 
     ret = PCA().fit(ydat)
     labels = [get_label(g) for g  in groups]
