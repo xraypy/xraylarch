@@ -3,10 +3,14 @@
 *~
 *#
 *.bak
+*.aux
+*.pdf
+conda_constructor/*.sh
+conda_constructor/*.exe
+conda_constructor/*.pkg
 __pycache__
 .deps
 doc/_build
-doc/*.pdf
 MANIFEST
 build
 dist
