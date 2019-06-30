@@ -12,7 +12,6 @@ the path represented by the feffNNNN.dat
 
 creates a group that contains the chi(k) for the sum of paths.
 """
-import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
@@ -261,7 +260,7 @@ class FeffPathGroup(Group):
         for pname in PATH_PARS:
             val =  getattr(self, pname)
             attr = 'value'
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 attr = 'expr'
             kws =  {'vary': False, attr: val}
             parname = fix_varname(PATHPAR_FMT % (pname, self.label))
@@ -351,7 +350,7 @@ class FeffPathGroup(Group):
             if pname == 's02': pname = 'n*s02'
 
             svalue = "     {:7s}= {:s}".format(pname, svalue)
-            if isinstance(strval, six.string_types):
+            if isinstance(strval, str):
                 svalue = "{:s}  '{:s}'".format(svalue, strval)
 
             if val == 0 and pname in ('third', 'fourth', 'ei'):

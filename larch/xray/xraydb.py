@@ -9,7 +9,6 @@ Main Class for full Database:  xrayDB
 import os
 import json
 from collections import namedtuple
-import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from sqlalchemy import MetaData, create_engine
@@ -67,7 +66,7 @@ def isxrayDB(dbname):
 
 def json_encode(val):
     "return json encoded value"
-    if val is None or isinstance(val, six.string_types):
+    if val is None or isinstance(val, str):
         return val
     return  json.dumps(val)
 

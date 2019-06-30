@@ -89,7 +89,6 @@ from threading import Thread
 import json
 import numpy as np
 import random
-import six
 
 from datetime import timedelta
 
@@ -217,7 +216,7 @@ def connect_scandb(scandb=None, dbname=None, _larch=None, **kwargs):
     global _scandb, _instdb
     if _scandb is not None:
         return _scandb
-    if scandb is None: 
+    if scandb is None:
         scandb = ScanDB(dbname=dbname, **kwargs)
 
     if scandb is not None:

@@ -6,7 +6,6 @@ This is a Larch group representing a Peak in an XRF Spectrum.
   group  = xrf_peak()
 
 """
-import six
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
@@ -78,7 +77,7 @@ class XRFPeak(Group):
             if parname in kws:
                 if kws[parname] is not None:
                     val = kws[parname]
-            if isinstance(val, six.string_types):
+            if isinstance(val, str):
                 thispar = Parameter(expr=val)
                 setattr(self, parname, thispar)
                 val = getattr(self, parname)

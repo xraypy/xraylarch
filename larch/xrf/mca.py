@@ -7,7 +7,6 @@ Authors/Modifications:
 * Modified for Tdl, tpt
 * modified and simplified for Larch, M Newville
 """
-import six
 import numpy as np
 from larch import Group, isgroup
 
@@ -158,7 +157,7 @@ class MCA(Group):
             thisroi = roi
         elif isinstance(roi, int) and roi < len(self.rois):
             thisroi = self.rois[roi]
-        elif isinstance(roi, six.string_types):
+        elif isinstance(roi, str):
             rnames = [r.name.lower() for r in self.rois]
             for iroi, nam in enumerate(rnames):
                 if nam.startswith(roi.lower()):

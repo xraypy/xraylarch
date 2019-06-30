@@ -5,7 +5,6 @@ import socket
 import time
 import h5py
 import numpy as np
-import six
 import scipy.stats as stats
 import json
 import multiprocessing as mp
@@ -64,7 +63,8 @@ def h5str(obj):
         out = out[2:-1]
     return out
 
-
+def strlist(alist):
+    return [a.encode('utf-8') for a in alist]
 
 def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
@@ -596,8 +596,8 @@ class GSEXRM_MapFile(object):
                 roi_lim.append([lims[i] for i in range(self.nmca)])
                 roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.nmca)])
             roi_lim = np.array(roi_lim)
-            self.add_data(group['rois'], 'name',     [six.b(a) for a in roi_desc])
-            self.add_data(group['rois'], 'address',  [six.b(a) for a in roi_addr])
+            self.add_data(group['rois'], 'name',   strlist(roi_desc))
+            self.add_data(group['rois'], 'address', strlist(roi_addr))
             self.add_data(group['rois'], 'limits',   roi_lim)
 
             for key, val in calib.items():
@@ -631,9 +631,9 @@ class GSEXRM_MapFile(object):
             envdat = ['Facility.Ring_Current (UnknownPV) = 0']
         env_desc, env_addr, env_val = parseEnviron(envdat)
 
-        self.add_data(group['environ'], 'name',     [six.b(a) for a in env_desc])
-        self.add_data(group['environ'], 'address',  [six.b(a) for a in env_addr])
-        self.add_data(group['environ'], 'value',    [six.b(a) for a  in env_val])
+        self.add_data(group['environ'], 'name',    strlist(env_desc))
+        self.add_data(group['environ'], 'address', strlist(env_addr))
+        self.add_data(group['environ'], 'value',   strlist(env_val))
 
         cmprstr = '%s' % self.compress_args['compression']
         if self.compress_args['compression'] != 'lzf':
@@ -1124,8 +1124,8 @@ class GSEXRM_MapFile(object):
             self.pos_desc.append(pname)
             self.pos_addr.append(pname)
         npos = len(self.pos_desc)
-        self.add_data(pos, 'name',     [six.b(a) for a in self.pos_desc])
-        self.add_data(pos, 'address',  [six.b(a) for a in self.pos_addr])
+        self.add_data(pos, 'name',    strlist(self.pos_desc))
+        self.add_data(pos, 'address', strlist(self.pos_addr))
         pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
                            maxshape=(None, npts, npos), **self.compress_args)
 
@@ -1267,10 +1267,10 @@ class GSEXRM_MapFile(object):
                 nsca = len(det_desc)
                 sums_list = np.array(sums_list)
 
-                self.add_data(rdat, 'det_name',    [six.b(a) for a in det_desc])
-                self.add_data(rdat, 'det_address', [six.b(a) for a in det_addr])
-                self.add_data(rdat, 'sum_name',    [six.b(a) for a in sums_desc])
-                self.add_data(rdat, 'sum_list',    sums_list)
+                self.add_data(rdat, 'det_name',   strlist(det_desc))
+                self.add_data(rdat, 'det_address', strlist(det_addr))
+                self.add_data(rdat, 'sum_name',  strlist(sums_desc))
+                self.add_data(rdat, 'sum_list',  sums_list)
 
                 for name, nx, dtype in (('det_raw', nsca, np.uint32),
                                         ('det_cor', nsca, np.float32),
@@ -1298,8 +1298,8 @@ class GSEXRM_MapFile(object):
                               attrs={'cal_offset':offset[imca],
                                      'cal_slope': slope[imca],
                                      'cal_quad': quad[imca]})
-                self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
-                self.add_data(dgrp, 'roi_address', [six.b(s % (imca+1)) for s in roi_addrs])
+                self.add_data(dgrp, 'roi_name',  strlist(roi_names))
+                self.add_data(dgrp, 'roi_address', strlist([s % (imca+1) for s in roi_addrs]))
                 self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
 
                 dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
@@ -1321,8 +1321,8 @@ class GSEXRM_MapFile(object):
                           attrs={'cal_offset':offset[0],
                                  'cal_slope': slope[0],
                                  'cal_quad': quad[0]})
-            self.add_data(dgrp, 'roi_name',    [six.b(a) for a in roi_names])
-            self.add_data(dgrp, 'roi_address', [six.b(s % 1) for s in roi_addrs])
+            self.add_data(dgrp, 'roi_name',    strlist(roi_names))
+            self.add_data(dgrp, 'roi_address', strlist((s % 1) for s in roi_addrs))
             self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
                                 chunks=self.chunksize,
@@ -1362,9 +1362,9 @@ class GSEXRM_MapFile(object):
 
             sums_list = np.array(sums_list)
 
-            self.add_data(scan, 'det_name',    [six.b(a) for a in det_desc])
-            self.add_data(scan, 'det_address', [six.b(a) for a in det_addr])
-            self.add_data(scan, 'sum_name',    [six.b(a) for a in sums_desc])
+            self.add_data(scan, 'det_name',    strlist(det_desc))
+            self.add_data(scan, 'det_address', strlist(det_addr))
+            self.add_data(scan, 'sum_name',    strlist(sum_desc))
             self.add_data(scan, 'sum_list',    sums_list)
 
             nxx = min(nsca, 8)

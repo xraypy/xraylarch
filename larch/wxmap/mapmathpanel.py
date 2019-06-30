@@ -9,7 +9,6 @@ import platform
 import sys
 import time
 import json
-import six
 import socket
 import datetime
 from functools import partial

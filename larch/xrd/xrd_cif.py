@@ -11,14 +11,11 @@ mkak 2017.02.06 (originally written spring 2016)
 import numpy as np
 import os
 import re
-
 import math
 import cmath
-
-from six import StringIO
+from io import StringIO
 
 from ..xray import xrayDB
-
 from .xrd_tools import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
                         twth_from_d, d_from_q, twth_from_q)
 

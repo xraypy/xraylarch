@@ -5,10 +5,7 @@ build American Mineralogist Crystal Structure Databse (amcsd)
 
 import os
 import requests
-
 import numpy as np
-import six
-
 from itertools import groupby
 from distutils.version import StrictVersion
 
@@ -956,7 +953,7 @@ class cifDB(object):
         '''
         if isinstance(element, int):
             element = '%d' % element
-        elif isinstance(element, six.string_types):
+        elif isinstance(element, str):
             element = element.title()
         q = self.query(self.elemtbl)
         row = q.filter(or_(self.elemtbl.c.z == element,
@@ -1038,7 +1035,7 @@ class cifDB(object):
     def get_mineral_names(self):
         names = []
         for name in self.query(self.nametbl.c.mineral_name).all():
-            if isinstance(name[0], six.string_types):
+            if isinstance(name[0], str):
                 names.append(name[0])
         return sorted(names)
 

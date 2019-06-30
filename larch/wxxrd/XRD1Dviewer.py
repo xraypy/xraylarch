@@ -15,7 +15,7 @@ import math
 from threading import Thread
 from functools import partial
 
-from six import StringIO
+from io import StringIO
 
 import wx
 import wx.lib.mixins.listctrl  as listmix

@@ -2,7 +2,7 @@
 import sys
 import os
 import time
-from six.moves.configparser import ConfigParser
+from configparser import ConfigParser
 
 from epics import Device, caget, caput, poll
 from epics.devices.mca import MCA, ROI, OrderedDict
