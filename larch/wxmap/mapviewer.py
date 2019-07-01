@@ -453,12 +453,10 @@ class MapPanel(GridPanel):
         self.owner.plot_displays.append(correl_plot)
 
     def onProcessMap(self, event=None, max_new_rows=None):
-        try:
-            xrmfile = self.owner.current_file
-            pref, fname = os.path.split(xrmfile.filename)
-            self.owner.process_file(fname, max_new_rows=max_new_rows)
-        except:
-            pass
+        xrmfile = self.owner.current_file
+        pref, fname = os.path.split(xrmfile.filename)
+        self.owner.process_file(fname, max_new_rows=max_new_rows)
+        self.update_xrmmap(xrmfile=self.owner.current_file)
 
     def onROIMap(self, event=None, new=True, plot=True):
         plot_type = self.plot_choice.GetStringSelection().lower()
