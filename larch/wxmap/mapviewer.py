@@ -1952,7 +1952,7 @@ class MapViewerFrame(wx.Frame):
 
     def add_xrmfile(self, xrmfile):
         parent, fname = os.path.split(xrmfile.filename)
-
+        # print("Add XRM File ", fname)
         # look for group with this name or for next available group
         for i in range(1000):
             gname = 'map%3.3i' % (i+1)
@@ -1972,7 +1972,7 @@ class MapViewerFrame(wx.Frame):
             self.filelist.SetStringSelection(fname)
 
         if self.check_ownership(fname):
-            self.process_file(fname, max_new_rows=25)
+            self.process_file(fname, max_new_rows=50)
 
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
@@ -2139,7 +2139,14 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_thread.join()
             self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
-            self.ShowFile(filename=self.h5convert_fname, process_file=True)
+
+            _path, _fname = os.path.split(fname)
+            self.ShowFile(filename=_fname)
+            if _fname in self.filemap:
+                for page in self.nb.pagelist:
+                    if hasattr(page, 'update_xrmmap'):
+                        page.update_xrmmap(xrmfile=self.filemap[_fname])
+
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
