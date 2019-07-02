@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.44
+version: 0.9.45
 
 channels:
     - https://conda.anaconda.org/gsecars/
@@ -21,16 +21,15 @@ post_install: post_install_windows.bat [win]
 
 specs:
     - python=>3.7.2
+    - conda==4.5.13
     - setuptools
     - pip
-    - conda
     - openssl
     - asn1crypto
     - anaconda
     - numpy>=1.15
     - scipy>=1.2
     - matplotlib>=3.0
-    - six>=1.12
     - yaml
     - termcolor
     - pcre
@@ -57,15 +56,15 @@ specs:
     - pycifrw
     - peakutils
     - pyshortcuts
-    - pyepics>=3.3.3
+    - pyepics>=3.4.0
     - lmfit>=0.9.13
     - asteval
     - wxutils>=0.2.3
-    - wxmplot>=0.9.34
+    - wxmplot>=0.9.35
     - tomopy>=1.4.0
     - dioptas
     - pyFAI>=0.17.1
     - fabio
     - silx
     - tifffile
-    - xraylarch>=0.9.42
+    - xraylarch>=0.9.45
