@@ -7,13 +7,17 @@ channels:
     - https://repo.continuum.io/pkgs/free
     - https://repo.continuum.io/pkgs/msys2 [win]
 
-welcome_image: larch_3cones.png   [win]
+welcome_image: larch_3cones.png  #  [win]
 
 license_file: ../LICENSE
 
 attempt_hardlinks: True [linux or osx]
 
 installer_type: pkg [osx]
+
+osxpkg_welcome: header.rtf # [osx]
+osxpkg_conclusion: footer.rtf # [osx]
+osxpkg_image: LarchInstaller.png # [osx]
 
 post_install: post_install_linux.sh [linux]
 post_install: post_install_macosx.sh [osx]
@@ -69,4 +73,3 @@ specs:
     - silx
     - tifffile
     - xraylarch
-
