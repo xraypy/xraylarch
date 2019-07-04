@@ -3,15 +3,15 @@ version: 0.9.45
 
 channels:
     - https://conda.anaconda.org/gsecars/
-    - http://repo.continuum.io/pkgs/main
-    - http://repo.continuum.io/pkgs/free
-    - http://repo.continuum.io/pkgs/msys2 [win]
+    - https://repo.continuum.io/pkgs/main
+    - https://repo.continuum.io/pkgs/free
+    - https://repo.continuum.io/pkgs/msys2 [win]
 
 welcome_image: larch_3cones.png   [win]
 
 license_file: ../LICENSE
 
-attempt_hardlinks: True
+attempt_hardlinks: True [linux or osx]
 
 installer_type: pkg [osx]
 
@@ -20,16 +20,16 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python=>3.7.2
+    - python==3.7.3
     - conda==4.5.13
     - setuptools
     - pip
     - openssl
     - asn1crypto
     - anaconda
-    - numpy>=1.15
-    - scipy>=1.2
-    - matplotlib>=3.0
+    - numpy=1.16.2
+    - scipy==1.2.1
+    - matplotlib==3.0.3
     - yaml
     - termcolor
     - pcre
@@ -44,27 +44,29 @@ specs:
     - scikit-image
     - scikit-learn
     - pandas
-    - patchelf         # [linux64]
-    - pango            # [linux64]
-    - fontconfig       # [linux64 or osx]
-    - readline         # [linux64 or osx]
+    - patchelf         # [linux]
+    - pango            # [linux]
+    - fontconfig       # [linux or osx]
+    - readline         # [linux or osx]
     - python.app       # [osx]
     - pywin32          # [win64]
     - console_shortcut # [win64]
+    - powershell_shortcut # [win64]
     - pyqtgraph
-    - wxpython>=4.0.4
+    - wxpython
     - pycifrw
     - peakutils
     - pyshortcuts
-    - pyepics>=3.4.0
-    - lmfit>=0.9.13
+    - pyepics
+    - lmfit
     - asteval
-    - wxutils>=0.2.3
-    - wxmplot>=0.9.35
-    - tomopy>=1.4.0
+    - wxutils
+    - wxmplot
+    - tomopy
     - dioptas
-    - pyFAI>=0.17.1
+    - pyFAI
     - fabio
     - silx
     - tifffile
-    - xraylarch>=0.9.45
+    - xraylarch
+
