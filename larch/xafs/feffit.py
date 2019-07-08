@@ -735,7 +735,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                 out.append(exprformat % (name, gformat(par.value),
                                          stderr, par.expr))
             else:
-                out.append(fixformat % (name, gformaat(par.value)))
+                out.append(fixformat % (name, gformat(par.value)))
     # if len(exprs) > 0:
     #     out.append(header % 'Constraint Expressions')
     #     out.extend(exprs)
