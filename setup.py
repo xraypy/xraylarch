@@ -176,7 +176,7 @@ setup(name = 'xraylarch',
 
 # create desktop icons
 if INSTALL or DEVELOP:
-    subprocess.check_call((pjoin(sys.exec_prefix, pyexe),
+    subprocess.check_call((pjoin(sys.exec_prefix, sys.executable),
                            pjoin(sys.exec_prefix, bindir, larchbin), '-m'))
 
 if len(missing) > 0:
