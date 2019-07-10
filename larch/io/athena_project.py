@@ -542,7 +542,6 @@ class AthenaProject(object):
         self.header = data.header
         self.journal = data.journal
         self.group_names = data.group_names
-        print("Group Names: ", data.group_names)
 
         for gname in data.group_names:
             oname = gname

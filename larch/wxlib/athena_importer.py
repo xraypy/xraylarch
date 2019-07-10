@@ -83,7 +83,7 @@ class AthenaImporter(wx.Frame) :
         self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False,
                                      _larch=_larch)
         self.allgroups = []
-        for item in dir(self.a_project):
+        for item in self.a_project._athena_groups:
             if not item.startswith('_athena_'):
                 self.allgroups.append(item)
                 self.grouplist.Append(item)
