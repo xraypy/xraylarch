@@ -4,7 +4,6 @@ version: 0.9.45
 channels:
     - https://conda.anaconda.org/gsecars/
     - https://repo.continuum.io/pkgs/main
-    - https://repo.continuum.io/pkgs/free
     - https://repo.continuum.io/pkgs/msys2 [win]
 
 welcome_image: larch_3cones.png  #  [win]
