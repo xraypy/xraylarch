@@ -355,7 +355,7 @@ class EXAFSPanel(TaskPanel):
             return {a: conf[a] for a in args}
 
         name = str(name)
-        if name in ('e0', 'rkbg', 'bkg_kweight', 'fft_kweight'):
+        if name in ('e0', 'rbkg', 'bkg_kweight', 'fft_kweight'):
             opts = copy_attrs(name)
         elif name == 'bkg_krange':
             opts = copy_attrs('bkg_kmin', 'bkg_kmax')
