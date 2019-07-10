@@ -542,6 +542,7 @@ class AthenaProject(object):
         self.header = data.header
         self.journal = data.journal
         self.group_names = data.group_names
+        print("Group Names: ", data.group_names)
 
         for gname in data.group_names:
             oname = gname
@@ -580,6 +581,7 @@ class AthenaProject(object):
         out.__doc__ = """XAFS Data from Athena Project File %s""" % (self.filename)
         out._athena_journal = self.journal
         out._athena_header = self.header
+        out._athena_groups = self.groups
 
         for name, group in self.groups.items():
             setattr(out, name, group)
