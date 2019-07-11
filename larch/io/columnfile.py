@@ -242,9 +242,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
         setattr(group.attrs, key, val)
 
     if labelline is not None:
-        for ch in '\t\r\n(){}[]<>':
+        for ch in '\t\r\n':
             labelline = labelline.replace(ch, '_')
-        for ch in ';~,`!%$@$&^?*#:"/|\'\\':
+        for ch in ';~,`!%$@$&^?*#:"/|\'\\(){}[]<>':
             labelline = labelline.replace(ch, '')
 
     if isinstance(labels, str):
