@@ -177,6 +177,8 @@ def read_ascii(filename, labels=None, simple_labels=False,
             labelline = line
             if labelline[0] in COMMENTCHARS:
                 labelline = labelline[1:].strip()
+
+
         # act of current section:
         if section == 'FOOTER':
             footers.append(line)
@@ -239,9 +241,16 @@ def read_ascii(filename, labels=None, simple_labels=False,
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
 
+    if labelline is not None:
+        for ch in '\t\r\n(){}[]<>':
+            labelline = labelline.replace(ch, '_')
+        for ch in ';~,`!%$@$&^?*#:"/|\'\\':
+            labelline = labelline.replace(ch, '')
+
     if isinstance(labels, str):
         labelline = labels
         labels = None
+
     set_array_labels(group, labels=labels, simple_labels=simple_labels,
                      labelline=labelline, delimeter=delimeter)
 
