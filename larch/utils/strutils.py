@@ -139,6 +139,9 @@ def fix_filename(s):
 def fix_varname(s):
     """fix string to be a 'good' variable name."""
     t = str(s).translate(TRANS_VARS)
+
+    if len(t) < 1:
+        t = '_unlabeled_'
     if t[0] not in VALID_CHARS1:
         t = '_%s' % t
     while t.endswith('_'):
