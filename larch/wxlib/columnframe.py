@@ -84,9 +84,7 @@ class AddColumnsFrame(wx.Frame):
         sizer.Add(wids['tc_regex'], (2, 1), (1, 2), LCEN, 3)
         sizer.Add(sel_re,           (2, 3), (1, 1), LCEN, 3)
 
-        sizer.Add(HLine(panel, size=(550, 2)),
-                  (3, 0), (1, 5), LCEN, 3)
-
+        sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LCEN, 3)
         ir = 4
 
         cind  = SimpleText(panel, label='Column Number')
@@ -285,7 +283,6 @@ class EditColumnFrame(wx.Frame) :
             label = self.wids["ret_%i" % index].GetLabel()
             popts = dict(marker='o', markersize=4, linewidth=1.5,
                          ylabel=label, xlabel='data point', label=label)
-
             self.parent.plotpanel.plot(x, y, **popts)
 
     def onColNumber(self, evt=None, index=-1):
@@ -581,9 +578,12 @@ class ColumnDataFileFrame(wx.Frame) :
                 self.subframes[name].Raise()
                 shown = True
             except:
-                del self.subframes[name]
+                pass
         if not shown:
             self.subframes[name] = frameclass(self, **opts)
+            self.subframes[name].Show()
+            self.subframes[name].Raise()
+
 
     def onAddColumns(self, event=None):
         self.show_subframe('addcol', AddColumnsFrame,
@@ -705,7 +705,6 @@ class ColumnDataFileFrame(wx.Frame) :
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
         # dtcorr = self.dtcorr.IsChecked()
-        # print("Column Frame on Update ")
 
         dtcorr = False
         use_deriv = self.use_deriv.IsChecked()
@@ -739,6 +738,7 @@ class ColumnDataFileFrame(wx.Frame) :
                     arr = np.log(arr)
                 elif opstr == '-log(':
                     arr = -np.log(arr)
+                arr[np.where(np.isnan(arr))] = 0
             return suf, opstr, arr
 
         try:
@@ -747,6 +747,7 @@ class ColumnDataFileFrame(wx.Frame) :
             exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
         except:
             return
+
         try:
             xunits = rawgroup.array_units[ix].strip()
             xlabel = '%s (%s)' % (xname, xunits)
