@@ -250,7 +250,9 @@ def read_ascii(filename, labels=None, simple_labels=False,
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
 
-    if not simple_labels:
+    if isinstance(labels, str):
+        labels = labels.split()
+    if labels is None and not simple_labels:
         bldat = guess_beamline(headers)(headers)
         labels = bldat.get_array_labels()
         if getattr(bldat, 'energy_units', 'eV') != 'eV':
