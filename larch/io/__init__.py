@@ -30,6 +30,9 @@ from .save_restore import save, restore
 from .tifffile import TIFFfile
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
                              extract_athenagroup, make_hashkey)
+
+from .xafs_beamlines import guess_beamline
+
 from .csvfiles import groups2csv, read_csv
 from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups

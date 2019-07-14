@@ -13,6 +13,7 @@ from larch import Group
 from larch.symboltable import isgroup
 from .fileutils import fix_varname
 
+from .xafs_beamlines import guess_beamline
 
 MODNAME = '_io'
 TINY = 1.e-7
@@ -100,6 +101,17 @@ def lformat(val, length=12):
     fmt = '{0: %i.%i%s}' % (length, prec, form)
     return fmt.format(val)
 
+def parse_labelline(labelline, header):
+    """
+    parse the 'label line' for an ASCII file.
+
+
+    This is meant to handle some special cases of XAFS data collected at a variety of sources
+    """
+
+    pass
+
+
 def read_ascii(filename, labels=None, simple_labels=False,
                sort=False, sort_column=0, delimeter=None, _larch=None):
     """read a column ascii column file, returning a group containing the data
@@ -110,7 +122,7 @@ def read_ascii(filename, labels=None, simple_labels=False,
     Arguments
     ---------
      filename (str)        name of file to read
-     labels (list or None) list of labels to use for column labels [None]
+     labels (list or None) list of labels to use for array labels [None]
      simple_labels (bool)  whether to force simple column labels (note 1) [False]
      delimeter (str)       string to use to split label line
      sort (bool)           whether to sort row data (note 2) [False]
@@ -122,11 +134,13 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     Notes
     -----
-      1. column labels.  If `labels` is left the default value of `None`,
-         column labels will be tried to be created from the line
-         immediately preceeding the data and the provided delimeter, and may
-         use 'col1', 'col2', etc if suitable column labels cannot be figured out.
-         The labels will be used as names for the 1-d arrays for each column.
+      1. array labels.  If `labels` is `None` (he default value), column labels
+         (and so, names of 1d arrays) will be tried to be determined from the
+         file header.  This often means parsing the final header line, but
+         tagged column files from several XAFS beamlines will be tried and used
+         if matching.  Column labels may be like 'col1', 'col2', etc if suitable
+         column labels cannot be guessed.
+         These labels will be used as names for the 1-d arrays from each column.
          If `simple_labels` is  `True`, the names 'col1', 'col2' etc will be used
          regardless of the column labels found in the file.
 
@@ -158,7 +172,6 @@ def read_ascii(filename, labels=None, simple_labels=False,
 
     text = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
 
-    labelline = None
     ncol = None
     data, footers, headers = [], [], []
 
@@ -174,10 +187,6 @@ def read_ascii(filename, labels=None, simple_labels=False,
             section = 'DATA'
         elif section == 'DATA' and None in getfloats(line):
             section = 'HEADER'
-            labelline = line
-            if labelline[0] in COMMENTCHARS:
-                labelline = labelline[1:].strip()
-
 
         # act of current section:
         if section == 'FOOTER':
@@ -241,30 +250,27 @@ def read_ascii(filename, labels=None, simple_labels=False,
     for key, val in header_attrs.items():
         setattr(group.attrs, key, val)
 
-    if labelline is not None:
-        for ch in ';~,`!%$@$&^?*#"':
-            labelline = labelline.replace(ch, ' ')
-        for ch in '\t\r\n(){}[]<>:"/|\'\\':
-            labelline = labelline.replace(ch, '_')
+    if not simple_labels:
+        bldat = guess_beamline(headers)(headers)
+        labels = bldat.get_array_labels()
+        if getattr(bldat, 'energy_units', 'eV') != 'eV':
+            group.energy_units = bldat.energy_units
+        if getattr(bldat, 'energy_column', 1) != 1:
+            group.energy_column = bldat.energy_column
+        if getattr(bldat, 'mono_dspace', -1) > 0:
+            group.mono_dspace = bldat.mono_dspace
 
-    if isinstance(labels, str):
-        labelline = labels
-        labels = None
-
-    set_array_labels(group, labels=labels, simple_labels=simple_labels,
-                     labelline=labelline, delimeter=delimeter)
-
+    set_array_labels(group, labels=labels, simple_labels=simple_labels)
     return group
 
-def set_array_labels(group, labels=None, labelline=None, delimeter=None,
-                     simple_labels=False, save_oldarrays=False, _larch=None):
+def set_array_labels(group, labels=None, simple_labels=False,
+                     save_oldarrays=False, _larch=None):
+
     """set array names for a group from its 2D `data` array.
 
     Arguments
     ----------
       labels (list of strings or None)  array of labels to use
-      labelline (string or None): text to parse for labels
-      delimeter (string or None): delimeter to split labelline (None)
       simple_labels (bool):   flag to use ('col1', 'col2', ...) [False]
       save_oldarrays (bool):  flag to save old array names [False]
 
@@ -277,13 +283,7 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
 
     Notes
     ------
-      1. The order for resolution is: `simple_labels=True`, followed
-         by `labels`, then `labelline`.
-
-      2. When using `labelline`, the `delimeter` will be used to split
-         the line of text. If left as `None`, any whitespace will be used.
-         Also, when using `labelline` and `delimeter`, more than half of
-         the columns must have an explicit label.
+      1. if `simple_labels=True` it will overwrite any values in `labels`
 
       3. Array labels must be valid python names. If not enough labels
          are specified, or if name clashes arise, the array names may be
@@ -313,31 +313,16 @@ def set_array_labels(group, labels=None, labelline=None, delimeter=None,
 
     ####
     # step 1: determine user-defined labels from input options
-    # generating array `tlabels` for test labelsaZA
+    # generating array `tlabels` for test labels
     #
     # generate simple column labels, used as backup
     clabels = ['col%i' % (i+1) for i in range(ncols)]
 
-    # allow labels to really be 'labelline
-    if isinstance(labels, str) and labelline is None:
-        labelline = labels
-        labels = None
+    if isinstance(labels, str):
+        labels = labels.split()
 
-    # convert user input into candidate labels
-    tlabels = None
 
-    # if labelline provided, split with provided delimeter
-    # or the best delimeter of '\t', ',', '|', or whitespace
-    delim = delimeter
-    if labelline is not None:
-        if delim is None:
-            for dtest in ('\t', ',', '|', '&'):
-                if  labelline.count(dtest) > int(ncols/2.0)-1:
-                    delim = dtest
-                    break
-        tlabels = [colname(l) for l in labelline.split(delim)]
-    elif labels is not None:
-        tlabels = labels
+    tlabels = labels
     # if simple column names requested or above failed, use simple column names
     if simple_labels or tlabels is None:
         tlabels = clabels
