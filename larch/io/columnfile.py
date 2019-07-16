@@ -251,6 +251,8 @@ def read_ascii(filename, labels=None, simple_labels=False,
         setattr(group.attrs, key, val)
 
     if isinstance(labels, str):
+        for bchar in ',#@%|:*':
+            labels = labels.replace(bchar, '')
         labels = labels.split()
     if labels is None and not simple_labels:
         bldat = guess_beamline(headers)(headers)
