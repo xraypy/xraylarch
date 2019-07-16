@@ -546,17 +546,21 @@ class XASNormPanel(TaskPanel):
 
         en_units = getattr(dgroup, 'energy_units', None)
         if en_units is None:
-            en_units = 'eV'
-            units = guess_energy_units(dgroup.energy)
+            en_units = guess_energy_units(dgroup.energy)
 
-            if units != 'eV':
-                dlg = EnergyUnitsDialog(self.parent, units, dgroup.energy)
-                res = dlg.GetResponse()
-                dlg.Destroy()
-                if res.ok:
-                    en_units = res.units
-                    dgroup.xdat = dgroup.energy = res.energy
-            dgroup.energy_units = en_units
+        if en_units != 'eV':
+            mono_dspace = getattr(dgroup, 'mono_dspace', 1)
+            print("Group dspace : ", mono_dspace)
+            dlg = EnergyUnitsDialog(self.parent, dgroup.energy,
+                                    unitname=en_units,
+                                    dspace=mono_dspace)
+            res = dlg.GetResponse()
+            dlg.Destroy()
+            if res.ok:
+                en_units = res.units
+                dgroup.mono_dspace = res.dspace
+                dgroup.xdat = dgroup.energy = res.energy
+        dgroup.energy_units = en_units
 
         form = self.read_form()
 
