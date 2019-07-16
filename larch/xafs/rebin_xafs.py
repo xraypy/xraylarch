@@ -41,7 +41,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _la
         group.sorted = Group(energy=new_energy, mu=new_mu)
     else:
         group.energy = new_energy
-        group.mu = mu
+        group.mu = new_mu
     return
 
 
