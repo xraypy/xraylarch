@@ -1281,10 +1281,11 @@ class EnergyUnitsDialog(wx.Dialog):
     """dialog for selecting, changing energy units, forcing data to eV"""
     unit_choices = ['eV', 'keV', 'deg', 'steps']
 
-    def __init__(self, parent, unitname, energy_array, **kws):
+    def __init__(self, parent, energy_array, unitname='eV',dspace=1, **kws):
 
-        self.energy = energy_array[:]
-
+        self.parent = parent
+        self.energy = 1.0*energy_array
+        print(" energy units " , unitname, dspace)
         title = "Select Energy Units to convert to 'eV'"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
@@ -1293,7 +1294,7 @@ class EnergyUnitsDialog(wx.Dialog):
         self.en_units = Choice(panel, choices=self.unit_choices, size=(125, -1),
                                action=self.onUnits)
         self.en_units.SetStringSelection(unitname)
-        self.mono_dspace = FloatCtrl(panel, value=1.0, minval=0, maxval=100.0,
+        self.mono_dspace = FloatCtrl(panel, value=dspace, minval=0, maxval=100.0,
                                      precision=6, size=(125, -1))
         self.steps2deg  = FloatCtrl(panel, value=1.0, minval=0,
                                      precision=1, size=(125, -1))
@@ -1317,19 +1318,14 @@ class EnergyUnitsDialog(wx.Dialog):
 
     def onUnits(self, event=None):
         units = self.en_units.GetStringSelection()
-
-        self.steps2deg.Disable()
-        self.mono_dspace.Disable()
-
-        if units in ('deg', 'steps'):
-            self.mono_dspace.Enable()
-            if units == 'steps':
-                self.steps2deg.Enable()
+        self.steps2deg.Enable(units == 'steps')
+        self.mono_dspace.Enable(units in ('steps', 'deg'))
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
-        response = namedtuple('EnergyUnitsResponse', ('ok', 'units', 'energy'))
-        ok, units, en = False, 'eV', None
+        response = namedtuple('EnergyUnitsResponse',
+                              ('ok', 'units', 'energy', 'dspace'))
+        ok, units, en, dspace = False, 'eV', None, -1
 
         if self.ShowModal() == wx.ID_OK:
             units = self.en_units.GetStringSelection()
@@ -1341,9 +1337,10 @@ class EnergyUnitsDialog(wx.Dialog):
                 dspace = float(self.mono_dspace.GetValue())
                 if units == 'steps':
                     self.energy /= self.steps2deg.GetValue()
-                en = (PLANCK_HC/(2*dspace))/np.sin(self.energy * DEG2RAD)
+                print("DEG TO EN ", dspace, DEG2RAD, PLANCK_HC)
+                en = PLANCK_HC/(2*dspace*np.sin(self.energy * DEG2RAD))
             ok = True
-        return response(ok, units, en)
+        return response(ok, units, en, dspace)
 
 class MergeDialog(wx.Dialog):
     """dialog for merging groups"""
