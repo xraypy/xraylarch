@@ -277,17 +277,29 @@ class APSXSD_BeamlineData(GenericBeamlineData):
         # here we try two different ways for "older" and "newer" 20BM/9BM fles
         labels = []
         mode = 'search'
+        _tmplabels = {}
         for line in self.headerlines:
             line = line[1:].strip()
             if mode == 'found legend':
                 if len(line) < 2:
                     mode = 'legend done'
                 else:
+                    print("Label Line : ", line)
                     if ')' in line:
-                        pref, suff = line.replace('*', '').split(')', 1)
-                        labels.append(suff)
+                        words = line.replace('*', '').split()
+                        bounds = []
+                        keys = []
+                        for iw, word in enumerate(words):
+                            if word.endswith(')'):
+                                keys.append(int(word[:-1]))
+                                bounds.append(iw)
+                        bounds.append(len(words))
+                        for ik, key in enumerate(keys):
+                            _tmplabels[key] = ' '.join(words[bounds[ik]+1:bounds[ik+1]])
             elif mode == 'search' and 'is a readable list of column' in line:
                 mode = 'found legend'
+        for k in sorted(_tmplabels.keys()):
+            labels.append(_tmplabels[k])
 
         # older version: no explicit legend, parse last header line, uses '*'
         if len(labels) == 0:
