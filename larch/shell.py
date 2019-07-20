@@ -91,7 +91,10 @@ class shell(cmd.Cmd):
         trim_last = False
         if text is not None:
             trim_last = text.strip() in ('quit', 'exit')
-        self.larch.input.history.save(trim_last=trim_last)
+        try:
+            self.larch.input.history.save(trim_last=trim_last)
+        except PermissionError:
+            print("Warning: could not save session history -- permission denied")
         sys.exit()
 
     def do_quit(self, text):

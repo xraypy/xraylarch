@@ -147,7 +147,10 @@ if INSTALL:
     for dirname in ('plugins', 'dlls', 'icons'):
         fname = pjoin(larchdir, 'plugins')
         if os.path.exists(fname):
-            shutil.rmtree(fname)
+            try:
+                shutil.rmtree(fname)
+            except PermissionError:
+                pass
 
 with open('requirements.txt', 'r') as f:
     install_reqs = f.read().splitlines()

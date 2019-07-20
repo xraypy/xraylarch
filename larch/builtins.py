@@ -507,9 +507,9 @@ def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
 
-def save_history(filename, session_only=False, max_lines=5000, _larch=None):
+def save_history(filename, session_only=False, maxlines=5000, _larch=None):
     """save history of larch commands to a file"""
-    _larch.history.save(filename, session_only=session_only, max_lines=max_lines)
+    _larch.input.history.save(filename, session_only=session_only, maxlines=maxlines)
 
 def show_history(max_lines=10000, _larch=None):
     """show history of larch commands"""
