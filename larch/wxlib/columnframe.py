@@ -548,7 +548,7 @@ class ColumnDataFileFrame(wx.Frame) :
             hasattr(_larch, '_larch')):
             _larch = _larch._larch
         try:
-            _larch.eval(read_cmd, add_history=False)
+            _larch.eval(read_cmd, add_history=True)
         except:
             pass
         if _larch.error:
