@@ -32,6 +32,7 @@ WXLARCH_INP = None
 UPDATE_GROUPNAME = '_sys.wx'
 UPDATE_GROUP = None
 UPDATE_VAR = 'force_wxupdate'
+IN_MODAL_DIALOG = False
 
 def update_requested():
     "check if update has been requested"
@@ -83,6 +84,26 @@ elif sys.platform == 'darwin':
     from .allow_idle_macosx import allow_idle
 
 
+class EnteredModalDialogHook(wx.ModalDialogHook):
+    """
+    set Global flag IN_MODAL_DIALOG when in a Modal Dialog.
+
+    this will allow the event loop to *not* try to read stdina
+    when a modal dialog is blocking, which causes problems on MacOS
+    """
+    def __init__(self):
+        wx.ModalDialogHook.__init__(self)
+
+    def Enter(self, dialog):
+        global IN_MODAL_DIALOG
+        IN_MODAL_DIALOG = True
+        return wx.ID_NONE
+
+    def Exit(self, dialog):
+        global IN_MODAL_DIALOG
+        IN_MODAL_DIALOG = False
+
+
 class EventLoopRunner(object):
     def __init__(self, parent):
         self.parent = parent
@@ -98,16 +119,20 @@ class EventLoopRunner(object):
         self.evtloop.Run()
 
     def check_stdin(self, event=None):
-        # print 'Get In ', clock()-self.t0, stdin_ready()
         try:
-            if (stdin_ready() or update_requested() or
-                (clock() - self.t0) > 5):
+            if (not IN_MODAL_DIALOG and (stdin_ready() or
+                                        update_requested() or
+                                        (clock() - self.t0) > 5)):
                 self.timer.Stop()
                 self.evtloop.Exit()
                 del self.timer, self.evtloop
                 clear_update_request()
+
         except KeyboardInterrupt:
             print('Captured Ctrl-C!')
+        except:
+            print(sys.exc_info())
+
 
 def inputhook_wx():
     """Run the wx event loop by processing pending events only.
@@ -172,6 +197,8 @@ def inputhook_darwin():
         app = wx.GetApp()
         if app is not None:
             assert is_wxMain()
+            modal_hook = EnteredModalDialogHook()
+            modal_hook.Register()
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested():
