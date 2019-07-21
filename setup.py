@@ -145,7 +145,7 @@ if INSTALL:
     # system-wide larch directory
     larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
     for dirname in ('plugins', 'dlls', 'icons'):
-        fname = pjoin(larchdir, 'plugins')
+        fname = pjoin(larchdir, dirname)
         if os.path.exists(fname):
             try:
                 shutil.rmtree(fname)
