@@ -357,8 +357,11 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
                      - 2*core_width(group.atsym, group.edge))
     i1 = index_of(energy, emin_area)
     i2 = index_of(energy, e0+norm2)
-    en = energy[i1:i2]
-    area_step = max(1.e-15, simps(norm[i1:i2], en) / en.ptp())
+    if i2-i1 > 2:
+        en = energy[i1:i2]
+        area_step = max(1.e-15, simps(norm[i1:i2], en) / en.ptp())
+    else:
+        area_step = norm[i1:i2].mean()
     group.edge_step_area = group.edge_step_poly * area_step
     group.norm_area = norm/area_step
     group.pre_edge_details.emin_area = emin_area
