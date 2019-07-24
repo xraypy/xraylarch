@@ -463,6 +463,7 @@ class MapPanel(GridPanel):
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
         self.owner.process_file(fname, max_new_rows=10)
+
         if plot:
             if 'correlation' in plot_type:
                 self.ShowCorrel(new=new)
@@ -2013,7 +2014,7 @@ class MapViewerFrame(wx.Frame):
 
             path, read = None, False
             if myDlg.ShowModal() == wx.ID_OK:
-                read        = True
+                read = True
             myDlg.Destroy()
 
             if read:
@@ -2344,13 +2345,13 @@ class ROIPopUp(wx.Dialog):
             self.setROI()
 
     def setROI(self):
-
         detname = self.rm_roi_ch[0].GetStringSelection()
         try:
             detgrp = self.cfile.xrmmap['roimap'][detname]
         except:
             return
-        limits,names = [],detgrp.keys()
+
+        limits, names = [], detgrp.keys()
         for name in names:
             limits += [list(detgrp[name]['limits'][:])]
 
@@ -2399,6 +2400,8 @@ class ROIPopUp(wx.Dialog):
         xunt  = self.roi_chc[1].GetStringSelection()
         xname = self.roi_name.GetValue()
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
+        # print("Create ROI ", xtyp, xunt, xname, xrange)
+
         if xtyp != '2DXRD': xrange = xrange[:2]
 
         self.owner.message('Building ROI data for: %s' % xname)
