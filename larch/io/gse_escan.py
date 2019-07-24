@@ -346,9 +346,9 @@ class EscanData:
             self.correct_deadtime = True
 
         if self.dimension == 2:
-            print( '2D ', len(self.y), len(tmp_dat))
             ny = len(self.y)
-            nx = len(tmp_dat)/ny
+            nx = int(len(tmp_dat)/ny)
+            print( '2D ', len(self.y), nx, len(tmp_dat))
 
             self.det.shape  = (self.det.shape[0],  ny, nx)
             self.pos.shape  = (self.pos.shape[0],  ny, nx)
