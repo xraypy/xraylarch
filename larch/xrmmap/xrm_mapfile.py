@@ -501,7 +501,7 @@ class GSEXRM_MapFile(object):
         adds mask file to exisiting '/xrmmap' group in an open HDF5 file
         mkak 2018.02.01
         '''
-        xrd1dgrp = ensure_subgroup('xrd1d',self.xrmmap)
+        xrd1dgrp = ensure_subgroup('xrd1d', self.xrmmap)
 
         if xrdcalfile is not None:
             self.xrdcalfile = xrdcalfile
@@ -1565,9 +1565,10 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             det_list = build_dlist(xrmmap['roimap'])
             for det in EXTRA_DETGROUPS:
-                if det in xrmmap:
-                    if len(xrmmap[det]) > 0:
-                        det_list.append(det)
+                if (det in xrmmap and
+                    len(xrmmap[det]) > 0 and
+                    det not in det_list):
+                    det_list.append(det)
         else:
             det_list = build_dlist(xrmmap)
             for det in build_dlist(xrmmap['roimap']):
@@ -2680,6 +2681,7 @@ class GSEXRM_MapFile(object):
         if roiname in roigroup[detname]:
             raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname, detname))
 
+        # print("ADD XRD1D ROI ", detname, xrange, roiname, unit)
         counts = self.xrmmap[detname]['counts']
         q = self.xrmmap[detname]['q'][:]
 
@@ -2693,7 +2695,8 @@ class GSEXRM_MapFile(object):
             bkglo = counts[:,:,ibkglo:imin].sum(axis=2)/(imin-ibkglo)
             bkghi = counts[:,:,imax::ibkghi].sum(axis=2)/(ibkghi-imax)
             xrd1d_cor -=  (imax-imin)* (bkglo + bkghi)/2.0
-
+        # print("ADD XRD1D ROI ", roiname, detname,
+        #       xrd1d_sum.sum(), xrd1d_sum.mean())
         self.save_roi(roiname, detname, xrd1d_sum, xrd1d_cor,
                       qrange,'q', '1/A')
 
@@ -2723,13 +2726,12 @@ class GSEXRM_MapFile(object):
             self.h5root.flush()
 
 
-    def save_roi(self,roiname,det,raw,cor,range,type,units):
-
-        ds = ensure_subgroup(roiname,self.xrmmap['roimap'][det])
+    def save_roi(self,roiname,det, raw, cor, drange, dtype, units):
+        ds = ensure_subgroup(roiname, self.xrmmap['roimap'][det])
         ds.create_dataset('raw',    data=raw   )
         ds.create_dataset('cor',    data=cor   )
-        ds.create_dataset('limits', data=range )
-        ds['limits'].attrs['type']  = type
+        ds.create_dataset('limits', data=drange )
+        ds['limits'].attrs['type']  = dtype
         ds['limits'].attrs['units'] = units
 
         self.h5root.flush()
@@ -2901,12 +2903,17 @@ class GSEXRM_MapFile(object):
 
         roi, detaddr = self.check_roi(roiname, det)
         ext = 'cor' if dtcorrect else 'raw'
-        if det in EXTRA_DETGROUPS:
+        if det == 'scalars':
             ext = ''
+        elif det in EXTRA_DETGROUPS:
+            ext = 'raw'
 
-        # print(" GetROIMAP %s|%s|%s|%s|%s|%s" % (roiname, roi, det, detaddr, ext, self.version))
+        # print("EXTRA DETGROUPS ", EXTRA_DETGROUPS)
+        # print(" GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
+        # print("  detaddr=%s|ext=%s|version=%s" % (
+        #   detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
-            if det in EXTRA_DETGROUPS:
+            if det == 'scalars':
                 grp = self.xrmmap[det]
                 if roiname in grp:
                     out = grp[roiname][:]
