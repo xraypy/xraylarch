@@ -32,7 +32,7 @@ from wxutils import (SimpleText, TextCtrl, Button, Popup, Choice, pack)
 
 def get_wxmplot_version():
     return "this function is deprecated"
-	
+
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
@@ -322,8 +322,12 @@ class MapImageFrame(ImageFrame):
                 dval = "%.4g" % dval
             if pan.xdata is not None and pan.ydata is not None:
                 self.this_point = (ix, iy)
-
             msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
+            self.panel.conf.projection_xy = ix, iy
+            try:
+                self.panel.update_projections()
+            except:
+                pass
         self.panel.write_message(msg, panel=0)
 
     def report_motion(self, event=None):
