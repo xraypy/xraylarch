@@ -48,8 +48,7 @@ def _parse_header(fname):
 
 
 def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
-                   out_dir=None, counter_signal='ROI1', counter_norm=None,
-                   save_rixs=False):
+                   out_dir=None, counter_signal='ROI1', counter_norm=None, interp_ene_in=True, save_rixs=False):
     """Build RIXS map as X,Y,Z 1D arrays
 
     Parameters
@@ -66,6 +65,8 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
         name of the data column to use as signal
     counter_norm : str
         name of the data column to use as normaliztion
+    interp_ene_in: bool
+        perform interpolation ene_in to the energy step of ene_out [True]
     save_rixs : bool
         if True -> save outdict to disk (in 'out_dir')
 
@@ -110,6 +111,11 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
     iz = cols.index(counter_signal)
     i0 = cols.index(counter_norm)
 
+    if interp_ene_in:
+        dat = np.loadtxt(fname0)
+        x0 = dat[:, ix]
+        xnew = np.arange(x0.min(), x0.max()+estep, estep)
+
     for ifn, fname in enumerate(fnames):
         dat = np.loadtxt(fname)
         x = dat[:, ix]
@@ -118,6 +124,10 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
             z = dat[:, iz] / dat[:, i0]
         else:
             z = dat[:, iz]
+        if interp_ene_in:
+            y = np.ones_like(xnew) * enes[ifn]
+            z = np.interp(xnew, x, z)
+            x = xnew
         if ifn == 0:
             _xcol = x
             _ycol = y

@@ -103,6 +103,7 @@ class RixsData(object):
         yet: bool
             if True: y1, y2 are given in energy transfer [False]
         """
+        self._crop_area = crop_area
         x1, y1, x2, y2 = crop_area
         _xystep = self.ene_grid or 0.1
         _method = self.grid_method or 'nearest'
@@ -161,7 +162,7 @@ class RixsData(object):
     def getPlotter(self):
         """Get a default plotter"""
         if self._plotter is None:
-            from sloth.gui.plot.plotrixs import RixsPlot2D
+            from larch.qtlib.plotrixs import RixsPlot2D
             self._plotter = RixsPlot2D(logger=self._logger)
         return self._plotter
 
