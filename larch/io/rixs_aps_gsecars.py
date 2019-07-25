@@ -73,30 +73,26 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
     -------
     outdict : dict
         {
-        'data': {
-            'X': array, energy in
-            'Y': array, energy out
-            'Z': array, signal
-            },
-        'infos': {
-            'writer_name': str,
-            'writer_version': str,
-            'writer_timestamp': str,
-            'filename_all' : list,
-            'filename_root': str,
-            'name_sample': str,
-            'name_scan': str,
-            'counter_all': str,
-            'counter_signal': str,
-            'counter_norm': str,
-            'ene_grid': float,
-            'ene_unit': str,
-            }
+        '_x': array, energy in
+        '_y': array, energy out
+        '_z': array, signal
+        'writer_name': str,
+        'writer_version': str,
+        'writer_timestamp': str,
+        'filename_all' : list,
+        'filename_root': str,
+        'name_sample': str,
+        'name_scan': str,
+        'counter_all': str,
+        'counter_signal': str,
+        'counter_norm': str,
+        'ene_grid': float,
+        'ene_unit': str,
         }
 
     """
     _writer = 'get_rixs_13ide'
-    _writer_version = '1.4'  #: used for reading back in RixsData.load_from_h5()
+    _writer_version = '1.5'  #: used for reading back in RixsData.load_from_h5()
     _writer_timestamp = '{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}'.format(*time.localtime())
 
     if out_dir is None:
@@ -133,25 +129,21 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
         _logger.info("Loaded scan {0}: {1} eV".format(ifn+1, enes[ifn]))
 
     outdict = {
-        'data': {
-            'X': _xcol,
-            'Y': _ycol,
-            'Z': _zcol,
-        },
-        'infos': {
-            'writer_name': _writer,
-            'writer_version': _writer_version,
-            'writer_timestamp': _writer_timestamp,
-            'filename_root': fnstr,
-            'filename_all': fnames,
-            'counter_all': cols,
-            'counter_signal': counter_signal,
-            'counter_norm': counter_norm,
-            'sample_name': sample_name,
-            'scan_name': scan_name,
-            'ene_grid': estep,
-            'ene_unit': 'eV',
-            },
+        '_x': _xcol,
+        '_y': _ycol,
+        '_z': _zcol,
+        'writer_name': _writer,
+        'writer_version': _writer_version,
+        'writer_timestamp': _writer_timestamp,
+        'filename_root': fnstr,
+        'filename_all': fnames,
+        'counter_all': cols,
+        'counter_signal': counter_signal,
+        'counter_norm': counter_norm,
+        'sample_name': sample_name,
+        'scan_name': scan_name,
+        'ene_grid': estep,
+        'ene_unit': 'eV',
         }
 
     if save_rixs:
