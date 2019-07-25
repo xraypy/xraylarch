@@ -1,0 +1,7 @@
+# List of larch development dependencies
+# Those ARE NOT required for installation, at runtime or to build from source
+# (except for the doc)
+
+-r requirements.txt
+pytest
+sphinx
