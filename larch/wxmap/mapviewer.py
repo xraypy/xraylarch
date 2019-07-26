@@ -1621,8 +1621,14 @@ class MapViewerFrame(wx.Frame):
             hotcols = False
         else:
             hotcols = xrmfile.hotcols
-        if x is not None and hotcols and map.shape[1] != x.shape[0]:
-            x = x[1:-1]
+
+        if x is not None:
+            zigzag = abs(xrmfile.zigzag)
+            if zigzag != 0:
+                x = x[zigzag:-zigzag]
+            elif hotcols and map.shape[1] != x.shape[0]:
+                x = x[1:-1]
+
 
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                      det=det, subtitles=subtitles,
