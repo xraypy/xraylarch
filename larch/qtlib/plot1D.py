@@ -18,9 +18,6 @@ from silx.gui.plot import PlotWindow
 from silx.gui.plot.tools.CurveLegendsWidget import CurveLegendsWidget
 from silx.gui.widgets.BoxLayoutDockWidget import BoxLayoutDockWidget
 
-__authors__ = ['Mauro Rovezzi']
-__credits__ = ['Marius Retegan', 'SILX developers']
-
 
 class CustomCurveLegendsWidget(CurveLegendsWidget):
     """Extension of CurveLegendWidget.

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Custom version of SILX Plot2D
 =============================
@@ -9,8 +8,6 @@ import time
 import numpy as np
 from silx.gui.plot import Plot2D as silxPlot2D
 from larch.utils.logging import getLogger
-
-__authors__ = ['Mauro Rovezzi']
 
 
 class Plot2D(silxPlot2D):
@@ -162,7 +159,16 @@ class Plot2D(silxPlot2D):
         if self._index is not None:
             self.setWindowTitle('{0}: {1}'.format(self._index, self._title))
 
-    def addImage(self, data, x=None, y=None, title=None, xlabel=None, ylabel=None,
+    def reset(self):
+        self.clear()
+        self.setGraphTitle()
+        self.setGraphXLabel('X')
+        # self.setGraphXLimits(0, 100)
+        self.setGraphYLabel('Y')
+        # self.setGraphYLimits(0, 100)
+
+    def addImage(self, data, x=None, y=None,
+                 title=None, xlabel=None, ylabel=None,
                  vmin=None, vmax=None, **kwargs):
         """Custom addImage
 

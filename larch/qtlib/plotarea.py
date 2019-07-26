@@ -13,9 +13,6 @@ from silx.gui import qt
 from .plot1D import Plot1D
 from .plot2D import Plot2D
 
-__authors__ = ['Mauro Rovezzi']
-__credits__ = ['Marius Retegan']
-
 
 class MdiSubWindow(qt.QMdiSubWindow):
 

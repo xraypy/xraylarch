@@ -181,6 +181,7 @@ class RixsPlotArea(PlotArea):
 
         self._overlayColors = overlayColors or _DEFAULT_OVERLAY_COLORS
         self._profileWindow = profileWindow or self._addProfileWindow()
+        self.addRixsPlot2D()
         self.setMinimumSize(300, 300)
         self.setWindowTitle('RixsPlotArea')
 
@@ -257,6 +258,7 @@ class RixsMainWindow(qt.QMainWindow):
 
     def getProfileWindow(self):
         return self.getPlotArea().getProfileWindow()
+
 
 if __name__ == '__main__':
     pass

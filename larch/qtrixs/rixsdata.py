@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 RIXS data object
 ================
-
 """
 import numpy as np
 from scipy.interpolate import griddata
@@ -46,9 +44,9 @@ class RixsData(object):
         self._logger = logger or _logger
 
     def _init_axis_labels(self, unit=None):
-            self.ene_in_label = 'Incoming energy ({0})'.format(unit)
-            self.ene_out_label = 'Emitted energy ({0})'.format(unit)
-            self.ene_et_label = 'Energy transfer ({0})'.format(unit)
+        self.ene_in_label = 'Incoming energy ({0})'.format(unit)
+        self.ene_out_label = 'Emitted energy ({0})'.format(unit)
+        self.ene_et_label = 'Energy transfer ({0})'.format(unit)
 
     def load_from_dict(self, rxdict):
         """Load RIXS data from a dictionary
@@ -89,7 +87,7 @@ class RixsData(object):
     def save_to_h5(self, fname):
         """Dump dictionary representation to HDF5 file"""
         dicttoh5(self.__dict__)
-        self._logger.info(f"RixsData saved to {fname}")
+        self._logger.info("RixsData saved to {0}".format(fname))
 
     def crop(self, crop_area, yet=False):
         """Crop the plane in a given range
@@ -148,7 +146,7 @@ class RixsData(object):
                                                            self._z,
                                                            xystep=_xystep,
                                                            lib=_lib,
-                                                           method='nearest')
+                                                           method=_method)
         self._et = self._x - self._y
         _, self.ene_et, self.rixs_et_map = gridxyz(self._x, self._et, self._z,
                                                    xystep=_xystep,
@@ -158,58 +156,6 @@ class RixsData(object):
     def norm(self):
         """Simple map normalization to max-min"""
         self.rixs_map_norm = self.rixs_map/(np.nanmax(self.rixs_map)-np.nanmin(self.rixs_map))
-
-    def getPlotter(self):
-        """Get a default plotter"""
-        if self._plotter is None:
-            from larch.qtlib.plotrixs import RixsPlot2D
-            self._plotter = RixsPlot2D(logger=self._logger)
-        return self._plotter
-
-    def plot(self, plotter=None, crop=False, rixs_et=False, nlevels=50):
-        """Data plotter"""
-        if plotter is None:
-            plotter = self.getPlotter()
-        else:
-            self._plotter = plotter
-        plotter.clear()
-        if type(crop) is tuple:
-            self.crop(crop)
-        if crop:
-            _title = f"{self.sample_name} [CROP: {self._crop_area}]"
-            if rixs_et:
-                plotter.addImage(self.rixs_et_map_crop,
-                                 x=self.ene_in_crop,
-                                 y=self.ene_et_crop,
-                                 title=_title,
-                                 xlabel=self.ene_in_label,
-                                 ylabel=self.ene_et_label)
-            else:
-                plotter.addImage(self.rixs_map_crop,
-                                 x=self.ene_in_crop,
-                                 y=self.ene_out_crop,
-                                 title=_title,
-                                 xlabel=self.ene_in_label,
-                                 ylabel=self.ene_out_label)
-            plotter.addContours(nlevels)
-            return
-        else:
-            if rixs_et:
-                plotter.addImage(self.rixs_et_map,
-                                 x=self.ene_in,
-                                 y=self.ene_et,
-                                 title=self.sample_name,
-                                 xlabel=self.ene_in_label,
-                                 ylabel=self.ene_et_label)
-            else:
-                plotter.addImage(self.rixs_map,
-                                 x=self.ene_in,
-                                 y=self.ene_out,
-                                 title=self.sample_name,
-                                 xlabel=self.ene_in_label,
-                                 ylabel=self.ene_out_label)
-        plotter.addContours(nlevels)
-        plotter.show()
 
 
 if __name__ == '__main__':
