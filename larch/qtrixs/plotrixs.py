@@ -15,10 +15,12 @@ from silx.gui.plot.tools.roi import RegionOfInterestTableWidget
 # from silx.gui.plot.items.roi import RectangleROI
 from silx.gui.plot.items import LineMixIn, SymbolMixIn
 
-
 from larch.qtlib.plotarea import PlotArea, MdiSubWindow
 from larch.qtlib.plot1D import Plot1D
 from larch.qtlib.plot2D import Plot2D
+
+from .view import RixsListView
+from .model import RixsListModel
 
 from larch.utils.logging import getLogger
 
@@ -176,9 +178,11 @@ class RixsPlot2D(Plot2D):
 class RixsPlotArea(PlotArea):
     """RIXS equivalent of PlotArea"""
 
-    def __init__(self, parent=None, profileWindow=None, overlayColors=None):
+    def __init__(self, parent=None, profileWindow=None, overlayColors=None,
+                 logger=None):
         super(RixsPlotArea, self).__init__(parent=parent)
 
+        self._logger = logger or getLogger('RixsPlotArea')
         self._overlayColors = overlayColors or _DEFAULT_OVERLAY_COLORS
         self._profileWindow = profileWindow or self._addProfileWindow()
         self.addRixsPlot2D()
@@ -233,9 +237,11 @@ class RixsPlotArea(PlotArea):
 
 class RixsMainWindow(qt.QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, logger=None):
 
         super(RixsMainWindow, self).__init__(parent=parent)
+
+        self._logger = logger or getLogger('RixsMainWindow')
 
         if parent is not None:
             #: behave as a widget
@@ -244,14 +250,115 @@ class RixsMainWindow(qt.QMainWindow):
             #: main window
             self.setWindowTitle('RIXS_VIEW')
 
+        self.setGeometry(0, 0, 1280, 960)
+
+        #: Model (= simple RixsData container)
+        self._model = RixsListModel()
+
+        #: View (= simply show list of loaded data)
+        self._view = RixsListView(parent=self)
+        self._view.setModel(self._model)
+
+        #: View dock widget
+        self._dockDataWidget = qt.QDockWidget(parent=self)
+        self._dockDataWidget.setObjectName('Data View')
+        self._dockDataWidget.setWidget(self._view)
+        self.addDockWidget(qt.Qt.LeftDockWidgetArea, self._dockDataWidget)
+
         #: Plot Area
         self._plotArea = RixsPlotArea(self)
         self.setCentralWidget(self._plotArea)
         self.setMinimumSize(600, 600)
 
-    def addRixsDOIDockWidget(self, plot):
-        self._roiDock = RixsROIDockWidget(plot, parent=self)
-        self.addDockWidget(qt.Qt.LeftDockWidgetArea, self._roiDock)
+        #: TODO Tab widget containing Cursors Infos dock widgets
+        # self._tabCurInfos = qt.QTabWidget(parent=self)
+        # self._tabCurInfos.setLayoutDirection(qt.Qt.LeftToRight)
+        # self._tabCurInfos.setDocumentMode(False)
+        # self._tabCurInfos.setTabsClosable(False)
+        # self._tabCurInfos.setMovable(False)
+        # self._dockCurInfos = qt.QDockWidget('Plot Cursors Infos', self)
+        # self.addDockWidget(qt.Qt.BottomDockWidgetArea, self._dockCurInfos)
+        # self._dockCurInfos.setWidget(self._tabCurInfos)
+
+    def _plot_rixs(self, rd, pw):
+        """Plot rixs full plane"""
+        pw.addImage(rd.rixs_map, x=rd.ene_in, y=rd.ene_out,
+                    title=rd.sample_name,
+                    xlabel=rd.ene_in_label,
+                    ylabel=rd.ene_out_label)
+
+    def _plot_rixs_et(self, rd, pw):
+        """Plot rixs_et full plane"""
+        pw.addImage(rd.rixs_et_map, x=rd.ene_in, y=rd.ene_et,
+                    title=rd.sample_name,
+                    xlabel=rd.ene_in_label,
+                    ylabel=rd.ene_et_label)
+
+    def _plot_rixs_crop(self, rd, pw):
+        """Plot rixs_et crop_area plane"""
+        _title = f"{rd.sample_name} [CROP: {rd._crop_area}]"
+        pw.addImage(rd.rixs_map_crop, x=rd.ene_in_crop, y=rd.ene_out_crop,
+                    title=_title,
+                    xlabel=rd.ene_in_label,
+                    ylabel=rd.ene_out_label)
+
+    def _plot_rixs_et_crop(self, rd, pw):
+        """Plot rixs_et crop_area plane"""
+        _title = f"{rd.sample_name} [CROP: {rd._crop_area}]"
+        pw.addImage(rd.rixs_et_map_crop,
+                    x=rd.ene_in_crop,
+                    y=rd.ene_et_crop,
+                    title=_title,
+                    xlabel=rd.ene_in_label,
+                    ylabel=rd.ene_et_label)
+
+    def plot(self, dataIndex, plotIndex,
+             crop=False, rixs_et=False,
+             nlevels=50):
+        """Plot given data index to given plot"""
+        rd = self.getData(dataIndex)
+        pw = self.getPlotWindow(plotIndex)
+        if rd is None or pw is None:
+            return
+        pw.reset()
+        if type(crop) is tuple:
+            rd.crop(crop)
+        if crop:
+            if rixs_et:
+                self._plot_rixs_et_crop(rd, pw)
+            else:
+                self._plot_rixs_crop(rd, pw)
+        else:
+            if rixs_et:
+                self._plot_rixs_et(rd, pw)
+            else:
+                self._plot_rixs(rd, pw)
+        pw.addContours(nlevels)
+
+    def getData(self, index):
+        try:
+            return self._model._data[index]
+        except IndexError:
+            self._logger.error("data index is wrong")
+            self._logger.info("use 'addData' to add new data to the list")
+            return None
+
+    def getPlotWindow(self, index):
+        try:
+            return self._plotArea.getPlotWindow(index)
+        except IndexError:
+            self._plotArea.addRixsPlot2D()
+            self._logger.warning("plot index wrong -> created a new RixsPlot2D")
+            return self._plotArea.getPlotWindow(-1)
+
+    def addData(self, data):
+        """Append RixsData object to the model"""
+        self._model.appendRow(data)
+
+    def addRixsDOIDockWidget(self, plotIndex):
+        plot = self.getPlotWindow(plotIndex)
+        _roiDock = RixsROIDockWidget(plot, parent=self)
+        self.addDockWidget(qt.Qt.BottomDockWidgetArea, _roiDock)
 
     def getPlotArea(self):
         return self._plotArea

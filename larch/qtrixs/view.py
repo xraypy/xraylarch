@@ -55,5 +55,12 @@ class RixsTreeView(TreeView):
                 yield item
 
 
+class RixsListView(qt.QListView):
+    """Simple List View used in larch.qtrixs.plotrixs.RixsMainWindow"""
+
+    def __init__(self, parent=None):
+        super(RixsListView, self).__init__(parent)
+
+
 if __name__ == '__main__':
     pass
