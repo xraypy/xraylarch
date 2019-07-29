@@ -72,7 +72,7 @@ class RixsData(object):
         None, set attributes: self.*
         """
         self.__dict__.update(rxdict)
-        self._init_axis_labels(unit=self.ene_unit)
+        self._init_axis_labels(unit=_tostr(self.ene_unit))
         self.grid_rixs_from_col()
 
     def load_from_h5(self, fname):
