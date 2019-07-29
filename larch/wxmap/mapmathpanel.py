@@ -204,7 +204,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                info=json.dumps(info))
 
         for p in self.owner.nb.pagelist:
-            print("update ", p, hasattr(p, 'update_xrmmap'))
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile)
 
