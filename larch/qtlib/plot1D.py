@@ -137,7 +137,7 @@ class Plot1D(PlotWindow):
 
         # Add the CurveLegendsWidget as a dock widget to the plot
         self.dock = BoxLayoutDockWidget()
-        self.dock.setWindowTitle('Legend')
+        self.dock.setWindowTitle('Legend (right click for menu)')
         self.dock.setWidget(self.legendsWidget)
         self.addDockWidget(qt.Qt.RightDockWidgetArea, self.dock)
 

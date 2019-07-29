@@ -44,6 +44,10 @@ class RixsData(object):
         self._logger = logger or _logger
 
     def _init_axis_labels(self, unit=None):
+        try:
+            unit.decode()
+        except AttributeError:
+            pass
         self.ene_in_label = 'Incoming energy ({0})'.format(unit)
         self.ene_out_label = 'Emitted energy ({0})'.format(unit)
         self.ene_et_label = 'Energy transfer ({0})'.format(unit)

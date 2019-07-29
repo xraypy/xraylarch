@@ -5,32 +5,21 @@
 Plot RIXS data
 ==============
 """
-from itertools import cycle
 from silx.gui import qt
-from silx.gui.plot.Profile import ProfileToolBar
 from silx.gui.plot.actions import PlotAction
-
 from silx.gui.plot.tools.roi import RegionOfInterestManager
 from silx.gui.plot.tools.roi import RegionOfInterestTableWidget
 # from silx.gui.plot.items.roi import RectangleROI
 from silx.gui.plot.items import LineMixIn, SymbolMixIn
-
+from larch.utils.logging import getLogger
 from larch.qtlib.plotarea import PlotArea, MdiSubWindow
 from larch.qtlib.plot1D import Plot1D
 from larch.qtlib.plot2D import Plot2D
-
+from .profiletoolbar import (_DEFAULT_OVERLAY_COLORS, RixsProfileToolBar)
 from .view import RixsListView
 from .model import RixsListModel
 
-from larch.utils.logging import getLogger
-
-_DEFAULT_OVERLAY_COLORS = cycle(['#1F77B4', '#AEC7E8', '#FF7F0E', '#FFBB78',
-                                 '#2CA02C', '#98DF8A', '#D62728', '#FF9896',
-                                 '#9467BD', '#C5B0D5', '#8C564B', '#C49C94',
-                                 '#E377C2', '#F7B6D2', '#7F7F7F', '#C7C7C7',
-                                 '#BCBD22', '#DBDB8D', '#17BECF', '#9EDAE5'])
-
-__authors__ = ['Mauro Rovezzi']
+_logger = getLogger("larch.qtrixs.plotrixs")
 
 
 class RixsROIManager(RegionOfInterestManager):
@@ -110,40 +99,11 @@ class RixsRotateAction(PlotAction):
                             tooltip='Rotate RIXS plane to energy transfer',
                             triggered=self.rotateImage,
                             parent=parent)
+        raise NotImplementedError
 
     def rotateImage(self):
         """"""
         return
-
-
-class RixsProfileToolBar(ProfileToolBar):
-    """RIXS-adapted Profile (=Cuts) toolbar"""
-
-    def __init__(self, parent=None, plot=None, profileWindow=None, overlayColors=None,
-                 title='RIXS profile'):
-        """Constructor"""
-        super(RixsProfileToolBar, self).__init__(parent=parent, plot=plot,
-                                                 profileWindow=profileWindow, title=title)
-
-        self._overlayColors = overlayColors or _DEFAULT_OVERLAY_COLORS
-
-    def _getNewColor(self):
-        return next(self._overlayColors)
-
-    def updateProfile(self):
-        """Update the displayed profile and profile ROI.
-        This uses the current active image of the plot and the current ROI.
-        """
-        image = self.plot.getActiveImage()
-        if image is None:
-            return
-
-        self._overlayColor = self._getNewColor()
-
-        self._createProfile(currentData=image.getData(copy=False),
-                            origin=image.getOrigin(), scale=image.getScale(),
-                            colormap=None, z=image.getZValue(),
-                            method=self.getProfileMethod())
 
 
 class RixsPlot2D(Plot2D):
@@ -155,7 +115,7 @@ class RixsPlot2D(Plot2D):
         super(RixsPlot2D, self).__init__(parent=parent, backend=backend, title=title)
 
         self._title = title
-        self._logger = logger or getLogger("RixsPlot2D")
+        self._logger = logger or _logger
         self._profileWindow = profileWindow or Plot1D(title="Profiles")
         self._overlayColors = overlayColors or _DEFAULT_OVERLAY_COLORS
 
@@ -182,7 +142,7 @@ class RixsPlotArea(PlotArea):
                  logger=None):
         super(RixsPlotArea, self).__init__(parent=parent)
 
-        self._logger = logger or getLogger('RixsPlotArea')
+        self._logger = logger or _logger
         self._overlayColors = overlayColors or _DEFAULT_OVERLAY_COLORS
         self._profileWindow = profileWindow or self._addProfileWindow()
         self.addRixsPlot2D()
@@ -241,7 +201,7 @@ class RixsMainWindow(qt.QMainWindow):
 
         super(RixsMainWindow, self).__init__(parent=parent)
 
-        self._logger = logger or getLogger('RixsMainWindow')
+        self._logger = logger or _logger
 
         if parent is not None:
             #: behave as a widget
