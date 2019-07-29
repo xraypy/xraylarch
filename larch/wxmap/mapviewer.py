@@ -1625,16 +1625,18 @@ class MapViewerFrame(wx.Frame):
             x = x[1:-1]
 
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
-                     det=det, subtitles=subtitles, contrast_level=0.5,
+                     det=det, subtitles=subtitles,
                      xrmfile=xrmfile, with_savepos=with_savepos)
         displayed = False
         while not displayed:
             if len(self.im_displays) == 0:
                 imd = self.add_imdisplay(title=title, det=det)
-                imd.display(map, **dopts)
+                imd.display(map, contrast_level=0.5, **dopts)
             else:
                 try:
                     imd = self.im_displays[-1]
+                    if imd.panel.conf.contrast_level in (0, None):
+                        dopts['contrast_level'] = 0.5
                     imd.display(map, **dopts)
                     displayed = True
                 except PyDeadObjectError:

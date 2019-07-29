@@ -157,7 +157,7 @@ class GSEXRM_MapRow:
                  npts=None,  irow=None, dtime=None, nrows_expected=None,
                  masterfile=None, xrftype=None, xrdtype=None,
                  xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
-                 wdg=0, steps=4096, flip=True,
+                 wdg=0, steps=4096, flip=True, force_no_dtc=False,
                  has_xrf=True, has_xrd2d=False, has_xrd1d=False):
 
         self.read_ok = False
@@ -307,6 +307,10 @@ class GSEXRM_MapRow:
             self.dtfactor  = self.inpcounts*self.realtime/dt_denom
             self.dtfactor[np.where(self.dtfactor < 0.5)] = 0.5
             self.dtfactor[np.where(np.isnan(self.dtfactor))] = 1.0
+            if force_no_dtc: # in case deadtime info is unreliable (some v old data)
+                self.outcounts = self.inpcounts*1.0
+                self.livetime  = self.realtime*1.0
+                self.dtfactor  = np.ones(self.dtfactor.shape)
 
         ## SPECIFIC TO XRD data
         if has_xrd2d or has_xrd1d:
@@ -410,10 +414,20 @@ class GSEXRM_MapRow:
         # auto-reverse: counter-intuitively (because stage is upside-down and so
         # backwards wrt optical view), left-to-right scans from high to low value
         # so reverse those that go from low to high value
+        # first, find fast axis:
+        ixaddr, gvarmax = 0, -1
+        for ig in range(ngather):
+            gvar = gdata[:, ig].std()
+            if gvar > gvarmax:
+                gvarmax = gvar
+                ixaddr = ig
+
         if reverse:
-            do_reverse = gdata[0, 0] < gdata[-1, 0]
+            do_reverse = gdata[0, ixaddr] < gdata[-1, ixaddr]
         else:
-            do_reverse = gdata[0, 0] > gdata[-1, 0]
+            do_reverse = gdata[0, ixaddr] > gdata[-1, ixaddr]
+        do_reverse = (irow % 2) == 0
+        # print("Reverse?  ", do_reverse, ixaddr, irow, gdata.shape)
         if do_reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]

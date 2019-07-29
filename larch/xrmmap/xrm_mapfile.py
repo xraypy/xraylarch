@@ -234,6 +234,8 @@ class GSEXRM_MapFile(object):
         self.roi_slices    = None
         self._pixeltime    = None
         self.masterfile    = None
+        self.force_no_dtc  = False
+
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
@@ -242,7 +244,6 @@ class GSEXRM_MapFile(object):
         self.has_xrf       = has_xrf
         self.has_xrd1d     = has_xrd1d
         self.has_xrd2d     = has_xrd2d
-
         self.pos_desc = []
         self.pos_addr = []
         ## used for XRD
@@ -698,8 +699,9 @@ class GSEXRM_MapFile(object):
             if hasattr(callback, '__call__'):
                 callback(filename=self.filename, status='complete')
 
-    def process(self, maxrow=None, force=False, callback=None):
+    def process(self, maxrow=None, force=False, callback=None, force_no_dtc=False):
         "look for more data from raw folder, process if needed"
+        self.force_no_dtc = force_no_dtc
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
@@ -834,13 +836,13 @@ class GSEXRM_MapFile(object):
             ioffset = offset
         self.has_xrf = self.has_xrf and xrff != '_unused_'
 
-
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=0, dimension=self.dimension,
                              npts=self.npts,
                              reverse=reverse,
                              ioffset=ioffset,
+                             force_no_dtc=self.force_no_dtc,
                              masterfile=self.masterfile, flip=self.flip,
                              xrdcal=self.xrdcalfile,
                              xrd2dmask=self.mask_xrd2d,
