@@ -2102,6 +2102,7 @@ class MapViewerFrame(wx.Frame):
     def onFileWatchTimer(self, event=None):
         if self.current_file is not None and len(self.files_in_progress) == 0:
             if self.current_file.folder_has_newdata():
+                path, fname = os.path.split(self.current_file.filename)
                 self.process_file(fname, max_new_rows=1200300)
 
 

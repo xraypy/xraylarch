@@ -1112,8 +1112,8 @@ clear undo history''')
     def on_apply(self, event=None):
         xdat, ydat = self.data[-1]
         dgroup = self.dgroup
-        dgroup.energy = xdat
-        dgroup.mu     = ydat
+        dgroup.energy = dgroup.xdat = xdat
+        dgroup.mu     = dgroup.ydat = ydat
         self.reset_data_history()
         self.parent.nb.pagelist[0].process(dgroup)
         self.plot_results()

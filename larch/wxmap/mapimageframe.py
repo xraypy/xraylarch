@@ -42,9 +42,6 @@ class MapImageFrame(ImageFrame):
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  with_savepos=True,output_title='Image', **kws):
-
-        # instdb=None,  inst_name=None,
-
         self.det = None
         self.xrmfile = None
         self.map = None
@@ -57,22 +54,15 @@ class MapImageFrame(ImageFrame):
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
 
-        self.panel.add_cursor_mode('prof', motion = self.prof_motion,
-                                   leftdown = self.prof_leftdown,
-                                   leftup   = self.prof_leftup)
-        self.panel.report_leftdown = self.report_leftdown
-        self.panel.report_motion   = self.report_motion
-
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
-
         self.SetSize((max(w0, w1)+5, max(h0, h1)+5))
         self.SetMinSize((500, 500))
 
         self.prof_plotter = None
         self.zoom_ini =  None
         self.lastpoint = [None, None]
-        self.this_point = None
+
         self.rbbox = None
 
     def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0,
@@ -86,11 +76,7 @@ class MapImageFrame(ImageFrame):
         if 'title' in kws:
             self.title = kws['title']
         ImageFrame.display(self, map, **kws)
-        if 'x' in kws:
-            self.panel.xdata = kws['x']
-        if 'y' in kws:
-            self.panel.ydata = kws['y']
-        self.set_contrast_levels()
+        # self.set_contrast_levels()
 
         if self.save_callback is not None and hasattr(self, 'pos_name'):
             self.pos_name.Enable(with_savepos)
@@ -102,6 +88,84 @@ class MapImageFrame(ImageFrame):
                 if sub is not None:
                     self.cmap_panels[i].title.SetLabel(sub)
 
+
+    def onCursorMode(self, event=None, mode='zoom'):
+        self.panel.cursor_mode = mode
+        choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
+        if event is not None:
+            if choice.startswith('Pick Area'):
+                self.panel.cursor_mode = 'lasso'
+
+    def onLasso(self, data=None, selected=None, mask=None, **kws):
+        if hasattr(self.lasso_callback , '__call__'):
+
+            self.lasso_callback(data=data, selected=selected, mask=mask,
+                                xoff=self.xoff, yoff=self.yoff, det=self.det,
+                                xrmfile=self.xrmfile, **kws)
+
+        self.zoom_mode.SetSelection(0)
+        self.panel.cursor_mode = 'zoom'
+
+    def CustomConfig(self, panel, sizer=None, irow=0):
+        """config panel for left-hand-side of frame"""
+
+        labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
+
+        if self.lasso_callback is None:
+            zoom_opts = ('Zoom to Rectangle',)
+        else:
+            zoom_opts = ('Zoom to Rectangle',
+                         'Pick Area for XRF Spectrum')
+
+        cpanel = wx.Panel(panel)
+        if sizer is None:
+            sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle),
+                  0, labstyle, 3)
+        self.zoom_mode = wx.RadioBox(cpanel, -1, "",
+                                     wx.DefaultPosition, wx.DefaultSize,
+                                     zoom_opts, 1, wx.RA_SPECIFY_COLS)
+        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+
+        sizer.Add(self.zoom_mode, 1, labstyle, 4)
+
+        if self.save_callback is not None:
+            sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle),
+                      0, labstyle, 3)
+            self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
+                                        style=wx.TE_PROCESS_ENTER)
+            self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+            sizer.Add(self.pos_name, 0, labstyle, 3)
+
+        pack(cpanel, sizer)
+        return cpanel
+
+    def onSavePixel(self, event=None):
+        ix, iy = self.panel.conf.projection_xy
+        if ix > 0 and iy > 0 and self.save_callback is not None:
+            name  = str(event.GetString().strip())
+            x = float(self.panel.xdata[int(ix)])
+            y = float(self.panel.ydata[int(iy)])
+            self.save_callback(name, ix, iy, x=x, y=y,
+                               title=self.title, xrmfile=self.xrmfile)
+
+
+class CorrelatedMapFrame(wxmplot.ImageMatrixFrame):
+    """
+    wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
+    """
+    def __init__(self, parent=None, xrmfile=None,
+                 title='CorrelatedMaps',  **kws):
+
+        self.xrmfile = xrmfile
+        wxmplot.ImageMatrixFrame.__init__(self, parent, size=(900, 625),
+                                          title=title, **kws)
+
+    def CustomConfig(self, parent):
+        pass
+
+
+class with_profile_mode:
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
             return
@@ -276,133 +340,3 @@ class MapImageFrame(ImageFrame):
 
         msg = "Pixel [%i, %i], X, OME = [%.4f mm, %.4f deg], Intensity= %g" % _point
         write(msg,  panel=0)
-
-    def onCursorMode(self, event=None, mode='zoom'):
-        self.panel.cursor_mode = mode
-        choice = self.zoom_mode.GetString(self.zoom_mode.GetSelection())
-        if event is not None:
-            if choice.startswith('Pick Area'):
-            #if 1 == event.GetInt():
-                self.panel.cursor_mode = 'lasso'
-            elif choice.startswith('Show Line'):
-            #elif 2 == event.GetInt():
-                self.panel.cursor_mode = 'prof'
-
-    def report_leftdown(self, event=None):
-        if event is None:
-            return
-        if event.xdata is None or event.ydata is None:
-            return
-
-        ix, iy = int(round(event.xdata)), int(round(event.ydata))
-        conf = self.panel.conf
-        if conf.flip_ud:  iy = conf.data.shape[0] - iy
-        if conf.flip_lr:  ix = conf.data.shape[1] - ix
-
-        self.this_point = None
-        msg = ''
-        if (ix >= 0 and ix < conf.data.shape[1] and
-            iy >= 0 and iy < conf.data.shape[0]):
-            pos = ''
-            pan = self.panel
-            labs, vals = [], []
-            if pan.xdata is not None:
-                labs.append(pan.xlab)
-                vals.append(pan.xdata[ix])
-            if pan.ydata is not None:
-                labs.append(pan.ylab)
-                vals.append(pan.ydata[iy])
-            pos = ', '.join(labs)
-            vals =', '.join(['%.4g' % v for v in vals])
-            pos = '%s = [%s]' % (pos, vals)
-            dval = conf.data[iy, ix]
-            if len(pan.data_shape) == 3:
-                dval = "%.4g, %.4g, %.4g" % tuple(dval)
-            else:
-                dval = "%.4g" % dval
-            if pan.xdata is not None and pan.ydata is not None:
-                self.this_point = (ix, iy)
-            msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
-            self.panel.conf.projection_xy = ix, iy
-            try:
-                self.panel.update_projections()
-            except:
-                pass
-        self.panel.write_message(msg, panel=0)
-
-    def report_motion(self, event=None):
-        return
-
-    def onLasso(self, data=None, selected=None, mask=None, **kws):
-        if hasattr(self.lasso_callback , '__call__'):
-
-            self.lasso_callback(data=data, selected=selected, mask=mask,
-                                xoff=self.xoff, yoff=self.yoff, det=self.det,
-                                xrmfile=self.xrmfile, **kws)
-
-        self.zoom_mode.SetSelection(0)
-        self.panel.cursor_mode = 'zoom'
-
-    def CustomConfig(self, panel, sizer=None, irow=0):
-        """config panel for left-hand-side of frame"""
-
-        labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
-
-        if self.lasso_callback is None:
-            zoom_opts = ('Zoom to Rectangle',
-                         'Show Line Profile')
-        else:
-            zoom_opts = ('Zoom to Rectangle',
-                         'Pick Area for XRF Spectrum',
-                         'Show Line Profile')
-
-        cpanel = wx.Panel(panel)
-        if sizer is None:
-            sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(SimpleText(cpanel, label='Cursor Modes', style=labstyle),
-                  0, labstyle, 3)
-        self.zoom_mode = wx.RadioBox(cpanel, -1, "",
-                                     wx.DefaultPosition, wx.DefaultSize,
-                                     zoom_opts, 1, wx.RA_SPECIFY_COLS)
-        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-
-        sizer.Add(self.zoom_mode, 1, labstyle, 4)
-
-        if self.save_callback is not None:
-            sizer.Add(SimpleText(cpanel, label='Save Position:', style=labstyle),
-                      0, labstyle, 3)
-            self.pos_name = wx.TextCtrl(cpanel, -1, '',  size=(155, -1),
-                                        style=wx.TE_PROCESS_ENTER)
-            self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
-            sizer.Add(self.pos_name, 0, labstyle, 3)
-
-        pack(cpanel, sizer)
-        return cpanel
-
-    def onMoveToPixel(self, event=None):
-        pass
-
-    def onSavePixel(self, event=None):
-        if self.this_point is not None and self.save_callback is not None:
-            name  = str(event.GetString().strip())
-            # name  = str(self.pos_name.GetValue().strip())
-            ix, iy = self.this_point
-            x = float(self.panel.xdata[int(ix)])
-            y = float(self.panel.ydata[int(iy)])
-            self.save_callback(name, ix, iy, x=x, y=y,
-                               title=self.title, xrmfile=self.xrmfile)
-
-
-class CorrelatedMapFrame(wxmplot.ImageMatrixFrame):
-    """
-    wx.Frame, with 3 ImagePanels and correlation plot for 2 map arrays
-    """
-    def __init__(self, parent=None, xrmfile=None,
-                 title='CorrelatedMaps',  **kws):
-
-        self.xrmfile = xrmfile
-        wxmplot.ImageMatrixFrame.__init__(self, parent, size=(900, 625),
-                                          title=title, **kws)
-
-    def CustomConfig(self, parent):
-        pass

@@ -36,7 +36,7 @@ COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
 DEFAULT_ROOTNAME = 'xrmmap'
 VALID_ROOTNAMES = ('xrmmap', 'xrfmap')
-EXTRA_DETGROUPS =  ('scalars', 'xrd1d', 'xrd2d', 'work')
+EXTRA_DETGROUPS =  ('scalars', 'work', 'xrd1d', 'xrd2d')
 NOT_OWNER = "Not Owner of HDF5 file %s"
 QSTEPS = 2048
 
@@ -1540,6 +1540,7 @@ class GSEXRM_MapFile(object):
             try:
                 rois = sort_roi_limits(roigrp[detname]) + rois
             except:
+                print(" no rois for det ",  detname, list(roigrp.keys()))
                 pass
         rois.append('1')
 
@@ -1573,14 +1574,21 @@ class GSEXRM_MapFile(object):
                     det_list.append(det)
         else:
             det_list = build_dlist(xrmmap)
+            print("D LIST  ", det_list)
             for det in build_dlist(xrmmap['roimap']):
                 if det not in det_list:
                     det_list.append(det)
+            print(" extra ", EXTRA_DETGROUPS)
             for det in EXTRA_DETGROUPS:
-                 try:
-                     det_list.pop(det_list.index(det))
-                 except:
-                     pass
+                if (det in xrmmap and
+                    len(xrmmap[det]) > 0 and
+                    det not in det_list):
+                    det_list.append(det)
+#             for det in EXTRA_DETGROUPS:
+#                  try:
+#                      det_list.pop(det_list.index(det))
+#                  except:
+#                      pass
         if len(det_list) < 1:
             det_list = ['']
         return det_list
@@ -2816,9 +2824,11 @@ class GSEXRM_MapFile(object):
             if detname is not None:
                 detname = detname.replace('det','mca')
 
-            for sclr in self.xrmmap['scalars']:
-                if roiname == sclr.lower():
-                    return sclr.strip('_raw'), 'scalars'
+            for xdname in EXTRA_DETGROUPS:
+                if xdname in self.xrmmap:
+                    for rname in self.xrmmap[xdname]:
+                        if roiname == rname.lower():
+                            return rname.strip('_raw'), xdname
 
             if detname is None:
                 detname = 'roimap/mcasum'
@@ -2904,16 +2914,17 @@ class GSEXRM_MapFile(object):
             dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         roi, detaddr = self.check_roi(roiname, det)
-        ext = 'cor' if dtcorrect else 'raw'
-        if det == 'scalars':
+        ext = 'raw'
+        if det in ('scalars', 'work'):
             ext = ''
-        elif det in EXTRA_DETGROUPS:
-            ext = 'raw'
+        elif dtcorrect:
+            ext = 'cor'
+
 
         # print("EXTRA DETGROUPS ", EXTRA_DETGROUPS)
         # print(" GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
         # print("  detaddr=%s|ext=%s|version=%s" % (
-        #   detaddr, ext, self.version))
+        #    detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
             if det == 'scalars':
                 grp = self.xrmmap[det]
