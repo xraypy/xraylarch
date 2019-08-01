@@ -672,8 +672,8 @@ class GSEXRM_MapFile(object):
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process_row(self, irow, flush=False, callback=None):
-        row = self.read_rowdata(irow)
+    def process_row(self, irow, flush=False, offset=0, callback=None):
+        row = self.read_rowdata(irow, offset=offset)
         if irow == 0:
             nmca, nchan = 0, 2048
             if row.counts is not None:
@@ -699,7 +699,8 @@ class GSEXRM_MapFile(object):
             if hasattr(callback, '__call__'):
                 callback(filename=self.filename, status='complete')
 
-    def process(self, maxrow=None, force=False, callback=None, force_no_dtc=False):
+    def process(self, maxrow=None, force=False, callback=None, offset=0,
+                force_no_dtc=False):
         "look for more data from raw folder, process if needed"
         self.force_no_dtc = force_no_dtc
         if not self.check_hostid():
@@ -719,7 +720,8 @@ class GSEXRM_MapFile(object):
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                self.process_row(irow, flush=(nrows-irow<=1), callback=callback)
+                self.process_row(irow, flush=(nrows-irow<=1), offset=offset,
+                                 callback=callback)
                 irow  = irow + 1
 
     def set_roidata(self, row_start=0, row_end=None):
@@ -2959,6 +2961,7 @@ class GSEXRM_MapFile(object):
                     tmp[i, :-zigzag] = out[i, :-zigzag]
                 else:
                     tmp[i, zigzag:]  = out[i, :-zigzag]
+
             out = tmp[:, zigzag:-zigzag]
         elif hotcols:
             out = out[:, 1:-1]
