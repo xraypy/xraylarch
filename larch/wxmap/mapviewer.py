@@ -128,7 +128,7 @@ class MapPanel(GridPanel):
     def __init__(self, parent, owner=None, **kws):
 
         self.owner = owner
-        self.cfile,self.xrmmap = None,None
+        self.cfile, self.xrmmap = None,None
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
@@ -221,6 +221,9 @@ class MapPanel(GridPanel):
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(self.use_hotcols,              dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(self.use_zigzag,               dcol=1, style=LEFT)
+        self.Add(self.zigoff,                   dcol=1, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(self.limrange,                 dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(SimpleText(self, 'X Range:'),  dcol=1, style=LEFT)
@@ -230,23 +233,27 @@ class MapPanel(GridPanel):
         self.Add(SimpleText(self, 'Y Range:'),  dcol=1, style=LEFT)
         self.Add(self.lims[2],                  dcol=1, style=LEFT)
         self.Add(self.lims[3],                  dcol=1, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.use_zigzag,               dcol=1, style=LEFT)
-        self.Add(self.zigoff,                   dcol=1, style=LEFT)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
         self.pack()
 
     def onDTCorrect(self, event=None):
-        self.owner.current_file.dtcorrect = self.use_dtcorr.IsChecked()
+        xrmfile = self.owner.current_file
+        if xrmfile is not None:
+            xrmfile.dtcorrect = self.use_dtcorr.IsChecked()
 
     def onHotCols(self, event=None):
-        self.owner.current_file.hotcols = self.use_hotcols.IsChecked()
+        xrmfile = self.owner.current_file
+        if xrmfile is not None:
+            xrmfile.hotcols = self.use_hotcols.IsChecked()
 
     def onZigZag(self, event=None):
-        self.owner.current_file.zigzag = 0
-        if self.use_zigzag.IsChecked():
-            self.owner.current_file.zigzag = int(self.zigoff.GetValue())
+        xrmfile = self.owner.current_file
+        if xrmfile is not None:
+            zigzag = 0
+            if self.use_zigzag.IsChecked():
+                zigzag = int(self.zigoff.GetValue())
+            xrmfile.zigzag = zigzag
 
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None:
