@@ -639,6 +639,9 @@ class LinearComboPanel(TaskPanel):
 
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
+        max_ncomps = self.add_floatspin('max_ncomps', value=10, digits=0, increment=1,
+                                        min_val=0, max_val=20, size=(60, -1),
+                                        with_pin=False)
 
         panel.Add(SimpleText(panel, ' Linear Combination Analysis',
                              **self.titleopts), dcol=4)
@@ -658,8 +661,10 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['fit_selected'], dcol=3)
         add_text('Fit Options: ')
         panel.Add(wids['sum_to_one'], dcol=2)
-        panel.Add(wids['all_combos'], dcol=3)
-
+        panel.Add((10, 10), dcol=1, newrow=True)
+        panel.Add(wids['all_combos'], dcol=2)
+        add_text('Max # Components: ', newrow=False)
+        panel.Add(max_ncomps, dcol=2)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
 
@@ -676,7 +681,7 @@ class LinearComboPanel(TaskPanel):
                                       datatypes=coltypes, defaults=coldefs,
                                       colsizes=colsizes)
 
-        wids['table'].SetMinSize((625, 225))
+        wids['table'].SetMinSize((625, 250))
         panel.Add(wids['table'], newrow=True, dcol=6)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
@@ -761,7 +766,7 @@ class LinearComboPanel(TaskPanel):
         self.dgroup = dgroup
         opts = {'group': dgroup.groupname, 'filename':dgroup.filename}
         wids = self.wids
-        for attr in ('elo', 'ehi'):
+        for attr in ('elo', 'ehi', 'max_ncomps'):
             opts[attr] = wids[attr].GetValue()
 
         for attr in ('fitspace', ): # 'plotchoice'):
@@ -836,10 +841,13 @@ class LinearComboPanel(TaskPanel):
         form['gname'] = groupname
         script = """# do LCF for {gname:s}
 result = {func:s}({gname:s}, [{comps:s}],
-            xmin={elo:.4f}, xmax={ehi:.4f}, sum_to_one={sum_to_one}, arrayname='{arrayname:s}',
+            xmin={elo:.4f}, xmax={ehi:.4f},
+            arrayname='{arrayname:s}',
+            sum_to_one={sum_to_one},
             weights=[{weights:s}],
             minvals=[{minvals:s}],
-            maxvals=[{maxvals:s}])
+            maxvals=[{maxvals:s}],
+            max_ncomps={max_ncomps:.0f})
 """
         if form['all_combos']:
             script = "%s\n{gname:s}.lcf_result = result\n" % script
