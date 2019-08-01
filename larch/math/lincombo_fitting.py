@@ -174,8 +174,8 @@ def lincombo_fit(group, components, weights=None, minvals=None,
                  xdata=xdat, ydata=ydat, yfit=yfit, ycomps=fcomps)
 
 def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
-                     arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                    sum_to_one=True):
+                    arrayname='norm', xmin=-np.inf, xmax=np.inf,
+                    max_ncomps=None, sum_to_one=True):
     """perform linear combination fittings for a group with all combinations
     of 2 or more of the components given
 
@@ -190,7 +190,7 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
       xmin        x-value for start of fit range [-inf]
       xmax        x-value for end of fit range [+inf]
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
-
+      max_ncomps  int or None: max number of components to use [None -> all]
     Returns
     -------
      list of groups with resulting weights and fit statistics,
@@ -208,6 +208,7 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
     # here we save the inputs weights and bounds for each component by name
     # so they can be imposed for the individual fits
     _save = {}
+
     if weights in (None, [None]*ncomps):
         weights = [None]*ncomps
     if minvals in (None, [None]*ncomps):
@@ -218,8 +219,12 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
     for i in range(ncomps):
         _save[get_label(components[i])] = (weights[i], minvals[i], maxvals[i])
 
+    if max_ncomps is None:
+        max_ncomps = ncomps
+    elif max_ncomps > 0:
+        max_ncomps = min(max_ncomps, ncomps)
     all = []
-    for nx in range(ncomps, 1, -1):
+    for nx in range(int(max_ncomps), 1, -1):
         for comps in combinations(components, nx):
             labs = [get_label(c) for c in comps]
             _wts = [1.0/nx for lab in labs]
