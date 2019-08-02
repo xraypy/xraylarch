@@ -141,7 +141,7 @@ class MapImageFrame(ImageFrame):
         return cpanel
 
     def onSavePixel(self, event=None):
-        ix, iy = self.panel.conf.slice_pos
+        ix, iy = self.panel.conf.slice_xy
         if ix > 0 and iy > 0 and self.save_callback is not None:
             name  = str(event.GetString().strip())
             x = float(self.panel.xdata[int(ix)])
