@@ -164,6 +164,23 @@ def toppath(pname, n=4):
     return '/'.join(words)
 
 
+def remove_zigzag(map, zigzag=0):
+    if zigzag == 0:
+        return map
+    nrows, ncols = map.shape
+    tmp = 1.0 * map
+    even = 0
+    if zigzag < 0:
+        even = 1
+        zigzag = -zigzag
+    for i in range(nrows):
+        if (i % 2) == even:
+            tmp[i, :] = map[i, :]
+        else:
+            tmp[i, zigzag:]  = map[i, :-zigzag]
+    return tmp
+
+
 class GSEXRM_MapFile(object):
     '''
     Access to GSECARS X-ray Microprobe Map File:
@@ -203,7 +220,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, create_empty=False,
-                 hotcols=False, zigzag=0, dtcorrect=True, root=None,
+                 hotcols=True, zigzag=0, dtcorrect=True, root=None,
                  chunksize=None, xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
                  xrd1dbkgd=None, azwdgs=0, qstps=QSTEPS, flip=True,
                  bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
@@ -672,7 +689,8 @@ class GSEXRM_MapFile(object):
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process_row(self, irow, flush=False, offset=0, callback=None):
+    def process_row(self, irow, flush=False, offset=None, callback=None):
+        print("Process Row ", offset)
         row = self.read_rowdata(irow, offset=offset)
         if irow == 0:
             nmca, nchan = 0, 2048
@@ -699,7 +717,7 @@ class GSEXRM_MapFile(object):
             if hasattr(callback, '__call__'):
                 callback(filename=self.filename, status='complete')
 
-    def process(self, maxrow=None, force=False, callback=None, offset=0,
+    def process(self, maxrow=None, force=False, callback=None, offset=None,
                 force_no_dtc=False):
         "look for more data from raw folder, process if needed"
         self.force_no_dtc = force_no_dtc
@@ -837,7 +855,6 @@ class GSEXRM_MapFile(object):
         if offset is not None:
             ioffset = offset
         self.has_xrf = self.has_xrf and xrff != '_unused_'
-
         return GSEXRM_MapRow(yval, xrff, xrdf, xpsf, sisf, self.folder,
                              irow=irow, nrows_expected=self.nrows_expected,
                              ixaddr=0, dimension=self.dimension,
@@ -2897,13 +2914,13 @@ class GSEXRM_MapFile(object):
         -------
         ndarray for ROI data
         '''
-        # print("Get ROI Map ", roiname, det, hotcols, zigzag, dtcorrect)
         if hotcols is None:
             hotcols = self.hotcols
         if zigzag is None:
             zigzag = self.zigzag
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
+        print("Get ROI Map ", roiname, det, hotcols, zigzag, dtcorrect)
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
@@ -2950,19 +2967,7 @@ class GSEXRM_MapFile(object):
             out = self.xrmmap[detname][:, :, roi]
 
         if zigzag is not None and zigzag != 0:
-            nrows, ncols = out.shape
-            tmp = 0.0 * out
-            even = 0
-            if zigzag < 0:
-                even = 1
-                zigzag = -zigzag
-            for i in range(nrows):
-                if (i % 2) == even:
-                    tmp[i, :-zigzag] = out[i, :-zigzag]
-                else:
-                    tmp[i, zigzag:]  = out[i, :-zigzag]
-
-            out = tmp[:, zigzag:-zigzag]
+            out = remove_zigzag(out, zigzag)
         elif hotcols:
             out = out[:, 1:-1]
         return out
