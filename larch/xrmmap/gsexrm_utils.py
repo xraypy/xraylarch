@@ -351,6 +351,7 @@ class GSEXRM_MapRow:
                     xdat = np.load(xrd1d_file)
                     self.xrdq  = xdat[0, :]
                     self.xrd1d = xdat[1:, :]
+                    # print("READ XRDQ 1D ", self.xrdq.shape, self.xrd1d.shape)
                 if self.xrdq is None and self.xrd2d is not None: # integrate data if needed.
                     print("will try to integrate 2DXRD data ", self.xrd2d.shape)
                     attrs['flip'] = True
@@ -359,6 +360,7 @@ class GSEXRM_MapRow:
                     self.xrd2d[np.where(self.xrd2d>maxval)] = 0
                     self.xrdq, self.xrd1d = integrate_xrd_row(self.xrd2d, xrdcal,
                                                               **attrs)
+                    # print("Integrated to ", self.xrdq.shape)
                 if wdg > 1:
                     self.xrdq_wdg, self.xrd1d_wdg = [], []
                     wdg_sz = 360./int(wdg)
@@ -405,7 +407,8 @@ class GSEXRM_MapRow:
             if has_xrd2d:
                 self.xrd2d = self.xrd2d[:self.npts]
             if has_xrd1d:
-                self.xrdq, self.xrd1d = self.xrdq[:self.npts], self.xrd1d[:self.npts]
+                # self.xrdq, self.xrd1d = self.xrdq[:self.npts], self.xrd1d[:self.npts]
+                print(" -- has xrd1d ->  ",  xnpts, self.npts, self.xrdq.shape)
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg    = self.xrdq_wdg[:self.npts]
                     self.xrd1d_wdg   = self.xrd1d_wdg[:self.npts]
