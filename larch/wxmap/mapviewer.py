@@ -165,7 +165,7 @@ class MapPanel(GridPanel):
                      FloatCtrl(self, value= 0, **fopts),
                      FloatCtrl(self, value=-1, **fopts)]
 
-        self.zigoff = FloatCtrl(self, value= 2, minval=-15, maxval=15,
+        self.zigoff = FloatCtrl(self, value=0, minval=-15, maxval=15,
                                 precision=0, size=(70, -1))
         for wid in self.lims:
             wid.Disable()
@@ -177,7 +177,7 @@ class MapPanel(GridPanel):
                                  label='Remove First and Last columns',
                                  action=self.onHotCols)
 
-        self.use_zigzag = Check(self, default=True, label='Fix ZigZag',
+        self.use_zigzag = Check(self, default=False, label='Fix ZigZag',
                                 action=self.onZigZag)
 
         self.limrange  = Check(self, default=False,

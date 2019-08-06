@@ -220,7 +220,7 @@ class GSEXRM_MapFile(object):
     MasterFile = 'Master.dat'
 
     def __init__(self, filename=None, folder=None, create_empty=False,
-                 hotcols=True, zigzag=0, dtcorrect=True, root=None,
+                 hotcols=False, zigzag=0, dtcorrect=True, root=None,
                  chunksize=None, xrdcal=None, xrd2dmask=None, xrd2dbkgd=None,
                  xrd1dbkgd=None, azwdgs=0, qstps=QSTEPS, flip=True,
                  bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
