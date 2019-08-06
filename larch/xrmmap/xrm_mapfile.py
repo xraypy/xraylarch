@@ -690,7 +690,6 @@ class GSEXRM_MapFile(object):
         self.status = GSEXRM_FileStatus.hasdata
 
     def process_row(self, irow, flush=False, offset=None, callback=None):
-        print("Process Row ", offset)
         row = self.read_rowdata(irow, offset=offset)
         if irow == 0:
             nmca, nchan = 0, 2048
