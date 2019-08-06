@@ -408,7 +408,7 @@ class GSEXRM_MapRow:
                 self.xrd2d = self.xrd2d[:self.npts]
             if has_xrd1d:
                 # self.xrdq, self.xrd1d = self.xrdq[:self.npts], self.xrd1d[:self.npts]
-                print(" -- has xrd1d ->  ",  xnpts, self.npts, self.xrdq.shape)
+                # print(" -- has xrd1d ->  ",  xnpts, self.npts, self.xrdq.shape)
                 if self.xrdq_wdg is not None:
                     self.xrdq_wdg    = self.xrdq_wdg[:self.npts]
                     self.xrd1d_wdg   = self.xrd1d_wdg[:self.npts]
