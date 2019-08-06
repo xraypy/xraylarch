@@ -2928,7 +2928,7 @@ class GSEXRM_MapFile(object):
         # print("  detaddr=%s|ext=%s|version=%s" % (
         #    detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
-            if det == 'scalars':
+            if det in ('scalars', 'work'):
                 grp = self.xrmmap[det]
                 if roiname in grp:
                     out = grp[roiname][:]
