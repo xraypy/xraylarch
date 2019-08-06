@@ -2919,7 +2919,7 @@ class GSEXRM_MapFile(object):
             zigzag = self.zigzag
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
-        print("Get ROI Map ", roiname, det, hotcols, zigzag, dtcorrect)
+
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
