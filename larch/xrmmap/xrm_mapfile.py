@@ -1790,8 +1790,7 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
-        base_grp = self.xrmmap
-        area_grp = ensure_subgroup('areas',base_grp)
+        area_grp = ensure_subgroup('areas', self.xrmmap)
         if name is None:
             name = 'area_001'
         if len(area_grp) > 0:
@@ -1813,27 +1812,25 @@ class GSEXRM_MapFile(object):
             file_str = '%s_Areas.npz'
             filename = file_str % self.filename
 
-        base_grp = self.xrmmap
-        area_grp = ensure_subgroup('areas',base_grp)
-
-        kwargs = {}
-        for aname in area_grp:
-            kwargs[aname] = area_grp[aname][:]
+        areas = ensure_subgroup('areas', self.xrmmap)
+        kwargs = {key: val[:] for key, val in areas.items()}
         np.savez(filename, **kwargs)
         return filename
 
     def import_areas(self, filename, overwrite=False):
         '''import areas from datafile exported by export_areas()'''
-        npzdat = np.load(filename)
+        fname = os.path.split(filename)[1]
+        if fname.endswith('.h5_Areas.npz'):
+            fname = fname.replace('.h5_Areas.npz', '')
 
-        othername = os.path.split(filename)[1]
-        if othername.endswith('.h5_Areas.npz'):
-            othername = othername.replace(npz_str, '')
+        areas = ensure_subgroup('areas', self.xrmmap)
 
-        for aname in npzdat.files:
-            amask = npzdat[aname]
-            outname = '%s_%s' % (aname, othername)
-            self.add_area(amask, name=outname, desc=outname)
+        for aname in np.load(filename).files:
+            desc = '%s imported from %s' % (aname, fname)
+            name = aname
+            if name in areas and not overwrite:
+                name = '%s_%s' % (name, fname)
+            self.add_area(npzdat[aname], name=name, desc=desc)
 
     def get_area(self, name=None, desc=None):
         '''
