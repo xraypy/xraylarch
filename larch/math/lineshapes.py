@@ -18,7 +18,8 @@ from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
 s2pi = sqrt(2*pi)
 s2 = sqrt(2.0)
 
-def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
+def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
+             step=0.001, tail=0, gamma=0.1):
     """
     hypermet function to simulate XRF peaks and/or Compton Scatter Peak
 
@@ -28,7 +29,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
       amplitude  overall scale factor
       center     peak centroid
       sigma      Gaussian sigma
-      step       step parameter for low-x erfc step [0]
+      step       step parameter for low-x erfc step [0.001]
       tail       amplitude of tail function         [0]
       gamma      slope of tail function             [0.1]
 
@@ -41,7 +42,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
 
         arg  = (x - center)/sigma
         gauss = (1.0/(s2pi*sigma)) * exp(-arg**2 /2)
-        sfunc = step * max(gauss) * erfc(arg/2.0) / 2.0
+        sfunc = step * max(gauss) * erfc(arg/2.0) / 200.0
         tfunc = tail * exp((x-center)/(gamma*sigma)) * erfc(arg/s2 + 1.0/gamma))
         hypermet = amplitude * (gauss + sfunc + tfunc) / 2.0
 
@@ -62,7 +63,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0, step=0, tail=0, gamma=0.1):
     arg[where(arg<-100)] = -100.0
     gscale = s2pi*sigma
     gauss = (1.0/gscale) * exp(-arg**2 / 2.0)
-    sfunc = step * special.erfc(arg/2.0) / (2.0*gscale)
+    sfunc = step * special.erfc(arg/2.0) / (200.0*gscale)
 
     targ = (x-center)/(gamma*sigma)
     targ[where(targ>100)] = 100.0
