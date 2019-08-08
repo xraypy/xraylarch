@@ -166,9 +166,9 @@ class FitSpectraFrame(wx.Frame):
                                       action=partial(self.onUsePeak, name=t))
             wids['%s_cen_vary'%t] = VarChoice(p, default=1)
             wids['%s_step_vary'%t] = VarChoice(p, default=0)
-            wids['%s_gamm_vary'%t] = VarChoice(p, default=0)
+            wids['%s_gamma_vary'%t] = VarChoice(p, default=0)
             wids['%s_tail_vary'%t] = VarChoice(p, default=0)
-            wids['%s_sigm_vary'%t] = VarChoice(p, default=0)
+            wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
 
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=1, min_val=0,
                                            increment=10)
@@ -176,9 +176,9 @@ class FitSpectraFrame(wx.Frame):
                                            max_val=20.0, increment=1.e-2)
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
                                            max_val=30.0, increment=1.e-3)
-            wids['%s_gamm'%t] = FloatSpin(p, value=dgamm, digits=3, min_val=0,
+            wids['%s_gamma'%t] = FloatSpin(p, value=dgamm, digits=3, min_val=0,
                                            max_val=30.0, increment=0.1)
-            wids['%s_sigm'%t] = FloatSpin(p, value=2.0, digits=2, min_val=0,
+            wids['%s_sigma'%t] = FloatSpin(p, value=2.0, digits=2, min_val=0,
                                            max_val=10.0, increment=0.1)
             if not def_use:
                 self.onUsePeak(name=t, value=False)
@@ -198,12 +198,12 @@ class FitSpectraFrame(wx.Frame):
             p.Add(wids['%s_tail_vary'%t])
 
             p.AddText('  Gamma : ', newrow=True)
-            p.Add(wids['%s_gamm'%t])
-            p.Add(wids['%s_gamm_vary'%t])
+            p.Add(wids['%s_gamma'%t])
+            p.Add(wids['%s_gamma_vary'%t])
 
             p.AddText('  Sigma Scale : ', newrow=False)
-            p.Add(wids['%s_sigm'%t])
-            p.Add(wids['%s_sigm_vary'%t])
+            p.Add(wids['%s_sigma'%t])
+            p.Add(wids['%s_sigma_vary'%t])
 
             p.Add(HLine(p, size=(550, 3)), dcol=7, newrow=True)
 
@@ -443,8 +443,6 @@ class FitSpectraFrame(wx.Frame):
 
         # convert thicknesses from mm to cm:
         opts['det_thk'] /= 10.0
-        # peak step is displayed as percent, used as fraction
-        opts['peak_step'] /= 100.0
 
         script = ["""xrfmod = xrf_model(xray_energy={en_xray:.1f}, count_time={count_time:.3f},
         energy_min={en_min:.1f}, energy_max={en_max:.1f})""".format(**opts),
@@ -464,18 +462,18 @@ class FitSpectraFrame(wx.Frame):
                 d = {}
                 d['_cen']  = opts['%s_cen'%t]
                 d['vcen']  = opts['%s_cen_vary'%t]
-                d['_step'] = opts['%s_step'%t] * 0.01
+                d['_step'] = opts['%s_step'%t]
                 d['vstep'] = opts['%s_step_vary'%t]
                 d['_tail'] = opts['%s_tail'%t]
                 d['vtail'] = opts['%s_tail_vary'%t]
-                d['_gamm'] = opts['%s_gamm'%t]
-                d['vgamm'] = opts['%s_gamm_vary'%t]
-                d['_sigm'] = opts['%s_sigm'%t]
-                d['vsigm'] = opts['%s_sigm_vary'%t]
+                d['_gamma'] = opts['%s_gamma'%t]
+                d['vgamma'] = opts['%s_gamma_vary'%t]
+                d['_sigma'] = opts['%s_sigma'%t]
+                d['vsigma'] = opts['%s_sigma_vary'%t]
                 s = """amplitude=1e5, center={_cen:.1f}, step={_step:.5f},
-    tail={_tail:.5f}, gamma={_gamm:.5f}, sigmax={_sigm:.3f}, vary_center={vcen:s},
+    tail={_tail:.5f}, gamma={_gamma:.5f}, sigmax={_sigma:.3f}, vary_center={vcen:s},
     vary_step={vstep:s}, vary_tail={vtail:s},
-    vary_sigmax={vsigm:s}, vary_gamma={vgamm:s}""".format(**d)
+    vary_sigmax={vsigma:s}, vary_gamma={vgamma:s}""".format(**d)
                 script.append("xrfmod.add_scatter_peak(name='%s', %s)" % (t, s))
 
         for i in range(1, NFILTERS+1):
