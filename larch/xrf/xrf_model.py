@@ -1,6 +1,8 @@
 
-import numpy as np
 from collections import OrderedDict
+
+import numpy as np
+from numpy.linalg import lstsq
 
 from lmfit import  Parameters, minimize, fit_report
 
@@ -193,7 +195,7 @@ class XRF_Model:
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
-                         step=0.0001, tail=0.5, sigmax=1.0, gamma=0.75,
+                         step=0.010, tail=0.5, sigmax=1.0, gamma=0.75,
                          vary_center=True, vary_step=True, vary_tail=True,
                          vary_sigmax=True, vary_gamma=False):
         """add Rayleigh (elastic) or Compton (inelastic) scattering peak
@@ -205,13 +207,13 @@ class XRF_Model:
         if center is None:
             center = self.xray_energy
 
-        self.params.add('amp_%s' % name,    value=amplitude, vary=True, min=0)
-        self.params.add('center_%s' % name, value=center, vary=vary_center,
+        self.params.add('%s_amp' % name,    value=amplitude, vary=True, min=0)
+        self.params.add('%s_center' % name, value=center, vary=vary_center,
                         min=center*0.8, max=center*1.2)
-        self.params.add('step_%s' % name,   value=step, vary=vary_step, min=0, max=10)
-        self.params.add('tail_%s' % name,   value=tail, vary=vary_tail, min=0, max=20)
-        self.params.add('gamma_%s' % name,  value=gamma, vary=vary_gamma, min=0, max=10)
-        self.params.add('sigmax_%s' % name, value=sigmax, vary=vary_sigmax,
+        self.params.add('%s_step' % name,   value=step, vary=vary_step, min=0, max=10)
+        self.params.add('%s_tail' % name,   value=tail, vary=vary_tail, min=0, max=20)
+        self.params.add('%s_gamma' % name,  value=gamma, vary=vary_gamma, min=0, max=10)
+        self.params.add('%s_sigmax' % name, value=sigmax, vary=vary_sigmax,
                         min=0, max=100)
 
     def add_element(self, elem, amplitude=1.0, vary_amplitude=True):
@@ -226,7 +228,7 @@ class XRF_Model:
     def add_filter(self, material, thickness, vary_thickness=False):
         self.filters.append(XRF_Material(material=material,
                                          thickness=thickness))
-        self.params.add('filt_%s_thickness' % material,
+        self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
 
     def calc_spectrum(self, energy, params=None):
@@ -243,7 +245,7 @@ class XRF_Model:
         # factor for Detector absorbance and Filters
         factor = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
-            thickness = pars['filt_%s_thickness' % f.material]
+            thickness = pars['filterlen_%s' % f.material]
             factor *= f.attenuation(energy, thickness=thickness)
         self.atten = factor
 
@@ -262,12 +264,12 @@ class XRF_Model:
 
         # scatter peaks for Rayleigh and Compton
         for p in self.scatter:
-            amp  = pars['amp_%s' % p]
-            ecen = pars['center_%s' % p]
-            step = pars['step_%s' % p]
-            tail = pars['tail_%s' % p]
-            gamma = pars['gamma_%s' % p]
-            sigma = pars['sigmax_%s' % p]
+            amp  = pars['%s_amp' % p]
+            ecen = pars['%s_center' % p]
+            step = pars['%s_step' % p]
+            tail = pars['%s_tail' % p]
+            gamma = pars['%s_gamma' % p]
+            sigma = pars['%s_sigmax' % p]
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, gamma=gamma)
@@ -355,7 +357,21 @@ class XRF_Model:
         tmat= []
         for key, val in self.comps.items():
             tmat.append(val / self.eigenvalues[key])
-        self.transfer_matrix = np.array(tmat)
+        self.transfer_matrix = np.array(tmat).transpose()
+
+    def apply_model(self, spectrum):
+        """
+        apply fitted model to another spectrum,
+        returning a dict of predicted eigenvalues
+        for the supplied spectrum
+        """
+        out = {}
+        if self.transfer_matrix is not None:
+            weights, chi2, rank, s2 = lstsq(self.transfer_matrix, spectrum)
+            for i, name in enumerate(self.eigenvalues.keys()):
+                out[name] = weights[i]
+        return out
+
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, **kws):
     """create an XRF Peak
