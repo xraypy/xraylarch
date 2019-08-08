@@ -36,6 +36,7 @@ from ..math import index_of
 from ..utils import bytes2str, debugtime
 from ..io import GSEMCA_File, gsemca_group
 from ..site_config import icondir
+from ..interpreter import Interpreter
 
 from .larchframe import LarchFrame
 from .periodictable import PeriodicTablePanel
@@ -89,15 +90,17 @@ class XRFDisplayFrame(wx.Frame):
         self.plotframe = None
         self.wids = {}
         self.larch = _larch
-
-        self.larch_buffer = parent
-        if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
-            self.larch_buffer.Show()
-            self.larch_buffer.Raise()
-            self.larch_buffer.Hide()
-        self.larch = self.larch_buffer.larchshell
-        self.init_larch()
+        if isinstance(_larch, Interpreter):  # called from shell
+            pass
+        else:
+            self.larch_buffer = parent
+            if not isinstance(parent, LarchFrame):
+                self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
+                self.larch_buffer.Show()
+                self.larch_buffer.Raise()
+                self.larch_buffer.Hide()
+            self.larch = self.larch_buffer.larchshell
+            self.init_larch()
 
         self._mcagroup = self.larch.symtable.new_group('_mcas')
         self.exit_callback = exit_callback
