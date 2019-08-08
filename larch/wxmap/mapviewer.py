@@ -614,21 +614,19 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         fines = {'X': '?', 'Y': '?'}
         i0vals = {'flux':'?', 'current':'?'}
-        cur_energy = ''
+        in_energy_found = False
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
             name = bytes2str(name).lower()
             val = h5str(val)
-
             if 'ring_current' in name or 'ring current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
-            elif ('mono.energy' in name or 'mono energy' in name) and cur_energy=='':
-                self.owner.current_energy = float(val)/1000.
-                xrmfile.mono_energy = float(val)/1000.
-                wvlgth = lambda_from_E(self.owner.current_energy)
-                self.wids['X-ray Energy'].SetLabel(u'%0.3f keV (%0.3f \u00c5)' % \
-                                                   (self.owner.current_energy,wvlgth))
-                cur_energy = val
+            elif (('mono.energy' in name or 'mono energy' in name) and
+                  not in_energy_found):
+                xrmfile.incident_energy = en = float(val)
+                msg = '%0.1f eV (%0.3f \u00c5)' % (en, lambda_from_E(en, E_units='eV'))
+                self.wids['X-ray Energy'].SetLabel(msg)
+                in_energy_found = True
             elif 'beamline.fluxestimate' in name or 'transmitted flux' in name:
                 i0vals['flux'] = val
             elif 'i0 current' in name:
@@ -1244,7 +1242,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         kwargs = dict(filename=self.owner.current_file.filename,
                       npixels = len(area.value[np.where(area.value)]),
-                      energy = self.owner.current_energy,
+                      energy  = 0.001*xrmfile.incident_energy,
                       calfile = ponifile, title = title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
@@ -1374,7 +1372,6 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
-        self.current_energy = None
 
 
     def CloseFile(self, filename, event=None):

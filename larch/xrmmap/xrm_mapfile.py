@@ -257,7 +257,7 @@ class GSEXRM_MapFile(object):
         if compression != 'lzf':
             self.compress_args['compression_opts'] = compression_opts
 
-        self.mono_energy   = None
+        self.incident_energy = None
         self.has_xrf       = has_xrf
         self.has_xrd1d     = has_xrd1d
         self.has_xrd2d     = has_xrd2d
@@ -1502,9 +1502,8 @@ class GSEXRM_MapFile(object):
                 return
 
     def get_slice_y(self):
-
-        for name, val in zip(list(self.xrmmap['config/environ/name']),
-                             list(self.xrmmap['config/environ/value'])):
+        for name, val in zip([h5str(a) for a in self.xrmmap['config/environ/name']],
+                             [h5str(a) for a in self.xrmmap['config/environ/value']]):
             name = str(name).lower()
             if name.startswith('sample'):
                 name = name.replace('samplestage.', '')
@@ -1558,7 +1557,7 @@ class GSEXRM_MapFile(object):
             try:
                 rois = sort_roi_limits(roigrp[detname]) + rois
             except:
-                print(" no rois for det ",  detname, list(roigrp.keys()))
+                # print(" no rois for det ",  detname, list(roigrp.keys()))
                 pass
         rois.append('1')
 
@@ -1592,11 +1591,9 @@ class GSEXRM_MapFile(object):
                     det_list.append(det)
         else:
             det_list = build_dlist(xrmmap)
-            print("D LIST  ", det_list)
             for det in build_dlist(xrmmap['roimap']):
                 if det not in det_list:
                     det_list.append(det)
-            print(" extra ", EXTRA_DETGROUPS)
             for det in EXTRA_DETGROUPS:
                 if (det in xrmmap and
                     len(xrmmap[det]) > 0 and
@@ -2315,8 +2312,8 @@ class GSEXRM_MapFile(object):
         """get environment value by name"""
         if self.envvar is None:
             self.envvar = {}
-            env_names = list(self.xrmmap['config/environ/name'])
-            env_vals  = list(self.xrmmap['config/environ/value'])
+            env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
+            env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
             for name, val in zip(env_names, env_vals):
                 name = h5str(name).lower()
                 val = h5str(val)
@@ -2330,6 +2327,16 @@ class GSEXRM_MapFile(object):
         if name in self.envvar:
             return self.envvar[name]
 
+    def get_incident_energy(self):
+        """ special case of get_envvar"""
+        env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
+        env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
+        for name, val in zip(env_names, env_vals):
+            name = name.lower()
+            if (name.startswith('mono energy') or
+                name.startswith('mono.energy')):
+                return float(val)
+        return None
 
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None,
                         det=None, dtcorrect=None):
@@ -2510,11 +2517,15 @@ class GSEXRM_MapFile(object):
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],
                    slope=cal['cal_slope'], **kws)
+        if self.incident_energy is None:
+            self.incident_energy = self.get_incident_energy()
+        print("Incident Energy ", self.incident_energy)
 
+        _mca.incident_energy = 0.001*self.incident_energy
         _mca.energy =  map['energy'].value
-        env_names = list(self.xrmmap['config/environ/name'])
-        env_addrs = list(self.xrmmap['config/environ/address'])
-        env_vals  = list(self.xrmmap['config/environ/value'])
+        env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
+        env_addrs = [h5str(a) for a in self.xrmmap['config/environ/address']]
+        env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
         for desc, val, addr in zip(env_names, env_vals, env_addrs):
             _mca.add_environ(desc=desc, val=val, addr=addr)
 
@@ -2536,10 +2547,11 @@ class GSEXRM_MapFile(object):
             roiname = 'roi_name'
             if roiname not in map: roiname = 'roi_names'
 
-            roinames = list(map[roiname])
-            roilims  = list(map['roi_limits'])
-            for roi, lims in zip(roinames, roilims):
-                _mca.add_roi(roi, left=lims[0], right=lims[1])
+            roinames = [h5str(a) for a in map[roiname]]
+            roilim0  = [lim[0] for lim in map['roi_limits']]
+            roilim1  = [lim[1] for lim in map['roi_limits']]
+            for roi, lim0, lim1 in zip(roinames, roilim0, roilim1):
+                _mca.add_roi(roi, left=lim0, right=lim1)
 
         _mca.areaname = _mca.title = name
         path, fname = os.path.split(self.filename)
@@ -2582,7 +2594,7 @@ class GSEXRM_MapFile(object):
         counts = counts[area[ymin:ymax, xmin:xmax]]
 
         name = '%s: %s' % (xrdgroup, areaname)
-        kws['energy'] = energy = self.get_envvar('mono.energy')/1000.0
+        kws['energy'] = energy = 0.001 * self.get_incident_energy
         kws['wavelength'] = lambda_from_E(energy, E_units='keV')
 
         if xrdgroup == 'xrd1d':
@@ -2690,12 +2702,12 @@ class GSEXRM_MapFile(object):
             print('No 1D-XRD data in file')
             return
 
-        if self.mono_energy is None:
-            self.mono_energy = self.get_envvar('mono.energy')
+        if self.incident_energy is None:
+            self.incident_energy = self.get_incident_energy()
 
         if unit.startswith('2th'): ## 2th to 1/A
             qrange = q_from_twth(xrange,
-                                 lambda_from_E(self.mono_energy, E_units='eV'))
+                                 lambda_from_E(self.incident_energy, E_units='eV'))
         elif unit == 'd':           ## A to 1/A
             qrange = q_from_d(xrange)
         else:

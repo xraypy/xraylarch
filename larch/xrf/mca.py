@@ -126,6 +126,7 @@ class MCA(Group):
         if counts is not None:
             self.nchans      = len(counts)
             self.total_counts =  counts.sum()
+        self.incident_energy = None
         self.get_energy()
         self._calc_correction()
         Group.__init__(self)
