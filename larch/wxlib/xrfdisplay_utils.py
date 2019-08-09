@@ -432,8 +432,7 @@ class XRFDisplayConfig:
     spectra_color    = '#1f77b4'
     spectra2_color   = '#2ca02c'
     bgr_color        = '#ff7f0e'
-
-
+    fit_color        = '#d62728'
 
     K_major = ['Ka1', 'Ka2', 'Kb1']
     K_minor = ['Kb3', 'Kb2']
