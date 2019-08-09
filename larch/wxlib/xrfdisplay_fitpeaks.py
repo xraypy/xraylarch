@@ -150,16 +150,16 @@ class FitSpectraFrame(wx.Frame):
         for name, def_use  in (('Elastic', True), ('Compton1', True),
                                ('Compton2', False)):
             en = self.mca.incident_energy
-            dtail = 0.01
+            dtail = 0.025
             dgamm = 0.75
             if name == 'Compton1':
                 en = 0.97 * self.mca.incident_energy
-                dtail = 0.1
-                dgamm = 2.0
+                dtail = 0.025
+                dgamm = 1.5
             elif name == 'Compton2':
                 en = 0.94 * self.mca.incident_energy
-                dtail = 0.2
-                dgamm = 2.0
+                dtail = 0.050
+                dgamm = 1.50
             t = name.lower()
             wids['%s_use'%t] = Check(p, label='Include',
                                       default=def_use,
@@ -546,10 +546,10 @@ class FitSpectraFrame(wx.Frame):
 
 
     def plot_model(self, init=False):
-
+        conf = self.parent.conf
         plotkws = {'linewidth': 2.5,
                    'delay_draw': True,
-                   'grid': self.parent.panel.conf.show_grid,
+                   'grid': False,
                    'ylog_scale': self.parent.ylog_scale,
                    'show_legend': False,
                    'fullbox': False}
@@ -558,14 +558,14 @@ class FitSpectraFrame(wx.Frame):
         ppanel.conf.reset_trace_properties()
 
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
-                         xlabel='E (keV)', xmin=0,  **plotkws)
+                         xlabel='E (keV)', xmin=0, with_rois=False, **plotkws)
 
         if init:
             self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
-                  label='predicted model', **plotkws)
+                  label='predicted model', color=conf.fit_color, **plotkws)
         else:
             self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
-                  label='best fit', **plotkws)
+                  label='best fit', color=conf.fit_color, **plotkws)
 
         if self.wids['show_components'].IsChecked():
             for label, arr in self.xrfmod.comps.items():
