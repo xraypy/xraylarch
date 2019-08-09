@@ -173,13 +173,13 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=1, min_val=0,
                                            increment=10)
             wids['%s_step'%t] = FloatSpin(p, value=0.05, digits=3, min_val=0,
-                                           max_val=20.0, increment=1.e-2)
+                                           max_val=20.0, increment=0.01)
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                           max_val=30.0, increment=1.e-3)
+                                           max_val=30.0, increment=0.01)
             wids['%s_gamma'%t] = FloatSpin(p, value=dgamm, digits=3, min_val=0,
-                                           max_val=30.0, increment=0.1)
-            wids['%s_sigma'%t] = FloatSpin(p, value=2.0, digits=2, min_val=0,
-                                           max_val=10.0, increment=0.1)
+                                           max_val=30.0, increment=0.05)
+            wids['%s_sigma'%t] = FloatSpin(p, value=1.5, digits=2, min_val=0,
+                                           max_val=10.0, increment=0.05)
             if not def_use:
                 self.onUsePeak(name=t, value=False)
 
