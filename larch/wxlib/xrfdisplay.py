@@ -163,7 +163,10 @@ class XRFDisplayFrame(wx.Frame):
                 pass
         ix = x
         if self.mca is not None:
-            ix = index_of(self.mca.energy, x)
+            try:
+                ix = index_of(self.mca.energy, x)
+            except TypeError:
+                pass
 
         if side == 'right':
             self.xmarker_right = ix
@@ -1104,7 +1107,7 @@ class XRFDisplayFrame(wx.Frame):
         if set_title:
             self.SetTitle(title)
 
-    def plot(self, x, y=None, mca=None, init=False, **kws):
+    def plot(self, x, y=None, mca=None, init=False, with_rois=True, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
@@ -1124,7 +1127,6 @@ class XRFDisplayFrame(wx.Frame):
 
         self.xdata = 1.0*x[:]
         self.ydata = 1.0*y[:]
-        yroi = None
         ydat = 1.0*y[:] + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
         kwargs['ymin'] = 0.9
@@ -1134,7 +1136,8 @@ class XRFDisplayFrame(wx.Frame):
             kwargs['xmin'] = self.xview_range[0]
             kwargs['xmax'] = self.xview_range[1]
 
-        if mca is not None:
+        panel.plot(x, ydat, label='spectrum',  **kwargs)
+        if with_rois and mca is not None:
             xnpts = 1.0/len(self.mca.energy)
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
@@ -1146,11 +1149,9 @@ class XRFDisplayFrame(wx.Frame):
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
-
-        panel.plot(x, ydat, label='spectrum',  **kwargs)
-        if yroi is not None and yroi.max() > 0:
-            kwargs['color'] = self.conf.roi_color
-            panel.oplot(x, yroi, label='rois', **kwargs)
+            if yroi.max() > 0:
+                kwargs['color'] = self.conf.roi_color
+                panel.oplot(x, yroi, label='rois', **kwargs)
         yscale = {False:'linear', True:'log'}[self.ylog_scale]
         panel.set_viewlimits()
         panel.set_logscale(yscale=yscale)
