@@ -1,5 +1,4 @@
 
-from collections import OrderedDict
 
 import numpy as np
 from numpy.linalg import lstsq
@@ -157,7 +156,7 @@ class XRF_Model:
       detector      (material, thickness, efano, noise, step, tail, gamma, pileup_scale)
     """
     def __init__(self, xray_energy=None, energy_min=1500, energy_max=30000,
-                 count_time=1, **kws):
+                 count_time=1, bgr=None, **kws):
 
         self.xray_energy = xray_energy
         self.energy_min = energy_min
@@ -166,13 +165,16 @@ class XRF_Model:
         self.params = Parameters()
         self.elements = []
         self.scatter = []
-        self.comps = OrderedDict()
-        self.eigenvalues = OrderedDict()
+        self.comps = {}
+        self.eigenvalues = {}
         self.transfer_matrix = None
         self.filters = []
         self.fit_iter = 0
         self.fit_toler = 1.e-5
         self.fit_log = False
+        self.bgr = None
+        if bgr is not None:
+            self.add_background(bgr)
 
     def set_detector(self, material='Si', thickness=0.025, efano=None,
                      noise=30., peak_step=1e-4, peak_tail=0.01,
@@ -200,7 +202,6 @@ class XRF_Model:
                          vary_sigmax=True, vary_gamma=False):
         """add Rayleigh (elastic) or Compton (inelastic) scattering peak
         """
-
         if name not in self.scatter:
             self.scatter.append(name)
 
@@ -231,12 +232,22 @@ class XRF_Model:
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
 
+    def add_background(self, data, vary=True):
+        self.bgr = data
+        self.params.add('amp_background', value=1.0, min=0, vary=vary)
+
+    def clear_background(self):
+        self.bgr = None
+        self.params.pop('amp_background')
+
+
     def calc_spectrum(self, energy, params=None):
         if params is None:
             params = self.params
         pars = params.valuesdict()
-        self.comps = OrderedDict()
-        self.eigenvalues = OrderedDict()
+        self.comps = {}
+        self.eigenvalues = {}
+
         efano = pars['det_efano']
         noise = pars['det_noise']
         step = pars['peak_step']
@@ -276,6 +287,10 @@ class XRF_Model:
             self.comps[p] = amp * comp * factor
             self.eigenvalues[p] = amp
 
+        if self.bgr is not None:
+            bgr_amp = pars['amp_background']
+            self.comps['background'] = bgr_amp * self.bgr
+            self.eigenvalues['background'] = bgr_amp
         # calculate total spectrum
         total = 0. * energy
         for comp in self.comps.values():
@@ -316,8 +331,7 @@ class XRF_Model:
         ewid = 1.5*(self.xray_energy - emax)
         self.fit_weight = w * erfc((energy-emax)/ewid)/2.0
 
-    def fit_spectrum(self, energy, counts, energy_min=None,
-                     energy_max=None):
+    def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
 
         work_energy = 1.0*energy
         work_counts = 1.0*counts
@@ -373,12 +387,13 @@ class XRF_Model:
         return out
 
 
-def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, **kws):
+def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
     """create an XRF Peak
 
     Returns:
     ---------
      an XRF_Model instance
     """
-    return XRF_Model(xray_energy=xray_energy, energy_min=energy_min,
-                     energy_max=energy_max, **kws)
+
+    return XRF_Model(xray_energy=xray_energy, use_bgr=use_bgr,
+                     energy_min=energy_min, energy_max=energy_max, **kws)
