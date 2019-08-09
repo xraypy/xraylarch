@@ -2519,8 +2519,6 @@ class GSEXRM_MapFile(object):
                    slope=cal['cal_slope'], **kws)
         if self.incident_energy is None:
             self.incident_energy = self.get_incident_energy()
-        print("Incident Energy ", self.incident_energy)
-
         _mca.incident_energy = 0.001*self.incident_energy
         _mca.energy =  map['energy'].value
         env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
