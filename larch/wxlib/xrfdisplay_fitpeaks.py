@@ -222,18 +222,15 @@ class FitSpectraFrame(wx.Frame):
             xray_energy = 1000.0 * xray_energy
         mca.incident_energy = xray_energy
 
-        en_min = getattr(conf, 'e_min', 1.0) * 1000.0
-        en_max = getattr(conf, 'e_max', None)
-        if en_max is None:
-            en_max = mca.incident_energy
-        en_max = en_max * 1000.0
+        en_min = 2000.0
+        en_max = xray_energy
 
         cal_offset = getattr(mca, 'offset',  0) * 1000.0
         cal_slope = getattr(mca, 'slope',  0.010) * 1000.0
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         det_noise = getattr(mca, 'det_noise',  30)
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
-        width = getattr(mca, 'bgr_width',    5000)
+        width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
 
         wids = self.wids
@@ -250,9 +247,11 @@ class FitSpectraFrame(wx.Frame):
                                    size=(70, -1), default=0)
         wids['bgr_show'] = Button(pdet, 'Show Background', size=(150, -1),
                                   action=self.onShowBgr)
+        wids['bgr_fit'] = Check(pdet, label='Scale Background in Fit?', default=False)
         wids['bgr_width'].Disable()
         wids['bgr_expon'].Disable()
         wids['bgr_show'].Disable()
+        wids['bgr_fit'].Disable()
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
                                       min_val=0, max_val=100,
@@ -328,6 +327,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.AddText('    Width (keV): ', newrow=True)
         pdet.Add(wids['bgr_width'], dcol=2)
         pdet.Add(wids['bgr_show'])
+        pdet.Add(wids['bgr_fit'], newrow=True)
         pdet.pack()
 
         # filters section
@@ -367,6 +367,7 @@ class FitSpectraFrame(wx.Frame):
         self.wids['bgr_width'].Enable(use)
         self.wids['bgr_expon'].Enable(use)
         self.wids['bgr_show'].Enable(use)
+        self.wids['bgr_fit'].Enable(use)
 
 
     def onShowBgr(self, event=None):
@@ -415,7 +416,7 @@ class FitSpectraFrame(wx.Frame):
             value = event.IsChecked()
         if name is None:
             return
-        for a in ('cen', 'step', 'tail', 'sigm', 'gamm'):
+        for a in ('cen', 'step', 'tail', 'sigma', 'gamma'):
             self.wids['%s_%s'%(name, a)].Enable(value)
             varwid = self.wids.get('%s_%s_vary'%(name, a), None)
             if varwid is not None:
@@ -499,7 +500,21 @@ class FitSpectraFrame(wx.Frame):
         if max(self.mca.energy) < 250.0:
             en_str = "work_mca.energy_ev = work_mca.energy*1000.0"
         script.append(en_str)
+        if opts['bgr_use']:
+            if getattr(self.mca, 'bgr', None) is None:
+                width  = self.wids['bgr_width'].GetValue()/1000.0
+                expon  = int(self.wids['bgr_expon'].GetStringSelection())
+                cmd = """xrf_background(energy=work_mca.energy, counts=work_mca.counts,
+                group=work_mca, width=%.2f, exponent=%d)"""  % (width, expon)
+                script.append(cmd)
+            vary_str = 'False'
+            if opts['bgr_fit']:
+                vary_str = 'True'
+            script.append("xrfmod.add_background(work_mca.bgr, vary=%s)" % vary_str)
+        else:
+            script.append("## no bgr!!")
         script.append("work_mca.xrf_init = xrfmod.calc_spectrum(work_mca.energy_ev)")
+
         script = '\n'.join(script)
         self._larch.eval(script)
         self.model_script = script
@@ -514,6 +529,10 @@ class FitSpectraFrame(wx.Frame):
                 imax = np.where(parr == parr.max())[0][0]
                 scale = self.mca.counts[imax] / (parr[imax]+1.e-5)
                 ampname = 'amp_%s' % nam
+                if nam.startswith('elastic') or nam.startswith('compton'):
+                    ampname = '%s_amp' % nam
+                elif nam.startswith('background'):
+                    scale = 1.0
                 paramval = self.xrfmod.params[ampname].value
                 s = "xrfmod.params['%s'].value = %.1f"
                 cmds.append(s % (ampname, paramval * scale))
@@ -539,7 +558,7 @@ class FitSpectraFrame(wx.Frame):
         ppanel.conf.reset_trace_properties()
 
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
-             xlabel='E (keV)', xmin=0,  **plotkws)
+                         xlabel='E (keV)', xmin=0,  **plotkws)
 
         if init:
             self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
