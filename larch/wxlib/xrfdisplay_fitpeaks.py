@@ -45,7 +45,8 @@ def VarChoice(p, default=0):
 NFILTERS = 4
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
-EFano_Text = '      Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
+EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
+Energy_Text = 'All energies in eV'
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
@@ -121,10 +122,11 @@ class FitSpectraFrame(wx.Frame):
         p.AddText(' Select Elements to include :', colour='#880000', dcol=7)
         p.Add(self.ptable, dcol=6, newrow=True)
 
-        wids['peak_step'] = FloatSpin(p, value=0.01, digits=3, min_val=0,
-                                      max_val=10.0, increment=1.e-2)
-        wids['peak_tail'] = FloatSpin(p, value=0.01, digits=3, min_val=0,
-                                        max_val=0.25, increment=1.e-3)
+        dstep = dtail = 0.025
+        wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
+                                      max_val=10.0, increment=0.01)
+        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
+                                        max_val=0.25, increment=0.01)
 
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
@@ -147,41 +149,30 @@ class FitSpectraFrame(wx.Frame):
 
         opts = dict(size=(100, -1),
                     min_val=0, digits=4, increment=0.010)
-        for name, def_use  in (('Elastic', True), ('Compton1', True),
-                               ('Compton2', False)):
-            en = self.mca.incident_energy
-            dtail = 0.025
-            dgamm = 0.75
-            if name == 'Compton1':
-                en = 0.97 * self.mca.incident_energy
-                dtail = 0.025
-                dgamm = 1.5
-            elif name == 'Compton2':
-                en = 0.94 * self.mca.incident_energy
-                dtail = 0.050
-                dgamm = 1.50
+        for name, escale, dsigma in (('Elastic',  1.000, 1.0),
+                                     ('Compton1', 0.975, 1.5),
+                                     ('Compton2', 0.950, 2.0)):
+            en = escale * self.mca.incident_energy
             t = name.lower()
-            wids['%s_use'%t] = Check(p, label='Include',
-                                      default=def_use,
-                                      action=partial(self.onUsePeak, name=t))
-            wids['%s_cen_vary'%t] = VarChoice(p, default=1)
-            wids['%s_step_vary'%t] = VarChoice(p, default=0)
+            vary_en = 1 if t.startswith('compton') else 0
+
+            wids['%s_use'%t] = Check(p, label='Include', default=True)
+            wids['%s_cen_vary'%t]   = VarChoice(p, default=vary_en)
+            wids['%s_step_vary'%t]  = VarChoice(p, default=0)
             wids['%s_gamma_vary'%t] = VarChoice(p, default=0)
-            wids['%s_tail_vary'%t] = VarChoice(p, default=0)
+            wids['%s_tail_vary'%t]  = VarChoice(p, default=0)
             wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
 
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=1, min_val=0,
                                            increment=10)
-            wids['%s_step'%t] = FloatSpin(p, value=0.05, digits=3, min_val=0,
+            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                            max_val=20.0, increment=0.01)
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
                                            max_val=30.0, increment=0.01)
-            wids['%s_gamma'%t] = FloatSpin(p, value=dgamm, digits=3, min_val=0,
-                                           max_val=30.0, increment=0.05)
-            wids['%s_sigma'%t] = FloatSpin(p, value=1.5, digits=2, min_val=0,
-                                           max_val=10.0, increment=0.05)
-            if not def_use:
-                self.onUsePeak(name=t, value=False)
+            wids['%s_gamma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
+                                           max_val=30.0, increment=0.1)
+            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=2, min_val=0,
+                                           max_val=10.0, increment=0.1)
 
             p.AddText("  %s " % name,  colour='#880000', newrow=True)
             p.Add(wids['%s_use' % t], dcol=2)
@@ -239,19 +230,17 @@ class FitSpectraFrame(wx.Frame):
         pdet = GridPanel(main, itemstyle=LEFT)
         pflt = GridPanel(main, itemstyle=LEFT)
 
-        wids['bgr_use'] = Check(pdet, label='Fit Background-Subtracted Spectrum',
-                                default=False, action=self.onUseBackground)
+        wids['bgr_use'] = Check(pdet, label='Include Background in Fit',
+                                default=True, action=self.onUseBackground)
         wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
                                    digits=0, increment=500, size=(100, -1))
         wids['bgr_expon'] = Choice(pdet, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
-        wids['bgr_show'] = Button(pdet, 'Show Background', size=(150, -1),
+        wids['bgr_show'] = Button(pdet, 'Show', size=(80, -1),
                                   action=self.onShowBgr)
-        wids['bgr_fit'] = Check(pdet, label='Scale Background in Fit?', default=False)
-        wids['bgr_width'].Disable()
-        wids['bgr_expon'].Disable()
-        wids['bgr_show'].Disable()
-        wids['bgr_fit'].Disable()
+        # wids['bgr_width'].Disable()
+        # wids['bgr_expon'].Disable()
+        # wids['bgr_show'].Disable()
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
                                       min_val=0, max_val=100,
@@ -260,7 +249,7 @@ class FitSpectraFrame(wx.Frame):
                                       min_val=-500, max_val=500,
                                       digits=3, increment=0.01, size=(100, -1))
 
-        wids['cal_vary'] = VarChoice(pdet, default=0)
+        wids['cal_vary'] = Check(pdet, label='Vary Calibration in Fit', default=True)
 
         wids['det_mat'] = Choice(pdet, choices=Detector_Materials,
                                  size=(55, -1), default=0,
@@ -286,48 +275,47 @@ class FitSpectraFrame(wx.Frame):
         wids['det_efano'] = FloatSpin(pdet, value=det_efano, **opts)
 
 
-        pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=3)
-        pdet.AddText('    X-ray Energy (eV): ', newrow=True)
+        pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
+        pdet.AddText(Energy_Text, dcol=2)
+        pdet.AddText('   X-ray Energy: ', newrow=True)
         pdet.Add(wids['en_xray'])
-        pdet.AddText('    Fit Range (eV): ', newrow=True)
+        pdet.AddText('   Energy Min: ', newrow=True)
         pdet.Add(wids['en_min'])
-        pdet.AddText(' : ')
+        pdet.AddText('Energy Max: ')
         pdet.Add(wids['en_max'])
 
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(' Energy Calibration :', colour='#880000', dcol=1, newrow=True)
-        pdet.AddText('   Vary in fit:')
-        pdet.Add(wids['cal_vary'], dcol=2)
-        pdet.AddText('    Offset (eV): ', newrow=True)
+        pdet.AddText('Energy Calibration :', colour='#880000', dcol=1, newrow=True)
+        pdet.Add(wids['cal_vary'], dcol=3)
+        pdet.AddText('   Offset: ', newrow=True)
         pdet.Add(wids['cal_offset'])
-        pdet.AddText('    Slope (eV/bin): ', newrow=True)
+        pdet.AddText('Slope (eV/bin): ')
         pdet.Add(wids['cal_slope'])
 
 
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(' Detector :', colour='#880000', dcol=4, newrow=True)
-        pdet.AddText('    Material:  ', newrow=True)
+        pdet.AddText(' Detector :', colour='#880000', newrow=True)
+        pdet.AddText(EFano_Text, dcol=3)
+        pdet.AddText('   Material:  ', newrow=True)
         pdet.Add(wids['det_mat'])
-        pdet.AddText('    Thickness (mm): ', newrow=True)
+        pdet.AddText('Thickness (mm): ')
         pdet.Add(wids['det_thk'])
 
-        pdet.AddText('    Noise (eV): ', newrow=True)
+        pdet.AddText('   Noise: ', newrow=True)
         pdet.Add(wids['det_noise'])
         pdet.Add(wids['det_noise_vary'], dcol=2)
-        pdet.AddText('    E_Fano (eV): ', newrow=True)
+        pdet.AddText('   E_Fano: ', newrow=True)
         pdet.Add(wids['det_efano'])
         pdet.Add(wids['det_efano_vary'], dcol=2)
-        pdet.AddText(EFano_Text, newrow=True,  dcol=4)
 
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(" Background: ", colour='#880000', newrow=True)
-        pdet.Add(wids['bgr_use'], dcol=3)
-        pdet.AddText('    Exponent:', newrow=True)
-        pdet.Add(wids['bgr_expon'])
-        pdet.AddText('    Width (keV): ', newrow=True)
-        pdet.Add(wids['bgr_width'], dcol=2)
+        pdet.AddText(' Background: ', colour='#880000', newrow=True)
+        pdet.Add(wids['bgr_use'], dcol=2)
         pdet.Add(wids['bgr_show'])
-        pdet.Add(wids['bgr_fit'], newrow=True)
+        pdet.AddText('   Exponent:', newrow=True)
+        pdet.Add(wids['bgr_expon'])
+        pdet.AddText('Energy Width: ') # , newrow=True)
+        pdet.Add(wids['bgr_width'])# , dcol=2)
         pdet.pack()
 
         # filters section
@@ -361,14 +349,6 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(pflt)
         pack(main, sizer)
         return main
-
-    def onUseBackground(self, event=None):
-        use = self.wids['bgr_use'].IsChecked()
-        self.wids['bgr_width'].Enable(use)
-        self.wids['bgr_expon'].Enable(use)
-        self.wids['bgr_show'].Enable(use)
-        self.wids['bgr_fit'].Enable(use)
-
 
     def onShowBgr(self, event=None):
         mca    = self.mca
@@ -441,6 +421,7 @@ class FitSpectraFrame(wx.Frame):
                 opts[key] = '????'
             opts[key] = val
         opts['count_time'] = getattr(self.mca, 'real_time', 1.0)
+        opts['cal_vary'] = repr(opts['cal_vary'])
 
         # convert thicknesses from mm to cm:
         opts['det_thk'] /= 10.0
@@ -500,19 +481,14 @@ class FitSpectraFrame(wx.Frame):
         if max(self.mca.energy) < 250.0:
             en_str = "work_mca.energy_ev = work_mca.energy*1000.0"
         script.append(en_str)
-        if opts['bgr_use']:
+        if opts['bgr_use'] in ('True', True):
             if getattr(self.mca, 'bgr', None) is None:
                 width  = self.wids['bgr_width'].GetValue()/1000.0
                 expon  = int(self.wids['bgr_expon'].GetStringSelection())
                 cmd = """xrf_background(energy=work_mca.energy, counts=work_mca.counts,
                 group=work_mca, width=%.2f, exponent=%d)"""  % (width, expon)
                 script.append(cmd)
-            vary_str = 'False'
-            if opts['bgr_fit']:
-                vary_str = 'True'
-            script.append("xrfmod.add_background(work_mca.bgr, vary=%s)" % vary_str)
-        else:
-            script.append("## no bgr!!")
+            script.append("xrfmod.add_background(work_mca.bgr, vary=False)")
         script.append("work_mca.xrf_init = xrfmod.calc_spectrum(work_mca.energy_ev)")
 
         script = '\n'.join(script)
