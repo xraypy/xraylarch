@@ -8,6 +8,7 @@ from lmfit import  Parameters, minimize, fit_report
 from ..math import index_of, savitzky_golay, hypermet, erfc
 from ..xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
                     xray_edges, xray_lines, ck_probability)
+from ..xafs import ftwindow
 
 ########
 # Note on units:  energies are in eV, lengths in cm
@@ -307,29 +308,20 @@ class XRF_Model:
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
         self.best_fit = self.calc_spectrum(self.best_en, params=params)
-        return (data - self.best_fit)*self.fit_weight
+        resid = (data - self.best_fit) * self.fit_weight
 
-    def set_fit_weight(self, energy, counts):
+        # emphasize negative residuals more than positive residuals
+        # scale = 0.25 * (np.abs(resid)).max()
+        return resid # + 1 - np.exp(-resid/scale))
+
+    def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
         """
-        set weighting factor to emphasize low-count regions of spectra
-        and to deemphasize spectra above max line energy
+        set weighting factor to smoothed square-root of data
         """
-        # first, weigh by (1/log(counts))**2, with some safety
-        # to set scale to be between 1 and 5:
-        w = np.log10(counts.mean())/np.log10(counts+3)
-        w = (1 + (w - w.min()) / (w.mean() - w.min()))**2
-        w[np.where(w>5.0)] = 5.0
-
-        # smooth out noise
-        w  = savitzky_golay(w, 7, 2)
-
-        # now apply gentle high-energy cutoff
-        emax = -1
-        for elem in self.elements:
-            for key, line in elem.lines.items():
-                emax = max(emax, line.energy)
-        ewid = 1.5*(self.xray_energy - emax)
-        self.fit_weight = w * erfc((energy-emax)/ewid)/2.0
+        stderr = 1.0 / np.sqrt(counts + 0.1)
+        en_win = ftwindow(energy, xmin=emin, xmax=emax,
+                          dx=ewid, window='hanning')
+        self.fit_weight = en_win * savitzky_golay(stderr, 7, 2)
 
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
 
@@ -341,8 +333,6 @@ class XRF_Model:
         if max(energy) < 250.0: # input energies are in keV
             work_energy = 1000.0 * energy
 
-        self.set_fit_weight(work_energy, work_counts)
-
         imin, imax = 0, len(counts)
         if energy_min is None:
             energy_min = self.energy_min
@@ -353,17 +343,25 @@ class XRF_Model:
         if energy_max is not None:
             imax = index_of(work_energy, energy_max)
 
-        self.fit_weight[:imin-1] = 0.0
-        self.fit_weight[imax+1:] = 0.0
+        self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
+
         self.fit_iter = 0
 
-        userkws = dict(data=work_counts,
-                       index=np.arange(len(counts)))
-        kws = dict(method='leastsq', maxfev=4000, gtol=self.fit_toler,
-                   ftol=self.fit_toler, xtol=self.fit_toler, epsfcn=1.e-5)
+        index = np.arange(len(counts))
+        userkws = dict(data=work_counts, index=index)
 
-        self.result = minimize(self.__resid, self.params, kws=userkws, **kws)
+        tol = self.fit_toler
+        self.result = minimize(self.__resid, self.params, kws=userkws,
+                               method='leastsq', maxfev=10000, scale_covar=True,
+                               gtol=tol, ftol=tol, epsfcn=1.e-5)
+
         self.fit_report = fit_report(self.result, min_correl=0.5)
+        pars = self.result.pars
+
+        self.best_en = (pars['cal_offset'] + pars['cal_slope'] * index +
+                        pars['cal_quad'] * index**2)
+        self.fit_iter += 1
+        self.best_fit = self.calc_spectrum(self.best_en, params=params)
 
         self.best_fit = self.calc_spectrum(energy, params=self.result.params)
 
