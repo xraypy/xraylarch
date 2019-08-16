@@ -231,7 +231,7 @@ class FitSpectraFrame(wx.Frame):
         pflt = GridPanel(main, itemstyle=LEFT)
 
         wids['bgr_use'] = Check(pdet, label='Include Background in Fit',
-                                default=True, action=self.onUseBackground)
+                                default=True)# , action=self.onUseBackground)
         wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
                                    digits=0, increment=500, size=(100, -1))
         wids['bgr_expon'] = Choice(pdet, choices=['2', '4', '6'],
