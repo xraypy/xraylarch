@@ -1,3 +1,8 @@
+# List of all dependencies of larch
+# Recommended installation with conda:
+# conda config --env --append channels conda-forge
+# conda config --env --append channels GSECARS
+# conda install --file ./requirements.txt
 scipy>=1.1
 numpy>=1.15
 matplotlib>=3.0
@@ -20,3 +25,5 @@ termcolor
 wxpython>=4.0.2
 wxutils>=0.2.3
 wxmplot>=0.9.34
+pyside2>=5.13
+silx>=0.11
