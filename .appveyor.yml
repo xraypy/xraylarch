@@ -1,7 +1,7 @@
 
 environment:
   matrix:
-    - PYTHON_VERSION: "3.7-dev"
+    - PYTHON_VERSION: "3.7"
       MINICONDA: "C:\\Miniconda36-x64"
 
 install:
@@ -10,8 +10,6 @@ install:
     - conda config --add channels gsecars
     - conda update conda
     - conda info -a
-
-install:
     - conda create -q -n xlarch python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip
     - source activate xlarch
     - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor
