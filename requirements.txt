@@ -18,7 +18,6 @@ uncertainties>=3
 pyshortcuts>=1.3
 pip
 dill
-yaml
 pyyaml
 psutil
 nose
