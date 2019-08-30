@@ -13,16 +13,15 @@ before_install:
     - export PATH="$HOME/xraylarch/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
+    - conda config --add channels gsecars
     - conda update -q conda
     - conda info -a
 
 install:
-    - if [[ $TRAVIS_PYTHON_VERSION != 3.7-dev ]]; then conda create -q -n testlarch python=$TRAVIS_PYTHON_VERSION numpy scipy six pandas matplotlib h5py wxpython pip dill nose sphinx; fi
-    - if [[ $TRAVIS_PYTHON_VERSION == 3.7-dev ]]; then conda create -q -n testlarch python=3.7                    numpy scipy six pandas matplotlib h5py wxpython pip dill nose sphinx; fi
+    - if [[ $TRAVIS_PYTHON_VERSION != 3.7-dev ]]; then conda create -q -n testlarch python=$TRAVIS_PYTHON_VERSION --file requirements.txt; fi
+    - if [[ $TRAVIS_PYTHON_VERSION == 3.7-dev ]]; then conda create -q -n testlarch python=3.7                    --file requirements.txt; fi
     - source activate testlarch
-    - conda install sqlalchemy psycopg2 pytest patchelf pillow requests yaml pyyaml pango pcre psutil scikit-learn
-    - conda config --add channels gsecars
-    - conda install -c gsecars uncertainties asteval lmfit termcolor peakutils pyepics pycifrw pyshortcuts wxmplot wxutils
+    - conda install patchelf pango pcre pycifrw
     - python setup.py install
     - conda list
 
