@@ -18,10 +18,10 @@ before_install:
     - conda info -a
 
 install:
-    - if [[ $TRAVIS_PYTHON_VERSION != 3.7-dev ]]; then conda create -q -n testlarch python=$TRAVIS_PYTHON_VERSION --file requirements.txt; fi
-    - if [[ $TRAVIS_PYTHON_VERSION == 3.7-dev ]]; then conda create -q -n testlarch python=3.7                    --file requirements.txt; fi
+    - conda create -q -n testlarch python=3.7 --file requirements.txt
     - source activate testlarch
     - conda install patchelf pango pcre pycifrw
+    - pip install pyside2
     - python setup.py install
     - conda list
 

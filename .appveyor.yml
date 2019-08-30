@@ -11,6 +11,7 @@ install:
     - conda update conda
     - conda install python=%PYTHON_VERSION% --file requirements.txt
     - activate base
+    - pip install pyside2
     - conda info -a
 
 build_script:
