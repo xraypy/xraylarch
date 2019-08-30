@@ -12,8 +12,9 @@ install:
     - conda info -a
     - conda create -q -n xlarch python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip
     - activate xlarch
+    - conda install asteval dioptas lmfit pycifrw pyfai pyshortcuts tomopy uncertainties wxutils wxmplot
     - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor
-    - "%MINICONDA%\\Scripts\\conda.exe" install asteval dioptas lmfit pycifrw pyfai pyshortcuts tomopy uncertainties wxutils wxmplot
+
 
 build_script:
     - python.exe setup.py install
