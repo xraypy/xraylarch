@@ -284,7 +284,7 @@ class APSXSD_BeamlineData(GenericBeamlineData):
                 if len(line) < 2:
                     mode = 'legend done'
                 else:
-                    print("Label Line : ", line)
+                    # print("Label Line : ", line)
                     if ')' in line:
                         words = line.replace('*', '').split()
                         bounds = []
