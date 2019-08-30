@@ -10,7 +10,7 @@ install:
     - conda config --add channels gsecars
     - conda update conda
     - conda info -a
-    - conda install python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip tomopy
+    - conda install python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip
     - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor
     - pip install asteval lmfit pycifrw pyfai pyshortcuts uncertainties wxutils wxmplot
 ### - conda install dioptas tomopy
