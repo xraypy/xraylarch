@@ -6,5 +6,4 @@ dkk=diffkk(data.energy, data.mu, z=29, edge='K', mback_kws={'e0':8979, 'order':4
 print( 'Doing diff KK transform')
 dkk.kk()
 
-print( 'That took %.2f seconds' % dkk.time_elapsed)
-dkk.plotkk()
+plot_diffkk(dkk)
