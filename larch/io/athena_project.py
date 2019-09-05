@@ -22,14 +22,52 @@ from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
 from larch.xray import guess_edge
 
-if sys.version[0] == '2':
-    from string import maketrans
-else:
-    maketrans = str.maketrans
-alist2json = maketrans("();'\n", "[] \" ")
+alist2json = str.maketrans("();'\n", "[] \" ")
+
 
 def plarray2json(text):
     return json.loads(text.split('=', 1)[1].strip().translate(alist2json))
+
+def parse_arglist(text):
+    txt = text.split('=', 1)[1].strip()
+    if txt.endswith(';'):
+        txt = txt[:-1]
+    for beg, end in (('[', ']'), ('(', ')'), ('{', '}')):
+        if txt.startswith(beg) and txt.endswith(end):
+            txt = txt[1:-1]
+    txt = txt.translate(alist2json)
+
+    words = []
+    i0 = 0
+    inparen1 = False
+    inparen2 = False
+
+    def get_word(x):
+        w = x
+        for d in ('"', "'"):
+            if w.startswith(d) and w.endswith(d):
+                w = w[1:-1]
+        return w
+
+    for i in range(len(txt)):
+        c = txt[i]
+        if inparen1:
+            if c == "'":
+                inparen1 = False
+            continue
+        elif inparen2:
+            if c == '"':
+                inparen2 = False
+            continue
+        if c == ',':
+            words.append(get_word(txt[i0:i]))
+            i0 = i+1
+        elif c == '"':
+            inparen2 = True
+        elif c == "'":
+            inparen1 = True
+    words.append(get_word(txt[i0:]))
+    return words
 
 def asfloat(x):
     """try to convert value to float, or fail gracefully"""
@@ -53,8 +91,7 @@ def _read_raw_athena(filename):
     except Exception:
         errtype, errval, errtb = sys.exc_info()
         text = None
-    finally:
-        fh.close()
+
 
     if text is None:
         # try plain text file
@@ -64,8 +101,7 @@ def _read_raw_athena(filename):
         except Exception:
             errtype, errval, errtb = sys.exc_info()
             text = None
-        finally:
-            fh.close()
+
     return text
 
 def _test_athena_text(text):
@@ -213,6 +249,40 @@ def format_array(arr):
     o = ["'%s'" % v for v in arr]
     return ','.join(o)
 
+def clean_bkg_params(grp):
+    grp.nnorm = getattr(grp, 'nnorm', 2)
+    grp.e0   = getattr(grp, 'e0', -1)
+    grp.rbkg = getattr(grp, 'rbkg', 1)
+    grp.pre1 = getattr(grp, 'pre1', -150)
+    grp.pre2 = getattr(grp, 'pre2',  -25)
+    grp.nor1 = getattr(grp, 'nor1', 100)
+    grp.nor2 = getattr(grp, 'nor2', 1200)
+    grp.spl1 = getattr(grp, 'spl1', 0)
+    grp.spl2 = getattr(grp, 'spl2', 30)
+    grp.kw   = getattr(grp, 'kw', 1)
+    grp.dk   = getattr(grp, 'dk', 3)
+    if getattr(grp, 'kwindow', None) is None:
+        grp.kwindow = getattr(grp, 'win', 'hanning')
+
+    try:
+        grp.clamp1 = float(grp.clamp1)
+    except:
+        grp.clamp1 = 1
+    try:
+        grp.clamp2 = float(grp.clamp2)
+    except:
+        grp.clamp2 = 1
+
+    return grp
+
+def clean_fft_params(grp):
+    grp.kmin = getattr(grp, 'kmin', 0)
+    grp.kmax = getattr(grp, 'kmax',  25)
+    grp.kweight = getattr(grp, 'kweight',  2)
+    grp.dk = getattr(grp, 'dk',  3)
+    grp.kwindow = getattr(grp, 'kwindow',  'hanning')
+    return grp
+
 
 def parse_perlathena(text, filename):
     """
@@ -222,20 +292,25 @@ def parse_perlathena(text, filename):
     athenagroups = []
     raw = {'name':''}
     vline = lines.pop(0)
-    if  "Athena project file -- Demeter version" not in vline:
+    if  "Athena project file -- " not in vline:
         raise ValueError("%s '%s': invalid Athena File" % (ERR_MSG, filename))
-
     major, minor, fix = '0', '0', '0'
-    try:
-        vs = vline.split("Athena project file -- Demeter version")[1]
-        major, minor, fix = vs.split('.')
-    except:
-        raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
-    if int(minor) < 9 or int(fix[:2]) < 21:
-        raise ValueError("%s '%s': file is too old to read" % (ERR_MSG, filename))
+    if 'Demeter' in vline:
+        try:
+            vs = vline.split("Athena project file -- Demeter version")[1]
+            major, minor, fix = vs.split('.')
+        except:
+            raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
+    else:
+        try:
+            vs = vline.split("Athena project file -- Athena version")[1]
+            major, minor, fix = vs.split('.')
+        except:
+            raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
+
 
     header = [vline]
-    journal = {}
+    journal = ['']
     is_header = True
     for t in lines:
         if t.startswith('#') or len(t) < 2 or 'undef' in t:
@@ -244,34 +319,35 @@ def parse_perlathena(text, filename):
             continue
         is_header = False
         key = t.split(' ')[0].strip()
-        key = key.replace('$', '').replace('@', '')
+        key = key.replace('$', '').replace('@', '').replace('%', '').strip()
         if key == 'old_group':
             raw['name'] = plarray2json(t)
         elif key == '[record]':
             athenagroups.append(raw)
             raw = {'name':''}
         elif key == 'journal':
-            journal = plarray2json(t)
+            journal = parse_arglist(t)
         elif key == 'args':
-            raw['args'] = plarray2json(t)
+            raw['args'] = parse_arglist(t)
         elif key == 'xdi':
             raw['xdi'] = t
         elif key in ('x', 'y', 'i0', 'signal', 'stddev'):
             raw[key] = np.array([float(x) for x in plarray2json(t)])
-        elif key == '1;': # end of list
+        elif key in ('1;', 'indicator', 'lcf_data', 'plot_features'):
             pass
         else:
-            print(" do not know what to do with key ", key, raw['name'])
+            print(" do not know what to do with key '%s' at '%s'" % (key, raw['name']))
 
     out = Group()
     out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
-    out.journal = journal
+    out.journal = '\n'.join(journal)
     out.group_names = []
     out.header = '\n'.join(header)
     for dat in athenagroups:
         label = dat.get('name', 'unknown')
         this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
-                     bkg_params=Group(), fft_params=Group(),
+                     bkg_params=Group(),
+                     fft_params=Group(),
                      athena_params=Group())
         if 'i0' in dat:
             this.i0 = dat['i0']
@@ -331,7 +407,8 @@ def parse_jsonathena(text, filename):
         x = np.array(dat['x'], dtype='float64')
         y = np.array(dat['y'], dtype='float64')
         this = Group(athena_id=name, energy=x, mu=y,
-                     bkg_params=Group(), fft_params=Group(),
+                     bkg_params=Group(),
+                     fft_params=Group(),
                      athena_params=Group())
         if 'i0' in dat:
             this.i0 = np.array(dat['i0'], dtype='float64')
@@ -527,14 +604,12 @@ class AthenaProject(object):
         data = None
         try:
             data = parse_jsonathena(text, self.filename)
-        except ValueError:
+        except:
             #  try as perl format
-            # print("Not json-athena ", sys.exc_info())
             try:
                 data = parse_perlathena(text, self.filename)
             except:
-                # print("Not perl-athena ", sys.exc_info())
-                pass
+                print("Not perl-athena ", sys.exc_info())
 
         if data is None:
             raise ValueError("cannot read file '%s' as Athena Project File" % (self.filename))
@@ -552,7 +627,7 @@ class AthenaProject(object):
             if use_hashkey:
                 oname = this.athena_id
             if (do_preedge or do_bkg) and (self._larch is not None):
-                pars = this.bkg_params
+                pars = clean_bkg_params(this.bkg_params)
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
@@ -565,7 +640,7 @@ class AthenaProject(object):
                            dk=float(pars.dk), clamp_lo=float(pars.clamp1),
                            clamp_hi=float(pars.clamp2))
                     if do_fft:
-                        pars = this.fft_params
+                        pars = clean_fft_params(this.fft_params)
                         kweight=2
                         if hasattr(pars, 'kw'):
                             kweight = float(pars.kw)
