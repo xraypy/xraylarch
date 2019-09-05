@@ -205,7 +205,7 @@ class diffKKGroup(Group):
     A Larch Group for generating f'(E) and f"(E) from a XAS measurement of mu(E).
     """
 
-    def __init__(self, energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, **kws):
+    def __init__(self, energy=None, mu=None, z=None, edge='K', mback_kws=None, **kws):
         kwargs = dict(name='diffKK')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -214,12 +214,6 @@ class diffKKGroup(Group):
         self.z          = z
         self.edge       = edge
         self.mback_kws  = mback_kws
-
-        if _larch == None:
-            self._larch   = Interpreter()
-        else:
-            self._larch = _larch
-
     def __repr__(self):
         return '<diffKK Group>'
 
@@ -264,15 +258,15 @@ class diffKKGroup(Group):
         if self.edge == None:
             Exception("absorption edge not provided for diffKK")
 
-        mb_kws = dict(order=3, z=self.z, edge=self.edge, e0=None, emin=None, emax=None,
-                      whiteline=False, leexiang=False, tables='chantler',
+        mb_kws = dict(order=3, z=self.z, edge=self.edge, e0=None,
+                      leexiang=False, tables='chantler',
                       fit_erfc=False, return_f1=True)
         if self.mback_kws is not None:
             mb_kws.update(self.mback_kws)
 
         start = time.clock()
 
-        mback(self.energy, self.mu, group=self, _larch=self._larch, **mb_kws)
+        mback(self.energy, self.mu, group=self, **mb_kws)
 
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
         npts = int(self.energy[-1] - self.energy[0]) + (int(self.energy[-1] - self.energy[0])%2)
@@ -294,20 +288,7 @@ class diffKKGroup(Group):
         finish = time.clock()
         self.time_elapsed = float(finish-start)
 
-
-    def plotkk(self):
-        """
-        Make a quick-n-dirty plot of the output of the KK transform.
-        """
-        if not HASPLOT: return
-        _newplot(self.energy, self.f2, _larch=self._larch, label='$f_2$', xlabel='Energy (eV)', ylabel='scattering factors',
-                 show_legend=True, legend_loc='lr')
-        _plot(self.energy, self.fpp, _larch=self._larch, label="$f''(E)$")
-        _plot(self.energy, self.f1,  _larch=self._larch, label='$f_1$')
-        _plot(self.energy, self.fp,  _larch=self._larch, label="$f'(E)$")
-
-
-def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, **kws):
+def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, **kws):
     """
     Make a diffKK group given mu(E) data
 
@@ -318,4 +299,4 @@ def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, 
         edge:       absorption edge, usually 'K' or 'L3'
         mback_kws:  arguments for the mback algorithm
     """
-    return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws, _larch=_larch)
+    return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws)
