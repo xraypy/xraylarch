@@ -14,6 +14,7 @@ Plotting macros for XAFS data sets and fits
   plot_path_r()    chi(R) for a single path of a feffit dataset
   plot_paths_k()   chi(k) for model and all paths of a feffit dataset
   plot_paths_r()   chi(R) for model and all paths of a feffit dataset
+  plot_diffkk()    plots from DIFFKK
  ---------------- -----------------------------------------------------
 """
 
@@ -1002,3 +1003,56 @@ def plot_pca_fit(dgroup, win=1, with_components=False, _larch=None, **kws):
             cval = model.components[n]*result.weights[n]
             disp.panel.oplot(result.x, cval, label='Comp #%d' % (n+1))
     redraw(win=win, show_legend=True, stacked=True, _larch=_larch)
+
+def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
+                title=None, delay_draw=False, offset=0, win=1, _larch=None):
+    """
+    plot_diffkk(dgroup, norm=True, emin=None, emax=None, show_e0=False, label=None, new=True, win=1):
+
+    Plot mu(E) and background mu0(E) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup      group of XAFS data after autobk() results (see Note 1)
+     norm        bool whether to show normalized data [True]
+     emin       min energy to show, absolute or relative to E0 [None, start of data]
+     emax       max energy to show, absolute or relative to E0 [None, end of data]
+     show_e0     bool whether to show E0 [False]
+     label       string for label [``None``: 'mu']
+     title       string for plot titlel [None, may use filename if available]
+     new         bool whether to start a new plot [True]
+     delay_draw  bool whether to delay draw until more traces are added [False]
+     offset      vertical offset to use for y-array [0]
+     win         integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         energy, mu, bkg, norm, e0, pre_edge, edge_step, filename
+    """
+    if hasattr(dgroup, 'f2'):
+        f2 = dgroup.f2
+    else:
+        raise ValueError("Data group has no array for f2")
+    #endif
+    ylabel = r'$f \rm\,\, (e^{-})$ '
+    emin, emax = _get_erange(dgroup, emin, emax)
+    title = _get_title(dgroup, title=title)
+
+    labels = {'f2': r"$f_2(E)$", 'fpp': r"$f''(E)$", 'fp': r"$f'(E)$", 'f1': r"$f_1(E)$"}
+
+    opts = dict(win=win, show_legend=True, linewidth=3,
+                delay_draw=True, _larch=_larch)
+
+    _plot(dgroup.energy, f2, xlabel=plotlabels.energy, ylabel=ylabel,
+          title=title, label=labels['f2'], zorder=20, new=new, xmin=emin, xmax=emax,
+          **opts)
+    zorder = 15
+    for attr in ('fpp', 'f1', 'fp'):
+        yval = getattr(dgroup, attr)
+        if yval is not None:
+            _plot(dgroup.energy, yval, zorder=zorder, label=labels[attr], **opts)
+            zorder = zorder - 3
+
+    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+#enddef

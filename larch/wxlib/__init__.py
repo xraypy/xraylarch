@@ -109,6 +109,7 @@ if HAS_WXPYTHON:
                                     plot_path_r=xafsplots.plot_path_r,
                                     plot_paths_k=xafsplots.plot_paths_k,
                                     plot_paths_r=xafsplots.plot_paths_r,
+                                    plot_diffkk=xafsplots.plot_diffkk,
                                     plot_prepeaks_fit=xafsplots.plot_prepeaks_fit,
                                     plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
                                     plot_pca_components=xafsplots.plot_pca_components,
