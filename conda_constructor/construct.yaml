@@ -2,44 +2,31 @@ name:  xraylarch
 version: 0.9.45
 
 channels:
-    - https://conda.anaconda.org/gsecars/
     - https://repo.continuum.io/pkgs/main
     - https://repo.continuum.io/pkgs/msys2 [win]
+    - https://conda.anaconda.org/gsecars/
 
-welcome_image: larch_3cones.png  #  [win]
-
-license_file: ../LICENSE
-
-attempt_hardlinks: True [linux or osx]
+ignore_duplicate_files: True
 
 installer_type: pkg [osx]
 
-osxpkg_welcome: header.rtf # [osx]
-osxpkg_conclusion: footer.rtf # [osx]
-osxpkg_image: LarchInstaller.png # [osx]
-
-post_install: post_install_linux.sh [linux]
-post_install: post_install_macosx.sh [osx]
-post_install: post_install_windows.bat [win]
-
 specs:
-    - python==3.7.3
-    - conda==4.5.13
-    - setuptools
+    - python>=3.7
+    - conda
     - pip
     - openssl
-    - asn1crypto
-    - anaconda
-    - numpy=1.16.2
-    - scipy==1.2.1
-    - matplotlib==3.0.3
+    # - asn1crypto
+    # - anaconda
+    - numpy>=1.16
+    - scipy>=1.2
+    - matplotlib
     - yaml
     - termcolor
     - pcre
     - pyyaml
     - psutil
     - requests
-    - cython
+    # - cython
     - h5py
     - pillow
     - sqlalchemy
