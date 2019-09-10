@@ -56,7 +56,7 @@ def tostr(val):
     return str(val)
 
 def tostrlist(address, nitems):
-    return [str(i, 'ASCII') for i in (nitems*c_char_p).from_address(address)]
+    return [str(i, 'utf-8') for i in (nitems*c_char_p).from_address(address)]
 
 def add_dot2path():
     """add this folder to begninng of PATH environmental variable"""
@@ -131,6 +131,7 @@ class XDIFile(object):
         xdi = pxdi.contents
         for attr in dict(xdi._fields_):
             setattr(self, attr, getattr(xdi, attr))
+
         self.array_labels = tostrlist(xdi.array_labels, self.narrays)
 
         if self.user_labels is not None:
@@ -208,9 +209,14 @@ class XDIFile(object):
             monodat = self.attrs['monochromator']
 
         if ix >= 0 and 'd_spacing' in monodat:
-            dspace = float(monodat['d_spacing'])
-            if dspace < 0: dspace = 0.001
-            omega = PLANCK_HC/(2*dspace)
+            dspacing = monodat['d_spacing'].strip()
+            dunits = 'Angstroms'
+            if ' ' in dspacing:
+                dspacing, dunits = dspacing.split(' ', 1)
+            self.dspacing = float(dspacing)
+            self.dspacing_units = dunits
+
+            omega = PLANCK_HC/(2*self.dspacing)
             if xname == 'energy' and not hasattr(self, 'angle'):
                 energy_ev = self.energy
                 if xunits.lower() == 'kev':
