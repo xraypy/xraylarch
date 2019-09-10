@@ -636,7 +636,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         # generate script to pass back to calling program:
         read_cmd = "%s('{path}', labels='%s')" % (self.reader,
-                                                  ', '.join(self.orig_labels)
+                                                  ', '.join(self.orig_labels))
         buff = ["{group} = %s" % read_cmd,
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
