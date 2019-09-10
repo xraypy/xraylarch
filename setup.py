@@ -31,42 +31,12 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
 
 ##
 ## Dependencies: required and recommended modules
-required_modules = {'numpy': 'numpy',
-                    'scipy': 'scipy',
-                    'matplotlib': 'matplotlib',
-                    'h5py': 'h5py',
-                    'sqlalchemy': 'sqlalchemy',
-                    'requests': 'requests',
-                    'psutil': 'psutil',
-                    'pyshortcuts': 'pyshortcuts',
-                    'peakutils': 'peakutils',
-                    'PIL' : 'pillow',
-                    'asteval': 'asteval',
-                    'uncertainties': 'uncertainties',
-                    'lmfit': 'lmfit',
-                    'yaml': 'pyyaml',
-                    'termcolor': 'termcolor'}
+with open('requirements.txt', 'r') as f:
+    install_reqs = f.read().splitlines()
 
-graphics_modules = {'wx': 'wxPython', 'wxmplot': 'wxmplot', 'wxutils':'wxutils'}
-xrd_modules  = {'pyFAI': 'pyFAI', 'CifFile' : 'PyCifRW', 'fabio': 'fabio',
-                'dioptas': 'Dioptas'}
-
-tomo_modules = {'tomopy': 'tomopy', 'skimage': 'scikit-image'}
-epics_modules = {'epics': 'pyepics'}
-
-spec_modules = {'silx': 'silx'}
-pca_modules = {'sklearn': 'scikit-learn'}
-
-testing_modules = {'nose': 'nose', 'pytest': 'pytest'}
-
-all_modules = (('basic analysis', required_modules),
-               ('graphics and plotting', graphics_modules),
-               ('xrd modules', xrd_modules),
-               ('tomography modules', tomo_modules),
-               ('connecting to the EPICS control system', epics_modules),
-               ('reading Spec files', spec_modules),
-               ('PCA and machine learning', pca_modules),
-               ('testing tools',  testing_modules))
+recommended = {'dioptas': 'XRD Display and Integraton',
+               'tomopy': 'Tomographic reconstructions',
+               'psycopg2': 'Interacting with PostgresQL databases'}
 
 missing = []
 
@@ -76,14 +46,12 @@ try:
 except:
     pass
 
-print( 'Checking dependencies....')
-for desc, mods in all_modules:
-    for impname, modname in mods.items():
-        try:
-            x = __import__(impname)
-        except ImportError:
-            s = (modname + ' '*25)[:25]
-            missing.append('     %s %s' % (s, desc))
+for modname, moddesc in recommended.items():
+    try:
+        x = __import__(modname)
+    except ImportError:
+        missing.append('     {:25.25s} {:s}'.format(modname, moddesc))
+
 
 ## For Travis-CI, need to write a local site config file
 ##
@@ -152,9 +120,6 @@ if INSTALL:
             except PermissionError:
                 pass
 
-with open('requirements.txt', 'r') as f:
-    install_reqs = f.read().splitlines()
-
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
       version = __version__,
@@ -165,7 +130,7 @@ setup(name = 'xraylarch',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       python_requires='>=3.5.1',
-      # install_requires=install_reqs,
+      install_requires=install_reqs,
       packages = packages,
       package_data={'larch': package_data},
       entry_points = {'console_scripts' : larch_apps},
@@ -185,17 +150,17 @@ if INSTALL or DEVELOP:
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
     msg = """%s
- Note: Some optional Python Packages were not found. Some functionality
- will not be available without these packages:
+ Note: Some optional Python Packages were not found.
+ Some functionality will not be available without these packages:
 
      Package Name              Needed for
      ----------------          ----------------------------------
 %s
      ----------------          ----------------------------------
 
- If you need some of these capabilities, you can install them with
-    `pip install <Package Name>` or `conda install <Package Name>`
-
- See the Optional Modules section of doc/installation.rst for more details.
+ If you need these capabilities, you may be able to install them with
+    pip install <Package Name>
+ or
+    conda install -c gsecars <Package Name>
 %s"""
     print(msg % (dl, '\n'.join(missing), dl))
