@@ -48,52 +48,52 @@ class AddColumnsFrame(wx.Frame):
         sizer = wx.GridBagSizer(2, 2)
         panel = scrolled.ScrolledPanel(self)
 
-        self.SetMinSize((525, 500))
+        self.SetMinSize((550, 550))
 
         self.wids = {}
 
-        lab_aname = SimpleText(panel, label='Save Array Name:')
-        lab_range = SimpleText(panel, label='Use column numbers:')
-        lab_regex = SimpleText(panel, label='Use column labels:')
+        lab_aname = SimpleText(panel, label=' Save Array Name:')
+        lab_range = SimpleText(panel, label=' Use column index:')
+        lab_regex = SimpleText(panel, label=' Use column label:')
 
         wids = self.wids = {}
 
-        wids['arrayname'] = wx.TextCtrl(panel, value='sum',   size=(200, -1))
-        wids['tc_nums']  = wx.TextCtrl(panel, value='1,3-10', size=(200, -1))
-        wids['tc_regex']    = wx.TextCtrl(panel, value='*fe*',  size=(200, -1))
+        wids['arrayname'] = wx.TextCtrl(panel, value='sum',   size=(175, -1))
+        wids['tc_nums']   = wx.TextCtrl(panel, value='1,3-10', size=(175, -1))
+        wids['tc_regex']  = wx.TextCtrl(panel, value='*fe*',  size=(175, -1))
 
-        savebtn   = Button(panel, 'Save',   action=self.onOK)
-        plotbtn   = Button(panel, 'Plot Current Sum',   action=self.onPlot)
-        sel_nums  = Button(panel, 'Select Column Numbers',
+        savebtn   = Button(panel, 'Save',       action=self.onOK)
+        plotbtn   = Button(panel, 'Plot Sum',   action=self.onPlot)
+        sel_nums  = Button(panel, 'Select by Index',
                            action=self.onSelColumns)
-        sel_re    = Button(panel, 'Select Name Pattern',
+        sel_re    = Button(panel, 'Select by Pattern',
                            action=self.onSelRegex)
 
 
-        sizer.Add(lab_aname,         (0, 0), (1, 1), LCEN, 3)
-        sizer.Add(wids['arrayname'], (0, 1), (1, 2), LCEN, 3)
+        sizer.Add(lab_aname,         (0, 0), (1, 2), LCEN, 3)
+        sizer.Add(wids['arrayname'], (0, 2), (1, 1), LCEN, 3)
 
         sizer.Add(plotbtn,         (0, 3), (1, 1), LCEN, 3)
         sizer.Add(savebtn,         (0, 4), (1, 1), LCEN, 3)
 
-        sizer.Add(lab_range,       (1, 0), (1, 1), LCEN, 3)
-        sizer.Add(wids['tc_nums'], (1, 1), (1, 2), LCEN, 3)
-        sizer.Add(sel_nums,        (1, 3), (1, 1), LCEN, 3)
+        sizer.Add(lab_range,       (1, 0), (1, 2), LCEN, 3)
+        sizer.Add(wids['tc_nums'], (1, 2), (1, 1), LCEN, 3)
+        sizer.Add(sel_nums,        (1, 3), (1, 2), LCEN, 3)
 
-        sizer.Add(lab_regex,        (2, 0), (1, 1), LCEN, 3)
-        sizer.Add(wids['tc_regex'], (2, 1), (1, 2), LCEN, 3)
-        sizer.Add(sel_re,           (2, 3), (1, 1), LCEN, 3)
+        sizer.Add(lab_regex,        (2, 0), (1, 2), LCEN, 3)
+        sizer.Add(wids['tc_regex'], (2, 2), (1, 1), LCEN, 3)
+        sizer.Add(sel_re,           (2, 3), (1, 2), LCEN, 3)
 
         sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LCEN, 3)
         ir = 4
 
-        cind  = SimpleText(panel, label='Column Number')
-        cname = SimpleText(panel, label='Column Name')
-        csel = SimpleText(panel, label='Select')
+        cind = SimpleText(panel, label=' Index ')
+        csel = SimpleText(panel, label=' Select ')
+        cname = SimpleText(panel, label=' Array Name ')
 
         sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-        sizer.Add(cname,  (ir, 1), (1, 1), LCEN, 3)
-        sizer.Add(csel,  (ir, 2), (1, 1), LCEN, 3)
+        sizer.Add(csel,  (ir, 1), (1, 1), LCEN, 3)
+        sizer.Add(cname, (ir, 2), (1, 3), LCEN, 3)
 
         for i, name in enumerate(group.array_labels):
             ir += 1
@@ -103,9 +103,9 @@ class AddColumnsFrame(wx.Frame):
 
             self.wids["col_%d" % i] = csel
 
-            sizer.Add(cind,   (ir, 0), (1, 1), LCEN, 3)
-            sizer.Add(cname,  (ir, 1), (1, 1), LCEN, 3)
-            sizer.Add(csel,   (ir, 2), (1, 1), LCEN, 3)
+            sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
+            sizer.Add(csel,  (ir, 1), (1, 1), LCEN, 3)
+            sizer.Add(cname, (ir, 2), (1, 3), LCEN, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -194,8 +194,6 @@ class AddColumnsFrame(wx.Frame):
         for i, name in enumerate(self.group.array_labels):
             sel = re.search(pattern, name, flags=re.IGNORECASE) is not None
             self.wids["col_%d" % i].SetValue(sel)
-
-
 
 
 class EditColumnFrame(wx.Frame) :
@@ -334,6 +332,7 @@ class ColumnDataFileFrame(wx.Frame) :
             setattr(self.workgroup, attr, getattr(group, attr, None))
 
         arr_labels = [l.lower() for l in self.initgroup.array_labels]
+        self.orig_labels = arr_labels[:]
 
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
@@ -602,8 +601,6 @@ class ColumnDataFileFrame(wx.Frame) :
                            group=self.workgroup,
                            on_ok=self.set_array_labels)
 
-
-
     def set_array_labels(self, arr_labels):
         self.workgroup.array_labels = arr_labels
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
@@ -638,9 +635,8 @@ class ColumnDataFileFrame(wx.Frame) :
         self.expressions['yerr'] = yerr_expr
 
         # generate script to pass back to calling program:
-        labels = ', '.join(self.workgroup.array_labels)
-        read_cmd = "%s('{path}', labels='%s')" % (self.reader, labels)
-
+        read_cmd = "%s('{path}', labels='%s')" % (self.reader,
+                                                  ', '.join(self.orig_labels)
         buff = ["{group} = %s" % read_cmd,
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
