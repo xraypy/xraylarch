@@ -143,12 +143,6 @@ Project files from existing groups of data.
 Reading Athena Project Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. warning::
-
-  Larch can read Athena Project Files from Athena version 0.9.21 or later.
-  If you have a project file older than that, you should be able to open it
-  with Athena and re-save it into a newer version.
-
 .. function:: read_athena(filename, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
 
    open and read an Athena Project File, returning a group of groups, each
@@ -220,8 +214,6 @@ method of that project file.  The group is expected to have array names of
 .. class:: AthenaProject(filename)
 
    A representation of an Athena Project File
-
-.. module:: _io.AthenaProject
 
 .. method:: add_group(group, signal=None)
 

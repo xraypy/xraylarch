@@ -2,11 +2,22 @@
 Getting Started with Larch
 ==================================================
 
-Larch provides both GUI applications and a programming library for
-visualizing and analyzing X-ray spectroscopy data.  It can be slightly
-overwhelming to know where to get started with Larch.  We'll try to get you
-started using Larch, and then point to next places to go for getting the
-most out of it.
+Larch provides several tools for working with X-ray spectroscopy data.
+First, Larch provides a Python programming library that attempts to all of
+the functionality needed for the visualization and analysis of X-ray
+Absorption and Flourescence spectroscopy data.  It also includes an
+embedded Python-like scripting language for for interacting with data that
+can be used either from a very basic command-line interface or as a
+callable service.  Finally, Larch has a few GUI applications built on top
+of these components for X-ary absorption spectroscopy data, and for X-ray
+Fluorescence and Diffraction mapping.
+
+Because of this, it can be somewhat confusing to answer the question "What
+is Larch?" and slightly overwhelming for new people to know where to get
+started using it.  The goal is to make this is all meant to be
+
+We'll try to get you started using Larch, and then point to next places to
+go for getting the most out of it.
 
 First, install Larch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,8 +30,8 @@ If you are familiar with Python and want to use Larch as a library, see the
 :ref:`Downloading and Installation <install-chapter>` chapter.
 
 
-Second, XASViewer and/or GSEMapViewer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Second, use Athena, XASViewer and/or GSEMapViewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are mostly interested in using Larch as a backend for the Athena and
 Artemis programs for XAFS Analysis, just install Larch and the latest
@@ -28,7 +39,7 @@ version of Demeter, and Demeter should find and use Larch for EXAFS
 Analysis, replacing the older Ifeffit library and its many limitations.
 
 However, Athena still has some limitations for XAFS Analysis, and
-development and support for it have declined in recent years.  You may be
+development and support for it has declined in recent years.  You may be
 interested in the XAS Viewer program for XAFS processing and visualization.
 At this writing, :ref:`XAS Viewer <xasviewer-chapter>` is nearly a complete
 replacement for Athena, with several improvements in graphics and handling
@@ -37,12 +48,13 @@ so includes robust tools for peak-fitting, and machine-learning methods
 such as Principal Component Analysis, Partial Least Squares and LASSO
 regression.
 
-If you are a user of the GSECARS microprobe beamline, you'll want to start
-using the :ref:`GSE Mapviewer <gsemapviewer-chapter>` program for reading,
-displaying, and working with X-ray fluorescence maps.  Much of the
-documentation here discusses commands you can type in the "Larch Buffer",
-available from the Mapviewer program for scripting and more detailed access
-to the data in the XRF map HDF5 files.
+If you are a user of the GSECARS microprobe beamline or have XRF Mapping
+data from a compatible beamline (XFM at NSLS-II, maybe others), you'll
+want to start using the :ref:`GSE Mapviewer <gsemapviewer-chapter>` program
+for reading, displaying, and working with X-ray fluorescence maps.  Much of
+the documentation here discusses commands you can type in the "Larch
+Buffer", available from the Mapviewer program for scripting and more
+detailed access to the data in the XRF map HDF5 files.
 
 If you are a general-purpose user or ready for more control over data
 analysis for many types of data, the Larch GUI can help you browse through

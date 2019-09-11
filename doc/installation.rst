@@ -18,6 +18,12 @@ Downloading and Installation
 .. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-Linux-x86_64.sh
 .. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-docs-examples.zip
 
+
+.. _Ifeffit Mailing List: http://cars9.uchicago.edu/mailman/listinfo/ifeffit/
+.. _Demeter: https://bruceravel.github.io/demeter/
+.. _Larch Github Pages: https://github.com/xraypy/xraylarch
+
+
 The latest release version of Larch is |release|.
 
 Larch is in active and continuing development, and the intention is to tag a
@@ -115,7 +121,7 @@ Once installed, you may be able to upgrade to future versions of Larch using::
 
 
 
-Installing with Anaconda Python
+Using Anaconda Python
 ======================================
 
 For those familiar with Python, Larch can be installed into an existing
@@ -193,7 +199,7 @@ Source Installation
 =========================
 
 For Python-savvy users, Larch can be installed from source. You can use either
-the `source code (tar.gz)`_ or from `Larch releases (github.com)`_.  In
+the `source code (tar.gz)`_ or from `Larch Releases (github.com)`_.  In
 addition, you can use `git` to grab the latest development version of the
 source code::
 
@@ -329,10 +335,17 @@ into the created xraylarch-VERSION directory, and type::
 
     python setup.py install
 
+Larch is an open-source project, with active development happening at the
+`Larch Repository (github.com)`_.  There, you will find the latest source
+code and pages for submit bug reports.
+
+Getting Help and Support
+============================
+
+For questions and support about Larch, please use the `Ifeffit Mailing List`_.
 
 
-
-Documentation and Examples
+Docs and Examples
 ================================
 
 The source kit includes sources for documentation in the `docs` folder

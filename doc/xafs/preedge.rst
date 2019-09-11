@@ -225,7 +225,7 @@ Notes:
 
 Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
-result shown in :numref:`fig-mback-opper`.
+result shown in :numref:`fig-mback-copper`.
 
 .. code:: python
 

@@ -89,17 +89,15 @@ in-development features and application will be explicitly described as
 
 
 
-Larch is under active and open development, and has support from the U. S. National Science
-Foundation.
+Larch is under active and open development, and has support from the
+U. S. National Science Foundation.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    getting_started.rst
    installation.rst
-   community.rst
-   overview.rst
    guis.rst
    xasviewer/index.rst
    gsemapviewer/index.rst

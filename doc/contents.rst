@@ -8,9 +8,8 @@ Table of Contents
    :maxdepth: 3
    :numbered:
 
+   getting_started.rst
    installation.rst
-   community.rst
-   overview.rst
    guis.rst
    xasviewer/index.rst
    gsemapviewer/index.rst
