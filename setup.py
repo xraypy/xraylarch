@@ -86,8 +86,7 @@ for modname, impname, desc in recommended:
         except ImportError:
             import_ok = False
     if not import_ok:
-        missing.append('     {:25.25s} {:s}'.format(modname, moddesc))
-
+        missing.append('     {:25.25s} {:s}'.format(modname, desc))
 
 ## For Travis-CI, need to write a local site config file
 ##
