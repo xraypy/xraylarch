@@ -422,10 +422,3 @@ the BSD License:
 
 
 .. literalinclude:: ../LICENSE
-
-.. rubric:: References
-
-.. bibliography:: larch.bib
-   :style: unsrt
-   :labelprefix: Install_
-   :filter: docname in docnames

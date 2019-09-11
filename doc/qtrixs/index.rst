@@ -21,9 +21,13 @@ The CLI interface is based on a simple list model, that is, the
 Reading RIXS data
 -----------------
 
-RIXS data are stored in the :class:`larch.qtrixs.rixsdata.RixsData`. This is a
-relatively simple Python object with few attributes mapping the data, and
-methods to grid the original (X, Y, Z) arrays to RIXS maps. Usually the data are converted from ASCII collected at the beamline and stored in a HDF5 file, following a simple format (c.f. :func:`larch.io.rixs_aps_gsecars.get_rixs_13ide`). After that, reading in the `RixsData` object is as simple as::
+RIXS data are stored in the :class:`larch.qtrixs.rixsdata.RixsData`. This
+is a relatively simple Python object with few attributes mapping the data,
+and methods to grid the original (X, Y, Z) arrays to RIXS maps. Usually the
+data are converted from ASCII collected at the beamline and stored in a
+HDF5 file, following a simple format
+(c.f. :func:`larch.io.rixs_aps_gsecars.get_rixs_13ide`). After that,
+reading in the `RixsData` object is as simple as::
 
     from larch.qtrixs.rixsdata import RixsData
     my_rixs1 = RixsData()
@@ -32,7 +36,9 @@ methods to grid the original (X, Y, Z) arrays to RIXS maps. Usually the data are
 Plotting RIXS data
 -------------------
 
-Once the data are read in the `RixsData` object, can be added to the model where are stored in a list and easily retrieved or plotted using their index. Here an example to load a couple of planes and show them::
+Once the data are read in the `RixsData` object, can be added to the model
+where are stored in a list and easily retrieved or plotted using their
+index. Here an example to load a couple of planes and show them::
 
     from larch.qtrixs.plotrixs import RixsMainWindow
     main_win = RixsMainWindow()
@@ -48,9 +54,9 @@ Once the data are read in the `RixsData` object, can be added to the model where
     main_win.plot(0, 1, rixs_et=False, crop=False)  #: data[0] in plot[1]
     main_win.plot(1, 2, rixs_et=False, crop=False)  #: data[1] in plot[2] (new plot window is created)
 
-The output of this script is shown in :numref:`_fig_qtrixs_main`
+The output of this script is shown in :numref:`fig_qtrixs_main`
 
-.. _fig_qtrixs_main
+.. _fig_qtrixs_main:
 
 .. figure:: ../_images/qtrixs_main_window.png
     :target: ../_images/qtrixs_main_window.png
@@ -60,14 +66,16 @@ The output of this script is shown in :numref:`_fig_qtrixs_main`
     QtRIXS main window showing two RIXS data objects loaded in the model and
     plotted in the plot area.
 
-Dock (= dragable) information widgets for selecting regions of interest on the plot and getting the coordinates can be added to the main window simply by::
+Dock (= dragable) information widgets for selecting regions of interest on
+the plot and getting the coordinates can be added to the main window simply
+by::
 
     main_win.addRixsDOIDockWidget(1)  #: the argument is the index of the plot
     main_win.addRixsDOIDockWidget(2)  #: another info box for plot 2
 
-The result is shown in :numref:`_fig_qtrixs_cursors`.
+The result is shown in :numref:`fig_qtrixs_cursors`.
 
-.. _fig_qtrixs_cursors
+.. _fig_qtrixs_cursors:
 
 .. figure:: ../_images/qtrixs_cursors.png
     :target: ../_images/qtrixs_cursors.png
@@ -89,12 +97,12 @@ toolbar on each RIXS plot. This will push the corresponding cut to a common
 plot window called `Profiles`. From that window is possible to save the
 profiles to ASCII files and then process them independently. The profiles
 toolbar works correctly for horizontal and vertical cuts only. For taking a
-diagonal cut in energy transfer (= HERFD-XAS) the best is to simply take an
+diagonal cut in energy transfer (i.e., HERFD-XAS) the best is to simply take an
 horizontal cut in emitted energy. If the profiles window gets busy of many
 curves, the plot can be simply be cleaned by popping the context menu with
-right click on the legends. This is shown in :numref:`_fig_qtrixs_profiles`.
+right click on the legends. This is shown in :numref:`fig_qtrixs_profiles`.
 
-.. _fig_qtrixs_profiles
+.. _fig_qtrixs_profiles:
 
 .. figure:: ../_images/qtrixs_profiles.png
     :target: ../_images/qtrixs_profiles.png
