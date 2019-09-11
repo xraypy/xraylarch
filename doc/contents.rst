@@ -14,6 +14,7 @@ Table of Contents
    guis.rst
    xasviewer/index.rst
    gsemapviewer/index.rst
+   qtrixs/index.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst

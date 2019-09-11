@@ -119,11 +119,3 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
     The Cauchy Wavelet transform projected to :math:`k` and :math:`R`
     space.  In the left hand panel, the original EXAFS :math:`k^2\chi(k)`
     is shown for comparison.
-
-
-.. rubric:: References
-
-.. bibliography:: ../larch.bib
-   :style: unsrt
-   :labelprefix: Wavelets_
-   :filter: docname in docnames

@@ -79,13 +79,15 @@ in-development features and application will be explicitly described as
   | 1D XRD Viewer        | GUI       | Display and work with 1-D XRD patterns (beta).          |
   +----------------------+-----------+---------------------------------------------------------+
   | 2D XRD Viewer        | GUI       | Display  XRD images (beta)                              |
-  +----------------------+-----------+----l-----------------------------------------------------+
+  +----------------------+-----------+---------------------------------------------------------+
   | feff6l               | CLI       | Feff 6 EXAFS calculations                               |
   +----------------------+-----------+---------------------------------------------------------+
   | feff8l               | CLI       | Feff 8 EXAFS calculations - no XANES                    |
   +----------------------+-----------+---------------------------------------------------------+
-  | qtrixs               | `beta`    | Display RIXS planes, take profiles                    |
+  | qtrixs               | `beta`    | Display RIXS planes, take profiles                      |
   +----------------------+-----------+---------------------------------------------------------+
+
+
 
 Larch is under active and open development, and has support from the U. S. National Science
 Foundation.
