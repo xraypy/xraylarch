@@ -57,8 +57,6 @@ recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('tomopy', 'tomopy', 'Tomographic reconstructions'),
                ('psycopg2', 'psycopg2', 'Interacting with PostgresQL databases'),
                ('pycifrw', 'CifFile', 'Reading CIF files'),
-               ('pyepics', 'epics', 'Interacting with the Epics control system'),
-               ('sphinx', 'sphinx', 'Documentation system'),
                )
 
 missing = []

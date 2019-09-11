@@ -19,6 +19,8 @@ pyshortcuts>=1.4
 wxpython>=4.0.3
 wxutils>=0.2.3
 wxmplot>=0.9.37
+pyepics>=3.3.3
+sphinx
 pip
 dill
 pyyaml
