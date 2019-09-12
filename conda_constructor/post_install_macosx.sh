@@ -6,7 +6,7 @@ if [ xx$PREFIX == 'xx' ]; then
 fi
 
 # force install of packages that are noarch or have install problems
-$PREFIX/bin/conda install --force-reinstall qtpy dask pytz pyparsing networkx bokeh
+# $PREFIX/bin/conda install --force-reinstall qtpy dask pytz pyparsing networkx bokeh
 
 # fix pythonw on MacOSX
 wxapps='gse_dtcorrect gse_mapviewer larch xas_viewer xrd1d_viewer xrd2d_viewer xrfdisplay xrfdisplay_epics'

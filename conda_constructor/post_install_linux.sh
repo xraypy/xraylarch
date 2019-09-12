@@ -6,7 +6,7 @@ if [ xx$PREFIX == 'xx' ]; then
 fi
 
 # force install of packages that are noarch or have install problems
-$PREFIX/bin/conda install -f qtpy dask pytz pyparsing networkx bokeh conda=4.5.13
+# $PREFIX/bin/conda install -f qtpy dask pytz pyparsing networkx bokeh conda=4.5.13
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m
