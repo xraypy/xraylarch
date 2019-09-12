@@ -25,7 +25,6 @@ specs:
     - pip
     - nose
     - pytest
-    - sphinx
     - requests
     - psutil
     - termcolor>=1.1.0
