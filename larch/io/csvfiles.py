@@ -100,7 +100,7 @@ def str2float(word, allow_times=True):
 def read_csv(filename):
     """read CSV file, return group with data as columns"""
     csvfile = open(filename, 'r')
-    dialect = csv.Sniffer().sniff(csvfile.read(1024),  [',',';', '\t'])
+    dialect = csv.Sniffer().sniff(csvfile.read(),  [',',';', '\t'])
     csvfile.seek(0)
 
     data = None
