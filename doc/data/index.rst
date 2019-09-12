@@ -198,7 +198,7 @@ Creating and Writing to Athena Project Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can create an Athena Project File with :func:`create_athena` and then
-add a group of XAFS data to that project with the :meth:`add_group`
+add a group of XAFS data to that pct with the :meth:`add_group`
 method of that project file.  The group is expected to have array names of
 `energy` and `i0`, and one of `mu`, `mutrans`, or `mufluor`.
 
@@ -266,8 +266,6 @@ As an example creating and saving an Athena Project file::
 
 Using HDF5 Files
 ========================
-
-.. module:: _io
 
 HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds

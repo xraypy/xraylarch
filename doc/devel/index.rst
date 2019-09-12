@@ -1,7 +1,7 @@
 .. _programming_chapter:
 
 ====================================
-Programming with Larch and Python
+Programming with Larch from Python
 ====================================
 
 This chapter describes some of the key concepts of programming with the
@@ -21,7 +21,6 @@ Larch, and indeed essentially all the real scientific code in Larch is
 implemented as plugins.  As an important note, the functions defined in the
 Larch can be accessed from Python, without relying on the syntax of the
 Larch language at all.
-
 The reader here is assumed to be familiar with computer programming, and to
 have some exposure to working with Larch and/or Python, at least from the
 :ref:`Tutorial <tutorial_chapter>` (Chapter :ref:`tutorial_chapter`).

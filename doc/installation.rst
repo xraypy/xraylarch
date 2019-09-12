@@ -13,11 +13,11 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.45-docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46.tar.gz
+.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-docs-examples.zip
 
 
 .. _Ifeffit Mailing List: http://cars9.uchicago.edu/mailman/listinfo/ifeffit/
@@ -111,7 +111,7 @@ and double-click to run it to install Larch.
 For Linux, download the shell installer file, then open a Terminal, use
 `cd` to move to the download folder (typically `Downloads`) and run::
 
-    bash xraylarch-0.9.45-Linux-x86_64.sh
+    bash xraylarch-0.9.46-Linux-x86_64.sh
 
 
 Once installed, you will be able to upgrade to future versions of Larch using::
@@ -123,10 +123,9 @@ path, and so you would need to open a Command or Powershell window and type::
 
    C:\Users\YourName\AppData\Local\Continuum\xraylarch\Scripts\conda.exe -yc GSECARS xraylarch
 
-
 .. note::
-   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.45,
-   but it *will* work to upgrade from 0.9.43 or 0.9.44 to 0.9.45.
+   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.46,
+   but it *will* work to upgrade from 0.9.43 or higher to 0.9.46.
 
 Install with Python
 ======================================
@@ -207,7 +206,7 @@ This will install Larch and all of the required packages. Some of the
 "recommended" packages listed below may not be installed and you may have
 to forgo thes capabilities or install those packages by hand.
 
-Source Installation
+Source Inxstallation
 ------------------------
 
 For developers, Larch is an open-source project, with active development
