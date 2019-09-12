@@ -26,7 +26,6 @@ psutil
 nose
 pytest
 termcolor
-sphinx
 silx>=0.11
 fabio
 pyfai
