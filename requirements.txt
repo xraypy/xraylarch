@@ -21,7 +21,6 @@ wxpython>=4.0.3
 wxutils>=0.2.3
 wxmplot>=0.9.37
 pip
-dill
 pyyaml
 psutil
 nose
