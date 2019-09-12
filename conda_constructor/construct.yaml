@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.46rc1
+version: 0.9.46
 
 channels:
     - https://repo.continuum.io/pkgs/main
@@ -20,13 +20,25 @@ post_install: post_install_windows.bat [win]
 specs:
     - python>=3.7
     - conda
-    - pip
     - openssl
-    - numpy>=1.16
-    - scipy>=1.2
-    - matplotlib
+    - setuptools
+    - pip
+    - nose
+    - pytest
+    - sphinx
+    - requests
+    - psutil
+    - termcolor>=1.1.0
     - yaml
-    - termcolor
+    - pyyaml
+
+    - scipy>=1.2
+    - numpy>=1.12
+    - matplotlib>=3.0
+    - sqlalchemy>=0.9
+    - h5py
+    - pillow
+    - cython
     - pcre
     - patchelf         # [linux]
     - pango            # [linux]
@@ -36,13 +48,6 @@ specs:
     - pywin32          # [win64]
     - console_shortcut # [win64]
     - powershell_shortcut # [win64]
-    - pyyaml
-    - psutil
-    - requests
-    - cython
-    - h5py
-    - pillow
-    - sqlalchemy
     - psycopg2
     - scikit-image
     - scikit-learn
@@ -60,9 +65,9 @@ specs:
     - wxutils
     - wxmplot
     - tomopy
-    - dioptas
+    - silx>=0.11
     - pyFAI
     - fabio
-    - silx
+    - dioptas
     - tifffile
     - xraylarch
