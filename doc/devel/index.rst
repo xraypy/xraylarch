@@ -1,10 +1,12 @@
 .. _programming_chapter:
 
-============================
-Programming with Larch
-============================
+====================================
+Programming with Larch and Python
+====================================
 
-This chapter describes some of the key concepts for programming with Larch.
+This chapter describes some of the key concepts of programming with the
+`larch` module from Python.
+
 Larch is a fairly complete programming language for data analysis, but it
 is also easy to extend Larch with new functionality.  There are two
 distinct ways to do this.  First, ``modules`` are files of Larch or Python

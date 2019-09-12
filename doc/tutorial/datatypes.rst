@@ -1,7 +1,7 @@
 .. _tutor-datatypes_sec:
 
 ============================================
-Tutorial: Basic and Complex Data Types
+Basic and Complex Data Types
 ============================================
 
 This section of the Larch tutorial describes the types of data that Larch
@@ -68,7 +68,7 @@ syntax is supported, so that::
 
     larch> long_string = """Now is the time for all good men
     .....> to come to the aid of their party"""
-    larch> print long_string
+    larch> print(long_string)
     Now is the time for all good men
     to come to the aid of their party
 
@@ -119,9 +119,9 @@ imaginary part of the number::
    larch> 1j*1j
    (-1+0j)
    larch> x = sin(1+1j)
-   larch> print x
+   larch> print(x)
    (1.2984575814159773+0.63496391478473613j)
-   larch> print x.imag
+   larch> print(x.imag)
    0.63496391478473613
 
 To be clear, all these primitive data types in Larch are derived from the
@@ -164,9 +164,9 @@ have :attr:`real` and :attr:`imag` attributes for the real and imaginary
 parts, which can be accessed::
 
    larch> x = sin(1+1j)
-   larch> print x
+   larch> print(x)
    (1.2984575814159773+0.63496391478473613j)
-   larch> print x.imag
+   larch> print(x.imag)
    0.63496391478473613
 
 Methods are attributes of an object that happen to be callable as a
@@ -219,9 +219,9 @@ and can always be accessed by its full Group name.  The top-level Group is
 called '_main'.  You'll rarely need to use that fact, but it's there::
 
    larch> myvar = 22.13
-   larch> print _main.myvar
+   larch> print(_main.myvar)
    22.13
-   larch> print myvar
+   larch> print(myvar)
    22.13
 
 You can create your own groups and add data to it with the builtin
@@ -237,7 +237,7 @@ the parent group from the child object::
     larch> g.x = 1002.8
     larch> g.label = 'here is a string'
     larch> g.data = arange(100)
-    larch> print g.x/5
+    larch> print(g.x/5)
     200.56
 
 (:func:`arange` is a builtin function to create an array of numbers).  As
@@ -319,12 +319,12 @@ gives a good way of organizing data, but it also leads to a question of how
 variable names are found.  Of course, you can always access a function or
 data object by its full name::
 
-   larch> print _math.sin(_math.pi/2)
+   larch> print(_math.sin(_math.pi/2))
    1.0
 
 but that's too painful to use, and of course, one needs to be able to do::
 
-   larch> print sin(pi/2)
+   larch> print(sin(pi/2))
    1.0
 
 and have Larch know that when you say :func:`sin`, you mean
@@ -368,11 +368,11 @@ A list can contain a list as one of its elements::
 You can access the elements of a list using brackets and the integer index
 (starting from 0)::
 
-    larch> print my_list2[1]
+    larch> print(my_list2[1])
     'string'
-    larch> print nested_list[2]
+    larch> print(nested_list[2])
     ['c', 'd', ['e', 'f', 'g']]
-    larch> print nested_list[2][0]
+    larch> print(nested_list[2][0])
     'c'
 
 Lists are **mutable** -- they can be changed, in place.   To do this, you
@@ -418,7 +418,7 @@ You can get the length of a list with the built-in :func:`len` function,
 and test whether a particular element is in a list with the `in` operator::
 
     larch> my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-    larch> print len(my_list)
+    larch> print(len(my_list))
     10
     larch> 'e' in my_list
     True
@@ -462,14 +462,14 @@ That is, it does not make a copy of the list. Since the list is mutable,
 changing 'your_list' will also change 'my_list'::
 
     larch> your_list[0] = 500
-    larch> print my_list[:3]
+    larch> print(my_list[:3])
     [500, 'b', 'c']                # changed!!
 
 You can make a copy of a list, by selecting a full slice::
 
     larch> your_list = my_list[:]
     larch> your_list[0] = 3.2444
-    larch> print my_list[:3]
+    larch> print(my_list[:3])
     [500, 'b', 'c']                 # now unchanged
 
     larch> your_list[0] == my_list[0]
@@ -515,14 +515,14 @@ procedure (which we'll see more of below) returns two values as a tuple::
     .....>     return x+y, x-y
     .....> enddef
     larch> x = sumdiff(3, 2)
-    larch> print x[0], x[1]
+    larch> print( x[0], x[1])
     5 1
 
 Because the returned tuple has a fixed structure, you can also assign
 the it directly to a set of (the correct number of) variables::
 
     larch> plus, minus = sumdiff(10, 3)
-    larch> print plus, minus
+    larch> print(plus, minus)
     13 7
 
 
@@ -601,7 +601,7 @@ curly braces, with colons (':') separating key and value, and commas
 separating different elements::
 
     larch> atomic_weight = {'H': 1.008, 'He': 4.0026, 'Li': 6.9, 'Be': 9.012}
-    larch> print atomic_weight['He']
+    larch> print(atomic_weight['He'])
     4.0026
 
 You can also add more elements to a dictionary by assigning to a new key::
@@ -733,7 +733,7 @@ the value of one changes the value of the other::
     larch> id(y)
     108444568      ### The same as id(x) !!
     larch> y[1] = 'hello'
-    larch> print x
+    larch> print(x)
     [1, 'hello', 3, 4, 5]
 
 Here, ``x`` changed because it is identical to ``y`` and is mutable.
@@ -803,14 +803,9 @@ we see the hexidecimal representation of its  memory address::
     (113186800, '0x6bf17f0')
 
 
-
 In practice, this issue is not as confusing as it sounds, and the model for
 data, variables, and values is generally very easy to deal with.  The most
 important thing to be aware of -- the thing most likely to cause trouble --
 is that assigning a variable to be a mutable object like a list,
 dictionary, or array does not make a copy of the object, but simply creates
 another variable that points to the same value.
-
-
-
-

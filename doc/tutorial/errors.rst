@@ -1,5 +1,5 @@
 =======================================================
-Tutorial: Dealing With Errors
+Dealing With Errors
 =======================================================
 
 When an error exists in the syntax of your script, or an error happens when
@@ -37,10 +37,10 @@ even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time::
 
    larch> n = 1
-   larch> print 4.0 / ( n - 1)
+   larch> print(4.0 / ( n - 1))
    ZeroDivisionError('float division')
    <StdInput>
-       print 4.0/(n-1)
+       print(4.0/(n-1))
              ^^^
 
 which is saying that you can't divide by 0.  This is known as a **Runtime
@@ -83,9 +83,9 @@ As a simple example::
     try:
         x = a/b
     except ZeroDivisionError:
-        print 'saw a divide by zero!
+        print('saw a divide by zero!)
         x = 0
-    endtry
+    #endtry
 
 If b is not 0, x is set to the value of a/b.  If b is 0, executing *x =
 a/b* will cause a ZeroDivisionError (as we saw above), so the block with
@@ -101,11 +101,11 @@ to check for multiple types of problems.  These will be checked in order.  For e
     try:
         x = a/b
     except ZeroDivisionError:
-        print 'saw a divide by zero!
+        print('saw a divide by zero!)
         x = 0
     except TypeError:
-        print "a and b are of different types -- can't divide"
-    endtry
+        print("a and b are of different types -- can't divide")
+    #endtry
     <more statements>
 
 It is sometimes useful to run certain code only when a looked-for error has
@@ -117,12 +117,12 @@ read in a file into a list of lines, the recommended practice is to do::
     try:
         fh = open(filename, 'r')
     except IOError:
-        print 'cannot open file %s!' % filename
+        print('cannot open file %s!' % filename)
         datalines = []
     else:
         datalines = fh.readlines()
         fh.close()
-    endtry
+    #endtry
     <operate on datalines>
 
 There is a very large number of exception types built into Larch, all
@@ -140,5 +140,3 @@ To cause an exception, you use the **raise** statement, and you are said to
 be "raising an exception"::
 
     larch> raise TypeError("wrong data type")
-
-
