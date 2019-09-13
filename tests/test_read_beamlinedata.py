@@ -10,7 +10,7 @@ def _tester(fname):
     print(fname, cls.__name__, len(labels), group.data.shape, labels)
     return bldat, labels
 
-def test_apsxsd_new(fname):
+def test_apsxsd_new(fname='APS9BM_2019.dat'):
     bldat, labels = _tester(fname)
     assert('aps xsd' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -20,7 +20,7 @@ def test_apsxsd_new(fname):
     assert(labels[4].startswith('i0'))
 
 
-def test_apsxsd_old(fname):
+def test_apsxsd_old(fname='APS20BM_2001.dat'):
     bldat, labels = _tester(fname)
     assert('aps xsd' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -30,7 +30,7 @@ def test_apsxsd_old(fname):
     assert(labels[2] == 'i0')
 
 
-def test_apsmrcat(fname):
+def test_apsmrcat(fname='APS10BM_2019.dat'):
     bldat, labels = _tester(fname)
     assert('aps mrcat' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -42,7 +42,7 @@ def test_apsmrcat(fname):
     assert(labels[3]  == 'iref')
 
 
-def test_apsgse(fname):
+def test_apsgse(fname='APS13ID_2019.dat'):
     bldat, labels = _tester(fname)
     assert('gse epicsscan' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -55,7 +55,7 @@ def test_apsgse(fname):
     assert(labels[4]  == 'i2')
     assert(labels[5]  == 'mn_ka_mca1')
 
-def test_apsgse_old(fname):
+def test_apsgse_old(fname='APS13ID_2008.dat'):
     bldat, labels = _tester(fname)
     assert('gse epicsscan' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -66,8 +66,7 @@ def test_apsgse_old(fname):
     assert(labels[2]  == 'i0')
     assert(labels[3]  == 'i1')
 
-
-def test_aps12bm(fname):
+def test_aps12bm(fname='APS12BM_2019.dat'):
     bldat, labels = _tester(fname)
     assert('12bm' in bldat.name.lower())
     assert(1 == bldat.energy_column)
@@ -80,7 +79,7 @@ def test_aps12bm(fname):
     assert(labels[4]  == 'i1')
     assert(labels[5]  == 'i2')
 
-def test_aps9bm2006(fname):
+def test_aps9bm2006(fname='APS9BM_2006.dat'):
     bldat, labels = _tester(fname)
     assert(1 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -88,7 +87,7 @@ def test_aps9bm2006(fname):
     assert(labels[0]  == 'energy')
     assert('i0' in labels)
 
-def test_esrfsnbl(fname):
+def test_esrfsnbl(fname='ESRF_SNBL_2013.dat'):
     bldat, labels = _tester(fname)
     assert(1 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -97,7 +96,7 @@ def test_esrfsnbl(fname):
     assert(labels[1]  == 'det1')
     assert(labels[2]  == 'det2')
 
-def test_nsls2_6bm(fname):
+def test_nsls2_6bm(fname='NSLS6BM_2019.dat'):
     bldat, labels = _tester(fname)
     assert(1 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -108,7 +107,7 @@ def test_nsls2_6bm(fname):
     assert(labels[3]  == 'xmu')
     assert(labels[4]  == 'i0')
 
-def test_nsls2_8id(fname):
+def test_nsls2_8id(fname='NSLS8ID_2019.dat'):
     bldat, labels = _tester(fname)
     assert(1 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -119,7 +118,7 @@ def test_nsls2_8id(fname):
     assert(labels[3]  == 'it')
     assert(labels[4]  == 'iff')
 
-def test_ssrl1(fname):
+def test_ssrl1(fname='SSRL1_2006.dat'):
     bldat, labels = _tester(fname)
     assert(3 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -131,7 +130,7 @@ def test_ssrl1(fname):
     assert(labels[4]  == 'i1')
     assert(labels[5]  == 'i2')
 
-def test_ssrl2(fname):
+def test_ssrl2(fname='SSRLmicro_2008.dat'):
     bldat, labels = _tester(fname)
     assert(2 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -143,7 +142,7 @@ def test_ssrl2(fname):
     assert(labels[4]  == 'i2')
     assert(labels[5]  == 'sca1_1')
 
-def test_nslsxdac(fname):
+def test_nslsxdac(fname='NSLS_XDAC_2011.dat'):
     bldat, labels = _tester(fname)
     assert(1 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -154,7 +153,7 @@ def test_nslsxdac(fname):
     assert(labels[3]  == 'ifch1')
     assert(labels[4]  == 'ifch2')
 
-def test_clshxma(fname):
+def test_clshxma(fname='CLSHXMA.dat'):
     bldat, labels = _tester(fname)
     assert(4 == bldat.energy_column)
     assert('eV' == bldat.energy_units)
@@ -165,7 +164,7 @@ def test_clshxma(fname):
     assert(labels[3]  == 'energyachieved')
     assert(labels[4]  == 'detector1')
 
-def test_kekpf12c(fname):
+def test_kekpf12c(fname='PFBL12C_2005.dat'):
     bldat, labels = _tester(fname)
     assert(2 == bldat.energy_column)
     assert('deg' == bldat.energy_units)
@@ -173,18 +172,18 @@ def test_kekpf12c(fname):
     assert(len(labels) == 5)
 
 if __name__ == '__main__':
-    test_apsxsd_new('APS9BM_2019.dat')
-    test_apsxsd_old('APS20BM_2001.dat')
-    test_apsgse('APS13ID_2019.dat')
-    test_apsgse_old('APS13ID_2008.dat')
-    test_apsmrcat('APS10BM_2019.dat')
-    test_aps12bm('APS12BM_2019.dat')
-    test_aps9bm2006('APS9BM_2006.dat')
-    test_esrfsnbl('ESRF_SNBL_2013.dat')
-    test_nsls2_8id('NSLS8ID_2019.dat')
-    test_nsls2_6bm('NSLS6BM_2019.dat')
-    test_ssrl1('SSRL1_2006.dat')
-    test_ssrl2('SSRLmicro_2008.dat')
-    test_nslsxdac('NSLS_XDAC_2011.dat')
-    test_clshxma('CLSHXMA.dat')
-    test_kekpf12c('PFBL12C_2005.dat')
+    test_apsxsd_new()
+    test_apsxsd_old()
+    test_apsgse()
+    test_apsgse_old()
+    test_apsmrcat()
+    test_aps12bm()
+    test_aps9bm2006()
+    test_esrfsnbl()
+    test_nsls2_8id()
+    test_nsls2_6bm()
+    test_ssrl1()
+    test_ssrl2()
+    test_nslsxdac()
+    test_clshxma()
+    test_kekpf12c()
