@@ -9,6 +9,8 @@ from .site_config import icondir, home_dir, uname
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 
+HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
+
 HAS_WXPYTHON = False
 try:
     import wx
@@ -81,7 +83,7 @@ class LarchApp:
                 os.chmod(scut.target, 493)
         except:
             print("Warning: could not create shortcut to ", script)
-        if uname == 'darwin':
+        if uname == 'darwin' and HAS_CONDA:
             try:
                 fix_darwin_shebang(script)
             except:
