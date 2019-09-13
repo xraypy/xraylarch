@@ -5,34 +5,32 @@ Programming with Larch from Python
 ====================================
 
 This chapter describes some of the key concepts of programming with the
-`larch` module from Python.
+`larch` module from Python.  All the functionality described elsewhere in
+this documentation is available from the `larch` Python module::
 
-Larch is a fairly complete programming language for data analysis, but it
-is also easy to extend Larch with new functionality.  There are two
-distinct ways to do this.  First, ``modules`` are files of Larch or Python
-code that can be imported and used from Larch.  These are primarily
-intended to organize programming text, and to allow re-usable code.
-Second, ``plugins`` are Python modules that have special methods to export
-the functionality to Larch.  Whereas modules run from within the Larch
-interpreter, plugins are run in Python, and can closely interact with a
-running Larch interpreter to add or manipulate the existing session.
-Plugins should be the main approach for extending the capabilities of
-Larch, and indeed essentially all the real scientific code in Larch is
-implemented as plugins.  As an important note, the functions defined in the
-Larch can be accessed from Python, without relying on the syntax of the
-Larch language at all.
-The reader here is assumed to be familiar with computer programming, and to
-have some exposure to working with Larch and/or Python, at least from the
-:ref:`Tutorial <tutorial_chapter>` (Chapter :ref:`tutorial_chapter`).
-While the present chapter is aimed primarily at developers and advanced
-users, Larch (and Python) makes such developments easy enough that neither
-extensive effort nor training are required to begin writing programs with
-Larch.
+    import larch
 
-.. toctree::
-   :maxdepth: 2
 
-   notpython
-   modules
-   plugins
-   frompython
+A simple session might look like this::
+
+    from larch.xafs import autobk
+    from larch.io import read_xdi
+    from wxmplot.interactive import plot
+
+    dat = read_xdi('examples/xafsdata/fe3c_rt.xdi')
+    dat.mu = dat.mutrans
+    autobk(dat, rbkg=1.0, kweight=2)
+    plot(dat.k, dat.k*dat.chi, xlabel='k 1/A', ylabel='chi*k')
+
+    from larch.xray import xray_line
+    print(xray_line('Cu', 'Ka1'))
+    (8046.3, 0.577108, u'K', u'L3')
+
+
+Larch submodules
+============================
+
+.. module:: larch
+
+The `larch` module is broken up into a number of submodules, based mostly
+on type of data being processed.
