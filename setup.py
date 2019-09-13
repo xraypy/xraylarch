@@ -15,10 +15,12 @@ try:
 except ImportError:
     HAS_PIPMAIN = False
 
+HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
 cmdline_args = sys.argv[1:]
-INSTALL =  len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
-DEVELOP =  len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
+INSTALL = len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
+DEVELOP = len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
+
 
 uname = sys.platform.lower()
 if os.name == 'nt':
@@ -85,6 +87,10 @@ for modname, impname, desc in recommended:
             import_ok = False
     if not import_ok:
         missing.append('     {:25.25s} {:s}'.format(modname, desc))
+
+# do not add install requirements to setup() if on an anaconda system
+if HAS_CONDA:
+    install_reqs = []
 
 ## For Travis-CI, need to write a local site config file
 ##
