@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import importlib
 from setuptools import setup, find_packages
+
 try:
     from pip._internal import main as pipmain
     HAS_PIPMAIN = True
@@ -37,13 +38,14 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
             key, vers = [w.strip() for w in line.split('=')]
             __version__ = vers.replace("'",  "").replace('"',  "").strip()
 
-
-##
 ## Dependencies: required and recommended modules
-with open('requirements.txt', 'r') as f:
-    install_reqs = f.read().splitlines()
+## do not use `install_requires` for conda environments
+install_reqs = []
+if not HAS_CONDA:
+    with open('requirements.txt', 'r') as f:
+        install_reqs = f.read().splitlines()
 
-if HAS_PIPMAIN:
+if HAS_PIPMAIN and not HAS_CONDA:
     mods = ['install']
     for req in install_reqs:
         req = req.strip()
@@ -87,10 +89,6 @@ for modname, impname, desc in recommended:
             import_ok = False
     if not import_ok:
         missing.append('     {:25.25s} {:s}'.format(modname, desc))
-
-# do not add install requirements to setup() if on an anaconda system
-if HAS_CONDA:
-    install_reqs = []
 
 ## For Travis-CI, need to write a local site config file
 ##
