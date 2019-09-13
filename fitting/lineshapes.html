@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>10.5. Some Builtin Line-shape Functions &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>10.5. Some Builtin Line-shape Functions &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -29,11 +27,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -84,13 +82,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -106,7 +102,7 @@
   <div class="section" id="some-builtin-line-shape-functions">
 <span id="lineshape-functions-label"></span><h1>10.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
 <div class="versionchanged">
-<p><span class="versionmodified">Changed in version 0.9.34: </span>The definitions of these line shapes are now taken from the
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span>The definitions of these line shapes are now taken from the
 <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> package, and have a more uniform interface.</p>
 </div>
 <p>Larch provides a number of convenience functions for common line-shapes
@@ -115,7 +111,7 @@ be amended easily.  All these functions return either a floating point
 scalar or array, depending on the input <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 <dl class="function">
 <dt id="gaussian">
-<code class="descname">gaussian</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">gaussian</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Gaussian or normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Normal_distribution">http://en.wikipedia.org/wiki/Normal_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
@@ -130,7 +126,7 @@ approximately <span class="math notranslate nohighlight">\(2.3548\sigma\)</span>
 
 <dl class="function">
 <dt id="lorentzian">
-<code class="descname">lorentzian</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lorentzian</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Lorentzian or Cauchy-Lorentz distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Cauchy_distribution">http://en.wikipedia.org/wiki/Cauchy_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
@@ -144,7 +140,7 @@ half maximum is <span class="math notranslate nohighlight">\(2\sigma\)</span>.  
 
 <dl class="function">
 <dt id="voigt">
-<code class="descname">voigt</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>gamma=None</em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">voigt</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">gamma=None</em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Voigt distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Voigt_profile">http://en.wikipedia.org/wiki/Voigt_profile</a>), with four Parameters:
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, and <code class="docutils literal notranslate"><span class="pre">gamma</span></code> defined as:</p>
@@ -166,7 +162,7 @@ to <code class="docutils literal notranslate"><span class="pre">sigma</span></co
 
 <dl class="function">
 <dt id="pvoigt">
-<code class="descname">pvoigt</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>fraction=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pvoigt</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">fraction=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>) , <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and the same full
@@ -182,7 +178,7 @@ giving the full definition of</p>
 
 <dl class="function">
 <dt id="pearson7">
-<code class="descname">pearson7</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>exponent=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pearson7</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">exponent=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>A Pearson VII distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution">http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution</a>),
@@ -198,7 +194,7 @@ in <a class="reference external" href="https://docs.scipy.org/doc/scipy/referenc
 
 <dl class="function">
 <dt id="students_t">
-<code class="descname">students_t</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">students_t</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Student’s t distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Student%27s_t-distribution">http://en.wikipedia.org/wiki/Student%27s_t-distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and
@@ -212,7 +208,7 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 
 <dl class="function">
 <dt id="breit_wigner">
-<code class="descname">breit_wigner</code><span class="sig-paren">(</span><em>x</em>, <em>amplitude=1</em>, <em>center=0</em>, <em>sigma=1</em>, <em>q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">breit_wigner</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">amplitude=1</em>, <em class="sig-param">center=0</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">q=1</em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Breit-Wigner-Fano distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Fano_resonance">http://en.wikipedia.org/wiki/Fano_resonance</a>&gt;), with four Parameters:
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
@@ -223,7 +219,7 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 
 <dl class="function">
 <dt id="lognormal">
-<code class="descname">lognormal</code><span class="sig-paren">(</span><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lognormal</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">cen=0</em>, <em class="sig-param">sigma=1</em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Log-normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Lognormal">http://en.wikipedia.org/wiki/Lognormal</a>), with three Parameters
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
@@ -237,52 +233,52 @@ useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the <a class="reference internal" href="#fit-funcs-table"><span class="std std-ref">Table of Useful Line shapes</span></a>.</p>
 <blockquote id="fit-funcs-table">
 <span id="index-0"></span><div><p>Table of Useful Line shapes.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="55%" />
-<col width="45%" />
+<col style="width: 55%" />
+<col style="width: 45%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><em>function</em></th>
-<th class="head"><em>description</em></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><em>function</em></p></th>
+<th class="head"><p><em>description</em></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>gaussian(x, amplitude, center, sigma)</td>
-<td>Gaussian, normal distribution</td>
+<tbody>
+<tr class="row-even"><td><p>gaussian(x, amplitude, center, sigma)</p></td>
+<td><p>Gaussian, normal distribution</p></td>
 </tr>
-<tr class="row-odd"><td>lorentzian(x, amplitude, center, sigma)</td>
-<td>Lorentzian distribution</td>
+<tr class="row-odd"><td><p>lorentzian(x, amplitude, center, sigma)</p></td>
+<td><p>Lorentzian distribution</p></td>
 </tr>
-<tr class="row-even"><td>voigt(x, amplitude, center, sigma, gamma)</td>
-<td>Voigt distribution</td>
+<tr class="row-even"><td><p>voigt(x, amplitude, center, sigma, gamma)</p></td>
+<td><p>Voigt distribution</p></td>
 </tr>
-<tr class="row-odd"><td>pvoigt(x, amplitude, center, sigma, fraction)</td>
-<td>pseudo-Voigt distribution</td>
+<tr class="row-odd"><td><p>pvoigt(x, amplitude, center, sigma, fraction)</p></td>
+<td><p>pseudo-Voigt distribution</p></td>
 </tr>
-<tr class="row-even"><td>pearson7(x, amplitude, center, sigma, exponent)</td>
-<td>Pearson-7 distribution</td>
+<tr class="row-even"><td><p>pearson7(x, amplitude, center, sigma, exponent)</p></td>
+<td><p>Pearson-7 distribution</p></td>
 </tr>
-<tr class="row-odd"><td>students_t(x, amplitude, center, sigma)</td>
-<td>Student’s t distribution</td>
+<tr class="row-odd"><td><p>students_t(x, amplitude, center, sigma)</p></td>
+<td><p>Student’s t distribution</p></td>
 </tr>
-<tr class="row-even"><td>breit_wigner(x, amplitude, center, sigma, q)</td>
-<td>Breit-Wigner-Fano distribution</td>
+<tr class="row-even"><td><p>breit_wigner(x, amplitude, center, sigma, q)</p></td>
+<td><p>Breit-Wigner-Fano distribution</p></td>
 </tr>
-<tr class="row-odd"><td>lognormal(x, amplitude, center, sigma)</td>
-<td>Log-normal distribution</td>
+<tr class="row-odd"><td><p>lognormal(x, amplitude, center, sigma)</p></td>
+<td><p>Log-normal distribution</p></td>
 </tr>
-<tr class="row-even"><td>arctan(x)</td>
-<td>Arc-tangent function</td>
+<tr class="row-even"><td><p>arctan(x)</p></td>
+<td><p>Arc-tangent function</p></td>
 </tr>
-<tr class="row-odd"><td>erf(x)</td>
-<td>Error function</td>
+<tr class="row-odd"><td><p>erf(x)</p></td>
+<td><p>Error function</p></td>
 </tr>
-<tr class="row-even"><td>erfc(x)</td>
-<td>Complemented Error function (1-erf(x))</td>
+<tr class="row-even"><td><p>erfc(x)</p></td>
+<td><p>Complemented Error function (1-erf(x))</p></td>
 </tr>
-<tr class="row-odd"><td>gammaln(x)</td>
-<td>log of absolute value of gamma(x)</td>
+<tr class="row-odd"><td><p>gammaln(x)</p></td>
+<td><p>log of absolute value of gamma(x)</p></td>
 </tr>
 </tbody>
 </table>
@@ -326,7 +322,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

@@ -1,5 +1,5 @@
 =======================================================
-Tutorial: Writing Functions or Procedures
+Writing Functions or Procedures
 =======================================================
 
 Any moderately complex script will eventually include calcluations that
@@ -23,8 +23,8 @@ code.  This looks much like the **if**, **for**, and **while** blocks
 discussed earlier. A simple example would be::
 
     def sayhello():
-        print 'hello!'
-    enddef
+        print('hello!')
+    #enddef
 
 With this definition, one can then run this procedure as you would run any
 other built-in function, by writing::
@@ -38,9 +38,9 @@ Of course, you can write procedures that take input arguments, such as::
       if x > 0:
          print sqrt(x)
       else:
-         print 'Did you want sqrt(%f) = %f?' % (-x,  sqrt(-x))
-      endif
-    enddef
+         print('Did you want sqrt(%f) = %f?' % (-x,  sqrt(-x)))
+      #endif
+    #enddef
 
 Here *x* will hold whatever value is passed to it, so that::
 
@@ -62,15 +62,15 @@ the procedure has fully executed.  An example::
          return sqrt(x)
       else:
          return sqrt(-x)
-      endif
-    enddef
+      #endif
+    #enddef
 
 which can now be used as::
 
-    larch> print safe_sqrt(4)
+    larch> print(safe_sqrt(4))
     2.0
     larch> x = safe_sqrt(-10)
-    larch> print x
+    larch> print(x)
     3.16227766017
 
 **return** can take multiple arguments, separated by a comma, which is to
@@ -78,8 +78,8 @@ say a **tuple**.  As an example::
 
     larch> def sum_diff(x, y):
     .....>    return x + y, x-y
-    .....> enddef
-    larch> print sum_diff(3., 4.)
+    .....> #enddef
+    larch> print(sum_diff(3., 4.))
     (7.0, -1.0)
 
 This is discussed in more detail below.
@@ -88,7 +88,7 @@ The formal definition of a procedure looks like::
 
    def <procedure_name>(<arguments>):
        <block of statements>
-   enddef
+   #enddef
 
 ..  _tut-namespaces-label:
 
@@ -109,8 +109,6 @@ special list ``_sys.searchGroupObjects`` holding the list of Groups to be
 searched for names.  There are several related variables listed in
 :ref:`Table of Namespace-related Variables <namespace_table>`.
 
-.. versionchanged:: 0.9.34
-   `_sys.paramGroup` is no longer used.  For fitting, use `_sys.fiteval` instead.
 
 .. index:: _sys variables,  namespace-related variables
 .. _namespace_table:
@@ -169,21 +167,21 @@ multiple values from a single procedure.  Thus::
 
     larch> def my_divmod(x, y):
     .....>    return (x // y, x % y)  # note use of // for integer division!
-    .....> enddef
-    larch> print my_divmod(100, 7)
+    .....> #enddef
+    larch> print(my_divmod(100, 7))
     14, 2
 
 But be careful when assigning the return value to variable(s).  You can
 do::
 
     larch> xdiv, xmod = my_divmod(100, 7)
-    larch> print xdiv
+    larch> print(xdiv)
     14
 
 or::
 
     larch> result = my_divmod(100, 7)
-    larch> print result[0], result[1]
+    larch> print(result[0], result[1])
     14, 2
 
 Because a return value from a procedure can hold many values, it is best to
@@ -208,9 +206,9 @@ In a procedure definition, you add an argument name with a default value,  like 
          if base > 1:
             return log(a) /log(base)
         else:
-            print 'cannot calculate log base %f' % base
-        endif
-    enddef
+            print('cannot calculate log base %f' % base)
+        #endif
+    #enddef
 
 Unless passed in, the value of *base* will take the default value of *e*.
 This can then be used as::
@@ -261,20 +259,20 @@ argument to the procedure definition preceded by two asterisks:
         verbose = options.get('verbose', False)
 	op  = options.get('op', 'add')
         if verbose:
-           print 'op == %s ' % op
-        endif
+           print('op == %s ' % op)
+        #endif
         if op == 'add':
             return a + b
-       elif op == 'sub':
+        elif op == 'sub':
             return a - b
-       elif op == 'mul':
+        elif op == 'mul':
             return a * b
-       elif op == 'div':
+        elif op == 'div':
             return a / b
-       else:
-            if debug:  print 'unsupported operation!'
-       endif
-    enddef
+        else:
+            if debug:  print('unsupported operation!')
+        #endif
+    #enddef
 
 As you may have figured out, inside the procedure, 'options' will hold a
 dictionary of keyword names/values passed into it.  With this (perhaps
@@ -316,7 +314,7 @@ mechanism, or when viewing details of the procedure.  For example::
      returns sqrt(abs(x))
      """
      return sqrt(abs(x))
-    enddef
+    #enddef
 
 
 With this definition::

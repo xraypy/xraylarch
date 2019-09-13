@@ -4,6 +4,12 @@
 Plugins
 ================
 
+.. note:
+
+   outdated -- ignore this section
+
+
+
 A Larch plugin is a Python module that adds functionality to Larch at
 run-time.  Plugins are a powerful part of Larch that allow it to be
 extended without the requiring detailed knowledge of all of Larch's
@@ -12,8 +18,6 @@ to become part of the Larch framework.  Functions defined in plugins can
 access the Larch interpreter session, including creating or manipulating
 Groups in Larch's symbol table.  Essentially all the scientific
 functionality of Larch is implemented as plugins.
-
-.. module:: larch
 
 There are a few points to consider for writing plugins.  First, in order
 for a plugin function to interact with the running Larch interpreter, it

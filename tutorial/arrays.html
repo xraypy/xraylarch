@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>7.3. Tutorial: Basic Array Manipulation &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>7.3. Basic Array Manipulation &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -20,8 +18,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
-    <link rel="prev" title="7.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
+    <link rel="next" title="7.4. Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="7.2. Basic and Complex Data Types" href="datatypes.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -29,11 +27,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -52,10 +50,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="flow.html" title="7.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="7.4. Conditional Execution and Flow Control"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="7.2. Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="7.2. Basic and Complex Data Types"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -64,7 +62,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -72,10 +70,10 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.3. Tutorial: Basic Array Manipulation</a><ul>
+<li><a class="reference internal" href="#">7.3. Basic Array Manipulation</a><ul>
 <li><a class="reference internal" href="#functions-for-creating-arrays">7.3.1. Functions for creating arrays</a></li>
 <li><a class="reference internal" href="#the-array-dtype-datatype">7.3.2. The array <em>dtype</em> – datatype</a></li>
-<li><a class="reference internal" href="#basic-array-manipulation">7.3.3. Basic array manipulation</a></li>
+<li><a class="reference internal" href="#id1">7.3.3. Basic array manipulation</a></li>
 <li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">7.3.4. Slicing and extracting sub-arrays</a></li>
 <li><a class="reference internal" href="#array-attributes-and-methods">7.3.5. Array attributes and methods</a></li>
 <li><a class="reference internal" href="#mathematical-functions-for-arrays">7.3.6. Mathematical functions for arrays</a></li>
@@ -85,10 +83,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="datatypes.html"
-                        title="previous chapter">7.2. Tutorial: Basic and Complex Data Types</a></p>
+                        title="previous chapter">7.2. Basic and Complex Data Types</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="next chapter">7.4. Tutorial: Conditional Execution and Flow Control</a></p>
+                        title="next chapter">7.4. Conditional Execution and Flow Control</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -97,13 +95,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -116,8 +112,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tutorial-basic-array-manipulation">
-<span id="tutor-array-sec"></span><h1>7.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="basic-array-manipulation">
+<span id="tutor-array-sec"></span><h1>7.3. Basic Array Manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Arrays are sequences of numerical data, with each element having the same
 underlying data type – integers, real (floating point) numbers, or complex
 numbers.  Of course, arrays are very important for scientific data, and the
@@ -142,48 +138,49 @@ arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
 arrays can be changed without changing the rest of the array.</p>
 <blockquote id="tutor-arraycreate-table">
 <span id="index-0"></span><div><blockquote>
-<div>Table of Array Creation Functions.  These functions can all be used to
-create arrays in Larch.</div></blockquote>
-<table border="1" class="docutils">
+<div><p>Table of Array Creation Functions.  These functions can all be used to
+create arrays in Larch.</p>
+</div></blockquote>
+<table class="docutils align-default">
 <colgroup>
-<col width="28%" />
-<col width="35%" />
-<col width="38%" />
+<col style="width: 28%" />
+<col style="width: 35%" />
+<col style="width: 38%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>Function Name</strong></th>
-<th class="head"><strong>description</strong></th>
-<th class="head"><strong>example</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Function Name</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
+<th class="head"><p><strong>example</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>array</td>
-<td>array from list</td>
-<td>arr = array([1,2,3])</td>
+<tbody>
+<tr class="row-even"><td><p>array</p></td>
+<td><p>array from list</p></td>
+<td><p>arr = array([1,2,3])</p></td>
 </tr>
-<tr class="row-odd"><td>arange</td>
-<td>indices 0, N-1</td>
-<td>arr = arange(10)</td>
+<tr class="row-odd"><td><p>arange</p></td>
+<td><p>indices 0, N-1</p></td>
+<td><p>arr = arange(10)</p></td>
 </tr>
-<tr class="row-even"><td>zeros</td>
-<td>fill with N zeros</td>
-<td>arr = zeros(10)</td>
+<tr class="row-even"><td><p>zeros</p></td>
+<td><p>fill with N zeros</p></td>
+<td><p>arr = zeros(10)</p></td>
 </tr>
-<tr class="row-odd"><td>ones</td>
-<td>fill with N ones</td>
-<td>arr = ones(10)</td>
+<tr class="row-odd"><td><p>ones</p></td>
+<td><p>fill with N ones</p></td>
+<td><p>arr = ones(10)</p></td>
 </tr>
-<tr class="row-even"><td>linspace</td>
-<td>fill with bounds and N</td>
-<td>arr = linspace(0, 1, 11)</td>
+<tr class="row-even"><td><p>linspace</p></td>
+<td><p>fill with bounds and N</p></td>
+<td><p>arr = linspace(0, 1, 11)</p></td>
 </tr>
-<tr class="row-odd"><td>eye</td>
-<td>2-d identity matrix</td>
-<td>arr = eye(3)</td>
+<tr class="row-odd"><td><p>eye</p></td>
+<td><p>2-d identity matrix</p></td>
+<td><p>arr = eye(3)</p></td>
 </tr>
-<tr class="row-even"><td>meshgrid</td>
-<td>2-d mesh arrays</td>
-<td>mx, my = meshgrid(x, y)</td>
+<tr class="row-even"><td><p>meshgrid</p></td>
+<td><p>2-d mesh arrays</p></td>
+<td><p>mx, my = meshgrid(x, y)</p></td>
 </tr>
 </tbody>
 </table>
@@ -293,66 +290,67 @@ encapsulated in the arrays <em>dtype</em>.  It can be one of several values,
 listed in the</p>
 <blockquote id="tutor-arraydtype-table">
 <span id="index-1"></span><div><blockquote>
-<div>Table of Array Data types.  Each array has exactly one of these create
+<div><p>Table of Array Data types.  Each array has exactly one of these create
 arrays in Larch.  The <strong>dtype</strong> can be used in any of the array creation
 functions using the <code class="docutils literal notranslate"><span class="pre">dtype</span></code> keyword argument (e.g,
-<code class="docutils literal notranslate"><span class="pre">dtype=float32</span></code>).</div></blockquote>
-<table border="1" class="docutils">
+<code class="docutils literal notranslate"><span class="pre">dtype=float32</span></code>).</p>
+</div></blockquote>
+<table class="docutils align-default">
 <colgroup>
-<col width="33%" />
-<col width="67%" />
+<col style="width: 33%" />
+<col style="width: 67%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>dtype</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>dtype</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>bool</td>
-<td>boolean (<code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>)</td>
+<tbody>
+<tr class="row-even"><td><p>bool</p></td>
+<td><p>boolean (<code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td>int8</td>
-<td>signed 8-bit integer (-128 to 127)</td>
+<tr class="row-odd"><td><p>int8</p></td>
+<td><p>signed 8-bit integer (-128 to 127)</p></td>
 </tr>
-<tr class="row-even"><td>int16</td>
-<td>signed 16-bit integer (-32768 to 32767)</td>
+<tr class="row-even"><td><p>int16</p></td>
+<td><p>signed 16-bit integer (-32768 to 32767)</p></td>
 </tr>
-<tr class="row-odd"><td>int32</td>
-<td>signed 32-bit integer (-2**31 to 2**31-1)</td>
+<tr class="row-odd"><td><p>int32</p></td>
+<td><p>signed 32-bit integer (-2**31 to 2**31-1)</p></td>
 </tr>
-<tr class="row-even"><td>int64</td>
-<td>signed 64-bit integer  (-2**63 to 2**63-1)</td>
+<tr class="row-even"><td><p>int64</p></td>
+<td><p>signed 64-bit integer  (-2**63 to 2**63-1)</p></td>
 </tr>
-<tr class="row-odd"><td>uint8</td>
-<td>unsigned 8-bit integer (0 to 255)</td>
+<tr class="row-odd"><td><p>uint8</p></td>
+<td><p>unsigned 8-bit integer (0 to 255)</p></td>
 </tr>
-<tr class="row-even"><td>uint16</td>
-<td>unsigned 16-bit integer (0 to 65535)</td>
+<tr class="row-even"><td><p>uint16</p></td>
+<td><p>unsigned 16-bit integer (0 to 65535)</p></td>
 </tr>
-<tr class="row-odd"><td>uint32</td>
-<td>unsigned 32-bit integer (0 to 2**32)</td>
+<tr class="row-odd"><td><p>uint32</p></td>
+<td><p>unsigned 32-bit integer (0 to 2**32)</p></td>
 </tr>
-<tr class="row-even"><td>uint64</td>
-<td>unsigned 64-integer (0 to 2**64)</td>
+<tr class="row-even"><td><p>uint64</p></td>
+<td><p>unsigned 64-integer (0 to 2**64)</p></td>
 </tr>
-<tr class="row-odd"><td>float32</td>
-<td>single precision float</td>
+<tr class="row-odd"><td><p>float32</p></td>
+<td><p>single precision float</p></td>
 </tr>
-<tr class="row-even"><td>float64 or float</td>
-<td>double precision float</td>
+<tr class="row-even"><td><p>float64 or float</p></td>
+<td><p>double precision float</p></td>
 </tr>
-<tr class="row-odd"><td>complex64</td>
-<td>single precision complex two float32s</td>
+<tr class="row-odd"><td><p>complex64</p></td>
+<td><p>single precision complex two float32s</p></td>
 </tr>
-<tr class="row-even"><td>complex128 or complex</td>
-<td>double precision complex, two float64s.</td>
+<tr class="row-even"><td><p>complex128 or complex</p></td>
+<td><p>double precision complex, two float64s.</p></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </div>
-<div class="section" id="basic-array-manipulation">
-<h2>7.3.3. Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>7.3.3. Basic array manipulation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
@@ -484,138 +482,139 @@ by setting the value of <code class="xref py py-data docutils literal notranslat
 </div>
 <blockquote id="tutor-arraymethods-table">
 <span id="index-2"></span><div><blockquote>
-<div>Table of Array Attribute and Methods.  Those ending with parentheses (<code class="docutils literal notranslate"><span class="pre">()</span></code>) are
+<div><p>Table of Array Attribute and Methods.  Those ending with parentheses (<code class="docutils literal notranslate"><span class="pre">()</span></code>) are
 methods, that act on the array.  Most of the attributes and the vast majority of
 methods return a value based on the array contents, leaving the array unchanged.  The
-attributes and methods marked <code class="docutils literal notranslate"><span class="pre">read/write</span></code> operate in place, changing the array.</div></blockquote>
-<table border="1" class="docutils">
+attributes and methods marked <code class="docutils literal notranslate"><span class="pre">read/write</span></code> operate in place, changing the array.</p>
+</div></blockquote>
+<table class="docutils align-default">
 <colgroup>
-<col width="27%" />
-<col width="54%" />
-<col width="19%" />
+<col style="width: 27%" />
+<col style="width: 54%" />
+<col style="width: 19%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>attribute</strong></th>
-<th class="head"><strong>description</strong></th>
-<th class="head"><strong>notes</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>attribute</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
+<th class="head"><p><strong>notes</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>dtype</td>
-<td>data type</td>
-<td>read only</td>
+<tbody>
+<tr class="row-even"><td><p>dtype</p></td>
+<td><p>data type</p></td>
+<td><p>read only</p></td>
 </tr>
-<tr class="row-odd"><td>size</td>
-<td>number of elements  (int)</td>
-<td>read only</td>
+<tr class="row-odd"><td><p>size</p></td>
+<td><p>number of elements  (int)</p></td>
+<td><p>read only</p></td>
 </tr>
-<tr class="row-even"><td>ndim</td>
-<td>number of dimensions (int)</td>
-<td>read only</td>
+<tr class="row-even"><td><p>ndim</p></td>
+<td><p>number of dimensions (int)</p></td>
+<td><p>read only</p></td>
 </tr>
-<tr class="row-odd"><td>shape</td>
-<td>length along each dimension (tuple)</td>
-<td>read/write</td>
+<tr class="row-odd"><td><p>shape</p></td>
+<td><p>length along each dimension (tuple)</p></td>
+<td><p>read/write</p></td>
 </tr>
-<tr class="row-even"><td>real</td>
-<td>real part of array</td>
-<td>read/write</td>
+<tr class="row-even"><td><p>real</p></td>
+<td><p>real part of array</p></td>
+<td><p>read/write</p></td>
 </tr>
-<tr class="row-odd"><td>imag</td>
-<td>imaginary part of array</td>
-<td>read/write</td>
+<tr class="row-odd"><td><p>imag</p></td>
+<td><p>imaginary part of array</p></td>
+<td><p>read/write</p></td>
 </tr>
-<tr class="row-even"><td>resize()</td>
-<td>grow/shrink array to specified size</td>
-<td>read/write</td>
+<tr class="row-even"><td><p>resize()</p></td>
+<td><p>grow/shrink array to specified size</p></td>
+<td><p>read/write</p></td>
 </tr>
-<tr class="row-odd"><td>conjugate()</td>
-<td>conjugate of array</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>conjugate()</p></td>
+<td><p>conjugate of array</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>all()</td>
-<td>boolean: if all values are <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
-<td>(non-zero)</td>
+<tr class="row-even"><td><p>all()</p></td>
+<td><p>boolean: if all values are <code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
+<td><p>(non-zero)</p></td>
 </tr>
-<tr class="row-odd"><td>any()</td>
-<td>boolean: if any value is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
-<td>(non-zero)</td>
+<tr class="row-odd"><td><p>any()</p></td>
+<td><p>boolean: if any value is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
+<td><p>(non-zero)</p></td>
 </tr>
-<tr class="row-even"><td>min()</td>
-<td>minimum value of array elements</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>min()</p></td>
+<td><p>minimum value of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>max()</td>
-<td>maximum value of array elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>max()</p></td>
+<td><p>maximum value of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>mean()</td>
-<td>mean value of array elements</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>mean()</p></td>
+<td><p>mean value of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>std()</td>
-<td>standard deviation of array elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>std()</p></td>
+<td><p>standard deviation of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>prod()</td>
-<td>product of array elements</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>prod()</p></td>
+<td><p>product of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>sum()</td>
-<td>sum of array elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>sum()</p></td>
+<td><p>sum of array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>argmin()</td>
-<td>index of first minimum value</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>argmin()</p></td>
+<td><p>index of first minimum value</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>argmax()</td>
-<td>index of first maximum value</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>argmax()</p></td>
+<td><p>index of first maximum value</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>argsort()</td>
-<td>array of indices for sorted array</td>
-<td>(min to max)</td>
+<tr class="row-even"><td><p>argsort()</p></td>
+<td><p>array of indices for sorted array</p></td>
+<td><p>(min to max)</p></td>
 </tr>
-<tr class="row-odd"><td>cumprod()</td>
-<td>array of cumulative product of elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>cumprod()</p></td>
+<td><p>array of cumulative product of elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>cumsum()</td>
-<td>array of cumulative sum of elements</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>cumsum()</p></td>
+<td><p>array of cumulative sum of elements</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>astype()</td>
-<td>array re-cast as a different <code class="docutils literal notranslate"><span class="pre">dtype</span></code></td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>astype()</p></td>
+<td><p>array re-cast as a different <code class="docutils literal notranslate"><span class="pre">dtype</span></code></p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>round()</td>
-<td>array of rounded elements</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>round()</p></td>
+<td><p>array of rounded elements</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>diagonal()</td>
-<td>array of diagonal elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>diagonal()</p></td>
+<td><p>array of diagonal elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>trace()</td>
-<td>sum of diagonal elements()</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>trace()</p></td>
+<td><p>sum of diagonal elements()</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>transpose()</td>
-<td>transpose of array</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>transpose()</p></td>
+<td><p>transpose of array</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>flatten()</td>
-<td>array “flattened” to 1-dimension</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>flatten()</p></td>
+<td><p>array “flattened” to 1-dimension</p></td>
+<td></td>
 </tr>
-<tr class="row-odd"><td>tolist()</td>
-<td>list containing array elements</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><p>tolist()</p></td>
+<td><p>list containing array elements</p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>reshape()</td>
-<td>array reshaped to specified shape tuple</td>
-<td>&#160;</td>
+<tr class="row-even"><td><p>reshape()</p></td>
+<td><p>array reshaped to specified shape tuple</p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -657,408 +656,409 @@ The <a class="reference internal" href="#tutor-arrayfuncs-table"><span class="st
 What’s more, many more are available by importing them from the scipy library.</p>
 <blockquote id="tutor-arrayfuncs-table">
 <span id="index-3"></span><div><blockquote>
-<div>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
-builtin <a class="reference internal" href="builtins.html#help" title="help"><code class="xref py py-func docutils literal notranslate"><span class="pre">help()</span></code></a> function.  The table is broken up by categories to make printing easier.</div></blockquote>
+<div><p>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
+builtin <a class="reference internal" href="builtins.html#help" title="help"><code class="xref py py-func docutils literal notranslate"><span class="pre">help()</span></code></a> function.  The table is broken up by categories to make printing easier.</p>
+</div></blockquote>
 <p><strong>General Purpose Functions</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>all</td>
-<td>all values are <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
+<tbody>
+<tr class="row-even"><td><p>all</p></td>
+<td><p>all values are <code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
 </tr>
-<tr class="row-odd"><td>allclose</td>
-<td>all values of 2 arrays are close</td>
+<tr class="row-odd"><td><p>allclose</p></td>
+<td><p>all values of 2 arrays are close</p></td>
 </tr>
-<tr class="row-even"><td>info</td>
-<td>print information about array storage</td>
+<tr class="row-even"><td><p>info</p></td>
+<td><p>print information about array storage</p></td>
 </tr>
-<tr class="row-odd"><td>fabs</td>
-<td>absolute value of values</td>
+<tr class="row-odd"><td><p>fabs</p></td>
+<td><p>absolute value of values</p></td>
 </tr>
-<tr class="row-even"><td>sqrt</td>
-<td>square root of values</td>
+<tr class="row-even"><td><p>sqrt</p></td>
+<td><p>square root of values</p></td>
 </tr>
-<tr class="row-odd"><td>exp</td>
-<td>exponential of values</td>
+<tr class="row-odd"><td><p>exp</p></td>
+<td><p>exponential of values</p></td>
 </tr>
-<tr class="row-even"><td>expm1</td>
-<td>exp(x) - 1   for values x</td>
+<tr class="row-even"><td><p>expm1</p></td>
+<td><p>exp(x) - 1   for values x</p></td>
 </tr>
-<tr class="row-odd"><td>exp2</td>
-<td>2**x for values x</td>
+<tr class="row-odd"><td><p>exp2</p></td>
+<td><p>2**x for values x</p></td>
 </tr>
-<tr class="row-even"><td>ln / log</td>
-<td>natural logarithm of values</td>
+<tr class="row-even"><td><p>ln / log</p></td>
+<td><p>natural logarithm of values</p></td>
 </tr>
-<tr class="row-odd"><td>log1p</td>
-<td>log(x) + 1 for values x</td>
+<tr class="row-odd"><td><p>log1p</p></td>
+<td><p>log(x) + 1 for values x</p></td>
 </tr>
-<tr class="row-even"><td>log10</td>
-<td>base-10 logarithm of values</td>
+<tr class="row-even"><td><p>log10</p></td>
+<td><p>base-10 logarithm of values</p></td>
 </tr>
-<tr class="row-odd"><td>log2</td>
-<td>base-2 logarithm of values</td>
+<tr class="row-odd"><td><p>log2</p></td>
+<td><p>base-2 logarithm of values</p></td>
 </tr>
-<tr class="row-even"><td>mod</td>
-<td>modulus of values</td>
+<tr class="row-even"><td><p>mod</p></td>
+<td><p>modulus of values</p></td>
 </tr>
-<tr class="row-odd"><td>ldexp</td>
-<td>x * 2**y for values x and y</td>
+<tr class="row-odd"><td><p>ldexp</p></td>
+<td><p>x * 2**y for values x and y</p></td>
 </tr>
-<tr class="row-even"><td>fmin</td>
-<td>element-wise minima of two arrays</td>
+<tr class="row-even"><td><p>fmin</p></td>
+<td><p>element-wise minima of two arrays</p></td>
 </tr>
-<tr class="row-odd"><td>fmax</td>
-<td>element-wise maxima of two arrays</td>
+<tr class="row-odd"><td><p>fmax</p></td>
+<td><p>element-wise maxima of two arrays</p></td>
 </tr>
-<tr class="row-even"><td>fmod</td>
-<td>element-wise modulus of two arrays</td>
+<tr class="row-even"><td><p>fmod</p></td>
+<td><p>element-wise modulus of two arrays</p></td>
 </tr>
-<tr class="row-odd"><td>frexp</td>
-<td>split value into fractional and exponent</td>
+<tr class="row-odd"><td><p>frexp</p></td>
+<td><p>split value into fractional and exponent</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Trigonometry Functions</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>angle</td>
-<td>phase angle for complex values</td>
+<tbody>
+<tr class="row-even"><td><p>angle</p></td>
+<td><p>phase angle for complex values</p></td>
 </tr>
-<tr class="row-odd"><td>acos  / arccos</td>
-<td>inverse of cosine</td>
+<tr class="row-odd"><td><p>acos  / arccos</p></td>
+<td><p>inverse of cosine</p></td>
 </tr>
-<tr class="row-even"><td>asin  / arcsin</td>
-<td>inverse of sine</td>
+<tr class="row-even"><td><p>asin  / arcsin</p></td>
+<td><p>inverse of sine</p></td>
 </tr>
-<tr class="row-odd"><td>atan  / arctan</td>
-<td>inverse of tangent</td>
+<tr class="row-odd"><td><p>atan  / arctan</p></td>
+<td><p>inverse of tangent</p></td>
 </tr>
-<tr class="row-even"><td>atan2 / arctan2</td>
-<td>inverse of tangent of ratio of two values</td>
+<tr class="row-even"><td><p>atan2 / arctan2</p></td>
+<td><p>inverse of tangent of ratio of two values</p></td>
 </tr>
-<tr class="row-odd"><td>acosh / arccosh</td>
-<td>inverse of hyperbolic cosine</td>
+<tr class="row-odd"><td><p>acosh / arccosh</p></td>
+<td><p>inverse of hyperbolic cosine</p></td>
 </tr>
-<tr class="row-even"><td>asinh / arcsinh</td>
-<td>inverse of hyperbolic sine</td>
+<tr class="row-even"><td><p>asinh / arcsinh</p></td>
+<td><p>inverse of hyperbolic sine</p></td>
 </tr>
-<tr class="row-odd"><td>atanh / arctanh</td>
-<td>inverse of hyperbolic tangent</td>
+<tr class="row-odd"><td><p>atanh / arctanh</p></td>
+<td><p>inverse of hyperbolic tangent</p></td>
 </tr>
-<tr class="row-even"><td>cos</td>
-<td>cosine</td>
+<tr class="row-even"><td><p>cos</p></td>
+<td><p>cosine</p></td>
 </tr>
-<tr class="row-odd"><td>cosh</td>
-<td>hyperbolic cosine</td>
+<tr class="row-odd"><td><p>cosh</p></td>
+<td><p>hyperbolic cosine</p></td>
 </tr>
-<tr class="row-even"><td>sin</td>
-<td>sine</td>
+<tr class="row-even"><td><p>sin</p></td>
+<td><p>sine</p></td>
 </tr>
-<tr class="row-odd"><td>sinh</td>
-<td>hyperbolic sine</td>
+<tr class="row-odd"><td><p>sinh</p></td>
+<td><p>hyperbolic sine</p></td>
 </tr>
-<tr class="row-even"><td>tan</td>
-<td>tangent</td>
+<tr class="row-even"><td><p>tan</p></td>
+<td><p>tangent</p></td>
 </tr>
-<tr class="row-odd"><td>tanh</td>
-<td>hyperbolic tangent</td>
+<tr class="row-odd"><td><p>tanh</p></td>
+<td><p>hyperbolic tangent</p></td>
 </tr>
-<tr class="row-even"><td>deg2rad</td>
-<td>convert degrees to radians</td>
+<tr class="row-even"><td><p>deg2rad</p></td>
+<td><p>convert degrees to radians</p></td>
 </tr>
-<tr class="row-odd"><td>rad2deg</td>
-<td>convert radians to degrees</td>
+<tr class="row-odd"><td><p>rad2deg</p></td>
+<td><p>convert radians to degrees</p></td>
 </tr>
-<tr class="row-even"><td>hypot</td>
-<td>hypotenuse (distance) of two values</td>
+<tr class="row-even"><td><p>hypot</p></td>
+<td><p>hypotenuse (distance) of two values</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Array Manipulation and Re-shaping</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>append</td>
-<td>append a value to an array</td>
+<tbody>
+<tr class="row-even"><td><p>append</p></td>
+<td><p>append a value to an array</p></td>
 </tr>
-<tr class="row-odd"><td>insert</td>
-<td>insert a value into a specified location of an array</td>
+<tr class="row-odd"><td><p>insert</p></td>
+<td><p>insert a value into a specified location of an array</p></td>
 </tr>
-<tr class="row-even"><td>concatenate</td>
-<td>Join a sequence of arrays together</td>
+<tr class="row-even"><td><p>concatenate</p></td>
+<td><p>Join a sequence of arrays together</p></td>
 </tr>
-<tr class="row-odd"><td>tile</td>
-<td>build array by repeating an array a number of times</td>
+<tr class="row-odd"><td><p>tile</p></td>
+<td><p>build array by repeating an array a number of times</p></td>
 </tr>
-<tr class="row-even"><td>repeat</td>
-<td>repeat elements of an array a number of times</td>
+<tr class="row-even"><td><p>repeat</p></td>
+<td><p>repeat elements of an array a number of times</p></td>
 </tr>
-<tr class="row-odd"><td>split</td>
-<td>Split array into sub-arrays vertically (row)</td>
+<tr class="row-odd"><td><p>split</p></td>
+<td><p>Split array into sub-arrays vertically (row)</p></td>
 </tr>
-<tr class="row-even"><td>hsplit</td>
-<td>Split array into sub-arrays horizontally (column)</td>
+<tr class="row-even"><td><p>hsplit</p></td>
+<td><p>Split array into sub-arrays horizontally (column)</p></td>
 </tr>
-<tr class="row-odd"><td>dsplit</td>
-<td>Split array into sub-arrays along the 3rd axixpth (depth)</td>
+<tr class="row-odd"><td><p>dsplit</p></td>
+<td><p>Split array into sub-arrays along the 3rd axixpth (depth)</p></td>
 </tr>
-<tr class="row-even"><td>hstack</td>
-<td>Stack arrays in sequence horizontally (column)</td>
+<tr class="row-even"><td><p>hstack</p></td>
+<td><p>Stack arrays in sequence horizontally (column)</p></td>
 </tr>
-<tr class="row-odd"><td>vstack</td>
-<td>Stack arrays in sequence vertically (row )</td>
+<tr class="row-odd"><td><p>vstack</p></td>
+<td><p>Stack arrays in sequence vertically (row )</p></td>
 </tr>
-<tr class="row-even"><td>dstack</td>
-<td>Stack arrays in sequence along third dimension (depth)</td>
+<tr class="row-even"><td><p>dstack</p></td>
+<td><p>Stack arrays in sequence along third dimension (depth)</p></td>
 </tr>
-<tr class="row-odd"><td>take</td>
-<td>take values at specified indices</td>
+<tr class="row-odd"><td><p>take</p></td>
+<td><p>take values at specified indices</p></td>
 </tr>
-<tr class="row-even"><td>choose</td>
-<td>construct array from index array and a set of arrays</td>
+<tr class="row-even"><td><p>choose</p></td>
+<td><p>construct array from index array and a set of arrays</p></td>
 </tr>
-<tr class="row-odd"><td>where</td>
-<td>select array elements depending on an input condition</td>
+<tr class="row-odd"><td><p>where</p></td>
+<td><p>select array elements depending on an input condition</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Statistical Functions</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>average</td>
-<td>average value of an array, with optional weights</td>
+<tbody>
+<tr class="row-even"><td><p>average</p></td>
+<td><p>average value of an array, with optional weights</p></td>
 </tr>
-<tr class="row-odd"><td>max</td>
-<td>maximum value of an array</td>
+<tr class="row-odd"><td><p>max</p></td>
+<td><p>maximum value of an array</p></td>
 </tr>
-<tr class="row-even"><td>mean</td>
-<td>mean value of an array</td>
+<tr class="row-even"><td><p>mean</p></td>
+<td><p>mean value of an array</p></td>
 </tr>
-<tr class="row-odd"><td>median</td>
-<td>median value of an array</td>
+<tr class="row-odd"><td><p>median</p></td>
+<td><p>median value of an array</p></td>
 </tr>
-<tr class="row-even"><td>min</td>
-<td>minimum value of an array</td>
+<tr class="row-even"><td><p>min</p></td>
+<td><p>minimum value of an array</p></td>
 </tr>
-<tr class="row-odd"><td>var</td>
-<td>variance of an array</td>
+<tr class="row-odd"><td><p>var</p></td>
+<td><p>variance of an array</p></td>
 </tr>
-<tr class="row-even"><td>std</td>
-<td>standard deviation of an array</td>
+<tr class="row-even"><td><p>std</p></td>
+<td><p>standard deviation of an array</p></td>
 </tr>
-<tr class="row-odd"><td>trapz</td>
-<td>integrate using composite trapezoidal rule</td>
+<tr class="row-odd"><td><p>trapz</p></td>
+<td><p>integrate using composite trapezoidal rule</p></td>
 </tr>
-<tr class="row-even"><td>remainder</td>
-<td>remainder of division (<code class="docutils literal notranslate"><span class="pre">x1</span> <span class="pre">-</span> <span class="pre">floor(x1</span> <span class="pre">/</span> <span class="pre">x2)</span> <span class="pre">*</span> <span class="pre">x2</span></code>)</td>
+<tr class="row-even"><td><p>remainder</p></td>
+<td><p>remainder of division (<code class="docutils literal notranslate"><span class="pre">x1</span> <span class="pre">-</span> <span class="pre">floor(x1</span> <span class="pre">/</span> <span class="pre">x2)</span> <span class="pre">*</span> <span class="pre">x2</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td>percentile</td>
-<td>returns the given  percentile of array elements</td>
+<tr class="row-odd"><td><p>percentile</p></td>
+<td><p>returns the given  percentile of array elements</p></td>
 </tr>
-<tr class="row-even"><td>ceil</td>
-<td>ceiling values (round “up”) of input</td>
+<tr class="row-even"><td><p>ceil</p></td>
+<td><p>ceiling values (round “up”) of input</p></td>
 </tr>
-<tr class="row-odd"><td>floor</td>
-<td>floor values (round “down”) of input</td>
+<tr class="row-odd"><td><p>floor</p></td>
+<td><p>floor values (round “down”) of input</p></td>
 </tr>
-<tr class="row-even"><td>round</td>
-<td>round values (away from 0) of input</td>
+<tr class="row-even"><td><p>round</p></td>
+<td><p>round values (away from 0) of input</p></td>
 </tr>
-<tr class="row-odd"><td>clip</td>
-<td>set upper/lower bounds on array values</td>
+<tr class="row-odd"><td><p>clip</p></td>
+<td><p>set upper/lower bounds on array values</p></td>
 </tr>
-<tr class="row-even"><td>digitize</td>
-<td>indices of bins for binned values</td>
+<tr class="row-even"><td><p>digitize</p></td>
+<td><p>indices of bins for binned values</p></td>
 </tr>
-<tr class="row-odd"><td>bincount</td>
-<td>number of occurrences of each value in array</td>
+<tr class="row-odd"><td><p>bincount</p></td>
+<td><p>number of occurrences of each value in array</p></td>
 </tr>
-<tr class="row-even"><td>histogram</td>
-<td>build a histogram from an array</td>
+<tr class="row-even"><td><p>histogram</p></td>
+<td><p>build a histogram from an array</p></td>
 </tr>
-<tr class="row-odd"><td>histogram2d</td>
-<td>build a 2-d histogram from two arrays</td>
+<tr class="row-odd"><td><p>histogram2d</p></td>
+<td><p>build a 2-d histogram from two arrays</p></td>
 </tr>
-<tr class="row-even"><td>convolve</td>
-<td>discrete convolution of two 1-d arrays</td>
+<tr class="row-even"><td><p>convolve</p></td>
+<td><p>discrete convolution of two 1-d arrays</p></td>
 </tr>
-<tr class="row-odd"><td>correlate</td>
-<td>cross-correlation of two 1-d arrays</td>
+<tr class="row-odd"><td><p>correlate</p></td>
+<td><p>cross-correlation of two 1-d arrays</p></td>
 </tr>
-<tr class="row-even"><td>cumprod</td>
-<td>cumulative product</td>
+<tr class="row-even"><td><p>cumprod</p></td>
+<td><p>cumulative product</p></td>
 </tr>
-<tr class="row-odd"><td>cumsum</td>
-<td>cumulative sum</td>
+<tr class="row-odd"><td><p>cumsum</p></td>
+<td><p>cumulative sum</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Multi-dimensional and Matrix Functions</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>tril</td>
-<td>upper triagonal of an array</td>
+<tbody>
+<tr class="row-even"><td><p>tril</p></td>
+<td><p>upper triagonal of an array</p></td>
 </tr>
-<tr class="row-odd"><td>triu</td>
-<td>lower triagonal of an array</td>
+<tr class="row-odd"><td><p>triu</p></td>
+<td><p>lower triagonal of an array</p></td>
 </tr>
-<tr class="row-even"><td>diagonal</td>
-<td>diagonal elements of an array</td>
+<tr class="row-even"><td><p>diagonal</p></td>
+<td><p>diagonal elements of an array</p></td>
 </tr>
-<tr class="row-odd"><td>trace</td>
-<td>sum of diagonal elements</td>
+<tr class="row-odd"><td><p>trace</p></td>
+<td><p>sum of diagonal elements</p></td>
 </tr>
-<tr class="row-even"><td>dot</td>
-<td>dot product of two arrays</td>
+<tr class="row-even"><td><p>dot</p></td>
+<td><p>dot product of two arrays</p></td>
 </tr>
-<tr class="row-odd"><td>inner</td>
-<td>inner product of two arrays</td>
+<tr class="row-odd"><td><p>inner</p></td>
+<td><p>inner product of two arrays</p></td>
 </tr>
-<tr class="row-even"><td>outer</td>
-<td>outer product of two arrays</td>
+<tr class="row-even"><td><p>outer</p></td>
+<td><p>outer product of two arrays</p></td>
 </tr>
-<tr class="row-odd"><td>kron</td>
-<td>Kronecker product of two arrays</td>
+<tr class="row-odd"><td><p>kron</p></td>
+<td><p>Kronecker product of two arrays</p></td>
 </tr>
-<tr class="row-even"><td>swapaxes</td>
-<td>rotate axes of an array</td>
+<tr class="row-even"><td><p>swapaxes</p></td>
+<td><p>rotate axes of an array</p></td>
 </tr>
-<tr class="row-odd"><td>transpose</td>
-<td>transpose array</td>
+<tr class="row-odd"><td><p>transpose</p></td>
+<td><p>transpose array</p></td>
 </tr>
-<tr class="row-even"><td>fliplr</td>
-<td>Flip an array horizontally</td>
+<tr class="row-even"><td><p>fliplr</p></td>
+<td><p>Flip an array horizontally</p></td>
 </tr>
-<tr class="row-odd"><td>flipud</td>
-<td>Flip an array vertically</td>
+<tr class="row-odd"><td><p>flipud</p></td>
+<td><p>Flip an array vertically</p></td>
 </tr>
-<tr class="row-even"><td>rot90</td>
-<td>rotate an array 90 degrees counter clockwise</td>
+<tr class="row-even"><td><p>rot90</p></td>
+<td><p>rotate an array 90 degrees counter clockwise</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Array and Signal Processing</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>diff</td>
-<td>finite difference of array elements</td>
+<tbody>
+<tr class="row-even"><td><p>diff</p></td>
+<td><p>finite difference of array elements</p></td>
 </tr>
-<tr class="row-odd"><td>gradient</td>
-<td>gradient of an array</td>
+<tr class="row-odd"><td><p>gradient</p></td>
+<td><p>gradient of an array</p></td>
 </tr>
-<tr class="row-even"><td>interp</td>
-<td>linear interpolation of 1-d arrays</td>
+<tr class="row-even"><td><p>interp</p></td>
+<td><p>linear interpolation of 1-d arrays</p></td>
 </tr>
-<tr class="row-odd"><td>poly</td>
-<td>Evaluate a polynomial at a point</td>
+<tr class="row-odd"><td><p>poly</p></td>
+<td><p>Evaluate a polynomial at a point</p></td>
 </tr>
-<tr class="row-even"><td>root</td>
-<td>the roots of a polynomial</td>
+<tr class="row-even"><td><p>root</p></td>
+<td><p>the roots of a polynomial</p></td>
 </tr>
-<tr class="row-odd"><td>polyfit</td>
-<td>least squares polynomial fit</td>
+<tr class="row-odd"><td><p>polyfit</p></td>
+<td><p>least squares polynomial fit</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Random number generation and other</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>random.random</td>
-<td>randomly distributed reals, on [0, 1).</td>
+<tbody>
+<tr class="row-even"><td><p>random.random</p></td>
+<td><p>randomly distributed reals, on [0, 1).</p></td>
 </tr>
-<tr class="row-odd"><td>random.randint</td>
-<td>array of random integers, over specified range</td>
+<tr class="row-odd"><td><p>random.randint</p></td>
+<td><p>array of random integers, over specified range</p></td>
 </tr>
-<tr class="row-even"><td>random.normal</td>
-<td>normally distributed random numbers</td>
+<tr class="row-even"><td><p>random.normal</p></td>
+<td><p>normally distributed random numbers</p></td>
 </tr>
 </tbody>
 </table>
 <p><strong>Fourier transforms</strong></p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col style="width: 22%" />
+<col style="width: 78%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>function</strong></th>
-<th class="head"><strong>description</strong></th>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>function</strong></p></th>
+<th class="head"><p><strong>description</strong></p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>fft.fft</td>
-<td>Fourier transform of a 1-d array</td>
+<tbody>
+<tr class="row-even"><td><p>fft.fft</p></td>
+<td><p>Fourier transform of a 1-d array</p></td>
 </tr>
-<tr class="row-odd"><td>fft.ifft</td>
-<td>inverse Fourier transform of a 1-d array</td>
+<tr class="row-odd"><td><p>fft.ifft</p></td>
+<td><p>inverse Fourier transform of a 1-d array</p></td>
 </tr>
-<tr class="row-even"><td>fft.fft2</td>
-<td>Fourier transform of a 2-d array</td>
+<tr class="row-even"><td><p>fft.fft2</p></td>
+<td><p>Fourier transform of a 2-d array</p></td>
 </tr>
-<tr class="row-odd"><td>fft.ifft2</td>
-<td>inverse Fourier transform of a 2-d array</td>
+<tr class="row-odd"><td><p>fft.ifft2</p></td>
+<td><p>inverse Fourier transform of a 2-d array</p></td>
 </tr>
 </tbody>
 </table>
@@ -1080,10 +1080,10 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="flow.html" title="7.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="7.4. Conditional Execution and Flow Control"
              >next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="7.2. Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="7.2. Basic and Complex Data Types"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -1092,12 +1092,12 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

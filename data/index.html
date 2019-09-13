@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>8. Reading and Writing Data &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>8. Reading and Writing Data &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -21,7 +19,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="9. Plotting and Displaying Data" href="../plotting/index.html" />
-    <link rel="prev" title="7.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
+    <link rel="prev" title="7.8. Builtin Functions" href="../tutorial/builtins.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -29,11 +27,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -55,7 +53,7 @@
           <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="7.8. Tutorial: Builtin Functions"
+          <a href="../tutorial/builtins.html" title="7.8. Builtin Functions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -78,7 +76,7 @@
 <li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">8.2.2. Creating and Writing to Athena Project Files</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-_io">8.3. Using HDF5 Files</a></li>
+<li><a class="reference internal" href="#using-hdf5-files">8.3. Using HDF5 Files</a></li>
 <li><a class="reference internal" href="#reading-netcdf-files">8.4. Reading NetCDF Files</a></li>
 <li><a class="reference internal" href="#reading-tiff-images">8.5. Reading TIFF Images</a></li>
 <li><a class="reference internal" href="#working-with-epics-channel-access">8.6. Working with Epics Channel Access</a></li>
@@ -91,7 +89,7 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../tutorial/builtins.html"
-                        title="previous chapter">7.8. Tutorial: Builtin Functions</a></p>
+                        title="previous chapter">7.8. Builtin Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../plotting/index.html"
                         title="next chapter">9. Plotting and Displaying Data</a></p>
@@ -103,13 +101,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -156,22 +152,18 @@ information.  For instance:</p>
 <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_io.read_ascii">
-<code class="descclassname">_io.</code><code class="descname">read_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_ascii</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">comentchar='#;*%'</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and read an plaintext data file, returning a new group containing
 the data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<em>string</em>) – name of file to read.</li>
-<li><strong>commentchar</strong> (<em>string</em>) – string of valid comment characters</li>
-<li><strong>labels</strong> (string, <code class="docutils literal notranslate"><span class="pre">None</span></code>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>) – string to split for column labels</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>string</em>) – name of file to read.</p></li>
+<li><p><strong>commentchar</strong> (<em>string</em>) – string of valid comment characters</p></li>
+<li><p><strong>labels</strong> (string, <code class="docutils literal notranslate"><span class="pre">None</span></code>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>) – string to split for column labels</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a>:</p>
@@ -207,26 +199,22 @@ labels in the file.   You can be explicit:</p>
 in from the file, which can also be useful to rename arrays.</p>
 <dl class="function">
 <dt id="_io.write_ascii">
-<code class="descclassname">_io.</code><code class="descname">write_ascii</code><span class="sig-paren">(</span><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">write_ascii</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">*args</em>, <em class="sig-param">commentchar='#'</em>, <em class="sig-param">label=None</em>, <em class="sig-param">header=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and writes arrays, scalars, and text to an ASCII file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>commentchar</strong> – character for comment (‘#’)</li>
-<li><strong>label</strong> – array label line (autogenerated)</li>
-<li><strong>header</strong> – array of strings for header</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>commentchar</strong> – character for comment (‘#’)</p></li>
+<li><p><strong>label</strong> – array label line (autogenerated)</p></li>
+<li><p><strong>header</strong> – array of strings for header</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.write_group">
-<code class="descclassname">_io.</code><code class="descname">write_group</code><span class="sig-paren">(</span><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">write_group</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">group</em>, <em class="sig-param">scalars=None</em>, <em class="sig-param">arrays=None</em>, <em class="sig-param">arrays_like=None</em>, <em class="sig-param">commentchar='#'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>write data from a specified group to an ASCII data file.
 This is pretty minimal and may work poorly for large groups of complex
 data.</p>
@@ -241,50 +229,39 @@ extract the data from these project files, and can also write Athena
 Project files from existing groups of data.</p>
 <div class="section" id="reading-athena-project-files">
 <h3>8.2.1. Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Permalink to this headline">¶</a></h3>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Larch can read Athena Project Files from Athena version 0.9.21 or later.
-If you have a project file older than that, you should be able to open it
-with Athena and re-save it into a newer version.</p>
-</div>
 <dl class="function">
 <dt id="_io.read_athena">
-<code class="descclassname">_io.</code><code class="descname">read_athena</code><span class="sig-paren">(</span><em>filename</em>, <em>match=None</em>, <em>do_preedge=True</em>, <em>do_bkg=True</em>, <em>do_fft=True</em>, <em>use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_athena" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_athena</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">match=None</em>, <em class="sig-param">do_preedge=True</em>, <em class="sig-param">do_bkg=True</em>, <em class="sig-param">do_fft=True</em>, <em class="sig-param">use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_athena" title="Permalink to this definition">¶</a></dt>
 <dd><p>open and read an Athena Project File, returning a group of groups, each
 subgroup corresponding to an Athena Group from the project file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> – name of Athena Project file</li>
-<li><strong>match</strong> – string pattern used to limit the imported groups (see Note)</li>
-<li><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</li>
-<li><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</li>
-<li><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</li>
-<li><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of Athena Project file</p></li>
+<li><p><strong>match</strong> – string pattern used to limit the imported groups (see Note)</p></li>
+<li><p><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</p></li>
+<li><p><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</p></li>
+<li><p><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</p></li>
+<li><p><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">group of groups.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>group of groups.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="docutils">
-<dt>Notes:</dt>
-<dd><ol class="first last arabic simple">
-<li>To limit the imported groups, use the pattern in <cite>match</cite>,
+<dl class="simple">
+<dt>Notes:</dt><dd><ol class="arabic simple">
+<li><p>To limit the imported groups, use the pattern in <cite>match</cite>,
 using ‘*’ to match ‘all’, ‘?’ to match any single character,
 or [sequence] to match any of a sequence of letters.  The match
-will always be insensitive to case.</li>
-<li><cite>do_preedge</cite>, <cite>do_bkg</cite>, and <cite>do_fft</cite> will attempt to reproduce the
+will always be insensitive to case.</p></li>
+<li><p><cite>do_preedge</cite>, <cite>do_bkg</cite>, and <cite>do_fft</cite> will attempt to reproduce the
 pre-edge, background subtraction, and FFT from Athena by using
-the parameters saved in the project file.</li>
-<li><cite>use_hashkey=True</cite> will name groups from the internal 5 character
-string used by Athena, instead of the group label.</li>
+the parameters saved in the project file.</p></li>
+<li><p><cite>use_hashkey=True</cite> will name groups from the internal 5 character
+string used by Athena, instead of the group label.</p></li>
 </ol>
 </dd>
 </dl>
@@ -301,19 +278,17 @@ string used by Athena, instead of the group label.</li>
 </div>
 <dl class="function">
 <dt id="_io.extract_athenagroup">
-<code class="descclassname">_io.</code><code class="descname">extract_athenagroup</code><span class="sig-paren">(</span><em>datagroup</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.extract_athenagroup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">extract_athenagroup</code><span class="sig-paren">(</span><em class="sig-param">datagroup</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.extract_athenagroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>extracts a group out of an Athena Project File, allowing the file to be
 closed.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datagroup</strong> – group from athena project</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">group with copy of data, allowing safe closing of project file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>datagroup</strong> – group from athena project</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>group with copy of data, allowing safe closing of project file</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p>An example using this function to allow extracting 1 group from an Athena
@@ -327,97 +302,83 @@ Project would be:</p>
 <div class="section" id="creating-and-writing-to-athena-project-files">
 <h3>8.2.2. Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this headline">¶</a></h3>
 <p>You can create an Athena Project File with <a class="reference internal" href="#_io.create_athena" title="_io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
-add a group of XAFS data to that project with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code>
+add a group of XAFS data to that pct with the <a class="reference internal" href="#_io.add_group" title="_io.add_group"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code></a>
 method of that project file.  The group is expected to have array names of
 <cite>energy</cite> and <cite>i0</cite>, and one of <cite>mu</cite>, <cite>mutrans</cite>, or <cite>mufluor</cite>.</p>
 <dl class="function">
 <dt id="_io.create_athena">
-<code class="descclassname">_io.</code><code class="descname">create_athena</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.create_athena" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">create_athena</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.create_athena" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a new or existing Athena Project File, returning an
-<a class="reference internal" href="#module-_io.AthenaProject" title="_io.AthenaProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">AthenaProject</span></code></a> object.  That is, a new project file will be
+<a class="reference internal" href="#_io.AthenaProject" title="_io.AthenaProject"><code class="xref py py-class docutils literal notranslate"><span class="pre">AthenaProject</span></code></a> object.  That is, a new project file will be
 created if it does not exist, or an existing project will be opened for
 reading and writing.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> – name of Athena Project file</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – name of Athena Project file</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="class">
 <dt id="_io.AthenaProject">
-<em class="property">class </em><code class="descclassname">_io.</code><code class="descname">AthenaProject</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">_io.</code><code class="sig-name descname">AthenaProject</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of an Athena Project File</p>
 </dd></dl>
 
-<span class="target" id="module-_io.AthenaProject"></span><dl class="method">
-<dt id="_io.AthenaProject.add_group">
-<code class="descclassname">_io.AthenaProject.</code><code class="descname">add_group</code><span class="sig-paren">(</span><em>group</em>, <em>signal=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.add_group" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="_io.add_group">
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">add_group</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">signal=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.add_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>add a group of XAFS data to an Athena Project</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>group</strong> – group to be added. See note</li>
-<li><strong>signal</strong> – string or <code class="docutils literal notranslate"><span class="pre">None</span></code> name of array to use as main signal</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> – group to be added. See note</p></li>
+<li><p><strong>signal</strong> – string or <code class="docutils literal notranslate"><span class="pre">None</span></code> name of array to use as main signal</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>if <cite>signal</cite> is not specified, it will be chosen as <cite>mu</cite>, <cite>mutrans</cite>, or
 <cite>mufluor</cite> (in that order).</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="_io.AthenaProject.save">
-<code class="descclassname">_io.AthenaProject.</code><code class="descname">save</code><span class="sig-paren">(</span><em>use_gzip=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.save" title="Permalink to this definition">¶</a></dt>
+<dt id="_io.save">
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">use_gzip=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>save project to file</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>use_gzip</strong> – bool, whether to use gzip compression for file.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_gzip</strong> – bool, whether to use gzip compression for file.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="_io.AthenaProject.read">
-<code class="descclassname">_io.AthenaProject.</code><code class="descname">read</code><span class="sig-paren">(</span><em>filename=None</em>, <em>match=None</em>, <em>do_preedge=True</em>, <em>do_bkg=True</em>, <em>do_fft=True</em>, <em>use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.read" title="Permalink to this definition">¶</a></dt>
+<dt id="_io.read">
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">filename=None</em>, <em class="sig-param">match=None</em>, <em class="sig-param">do_preedge=True</em>, <em class="sig-param">do_bkg=True</em>, <em class="sig-param">do_fft=True</em>, <em class="sig-param">use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>read from project.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – name of Athena Project file</li>
-<li><strong>match</strong> – string pattern used to limit the imported groups (see Note)</li>
-<li><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</li>
-<li><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</li>
-<li><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</li>
-<li><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of Athena Project file</p></li>
+<li><p><strong>match</strong> – string pattern used to limit the imported groups (see Note)</p></li>
+<li><p><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</p></li>
+<li><p><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</p></li>
+<li><p><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</p></li>
+<li><p><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<p>The function <code class="xref py py-func docutils literal notranslate"><span class="pre">read_athena()</span></code> above is a wrapper around this method, and
+<p>The function <a class="reference internal" href="#_io.read_athena" title="_io.read_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_athena()</span></code></a> above is a wrapper around this method, and
 the notes there apply here as well. An important difference is that for
 this method the data is retained in the <cite>groups</cite> attribute which is a
 Python list of groups for each group in the Athena Project.</p>
 <dl class="method">
-<dt id="_io.AthenaProject.as_group">
-<code class="descclassname">_io.AthenaProject.</code><code class="descname">as_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_io.AthenaProject.as_group" title="Permalink to this definition">¶</a></dt>
+<dt id="_io.as_group">
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">as_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_io.as_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Athena Project <cite>groups</cite> attribute (as read by
-<a class="reference internal" href="#_io.AthenaProject.read" title="_io.AthenaProject.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
+<a class="reference internal" href="#_io.read" title="_io.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
 </dd></dl>
 
 <p>As an example creating and saving an Athena Project file:</p>
@@ -433,8 +394,8 @@ Python list of groups for each group in the Athena Project.</p>
 </div>
 </div>
 </div>
-<div class="section" id="module-_io">
-<span id="using-hdf5-files"></span><h2>8.3. Using HDF5 Files<a class="headerlink" href="#module-_io" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="using-hdf5-files">
+<h2>8.3. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -442,7 +403,7 @@ The interface used in Larch is based on <a class="reference external" href="http
 for further documentation.</p>
 <dl class="function">
 <dt id="_io.h5_group">
-<code class="descclassname">_io.</code><code class="descname">h5_group</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.h5_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">h5_group</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.h5_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and maps and HDF5 file to a Larch Group, with HDF5 Groups map as
 Larch Groups.  Note that the full set of data is not read and
 copied. Instead, the HDF5 file is kept open and data accessed from the
@@ -485,13 +446,13 @@ top of this approach.</p>
 efficient for storing array data and still in wide use.</p>
 <dl class="function">
 <dt id="_io.netcdf_group">
-<code class="descclassname">_io.</code><code class="descname">netcdf_group</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">netcdf_group</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a group with data from a NetCDF4 file.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.netcdf_file">
-<code class="descclassname">_io.</code><code class="descname">netcdf_file</code><span class="sig-paren">(</span><em>filename</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">netcdf_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">mode='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.netcdf_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and returns a netcdf file.</p>
 </dd></dl>
 
@@ -502,14 +463,14 @@ efficient for storing array data and still in wide use.</p>
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="function">
 <dt id="_io.read_tiff">
-<code class="descclassname">_io.</code><code class="descname">read_tiff</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_tiff" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_tiff</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_tiff" title="Permalink to this definition">¶</a></dt>
 <dd><p>reads a TIFF image from a TIFF File.  This returns just the image data as an
 array, and does return any metadata.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.tiff_object">
-<code class="descclassname">_io.</code><code class="descname">tiff_object</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.tiff_object" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">tiff_object</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.tiff_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and returns a TIFF file.  This is useful for extracting metadata
 and multiple series.</p>
 </dd></dl>
@@ -525,7 +486,7 @@ on <a class="reference external" href="http://pyepics.github.com/pyepics/">pyepi
 access is encapsulated into three functions:</p>
 <dl class="function">
 <dt id="_io.caget">
-<code class="descclassname">_io.</code><code class="descname">caget</code><span class="sig-paren">(</span><em>PV_name</em>, <em>as_string=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caget" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">caget</code><span class="sig-paren">(</span><em class="sig-param">PV_name</em>, <em class="sig-param">as_string=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caget" title="Permalink to this definition">¶</a></dt>
 <dd><p>get the value of the Process Variable.  The optional <code class="docutils literal notranslate"><span class="pre">as_string</span></code>
 argument ensures the returned value is the string representation for the
 variable.</p>
@@ -533,7 +494,7 @@ variable.</p>
 
 <dl class="function">
 <dt id="_io.caput">
-<code class="descclassname">_io.</code><code class="descname">caput</code><span class="sig-paren">(</span><em>PV_name</em>, <em>value</em>, <em>wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">caput</code><span class="sig-paren">(</span><em class="sig-param">PV_name</em>, <em class="sig-param">value</em>, <em class="sig-param">wait=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.caput" title="Permalink to this definition">¶</a></dt>
 <dd><p>set the value of the Process Variable.  If the optional <code class="docutils literal notranslate"><span class="pre">wait</span></code> is
 <code class="docutils literal notranslate"><span class="pre">True</span></code>, the function will not return until the put “completes”. For
 some types of data, this may wait for some process (moving a motor,
@@ -542,7 +503,7 @@ triggering a detector) to finish before returning.</p>
 
 <dl class="function">
 <dt id="_io.PV">
-<code class="descclassname">_io.</code><code class="descname">PV</code><span class="sig-paren">(</span><em>PV_name</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.PV" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">PV</code><span class="sig-paren">(</span><em class="sig-param">PV_name</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.PV" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return an Epics PV object for a Process Variable.  This will
 have get() and put() methods, and allows you to add callback functions
 which will be run with new values everytime the PV value changes.</p>
@@ -555,7 +516,7 @@ which will be run with new values everytime the PV value changes.</p>
 facilities and beamlines.</p>
 <dl class="function">
 <dt id="_io.read_mda">
-<code class="descclassname">_io.</code><code class="descname">read_mda</code><span class="sig-paren">(</span><em>filename</em>, <em>maxdim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_mda" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_mda</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">maxdim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_mda" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a binary MDA (multi-Dimensional Array) file from the Epics SScan
 Record, and return a group based on the scans it contains.  This is not
 very well tested – use with caution!</p>
@@ -563,13 +524,13 @@ very well tested – use with caution!</p>
 
 <dl class="function">
 <dt id="_io.read_gsescan">
-<code class="descclassname">_io.</code><code class="descname">read_gsescan</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_gsescan" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_gsescan</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_gsescan" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a (old-style) GSECARS Escan data file into a group.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.read_stepscan">
-<code class="descclassname">_io.</code><code class="descname">read_stepscan</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_stepscan" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_stepscan</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_stepscan" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a GSECARS StepScan data file into a group.</p>
 </dd></dl>
 
@@ -580,7 +541,7 @@ very well tested – use with caution!</p>
 to standardize the format of XAFS data files (see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange">xdi</a>.)</p>
 <dl class="function">
 <dt id="_io.read_xdi">
-<code class="descclassname">_io.</code><code class="descname">read_xdi</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_xdi" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_xdi</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_xdi" title="Permalink to this definition">¶</a></dt>
 <dd><p>read an XDI data file into a Larch group.</p>
 </dd></dl>
 
@@ -597,14 +558,14 @@ not as big of a problem as you might expect: you want to save <strong>data</stro
 the functions will be present in the later session.  All the built-in Larch
 groups and data structures can be saved and restored.</p>
 <dl class="function">
-<dt id="_io.save">
-<code class="descclassname">_io.</code><code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>list_of_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.save" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">list_of_groups</em><span class="sig-paren">)</span></dt>
 <dd><p>save a set of Larch groups and data into an HDF5 file.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_io.restore">
-<code class="descclassname">_io.</code><code class="descname">restore</code><span class="sig-paren">(</span><em>filename</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">restore</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.restore" title="Permalink to this definition">¶</a></dt>
 <dd><p>recover groups from a Larch ‘save’ file.  If <code class="docutils literal notranslate"><span class="pre">group</span></code> is None, the
 groups in the save file will be returned (in the order in which they
 were saved).  If <code class="docutils literal notranslate"><span class="pre">group</span></code> is an existing Larch group, the groups in
@@ -630,7 +591,7 @@ the save file will be put inside that group, and will not be returned.</p>
           <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="7.8. Tutorial: Builtin Functions"
+          <a href="../tutorial/builtins.html" title="7.8. Builtin Functions"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -643,7 +604,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

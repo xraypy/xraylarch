@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>14.4. Using Larch from Python &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>Using Larch from Python &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -20,8 +18,6 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="15. Bibliography" href="../biblio.html" />
-    <link rel="prev" title="14.3. Plugins" href="plugins.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -29,11 +25,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -51,31 +47,18 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../biblio.html" title="15. Bibliography"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="plugins.html" title="14.3. Plugins"
-             accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
-
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">14. Programming with Larch</a> &#187;</li> 
+ 
       </ul>
     </div>
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="plugins.html"
-                        title="previous chapter">14.3. Plugins</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../biblio.html"
-                        title="next chapter">15. Bibliography</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -84,13 +67,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -104,34 +85,20 @@
           <div class="body" role="main">
             
   <div class="section" id="using-larch-from-python">
-<span id="frompython-section"></span><h1>14.4. Using Larch from Python<a class="headerlink" href="#using-larch-from-python" title="Permalink to this headline">¶</a></h1>
-<p>Although Larch contains its own scripting language, this is not Python, and
-it is perfectly reasonable to expect that the Larch analysis functionality
-be available in Python without using the Larch scripting language at all.
-That is, you may want to consider Larch to be a set of Python modules for
+<span id="frompython-section"></span><h1>Using Larch from Python<a class="headerlink" href="#using-larch-from-python" title="Permalink to this headline">¶</a></h1>
+<p>That is, you may want to consider Larch to be a set of Python modules for
 the analysis of X-ray spectroscopic and related data.  There are plenty of
 good reasons to want to do this, and it is certainly possible.  However,
 because Larch is intended for use independent of an installed Python
 system, there are two points to keep in mind when using Larch from Python.</p>
-<p>First, Larch keeps essentially all its functionality in plugins, which are
+<p>Larch keeps essentially all its functionality in plugins, which are
 <em>not</em> installed into the standard Python tree of installed modules, but
 into a folder specific to Larch.  This means that, while Larch can be used
 from Python, Python will need to be told about where Larch is installed in
 order for the <code class="docutils literal notranslate"><span class="pre">import</span></code> statements to work.</p>
-<span class="target" id="module-larch"></span><dl class="function">
-<dt id="larch.use_plugin_path">
-<code class="descclassname">larch.</code><code class="descname">use_plugin_path</code><span class="sig-paren">(</span><em>folder_name</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.use_plugin_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>add the named Plugin folder to Python’s <code class="docutils literal notranslate"><span class="pre">sys.path</span></code>, allowing python
-functions to be imported from the modules in the specified plugin folder.</p>
-<p>The argument is the subfolder for each plugin, relative to the
-installed Larch plugins (typically <code class="docutils literal notranslate"><span class="pre">$HOME/.larch/plugins</span></code> for
-Unix or Mac OSX or <code class="docutils literal notranslate"><span class="pre">$USER\larch\plugins</span></code> on Windows).</p>
-</dd></dl>
-
-<p>Thus to get the <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.autobk()</span></code></a> function into a Python module, you
+<span class="target" id="module-larch"></span><p>Thus to get the <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.autobk()</span></code></a> function into a Python module, you
 could do either:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">larch</span>
-<span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="k">import</span> <span class="n">autobk</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="k">import</span> <span class="n">autobk</span>
 </pre></div>
 </div>
 <p>The second consideration is that many of the functions in the Larch plugins
@@ -145,40 +112,18 @@ python (you <strong>can</strong>, but if you’re reading this section, you prob
 to use Python instead of Larch), you will need an instance of the
 interpreter.  This is easily created, and can then be passed to any of the
 plugin functions with the <code class="docutils literal notranslate"><span class="pre">_larch</span></code> keyword argument:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch</span> <span class="k">import</span> <span class="n">Interpreter</span>
-<span class="kn">from</span> <span class="nn">larch_plugins.xafs</span> <span class="k">import</span> <span class="n">autobk</span>
-<span class="kn">from</span> <span class="nn">larch_plugins.io</span> <span class="k">import</span> <span class="n">read_xdi</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="k">import</span> <span class="n">autobk</span>
+<span class="kn">from</span> <span class="nn">larch.io</span> <span class="k">import</span> <span class="n">read_xdi</span>
 
-<span class="n">mylarch</span> <span class="o">=</span> <span class="n">Interpreter</span><span class="p">()</span>
-<span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;../xafsdata/fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">mylarch</span><span class="p">)</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;../xafsdata/fe3c_rt.xdi&#39;</span><span class="p">)</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">mutrans</span>
-<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">mylarch</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">larch.xray</span> <span class="k">import</span> <span class="n">xray_line</span>
+<span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="mf">8046.3</span><span class="p">,</span> <span class="mf">0.577108</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;L3&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That is, the <code class="docutils literal notranslate"><span class="pre">_larch=mylarch</span></code> argument is vital to having
-<a class="reference internal" href="../data/index.html#_io.read_xdi" title="_io.read_xdi"><code class="xref py py-func docutils literal notranslate"><span class="pre">_io.read_xdi()</span></code></a> properly create a Larch group, and for allowing
-<a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.autobk()</span></code></a> to do the actual fit, and organize the results.</p>
-<p>Note that you can create the interpreter without loading all the plugins
-using <code class="docutils literal notranslate"><span class="pre">with_plugins=False</span></code>.  When running from python, this may be a
-reasonable default.  If you want to add some of the plugins for a
-particular interpreter session, you can:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;cu_ka = xray_line(&#39;Cu&#39;, &#39;Ka1&#39;)&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">cu_ka</span>
-<span class="go">(8046.3, 0.577108, u&#39;K&#39;, u&#39;L3&#39;)</span>
-</pre></div>
-</div>
-<p>This would be nearly the same as doing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch_plugins.xray</span> <span class="k">import</span> <span class="n">xray_line</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">Interpreter</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-<span class="go">(8046.3, 0.577108, u&#39;K&#39;, u&#39;L3&#39;)</span>
-</pre></div>
-</div>
-<p>except that in the former, the Larch session retains the value in
-<code class="docutils literal notranslate"><span class="pre">cu_ka</span></code>.</p>
 </div>
 
 
@@ -193,25 +138,18 @@ particular interpreter session, you can:</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="../biblio.html" title="15. Bibliography"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plugins.html" title="14.3. Plugins"
-             >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
-
-          <li class="nav-item nav-item-1"><a href="index.html" >14. Programming with Larch</a> &#187;</li> 
+ 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

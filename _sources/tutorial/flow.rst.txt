@@ -1,5 +1,5 @@
 =======================================================
-Tutorial: Conditional Execution and Flow Control
+Conditional Execution and Flow Control
 =======================================================
 
 Two important needs for a full-featured language are the ability to run
@@ -28,7 +28,7 @@ So far we've seen three types of statements:
 
   2.  print statements, such as::
 
-         larch> print sqrt(3)
+         larch> print(sqrt(3))
 
       where we explicitly command larch to print the evaluated
       expression -- this would print if run from a script.
@@ -51,7 +51,7 @@ A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the **if** statement, an example of
 which is::
 
-    larch> if x == 0: print 'x is 0!'
+    larch> if x == 0: print('x is 0!')
 
 Which will print 'x is 0!' if the value of *x* is equal to 0.  The `x == 0`
 in this if statement is called the **test**.  A test is a Boolean
@@ -70,16 +70,16 @@ If statements can execute multiple statements by putting the statements
 into a "block of code"::
 
     if x == 0:
-        print 'x is equal to 0!'
+        print('x is equal to 0!')
         x = 1
-    endif
+    #endif
 
 Which is to say that the multiple-line form of the if statement looks like
 this::
 
     if <test>:
       <statements>
-    endif
+   #endif
 
 where '<statements>' here means a list of statements, and the 'endif' is
 required (see :ref:`code-block-ends`). For the above, two statements will
@@ -89,24 +89,24 @@ can be run.
 An 'else' statement can be added to execute code if the test is False::
 
     if x == 0:
-        print 'x is equal to 0!'
+        print('x is equal to 0!')
         x = 1
     else:
-        print 'x is not 0'
-    endif
+        print('x is not 0')
+   #endif
 
 Multiple tests can be chained together with the 'elif' (a contraction of
 'else if')::
 
     if x == 0:
-        print 'x is equal to 0!'
+        print('x is equal to 0!')
     elif x > 0:
-        print 'x is positive'
+        print('x is positive')
     elif x > -10:
-        print 'x is a small negative number'
+        print('x is a small negative number')
     else:
-        print 'x is negative'
-    endif
+        print('x is negative')
+   #endif
 
 Here the 'x > 0' test will be executed if the 'x == 0' test fails, and the
 'x > -10' test will be tried if that fails.
@@ -162,8 +162,8 @@ iterates over an ordered set of values as from a list, tuple, or array, or
 over the keys from a dictionary.   Thus a loop like this::
 
     for x in ('a', 'b', 'c'):
-        print x
-    endfor
+        print(x)
+    #endfor
 
 will go through values 'a', 'b', and 'c',  assigning each value to *x*,
 then printing the value of x, which will result in printing out::
@@ -176,7 +176,7 @@ Similar to the *if* statement above, the for loop has the form::
 
    for <varlist> in <sequence>:
        <statements>
-   endfor
+   #endfor
 
 Compared to a C for loop or Fortran do loop, the Larch for loop is much
 more like a  *foreach* loop.  The common C / Fortran use case of interating
@@ -184,8 +184,8 @@ over a set of integers can be emulated using the builtin :func:`range`
 function which generates a sequence of integers.   Thus::
 
    for i in range(5):
-      print i, i/2.0
-   endfor
+      print(i, i/2.0)
+   #endfor
 
 will result in::
 
@@ -201,7 +201,7 @@ and step.  It is important to note that the sequence that is iterated order
 does not be generated from the :func:`range` function, but can be any list,
 array, or Python sequence.  Importantly, this includes strings(!) so that::
 
-    for char in 'hello':  print char
+    for char in 'hello': print(char)
 
 will print::
 
@@ -220,7 +220,7 @@ string.   Notice that::
         fh = open(fname)
         process_file(fh)
         fh.close()
-    endfor
+    #endfor
 
 would act very differently if filelist was changed to 'file1'!
 
@@ -228,8 +228,8 @@ Multiple values can be assigned in each iteration of the for loop.  Thus,
 iterating over a sequence of equal-length tuples, as in::
 
    for a, b in (('a', 1), ('b', 2), ('c', 3)):
-       print a, b
-   endfor
+       print(a, b)
+   #endfor
 
 will print::
 
@@ -244,8 +244,8 @@ two-element tuples as above of key, value.  Thus::
 
    mydict = {'a':1, 'b':2, 'c':3, 'd':4}
    for key, val in mydict.items():
-       print key, val
-   endfor
+       print(key, val)
+   #endfor
 
 will print (note that dictionaries do no preserve order, but the (key, val)
 pairs match)::
@@ -262,7 +262,7 @@ the lists or arrays.  Thus::
    larch> a = range(10)
    larch> b = sin(a)
    larch> c = cos(a)
-   larch> print zip(a, b, c)
+   larch> print(zip(a, b, c))
    [(0, 0.0, 1.0), (1, 0.8414709848078965, 0.54030230586813977),
     (2, 0.90929742682568171, -0.41614683654714241), ....]
 
@@ -271,10 +271,10 @@ tuples until any of its arguments runs out of elements).   Thus a for loop
 can make use of the :func:`zip` function to iterate over multiple arrays::
 
    larch> a = arange(101)/10.0
-   larch> print 'X   SIN(X)  SIN(Y)\n================\n'
+   larch> print('X   SIN(X)  SIN(Y)\n================\n')
    larch> for a, sval, cval in zip(a, sin(a), cos(a)):
-   .....>     print '%.3f, %.5f, %.5f' % (a, sval, cval)
-   .....> endfor
+   .....>     print('%.3f, %.5f, %.5f' % (a, sval, cval))
+   .....> #endfor
 
 will print a table of sine and cosine values.
 
@@ -282,8 +282,8 @@ A final utility of note for loops is :func:`enumerate` which will return a
 tuple of (index, value) for a sequence.   That is::
 
    larch> for i, a in enumerate('a', b', 'c'):
-   .....>     print i, a
-   .....> endfor
+   .....>     print(i, a)
+   .....> #endfor
 
 will print::
 
@@ -299,10 +299,10 @@ in the sequence.   The *break* statement will exit a for loop immediately::
        status = get_status(fname)
        if status < 0:
           break
-       endif
+       #endif
        more_processing(fname)
-   endfor
-   print 'processed up to i = ', i
+   #endfor
+   print('processed up to i = ', i)
 
 may jump out of the loop before the sequence generated by 'range(10)' is
 complete.  The variable 'i' will have the final used value.
@@ -314,9 +314,9 @@ statement::
        status = get_status(fname)
        if status < 0:
           continue
-       endif
+       #endif
        more_processing(fname)
-   endfor
+   #endfor
 
 
 While loops
@@ -328,7 +328,7 @@ is::
 
    while <test>:
       <statements>
-   endwhile
+   #endwhile
 
 Here, the test works as for *if* -- it is a Boolean expression, evaluated at
 each iteration of the loop. Generally, the expression will test something
@@ -339,7 +339,7 @@ while loop increases a counter at each iteration::
    while counter < 10:
       do_something(counter)
       counter = counter + 1
-   endwhile
+   #endwhile
 
 A while loop is easily turned into an infinite loop, simply by not
 incrementing the counter.   Then again, the above loop would easily be
@@ -349,8 +349,8 @@ each iteration.   A more realistic use would be::
    n = 1
    while n < 100:
       n = (n + 0.1) * n
-      print n
-   endwhile
+      print(n)
+   #endwhile
 
 An additional use for a while loop is to use an implicit or external
 condition, such as time::
@@ -358,7 +358,7 @@ condition, such as time::
    now = time.time() # return the time in seconds since Unix epoch
    while time.time() - now < 15:   # That is 'for 15 seconds'
       do_someting()
-   endwhile
+   #endwhile
 
 The *break* and *continue* statements also work for while loops, just as they
 do with for loops.   These can be used as ways to exit an other-wise infinite
@@ -369,6 +369,6 @@ while loop::
       if answer == 'lime':
           break
       else:
-          print 'Nope, try again'
-      endif
-   endwhile
+          print('Nope, try again')
+      #endif
+   #endwhile

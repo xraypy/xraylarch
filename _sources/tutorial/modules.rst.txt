@@ -1,7 +1,7 @@
 .. _tutorial_modules_section:
 
 =======================================================
-Tutorial: Running Larch Scripts, and Modules
+Running Larch Scripts, and Modules
 =======================================================
 
 Once you've done any significant amount of work with Larch, you'll want to
@@ -24,14 +24,14 @@ If you have a Larch script, you can run it with the built-in :func:`run`
 function::
 
     # file myscript.lar
-    print 'hello from myscript.lar!'
+    print('hello from myscript.lar!')
 
     name = 'Fred'
     phi  = (sqrt(5)+1)/2
 
     for i in range(5):
-       print i, sqrt(i)
-    endfor
+       print(i, sqrt(i))
+    #endfor
     # end of file myscript.lar
 
 To run this, you simply type::
@@ -50,7 +50,7 @@ script will exist in your larch session.  For example, running the above
 script, there will be variables ``name``, ``phi``, and ``i`` (and ``i``
 will hold the value 4), and you can access these::
 
-    larch> print i, name, phi
+    larch> print(i, name, phi)
     4 Fred 1.61803398875
 
 These variables are held in the "top-level namespace", ``_main``, about which
@@ -71,7 +71,7 @@ using the ``import`` statement::
 
 Notice a few differences: First, the '.lar' suffix was removed.  Second,
 the name is not in quotes.  The content of the file is still run, and the
-``print`` statements still prints output.  But now the variables ``name``,
+``print`` function still prints output.  But now the variables ``name``,
 ``phi``, and ``i`` are held in a group named ``myscript``.  Compared to the
 :func:`run` function above, this provides better organization, as the
 variable names are not in the top-level group, but in their own group,

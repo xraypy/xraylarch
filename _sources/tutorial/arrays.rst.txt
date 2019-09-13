@@ -1,7 +1,7 @@
 .. _tutor-array_sec:
 
 =====================================================
-Tutorial: Basic Array Manipulation
+Basic Array Manipulation
 =====================================================
 
 .. _numpy: http://numpy.scipy.org/
@@ -664,4 +664,3 @@ What's more, many more are available by importing them from the scipy library.
 
 
 Many other functions that work on arrays are available from numpy subpackages and from scipy.
-

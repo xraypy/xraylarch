@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Larch &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>Larch &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -20,7 +18,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Getting Started with Larch" href="getting_started.html" />
+    <link rel="next" title="1. Getting Started with Larch" href="getting_started.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -28,11 +26,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="#">
-	 <img src="_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -51,7 +49,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="getting_started.html" title="Getting Started with Larch"
+          <a href="getting_started.html" title="1. Getting Started with Larch"
              accesskey="N">next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -66,7 +64,7 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <h3> Get Larch</h3>
-<p>Current version: <b>0.9.45</b></p>
+<p>Current version: <b>0.9.46</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="http://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -82,7 +80,7 @@ Mailing List</a> / <a href="community.html"> Community</a><br>
 
 <h3>Contents</h3>
 
-&nbsp; &nbsp; <a href="guis/index.html"> Graphical Interface Programs </a><br>
+&nbsp; &nbsp; <a href="guis.html"> Graphical Interface Programs </a><br>
 &nbsp; &nbsp; <a href="data/index.html"> Reading Data </a><br>
 &nbsp; &nbsp; <a href="plotting/index.html"> Plotting Data</a><br>
 &nbsp; &nbsp; <a href="fitting/index.html"> Fitting Data</a><br>
@@ -92,13 +90,11 @@ Mailing List</a> / <a href="community.html"> Community</a><br>
 &nbsp; &nbsp; <a href="tutorial/index.html"> Scripting Tutorial</a><br>
 &nbsp; &nbsp; <a href="devel/index.html"> Programming Guide</a><br>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -131,12 +127,12 @@ analysis.</p>
 <p>Larch has several related target application areas:</p>
 <blockquote>
 <div><ul class="simple">
-<li>XAFS analysis, replacing and extending the Ifeffit Package for EXAFS analysis.</li>
-<li>Visualizing and analyzing micro-X-ray fluorescence and X-ray diffraction maps.</li>
-<li>Quantitative X-ray fluorescence analysis.</li>
-<li>Data collection software for synchrotron data.</li>
-<li>Providing simple access to tabulated X-ray properties of the elements
-and materials.</li>
+<li><p>XAFS analysis, replacing and extending the Ifeffit Package for EXAFS analysis.</p></li>
+<li><p>Visualizing and analyzing micro-X-ray fluorescence and X-ray diffraction maps.</p></li>
+<li><p>Quantitative X-ray fluorescence analysis.</p></li>
+<li><p>Data collection software for synchrotron data.</p></li>
+<li><p>Providing simple access to tabulated X-ray properties of the elements
+and materials.</p></li>
 </ul>
 </div></blockquote>
 <p>A key idea is that these otherwise different application areas can share
@@ -154,88 +150,181 @@ scientific Python environment and several applications.</p>
 <p>The following table lists the main Larch applications.  New and
 in-development features and application will be explicitly described as
 “beta”.</p>
-<dl class="docutils" id="larch-app-table">
-<dt><strong>Table of Larch Applications and Programs</strong></dt>
-<dd><blockquote class="first">
-<div>The applications installed with Larch. Here, GUI = Graphical User
+<dl id="larch-app-table">
+<dt><strong>Table of Larch Applications and Programs</strong></dt><dd><blockquote>
+<div><p>The applications installed with Larch. Here, GUI = Graphical User
 Interface, CLI = Command Line Interface, and <cite>beta</cite> indicates a
-work in progress.</div></blockquote>
-<table border="1" class="last docutils">
+work in progress.</p>
+</div></blockquote>
+<table class="docutils align-default">
 <colgroup>
-<col width="24%" />
-<col width="12%" />
-<col width="63%" />
+<col style="width: 24%" />
+<col style="width: 12%" />
+<col style="width: 63%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Application Name</th>
-<th class="head">GUI / CLI</th>
-<th class="head">Description</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Application Name</p></th>
+<th class="head"><p>GUI / CLI</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>larch</td>
-<td>CLI</td>
-<td>simple command-lne interface</td>
+<tbody>
+<tr class="row-even"><td><p>larch</p></td>
+<td><p>CLI</p></td>
+<td><p>simple command-lne interface</p></td>
 </tr>
-<tr class="row-odd"><td>larch_gui</td>
-<td>GUI</td>
-<td>enhanced command-lne interface with data browser</td>
+<tr class="row-odd"><td><p>larch_gui</p></td>
+<td><p>GUI</p></td>
+<td><p>enhanced command-lne interface with data browser</p></td>
 </tr>
-<tr class="row-even"><td>gse_mapviewer</td>
-<td>GUI</td>
-<td>XRF Map Viewer for GSECARS X-ray microprobe data.</td>
+<tr class="row-even"><td><p>gse_mapviewer</p></td>
+<td><p>GUI</p></td>
+<td><p>XRF Map Viewer for GSECARS X-ray microprobe data.</p></td>
 </tr>
-<tr class="row-odd"><td>xas_viewer</td>
-<td>GUI</td>
-<td>Display XANES data, and Pre-edge Peak Fitting.</td>
+<tr class="row-odd"><td><p>xas_viewer</p></td>
+<td><p>GUI</p></td>
+<td><p>Display XANES data, and Pre-edge Peak Fitting.</p></td>
 </tr>
-<tr class="row-even"><td>xrfdisplay</td>
-<td>GUI</td>
-<td>Display and analyze XRF Spectra.</td>
+<tr class="row-even"><td><p>xrfdisplay</p></td>
+<td><p>GUI</p></td>
+<td><p>Display and analyze XRF Spectra.</p></td>
 </tr>
-<tr class="row-odd"><td>Dioptas</td>
-<td>GUI</td>
-<td>Display XRD images, calibrate to XRD patterns.</td>
+<tr class="row-odd"><td><p>Dioptas</p></td>
+<td><p>GUI</p></td>
+<td><p>Display XRD images, calibrate to XRD patterns.</p></td>
 </tr>
-<tr class="row-even"><td>1D XRD Viewer</td>
-<td>GUI</td>
-<td>Display and work with 1-D XRD patterns (beta).</td>
+<tr class="row-even"><td><p>1D XRD Viewer</p></td>
+<td><p>GUI</p></td>
+<td><p>Display and work with 1-D XRD patterns (beta).</p></td>
 </tr>
-<tr class="row-odd"><td>2D XRD Viewer</td>
-<td>GUI</td>
-<td>Display  XRD images (beta)</td>
+<tr class="row-odd"><td><p>2D XRD Viewer</p></td>
+<td><p>GUI</p></td>
+<td><p>Display  XRD images (beta)</p></td>
 </tr>
-<tr class="row-even"><td>feff6l</td>
-<td>CLI</td>
-<td>Feff 6 EXAFS calculations</td>
+<tr class="row-even"><td><p>feff6l</p></td>
+<td><p>CLI</p></td>
+<td><p>Feff 6 EXAFS calculations</p></td>
 </tr>
-<tr class="row-odd"><td>feff8l</td>
-<td>CLI</td>
-<td>Feff 8 EXAFS calculations - no XANES</td>
+<tr class="row-odd"><td><p>feff8l</p></td>
+<td><p>CLI</p></td>
+<td><p>Feff 8 EXAFS calculations - no XANES</p></td>
+</tr>
+<tr class="row-even"><td><p>qtrixs</p></td>
+<td><p><cite>beta</cite></p></td>
+<td><p>Display RIXS planes, take profiles</p></td>
 </tr>
 </tbody>
 </table>
 </dd>
 </dl>
-<p>Larch is under active and open development, and has support from the U. S. National Science
-Foundation.</p>
+<p>Larch is under active and open development, and has support from the
+U. S. National Science Foundation.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started with Larch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Downloading and Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="community.html">2. Larch Community and Support</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">3. Larch: Motivation and Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guis.html">4. Larch GUIs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xasviewer/index.html">5. XASViewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gsemapviewer/index.html">6. GSECARS Mapviewr</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">7. Larch Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">8. Reading and Writing Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">9. Plotting and Displaying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">10. Fitting and Modeling Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">11. XAFS Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xray/index.html">12. X-ray Databases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">13. X-ray Fluorescence Analysis with Larch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="devel/index.html">14. Programming with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">1. Getting Started with Larch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-install-larch">1.1. First, install Larch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#second-use-athena-xasviewer-and-or-gsemapviewer">1.2. Second, use Athena, XASViewer and/or GSEMapViewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#third-start-scripting-with-larch-and-or-python">1.3. Third, start scripting with Larch and/or Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">2. Downloading and Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#single-file-installers">2.1. Single-File Installers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-with-python">2.2. Install with Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#getting-help-and-support">2.3. Getting Help and Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#docs-and-examples">2.4. Docs and Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#citing-larch">2.5. Citing Larch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#funding-and-support">2.6. Funding and Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#acknowledgements">2.7. Acknowledgements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#license">2.8. License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guis.html">3. Larch GUIs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guis.html#basic-larch-gui">3.1. Basic Larch GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xasviewer/index.html">4. XASViewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#reading-data-into-xas-viewer">4.1. Reading Data into XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#common-xas-processing-dialogs">4.2. Common XAS Processing Dialogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#pre-edge-subtraction-and-normalization">4.3. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#pre-edge-peak-fitting">4.4. Pre-edge peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#linear-combination-analysis">4.5. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#principal-component-and-non-negative-factor-analysis">4.6. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#exafs-processing-background-subtraction">4.7. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#exafs-processing-fourier-transforms">4.8. EXAFS Processing:  Fourier Transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gsemapviewer/index.html">5. GSECARS Mapviewr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qtrixs/index.html">6. QtRIXS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qtrixs/index.html#reading-rixs-data">6.1. Reading RIXS data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtrixs/index.html#plotting-rixs-data">6.2. Plotting RIXS data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">7. Larch Language Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/start.html">7.1. Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/datatypes.html">7.2. Basic and Complex Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/arrays.html">7.3. Basic Array Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/flow.html">7.4. Conditional Execution and Flow Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/errors.html">7.5. Dealing With Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/procedures.html">7.6. Writing Functions or Procedures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/modules.html">7.7. Running Larch Scripts, and Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/builtins.html">7.8. Builtin Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">8. Reading and Writing Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#simple-ascii-column-files">8.1. Simple ASCII Column Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#athena-project-files">8.2. Athena Project Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#using-hdf5-files">8.3. Using HDF5 Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-netcdf-files">8.4. Reading NetCDF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-tiff-images">8.5. Reading TIFF Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#working-with-epics-channel-access">8.6. Working with Epics Channel Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-scan-data-from-aps-beamlines">8.7. Reading Scan Data from APS Beamlines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-xafs-data-interchange-xdi-files">8.8. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#saving-and-restoring-larch-groups">8.9. Saving and Restoring Larch Groups</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">9. Plotting and Displaying Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#line-plots">9.1. Line Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#image-display-and-contour">9.2. Image Display and Contour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#advanced-plotting-using-matplotlib">9.3. Advanced Plotting: using matplotlib</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">10. Fitting and Modeling Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting/overview.html">10.1. Fitting Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/parameters.html">10.2. Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/minimize.html">10.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/results.html">10.4. Fit Results and Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/lineshapes.html">10.5. Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/examples.html">10.6. Fit Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/fitpeaks.html">10.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/confidence.html">10.8. Advanced Confidence Intervals and Chi-square maps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">11. XAFS Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xafs/utilities.html">11.1. XAFS Functions: Overview and Naming Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/preedge.html">11.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/xanes.html">11.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/autobk.html">11.4. XAFS: Post-edge Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/xafsft.html">11.5. XAFS: Fourier Transforms for XAFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/wavelets.html">11.6. XAFS: Wavelet Transforms for XAFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/feffpaths.html">11.7. XAFS: Reading and using Feff Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/feffit.html">11.8. XAFS: Fitting XAFS to Feff Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/diffkk.html">11.9. XAFS: Computing anomalous scattering factors from XAFS data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xray/index.html">12. X-ray Databases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xray/index.html#x-ray-properties-of-the-elements">12.1. X-ray Properties of the Elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xray/index.html#x-ray-properties-of-materials-and-chemicals">12.2. X-ray Properties of Materials and Chemicals</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">13. X-ray Fluorescence Analysis with Larch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xrf/index.html#mca-and-roi-objects">13.1. MCA and ROI objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xrf/index.html#creating-mca-objects">13.2. Creating MCA objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devel/index.html">14. Programming with Larch from Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devel/index.html#module-larch">14.1. Larch submodules</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="biblio.html">15. Bibliography</a></li>
 </ul>
 </div>
@@ -254,7 +343,7 @@ Foundation.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="getting_started.html" title="Getting Started with Larch"
+          <a href="getting_started.html" title="1. Getting Started with Larch"
              >next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -267,7 +356,7 @@ Foundation.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

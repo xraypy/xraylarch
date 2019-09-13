@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9. Plotting and Displaying Data &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>9. Plotting and Displaying Data &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -29,11 +27,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -73,7 +71,7 @@
   <ul>
 <li><a class="reference internal" href="#">9. Plotting and Displaying Data</a><ul>
 <li><a class="reference internal" href="#line-plots">9.1. Line Plots</a><ul>
-<li><a class="reference internal" href="#plot-newplot-and-oplot">9.1.1. <code class="docutils literal notranslate"><span class="pre">plot()</span></code>, <code class="docutils literal notranslate"><span class="pre">newplot()</span></code>, and <code class="docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
+<li><a class="reference internal" href="#plot-newplot-and-oplot">9.1.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
 <li><a class="reference internal" href="#plot-examples">9.1.2. Plot Examples</a></li>
 <li><a class="reference internal" href="#interactive-use-of-the-plot-windows">9.1.3. Interactive Use of the Plot Windows</a></li>
 <li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">9.1.4. Using TeX-like commands for labels and titles</a></li>
@@ -99,13 +97,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -162,60 +158,48 @@ by the keyword/value arguments described in the <a class="reference internal" hr
 Arguments</span></a> below.</p>
 <dl class="method">
 <dt id="_plotter.plot">
-<code class="descclassname">_plotter.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – array of x values</li>
-<li><strong>y</strong> – array of y values – same size as x</li>
-<li><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</li>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – array of x values</p></li>
+<li><p><strong>y</strong> – array of y values – same size as x</p></li>
+<li><p><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>Plot y(x) given 1-dimensional x and y arrays – these must be of the
 same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.newplot">
-<code class="descclassname">_plotter.</code><code class="descname">newplot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – array of x values</li>
-<li><strong>y</strong> – array of y values – same size as x</li>
-<li><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</li>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">newplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – array of x values</p></li>
+<li><p><strong>y</strong> – array of y values – same size as x</p></li>
+<li><p><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
 The rest of the arguments are as</p>
 </dd></dl>
 
 <dl class="method">
 <dt>
-<code class="descclassname">_plotter.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – array of x values</li>
-<li><strong>y</strong> – array of y values – same size as x</li>
-<li><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</li>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – array of x values</p></li>
+<li><p><strong>y</strong> – array of y values – same size as x</p></li>
+<li><p><strong>kws</strong> – optional commands as listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=False</cite>.</p>
 </dd></dl>
 
@@ -225,230 +209,230 @@ The rest of the arguments are as</p>
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
 <div><blockquote>
-<div><table border="1" class="docutils">
+<div><table class="docutils align-default">
 <colgroup>
-<col width="15%" />
-<col width="12%" />
-<col width="9%" />
-<col width="49%" />
-<col width="13%" />
+<col style="width: 15%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 49%" />
+<col style="width: 13%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">argument</th>
-<th class="head">type</th>
-<th class="head">default</th>
-<th class="head">meaning</th>
-<th class="head">scatterplot?</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>argument</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>meaning</p></th>
+<th class="head"><p>scatterplot?</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>title</td>
-<td>string</td>
-<td>None</td>
-<td>Plot title</td>
-<td>yes</td>
+<tbody>
+<tr class="row-even"><td><p>title</p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+<td><p>Plot title</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>ylabel</td>
-<td>string</td>
-<td>None</td>
-<td>abscissa label</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>ylabel</p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+<td><p>abscissa label</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>y2label</td>
-<td>string</td>
-<td>None</td>
-<td>right-hand abscissa label</td>
-<td>yes</td>
+<tr class="row-even"><td><p>y2label</p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+<td><p>right-hand abscissa label</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>label</td>
-<td>string</td>
-<td>None</td>
-<td>trace label (defaults to ‘trace N’)</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>label</p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+<td><p>trace label (defaults to ‘trace N’)</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>win</td>
-<td>integer</td>
-<td>1</td>
-<td>index of plot window to use (1, 2, …, 16)</td>
-<td>yes</td>
+<tr class="row-even"><td><p>win</p></td>
+<td><p>integer</p></td>
+<td><p>1</p></td>
+<td><p>index of plot window to use (1, 2, …, 16)</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>side</td>
-<td>left/right</td>
-<td>left</td>
-<td>side for y-axis and label</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>side</p></td>
+<td><p>left/right</p></td>
+<td><p>left</p></td>
+<td><p>side for y-axis and label</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>grid</td>
-<td>None/bool</td>
-<td>None</td>
-<td>to show grid lines</td>
-<td>yes</td>
+<tr class="row-even"><td><p>grid</p></td>
+<td><p>None/bool</p></td>
+<td><p>None</p></td>
+<td><p>to show grid lines</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>fullbox</td>
-<td>bool</td>
-<td>True</td>
-<td>to show full box (not just left + bottom axes)</td>
-<td>no</td>
+<tr class="row-odd"><td><p>fullbox</p></td>
+<td><p>bool</p></td>
+<td><p>True</p></td>
+<td><p>to show full box (not just left + bottom axes)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>color</td>
-<td>string</td>
-<td>blue</td>
-<td>color to use for trace</td>
-<td>yes</td>
+<tr class="row-even"><td><p>color</p></td>
+<td><p>string</p></td>
+<td><p>blue</p></td>
+<td><p>color to use for trace</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>bgcolor</td>
-<td>string</td>
-<td>white</td>
-<td>color to use for plot background</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>bgcolor</p></td>
+<td><p>string</p></td>
+<td><p>white</p></td>
+<td><p>color to use for plot background</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>framecolor</td>
-<td>string</td>
-<td>white</td>
-<td>color to use for outer plot frame</td>
-<td>yes</td>
+<tr class="row-even"><td><p>framecolor</p></td>
+<td><p>string</p></td>
+<td><p>white</p></td>
+<td><p>color to use for outer plot frame</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>gridcolor</td>
-<td>string</td>
-<td>gray</td>
-<td>color to use grid</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>gridcolor</p></td>
+<td><p>string</p></td>
+<td><p>gray</p></td>
+<td><p>color to use grid</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>use_dates</td>
-<td>bool</td>
-<td>False</td>
-<td>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</td>
-<td>no</td>
+<tr class="row-even"><td><p>use_dates</p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>linewidth</td>
-<td>int</td>
-<td>2</td>
-<td>linewidth for trace</td>
-<td>no</td>
+<tr class="row-odd"><td><p>linewidth</p></td>
+<td><p>int</p></td>
+<td><p>2</p></td>
+<td><p>linewidth for trace</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>style</td>
-<td>string</td>
-<td>solid</td>
-<td>line-style for trace (solid, dashed, …)</td>
-<td>no</td>
+<tr class="row-even"><td><p>style</p></td>
+<td><p>string</p></td>
+<td><p>solid</p></td>
+<td><p>line-style for trace (solid, dashed, …)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>drawstyle</td>
-<td>string</td>
-<td>line</td>
-<td>style connecting points of trace</td>
-<td>no</td>
+<tr class="row-odd"><td><p>drawstyle</p></td>
+<td><p>string</p></td>
+<td><p>line</p></td>
+<td><p>style connecting points of trace</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>marker</td>
-<td>string</td>
-<td>None</td>
-<td>symbol to show for each point (+, o, ….)</td>
-<td>no</td>
+<tr class="row-even"><td><p>marker</p></td>
+<td><p>string</p></td>
+<td><p>None</p></td>
+<td><p>symbol to show for each point (+, o, ….)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>markersize</td>
-<td>int</td>
-<td>8</td>
-<td>size of marker shown for each point</td>
-<td>no</td>
+<tr class="row-odd"><td><p>markersize</p></td>
+<td><p>int</p></td>
+<td><p>8</p></td>
+<td><p>size of marker shown for each point</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>labelfontsize</td>
-<td>int</td>
-<td>9</td>
-<td>font size of labels</td>
-<td>no</td>
+<tr class="row-even"><td><p>labelfontsize</p></td>
+<td><p>int</p></td>
+<td><p>9</p></td>
+<td><p>font size of labels</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>legendfontsize</td>
-<td>int</td>
-<td>7</td>
-<td>font size of legend</td>
-<td>no</td>
+<tr class="row-odd"><td><p>legendfontsize</p></td>
+<td><p>int</p></td>
+<td><p>7</p></td>
+<td><p>font size of legend</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>dy</td>
-<td>array</td>
-<td>None</td>
-<td>uncertainties for y values; error bars</td>
-<td>no</td>
+<tr class="row-even"><td><p>dy</p></td>
+<td><p>array</p></td>
+<td><p>None</p></td>
+<td><p>uncertainties for y values; error bars</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>ylog_scale</td>
-<td>bool</td>
-<td>False</td>
-<td>draw y axis with log(base 10) scale</td>
-<td>no</td>
+<tr class="row-odd"><td><p>ylog_scale</p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>draw y axis with log(base 10) scale</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>xmin</td>
-<td>float</td>
-<td>None</td>
-<td>minimum displayed x value</td>
-<td>yes</td>
+<tr class="row-even"><td><p>xmin</p></td>
+<td><p>float</p></td>
+<td><p>None</p></td>
+<td><p>minimum displayed x value</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>xmax</td>
-<td>float</td>
-<td>None</td>
-<td>maximum displayed x value</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>xmax</p></td>
+<td><p>float</p></td>
+<td><p>None</p></td>
+<td><p>maximum displayed x value</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>ymin</td>
-<td>float</td>
-<td>None</td>
-<td>minimum displayed y value</td>
-<td>yes</td>
+<tr class="row-even"><td><p>ymin</p></td>
+<td><p>float</p></td>
+<td><p>None</p></td>
+<td><p>minimum displayed y value</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>ymax</td>
-<td>float</td>
-<td>None</td>
-<td>maximum displayed y value</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>ymax</p></td>
+<td><p>float</p></td>
+<td><p>None</p></td>
+<td><p>maximum displayed y value</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>autoscale</td>
-<td>bool</td>
-<td>True</td>
-<td>whether to automatically set plot limits</td>
-<td>no</td>
+<tr class="row-even"><td><p>autoscale</p></td>
+<td><p>bool</p></td>
+<td><p>True</p></td>
+<td><p>whether to automatically set plot limits</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>zorder</td>
-<td>None/int</td>
-<td>None</td>
-<td>Z-order of trace (which trace is on top)</td>
-<td>no</td>
+<tr class="row-odd"><td><p>zorder</p></td>
+<td><p>None/int</p></td>
+<td><p>None</p></td>
+<td><p>Z-order of trace (which trace is on top)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>show_legend</td>
-<td>None/bool</td>
-<td>None</td>
-<td>whether to display legend (None: leave as is)</td>
-<td>no</td>
+<tr class="row-even"><td><p>show_legend</p></td>
+<td><p>None/bool</p></td>
+<td><p>None</p></td>
+<td><p>whether to display legend (None: leave as is)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>legend_loc</td>
-<td>string</td>
-<td>‘ur’</td>
-<td>location of legend (‘ur’, ‘ll’, etc)</td>
-<td>no</td>
+<tr class="row-odd"><td><p>legend_loc</p></td>
+<td><p>string</p></td>
+<td><p>‘ur’</p></td>
+<td><p>location of legend (‘ur’, ‘ll’, etc)</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-even"><td>refresh</td>
-<td>bool</td>
-<td>True</td>
-<td>whether to refresh display</td>
-<td>no</td>
+<tr class="row-even"><td><p>refresh</p></td>
+<td><p>bool</p></td>
+<td><p>True</p></td>
+<td><p>whether to refresh display</p></td>
+<td><p>no</p></td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></td>
-<td>&#160;</td>
+<tr class="row-odd"><td></td>
+<td colspan="3"><p><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></p></td>
+<td></td>
 </tr>
-<tr class="row-even"><td>size</td>
-<td>int</td>
-<td>10</td>
-<td>size of marker</td>
-<td>yes</td>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>int</p></td>
+<td><p>10</p></td>
+<td><p>size of marker</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-odd"><td>edgecolor</td>
-<td>string</td>
-<td>black</td>
-<td>edge color of marker</td>
-<td>yes</td>
+<tr class="row-odd"><td><p>edgecolor</p></td>
+<td><p>string</p></td>
+<td><p>black</p></td>
+<td><p>edge color of marker</p></td>
+<td><p>yes</p></td>
 </tr>
-<tr class="row-even"><td>selectcolor</td>
-<td>string</td>
-<td>red</td>
-<td>color for selected points</td>
-<td>yes</td>
+<tr class="row-even"><td><p>selectcolor</p></td>
+<td><p>string</p></td>
+<td><p>red</p></td>
+<td><p>color for selected points</p></td>
+<td><p>yes</p></td>
 </tr>
 </tbody>
 </table>
@@ -482,7 +466,7 @@ transition to a new value as a sudden step, you want ‘steps-post’.</p>
 </div></blockquote>
 <dl class="method">
 <dt id="_plotter.scatterplot">
-<code class="descclassname">_plotter.</code><code class="descname">scatterplot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">scatterplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
 are not assumed to be in any particular order, and so are not connected
 with a line.  Arguments are very similar to those for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, and
@@ -491,23 +475,19 @@ are listed in  <a class="reference internal" href="#plotopt-table"><span class="
 
 <dl class="method">
 <dt id="_plotter.update_trace">
-<code class="descclassname">_plotter.</code><code class="descname">update_trace</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">update_trace</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">trace=1</em>, <em class="sig-param">win=1</em>, <em class="sig-param">side='left'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates an existing trace of a plot.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – array of x values</li>
-<li><strong>y</strong> – array of y values</li>
-<li><strong>win</strong> – integer index of window for plot (1 is the first window)</li>
-<li><strong>trace</strong> – integer index for the trace (1 is the first trace)</li>
-<li><strong>side</strong> – which y axis to use (‘left’ or ‘right’).</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – array of x values</p></li>
+<li><p><strong>y</strong> – array of y values</p></li>
+<li><p><strong>win</strong> – integer index of window for plot (1 is the first window)</p></li>
+<li><p><strong>trace</strong> – integer index for the trace (1 is the first trace)</p></li>
+<li><p><strong>side</strong> – which y axis to use (‘left’ or ‘right’).</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>This function is particularly useful for data to be plotted is changing
 and you wish to update traces from a previous <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> with new
 data without completely redrawing the entire plot.  Using this method
@@ -521,170 +501,142 @@ just happens that the data for the trace has been replaced.</p>
 
 <dl class="method">
 <dt id="_plotter.plot_text">
-<code class="descclassname">_plotter.</code><code class="descname">plot_text</code><span class="sig-paren">(</span><em>text</em>, <em>x</em>, <em>y</em>, <em>win=1</em>, <em>side='left'</em>, <em>rotation=None</em>, <em>ha='left'</em>, <em>va='center'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_text</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">win=1</em>, <em class="sig-param">side='left'</em>, <em class="sig-param">rotation=None</em>, <em class="sig-param">ha='left'</em>, <em class="sig-param">va='center'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>add text at x, y coordinates of the plot window</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>text</strong> – text to draw</li>
-<li><strong>x</strong> – x position of text</li>
-<li><strong>y</strong> – y position of text</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</li>
-<li><strong>rotation</strong> – text rotation. angle in degrees or ‘vertical’ or ‘horizontal’</li>
-<li><strong>ha</strong> – horizontal alignment (‘left’, ‘center’, ‘right’)</li>
-<li><strong>va</strong> – vertical alignment (‘top’, ‘center’, ‘bottom’, ‘baseline’)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – text to draw</p></li>
+<li><p><strong>x</strong> – x position of text</p></li>
+<li><p><strong>y</strong> – y position of text</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</p></li>
+<li><p><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</p></li>
+<li><p><strong>rotation</strong> – text rotation. angle in degrees or ‘vertical’ or ‘horizontal’</p></li>
+<li><p><strong>ha</strong> – horizontal alignment (‘left’, ‘center’, ‘right’)</p></li>
+<li><p><strong>va</strong> – vertical alignment (‘top’, ‘center’, ‘bottom’, ‘baseline’)</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.plot_arrow">
-<code class="descclassname">_plotter.</code><code class="descname">plot_arrow</code><span class="sig-paren">(</span><em>x1</em>, <em>y1</em>, <em>x2</em>, <em>y2</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_arrow</code><span class="sig-paren">(</span><em class="sig-param">x1</em>, <em class="sig-param">y1</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
 <dd><p>draw arrow from x1, y1 to x2, y2.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x1</strong> – starting x coordinate</li>
-<li><strong>y1</strong> – starting y coordinate</li>
-<li><strong>x2</strong> – endnig x coordinate</li>
-<li><strong>y2</strong> – ending y coordinate</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</li>
-<li><strong>shape</strong> – arrow head shape (‘full’, ‘left’, ‘right’)</li>
-<li><strong>fg</strong> – arrow fill color (‘black’)</li>
-<li><strong>width</strong> – width of arrow line (in points. default=0.0)</li>
-<li><strong>head_width</strong> – width of arrow head (in points. default=0.05)</li>
-<li><strong>head_length</strong> – length of arrow head (in points. default=0.25)</li>
-<li><strong>overhang</strong> – amount the arrow is swept back (in points. default=0)</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x1</strong> – starting x coordinate</p></li>
+<li><p><strong>y1</strong> – starting y coordinate</p></li>
+<li><p><strong>x2</strong> – endnig x coordinate</p></li>
+<li><p><strong>y2</strong> – ending y coordinate</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</p></li>
+<li><p><strong>side</strong> – which axis to use (‘left’ or ‘right’) for coordinates.</p></li>
+<li><p><strong>shape</strong> – arrow head shape (‘full’, ‘left’, ‘right’)</p></li>
+<li><p><strong>fg</strong> – arrow fill color (‘black’)</p></li>
+<li><p><strong>width</strong> – width of arrow line (in points. default=0.0)</p></li>
+<li><p><strong>head_width</strong> – width of arrow head (in points. default=0.05)</p></li>
+<li><p><strong>head_length</strong> – length of arrow head (in points. default=0.25)</p></li>
+<li><p><strong>overhang</strong> – amount the arrow is swept back (in points. default=0)</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.plot_marker">
-<code class="descclassname">_plotter.</code><code class="descname">plot_marker</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>marker='o'</em>, <em>size=4</em>, <em>color='black'</em>, <em>label='_nolegend_'</em>, <em>win=1</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_marker" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_marker</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">marker='o'</em>, <em class="sig-param">size=4</em>, <em class="sig-param">color='black'</em>, <em class="sig-param">label='_nolegend_'</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_marker" title="Permalink to this definition">¶</a></dt>
 <dd><p>draw a single marker at x, y</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – x coordinate</li>
-<li><strong>y</strong> – y coordinate</li>
-<li><strong>marker</strong> – symbol to draw at each point (‘+’, ‘o’, ‘x’, ‘square’, etc) [‘o’]</li>
-<li><strong>size</strong> – symbol size [4]</li>
-<li><strong>color</strong> – color for marker [‘black’]</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</li>
-<li><strong>kws</strong> – other arguments are semt to func:<cite>oplot</cite>.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate</p></li>
+<li><p><strong>y</strong> – y coordinate</p></li>
+<li><p><strong>marker</strong> – symbol to draw at each point (‘+’, ‘o’, ‘x’, ‘square’, etc) [‘o’]</p></li>
+<li><p><strong>size</strong> – symbol size [4]</p></li>
+<li><p><strong>color</strong> – color for marker [‘black’]</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</p></li>
+<li><p><strong>kws</strong> – other arguments are semt to func:<cite>oplot</cite>.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt>
-<code class="descname">plot_axhline(y, xmin=0, xmax=1, win=1, size=None, **kws):</code></dt>
+<code class="sig-name descname">plot_axhline(y, xmin=0, xmax=1, win=1, size=None, **kws):</code></dt>
 <dd><p>plot a horizontal line spanning the plot axes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>y</strong> – y position of line</li>
-<li><strong>xmin</strong> – starting x fraction (window units – not user units!) [0]</li>
-<li><strong>xmax</strong> – ending x fraction (window units – not user units!) [1]</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</li>
-<li><strong>kws</strong> – other arguments are semt to func:<cite>axes.axhline</cite></li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – y position of line</p></li>
+<li><p><strong>xmin</strong> – starting x fraction (window units – not user units!) [0]</p></li>
+<li><p><strong>xmax</strong> – ending x fraction (window units – not user units!) [1]</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</p></li>
+<li><p><strong>kws</strong> – other arguments are semt to func:<cite>axes.axhline</cite></p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt>
-<code class="descname">plot_axvline(x, ymin=0, ymax=1, win=1, size=None, **kws):</code></dt>
+<code class="sig-name descname">plot_axvline(x, ymin=0, ymax=1, win=1, size=None, **kws):</code></dt>
 <dd><p>plot a horizontal line spanning the plot axes</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> – x position of line</li>
-<li><strong>ymin</strong> – starting y fraction (window units – not user units!) [0]</li>
-<li><strong>ymax</strong> – ending y fraction (window units – not user units!) [1]</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</li>
-<li><strong>kws</strong> – other arguments are semt to func:<cite>axes.axvline</cite></li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x position of line</p></li>
+<li><p><strong>ymin</strong> – starting y fraction (window units – not user units!) [0]</p></li>
+<li><p><strong>ymax</strong> – ending y fraction (window units – not user units!) [1]</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame. [1]</p></li>
+<li><p><strong>kws</strong> – other arguments are semt to func:<cite>axes.axvline</cite></p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.save_plot">
-<code class="descclassname">_plotter.</code><code class="descname">save_plot</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_plot</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">dpi=600</em>, <em class="sig-param">format=None</em>, <em class="sig-param">win=1</em>, <em class="sig-param">facecolor='w'</em>, <em class="sig-param">edgecolor='w'</em>, <em class="sig-param">transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current plot to a PNG or other output formats.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – name of output file</li>
-<li><strong>dpi</strong> – resolution (dots per inch)</li>
-<li><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>facecolor</strong> – color of plot background (not supported for all formats)</li>
-<li><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</li>
-<li><strong>transparent</strong> – whether to use a transparent background.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of output file</p></li>
+<li><p><strong>dpi</strong> – resolution (dots per inch)</p></li>
+<li><p><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</p></li>
+<li><p><strong>facecolor</strong> – color of plot background (not supported for all formats)</p></li>
+<li><p><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</p></li>
+<li><p><strong>transparent</strong> – whether to use a transparent background.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.save_image">
-<code class="descclassname">_plotter.</code><code class="descname">save_image</code><span class="sig-paren">(</span><em>filename</em>, <em>dpi=600</em>, <em>format=None</em>, <em>win=1</em>, <em>facecolor='w'</em>, <em>edgecolor='w'</em>, <em>transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_image</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">dpi=600</em>, <em class="sig-param">format=None</em>, <em class="sig-param">win=1</em>, <em class="sig-param">facecolor='w'</em>, <em class="sig-param">edgecolor='w'</em>, <em class="sig-param">transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current 2D image from <a class="reference internal" href="#_plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – name of output file</li>
-<li><strong>dpi</strong> – resolution (dots per inch)</li>
-<li><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</li>
-<li><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</li>
-<li><strong>facecolor</strong> – color of plot background (not supported for all formats)</li>
-<li><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</li>
-<li><strong>transparent</strong> – whether to use a transparent background.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of output file</p></li>
+<li><p><strong>dpi</strong> – resolution (dots per inch)</p></li>
+<li><p><strong>format</strong> – output format (one of ‘png’, ‘pdf’, or ‘svg’)</p></li>
+<li><p><strong>win</strong> – index of Plot Frame (0, 1, etc).  May create a new Plot Frame.</p></li>
+<li><p><strong>facecolor</strong> – color of plot background (not supported for all formats)</p></li>
+<li><p><strong>edgecolor</strong> – color of plot frame color (not supported for all formats)</p></li>
+<li><p><strong>transparent</strong> – whether to use a transparent background.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.get_display">
-<code class="descclassname">_plotter.</code><code class="descname">get_display</code><span class="sig-paren">(</span><em>win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.get_display" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">get_display</code><span class="sig-paren">(</span><em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.get_display" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the underlying Display object. For advanced usage, this allows
 access to the PlotDisplay object, which is the wxPython frame for the
 plot window.  The plot itself is contained in the <code class="docutils literal notranslate"><span class="pre">panel</span></code> attribute,
@@ -703,18 +655,18 @@ more details, see <a class="reference internal" href="#plot-mpl-sec"><span class
 </pre></div>
 </div>
 <p>will make this plot:</p>
-<div class="figure" id="id1">
+<div class="figure align-default" id="id1">
 <span id="plotting-fig1"></span><a class="reference external image-reference" href="../_images/plot_basic1.png"><img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.1.1 </span><span class="caption-text">A basic line plot.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.1.1 </span><span class="caption-text">A basic line plot.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Adding a second curve, and setting some labels:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example Plot&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will make this plot:</p>
-<div class="figure" id="id2">
+<div class="figure align-default" id="id2">
 <span id="plotting-fig2"></span><a class="reference external image-reference" href="../_images/plot_basic2.png"><img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.1.2 </span><span class="caption-text">A line plot with two curves.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.1.2 </span><span class="caption-text">A line plot with two curves.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="interactive-use-of-the-plot-windows">
@@ -759,9 +711,9 @@ all systems, in which case saving an image and printing that should</p>
 Options-&gt;’Configure Plot’ (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
 like this:</p>
-<div class="figure" id="id3">
+<div class="figure align-default" id="id3">
 <span id="plotting-fig3"></span><a class="reference external image-reference" href="../_images/plot_config.png"><img alt="../_images/plot_config.png" src="../_images/plot_config.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.1.3 </span><span class="caption-text">Screenshot of the Configuration window for Plots.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.1.3 </span><span class="caption-text">Screenshot of the Configuration window for Plots.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>From here you can set the titles, axis labels, and styles, colors, symbols,
 labels, and so on for each of the line traces drawn.</p>
@@ -802,42 +754,34 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <h2>9.2. Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
 <dt id="_plotter.imshow">
-<code class="descclassname">_plotter.</code><code class="descname">imshow</code><span class="sig-paren">(</span><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dat</strong> – 2-d array of some intensity</li>
-<li><strong>x</strong> – 1-d array of x values</li>
-<li><strong>y</strong> – 1-d array of y values</li>
-<li><strong>colormap</strong> – name of color table to use.</li>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">imshow</code><span class="sig-paren">(</span><em class="sig-param">dat</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">colormap=None</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> – 2-d array of some intensity</p></li>
+<li><p><strong>x</strong> – 1-d array of x values</p></li>
+<li><p><strong>y</strong> – 1-d array of y values</p></li>
+<li><p><strong>colormap</strong> – name of color table to use.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>display a grey-scale or false-color image from a 2-d array of intensities.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="_plotter.contour">
-<code class="descclassname">_plotter.</code><code class="descname">contour</code><span class="sig-paren">(</span><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>nlevels=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dat</strong> – 2-d array of some intensity</li>
-<li><strong>x</strong> – 1-d array of x values</li>
-<li><strong>y</strong> – 1-d array of y values</li>
-<li><strong>colormap</strong> – name of color table to use.</li>
-<li><strong>nlevels</strong> – number of contour levels shown</li>
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">contour</code><span class="sig-paren">(</span><em class="sig-param">dat</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">colormap=None</em>, <em class="sig-param">nlevels=None</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> – 2-d array of some intensity</p></li>
+<li><p><strong>x</strong> – 1-d array of x values</p></li>
+<li><p><strong>y</strong> – 1-d array of y values</p></li>
+<li><p><strong>colormap</strong> – name of color table to use.</p></li>
+<li><p><strong>nlevels</strong> – number of contour levels shown</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>display a grey-scale or false-color contour map from a 2-d array of intensities.</p>
 </dd></dl>
 
@@ -877,14 +821,14 @@ image, generated with</p>
 </pre></div>
 </div>
 <p>is shown below:</p>
-<div class="figure" id="id4">
+<div class="figure align-default" id="id4">
 <span id="plotting-fig4"></span><a class="reference external image-reference" href="../_images/plot_image1.png"><img alt="../_images/plot_image1.png" src="../_images/plot_image1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.1 </span><span class="caption-text">A false-color display of 2 dimensional image data.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.1 </span><span class="caption-text">A false-color display of 2 dimensional image data.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>and as a contour plot, with a different color table:</p>
-<div class="figure" id="id5">
+<div class="figure align-default" id="id5">
 <span id="plotting-fig5"></span><a class="reference external image-reference" href="../_images/plot_contour1.png"><img alt="../_images/plot_contour1.png" src="../_images/plot_contour1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.2.2 </span><span class="caption-text">A contour plot of 2 dimensional image data.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.2.2 </span><span class="caption-text">A contour plot of 2 dimensional image data.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="advanced-plotting-using-matplotlib">
@@ -952,9 +896,9 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p>which generates a plot that looks like</p>
-<div class="figure" id="id6">
+<div class="figure align-default" id="id6">
 <span id="plotting-fig6"></span><a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 9.3.1 </span><span class="caption-text">A histogram plot made using matplotlib’s <code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code> function.</span></p>
+<p class="caption"><span class="caption-number">Figure 9.3.1 </span><span class="caption-text">A histogram plot made using matplotlib’s <code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code> function.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
@@ -988,7 +932,7 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

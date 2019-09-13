@@ -48,10 +48,3 @@ is in the default search path.
    feffpaths
    feffit
    diffkk
-
-.. rubric:: References
-
-.. bibliography:: ../larch.bib
-   :style: unsrt
-   :labelprefix: XAFS_
-   :filter: docname in docnames

@@ -200,11 +200,3 @@ Another possibility is measurement of data over much longer data
 ranges so that the matching algorithm can be made to do a good job far
 away from the absorption edges.  Or perhaps a non-differential
 algorithm would be more appropriate for L edge data.
-
-
-.. rubric:: References
-
-.. bibliography:: ../larch.bib
-   :style: unsrt
-   :labelprefix: DiffKK
-   :filter: docname in docnames

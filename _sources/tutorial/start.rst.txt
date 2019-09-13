@@ -1,19 +1,17 @@
 =================================
-Tutorial: Getting Started
+Getting Started
 =================================
 
 This tutorial expects that you already have Larch installed and can run
-either the program larch, basic Larch interpreter, or larch_gui, the
-enhanced GUI interpreter::
+either the program `larch`, basic Larch command-line shell program
+or 'Larch GUI`, the enhanced GUI interpreter::
 
    C:> larch
-     Larch 0.9.17 (9-Dec-2012) M. Newville, T. Trainor
-     using python 2.7.3, numpy 1.6.2, wx-enabled, wx version 2.9.4.0
-   larch>
-
-
-For Windows, you can start larch_gui or the larch shell program from the
-Windows Start Menu.
+   ===========================================================================
+   Larch 0.9.46 (2019-Sep-12) M. Newville, M. Koker, B. Ravel, and others
+   Python 3.7.0 (default, Jun 28 2018, 07:39:16)
+   numpy 1.16.4, scipy 1.3.0, matplotlib 3.1.0, lmfit 0.9.14, wx 4.0.6
+   ===========================================================================
 
 As of this writing, the Larch GUI is little more than an enhanced command-line
 shell, though it does include a "Data Browser" menu that allows you to view
@@ -39,10 +37,10 @@ values, and then use these in calculations::
    larch> hc = 12398.419
    larch> d = 3.13556
    larch> energy = (hc/(2*d)) / sin(10.0*pi/180)
-   larch> print energy
+   larch> print(energy)
    11385.470119348252
    larch> angle = asin(hc/(10000*2*d))*180/pi
-   larch> print angle
+   larch> print(angle)
    11.402879992850263
 
 Note that parentheses are used to group multiplication and division, and
@@ -78,4 +76,3 @@ the calculation on the right-hand-side of the equal sign results in a value
 distinction may seem subtle, but it can have some profound results, as
 we'll see in the following section when discussing lists and other dynamic
 values.
-

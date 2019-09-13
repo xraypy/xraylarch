@@ -1,5 +1,5 @@
 =====================================================
-Tutorial: Builtin Functions
+Builtin Functions
 =====================================================
 
 Larch has several general built-in functions for basic manipulation of data and
@@ -43,12 +43,12 @@ Python).  Many help you work with Larch groups or otherwise simplify common task
    get object from symbol table by name.  For example::
 
       larch> g = group(a = 1,  b=2.3, z = 'a string')
-      larch> print get('g.z')
+      larch> print(get('g.z'))
       'a string'
 
    this is can also be accomplished by the similar::
 
-      larch> print getattr(g, 'z')
+      larch> print( getattr(g, 'z'))
       'a string'
 
    but the :func:`get` version uses only the name of the object.
@@ -91,7 +91,7 @@ Python).  Many help you work with Larch groups or otherwise simplify common task
          'fe2o3_rt1.xmu', 'fe3c_rt.xdi', 'feo_exafs_pnccat2001.dat',
          'feo_rt1.xmu', 'feo_xafs.dat', 'scorodite_as_xafs.001', 'znse_zn_xafs.001']
         larch> xdifiles = ls('*.xdi')
-        larch> print xdifiles
+        larch> print((xdifiles)
         ['cu_metal_rt.xdi', 'fe3c_rt.xdi']
 
 
@@ -495,4 +495,3 @@ Builtin functions inherited from Python
     Return a list of tuples, where each tuple contains the i-th element
     from each of the argument sequences.  The returned list is truncated
     in length to the length of the shortest argument sequence.
-

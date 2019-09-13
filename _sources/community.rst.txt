@@ -1,4 +1,4 @@
-.. xraylarch documentation master file
+
 
 =====================================
 Larch Community and Support

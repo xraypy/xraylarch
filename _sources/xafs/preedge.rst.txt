@@ -626,10 +626,3 @@ with results shown below:
 
     Example of simple usage of :func:`xas_deconvolve` and
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
-
-.. rubric:: References
-
-.. bibliography:: ../larch.bib
-   :style: unsrt
-   :labelprefix: Preedge_
-   :filter: docname in docnames

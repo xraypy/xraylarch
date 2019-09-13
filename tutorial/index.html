@@ -1,13 +1,11 @@
 
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>7. Larch Tutorial &#8212; larch 0.9.45 documentation</title>
+    <meta charset="utf-8" />
+    <title>7. Larch Language Tutorial &#8212; larch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -20,8 +18,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.1. Tutorial: Getting Started" href="start.html" />
-    <link rel="prev" title="6. GSECARS Mapviewr" href="../gsemapviewer/index.html" />
+    <link rel="next" title="7.1. Getting Started" href="start.html" />
+    <link rel="prev" title="6. QtRIXS" href="../qtrixs/index.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
 			 "HTML-CSS": {scale: 90}});
@@ -29,11 +27,11 @@
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
-<table border=1>
+<table border=0>
   <tr>
     <td width=20%>
 	<a href="../index.html">
-	 <img src="../_static/larchcones.png" height=60px alt="larchcones"/></a>
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
     </td>
     <td width=75% padding=0>
       <font size=+2>
@@ -52,10 +50,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="start.html" title="7.1. Tutorial: Getting Started"
+          <a href="start.html" title="7.1. Getting Started"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../gsemapviewer/index.html" title="6. GSECARS Mapviewr"
+          <a href="../qtrixs/index.html" title="6. QtRIXS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -70,11 +68,11 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../gsemapviewer/index.html"
-                        title="previous chapter">6. GSECARS Mapviewr</a></p>
+  <p class="topless"><a href="../qtrixs/index.html"
+                        title="previous chapter">6. QtRIXS</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="start.html"
-                        title="next chapter">7.1. Tutorial: Getting Started</a></p>
+                        title="next chapter">7.1. Getting Started</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -83,13 +81,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -102,18 +98,35 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="larch-tutorial">
-<span id="tutorial-chapter"></span><h1>7. Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
-<p>At its core, Larch is a language for processing of scientific data.  This
-chapter describes the Larch language and introduces data processing using
-Larch.  An important goal of Larch is to make writing and modifying data
-analysis scripts as simple as possible.</p>
-<p>Although aimed at the novice programmer, this tutorial does make a few
-assumptions about the readers experience with scientific programming.  For
-example, the reader is expected to have a technical background and some
-familiarity with using scientific data analysis programs.  Some
-understanding of the concepts of how scientific data is stored on computers
-and of the basics of programming will greatly help the reader.</p>
+  <div class="section" id="larch-language-tutorial">
+<span id="tutorial-chapter"></span><h1>7. Larch Language Tutorial<a class="headerlink" href="#larch-language-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Larch provides both a Python programming library and Python-like
+programming or macro language (which we’ll call <em>Larch macro language</em>
+here) for processing of scientific data.  You can use either of these to
+interact with the X-ray analysis functions described throughout this
+document.  If you already know Python or are interested in learning and
+using Python, we definitely encourage to use the Python interface.</p>
+<p>Here, the <em>Larch macro language</em> is described in some detail. This macro
+language is a dialect of Python and is used for the Larch command-line
+shell program.  This macro language is also used for communication between
+the Larch server process and Athena/Artemis.  Perhaps most importantly, it
+is also embedded in the Larch GUI applications so that you can “open the
+Larch buffer” and use the Larch/Python functions on the data that has been
+loaded into the GUI.  The <em>XAS Viewer</em> program really does all of its work
+with the Larch buffer so that you can see the complete (if somewhat)
+verbose list of commands and functions it is running when processing your
+data.  You can take these commands as documentation of the processing steps
+or use them as examples for writing batch processing scripts or more
+complex programs.</p>
+<p>This chapter describes the Larch language and using it for data processing.
+An important goal of Larch is to make writing and modifying data analysis
+scripts as simple as possible.  Although aimed at the novice programmer,
+this tutorial does make a few assumptions about the readers experience with
+scientific programming.  For example, the reader is expected to have a
+technical background and some familiarity with using scientific data
+analysis programs.  Some understanding of the concepts of how scientific
+data is stored on computers and of the basics of programming will greatly
+help the reader.</p>
 <p>The Larch language is implemented in Python, and heavily based upon it.
 Knowledge of Python will greatly simplify learning Larch, and vice versa.
 This shared syntax is intentional, so that as you learn Larch, you will
@@ -121,43 +134,45 @@ also be learning Python, which can be used to extend Larch.  Alternatively,
 knowledge of Python will make Larch easy to learn.  For further details on
 Python, including tutorials, see the Python documentation at
 <a class="reference external" href="http://python.org/">http://python.org/</a></p>
+<p>If you are familar with Python and want to use the <cite>larch</cite> module from
+Python, skip ahead to <a class="reference internal" href="../devel/index.html#programming-chapter"><span class="std std-ref">14</span></a>.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="start.html">7.1. Tutorial: Getting Started</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="start.html">7.1. Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">7.1.1. Larch as a Basic Calculator</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="datatypes.html">7.2. Tutorial: Basic and Complex Data Types</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="datatypes.html">7.2. Basic and Complex Data Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">7.2.1. Basic Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">7.2.2. Objects and Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">7.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="datatypes.html#object-identities-copying-and-equality-vs-identity">7.2.4. Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="arrays.html">7.3. Tutorial: Basic Array Manipulation</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="arrays.html">7.3. Basic Array Manipulation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="arrays.html#functions-for-creating-arrays">7.3.1. Functions for creating arrays</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arrays.html#the-array-dtype-datatype">7.3.2. The array <em>dtype</em> – datatype</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#basic-array-manipulation">7.3.3. Basic array manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#id1">7.3.3. Basic array manipulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arrays.html#slicing-and-extracting-sub-arrays">7.3.4. Slicing and extracting sub-arrays</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arrays.html#array-attributes-and-methods">7.3.5. Array attributes and methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="arrays.html#mathematical-functions-for-arrays">7.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">7.4. Tutorial: Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">7.4. Conditional Execution and Flow Control</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">7.4.1. Conditional Evaluation with if and else</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">7.4.2. For loops</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">7.4.3. While loops</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="errors.html">7.5. Tutorial: Dealing With Errors</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">7.5. Dealing With Errors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">7.5.1. Syntax Errors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">7.5.2. Exceptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">7.5.3. Try and Except</a></li>
 <li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">7.5.4. Raising your own exceptions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="procedures.html">7.6. Tutorial: Writing Functions or Procedures</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="procedures.html">7.6. Writing Functions or Procedures</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">7.6.1. Def statement</a></li>
 <li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">7.6.2. Namespace and “Scope” inside a Procedure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">7.6.3. The return statement, and multiple Return values</a></li>
@@ -165,12 +180,12 @@ Python, including tutorials, see the Python documentation at
 <li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">7.6.5. Documentation Strings</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">7.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">7.7.1. Running a larch script with <code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">7.7. Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">7.7.1. Running a larch script with <code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">7.7.2. Importing a Larch Script as a Module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="builtins.html">7.8. Tutorial: Builtin Functions</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="builtins.html">7.8. Builtin Functions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-data-values">7.8.1. Builtin data values</a></li>
 <li class="toctree-l2"><a class="reference internal" href="builtins.html#larch-specific-builtin-functions">7.8.2. Larch-Specific Builtin functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-functions-inherited-from-python">7.8.3. Builtin functions inherited from Python</a></li>
@@ -193,10 +208,10 @@ Python, including tutorials, see the Python documentation at
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="start.html" title="7.1. Tutorial: Getting Started"
+          <a href="start.html" title="7.1. Getting Started"
              >next</a> |</li>
         <li class="right" >
-          <a href="../gsemapviewer/index.html" title="6. GSECARS Mapviewr"
+          <a href="../qtrixs/index.html" title="6. QtRIXS"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -209,7 +224,7 @@ Python, including tutorials, see the Python documentation at
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

@@ -22,7 +22,7 @@ visualization, processing, and analysis routines with data collection
 processes to give a more seamless workflow that spans data collection and
 analysis, using core functionality that can be scripted and GUIs built on
 top of these core functions.  While Larch is a work in progress, it has
-already met most of these initial goals.
+calready met most of these initial goals.
 
 Larch is written in Python, a free, general-purpose interpreted language
 known for its clear syntax and readability.  Python has become quite
