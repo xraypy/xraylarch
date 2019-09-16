@@ -206,6 +206,11 @@ This will install Larch and all of the required packages. Some of the
 "recommended" packages listed below may not be installed and you may have
 to forgo thes capabilities or install those packages by hand.
 
+
+.. note::
+   This is currently *not* working on Windows....
+
+
 Source Inxstallation
 ------------------------
 
