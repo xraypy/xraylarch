@@ -2592,7 +2592,7 @@ class GSEXRM_MapFile(object):
         counts = counts[area[ymin:ymax, xmin:xmax]]
 
         name = '%s: %s' % (xrdgroup, areaname)
-        kws['energy'] = energy = 0.001 * self.get_incident_energy
+        kws['energy'] = energy = 0.001 * self.get_incident_energy()
         kws['wavelength'] = lambda_from_E(energy, E_units='keV')
 
         if xrdgroup == 'xrd1d':
