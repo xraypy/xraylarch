@@ -8,7 +8,8 @@ import signal
 import socket
 from subprocess import Popen
 from threading import Thread
-from optparse import OptionParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
 from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.client import ServerProxy
 
@@ -318,42 +319,46 @@ def spawn_server(port=4966, wait=True, timeout=30):
 ###
 def larch_server_cli():
     """command-line program to control larch XMLRPC server"""
-    __version__ = 'version 2.2'
-    usage = """usage: %prog [options] [start|stop|restart|next|status|report]
-
-Commands:
-   start       start server on specified port
-   stop        stop server on specified port
-   restart     restart server on specified port
-   next        start server on next avaialable port (see also '-n' option)
-   status      print a short status message: whether server is running on port
-   report      print a multi-line status report
+    command_desc = """
+command must be one of the following:
+  start       start server on specified port
+  stop        stop server on specified port
+  restart     restart server on specified port
+  next        start server on next avaialable port (see also '-n' option)
+  status      print a short status message: whether server< is running on port
+  report      print a multi-line status report
 """
 
-    parser = OptionParser(usage=usage, prog="larch_server",
-                          version="larch_server: %s" % __version__)
-    parser.add_option("-p", "--port", dest="port", default='4966',
-                      metavar='PORT', help="port number for server [4966]")
-    parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
-                      default=False, help="suppress messaages [False]")
-    parser.add_option("-n", "--next", dest="next", action="store_true",
-                      default=False, help="show next available port, but do not start [False]")
+    parser = ArgumentParser(description='run larch XML-RPC server',
+                            formatter_class=RawDescriptionHelpFormatter,
+                            epilog=command_desc)
 
-    (options, args) = parser.parse_args()
+    parser.add_argument("-p", "--port", dest="port", default='4966',
+                        help="port number for remote server [4966]")
 
-    port = int(options.port)
-    command = 'status'
+    parser.add_argument("-n", "--next", dest="next", action="store_true",
+                        default=False,
+                        help="show next available port, but do not start [False]")
+
+    parser.add_argument("-q", "--quiet", dest="quiet", action="store_true",
+                        default=False, help="suppress messaages [False]")
+
+    parser.add_argument("command", nargs='?',  help="server command ['status']")
+
+    args = parser.parse_args()
+
+
+    port = int(args.port)
+    command = args.command or 'status'
+    command = command.lower()
 
     def smsg(port, txt):
-        if not options.quiet:
+        if not args.quiet:
             print('larch_server port=%i: %s' % (port, txt))
 
-    if len(args) >  0:
-        command = args[0].lower()
 
-    if options.next:
+    if args.next:
         port = get_next_port(port=port)
-        print("%i" % port)
         sys.exit(0)
 
     server_state = test_server(port=port)

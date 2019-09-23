@@ -2,12 +2,14 @@ import os
 import sys
 import numpy
 import time
-from pyshortcuts import make_shortcut
-from pyshortcuts.shortcut import Shortcut
+from argparse import ArgumentParser
+
+from pyshortcuts import make_shortcut, ico_ext
 
 from .site_config import icondir, home_dir, uname
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
+from .version import __version__, __date__, make_banner
 
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
@@ -60,29 +62,18 @@ class LarchApp:
     def __init__(self, name, script, icon='larch', terminal=False):
         self.name = name
         self.script = script
-        icon_ext = 'ico'
-        if uname == 'darwin':
-            icon_ext = 'icns'
-        self.icon = "%s.%s" % (icon, icon_ext)
         self.terminal = terminal
-        bindir = 'bin'
-        if uname == 'win':
-            bindir = 'Scripts'
-
+        self.icon = "%s.%s" % (icon, ico_ext)
+        bindir = 'Scripts' if uname == 'win' else 'bin'
         self.bindir = os.path.join(sys.prefix, bindir)
 
     def create_shortcut(self):
-        script =os.path.join(self.bindir, self.script)
-        try:
-            scut = Shortcut(script, name=self.name, folder='Larch')
-            make_shortcut(script, name=self.name,
-                          icon=os.path.join(icondir, self.icon),
-                          terminal=self.terminal,
-                          folder='Larch')
-            if uname == 'linux':
-                os.chmod(scut.target, 493)
-        except:
-            print("Warning: could not create shortcut to ", script)
+        script = os.path.join(self.bindir, self.script)
+        icon = os.path.join(icondir, self.icon)
+
+        make_shortcut(script, name=self.name, icon=icon,
+                      terminal=self.terminal, folder='Larch')
+
         if uname == 'darwin' and HAS_CONDA:
             try:
                 fix_darwin_shebang(script)
@@ -178,49 +169,58 @@ def run_larch():
     commandline repl program or wxgui
     """
     usage = "usage: %prog [options] file(s)"
-    from optparse import OptionParser
-    parser = OptionParser(usage=usage, prog="larch",
-                          version="larch command-line version 0.2")
+    parser = ArgumentParser(description='run main larch program')
 
-    parser.add_option("-e", "--exec", dest="noshell", action="store_true",
-                      default=False, help="execute script only, default = False")
+    parser.add_argument('-v', '--version', dest='version', action='store_true',
+                        default=False, help='show version')
 
-    parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
-                      default=False, help="set quiet mode, default = False")
+    parser.add_argument("-e", "--exec", dest="noshell", action="store_true",
+                        default=False, help="execute script only, default = False")
 
-    parser.add_option("-x", "--nowx", dest="nowx", action="store_true",
-                      default=False, help="set no wx graphics mode, default = False")
+    parser.add_argument("-q", "--quiet", dest="quiet", action="store_true",
+                        default=False, help="set quiet mode, default = False")
 
-    parser.add_option("-w", "--wxgui", dest="wxgui", default=False,
-                      action='store_true', help="run Larch GUI")
+    parser.add_argument("-x", "--nowx", dest="nowx", action="store_true",
+                        default=False, help="set no wx graphics mode, default = False")
 
-    parser.add_option("-m", "--makeicons", dest="makeicons", action="store_true",
-                      default=False, help="create desktop icons")
+    parser.add_argument("-w", "--wxgui", dest="wxgui", default=False,
+                        action='store_true', help="run Larch GUI")
 
-    parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
-                      default=False, help="run in remote server mode")
+    parser.add_argument("-m", "--makeicons", dest="makeicons", action="store_true",
+                        default=False, help="create desktop icons")
 
-    parser.add_option("-p", "--port", dest="port", default='4966',
-                      metavar='PORT', help="port number for remote server")
+    parser.add_argument("-r", "--remote", dest="server_mode", action="store_true",
+                        default=False, help="run in remote server mode")
 
-    (options, args) = parser.parse_args()
-    with_wx = HAS_WXPYTHON and (not options.nowx)
+    parser.add_argument("-p", "--port", dest="port", default='4966',
+                        help="port number for remote server")
+
+    parser.add_argument('scripts', nargs='*',
+                        help='larch or python scripts to run on startup')
+
+    args = parser.parse_args()
+    if args.version:
+        print(make_banner())
+        return
+
+    with_wx = HAS_WXPYTHON and (not args.nowx)
 
     # create desktop icons
-    if options.makeicons:
+    if args.makeicons:
         make_desktop_shortcuts()
+        return
 
     # run in server mode
-    elif options.server_mode:
+    if args.server_mode:
         if with_wx:
             use_mpl_wxagg()
 
         from larch.xmlrpc_server import LarchServer
-        server = LarchServer(host='localhost', port=int(options.port))
+        server = LarchServer(host='localhost', port=int(args.port))
         server.run()
 
     # run wx Larch GUI
-    elif options.wxgui:
+    elif args.wxgui:
         use_mpl_wxagg()
         from larch.wxlib.larchframe import LarchApp
         LarchApp().MainLoop()
@@ -229,17 +229,17 @@ def run_larch():
     else:
         if with_wx:
             use_mpl_wxagg()
-        cli = shell(quiet=options.quiet, with_wx=with_wx)
+        cli = shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
-        if len(args)>0:
-            for arg in args:
-                cmd = "run('%s')" % arg
-                if arg.endswith('.py'):
-                    cmd = "import %s" %  arg[:-3]
+        if args.scripts is not None:
+            for script in args.scripts:
+                if script.endswith('.py'):
+                    cmd = "import %s" %  script[:-3]
+                else:
+                    cmd = "run('%s')" % script
                 cli.default(cmd)
-
         # if interactive, start command loop
-        if not options.noshell:
+        if not args.noshell:
             try:
                 cli.cmdloop()
             except ValueError:
