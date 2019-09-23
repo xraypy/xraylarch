@@ -15,7 +15,7 @@ scikit-learn
 asteval>=0.9.14
 lmfit>=0.9.13
 uncertainties>=3.0
-pyshortcuts>=1.4
+pyshortcuts>=1.5
 pyepics>=3.3.3
 wxpython>=4.0.3
 wxutils>=0.2.3
