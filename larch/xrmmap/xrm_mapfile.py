@@ -248,6 +248,7 @@ class GSEXRM_MapFile(object):
         self.h5root        = None
         self.last_row      = -1
         self.rowdata       = []
+        self.roi_names     = {}
         self.roi_slices    = None
         self._pixeltime    = None
         self.masterfile    = None
@@ -287,9 +288,11 @@ class GSEXRM_MapFile(object):
                       'user'       : user}
 
         nmaster = -1
+        print("XRMMAP ", self.filename)
         # initialize from filename or folder
         if self.filename is not None:
             self.getFileStatus(root=root)
+            print("Get File Status ", root, self.status)
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
@@ -311,7 +314,7 @@ class GSEXRM_MapFile(object):
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.getFileStatus(root=root)
 
-        # print("Found File or Folder ", self.status, self.filename, self.folder)
+        print("Found File or Folder ", self.status, self.filename, self.folder)
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
@@ -389,7 +392,7 @@ class GSEXRM_MapFile(object):
 
         else:
             raise GSEXRM_Exception('GSEXMAP Error: could not locate map file or folder')
-        # print("Initialized done ", self.status, self.version, self.root)
+        print("Initialized done ", self.status, self.version, self.root)
 
     def __repr__(self):
         fname = ''
@@ -405,6 +408,7 @@ class GSEXRM_MapFile(object):
             self.filename = filename
         filename = self.filename
         folder = self.folder
+        print("getFileStatus 0 ", filename, folder)
         if folder is not None:
             folder = os.path.abspath(folder)
             parent, folder = os.path.split(folder)
@@ -415,7 +419,6 @@ class GSEXRM_MapFile(object):
         # see if file exists:
         if not (os.path.exists(filename) and os.path.isfile(filename)):
             return
-
         # see if file is empty/too small(signifies "read from folder")
         if os.stat(filename).st_size < 1024:
             self.status = GSEXRM_FileStatus.empty
@@ -1511,7 +1514,6 @@ class GSEXRM_MapFile(object):
                     return float(val)
 
     def get_datapath_list(self, remove='raw'):
-
         def find_detector(group):
             sub_list = []
             if 'counts' in group.keys():
@@ -1529,11 +1531,15 @@ class GSEXRM_MapFile(object):
 
         return dlist
 
-    def get_roi_list(self, det_name):
+    def get_roi_list(self, det_name, force=False):
         """get a list of rois from detector
         """
         detname = self._det_name(det_name)
         roigrp = ensure_subgroup('roimap', self.xrmmap)
+        if not force:
+            roilist = self.roi_names.get(detname, None)
+            if roilist is not None:
+                return roilist
 
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
@@ -1560,8 +1566,8 @@ class GSEXRM_MapFile(object):
                 # print(" no rois for det ",  detname, list(roigrp.keys()))
                 pass
         rois.append('1')
-
-        return [h5str(a) for a in rois]
+        self.roi_names[detname] = [h5str(a) for a in rois]
+        return self.roi_names[detname]
 
 
     def get_detector_list(self):
@@ -2678,6 +2684,8 @@ class GSEXRM_MapFile(object):
                 xrd2d_cor = xrd2d_counts
 
             self.save_roi(roiname,detname,xrd2d_counts,xrd2d_cor,xyrange,'area','pixels')
+            self.get_roi_list(detname, force=True)
+
         else:
             print('Only compatible with newest hdf5 mapfile version.')
 
@@ -2734,6 +2742,7 @@ class GSEXRM_MapFile(object):
         #       xrd1d_sum.sum(), xrd1d_sum.mean())
         self.save_roi(roiname, detname, xrd1d_sum, xrd1d_cor,
                       qrange,'q', '1/A')
+        self.get_roi_list(detname, force=True)
 
 
     def del_all_xrd1droi(self):
@@ -2832,6 +2841,8 @@ class GSEXRM_MapFile(object):
             self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy',unit)
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
+        self.get_roi_list(detname, force=True)
+
 
     def check_roi(self, roiname, det=None, version=None):
         if version is None:
