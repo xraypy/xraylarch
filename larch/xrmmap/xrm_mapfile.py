@@ -288,11 +288,10 @@ class GSEXRM_MapFile(object):
                       'user'       : user}
 
         nmaster = -1
-        print("XRMMAP ", self.filename)
         # initialize from filename or folder
         if self.filename is not None:
             self.getFileStatus(root=root)
-            print("Get File Status ", root, self.status)
+            # print("Get File Status ", root, self.status)
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
@@ -314,7 +313,6 @@ class GSEXRM_MapFile(object):
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.getFileStatus(root=root)
 
-        print("Found File or Folder ", self.status, self.filename, self.folder)
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
@@ -408,7 +406,7 @@ class GSEXRM_MapFile(object):
             self.filename = filename
         filename = self.filename
         folder = self.folder
-        print("getFileStatus 0 ", filename, folder)
+        # print("getFileStatus 0 ", filename, folder)
         if folder is not None:
             folder = os.path.abspath(folder)
             parent, folder = os.path.split(folder)
@@ -1835,19 +1833,18 @@ class GSEXRM_MapFile(object):
                 name = '%s_%s' % (name, fname)
             self.add_area(npzdat[aname], name=name, desc=desc)
 
-    def get_area(self, name=None, desc=None):
+    def get_area(self, name=None):
         '''
         get area group by name or description
         '''
-
         area_grp = ensure_subgroup('areas',self.xrmmap)
 
         if name is not None and name in area_grp:
             return area_grp[name]
-        if desc is not None:
-            for name in area_grp:
-                if desc == bytes2str(area_grp[name].attrs.get('description','')):
-                    return area_grp[name]
+        else:
+            for aname in area_grp:
+                if name == bytes2str(area_grp[aname].attrs.get('description','')):
+                    return area_grp[aname]
         return None
 
     def get_area_stats(self, name=None, desc=None):
@@ -2164,8 +2161,6 @@ class GSEXRM_MapFile(object):
         if self.folder is None or not isGSEXRM_MapFolder(self.folder):
             return
         self.masterfile = os.path.join(nativepath(self.folder), self.MasterFile)
-
-
         header, rows, mtime = [], [], -1
         if self.scandb is not None:
             # check that this map folder is the one currently running from scandb:
@@ -2565,8 +2560,8 @@ class GSEXRM_MapFile(object):
 
         return _mca
 
-    def get_xrd_area(self, areaname, xrd2d=False, callback=None, **kws):
-        '''return 1D or 2D XRD pattern for a pre-defined area
+    def get_xrd1d_area(self, areaname, callback=None, **kws):
+        '''return 1D XRD pattern for a pre-defined area
 
         Parameters
         ---------
@@ -2591,7 +2586,7 @@ class GSEXRM_MapFile(object):
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
 
-        xrdgroup = 'xrd2d' if xrd2d else 'xrd1d'
+        xrdgroup = 'xrd1d'
         mapdat = self.xrmmap[xrdgroup]
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
                                       mapdat=mapdat, dtcorrect=False)
@@ -2601,10 +2596,9 @@ class GSEXRM_MapFile(object):
         kws['energy'] = energy = 0.001 * self.get_incident_energy()
         kws['wavelength'] = lambda_from_E(energy, E_units='keV')
 
-        if xrdgroup == 'xrd1d':
-            counts = counts.sum(axis=0)
-            xrd = XRD(data1D=counts, steps=len(counts), name=name, **kws)
-        else:
+        counts = counts.sum(axis=0)
+        xrd = XRD(data1D=counts, steps=len(counts), name=name, **kws)
+        if xrdgroup != 'xrd1d':
             xpix, ypix = counts.shape
             xrd = XRD(data2D=counts, xpixels=xpix, ypixels=ypix, name=name, **kws)
 
@@ -2615,8 +2609,67 @@ class GSEXRM_MapFile(object):
         fmt = "Data from File '%s', detector '%s', area '%s'"
         xrd.info  =  fmt % (self.filename, mapdat.name, name)
         xrd.q = mapdat['q'].value
-
         return xrd
+
+    def get_xrd2d_area(self, areaname, callback=None, **kws):
+        '''return 2D XRD pattern for a pre-defined area
+
+        Parameters
+        ---------
+        areaname :   str       name of area
+
+        Returns
+        -------
+        diffraction pattern for given area
+
+        Notes
+        ------
+        slow because it really reads from the raw XRD h5 files
+        '''
+        try:
+            area = self.get_area(areaname).value
+        except:
+            raise GSEXRM_Exception("Could not find area '%s'" % areaname)
+            return
+        npix = area.sum()
+        if npix < 1:
+            return None
+
+        xrdgroup = 'xrd2d'
+        xrdgrp = ensure_subgroup('xrd2d', self.xrmmap)
+
+        stps, xpix, ypix, qdat = 0, 0, 0, None
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+        nx, ny = (xmax-xmin), (ymax-ymin)
+        xrd_file = os.path.join(self.folder, self.rowdata[0][4])
+        if os.path.exists(xrd_file):
+            data = None
+            for yrow in range(ymin, ymax+1):
+                xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                h5file = h5py.File(xrd_file, 'r')
+                rowdat = h5file['entry/data/data'][1:,:,:]
+                h5file.close()
+                if (yrow  % 2) == 1:
+                    rowdat = rowdat[::-1, :, :]
+                rowdat = rowdat[np.where(area[yrow])[0], :, :].sum(axis=0)
+                if data is None:
+                    data = rowdat
+                else:
+                    data += rowdat
+
+        name = '%s: %s' % (xrdgroup, areaname)
+        kws = {}
+        kws['energy'] = energy = 0.001 * self.get_incident_energy()
+        kws['wavelength'] = lambda_from_E(energy, E_units='keV')
+        xrd = XRD(data2D=data, name=name, **kws)
+        path, fname = os.path.split(self.filename)
+        xrd.filename = fname
+        xrd.areaname = xrd.title = areaname
+        fmt = "Data from File '%s', XRD 2d, area '%s'"
+        xrd.info  =  fmt % (self.filename, areaname)
+        return xrd
+
 
     def get_pos(self, name, mean=True):
         '''return  position by name (matching 'roimap/pos_name' if

@@ -432,7 +432,7 @@ class GSEXRM_MapRow:
             do_reverse = gdata[0, ixaddr] > gdata[-1, ixaddr]
 
         do_reverse = (irow % 2) == 1
-
+        self.reversed = do_reverse
         if do_reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]

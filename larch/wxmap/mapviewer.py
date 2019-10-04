@@ -1172,14 +1172,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             except:
                 pass
 
-    def _getmca_area(self, areaname, **kwargs):
-        self._mca = self.owner.current_file.get_mca_area(areaname, **kwargs)
-
-    def _getxrd_area(self, areaname, **kwargs):
-
-        self._xrd = None
-        self._xrd = self.owner.current_file.get_xrd_area(areaname, **kwargs)
-
     def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
         xrmfile = self.owner.current_file
@@ -1190,8 +1182,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
-        mca_thread = Thread(target=self._getmca_area, args=(aname,),
-                            kwargs={'dtcorrect': self.owner.dtcor})
+
+        def _getmca_area(aname):
+            o = self.owner
+            self._mca = o.current_file.get_mca_area(aname,
+                                                    dtcorrect=o.dtcor)
+
+        mca_thread = Thread(target=_getmca_area, args=(aname,))
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
@@ -1246,8 +1243,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                       calfile = ponifile, title = title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
-            kwargs['xrd'] = '1D'
-            self._xrd = xrmfile.get_xrd_area(aname, **kwargs)
+            self._xrd = xrmfile.get_xrd1d_area(aname, **kwargs)
 
             if show:
                 label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
@@ -1272,9 +1268,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
 
         if xrmfile.has_xrd2d and (xrd2d or xrd1d):
-            kwargs['xrd'] = '2D'
-            self._getxrd_area(aname,**kwargs)
-
+            self.owner.current_file.get_xrd2d_area(aname, **kwargs)
             if xrd2d:
                 if save:
                     wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
