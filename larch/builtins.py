@@ -39,7 +39,7 @@ except ImportError:
 try:
     import wx
     HAS_WXPYTHON = True
-except ImportError:
+except (ImportError, AttributeError):
     HAS_WXPYTHON = False
 
 from . import wxlib

@@ -468,7 +468,6 @@ class AthenaProject(object):
             if hasattr(group, _name):
                 yname = _name
                 break
-
         if x is None or yname is None:
             raise ValueError("can only add XAFS data to Athena project")
 
@@ -624,9 +623,18 @@ class AthenaProject(object):
                 if not fnmatch(gname.lower(), match):
                     continue
             this = getattr(data, gname)
+
             if use_hashkey:
                 oname = this.athena_id
-            if (do_preedge or do_bkg) and (self._larch is not None):
+            is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1.0)))
+            is_chi = bool(int(getattr(this.athena_params, 'is_chi', 0.0)))
+            is_xmu = is_xmu and not is_chi
+            for aname in ('is_xmudat', 'is_bkg', 'is_diff',
+                          'is_proj', 'is_pixel', 'is_rsp'):
+                val = bool(int(getattr(this.athena_params, aname, 0.0)))
+                is_xmu = is_xmu and not val
+
+            if is_xmu and (do_preedge or do_bkg) and (self._larch is not None):
                 pars = clean_bkg_params(this.bkg_params)
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
@@ -647,6 +655,11 @@ class AthenaProject(object):
                         xftf(this, _larch=self._larch, kmin=float(pars.kmin),
                              kmax=float(pars.kmax), kweight=kweight,
                              window=pars.kwindow, dk=float(pars.dk))
+            if is_chi:
+                this.k = this.energy*1.0
+                this.chi = this.mu*1.0
+                del this.energy
+                del this.mu
             self.groups[oname] = this
 
     def as_group(self):

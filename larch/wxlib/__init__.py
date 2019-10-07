@@ -19,7 +19,7 @@ HAS_WXPYTHON = False
 try:
     import wx
     HAS_WXPYTHON = True
-except ImportError:
+except (ImportError, AttributeError):
     HAS_WXPYTHON = False
 
 _larch_name = '_sys.wx'
