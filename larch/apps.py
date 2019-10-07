@@ -20,6 +20,12 @@ try:
 except ImportError:
     pass
 
+WIN_BASERUNNER = """@ECHO OFF
+call %~dp0%activate base
+%~dp0%*
+
+"""
+
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
     if HAS_WXPYTHON:
@@ -66,20 +72,27 @@ class LarchApp:
         self.icon = "%s.%s" % (icon, ico_ext)
         bindir = 'Scripts' if uname == 'win' else 'bin'
         self.bindir = os.path.join(sys.prefix, bindir)
-
+        
     def create_shortcut(self):
         script = os.path.join(self.bindir, self.script)
         icon = os.path.join(icondir, self.icon)
-
+        if HAS_CONDA and uname == 'win':
+            baserunner = os.path.join(self.bindir, 'baserunner.bat')
+            script = "%s %s" % (baserunner, self.script)
+            if not os.path.exists(baserunner) or os.stat(baserunner).st_size < 10:
+                fh = open(baserunner, 'w')
+                fh.write(WIN_BASERUNNER)
+                fh.close()
+                time.sleep(0.5)                                        
+        
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
 
-        if uname == 'darwin' and HAS_CONDA:
+        if HAS_CONDA and uname == 'darwin':
             try:
                 fix_darwin_shebang(script)
             except:
                 print("Warning: could not fix Mac exe for ", script)
-
 
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('Larch GUI', 'larch --wxgui'),
