@@ -1,14 +1,17 @@
 
-
+from collections import namedtuple
 import numpy as np
 from numpy.linalg import lstsq
-
+from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
 
 from ..math import index_of, savitzky_golay, hypermet, erfc
 from ..xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
-                    xray_edges, xray_lines, ck_probability)
+                    xray_edges, xray_edge, xray_lines, ck_probability,
+                    XrayLine)
 from ..xafs import ftwindow
+
+xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
 
 ########
 # Note on units:  energies are in eV, lengths in cm
@@ -93,7 +96,8 @@ class XRF_Material:
 
 
 class XRF_Element:
-    def __init__(self, symbol, xray_energy=None, energy_min=1500):
+    def __init__(self, symbol, xray_energy=None, energy_min=1500,
+                 overlap_energy=None):
         self.symbol = symbol
         self.xray_energy = xray_energy
         self.mu = 1.0
@@ -140,10 +144,70 @@ class XRF_Element:
                     self.fyields['L1'] = fy1
                 self.fyields['L2'] = fy2
             self.fyields['L3'] = fy3
-        # look up xray lines
+
+        # look up X-ray lines, keep track of very close lines
+        # so that they can be consolidate
         self.lines = {}
+        self.all_lines = {}
+        energy0 = None
+        combos = {}
         for ename in self.edges:
-            self.lines.update(xray_lines(symbol, ename))
+            for key, xline in xray_lines(symbol, ename).items():
+                self.all_lines[key] = xline
+                if xline.intensity > 0.002:
+                    self.lines[key] = xline
+                    if energy0 is None:
+                        energy0 = xline.energy
+
+        if overlap_energy is None:
+            if xray_energy is None: xray_energy = 10000
+            if energy0 is not None: xray_energy = energy0
+            overlap_energy = np.sqrt(1225 + 0.5*xray_energy)
+            overlap_energy = 10.0 * int(0.5 + overlap_energy/4.0)
+
+        # collect lines that are close in energy
+        nlines = len(self.lines)
+        combos = [[] for k in range(nlines)]
+        comboe = [-1 for k in range(nlines)]
+        for key, xline in self.lines.items():
+            assigned = False
+            for i, en in enumerate(comboe):
+                if abs(xline.energy - en) < overlap_energy:
+                    combos[i].append(key)
+                    assigned = True
+                    break
+            if not assigned:
+                for k in range(nlines):
+                    if comboe[k] < 0:
+                        break
+                comboe[k] = xline.energy
+                combos[k].append(key)
+
+        # consolidate overlapping X-ray lines
+        for comps in combos:
+            if len(comps) > 0:
+                key = comps[0]
+                l0 = self.lines.pop(key)
+                inlevel = l0.initial_level
+                flevel = [l0.final_level]
+                en = [l0.energy]
+                wt = [l0.intensity]
+                for other in comps[1:]:
+                    lx = self.lines.pop(other)
+                    flevel.append(lx.final_level)
+                    en.append(lx.energy)
+                    wt.append(lx.intensity)
+                wt = np.array(wt)
+                en = np.array(en)
+                flevel = ', '.join(flevel)
+                if len(comps) > 1:
+                    key = key.replace('1', '').replace('2', '').replace('3', '')
+                    key = key.replace('4', '').replace('5', '').replace(',', '')
+                self.lines[key] = XrayLine(energy=(en*wt).sum()/wt.sum(),
+                                           intensity=wt.sum(),
+                                           initial_level=inlevel,
+                                           final_level=flevel)
+
 
 
 class XRF_Model:
@@ -221,8 +285,10 @@ class XRF_Model:
     def add_element(self, elem, amplitude=1.0, vary_amplitude=True):
         """add Element to XRF model
         """
+        print(" Add element ", elem, self.xray_energy, amplitude)
         xelem = XRF_Element(elem, xray_energy=self.xray_energy,
                             energy_min=self.energy_min)
+        #
         self.elements.append(xelem)
         self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
@@ -248,7 +314,6 @@ class XRF_Model:
         pars = params.valuesdict()
         self.comps = {}
         self.eigenvalues = {}
-
         efano = pars['det_efano']
         noise = pars['det_noise']
         step = pars['peak_step']
@@ -257,8 +322,8 @@ class XRF_Model:
         # factor for Detector absorbance and Filters
         factor = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
-            thickness = pars['filterlen_%s' % f.material]
-            factor *= f.attenuation(energy, thickness=thickness)
+           thickness = pars['filterlen_%s' % f.material]
+           factor *= f.attenuation(energy, thickness=thickness)
         self.atten = factor
 
         factor = factor * self.count_time
@@ -318,13 +383,12 @@ class XRF_Model:
         """
         set weighting factor to smoothed square-root of data
         """
-        stderr = 1.0 / np.sqrt(counts + 0.1)
-        en_win = ftwindow(energy, xmin=emin, xmax=emax,
-                          dx=ewid, window='hanning')
-        self.fit_weight = en_win * savitzky_golay(stderr, 7, 2)
+        ewin = ftwindow(energy, xmin=emin, xmax=emax, dx=ewid, window='hanning')
+        self.fit_window = ewin
+        stderr = 1.0 / np.sqrt(counts + 5)
+        self.fit_weight = ewin * savitzky_golay(stderr, 7, 2)
 
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
-
         work_energy = 1.0*energy
         work_counts = 1.0*counts
         floor = 1.e-12*np.percentile(counts, [99])[0]
@@ -344,7 +408,6 @@ class XRF_Model:
             imax = index_of(work_energy, energy_max)
 
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
-
         self.fit_iter = 0
 
         index = np.arange(len(counts))
@@ -356,13 +419,11 @@ class XRF_Model:
                                gtol=tol, ftol=tol, epsfcn=1.e-5)
 
         self.fit_report = fit_report(self.result, min_correl=0.5)
-        pars = self.result.pars
+        pars = self.result.params
 
         self.best_en = (pars['cal_offset'] + pars['cal_slope'] * index +
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
-        self.best_fit = self.calc_spectrum(self.best_en, params=params)
-
         self.best_fit = self.calc_spectrum(energy, params=self.result.params)
 
         # calculate transfer matrix for linear analysis using this model
@@ -377,12 +438,18 @@ class XRF_Model:
         returning a dict of predicted eigenvalues
         for the supplied spectrum
         """
-        out = {}
-        if self.transfer_matrix is not None:
-            weights, chi2, rank, s2 = lstsq(self.transfer_matrix, spectrum)
-            for i, name in enumerate(self.eigenvalues.keys()):
-                out[name] = weights[i]
-        return out
+        if self.transfer_matrix is None:
+            raise ValueError("need to fit a spectrum first")
+
+        wts, rnorm = nnls(self.transfer_matrix, spectrum*self.fit_window)
+
+        weights = {}
+        prediction = 0.0*spectrum[:]
+        for i, name in enumerate(self.eigenvalues.keys()):
+            weights[name] = wts[i]
+            prediction += wts[i] * self.transfer_matrix[:, i]
+
+        return xrf_prediction(weights, prediction)
 
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):

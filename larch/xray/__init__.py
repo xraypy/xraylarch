@@ -21,6 +21,7 @@ xray_lines      X-ray emission lines for an element
 """
 from ..utils import debugtime
 from .xraydb import XrayDB as xrayDB
+from .xraydb import XrayLine
 
 from .xray import (atomic_mass, atomic_number, atomic_symbol,
                    atomic_density, xray_line, xray_lines, xray_edge,
