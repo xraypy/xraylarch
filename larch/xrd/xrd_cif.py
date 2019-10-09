@@ -15,7 +15,7 @@ import math
 import cmath
 from io import StringIO
 
-from ..xray import xrayDB
+from xraydb import f0
 from .xrd_tools import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
                         twth_from_d, d_from_q, twth_from_q)
 
@@ -2414,7 +2414,6 @@ class CIF(object):
         self.symmetry    = Symmetry()
         self.atom        = Atom()
         self.publication = Citation()
-        self.xraydb = xrayDB()
         self.formula = None
         self.elem_uvw = {}
 
@@ -2678,8 +2677,6 @@ class CIF(object):
 
     def structure_factors(self, wavelength=1.54056, q_min=0.2, q_max=10.0):
         hkl_list = generate_hkl()
-        xraydb = self.xraydb
-
         dhkl = d_from_hkl(hkl_list, *self.unitcell)
         qhkl = q_from_d(dhkl)
 
@@ -2694,7 +2691,7 @@ class CIF(object):
             Fhkl = 0
             if ii[i]:
                 for el in self.atom.label:  ## loops through each element
-                    f0 = xraydb.f0(el, qhkl[i]/(4*math.pi))
+                    f0 = f0(el, qhkl[i]/(4*math.pi))
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2] ## (hu+kv+lw)
                         Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
