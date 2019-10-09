@@ -9,9 +9,10 @@ This is a Larch group representing a Peak in an XRF Spectrum.
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
+from xraydb import xray_line
+
 from larch import Group
 from ..fitting import Parameter, isParameter, param_value
-from ..xray import xray_line
 from ..math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
@@ -41,7 +42,7 @@ class XRFPeak(Group):
 
         dat = xray_line(elem, line)
         if dat is not None:
-            ecenter = dat[0]
+            ecenter = dat.energy
             if self.center is None:
                 self.center = Parameter(name='center', value=ecenter,
                                         vary=False)

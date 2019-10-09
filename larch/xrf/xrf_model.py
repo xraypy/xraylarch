@@ -5,10 +5,10 @@ from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
 
+from xraydb import material_mu, mu_elam, xray_edges, xray_lines, ck_probability
+from xraydb.xray import XrayLine
+
 from ..math import index_of, savitzky_golay, hypermet, erfc
-from ..xray import (atomic_mass, atomic_symbol, material_mu, mu_elam,
-                    xray_edges, xray_edge, xray_lines, ck_probability,
-                    XrayLine)
 from ..xafs import ftwindow
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
@@ -110,7 +110,7 @@ class XRF_Element:
             self.edges = []
             for ename, xedge in xray_edges(self.symbol).items():
                 if ename.lower() in ('k', 'l1', 'l2', 'l3', 'm5'):
-                    edge_ev = xedge.edge
+                    edge_ev = xedge.energy
                     if (edge_ev < xray_energy and
                         edge_ev > energy_min):
                         self.edges.append(ename)

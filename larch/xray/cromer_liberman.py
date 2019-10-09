@@ -7,7 +7,7 @@ import larch
 from larch.larchlib import get_dll
 
 from larch.math import as_ndarray
-from .xray import core_width, atomic_number
+from xraydb import core_width, atomic_number
 
 CLLIB = None
 

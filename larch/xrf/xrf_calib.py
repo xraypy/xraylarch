@@ -7,8 +7,9 @@ import numpy as np
 from collections import OrderedDict
 from lmfit.models import GaussianModel, ConstantModel
 
+from xraydb import xray_line
+
 from ..math import index_of, linregress, fit_peak
-from ..xray import xray_line
 from .roi import split_roiname
 from .mca import isLarchMCAGroup
 
@@ -42,7 +43,7 @@ def xrf_calib_init_roi(mca, roiname):
         family = words[1].title()
     if family == 'Lb':
         family = 'Lb1'
-    eknown = xray_line(elem, family)[0]/1000.0
+    eknown = xray_line(elem, family).energy/1000.0
     llim = max(0, roi.left - roi.bgr_width)
     hlim = min(len(chans)-1, roi.right + roi.bgr_width)
     segcounts = counts[llim:hlim]
@@ -90,7 +91,7 @@ def xrf_calib_fitrois(mca):
         if len(words) > 1:
             family = words[1]
         try:
-            eknown = xray_line(elem, family)[0]/1000.0
+            eknown = xray_line(elem, family).energy/1000.0
         except:
             continue
         llim = max(0, roi.left - roi.bgr_width)
