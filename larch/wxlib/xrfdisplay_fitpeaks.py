@@ -16,6 +16,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT)
 
+from xraydb import material_mu
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -24,7 +25,7 @@ from larch import Group
 from ..fitting import Parameter, Minimizer
 
 from ..math import index_of, gaussian
-from ..xray import material_mu, material_get
+
 
 from ..xrf import xrf_background
 

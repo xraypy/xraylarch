@@ -18,13 +18,14 @@ try:
 except ImportError:
     HAS_PEAKUTILS = False
 
-from larch import Group, Make_CallArgs, isgroup, parse_group_args
 
+from xraydb import guess_edge, xray_edge, core_width
+
+from larch import Group, Make_CallArgs, isgroup, parse_group_args
 # now we can reliably import other std and xafs modules...
 
-from larch.xray import guess_edge, xray_edge, core_width
 from larch.math import (index_of, index_nearest,
-                         remove_dups, remove_nans2)
+                        remove_dups, remove_nans2)
 from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -347,13 +348,13 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.edge = getattr(group, 'edge', None)
 
     if group.atsym is None or group.edge is None:
-        _atsym, _edge = guess_edge(group.e0, _larch=_larch)
+        _atsym, _edge = guess_edge(group.e0)
         if group.atsym is None: group.atsym = _atsym
         if group.edge is None:  group.edge = _edge
 
     # calcuate area-normalization
     if emin_area is None:
-        emin_area = (xray_edge(group.atsym, group.edge).edge
+        emin_area = (xray_edge(group.atsym, group.edge).energy
                      - 2*core_width(group.atsym, group.edge))
     i1 = index_of(energy, emin_area)
     i2 = index_of(energy, e0+norm2)

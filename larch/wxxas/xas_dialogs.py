@@ -6,8 +6,8 @@ from lmfit import Parameters, minimize
 
 import wx
 
+from xraydb import guess_edge
 from larch.math import index_of, index_nearest, interp
-from larch.xray import guess_edge
 from larch.utils.strutils import file2groupname
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,

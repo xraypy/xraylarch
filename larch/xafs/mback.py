@@ -5,14 +5,15 @@
 import numpy as np
 from scipy.special import erfc
 
+from xraydb import (xray_edge, xray_line, xray_lines,
+                    f1_chantler, f2_chantler, guess_edge,
+                    atomic_number, atomic_symbol)
 from lmfit import Parameter, Parameters, minimize
 
 from larch import Group, isgroup, parse_group_args
 
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
-from larch.xray import (xray_edge, xray_line, xray_lines,
-                        f1_chantler, f2_chantler, f1f2_cl, guess_edge,
-                        atomic_number, atomic_symbol)
+
 from .xafsutils import set_xafsGroup
 from .pre_edge import find_e0, preedge
 
@@ -74,7 +75,7 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
       order:      order of the legendre polynomial for normalization.
 	              (default=3, min=0, max=5).
       leexiang:   boolean (default False)  to use the Lee & Xiang extension.
-      tables:     tabulated scattering factors: 'chantler' (default) or 'cl' (cromer-liberman)
+      tables:     tabulated scattering factors: 'chantler' [deprecated]
       fit_erfc:   boolean (default False) to fit parameters of error function.
       return_f1:  boolean (default False) to include the f1 array in the group.
 
@@ -91,6 +92,8 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
 	  group.norm:          normalized spectrum.
       group.mback_params:  group of parameters for the minimization.
 
+    Notes:
+        Chantler tables is now used, with Cromer-Liberman no longer supported.
     References:
       * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
       * Lee and Xiang: http://dx.doi.org/10.1088/0004-637X/702/2/970
@@ -154,17 +157,14 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     weight[p1:(p2+1)] = np.sqrt(np.sum(weight[p1:(p2+1)]))
     weight[n1:(n2+1)] = np.sqrt(np.sum(weight[n1:(n2+1)]))
 
-	## get the f'' function from CL or Chantler
-    if tables.lower() == 'chantler':
-        f1 = f1_chantler(z, energy)
-        f2 = f2_chantler(z, energy)
-    else:
-        (f1, f2) = f1f2_cl(z, energy, edge=edge)
+    ## get the f'' function from CL or Chantler
+    f1 = f1_chantler(z, energy)
+    f2 = f2_chantler(z, energy)
     group.f2 = f2
     if return_f1:
         group.f1 = f1
 
-    em = find_xray_line(z, edge)[0] # erfc centroid
+    em = find_xray_line(z, edge).energy # erfc centroid
 
     params = Parameters()
     params.add(name='s',  value=1.0,  vary=True)  # scale of data
@@ -259,7 +259,7 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     group.norm_poly = group.norm*1.0
 
     if z is not None:              # need to run find_e0:
-        e0_nominal = xray_edge(z, edge)[0]
+        e0_nominal = xray_edge(z, edge).energy
     if e0 is None:
         e0 = getattr(group, 'e0', None)
         if e0 is None:
@@ -291,10 +291,10 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
     # avoid l2 and higher edges
     if edge.lower().startswith('l'):
         if edge.lower() == 'l3':
-            e_l2 = xray_edge(z, 'L2').edge
+            e_l2 = xray_edge(z, 'L2').energy
             norm2 = min(norm2,  e_l2-e0)
         elif edge.lower() == 'l2':
-            e_l2 = xray_edge(z, 'L1').edge
+            e_l2 = xray_edge(z, 'L1').energy
             norm2 = min(norm2,  e_l1-e0)
 
     ipre2 = index_of(energy, e0+pre2)

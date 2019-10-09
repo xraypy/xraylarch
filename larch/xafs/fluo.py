@@ -1,7 +1,7 @@
 import numpy as np
 
+from xraydb import xray_line, xray_edge, material_mu
 from larch import  parse_group_args
-from larch.xray import xray_line, xray_edge, material_mu
 from .xafsutils import set_xafsGroup
 from .pre_edge import preedge
 
@@ -57,13 +57,13 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
                 np.sin(max(1.e-7, np.deg2rad(angout))))
 
     # find edge energies and fluorescence line energy
-    e_edge  = xray_edge(elem, edge)[0]
-    e_fluor = xray_line(elem, edge)[0]
+    e_edge  = xray_edge(elem, edge).energy
+    e_fluor = xray_line(elem, edge).energy
 
     # calculate mu(E) for fluorescence energy, above, below edge
-    muvals  = material_mu(formula,
-                         np.array([e_fluor, e_edge-10.0, e_edge+10.0]),
-                         density=1)
+
+    muvals = material_mu(formula, np.array([e_fluor, e_edge-10.0,
+                                            e_edge+10.0]), density=1)
 
     alpha   = (muvals[0]*ang_corr + muvals[1])/(muvals[2] - muvals[1])
     mu_corr = mu*alpha/(alpha + 1 - preinp['norm'])

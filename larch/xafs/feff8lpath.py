@@ -4,7 +4,7 @@ from ctypes import POINTER, pointer, c_int, c_long, c_char, c_char_p, c_double
 
 import larch
 from larch.larchlib import get_dll
-from larch.xray import  atomic_mass
+from xraydb import atomic_mass
 
 F8LIB = None
 

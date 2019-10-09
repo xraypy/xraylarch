@@ -20,6 +20,7 @@ pyepics>=3.3.3
 wxpython>=4.0.3
 wxutils>=0.2.3
 wxmplot>=0.9.37
+xraydb>=4.3
 pip
 pyyaml
 psutil

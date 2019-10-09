@@ -13,13 +13,15 @@ the path represented by the feffNNNN.dat
 creates a group that contains the chi(k) for the sum of paths.
 """
 import numpy as np
+
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
 from lmfit.printfuncs import gformat
-from larch import Group, isNamedClass
 
+from xraydb import atomic_mass, atomic_symbol
+
+from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname, b32hash
-from larch.xray import atomic_mass, atomic_symbol
 from larch.fitting import group2params, isParameter, param_value
 
 from .xafsutils import ETOK, set_xafsGroup

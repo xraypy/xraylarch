@@ -20,7 +20,7 @@ from numpy.random import randint
 from larch import Group
 from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
-from larch.xray import guess_edge
+from xraydb import guess_edge
 
 alist2json = str.maketrans("();'\n", "[] \" ")
 
@@ -496,7 +496,7 @@ class AthenaProject(object):
         # fix parameters that are incompatible with athena
         group.args['bkg_nnorm'] = max(1, min(3, int(group.args['bkg_nnorm'])))
 
-        _elem, _edge = guess_edge(group.e0, _larch=self._larch)
+        _elem, _edge = guess_edge(group.e0)
         group.args['bkg_z'] = _elem
         group.x = x
         group.y = y

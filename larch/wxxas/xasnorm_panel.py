@@ -9,9 +9,10 @@ import numpy as np
 
 from functools import partial
 
+from xraydb import guess_edge, atomic_number
+
 from lmfit.printfuncs import gformat
 from larch.math import index_of
-from larch.xray import guess_edge, atomic_number
 from larch.xafs.xafsutils import guess_energy_units
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
@@ -241,7 +242,7 @@ class XASNormPanel(TaskPanel):
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
-            atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+            atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = atsym
             conf['edge'] = edge
 
@@ -272,7 +273,7 @@ class XASNormPanel(TaskPanel):
                 edge_step = 1.0
 
             if hasattr(dgroup, 'e0') and opts['atsym'] == '?':
-                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+                atsym, edge = guess_edge(dgroup.e0)
                 opts['atsym'] = atsym
                 opts['edge'] = edge
 
@@ -341,7 +342,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
             cur_elem = self.wids['atsym'].GetStringSelection()
             if hasattr(dgroup, 'e0') and cur_elem == 'H':
-                atsym, edge = guess_edge(dgroup.e0, _larch=self.larch)
+                atsym, edge = guess_edge(dgroup.e0)
                 self.wids['edge'].SetStringSelection(edge)
                 self.wids['atsym'].SetStringSelection(atsym)
                 self.update_config({'edge': edge, 'atsym': atsym})
