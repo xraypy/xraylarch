@@ -285,11 +285,9 @@ class XRF_Model:
     def add_element(self, elem, amplitude=1.0, vary_amplitude=True):
         """add Element to XRF model
         """
-        print(" Add element ", elem, self.xray_energy, amplitude)
-        xelem = XRF_Element(elem, xray_energy=self.xray_energy,
-                            energy_min=self.energy_min)
-        #
-        self.elements.append(xelem)
+        self.elements.append(XRF_Element(elem,
+                                         xray_energy=self.xray_energy,
+                                         energy_min=self.energy_min))
         self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
 
