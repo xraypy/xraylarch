@@ -178,8 +178,9 @@ class MCA(Group):
         predict pileup for a spectrum, save to 'pileup' attribute
         """
         en = self.energy
-        counts = self.counts.astype(int)/1000.0
-        pileup = np.convolve(counts, counts/np.sqrt(en+0.1), 'full')
+        npts = len(en)
+        counts = self.counts.astype(int)*1.0
+        pileup = np.convolve(counts/en.sum(), counts/en.sum(), 'full')[:npts]
         ex = en[0] + np.arange(len(pileup))*(en[1] - en[0])
         if scale is None:
             npts = len(en)
