@@ -122,7 +122,7 @@ class FitSpectraFrame(wx.Frame):
         p.AddText(' Select Elements to include :', colour='#880000', dcol=7)
         p.Add(self.ptable, dcol=6, newrow=True)
 
-        dstep = dtail = 0.025
+        dstep = dtail = 0.25
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01)
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
@@ -231,16 +231,16 @@ class FitSpectraFrame(wx.Frame):
         pflt = GridPanel(main, itemstyle=LEFT)
 
         wids['bgr_use'] = Check(pdet, label='Include Background in Fit',
-                                default=True)# , action=self.onUseBackground)
+                                default=False, action=self.onUseBackground)
         wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
                                    digits=0, increment=500, size=(100, -1))
         wids['bgr_expon'] = Choice(pdet, choices=['2', '4', '6'],
                                    size=(70, -1), default=0)
         wids['bgr_show'] = Button(pdet, 'Show', size=(80, -1),
                                   action=self.onShowBgr)
-        # wids['bgr_width'].Disable()
-        # wids['bgr_expon'].Disable()
-        # wids['bgr_show'].Disable()
+        wids['bgr_width'].Disable()
+        wids['bgr_expon'].Disable()
+        wids['bgr_show'].Disable()
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
                                       min_val=0, max_val=100,
@@ -264,7 +264,8 @@ class FitSpectraFrame(wx.Frame):
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
                     digits=1, increment=10)
-        wids['en_xray'] = FloatSpin(pdet, value=xray_energy, **opts)
+        wids['en_xray'] = FloatSpin(pdet, value=xray_energy,
+                                    action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
 
@@ -350,6 +351,14 @@ class FitSpectraFrame(wx.Frame):
         pack(main, sizer)
         return main
 
+
+    def onSetXrayEnergy(self, event=None):
+        en = self.wids['en_xray'].GetValue()
+        self.wids['en_max'].SetValue(en)
+        self.wids['elastic_cen'].SetValue(en)
+        self.wids['compton1_cen'].SetValue(en*0.975)
+        self.wids['compton2_cen'].SetValue(en*0.950)
+
     def onShowBgr(self, event=None):
         mca    = self.mca
         parent = self.parent
@@ -390,6 +399,11 @@ class FitSpectraFrame(wx.Frame):
         self.ptable.tsym.SetLabel('')
         self.ptable.title.SetLabel('%d elements selected' % len(self.ptable.selected))
 
+    def onUseBackground(self, event=None):
+        use_bgr = self.wids['bgr_use'].IsChecked()
+        self.wids['bgr_width'].Enable(use_bgr)
+        self.wids['bgr_expon'].Enable(use_bgr)
+        self.wids['bgr_show'].Enable(use_bgr)
 
     def onUsePeak(self, event=None, name=None, value=None):
         if value is None and event is not None:
