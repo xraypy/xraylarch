@@ -19,8 +19,8 @@ before_install:
 install:
     - conda create -q -n xlarch python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip
     - source activate xlarch
-    - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor
-    - conda install -c gsecars asteval dioptas lmfit pycifrw pyfai tomopy uncertainties wxutils wxmplot patchelf pango pcre
+    - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor xraydb lmfit asteval pycifrw
+    - conda install -c gsecars dioptas pyfai tomopy uncertainties wxutils wxmplot patchelf pango pcre
     - pip install pyshortcuts==1.5
     - python setup.py install
     - conda list

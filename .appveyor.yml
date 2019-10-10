@@ -12,7 +12,7 @@ install:
     - conda info -a
     - conda install python=3.7 numpy scipy matplotlib sqlalchemy requests pandas scikit-image scikit-learn h5py wxpython yaml pyyaml pip
     - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor
-    - pip install asteval lmfit pycifrw pyfai pyshortcuts uncertainties wxutils wxmplot
+    - pip install asteval lmfit pycifrw pyfai pyshortcuts uncertainties wxutils wxmplot xraydb
 ### - conda install dioptas tomopy
 
 
