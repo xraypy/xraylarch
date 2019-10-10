@@ -243,12 +243,12 @@ class XRF_Model:
 
     def set_detector(self, material='Si', thickness=0.025, efano=None,
                      noise=30., peak_step=1e-4, peak_tail=0.01,
-                     peak_gamma=0.5, cal_offset=0, cal_slope=10.,
-                     cal_quad=0, vary_thickness=False, vary_efano=False,
-                     vary_noise=True, vary_peak_step=True,
+                     peak_gamma=0.5, peak_sigmax=1.0, cal_offset=0,
+                     cal_slope=10., cal_quad=0, vary_thickness=False,
+                     vary_efano=False, vary_noise=True, vary_peak_step=True,
                      vary_peak_tail=True, vary_peak_gamma=False,
-                     vary_cal_offset=True, vary_cal_slope=True,
-                     vary_cal_quad=False):
+                     vary_peak_sigmax=False, vary_cal_offset=True,
+                     vary_cal_slope=True, vary_cal_quad=False):
 
         self.detector = XRF_Material(material, thickness, efano=efano, noise=noise)
         self.params.add('det_thickness', value=thickness, vary=vary_thickness, min=0)
@@ -260,6 +260,7 @@ class XRF_Model:
         self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0, max=0.25)
         self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=0.25)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
+        self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
                          step=0.010, tail=0.5, sigmax=1.0, gamma=0.75,
@@ -305,8 +306,7 @@ class XRF_Model:
         self.bgr = None
         self.params.pop('amp_background')
 
-
-    def calc_spectrum(self, energy, params=None):
+    def calc_spectrum(self, energy, params=None, set_init=True):
         if params is None:
             params = self.params
         pars = params.valuesdict()
@@ -317,29 +317,35 @@ class XRF_Model:
         step = pars['peak_step']
         tail = pars['peak_tail']
         gamma = pars['peak_gamma']
+        sigmax = pars['peak_sigmax']
         # factor for Detector absorbance and Filters
         factor = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
-           thickness = pars['filterlen_%s' % f.material]
-           factor *= f.attenuation(energy, thickness=thickness)
+           thickness = pars.get('filterlen_%s' % f.material, None)
+           if thickness is not None:
+               factor *= f.attenuation(energy, thickness=thickness)
         self.atten = factor
 
         factor = factor * self.count_time
         for elem in self.elements:
-            amp = pars['amp_%s' % elem.symbol.lower()]
             comp = 0. * energy
+            amp = pars.get('amp_%s' % elem.symbol.lower(), None)
+            if amp is None:
+                continue
             for key, line in elem.lines.items():
                 ecen = line.energy
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
-                sig = self.detector.sigma(ecen, efano=efano, noise=noise)
+                sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
-                                sigma=sig, step=step, tail=tail, gamma=gamma)
+                                 sigma=sigma, step=step, tail=tail, gamma=gamma)
             self.comps[elem.symbol] = amp * comp * factor
             self.eigenvalues[elem.symbol] = amp
 
         # scatter peaks for Rayleigh and Compton
         for p in self.scatter:
-            amp  = pars['%s_amp' % p]
+            amp  = pars.get('%s_amp' % p, None)
+            if amp is None:
+                continue
             ecen = pars['%s_center' % p]
             step = pars['%s_step' % p]
             tail = pars['%s_tail' % p]
@@ -352,7 +358,7 @@ class XRF_Model:
             self.eigenvalues[p] = amp
 
         if self.bgr is not None:
-            bgr_amp = pars['amp_background']
+            bgr_amp = pars.get('amp_background', 0.0)
             self.comps['background'] = bgr_amp * self.bgr
             self.eigenvalues['background'] = bgr_amp
         # calculate total spectrum
@@ -362,7 +368,8 @@ class XRF_Model:
         # remove tiny values
         floor = 1.e-12*max(total)
         total[np.where(total<floor)] = floor
-        self.init_fit = total
+        if set_init:
+            self.init_fit = total
         return total
 
     def __resid(self, params, data, index):
