@@ -11,10 +11,28 @@ import numpy as np
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
 import wx.lib.scrolledpanel as scrolled
+import wx.dataview as dv
+DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+
+from lmfit import Parameter, Minimizer
+from lmfit.printfuncs import gformat, CORREL_HEAD
+try:
+    from lmfit.model import (save_modelresult, load_modelresult,
+                             save_model, load_model)
+    HAS_MODELSAVE = True
+except ImportError:
+    HAS_MODELSAVE = False
+
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
-                     RIGHT)
+                     RIGHT, FileSave, GUIColors, RCEN, LCEN, FRAMESTYLE,
+                     BitmapButton, SetTip, GridPanel,
+                     FloatSpinWithPin, get_icon)
+
+
+from . import FONTSIZE
+
 
 from xraydb import material_mu
 from .notebooks import flatnotebook
@@ -22,10 +40,6 @@ from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
 
 from larch import Group
-from ..fitting import Parameter, Minimizer
-
-from ..math import index_of, gaussian
-
 
 from ..xrf import xrf_background
 
@@ -48,6 +62,8 @@ Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
 EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Energy_Text = 'All energies in eV'
+
+MIN_CORREL = 0.10
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
@@ -75,6 +91,7 @@ class FitSpectraFrame(wx.Frame):
                                                        _larch=self._larch)
 
         self.wids = {}
+        self.result_frame = None
 
         self.panels = OrderedDict()
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
@@ -505,6 +522,7 @@ class FitSpectraFrame(wx.Frame):
                 script.append(cmd)
             script.append("xrfmod.add_background(work_mca.bgr, vary=False)")
         script.append("work_mca.xrf_init = xrfmod.calc_spectrum(work_mca.energy_ev)")
+        script.append("work_mca.fit_history = getattr(work_mca, 'fit_history', [])")
 
         script = '\n'.join(script)
         self._larch.eval(script)
@@ -577,14 +595,396 @@ class FitSpectraFrame(wx.Frame):
         emin = self.wids['en_min'].GetValue()
         emax = self.wids['en_max'].GetValue()
         script = """xrfmod.fit_spectrum(work_mca.energy_ev, work_mca.counts,
-         energy_min=%.1f, energy_max=%.1f)"""
+         energy_min=%.1f, energy_max=%.1f)
+         """
         script = script % (emin, emax)
         self._larch.eval(script)
 
         # display report,
+        self._larch.eval("work_mca.fit_history.append(xrfmod.result)")
         self._larch.eval("print(xrfmod.fit_report)")
         self.plot_model(init=False)
 
+        shown = False
+        try:
+            self.result_frame.Raise()
+            shown = True
+        except:
+            self.result_frame = None
+        if not shown:
+            self.result_frame = FitResultFrame(parent=self)
+        self.result_frame.show_results()
 
     def onClose(self, event=None):
         self.Destroy()
+
+
+########
+class FitResultFrame(wx.Frame):
+    def __init__(self, parent=None, **kws):
+        wx.Frame.__init__(self, None, -1, title='XRF Fit Results',
+                          style=FRAMESTYLE, size=(625, 750), **kws)
+        self.parent = parent
+        self.mca    = self.parent.mca
+        self._larch = self.parent._larch
+        self.xrfmod = self._larch.symtable.get_symbol('xrfmod')
+
+        self.fit_history = getattr(self.mca, 'fit_history', [])
+        self.nfit = 0
+        self.build()
+
+    def build(self):
+        sizer = wx.GridBagSizer(10, 5)
+        sizer.SetVGap(5)
+        sizer.SetHGap(5)
+
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((700, 450))
+        self.colors = GUIColors()
+
+        # title row
+        self.wids = wids = {}
+        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
+                                             colour=self.colors.title, style=LCEN)
+
+        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
+                                       colour=self.colors.title, style=LCEN)
+
+        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
+                                       font=Font(FONTSIZE+2), colour=self.colors.title,
+                                       style=LCEN)
+
+        opts = dict(default=False, size=(200, -1), action=self.onPlot)
+        wids['plot_comps'] = Check(panel, label='Plot all components?', **opts)
+        wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
+        self.plot_choice = Button(panel, 'Plot Selected Fit',
+                                  size=(175, -1), action=self.onPlot)
+
+
+        self.save_result = Button(panel, 'Save Selected Model',
+                                  size=(175, -1), action=self.onSaveFitResult)
+        SetTip(self.save_result, 'save model and result to be loaded later')
+
+        self.export_fit  = Button(panel, 'Export Fit',
+                                  size=(175, -1), action=self.onExportFitResult)
+        SetTip(self.export_fit, 'save arrays and results to text file')
+
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
+                                        size=(700, 50), style=LCEN)
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+
+        irow += 1
+        sizer.Add(self.save_result, (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LCEN)
+
+        irow += 1
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['plot_comps'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
+        sview.AppendTextColumn(' Fit #',  width=50)
+        sview.AppendTextColumn(' N_data', width=50)
+        sview.AppendTextColumn(' N_vary', width=50)
+        sview.AppendTextColumn(' N_eval', width=60)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(' Akaike Info', width=110)
+        sview.AppendTextColumn(' Bayesian Info', width=110)
+
+        for col in range(sview.ColumnCount):
+            this = sview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_CENTER
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+        sview.SetMinSize((700, 125))
+
+        irow += 1
+        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 1), LCEN)
+
+        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
+                                          size=(250, -1), action=self.onCopyParams)
+
+        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LCEN)
+
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        self.wids['paramsdata'] = []
+        pview.AppendTextColumn('Parameter',      width=150)
+        pview.AppendTextColumn('Best-Fit Value', width=125)
+        pview.AppendTextColumn('Standard Error', width=125)
+        pview.AppendTextColumn('Info ',          width=275)
+
+        for col in range(4):
+            this = pview.Columns[col]
+            align = wx.ALIGN_LEFT
+            if col in (1, 2):
+                align = wx.ALIGN_RIGHT
+            this.Sortable = False
+            this.Alignment = this.Renderer.Alignment = align
+
+        pview.SetMinSize((700, 200))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+
+        self.wids['all_correl'] = Button(panel, 'Show All',
+                                          size=(100, -1), action=self.onAllCorrel)
+
+        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
+                                            min_val=0, size=(100, -1),
+                                            digits=3, increment=0.1)
+
+        ctitle = SimpleText(panel, 'minimum correlation: ')
+        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
+
+        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+
+        cview.AppendTextColumn('Parameter 1',    width=150)
+        cview.AppendTextColumn('Parameter 2',    width=150)
+        cview.AppendTextColumn('Correlation',    width=150)
+
+        for col in (0, 1, 2):
+            this = cview.Columns[col]
+            this.Sortable = False
+            align = wx.ALIGN_LEFT
+            if col == 2:
+                align = wx.ALIGN_RIGHT
+            this.Alignment = this.Renderer.Alignment = align
+        cview.SetMinSize((475, 200))
+
+        irow += 1
+        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def onSaveFitResult(self, event=None):
+        deffile = self.mca.filename.replace('.', '_') + 'xrf.modl'
+        sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
+                         wildcard=ModelWcards)
+        if sfile is not None:
+            result = self.get_fitresult()
+            save_modelresult(result, sfile)
+
+    def onExportFitResult(self, event=None):
+        mca = self.mca
+        deffile = self.mca.filename.replace('.', '_') + '.xdi'
+        wcards = 'All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
+
+        print("Need to export MCA Fit Result")
+        result = self.get_fitresult()
+#         if outfile is not None:
+#             i1, i2 = get_xlims(dgroup.xdat,
+#                                result.user_options['emin'],
+#                                result.user_options['emax'])
+#             x = dgroup.xdat[i1:i2]
+#             y = dgroup.ydat[i1:i2]
+#             yerr = None
+#             if hasattr(dgroup, 'yerr'):
+#                 yerr = 1.0*dgroup.yerr
+#                 if not isinstance(yerr, np.ndarray):
+#                     yerr = yerr * np.ones(len(y))
+#                 else:
+#                     yerr = yerr[i1:i2]
+#
+#             export_modelresult(result, filename=outfile,
+#                                datafile=dgroup.filename, ydata=y,
+#                                yerr=yerr, x=x)
+
+
+    def get_fitresult(self, nfit=None):
+        if nfit is None:
+            nfit = self.nfit
+        self.fit_history = getattr(self.mca, 'fit_history', [])
+        self.nfit = max(0, nfit)
+        if self.nfit > len(self.fit_history):
+            self.nfit = 0
+        return self.fit_history[self.nfit]
+
+    def onPlot(self, event=None):
+        show_resid = self.wids['plot_resid'].IsChecked()
+        show_comps = self.wids['plot_comps'].IsChecked()
+        cmd = "plot_xrffit(%s, nfit=%i, show_residual=%s,show_comps=%s)"
+        cmd = cmd % (self.mca.groupname, self.nfit, show_resid, sub_bline)
+        self.larch_eval(cmd)
+
+    def onSelectFit(self, evt=None):
+        if self.wids['stats'] is None:
+            return
+        item = self.wids['stats'].GetSelectedRow()
+        if item > -1:
+            self.show_fitresult(nfit=item)
+
+    def onSelectParameter(self, evt=None):
+        if self.wids['params'] is None:
+            return
+        if not self.wids['params'].HasSelection():
+            return
+        item = self.wids['params'].GetSelectedRow()
+        pname = self.wids['paramsdata'][item]
+
+        cormin= self.wids['min_correl'].GetValue()
+        self.wids['correl'].DeleteAllItems()
+
+        result = self.get_fitresult()
+        this = result.params[pname]
+        if this.correl is not None:
+            sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
+            for name, corval in reversed(sort_correl):
+                if abs(corval) > cormin:
+                    self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
+
+    def onAllCorrel(self, evt=None):
+        result = self.get_fitresult()
+        params = result.params
+        parnames = list(params.keys())
+
+        cormin= self.wids['min_correl'].GetValue()
+        correls = {}
+        for i, name in enumerate(parnames):
+            par = params[name]
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                for name2 in parnames[i+1:]:
+                    if (name != name2 and name2 in par.correl and
+                            abs(par.correl[name2]) > cormin):
+                        correls["%s$$%s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+
+        self.wids['correl'].DeleteAllItems()
+
+        for namepair, corval in sort_correl:
+            name1, name2 = namepair.split('$$')
+            self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
+
+    def onCopyParams(self, evt=None):
+        result = self.get_fitresult()
+        print("copy?") # self.peakframe.update_start_values(result.params)
+
+    def show_results(self):
+        cur = self.get_fitresult()
+        wids = self.wids
+        wids['stats'].DeleteAllItems()
+        for i, res in enumerate(self.fit_history):
+            args = ['%2.2d' % (i+1)]
+            for attr in ('ndata', 'nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
+                val = getattr(res, attr)
+                if isinstance(val, int):
+                    val = '%d' % val
+                else:
+                    val = gformat(val, 11)
+                args.append(val)
+            wids['stats'].AppendItem(tuple(args))
+        wids['data_title'].SetLabel(self.mca.filename)
+        self.show_fitresult(nfit=0)
+
+    def show_fitresult(self, nfit=0, mca=None):
+        if mca is not None:
+            self.mca = mca
+
+        result = self.get_fitresult(nfit=nfit)
+        wids = self.wids
+        wids['data_title'].SetLabel(self.mca.filename)
+        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
+
+        parts = ['xrf model ']
+#         model_repr = result.model._reprstring(long=True)
+#         for word in model_repr.split('Model('):
+#             if ',' in word:
+#                 pref, suff = word.split(', ', 1)
+#                 parts.append( ("%sModel(%s" % (pref.title(), suff) ))
+#             else:
+#                 parts.append(word)
+#         desc = ''.join(parts)
+#         parts = []
+#         tlen = 90
+#         while len(desc) >= tlen:
+#             i = desc[tlen-1:].find('+')
+#             if i < 0:
+#                 break
+#             parts.append(desc[:tlen+i])
+#             desc = desc[tlen+i:]
+#         parts.append(desc)
+        wids['model_desc'].SetLabel('\n'.join(parts))
+
+        wids['params'].DeleteAllItems()
+        wids['paramsdata'] = []
+        for param in reversed(result.params.values()):
+            pname = param.name
+            try:
+                val = gformat(param.value)
+            except (TypeError, ValueError):
+                val = ' ??? '
+
+            serr = ' N/A '
+            if param.stderr is not None:
+                serr = gformat(param.stderr, 10)
+            extra = ' '
+            if param.expr is not None:
+                extra = ' = %s ' % param.expr
+            elif not param.vary:
+                extra = ' (fixed)'
+            elif param.init_value is not None:
+                extra = ' (init=%s)' % gformat(param.init_value, 11)
+
+            wids['params'].AppendItem((pname, val, serr, extra))
+            wids['paramsdata'].append(pname)
+        self.Refresh()
