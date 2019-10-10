@@ -283,7 +283,7 @@ class XRF_Model:
         self.params.add('%s_sigmax' % name, value=sigmax, vary=vary_sigmax,
                         min=0, max=100)
 
-    def add_element(self, elem, amplitude=1.0, vary_amplitude=True):
+    def add_element(self, elem, amplitude=1.e6, vary_amplitude=True):
         """add Element to XRF model
         """
         self.elements.append(XRF_Element(elem,
