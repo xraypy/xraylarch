@@ -158,10 +158,10 @@ class PeriodicTablePanel(wx.Panel):
                     self.onclick(label=newlabel)
         event.Skip()
 
-
     def on_clear_all(self, event=None):
-        for wid in self.ctrls.values():
+        for wid in list(self.ctrls.values()) + list(self.wids.values()):
             wid.SetBackgroundColour(self.bgcol)
+            wid.SetForegroundColour(self.fgcol)
         self.selected = []
         self.current = None
 

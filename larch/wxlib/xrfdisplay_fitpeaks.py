@@ -34,7 +34,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
 from . import FONTSIZE
 
 
-from xraydb import material_mu
+from xraydb import material_mu, xray_edge
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -75,10 +75,11 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, size=(550, 700)):
+    def __init__(self, parent, mca='mca1', size=(575, 750)):
         self.parent = parent
         self._larch = parent.larch
-        self.mca = parent.mca
+        self.mcagroup = "_mcas.%s" % mca
+        self.mca = self._larch.symtable.get_group(self.mcagroup)
         self.conf = {}
 
         self.paramgroup = Group()
@@ -127,44 +128,56 @@ class FitSpectraFrame(wx.Frame):
         p = GridPanel(self)
         tooltip_msg = 'Select Elements to include in model'
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=13,
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
-
         for roi in self.mca.rois:
             words = roi.name.split()
             elem = words[0].title()
             if elem in self.ptable.syms and elem not in self.ptable.selected:
                 self.ptable.onclick(label=elem)
 
-        p.AddText(' Select Elements to include :', colour='#880000', dcol=7)
-        p.Add(self.ptable, dcol=6, newrow=True)
+        p.AddText('Elements to model:', colour='#880000', dcol=8)
+        p.Add((2, 2), newrow=True)
+        p.Add(self.ptable, dcol=6)
 
-        dstep = dtail = 0.25
+        dstep, dtail, dsigma, dgamma = 0.25, 0.25, 1.0, 0.25
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01)
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                        max_val=0.25, increment=0.01)
+                                        max_val=0.5, increment=0.01)
 
+        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
+                                       max_val=30.0, increment=0.1)
+        wids['peak_sigma'] = FloatSpin(p, value=dsigma, digits=2, min_val=0,
+                                       max_val=10.0, increment=0.1)
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
+        wids['peak_gamma_vary'] = VarChoice(p, default=0)
+        wids['peak_sigma_vary'] = VarChoice(p, default=0)
 
-
-        p.AddText('  Step (%): ', newrow=True)
+        p.Add((2, 2), newrow=True)
+        p.AddText('  Step (%): ')
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 
-        p.AddText('  Tail: ', newrow=False)
+        p.AddText('  Tail: ')
         p.Add(wids['peak_tail'])
-
-
         p.Add(wids['peak_tail_vary'])
 
+        p.Add((2, 2), newrow=True)
+        p.AddText('  Gamma : ')
+        p.Add(wids['peak_gamma'])
+        p.Add(wids['peak_gamma_vary'])
 
-        p.Add(HLine(p, size=(550, 3)), dcol=8, newrow=True)
-        p.AddText(' Elastic / Compton peaks: ', colour='#880000',
-                  dcol=5, newrow=True)
+        p.AddText('  Sigma Scale: ')
+        p.Add(wids['peak_sigma'])
+        p.Add(wids['peak_sigma_vary'])
 
+        p.Add((2, 2), newrow=True)
+        p.Add(HLine(p, size=(550, 3)), dcol=8)
+
+        p.Add((2, 2), newrow=True)
         opts = dict(size=(100, -1),
                     min_val=0, digits=4, increment=0.010)
         for name, escale, dsigma in (('Elastic',  1.000, 1.0),
@@ -192,29 +205,34 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=2, min_val=0,
                                            max_val=10.0, increment=0.1)
 
-            p.AddText("  %s " % name,  colour='#880000', newrow=True)
+            p.Add((2, 2), newrow=True)
+            p.AddText("  %s Peak:" % name,  colour='#880000')
             p.Add(wids['%s_use' % t], dcol=2)
-            p.AddText('  Energy (eV): ', newrow=False)
+
+            p.AddText('  Energy (eV): ')
             p.Add(wids['%s_cen'%t])
             p.Add(wids['%s_cen_vary'%t])
 
-            p.AddText('  Step (%): ', newrow=True)
+            p.Add((2, 2), newrow=True)
+            p.AddText('  Step (%): ')
             p.Add(wids['%s_step'%t])
             p.Add(wids['%s_step_vary'%t])
 
-            p.AddText('  Tail: ', newrow=False)
+            p.AddText('  Tail: ')
             p.Add(wids['%s_tail'%t])
             p.Add(wids['%s_tail_vary'%t])
 
-            p.AddText('  Gamma : ', newrow=True)
+            p.Add((2, 2), newrow=True)
+            p.AddText('  Gamma : ')
             p.Add(wids['%s_gamma'%t])
             p.Add(wids['%s_gamma_vary'%t])
 
-            p.AddText('  Sigma Scale : ', newrow=False)
+            p.AddText('  Sigma Scale : ')
             p.Add(wids['%s_sigma'%t])
             p.Add(wids['%s_sigma_vary'%t])
 
-            p.Add(HLine(p, size=(550, 3)), dcol=7, newrow=True)
+            p.Add((2, 2), newrow=True)
+            p.Add(HLine(p, size=(550, 3)), dcol=7)
 
         p.pack()
         return p
@@ -281,7 +299,7 @@ class FitSpectraFrame(wx.Frame):
         wids['det_efano_vary'] = VarChoice(pdet, default=0)
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
-                    digits=1, increment=10)
+                    digits=1, increment=50)
         wids['en_xray'] = FloatSpin(pdet, value=xray_energy,
                                     action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
@@ -369,13 +387,30 @@ class FitSpectraFrame(wx.Frame):
         pack(main, sizer)
         return main
 
-
     def onSetXrayEnergy(self, event=None):
         en = self.wids['en_xray'].GetValue()
         self.wids['en_max'].SetValue(en)
         self.wids['elastic_cen'].SetValue(en)
         self.wids['compton1_cen'].SetValue(en*0.975)
         self.wids['compton2_cen'].SetValue(en*0.950)
+        emin = self.wids['en_min'].GetValue() * 1.25
+
+        self.ptable.on_clear_all()
+        for roi in self.mca.rois:
+            words = roi.name.split()
+            elem = words[0].title()
+            kedge = l3edge = l2edge = 0.0
+            try:
+                kedge = xray_edge(elem, 'K').energy
+                l3edge = xray_edge(elem, 'L3').energy
+                l2edge = xray_edge(elem, 'L3').energy
+            except:
+                pass
+            if ((kedge < en and kedge > emin) or
+                (l3edge < en and l3edge > emin) or
+                (l2edge < en and l2edge > emin)):
+                if elem not in self.ptable.selected:
+                    self.ptable.onclick(label=elem)
 
     def onShowBgr(self, event=None):
         mca    = self.mca
@@ -466,7 +501,8 @@ class FitSpectraFrame(wx.Frame):
          vary_cal_slope={cal_vary:s}, vary_cal_quad=False,
          peak_step={peak_step:.4f}, vary_peak_step={peak_step_vary:s},
          peak_tail={peak_tail:.4f}, vary_peak_tail={peak_tail_vary:s},
-         peak_gamma=0.5, vary_peak_gamma=False,
+         peak_gamma={peak_gamma:.4f}, vary_peak_gamma={peak_gamma_vary:s},
+         peak_sigmax={peak_sigma:.4f}, vary_peak_sigmax={peak_sigma_vary:s},
          noise={det_noise:.2f}, vary_noise={det_noise_vary:s},
          efano={det_efano:.5f}, vary_efano={det_efano_vary:s})""".format(**opts)]
 
@@ -508,24 +544,25 @@ class FitSpectraFrame(wx.Frame):
             sym = self.ptable.syms[iz-1]
             script.append("xrfmod.add_element('%s', amplitude=1e5)" % sym)
 
-        self._larch.symtable.set_symbol('work_mca', self.mca)
-        en_assign = "work_mca.energy_ev = work_mca.energy[:]"
-        if max(self.mca.energy) < 250.0:
-            en_str = "work_mca.energy_ev = work_mca.energy*1000.0"
-        script.append(en_str)
+        bwid = bexp = 0.0
+        efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
+
+        script.append("{group:s}.energy_ev = {group:s}.energy*{efactor:.1f}")
+
         if opts['bgr_use'] in ('True', True):
             if getattr(self.mca, 'bgr', None) is None:
-                width  = self.wids['bgr_width'].GetValue()/1000.0
-                expon  = int(self.wids['bgr_expon'].GetStringSelection())
-                cmd = """xrf_background(energy=work_mca.energy, counts=work_mca.counts,
-                group=work_mca, width=%.2f, exponent=%d)"""  % (width, expon)
-                script.append(cmd)
-            script.append("xrfmod.add_background(work_mca.bgr, vary=False)")
-        script.append("work_mca.xrf_init = xrfmod.calc_spectrum(work_mca.energy_ev)")
-        script.append("work_mca.fit_history = getattr(work_mca, 'fit_history', [])")
+                bwid = self.wids['bgr_width'].GetValue()/1000.0
+                bexp = int(self.wids['bgr_expon'].GetStringSelection())
+                script.append("""xrf_background(energy={group:s}.energy,
+                counts={group:s}.counts, group={group:s},
+                width={bwid:.2f}, exponent={bexp:.2f})""")
+            script.append("xrfmod.add_background({group:s}.bgr, vary=False)")
+        script.append("{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)")
+        script.append("{group:s}.fit_history = getattr({group:s}, 'fit_history', [])")
 
         script = '\n'.join(script)
-        self._larch.eval(script)
+        self._larch.eval(script.format(group=self.mcagroup, bwid=bwid, bexp=bexp,
+                                       efactor=efactor))
         self.model_script = script
 
         cmds = []
@@ -554,56 +591,55 @@ class FitSpectraFrame(wx.Frame):
             self.model_script = "%s\n%s" % (self.model_script, script)
 
 
-    def plot_model(self, init=False):
+    def plot_model(self, model_spectrum=None, init=False, with_comps=True,
+                   label=None):
         conf = self.parent.conf
-        plotkws = {'linewidth': 2.5,
-                   'delay_draw': True,
-                   'grid': False,
-                   'ylog_scale': self.parent.ylog_scale,
-                   'show_legend': False,
+
+        plotkws = {'linewidth': 2.5, 'delay_draw': True, 'grid': False,
+                   'ylog_scale': self.parent.ylog_scale, 'show_legend': False,
                    'fullbox': False}
 
         ppanel = self.parent.panel
         ppanel.conf.reset_trace_properties()
-
         self.parent.plot(self.mca.energy, self.mca.counts, mca=self.mca,
                          xlabel='E (keV)', xmin=0, with_rois=False, **plotkws)
 
-        if init:
-            self.parent.oplot(self.mca.energy, self.xrfmod.init_fit,
-                  label='predicted model', color=conf.fit_color, **plotkws)
-        else:
-            self.parent.oplot(self.mca.energy, self.xrfmod.best_fit,
-                  label='best fit', color=conf.fit_color, **plotkws)
+        if model_spectrum is None:
+            model_spectrum = self.xrfmod.init_fit if init else self.xrfmod.best_fit
+        if label is None:
+            label = 'predicted model' if init else 'best fit'
 
-        if self.wids['show_components'].IsChecked():
+        self.parent.oplot(self.mca.energy, model_spectrum,
+                          label=label, color=conf.fit_color, **plotkws)
+
+        if with_comps:
             for label, arr in self.xrfmod.comps.items():
                 ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
 
         yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
         ppanel.set_viewlimits()
+        ppanel.conf.legend_loc = 'ur'
         ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
         self.build_model()
-        self.plot_model(init=True)
+        self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
+
 
     def onFitModel(self, event=None):
         self.build_model()
 
         emin = self.wids['en_min'].GetValue()
         emax = self.wids['en_max'].GetValue()
-        script = """xrfmod.fit_spectrum(work_mca.energy_ev, work_mca.counts,
-         energy_min=%.1f, energy_max=%.1f)
-         """
-        script = script % (emin, emax)
-        self._larch.eval(script)
-
-        # display report,
-        self._larch.eval("work_mca.fit_history.append(xrfmod.result)")
-        self._larch.eval("print(xrfmod.fit_report)")
-        self.plot_model(init=False)
+        script = """
+xrfmod.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
+                     energy_min={emin:.1f}, energy_max={emax:.1f})
+{group:s}.fit_history.append(xrfmod.result)
+print(xrfmod.fit_report)
+        """
+        self._larch.eval(script.format(group=self.mcagroup, emin=emin, emax=emax))
+        self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
 
         shown = False
         try:
@@ -619,7 +655,7 @@ class FitSpectraFrame(wx.Frame):
         self.Destroy()
 
 
-########
+
 class FitResultFrame(wx.Frame):
     def __init__(self, parent=None, **kws):
         wx.Frame.__init__(self, None, -1, title='XRF Fit Results',
@@ -658,11 +694,9 @@ class FitResultFrame(wx.Frame):
                                        style=LCEN)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        wids['plot_comps'] = Check(panel, label='Plot all components?', **opts)
-        wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
+        wids['plot_comps'] = Check(panel, label='Show All components?', **opts)
         self.plot_choice = Button(panel, 'Plot Selected Fit',
                                   size=(175, -1), action=self.onPlot)
-
 
         self.save_result = Button(panel, 'Save Selected Model',
                                   size=(175, -1), action=self.onSaveFitResult)
@@ -680,19 +714,11 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
         sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
 
-        # irow += 1
-        # wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-        #                                 size=(700, 50), style=LCEN)
-        # sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
-
         irow += 1
-        sizer.Add(self.save_result, (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LCEN)
-
-        irow += 1
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['plot_comps'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LCEN)
+        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.export_fit,    (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.plot_choice,   (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['plot_comps'], (irow, 3), (1, 1), LCEN)
 
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
@@ -720,7 +746,7 @@ class FitResultFrame(wx.Frame):
                 align = wx.ALIGN_CENTER
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((700, 125))
+        sview.SetMinSize((700, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LCEN)
@@ -794,7 +820,7 @@ class FitResultFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 200))
+        cview.SetMinSize((475, 175))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
@@ -826,7 +852,6 @@ class FitResultFrame(wx.Frame):
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
-        print("Need to export MCA Fit Result")
         result = self.get_fitresult()
 #         if outfile is not None:
 #             i1, i2 = get_xlims(dgroup.xdat,
@@ -854,14 +879,20 @@ class FitResultFrame(wx.Frame):
         self.nfit = max(0, nfit)
         if self.nfit > len(self.fit_history):
             self.nfit = 0
+
         return self.fit_history[self.nfit]
 
     def onPlot(self, event=None):
-        show_resid = self.wids['plot_resid'].IsChecked()
-        show_comps = self.wids['plot_comps'].IsChecked()
-        cmd = "plot_xrffit(%s, nfit=%i, show_residual=%s,show_comps=%s)"
-        cmd = cmd % (self.mca.groupname, self.nfit, show_resid, sub_bline)
-        self.larch_eval(cmd)
+        result = self.get_fitresult()
+        xrfmod = self._larch.symtable.get_symbol('xrfmod')
+        with_comps = self.wids['plot_comps'].IsChecked()
+        spectrum = xrfmod.calc_spectrum(self.mca.energy_ev,
+                                        params=result.params,
+                                        set_init=False)
+
+        self.parent.plot_model(model_spectrum=spectrum, with_comps=with_comps,
+                               label="Model #%d" % (1+self.nfit))
+
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -939,31 +970,11 @@ class FitResultFrame(wx.Frame):
     def show_fitresult(self, nfit=0, mca=None):
         if mca is not None:
             self.mca = mca
-
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
         wids['data_title'].SetLabel(self.mca.filename)
         wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
-
-#        parts = ['xrf model ']
-#         model_repr = result.model._reprstring(long=True)
-#         for word in model_repr.split('Model('):
-#             if ',' in word:
-#                 pref, suff = word.split(', ', 1)
-#                 parts.append( ("%sModel(%s" % (pref.title(), suff) ))
-#             else:
-#                 parts.append(word)
-#         desc = ''.join(parts)
-#         parts = []
-#         tlen = 90
-#         while len(desc) >= tlen:
-#             i = desc[tlen-1:].find('+')
-#             if i < 0:
-#                 break
-#             parts.append(desc[:tlen+i])
-#             desc = desc[tlen+i:]
-#         parts.append(desc)
-# wids['model_desc'].SetLabel('\n'.join(parts))
+        self.result = result
 
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []

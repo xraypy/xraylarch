@@ -1058,13 +1058,11 @@ class XRFDisplayFrame(wx.Frame):
     def plotmca(self, mca, title=None, set_title=True, as_mca2=False,
                 fullrange=False, init=False, **kws):
         if as_mca2:
-            self.mca2 = mca
+            self._mcagroup.mca2 = self.mca2 = mca
             kws['new'] = False
         else:
-            self.mca = mca
+            self._mcagroup.mca1 = self.mca = mca
             self.panel.conf.show_grid = False
-
-
         xview_range = self.panel.axes.get_xlim()
 
         if init or xview_range == (0.0, 1.0):
@@ -1317,7 +1315,7 @@ class XRFDisplayFrame(wx.Frame):
         try:
             self.win_fit.Raise()
         except:
-            self.win_fit = FitSpectraFrame(self)
+            self.win_fit = FitSpectraFrame(self, mca='mca1')
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
