@@ -680,10 +680,10 @@ class FitResultFrame(wx.Frame):
         sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
         sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
 
-        irow += 1
-        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(700, 50), style=LCEN)
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+        # irow += 1
+        # wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
+        #                                 size=(700, 50), style=LCEN)
+        # sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
 
         irow += 1
         sizer.Add(self.save_result, (irow, 0), (1, 1), LCEN)
@@ -945,7 +945,7 @@ class FitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.mca.filename)
         wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
 
-        parts = ['xrf model ']
+#        parts = ['xrf model ']
 #         model_repr = result.model._reprstring(long=True)
 #         for word in model_repr.split('Model('):
 #             if ',' in word:
@@ -963,7 +963,7 @@ class FitResultFrame(wx.Frame):
 #             parts.append(desc[:tlen+i])
 #             desc = desc[tlen+i:]
 #         parts.append(desc)
-        wids['model_desc'].SetLabel('\n'.join(parts))
+# wids['model_desc'].SetLabel('\n'.join(parts))
 
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
