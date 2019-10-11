@@ -108,13 +108,16 @@ class FitSpectraFrame(wx.Frame):
         self._larch = parent.larch
         self.mcagroup = "_mcas.%s" % mca
         self.mca = self._larch.symtable.get_group(self.mcagroup)
+
         efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
         self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
 
+        self.fit_history = getattr(self.mca, 'fit_history', [])
+        self.nfit = 0
         self.conf = {}
 
         self.paramgroup = Group()
-
+        self.colors = GUIColors()
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
@@ -128,7 +131,7 @@ class FitSpectraFrame(wx.Frame):
         self.panels = {}
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
-        self.panels['Fit Results'] = partial(FitResultPanel, parent=self)
+        self.panels['Fit Results'] = self.fitresult_page
 
         self.nb = flatnotebook(self, self.panels)
 
@@ -419,6 +422,159 @@ class FitSpectraFrame(wx.Frame):
         pack(main, sizer)
         return main
 
+    def fitresult_page(self, **kws):
+        sizer = wx.GridBagSizer(10, 5)
+        sizer.SetVGap(5)
+        sizer.SetHGap(5)
+
+        panel = scrolled.ScrolledPanel(self)
+        # title row
+        self.rwids = wids = {}
+        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
+                                             colour=self.colors.title, style=LCEN)
+
+        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
+                                       colour=self.colors.title, style=LCEN)
+
+        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
+                                       font=Font(FONTSIZE+2), colour=self.colors.title,
+                                       style=LCEN)
+
+        opts = dict(default=False, size=(175, -1), action=self.onPlot)
+        wids['plot_comps'] = Check(panel, label='Show All components?', **opts)
+        self.plot_choice = Button(panel, 'Plot Selected Fit',
+                                  size=(175, -1), action=self.onPlot)
+
+        self.save_result = Button(panel, 'Save Selected Model',
+                                  size=(175, -1), action=self.onSaveFitResult)
+        SetTip(self.save_result, 'save model and result to be loaded later')
+
+        self.export_fit  = Button(panel, 'Export Fit',
+                                  size=(175, -1), action=self.onExportFitResult)
+        SetTip(self.export_fit, 'save arrays and results to text file')
+
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
+
+        irow += 1
+        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.export_fit,    (irow, 1), (1, 2), LCEN)
+        irow += 1
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['plot_comps'], (irow, 1), (1, 3), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+
+        sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
+        sview.AppendTextColumn('  Fit #', width=65)
+        sview.AppendTextColumn(' N_vary', width=65)
+        sview.AppendTextColumn(' N_eval', width=65)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=125)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=125)
+        sview.AppendTextColumn(' Akaike Info', width=125)
+
+        for col in range(sview.ColumnCount):
+            this = sview.Columns[col]
+            isort, align = True, wx.ALIGN_RIGHT
+            if col == 0:
+                align = wx.ALIGN_CENTER
+            this.Sortable = isort
+            this.Alignment = this.Renderer.Alignment = align
+        sview.SetMinSize((625, 150))
+
+        irow += 1
+        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+        sizer.Add(title, (irow, 0), (1, 1), LCEN)
+
+        pview = wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        wids['paramsdata'] = []
+        pview.AppendTextColumn('Parameter',      width=150)
+        pview.AppendTextColumn('Refined Value',  width=150)
+        pview.AppendTextColumn('Standard Error', width=150)
+        pview.AppendTextColumn('Info ',          width=150)
+
+        for col in range(4):
+            this = pview.Columns[col]
+            align = wx.ALIGN_LEFT
+            if col in (1, 2):
+                align = wx.ALIGN_RIGHT
+            this.Sortable = False
+            this.Alignment = this.Renderer.Alignment = align
+
+        pview.SetMinSize((625, 200))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+
+        irow += 1
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LCEN)
+
+        wids['all_correl'] = Button(panel, 'Show All',
+                                    size=(100, -1), action=self.onAllCorrel)
+
+        wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
+                                       min_val=0, size=(100, -1),
+                                       digits=3, increment=0.1)
+
+        ctitle = SimpleText(panel, 'minimum correlation: ')
+        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
+        sizer.Add(wids['min_correl'], (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LCEN)
+
+        irow += 1
+
+        cview = wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+
+        cview.AppendTextColumn('Parameter 1',    width=150)
+        cview.AppendTextColumn('Parameter 2',    width=150)
+        cview.AppendTextColumn('Correlation',    width=150)
+
+        for col in (0, 1, 2):
+            this = cview.Columns[col]
+            this.Sortable = False
+            align = wx.ALIGN_LEFT
+            if col == 2:
+                align = wx.ALIGN_RIGHT
+            this.Alignment = this.Renderer.Alignment = align
+        cview.SetMinSize((550, 150))
+
+        irow += 1
+        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
+        irow += 1
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+        return panel
+    
     def onSetXrayEnergy(self, event=None):
         en = self.wids['en_xray'].GetValue()
         self.wids['en_max'].SetValue(en)
@@ -647,190 +803,14 @@ class FitSpectraFrame(wx.Frame):
 
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
 
-        for i in range(len(self.pagelist)):
-            if 'Results' in self.nb.GetPageText(i)
+        for i in range(len(self.nb.pagelist)):
+            if 'Results' in self.nb.GetPageText(i):
                 self.nb.SetSelection(i)
         time.sleep(0.002)
-        self.nb.GetCurrentPage().show_results()
+        self.show_results()
 
     def onClose(self, event=None):
         self.Destroy()
-
-
-class FitResultPanel(wx.Panel):
-    def __init__(self, parent, **kws):
-        wx.Panel.__init__(self, parent, size=(625, 750))
-
-        # title='XRF Fit Results',
-        #                   style=FRAMESTYLE, size=(625, 750), **kws)
-        self.parent = parent
-        self.mca    = self.parent.mca
-        self._larch = self.parent._larch
-        self.fit_history = getattr(self.mca, 'fit_history', [])
-        self.nfit = 0
-        self.build()
-
-    def build(self):
-        sizer = wx.GridBagSizer(10, 5)
-        sizer.SetVGap(5)
-        sizer.SetHGap(5)
-
-        panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((700, 450))
-        self.colors = GUIColors()
-
-        # title row
-        self.wids = wids = {}
-        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-
-        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
-                                             colour=self.colors.title, style=LCEN)
-
-        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
-                                       colour=self.colors.title, style=LCEN)
-
-        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
-                                       font=Font(FONTSIZE+2), colour=self.colors.title,
-                                       style=LCEN)
-
-        opts = dict(default=False, size=(175, -1), action=self.onPlot)
-        wids['plot_comps'] = Check(panel, label='Show All components?', **opts)
-        self.plot_choice = Button(panel, 'Plot Selected Fit',
-                                  size=(175, -1), action=self.onPlot)
-
-        self.save_result = Button(panel, 'Save Selected Model',
-                                  size=(175, -1), action=self.onSaveFitResult)
-        SetTip(self.save_result, 'save model and result to be loaded later')
-
-        self.export_fit  = Button(panel, 'Export Fit',
-                                  size=(175, -1), action=self.onExportFitResult)
-        SetTip(self.export_fit, 'save arrays and results to text file')
-
-        irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
-
-        irow += 1
-        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
-
-        irow += 1
-        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.export_fit,    (irow, 1), (1, 2), LCEN)
-        irow += 1
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['plot_comps'], (irow, 1), (1, 3), LCEN)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
-
-        irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
-
-        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('  Fit #', width=65)
-        sview.AppendTextColumn(' N_vary', width=65)
-        sview.AppendTextColumn(' N_eval', width=65)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=125)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=125)
-        sview.AppendTextColumn(' Akaike Info', width=125)
-
-        for col in range(sview.ColumnCount):
-            this = sview.Columns[col]
-            isort, align = True, wx.ALIGN_RIGHT
-            if col == 0:
-                align = wx.ALIGN_CENTER
-            this.Sortable = isort
-            this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((625, 150))
-
-        irow += 1
-        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
-
-        irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 1), LCEN)
-
-        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',      width=150)
-        pview.AppendTextColumn('Refined Value',  width=150)
-        pview.AppendTextColumn('Standard Error', width=150)
-        pview.AppendTextColumn('Info ',          width=150)
-
-        for col in range(4):
-            this = pview.Columns[col]
-            align = wx.ALIGN_LEFT
-            if col in (1, 2):
-                align = wx.ALIGN_RIGHT
-            this.Sortable = False
-            this.Alignment = this.Renderer.Alignment = align
-
-        pview.SetMinSize((625, 200))
-        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
-
-        irow += 1
-        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
-
-        irow += 1
-        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-
-        self.wids['all_correl'] = Button(panel, 'Show All',
-                                          size=(100, -1), action=self.onAllCorrel)
-
-        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
-                                            min_val=0, size=(100, -1),
-                                            digits=3, increment=0.1)
-
-        ctitle = SimpleText(panel, 'minimum correlation: ')
-        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
-        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LCEN)
-
-        irow += 1
-
-        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-
-        cview.AppendTextColumn('Parameter 1',    width=150)
-        cview.AppendTextColumn('Parameter 2',    width=150)
-        cview.AppendTextColumn('Correlation',    width=150)
-
-        for col in (0, 1, 2):
-            this = cview.Columns[col]
-            this.Sortable = False
-            align = wx.ALIGN_LEFT
-            if col == 2:
-                align = wx.ALIGN_RIGHT
-            this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((550, 150))
-
-        irow += 1
-        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
-        irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
-
-        pack(panel, sizer)
-        panel.SetupScrolling()
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
-
-        pack(self, mainsizer)
-        self.Show()
-        self.Raise()
 
     def onSaveFitResult(self, event=None):
         deffile = self.mca.filename.replace('.', '_') + 'xrf.modl'
@@ -849,7 +829,6 @@ class FitResultPanel(wx.Panel):
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
         result = self.get_fitresult()
-        print("Result " )
         if outfile is not None:
             export_modelresult(result, filename=outfile,
                                ydata=self.mca.counts, x=self.mca.energy)
@@ -868,32 +847,31 @@ class FitResultPanel(wx.Panel):
     def onPlot(self, event=None):
         result = self.get_fitresult()
         xrfmod = self._larch.symtable.get_symbol('xrfmod')
-        with_comps = self.wids['plot_comps'].IsChecked()
+        with_comps = self.rwids['plot_comps'].IsChecked()
         spectrum = xrfmod.calc_spectrum(self.mca.energy_ev,
                                         params=result.params,
                                         set_init=False)
 
-        self.parent.plot_model(model_spectrum=spectrum, with_comps=with_comps,
-                               label="Model #%d" % (1+self.nfit))
-
+        self.plot_model(model_spectrum=spectrum, with_comps=with_comps,
+                        label="Model #%d" % (1+self.nfit))
 
     def onSelectFit(self, evt=None):
-        if self.wids['stats'] is None:
+        if self.rwids['stats'] is None:
             return
-        item = self.wids['stats'].GetSelectedRow()
+        item = self.rwids['stats'].GetSelectedRow()
         if item > -1:
             self.show_fitresult(nfit=item)
 
     def onSelectParameter(self, evt=None):
-        if self.wids['params'] is None:
+        if self.rwids['params'] is None:
             return
-        if not self.wids['params'].HasSelection():
+        if not self.rwids['params'].HasSelection():
             return
-        item = self.wids['params'].GetSelectedRow()
-        pname = self.wids['paramsdata'][item]
+        item = self.rwids['params'].GetSelectedRow()
+        pname = self.rwids['paramsdata'][item]
 
-        cormin= self.wids['min_correl'].GetValue()
-        self.wids['correl'].DeleteAllItems()
+        cormin= self.rwids['min_correl'].GetValue()
+        self.rwids['correl'].DeleteAllItems()
 
         result = self.get_fitresult()
         this = result.params[pname]
@@ -901,14 +879,14 @@ class FitResultPanel(wx.Panel):
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
                 if abs(corval) > cormin:
-                    self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
+                    self.rwids['correl'].AppendItem((pname, name, "% .4f" % corval))
 
     def onAllCorrel(self, evt=None):
         result = self.get_fitresult()
         params = result.params
         parnames = list(params.keys())
 
-        cormin= self.wids['min_correl'].GetValue()
+        cormin= self.rwids['min_correl'].GetValue()
         correls = {}
         for i, name in enumerate(parnames):
             par = params[name]
@@ -923,16 +901,15 @@ class FitResultPanel(wx.Panel):
         sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
         sort_correl.reverse()
 
-        self.wids['correl'].DeleteAllItems()
+        self.rwids['correl'].DeleteAllItems()
 
         for namepair, corval in sort_correl:
             name1, name2 = namepair.split('$$')
-            self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
+            self.rwids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
     def show_results(self):
         cur = self.get_fitresult()
-        wids = self.wids
-        wids['stats'].DeleteAllItems()
+        self.rwids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
             args = ['%2.2d' % (i+1)]
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic'):
@@ -942,21 +919,21 @@ class FitResultPanel(wx.Panel):
                 else:
                     val = gformat(val, 11)
                 args.append(val)
-            wids['stats'].AppendItem(tuple(args))
-        wids['data_title'].SetLabel(self.mca.filename)
+            self.rwids['stats'].AppendItem(tuple(args))
+        self.rwids['data_title'].SetLabel(self.mca.filename)
         self.show_fitresult(nfit=0)
 
     def show_fitresult(self, nfit=0, mca=None):
         if mca is not None:
             self.mca = mca
         result = self.get_fitresult(nfit=nfit)
-        wids = self.wids
-        wids['data_title'].SetLabel(self.mca.filename)
-        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
+
+        self.rwids['data_title'].SetLabel(self.mca.filename)
+        self.rwids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
         self.result = result
 
-        wids['params'].DeleteAllItems()
-        wids['paramsdata'] = []
+        self.rwids['params'].DeleteAllItems()
+        self.rwids['paramsdata'] = []
         for param in reversed(result.params.values()):
             pname = param.name
             try:
@@ -975,6 +952,9 @@ class FitResultPanel(wx.Panel):
             elif param.init_value is not None:
                 extra = ' (init=%s)' % gformat(param.init_value, 8)
 
-            wids['params'].AppendItem((pname, val, serr, extra))
-            wids['paramsdata'].append(pname)
+            self.rwids['params'].AppendItem((pname, val, serr, extra))
+            self.rwids['paramsdata'].append(pname)
         self.Refresh()
+        
+        
+
