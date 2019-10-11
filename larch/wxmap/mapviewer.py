@@ -1418,9 +1418,8 @@ class MapViewerFrame(wx.Frame):
         aname = xrmfile.add_area(mask)
         self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
-    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0, det=None,
-                     **kws):
-
+    def lassoHandler(self, mask=None, xrmfile=None, xoff=0, yoff=0,
+                     det=None, **kws):
         if xrmfile is None:
             xrmfile = self.current_file
 
@@ -1437,7 +1436,6 @@ class MapViewerFrame(wx.Frame):
                 ym, xm = mask.shape
                 tmask = np.zeros((ny, nx)).astype(bool)
                 xmax = min(nx, xm+xoff)
-                # print("lassoHandler " , ny, nx, ym, xm, xoff, yoff, xmax)
                 for iy in range(ym):
                     if iy+yoff < ny:
                         tmask[iy+yoff, xoff:xmax] = mask[iy]
@@ -1473,13 +1471,14 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrfdisplay is None:
-            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer)
-
+            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
+                                              _larch=self.larch)
         try:
             self.xrfdisplay.Show()
 
         except PyDeadObjectError:
-            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer)
+            self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
+                                              _larch=self.larch)
             self.xrfdisplay.Show()
 
         if do_raise:
@@ -1568,8 +1567,8 @@ class MapViewerFrame(wx.Frame):
         else:
              lasso_cb = None
 
-        imframe = MapImageFrame(output_title   = title,
-                                  lasso_callback = lasso_cb)
+        imframe = MapImageFrame(output_title=title,
+                                lasso_callback=lasso_cb)
 
         self.tomo_displays.append(imframe)
 
