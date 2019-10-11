@@ -171,6 +171,7 @@ class XRF_Element:
             overlap_energy = np.sqrt(1225 + 0.5*xray_energy)
             overlap_energy = 10.0 * int(0.5 + overlap_energy/4.0)
 
+        print("OverLap En ", overlap_energy)
         # collect lines that are close in energy
         nlines = len(self.lines)
         combos = [[] for k in range(nlines)]
@@ -189,29 +190,34 @@ class XRF_Element:
                 comboe[k] = xline.energy
                 combos[k].append(key)
 
+        print(combos)
         # consolidate overlapping X-ray lines
         for comps in combos:
             if len(comps) > 0:
                 key = comps[0]
                 l0 = self.lines.pop(key)
-                inlevel = l0.initial_level
+                ilevel = [l0.initial_level]
                 flevel = [l0.final_level]
                 en = [l0.energy]
                 wt = [l0.intensity]
                 for other in comps[1:]:
                     lx = self.lines.pop(other)
+                    ilevel.append(lx.initial_level)
                     flevel.append(lx.final_level)
                     en.append(lx.energy)
                     wt.append(lx.intensity)
                 wt = np.array(wt)
                 en = np.array(en)
+                ilevel = ', '.join(ilevel)
                 flevel = ', '.join(flevel)
                 if len(comps) > 1:
-                    key = key.replace('1', '').replace('2', '').replace('3', '')
-                    key = key.replace('4', '').replace('5', '').replace(',', '')
+                    newkey = key.replace('1', '').replace('2', '').replace('3', '')
+                    newkey = newkey.replace('4', '').replace('5', '').replace(',', '')
+                if newkey not in self.lines:
+                    key = newkey
                 self.lines[key] = XrayLine(energy=(en*wt).sum()/wt.sum(),
                                            intensity=wt.sum(),
-                                           initial_level=inlevel,
+                                           initial_level=ilevel,
                                            final_level=flevel)
 
 
