@@ -1,5 +1,7 @@
 
 from collections import namedtuple
+import json
+
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.optimize import nnls
@@ -10,8 +12,12 @@ from xraydb.xray import XrayLine
 
 from ..math import index_of, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
+from ..utils.jsonutils import encode4js, decode4js
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
+xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step', 'tail',
+                                   'sigmax', 'gamma', 'vary_center', 'vary_step',
+                                   'vary_tail', 'vary_sigmax', 'vary_gamma'))
 
 ########
 # Note on units:  energies are in eV, lengths in cm
@@ -209,7 +215,6 @@ class XRF_Element:
                                            final_level=flevel)
 
 
-
 class XRF_Model:
     """model for X-ray fluorescence data
 
@@ -238,6 +243,7 @@ class XRF_Model:
         self.fit_toler = 1.e-5
         self.fit_log = False
         self.bgr = None
+        self.script = ''
         if bgr is not None:
             self.add_background(bgr)
 
@@ -254,11 +260,11 @@ class XRF_Model:
         self.params.add('det_thickness', value=thickness, vary=vary_thickness, min=0)
         self.params.add('det_efano', value=self.detector.efano, vary=vary_efano, min=0)
         self.params.add('det_noise', value=noise, vary=vary_noise, min=0)
-        self.params.add('cal_offset', value=cal_offset, vary=vary_cal_offset, min=-500, max=500)
+        self.params.add('cal_offset', value=cal_offset, vary=vary_cal_offset, min=-5000, max=5000)
         self.params.add('cal_slope', value=cal_slope, vary=vary_cal_slope, min=0)
         self.params.add('cal_quad', value=cal_quad, vary=vary_cal_quad)
-        self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0, max=0.25)
-        self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=0.25)
+        self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0, max=10)
+        self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=10)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
         self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
 
@@ -269,7 +275,9 @@ class XRF_Model:
         """add Rayleigh (elastic) or Compton (inelastic) scattering peak
         """
         if name not in self.scatter:
-            self.scatter.append(name)
+            self.scatter.append(xrf_peak(name, amplitude, center, step, tail,
+                                         sigmax, gamma, vary_center, vary_step,
+                                         vary_tail, vary_sigmax, vary_gamma))
 
         if center is None:
             center = self.xray_energy
@@ -342,7 +350,8 @@ class XRF_Model:
             self.eigenvalues[elem.symbol] = amp
 
         # scatter peaks for Rayleigh and Compton
-        for p in self.scatter:
+        for peak in self.scatter:
+            p = peak.name
             amp  = pars.get('%s_amp' % p, None)
             if amp is None:
                 continue
@@ -455,6 +464,61 @@ class XRF_Model:
             prediction += wts[i] * self.transfer_matrix[:, i]
 
         return xrf_prediction(weights, prediction)
+
+    def save(self, fname=None):
+        """save XRF model and result in a manner that can be loaded later"""
+
+        result_attrs = ('aborted', 'aic', 'bic', 'chisqr', 'covar',
+                        'errorbars', 'ier', 'init_vals', 'init_values',
+                        'lmdif_message', 'message', 'method', 'ndata',
+                        'nfev', 'nfree', 'nvarys', 'redchi',
+                        'residual', 'success', 'var_names')
+        result = {attr: getattr(self.result, attr) for attr in result_attrs}
+        result['params'] = self.result.params.dumps()
+
+        #
+        elem_attrs = ('all_lines', 'edges', 'fyields', 'lines',
+                      'mu', 'symbol', 'xray_energy')
+        elements = []
+        for el in self.elements:
+            elements.append({attr: getattr(el, attr) for attr in elem_attrs})
+
+
+        mater_attrs = ('efano', 'material', 'mu_photo', 'mu_total',
+                       'noise', 'thickness')
+        detector = {attr: getattr(self.detector, attr) for attr in mater_attrs}
+
+        filters = []
+        for ft in self.filters:
+            filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
+
+
+        out = dict(result=result, elements=elements,
+                   detector=detector, filters=filters,
+                   params=self.params.dumps())
+        for attr in ('atten', 'best_en', 'best_fit', 'bgr', 'comps', 'count_time',
+                     'eigenvalues', 'energy_max', 'energy_min', 'fit_iter', 'fit_log',
+                     'fit_report', 'fit_toler', 'fit_weight', 'fit_window', 'init_fit',
+                     'scatter', 'script', 'transfer_matrix', 'xray_energy'):
+            out[attr] = getattr(self, attr)
+
+        out = json.dumps(encode4js(out))
+
+        if fname is not None:
+            with open(fname, 'w') as fh:
+                fh.write(out)
+                fh.write("\n")
+        else:
+            return out
+
+    def load(self, s):
+        """load a saved XRF model from a string (json)"""
+        pass
+
+    def export(self, fname):
+        """save result to text file"""
+        pass
+
 
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
