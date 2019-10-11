@@ -511,7 +511,12 @@ class GSEXRM_MapFile(object):
             self.xrmmap.attrs['Process_Machine'] = ''
             self.xrmmap.attrs['Process_ID'] = 0
             self.xrmmap.attrs['Last_Row'] = self.last_row
-        self.h5root.close()
+        try:
+            self.h5root.close()
+        except RuntimeError:
+            print("Got Runtime Error ")
+            print(sys.exc_info())
+       
         self.h5root = None
 
     def add_XRDfiles(self, flip=None, xrdcalfile=None, xrd2dmaskfile=None,
@@ -2334,8 +2339,7 @@ class GSEXRM_MapFile(object):
         env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
         for name, val in zip(env_names, env_vals):
             name = name.lower()
-            if (name.startswith('mono energy') or
-                name.startswith('mono.energy')):
+            if name.startswith('mono energy'):
                 return float(val)
         return None
 
@@ -2520,6 +2524,7 @@ class GSEXRM_MapFile(object):
                    slope=cal['cal_slope'], **kws)
         if self.incident_energy is None:
             self.incident_energy = self.get_incident_energy()
+        
         _mca.incident_energy = 0.001*self.incident_energy
         _mca.energy =  map['energy'].value
         env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
