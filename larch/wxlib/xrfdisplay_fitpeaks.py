@@ -16,13 +16,6 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 from lmfit import Parameter, Minimizer
 from lmfit.printfuncs import gformat, CORREL_HEAD
-try:
-    from lmfit.model import (save_modelresult, load_modelresult,
-                             save_model, load_model)
-    HAS_MODELSAVE = True
-except ImportError:
-    HAS_MODELSAVE = False
-
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
@@ -42,7 +35,6 @@ from .periodictable import PeriodicTablePanel
 from larch import Group
 
 from ..xrf import xrf_background
-from ..io.export_modelresult import export_modelresult
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -133,9 +125,10 @@ class FitSpectraFrame(wx.Frame):
         self.wids = {}
         self.result_frame = None
 
-        self.panels = OrderedDict()
+        self.panels = {}
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
+        self.panels['Fit Results'] = partial(FitResultPanel, parent=self)
 
         self.nb = flatnotebook(self, self.panels)
 
@@ -654,29 +647,25 @@ class FitSpectraFrame(wx.Frame):
 
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
 
-        shown = False
-        try:
-            self.result_frame.Raise()
-            shown = True
-        except:
-            self.result_frame = None
-        if not shown:
-            self.result_frame = FitResultFrame(parent=self)
-        self.result_frame.show_results()
+        for i in range(len(self.pagelist)):
+            if 'Results' in self.nb.GetPageText(i)
+                self.nb.SetSelection(i)
+        time.sleep(0.002)
+        self.nb.GetCurrentPage().show_results()
 
     def onClose(self, event=None):
         self.Destroy()
 
 
+class FitResultPanel(wx.Panel):
+    def __init__(self, parent, **kws):
+        wx.Panel.__init__(self, parent, size=(625, 750))
 
-class FitResultFrame(wx.Frame):
-    def __init__(self, parent=None, **kws):
-        wx.Frame.__init__(self, None, -1, title='XRF Fit Results',
-                          style=FRAMESTYLE, size=(625, 750), **kws)
+        # title='XRF Fit Results',
+        #                   style=FRAMESTYLE, size=(625, 750), **kws)
         self.parent = parent
         self.mca    = self.parent.mca
         self._larch = self.parent._larch
-        self.xrfmod = self._larch.symtable.get_symbol('xrfmod')
         self.fit_history = getattr(self.mca, 'fit_history', [])
         self.nfit = 0
         self.build()
@@ -850,7 +839,7 @@ class FitResultFrame(wx.Frame):
                          wildcard=ModelWcards)
         if sfile is not None:
             result = self.get_fitresult()
-            save_modelresult(result, sfile)
+            # save_modelresult(result, sfile)
 
     def onExportFitResult(self, event=None):
         mca = self.mca
