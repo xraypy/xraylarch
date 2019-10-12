@@ -7,10 +7,11 @@ from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
 
-from xraydb import material_mu, mu_elam, xray_edges, xray_lines, ck_probability
+from xraydb import (material_mu, mu_elam, ck_probability,
+                    xray_edges, xray_lines, xray_line)
 from xraydb.xray import XrayLine
 
-from ..math import index_of, savitzky_golay, hypermet, erfc
+from ..math import index_of, interp, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
 from ..utils.jsonutils import encode4js, decode4js
 
@@ -156,7 +157,6 @@ class XRF_Element:
         self.lines = {}
         self.all_lines = {}
         energy0 = None
-        combos = {}
         for ename in self.edges:
             for key, xline in xray_lines(symbol, ename).items():
                 self.all_lines[key] = xline
@@ -165,13 +165,14 @@ class XRF_Element:
                     if energy0 is None:
                         energy0 = xline.energy
 
+        oo1 = overlap_energy
         if overlap_energy is None:
             if xray_energy is None: xray_energy = 10000
             if energy0 is not None: xray_energy = energy0
             overlap_energy = np.sqrt(1225 + 0.5*xray_energy)
-            overlap_energy = 10.0 * int(0.5 + overlap_energy/4.0)
+            overlap_energy = 5.0 * int(0.5 + overlap_energy/10.0)
 
-        print("OverLap En ", overlap_energy)
+
         # collect lines that are close in energy
         nlines = len(self.lines)
         combos = [[] for k in range(nlines)]
@@ -190,25 +191,26 @@ class XRF_Element:
                 comboe[k] = xline.energy
                 combos[k].append(key)
 
-        print(combos)
         # consolidate overlapping X-ray lines
         for comps in combos:
             if len(comps) > 0:
                 key = comps[0]
                 l0 = self.lines.pop(key)
-                ilevel = [l0.initial_level]
+                ilevel = l0.initial_level
+                iweight = l0.intensity
                 flevel = [l0.final_level]
                 en = [l0.energy]
                 wt = [l0.intensity]
                 for other in comps[1:]:
                     lx = self.lines.pop(other)
-                    ilevel.append(lx.initial_level)
+                    if lx.intensity > iweight:
+                        iweight = lx.intensity
+                        ilevel  = lx.initial_level
                     flevel.append(lx.final_level)
                     en.append(lx.energy)
                     wt.append(lx.intensity)
                 wt = np.array(wt)
                 en = np.array(en)
-                ilevel = ', '.join(ilevel)
                 flevel = ', '.join(flevel)
                 if len(comps) > 1:
                     newkey = key.replace('1', '').replace('2', '').replace('3', '')
@@ -249,6 +251,11 @@ class XRF_Model:
         self.fit_toler = 1.e-5
         self.fit_log = False
         self.bgr = None
+        self.use_pileup = False
+        self.use_escape = False
+        self.raw_pileup = None
+        self.raw_escape = None
+
         self.script = ''
         if bgr is not None:
             self.add_background(bgr)
@@ -273,6 +280,7 @@ class XRF_Model:
         self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=10)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
         self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
+
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
                          step=0.010, tail=0.5, sigmax=1.0, gamma=0.75,
@@ -315,6 +323,14 @@ class XRF_Model:
     def add_background(self, data, vary=True):
         self.bgr = data
         self.params.add('amp_background', value=1.0, min=0, vary=vary)
+
+    def add_escape(self, scale=0.001, vary=True):
+        self.use_escape = True
+        self.params.add('escape_scale', value=scale, min=0, vary=vary)
+
+    def add_pileup(self, scale=1.0, vary=True):
+        self.use_pileup = True
+        self.params.add('pileup_scale', value=scale, min=0, vary=vary)
 
     def clear_background(self):
         self.bgr = None
@@ -376,6 +392,17 @@ class XRF_Model:
             bgr_amp = pars.get('amp_background', 0.0)
             self.comps['background'] = bgr_amp * self.bgr
             self.eigenvalues['background'] = bgr_amp
+
+        if self.use_escape and self.raw_escape is not None:
+            escale = pars.get('escape_scale', 1.0)
+            self.comps['escape'] = escale * self.raw_escape
+            self.eigenvalues['escape'] = escale
+
+        if self.use_pileup and self.raw_pileup is not None:
+            pscale = pars.get('pileup_scale', 1.0)
+            self.comps['pileup'] = pscale * self.raw_pileup
+            self.eigenvalues['pileup'] = pscale
+
         # calculate total spectrum
         total = 0. * energy
         for comp in self.comps.values():
@@ -414,7 +441,7 @@ class XRF_Model:
         floor = 1.e-12*np.percentile(counts, [99])[0]
         work_counts[np.where(counts<floor)] = floor
 
-        if max(energy) < 250.0: # input energies are in keV
+        if max(energy) < 250.0: # if input energies are in keV
             work_energy = 1000.0 * energy
 
         imin, imax = 0, len(counts)
@@ -429,6 +456,19 @@ class XRF_Model:
 
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
+
+        if self.use_pileup:
+            npts = len(work_energy)
+            cx  = counts/work_energy.mean()
+            pileup = np.convolve(cx, cx, 'full')[:npts]
+            ex = work_energy[0] + np.arange(npts)*(work_energy[1] - work_energy[0])
+            self.raw_pileup = interp(ex, pileup, work_energy, kind='cubic')
+
+        if self.use_escape:
+            det_mat = self.detector.material
+            escape_en = work_energy - xray_line(det_mat, 'Ka').energy
+            self.raw_escape = interp(escape_en, counts, work_energy)
+
 
         index = np.arange(len(counts))
         userkws = dict(data=work_counts, index=index)
