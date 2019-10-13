@@ -807,6 +807,11 @@ class FitSpectraFrame(wx.Frame):
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
 
+
+        s = "{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)"
+        self._larch.eval(s.format(group=self.mcagroup))
+
+
     def plot_model(self, model_spectrum=None, init=False, with_comps=True,
                    label=None):
         conf = self.parent.conf
@@ -841,7 +846,6 @@ class FitSpectraFrame(wx.Frame):
     def onShowModel(self, event=None):
         self.build_model()
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
-
 
     def onFitModel(self, event=None):
         self.build_model()
