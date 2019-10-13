@@ -298,7 +298,7 @@ class FitSpectraFrame(wx.Frame):
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
-        escape_scale = getattr(mca, 'escape_scale', 0.005)
+        escape_scale = getattr(mca, 'escape_scale', 0.01)
         pileup_scale = getattr(mca, 'pileup_scale', 0.1)
 
         wids = self.wids
@@ -791,10 +791,11 @@ class FitSpectraFrame(wx.Frame):
                 imax = np.where(parr == parr.max())[0][0]
                 scale = self.mca.counts[imax] / (parr[imax]+1.e-5)
                 ampname = 'amp_%s' % nam
-                if nam.startswith('elastic') or nam.startswith('compton'):
+                if nam in ('elastic', 'compton1', 'compton2', 'compton',
+                           'background', 'pileup', 'escape'):
                     ampname = '%s_amp' % nam
-                elif nam.startswith('background'):
-                    scale = 1.0
+                    if nam in ('background', 'pileup', 'escape'):
+                        scale = 1.0
                 paramval = self.xrfmod.params[ampname].value
                 s = "xrfmod.params['%s'].value = %.1f"
                 cmds.append(s % (ampname, paramval * scale))
