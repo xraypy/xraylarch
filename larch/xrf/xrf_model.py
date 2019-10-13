@@ -231,7 +231,7 @@ class XRF_Model:
       incident beam (energy, angle_in, angle_out)
       matrix        (list of material, thickness)
       filters       (list of material, thickness)
-      detector      (material, thickness, efano, noise, step, tail, gamma, pileup_scale)
+      detector      (material, thickness, efano, noise, step, tail, gamma)
     """
     def __init__(self, xray_energy=None, energy_min=1500, energy_max=30000,
                  count_time=1, bgr=None, **kws):
@@ -253,8 +253,6 @@ class XRF_Model:
         self.bgr = None
         self.use_pileup = False
         self.use_escape = False
-        self.raw_pileup = None
-        self.raw_escape = None
 
         self.script = ''
         if bgr is not None:
@@ -322,24 +320,25 @@ class XRF_Model:
 
     def add_background(self, data, vary=True):
         self.bgr = data
-        self.params.add('amp_background', value=1.0, min=0, vary=vary)
+        self.params.add('background_amp', value=1.0, min=0, vary=vary)
 
     def add_escape(self, scale=0.001, vary=True):
         self.use_escape = True
-        self.params.add('escape_scale', value=scale, min=0, vary=vary)
+        self.params.add('escape_amp', value=scale, min=0, vary=vary)
 
     def add_pileup(self, scale=1.0, vary=True):
         self.use_pileup = True
-        self.params.add('pileup_scale', value=scale, min=0, vary=vary)
+        self.params.add('pileup_amp', value=scale, min=0, vary=vary)
 
     def clear_background(self):
         self.bgr = None
-        self.params.pop('amp_background')
+        self.params.pop('background_amp')
 
     def calc_spectrum(self, energy, params=None, set_init=True):
         if params is None:
             params = self.params
         pars = params.valuesdict()
+        print("CALC ", pars)
         self.comps = {}
         self.eigenvalues = {}
         efano = pars['det_efano']
@@ -348,15 +347,18 @@ class XRF_Model:
         tail = pars['peak_tail']
         gamma = pars['peak_gamma']
         sigmax = pars['peak_sigmax']
-        # factor for Detector absorbance and Filters
-        factor = self.detector.absorbance(energy, thickness=pars['det_thickness'])
+        # attenuation factor for Detector absorbance and Filters
+        atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
            thickness = pars.get('filterlen_%s' % f.material, None)
            if thickness is not None:
-               factor *= f.attenuation(energy, thickness=thickness)
-        self.atten = factor
+               atten *= f.attenuation(energy, thickness=thickness)
+        self.atten = atten
+        escape_amp = pars.get('escape_amp', 0.0)
+        if self.use_escape:
+            det_mat = self.detector.material
+            escape_en = energy - xray_line(det_mat, 'Ka').energy
 
-        factor = factor * self.count_time
         for elem in self.elements:
             comp = 0. * energy
             amp = pars.get('amp_%s' % elem.symbol.lower(), None)
@@ -368,7 +370,10 @@ class XRF_Model:
                 sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail, gamma=gamma)
-            self.comps[elem.symbol] = amp * comp * factor
+            comp *= amp * atten * self.count_time
+            if self.use_escape:
+                comp += escape_amp * interp(escape_en, comp, energy)
+            self.comps[elem.symbol] = comp
             self.eigenvalues[elem.symbol] = amp
 
         # scatter peaks for Rayleigh and Compton
@@ -385,23 +390,16 @@ class XRF_Model:
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, gamma=gamma)
-            self.comps[p] = amp * comp * factor
+            comp *= amp * atten * self.count_time
+            if self.use_escape:
+                comp += escape_amp * interp(escape_en, comp, energy)
+            self.comps[p] = comp
             self.eigenvalues[p] = amp
 
         if self.bgr is not None:
-            bgr_amp = pars.get('amp_background', 0.0)
+            bgr_amp = pars.get('background_amp', 0.0)
             self.comps['background'] = bgr_amp * self.bgr
             self.eigenvalues['background'] = bgr_amp
-
-        if self.use_escape and self.raw_escape is not None:
-            escale = pars.get('escape_scale', 1.0)
-            self.comps['escape'] = escale * self.raw_escape
-            self.eigenvalues['escape'] = escale
-
-        if self.use_pileup and self.raw_pileup is not None:
-            pscale = pars.get('pileup_scale', 1.0)
-            self.comps['pileup'] = pscale * self.raw_pileup
-            self.eigenvalues['pileup'] = pscale
 
         # calculate total spectrum
         total = 0. * energy
@@ -410,6 +408,16 @@ class XRF_Model:
         # remove tiny values
         floor = 1.e-12*max(total)
         total[np.where(total<floor)] = floor
+
+        if self.use_pileup:
+            pamp = pars.get('pileup_amp', 0.0)
+            npts = len(energy)
+            ctx = total/energy.mean()
+            pileup = pamp * np.convolve(ctx, ctx, 'full')[:npts]
+            self.comps['pileup'] = pileup
+            self.eigenvalues['pileup'] = pamp
+            total += pileup
+
         if set_init:
             self.init_fit = total
         return total
@@ -420,11 +428,7 @@ class XRF_Model:
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
         self.best_fit = self.calc_spectrum(self.best_en, params=params)
-        resid = (data - self.best_fit) * self.fit_weight
-
-        # emphasize negative residuals more than positive residuals
-        # scale = 0.25 * (np.abs(resid)).max()
-        return resid # + 1 - np.exp(-resid/scale))
+        return (data - self.best_fit) * self.fit_weight
 
     def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
         """
@@ -456,19 +460,6 @@ class XRF_Model:
 
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
-
-        if self.use_pileup:
-            npts = len(work_energy)
-            cx  = counts/work_energy.mean()
-            pileup = np.convolve(cx, cx, 'full')[:npts]
-            ex = work_energy[0] + np.arange(npts)*(work_energy[1] - work_energy[0])
-            self.raw_pileup = interp(ex, pileup, work_energy, kind='cubic')
-
-        if self.use_escape:
-            det_mat = self.detector.material
-            escape_en = work_energy - xray_line(det_mat, 'Ka').energy
-            self.raw_escape = interp(escape_en, counts, work_energy)
-
 
         index = np.arange(len(counts))
         userkws = dict(data=work_counts, index=index)
