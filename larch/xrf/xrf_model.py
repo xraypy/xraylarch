@@ -176,14 +176,16 @@ class XRF_Element:
             overlap_energy = np.sqrt(1225 + 0.5*xray_energy)
             overlap_energy = 5.0 * int(0.5 + overlap_energy/10.0)
 
-        # collect lines that are close in energy
+        # collect lines from the same initial level that are close in energy
         nlines = len(self.lines)
         combos = [[] for k in range(nlines)]
         comboe = [-1 for k in range(nlines)]
+        combol = [None for k in range(nlines)]
         for key, xline in self.lines.items():
             assigned = False
             for i, en in enumerate(comboe):
-                if abs(xline.energy - en) < overlap_energy:
+                if (abs(xline.energy - en) < overlap_energy and
+                    xline.initial_level == combol[i]):
                     combos[i].append(key)
                     assigned = True
                     break
@@ -191,6 +193,7 @@ class XRF_Element:
                 for k in range(nlines):
                     if comboe[k] < 0:
                         break
+                combol[k] = xline.initial_level
                 comboe[k] = xline.energy
                 combos[k].append(key)
 
@@ -341,7 +344,6 @@ class XRF_Model:
         if params is None:
             params = self.params
         pars = params.valuesdict()
-        # print("CALC ", pars)
         self.comps = {}
         self.eigenvalues = {}
         efano = pars['det_efano']
