@@ -298,8 +298,8 @@ class FitSpectraFrame(wx.Frame):
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
-        escape_scale = getattr(mca, 'escape_scale', 0.01)
-        pileup_scale = getattr(mca, 'pileup_scale', 0.1)
+        escape_amp = getattr(mca, 'escape_amp', 0.0102030)
+        pileup_amp = getattr(mca, 'pileup_amp', 0.1050403)
 
         wids = self.wids
         main = wx.Panel(self)
@@ -321,18 +321,18 @@ class FitSpectraFrame(wx.Frame):
 
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
                                    default=True, action=self.onUseBackground)
-        wids['escape_scale'] = FloatSpin(pdet, value=escape_scale,
+        wids['escape_amp'] = FloatSpin(pdet, value=escape_amp,
                                          min_val=0, max_val=0.5, digits=4,
                                          increment=0.001, size=(100, -1))
 
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
                                    default=True, action=self.onUseBackground)
-        wids['pileup_scale'] = FloatSpin(pdet, value=pileup_scale,
+        wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
                                          min_val=0, max_val=10, digits=4,
                                          increment=0.005, size=(100, -1))
 
-        wids['escape_scale_vary'] = VarChoice(pdet, default=True)
-        wids['pileup_scale_vary'] = VarChoice(pdet, default=True)
+        wids['escape_amp_vary'] = VarChoice(pdet, default=True)
+        wids['pileup_amp_vary'] = VarChoice(pdet, default=True)
 
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
@@ -417,12 +417,12 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_use'])
 
         pdet.AddText(' Escape Scale:', newrow=True)
-        pdet.Add(wids['escape_scale'])
-        pdet.Add(wids['escape_scale_vary'])
+        pdet.Add(wids['escape_amp'])
+        pdet.Add(wids['escape_amp_vary'])
 
         pdet.AddText(' Pileup Scale:', newrow=True)
-        pdet.Add(wids['pileup_scale'])
-        pdet.Add(wids['pileup_scale_vary'])
+        pdet.Add(wids['pileup_amp'])
+        pdet.Add(wids['pileup_amp_vary'])
 
         pdet.pack()
 
@@ -683,12 +683,12 @@ class FitSpectraFrame(wx.Frame):
         self.wids['bgr_show'].Enable(use_bgr)
 
         puse = self.wids['pileup_use'].IsChecked()
-        self.wids['pileup_scale'].Enable(puse)
-        self.wids['pileup_scale_vary'].Enable(puse)
+        self.wids['pileup_amp'].Enable(puse)
+        self.wids['pileup_amp_vary'].Enable(puse)
 
         puse = self.wids['escape_use'].IsChecked()
-        self.wids['escape_scale'].Enable(puse)
-        self.wids['escape_scale_vary'].Enable(puse)
+        self.wids['escape_amp'].Enable(puse)
+        self.wids['escape_amp_vary'].Enable(puse)
 
 
     def onUsePeak(self, event=None, name=None, value=None):
@@ -751,7 +751,6 @@ class FitSpectraFrame(wx.Frame):
                                                    thick=opts['%s_thk'%t] / 10.0,
                                                    vary=opts['%s_var'%t]))
 
-
         bwid = bexp = 0.0
         if opts['bgr_use'] in ('True', True):
             bwid = self.wids['bgr_width'].GetValue()/1000.0
@@ -759,12 +758,12 @@ class FitSpectraFrame(wx.Frame):
             script.append(xrfmod_bgr)
 
         if opts['pileup_use'] in ('True', True):
-            script.append(xrfmod_pileup.format(scale=opts['pileup_scale'],
-                                               vary=opts['pileup_scale_vary']))
+            script.append(xrfmod_pileup.format(scale=opts['pileup_amp'],
+                                               vary=opts['pileup_amp_vary']))
 
         if opts['escape_use'] in ('True', True):
-            script.append(xrfmod_escape.format(scale=opts['escape_scale'],
-                                               vary=opts['escape_scale_vary']))
+            script.append(xrfmod_escape.format(scale=opts['escape_amp'],
+                                               vary=opts['escape_amp_vary']))
 
         # sort elements selected on Periodic Table by Z
         elemz = []
@@ -774,7 +773,6 @@ class FitSpectraFrame(wx.Frame):
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in sorted(elemz)]
         syms = '[%s]' % (', '.join(syms))
         script.append("for s in %s: xrfmod.add_element(s)" % syms)
-
 
         script.append("{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)")
         script = '\n'.join(script)
@@ -797,8 +795,8 @@ class FitSpectraFrame(wx.Frame):
                     if nam in ('background', 'pileup', 'escape'):
                         scale = 1.0
                 paramval = self.xrfmod.params[ampname].value
-                s = "xrfmod.params['%s'].value = %.1f"
-                cmds.append(s % (ampname, paramval * scale))
+                s = "xrfmod.params['%s'].value = %.5f" % (ampname, paramval*scale)
+                cmds.append(s)
                 parr *= scale
                 parr[np.where(parr<floor)] = floor
                 total += parr
@@ -806,10 +804,9 @@ class FitSpectraFrame(wx.Frame):
             script = '\n'.join(cmds)
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
-
-
         s = "{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)"
         self._larch.eval(s.format(group=self.mcagroup))
+
 
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=True,
