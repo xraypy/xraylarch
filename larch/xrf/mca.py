@@ -10,6 +10,7 @@ Authors/Modifications:
 import numpy as np
 from larch import Group, isgroup
 
+from xraydb import xray_line
 from ..math import interp
 from .deadtime import calc_icr, correction_factor
 from .roi import ROI
@@ -191,6 +192,14 @@ class MCA(Group):
         self.pileup = interp(ex, scale*pileup, self.energy, kind='cubic')
         self.pileup_scale = scale
 
+    def predict_escape(self, scale=None, fraction=0.01, det='Si'):
+        """
+        predict detector escape for a spectrum, save to 'escape' attribute
+        """
+        en = self.energy - 0.001 * xray_line(det, 'Ka').energy
+        self.escape = fraction * interp(en, self.counts*1.0,
+                                        self.energy, kind='cubic')
+        
     def update_correction(self, tau=None):
         """
         Update the deadtime correction
