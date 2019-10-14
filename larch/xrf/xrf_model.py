@@ -338,7 +338,7 @@ class XRF_Model:
         if params is None:
             params = self.params
         pars = params.valuesdict()
-        print("CALC ", pars)
+        # print("CALC ", pars)
         self.comps = {}
         self.eigenvalues = {}
         efano = pars['det_efano']
@@ -405,18 +405,17 @@ class XRF_Model:
         total = 0. * energy
         for comp in self.comps.values():
             total += comp
-        # remove tiny values
-        floor = 1.e-12*max(total)
-        total[np.where(total<floor)] = floor
 
         if self.use_pileup:
             pamp = pars.get('pileup_amp', 0.0)
-            npts = len(energy)
-            ctx = total/energy.mean()
-            pileup = pamp * np.convolve(ctx, ctx, 'full')[:npts]
+            pileup = pamp * 1.e-9*np.convolve(total, total, 'full')[:npts]
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
             total += pileup
+
+        # remove tiny values
+        floor = 1.e-12*max(total)
+        total[np.where(total<floor)] = floor
 
         if set_init:
             self.init_fit = total
