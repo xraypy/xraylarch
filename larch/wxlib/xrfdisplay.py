@@ -781,6 +781,9 @@ class XRFDisplayFrame(wx.Frame):
         ix = amenu.Append(-1, "Show Pileup Prediction",
                           "Show Pileup Prediction", kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.onPileupPrediction, ix)
+        ix = amenu.Append(-1, "Show Escape Prediction",
+                          "Show Escape Prediction", kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.onEscapePrediction, ix)
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
         MenuItem(self, amenu, "Fit Spectrum\tCtrl+F",
@@ -1021,6 +1024,14 @@ class XRFDisplayFrame(wx.Frame):
         else:
             self.plotmca(self.mca)
 
+    def onEscapePrediction(self, event=None):
+        if event.IsChecked():
+            self.mca.predict_escape()
+            self.oplot(self.mca.energy, self.mca.escape, label='escape prediction')
+        else:
+            self.plotmca(self.mca)
+            
+            
     def onYAxis(self, event=None):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
         ax = self.panel.axes
