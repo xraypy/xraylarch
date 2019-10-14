@@ -240,12 +240,13 @@ class XRF_Model:
       detector      (material, thickness, efano, noise, step, tail, gamma)
     """
     def __init__(self, xray_energy=None, energy_min=1500, energy_max=30000,
-                 count_time=1, bgr=None, **kws):
+                 count_time=1, bgr=None, iter_callback=None, **kws):
 
         self.xray_energy = xray_energy
         self.energy_min = energy_min
         self.energy_max = energy_max
         self.count_time = count_time
+        self.iter_callback = None
         self.params = Parameters()
         self.elements = []
         self.scatter = []
@@ -433,6 +434,8 @@ class XRF_Model:
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
         self.best_fit = self.calc_spectrum(self.best_en, params=params)
+        if callable(self.iter_callback):
+            self.iter_callback(iter=self.fit_iter, pars=pars)
         return (data - self.best_fit) * self.fit_weight
 
     def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
