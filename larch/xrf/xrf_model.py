@@ -215,8 +215,8 @@ class XRF_Element:
                 if len(comps) > 1:
                     newkey = key.replace('1', '').replace('2', '').replace('3', '')
                     newkey = newkey.replace('4', '').replace('5', '').replace(',', '')
-                if newkey not in self.lines:
-                    key = newkey
+                    if newkey not in self.lines:
+                        key = newkey
                 self.lines[key] = XrayLine(energy=(en*wt).sum()/wt.sum(),
                                            intensity=wt.sum(),
                                            initial_level=ilevel,
