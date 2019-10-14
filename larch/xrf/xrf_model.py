@@ -408,6 +408,7 @@ class XRF_Model:
 
         if self.use_pileup:
             pamp = pars.get('pileup_amp', 0.0)
+            npts = len(energy)
             pileup = pamp * 1.e-9*np.convolve(total, total, 'full')[:npts]
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
