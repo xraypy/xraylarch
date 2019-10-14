@@ -15,7 +15,7 @@ from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HyperText, HLine, GridPanel, CEN, LEFT, RIGHT)
 
 from wxmplot.colors import hexcolor
-
+from xraydb import xray_line
 from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
                    xrf_calib_compute, xrf_calib_apply)
 
@@ -59,9 +59,9 @@ class XRFCalibrationFrame(wx.Frame):
             if len(words) > 1:
                 family = words[1]
             try:
-                eknown = xray_line(elem, family)/1000.0
-            except:
-                eknown = 1
+                eknown = xray_line(elem, family).energy/1000.0
+            except (AttributeError, ValueError):
+                eknown = 0.0001
             mid = (roi.right + roi.left)/2
             wid = (roi.right - roi.left)/2
             ecen = mid * mca.slope + mca.offset
@@ -130,7 +130,7 @@ class XRFCalibrationFrame(wx.Frame):
     def onInitTimer(self, evt=None):
         """initial calibration"""
         if self.init_proc:
-            print("skipping...")
+            # print("skipping in init_proc...")
             return
         nextroi = None
         if time.time() - self.init_t0 > 20:

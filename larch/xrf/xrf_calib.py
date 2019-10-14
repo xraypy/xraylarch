@@ -43,12 +43,15 @@ def xrf_calib_init_roi(mca, roiname):
         family = words[1].title()
     if family == 'Lb':
         family = 'Lb1'
-    eknown = xray_line(elem, family).energy/1000.0
+    try:
+        eknown = xray_line(elem, family).energy/1000.0
+    except:
+        eknown = 0.001
     llim = max(0, roi.left - roi.bgr_width)
     hlim = min(len(chans)-1, roi.right + roi.bgr_width)
     segcounts = counts[llim:hlim]
     maxcounts = max(segcounts)
-    ccen = llim + np.where(segcounts==maxcounts)[0]
+    ccen = llim + np.where(segcounts==maxcounts)[0][0]
     ecen = ccen * mca.slope + mca.offset
     bkgcounts = counts[llim] + counts[hlim]
     if maxcounts < 2*bkgcounts:
