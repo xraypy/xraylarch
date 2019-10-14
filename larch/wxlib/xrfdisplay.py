@@ -90,12 +90,13 @@ class XRFDisplayFrame(wx.Frame):
         self.plotframe = None
         self.wids = {}
         self.larch = _larch
-        if isinstance(_larch, Interpreter):  # called from shell
+        if isinstance(self.larch, Interpreter):  # called from shell
             pass
         else:
             self.larch_buffer = parent
             if not isinstance(parent, LarchFrame):
-                self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
+                self.larch_buffer = LarchFrame(_larch=self.larch,
+                                               is_standalone=False)
                 self.larch_buffer.Show()
                 self.larch_buffer.Raise()
                 self.larch_buffer.Hide()
@@ -1303,12 +1304,10 @@ class XRFDisplayFrame(wx.Frame):
             self.win_calib.Raise()
         except:
             self.win_calib = XRFCalibrationFrame(self, mca=self.mca,
-                                                 callback=self.onCalibrationChange,
-                                                 larch=self.larch)
+                                                 callback=self.onCalibrationChange)
 
     def onCalibrationChange(self, mca):
         """update whenn mca changed calibration"""
-        # print("new calib ", mca.offset, mca.slope)
         self.plotmca(mca)
 
     def onFitSpectrum(self, event=None, **kws):
