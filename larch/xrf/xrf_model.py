@@ -110,7 +110,6 @@ class XRF_Element:
         self.mu = 1.0
         self.edges = ['K']
         self.fyields = {}
-
         if xray_energy is not None:
             self.mu = mu_elam(symbol, xray_energy, kind='photo')
 
@@ -135,6 +134,7 @@ class XRF_Element:
 
         # apply CK corrections to fluorescent yields
         if 'L3' in self.edges:
+            nlines = 1.0
             ck13 = ck_probability(symbol, 'L1', 'L3')
             ck12 = ck_probability(symbol, 'L1', 'L2')
             ck23 = ck_probability(symbol, 'L2', 'L3')
@@ -142,15 +142,19 @@ class XRF_Element:
             fy2  = self.fyields.get('L2', 0)
             fy1  = self.fyields.get('L1', 0)
             if 'L2' in self.edges:
+                nlines = 2.0
                 fy3 = fy3 + fy2*ck23
                 fy2 = fy2 * (1 - ck23)
                 if 'L1' in self.edges:
+                    nlines = 3.0
                     fy3 = fy3 + fy1 * (ck13 + ck12*ck23)
                     fy2 = fy2 + fy1 * ck12
                     fy1 = fy1 * (1 - ck12 - ck13)
                     self.fyields['L1'] = fy1
                 self.fyields['L2'] = fy2
-            self.fyields['L3'] = fy3
+            self.fyields['L3'] = fy3/nlines
+            self.fyields['L2'] = fy2/nlines
+            self.fyields['L1'] = fy1/nlines
 
         # look up X-ray lines, keep track of very close lines
         # so that they can be consolidate
@@ -171,7 +175,6 @@ class XRF_Element:
             if energy0 is not None: xray_energy = energy0
             overlap_energy = np.sqrt(1225 + 0.5*xray_energy)
             overlap_energy = 5.0 * int(0.5 + overlap_energy/10.0)
-
 
         # collect lines that are close in energy
         nlines = len(self.lines)
