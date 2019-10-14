@@ -147,11 +147,14 @@ class FitSpectraFrame(wx.Frame):
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.wids['show_components'] = Check(bpanel, label='Show All Components',
                                              default=False)
+        self.wids['fit_message'] = SimpleText(bpanel, '  ', size=(200, -1))
+
         bsizer.Add(Button(bpanel, 'Calculate Model',
                           action=self.onShowModel), 0, LEFT)
         bsizer.Add(Button(bpanel, 'Fit Model',
                           action=self.onFitModel), 0, LEFT)
         bsizer.Add(self.wids['show_components'], 0, LEFT)
+        bsizer.Add(self.wids['fit_message'], 0, LEFT)
 
         pack(bpanel, bsizer)
         sizer.Add(bpanel, 0, CEN)
@@ -180,7 +183,7 @@ class FitSpectraFrame(wx.Frame):
         p.Add((2, 2), newrow=True)
         p.Add(self.ptable, dcol=6)
 
-        dstep, dtail, dsigma, dgamma = 0.25, 0.25, 1.0, 0.25
+        dstep, dtail, dsigma, dgamma = 0.1, 0.25, 1.0, 0.25
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01)
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
@@ -298,8 +301,8 @@ class FitSpectraFrame(wx.Frame):
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
-        escape_amp = getattr(mca, 'escape_amp', 0.0102030)
-        pileup_amp = getattr(mca, 'pileup_amp', 0.1050403)
+        escape_amp = getattr(mca, 'escape_amp', 0.010)
+        pileup_amp = getattr(mca, 'pileup_amp', 0.100)
 
         wids = self.wids
         main = wx.Panel(self)
@@ -585,8 +588,6 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['min_correl'], (irow, 2), (1, 1), LCEN)
         sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LCEN)
 
-        irow += 1
-
         cview = wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
         cview.AppendTextColumn('Parameter 1',    width=150)
@@ -604,8 +605,6 @@ class FitSpectraFrame(wx.Frame):
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
-        irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -844,9 +843,14 @@ class FitSpectraFrame(wx.Frame):
         self.build_model()
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
 
+    def onFitIteration(self, iter=0, pars=None):
+        self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
+        
     def onFitModel(self, event=None):
         self.build_model()
-
+        xrfmod = self._larch.symtable.get_symbol('xrfmod')
+        xrfmod.iter_callback = self.onFitIteration
+        self.wids['fit_message'].SetLabel("Fit beginning... ")        
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
                                              emin=self.wids['en_min'].GetValue(),
                                              emax=self.wids['en_max'].GetValue())
@@ -860,7 +864,7 @@ class FitSpectraFrame(wx.Frame):
         self._larch.eval(append_hist.format(group=self.mcagroup))
 
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
-
+        self.wids['fit_message'].SetLabel("Fit complete.")        
         for i in range(len(self.nb.pagelist)):
             if 'Results' in self.nb.GetPageText(i):
                 self.nb.SetSelection(i)
