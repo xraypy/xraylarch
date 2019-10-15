@@ -1,11 +1,16 @@
 
 from collections import namedtuple
 import json
-
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
+
+try:
+    import pint
+    HAS_PINT = True
+except ImportError:
+    HAS_PINT = False
 
 from xraydb import (material_mu, mu_elam, ck_probability,
                     xray_edges, xray_lines, xray_line)
@@ -25,11 +30,19 @@ xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step', 'tail'
 #
 # For many XRF Analysis needs, energies are in keV
 ####
+def is_pint_quantity(val):
+    return HAS_PINT and isinstance(val, pint.quantity._Quantity)
 
 class XRF_Material:
-    def __init__(self, material='Si', thickness=0.050, efano=None, noise=10.):
+    def __init__(self, material='Si', thickness=0.050, efano=None, noise=10.,
+                 thickness_units='mm'):
         self.material = material
+        self.thickness_units = thickness_units
         self.thickness = thickness
+        if HAS_PINT:
+            self.thickness_units = getattr(pint.UnitRegistry(), thickness_units)
+            self.thickness = thickness * self.thickness_units
+
         self.mu_total = self.mu_photo = None
         # note on efano:
         # self.efano = (energy to create e-h pair)  * FanoFactor
@@ -63,7 +76,7 @@ class XRF_Material:
         Arguments
         ----------
         energy      float or ndarray   energy (eV) of X-ray
-        thicknesss  float    material thickness (cm)
+        thicknesss  float or pint.Quantity   material thickness (cm)
 
         Returns
         -------
@@ -76,7 +89,11 @@ class XRF_Material:
         mu = self.mu_total
         if kind == 'photo':
             mu = self.mu_photo
-        return (1.0 - np.exp(-self.thickness*mu))
+        if is_pint_quantity(thickness):
+            t = thickness.to('cm').magnitude
+        else:
+            t = thickness * 10.0
+        return (1.0 - np.exp(-t*mu))
 
 
     def attenuation(self, energy, thickness=None, kind='total'):
@@ -85,7 +102,7 @@ class XRF_Material:
         Arguments
         ----------
         energy      float or ndarray   energy (eV) of X-ray
-        thicknesss  float    material thickness (cm)
+        thicknesss  float or pint.Quantity   material thickness (cm)
 
         Returns
         -------
@@ -99,7 +116,11 @@ class XRF_Material:
         mu = self.mu_total
         if kind == 'photo':
             mu = self.mu_photo
-        return np.exp(-thickness*mu)
+        if is_pint_quantity(thickness):
+            t = thickness.to('cm').magnitude
+        else:
+            t = thickness * 10.0
+        return np.exp(-t*mu)
 
 
 class XRF_Element:
@@ -319,8 +340,10 @@ class XRF_Model:
         self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
 
-    def add_filter(self, material, thickness, vary_thickness=False):
+    def add_filter(self, material, thickness, thickness_units='mm',
+                   vary_thickness=False):
         self.filters.append(XRF_Material(material=material,
+                                         thickness_units=thickness_units,
                                          thickness=thickness))
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
@@ -357,7 +380,7 @@ class XRF_Model:
         atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
            thickness = pars.get('filterlen_%s' % f.material, None)
-           if thickness is not None:
+           if thickness is not None and int(thickness*1e6) > 1:
                atten *= f.attenuation(energy, thickness=thickness)
         self.atten = atten
         escape_amp = pars.get('escape_amp', 0.0)
