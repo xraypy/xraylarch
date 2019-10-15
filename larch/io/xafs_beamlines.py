@@ -278,28 +278,35 @@ class APSXSD_BeamlineData(GenericBeamlineData):
         labels = []
         mode = 'search'
         _tmplabels = {}
+        lablines = []
         for line in self.headerlines:
             line = line[1:].strip()
-            if mode == 'found legend':
-                if len(line) < 2:
-                    mode = 'legend done'
-                else:
-                    # print("Label Line : ", line)
-                    if ')' in line:
-                        words = line.replace('*', '').split()
-                        bounds = []
-                        keys = []
-                        for iw, word in enumerate(words):
-                            if word.endswith(')'):
-                                keys.append(int(word[:-1]))
-                                bounds.append(iw)
-                        bounds.append(len(words))
-                        for ik, key in enumerate(keys):
-                            _tmplabels[key] = ' '.join(words[bounds[ik]+1:bounds[ik+1]])
-            elif mode == 'search' and 'is a readable list of column' in line:
+            if mode == 'search' and 'is a readable list of column' in line:
                 mode = 'found legend'
-        for k in sorted(_tmplabels.keys()):
-            labels.append(_tmplabels[k])
+            elif mode == 'found legend':
+                if len(line) < 2:
+                    break
+                # print("Label Line : ", line)
+                if ')' in line:
+                    if line.startswith('#'):
+                        line = line[1:].strip()
+                    if '*' in line:
+                        lablines.extend(line.split('*'))
+                    elif line.count(')') > 1:
+                        words = line.split()
+                        lablines.append('%s %s' % (words[0], words[1]))
+                        if len(words) == 4:
+                            lablines.append('%s %s' % (words[2], words[3]))
+                    else:
+                        lablines.append(line)
+
+        if len(lablines) > 1:
+            labels = ['']*len(lablines)
+            for line in lablines:
+                words = line.strip().split(' ', 1)
+                if ')' in words[0]:
+                    key = int(words[0].replace(')', ''))
+                    labels[key-1] = words[1]
 
         # older version: no explicit legend, parse last header line, uses '*'
         if len(labels) == 0:
