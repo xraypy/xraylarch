@@ -113,7 +113,7 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, mca='mca1', size=(575, 750)):
+    def __init__(self, parent, mca='mca1', size=(600, 775)):
         self.parent = parent
         self._larch = parent.larch
         if not self._larch.symtable.has_group('_xrfdata'):
@@ -177,7 +177,7 @@ class FitSpectraFrame(wx.Frame):
         p = GridPanel(self)
         tooltip_msg = 'Select Elements to include in model'
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=11,
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
         for roi in self.mca.rois:
@@ -186,9 +186,6 @@ class FitSpectraFrame(wx.Frame):
             if elem in self.ptable.syms and elem not in self.ptable.selected:
                 self.ptable.onclick(label=elem)
 
-        p.AddText('Elements to model:', colour='#880000', dcol=8)
-        p.Add((2, 2), newrow=True)
-        p.Add(self.ptable, dcol=6)
 
         dstep, dtail, dsigma, dgamma = 0.1, 0.25, 1.0, 0.25
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
@@ -204,6 +201,19 @@ class FitSpectraFrame(wx.Frame):
         wids['peak_tail_vary'] = VarChoice(p, default=0)
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
         wids['peak_sigma_vary'] = VarChoice(p, default=0)
+
+        btn_clear_elems = Button(p, 'Clear All', size=(95, -1),
+                                 action=self.onElems_Clear)
+        btn_from_rois = Button(p, 'From ROIS', size=(95, -1),
+                               action=self.onElems_FromROIS)
+
+        p.AddText('Elements to model:', colour='#880000', dcol=8)
+        p.Add((2, 2), newrow=True)
+        p.Add(self.ptable, dcol=5, drow=3)
+        p.Add(btn_clear_elems,  icol=6, irow=2)
+        p.Add(btn_from_rois,    icol=6, irow=3)
+
+        p.irow += 3
 
         p.Add((2, 2), newrow=True)
         p.AddText('  Step (%): ')
@@ -628,6 +638,13 @@ class FitSpectraFrame(wx.Frame):
         pack(panel, sizer)
         panel.SetupScrolling()
         return panel
+
+    def onElems_Clear(self, event=None):
+        print("Clear elements   ", event)
+
+    def onElems_FromROIS(self, event=None):
+        print("set elements from ROIS  ", event)
+
 
     def onSetXrayEnergy(self, event=None):
         en = self.wids['en_xray'].GetValue()

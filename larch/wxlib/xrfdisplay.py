@@ -356,9 +356,9 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z3,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Channels:', size=75, font=Font10)
-        rt2 = txt(roipanel, ' Energy:',   size=75, font=Font10)
-        rt3 = txt(roipanel, ' Cen/Wid:',  size=75, font=Font10)
+        rt1 = txt(roipanel, ' Channels:', size=80, font=Font10)
+        rt2 = txt(roipanel, ' Energy:',   size=80, font=Font10)
+        rt3 = txt(roipanel, ' Cen, Wid:',  size=80, font=Font10)
         m = ''
         self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font10)
         self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font10)
@@ -692,9 +692,9 @@ class XRFDisplayFrame(wx.Frame):
         self.ShowROIStatus(left, right, name=name)
         self.ShowROIPatch(left, right)
 
-        roi_msg1 = '[{:} : {:}]'.format(left, right)
-        roi_msg2 = '[{:6.3f} : {:6.3f}]'.format(elo, ehi)
-        roi_msg3 = ' {:6.3f} / {:6.3f} '.format((elo+ehi)/2., (ehi - elo))
+        roi_msg1 = '[{:}:{:}]'.format(left, right)
+        roi_msg2 = '[{:6.3f}:{:6.3f}]'.format(elo, ehi)
+        roi_msg3 = '{:6.3f}, {:6.3f}'.format((elo+ehi)/2., (ehi - elo))
 
         self.energy_for_zoom = (elo+ehi)/2.0
 
