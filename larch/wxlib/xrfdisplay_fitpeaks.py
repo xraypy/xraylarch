@@ -23,10 +23,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      BitmapButton, SetTip, GridPanel,
                      FloatSpinWithPin, get_icon)
 
-
 from . import FONTSIZE
-
-
 from xraydb import material_mu, xray_edge
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
@@ -63,39 +60,48 @@ mca_init = """
 {group:s}.energy_ev = {group:s}.energy*{efactor:.1f}
 """
 
-xrfmod_setup = """xrfmod = xrf_model(xray_energy={en_xray:.1f}, count_time={count_time:.3f},
-       energy_min={en_min:.1f}, energy_max={en_max:.1f})
-xrfmod.set_detector(thickness={det_thk:.4f}, material='{det_mat:s}',
-       cal_offset={cal_offset:.4f}, cal_slope={cal_slope:.4f},
-       vary_cal_offset={cal_vary!r}, vary_cal_slope={cal_vary!r}, vary_cal_quad=False,
-       peak_step={peak_step:.4f}, vary_peak_step={peak_step_vary:s},
-       peak_tail={peak_tail:.4f}, vary_peak_tail={peak_tail_vary:s},
-       peak_gamma={peak_gamma:.4f}, vary_peak_gamma={peak_gamma_vary:s},
-       peak_sigmax={peak_sigma:.4f}, vary_peak_sigmax={peak_sigma_vary:s},
-       noise={det_noise:.2f}, vary_noise={det_noise_vary:s},
-       efano={det_efano:.5f}, vary_efano={det_efano_vary:s})
+xrfmod_setup = """## Set up XRF Model
+_xrfmodel = xrf_model(xray_energy={en_xray:.2f},
+                      count_time={count_time:.5f},
+                      energy_min={en_min:.2f}, energy_max={en_max:.2f})
+
+_xrfmodel.set_detector(thickness={det_thk:.5f}, material='{det_mat:s}',
+                cal_offset={cal_offset:.5f}, cal_slope={cal_slope:.5f},
+                vary_cal_offset={cal_vary!r}, vary_cal_slope={cal_vary!r},
+                vary_cal_quad=False,
+                peak_step={peak_step:.5f}, vary_peak_step={peak_step_vary:s},
+                peak_tail={peak_tail:.5f}, vary_peak_tail={peak_tail_vary:s},
+                peak_gamma={peak_gamma:.5f}, vary_peak_gamma={peak_gamma_vary:s},
+                peak_sigmax={peak_sigma:.5f}, vary_peak_sigmax={peak_sigma_vary:s},
+                noise={det_noise:.5f}, vary_noise={det_noise_vary:s},
+                efano={det_efano:.5f}, vary_efano={det_efano_vary:s})
 """
 
-xrfmod_scattpeak = """xrfmod.add_scatter_peak(name='{peakname:s}', center={_cen:.1f},
-       amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, gamma={_gamma:.5f},
-       sigmax={_sigma:.3f},  vary_center={vcen:s}, vary_step={vstep:s},
-       vary_tail={vtail:s}, vary_sigmax={vsigma:s}, vary_gamma={vgamma:s})
+xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
+                amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, gamma={_gamma:.5f},
+                sigmax={_sigma:.5f},  vary_center={vcen:s}, vary_step={vstep:s},
+                vary_tail={vtail:s}, vary_sigmax={vsigma:s}, vary_gamma={vgamma:s})
 """
 
-xrfmod_fitscript = """xrfmod.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
-    energy_min={emin:.1f}, energy_max={emax:.1f})
+xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
+                energy_min={emin:.2f}, energy_max={emax:.2f})
 """
 
-xrfmod_filter = "xrfmod.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
+xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
 
 xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
-    group={group:s}, width={bwid:.2f}, exponent={bexp:.2f})
-xrfmod.add_background({group:s}.bgr, vary=False)
+             group={group:s}, width={bwid:.2f}, exponent={bexp:.2f})
+_xrfmodel.add_background({group:s}.bgr, vary=False)
 """
 
-xrfmod_pileup = "xrfmod.add_pileup(scale={scale:.3f}, vary={vary:s})"
-xrfmod_escape = "xrfmod.add_escape(scale={scale:.5f}, vary={vary:s})"
+xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
+xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.5f}, vary={vary:s})"
 
+xrfmod_elems = """
+for atsym in {elemlist:s}:
+    _xrfmodel.add_element(atsym)
+#endfor
+"""
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
@@ -110,7 +116,9 @@ class FitSpectraFrame(wx.Frame):
     def __init__(self, parent, mca='mca1', size=(575, 750)):
         self.parent = parent
         self._larch = parent.larch
-        self.mcagroup = "_mcas.%s" % mca
+        if not self._larch.symtable.has_group('_xrfdata'):
+            self._larch.symtable.create_group('_xrfdata')
+        self.mcagroup = "_xrfdata.%s" % mca
         self.mca = self._larch.symtable.get_group(self.mcagroup)
 
         efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
@@ -131,7 +139,6 @@ class FitSpectraFrame(wx.Frame):
 
         self.wids = {}
         self.result_frame = None
-
         self.panels = {}
         self.panels['Beam, Detector, Filters'] = self.beamdet_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
@@ -164,7 +171,7 @@ class FitSpectraFrame(wx.Frame):
         self.Raise()
 
     def elempeaks_page(self, **kws):
-        "create row for filters parameters"
+        "elements and peaks parameters"
         mca = self.parent.mca
         wids = self.wids
         p = GridPanel(self)
@@ -184,14 +191,14 @@ class FitSpectraFrame(wx.Frame):
         p.Add(self.ptable, dcol=6)
 
         dstep, dtail, dsigma, dgamma = 0.1, 0.25, 1.0, 0.25
-        wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
+        wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
                                       max_val=10.0, increment=0.01)
-        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
+        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=4, min_val=0,
                                         max_val=0.5, increment=0.01)
 
-        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
+        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=4, min_val=0,
                                        max_val=30.0, increment=0.1)
-        wids['peak_sigma'] = FloatSpin(p, value=dsigma, digits=2, min_val=0,
+        wids['peak_sigma'] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
                                        max_val=10.0, increment=0.1)
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
@@ -236,15 +243,15 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_tail_vary'%t]  = VarChoice(p, default=0)
             wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
 
-            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=1, min_val=0,
+            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=2, min_val=0,
                                            increment=10)
-            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
+            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=4, min_val=0,
                                            max_val=20.0, increment=0.01)
-            wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
+            wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=4, min_val=0,
                                            max_val=30.0, increment=0.01)
-            wids['%s_gamma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
+            wids['%s_gamma'%t] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
                                            max_val=30.0, increment=0.1)
-            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=2, min_val=0,
+            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
                                            max_val=10.0, increment=0.1)
 
             p.Add((2, 2), newrow=True)
@@ -340,10 +347,10 @@ class FitSpectraFrame(wx.Frame):
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
                                       min_val=0, max_val=100,
-                                      digits=3, increment=0.01, size=(100, -1))
+                                      digits=4, increment=0.01, size=(100, -1))
         wids['cal_offset'] = FloatSpin(pdet, value=cal_offset,
                                       min_val=-500, max_val=500,
-                                      digits=3, increment=0.01, size=(100, -1))
+                                      digits=4, increment=0.01, size=(100, -1))
 
         wids['cal_vary'] = Check(pdet, label='Vary Calibration in Fit', default=True)
 
@@ -353,19 +360,19 @@ class FitSpectraFrame(wx.Frame):
 
         wids['det_thk'] = FloatSpin(pdet, value=0.400, size=(100, -1),
                                      increment=0.010, min_val=0, max_val=10,
-                                     digits=3)
+                                     digits=4)
 
         wids['det_noise_vary'] = VarChoice(pdet, default=1)
         wids['det_efano_vary'] = VarChoice(pdet, default=0)
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
-                    digits=1, increment=50)
+                    digits=2, increment=50)
         wids['en_xray'] = FloatSpin(pdet, value=xray_energy,
                                     action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
 
-        opts.update({'digits': 4, 'max_val': 500, 'increment': 1})
+        opts.update({'digits': 3, 'max_val': 500, 'increment': 1})
         wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
 
         opts.update({'max_val': 1, 'increment': 0.001})
@@ -415,7 +422,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['bgr_width'])
 
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(' Escape & Pileup:', colour='#880000', newrow=True)
+        pdet.AddText(' Escape \& Pileup:', colour='#880000', newrow=True)
         pdet.Add(wids['escape_use'], dcol=2)
         pdet.Add(wids['pileup_use'])
 
@@ -438,7 +445,7 @@ class FitSpectraFrame(wx.Frame):
         pflt.Add(bx, dcol=3)
         pflt.AddManyText(('    filter', 'material',
                         'thickness (mm)', 'vary thickness'), style=CEN, newrow=True)
-        opts = dict(size=(100, -1), min_val=0, digits=3, increment=0.010)
+        opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
         for i in range(1, NFILTERS+1):
             t = 'filt%d' % i
             wids['%s_mat'%t] = Choice(pflt, choices=self.Filter_Materials, default=0,
@@ -446,6 +453,18 @@ class FitSpectraFrame(wx.Frame):
                                       action=partial(self.onFilterMaterial, index=i))
             wids['%s_thk'%t] = FloatSpin(pflt, value=0.0, **opts)
             wids['%s_var'%t] = VarChoice(pflt, default=0)
+            if i == 1: # first selection
+                wids['%s_mat'%t].SetStringSelection('beryllium')
+                wids['%s_thk'%t].SetValue(0.0250)
+            elif i == 2: # second selection
+                wids['%s_mat'%t].SetStringSelection('air')
+                wids['%s_thk'%t].SetValue(50.00)
+            elif i == 3: # third selection
+                wids['%s_mat'%t].SetStringSelection('kapton')
+                wids['%s_thk'%t].SetValue(0.00)
+            elif i == 4: # third selection
+                wids['%s_mat'%t].SetStringSelection('aluminum')
+                wids['%s_thk'%t].SetValue(0.00)
 
             pflt.AddText('     %i' % (i), newrow=True)
             pflt.Add(wids['%s_mat' % t])
@@ -469,17 +488,17 @@ class FitSpectraFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(self)
         # title row
         self.rwids = wids = {}
-        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
+        title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
 
-        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
+        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
                                              colour=self.colors.title, style=LCEN)
 
-        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
+        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+1),
                                        colour=self.colors.title, style=LCEN)
 
         wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
-                                       font=Font(FONTSIZE+2), colour=self.colors.title,
+                                       font=Font(FONTSIZE+1), colour=self.colors.title,
                                        style=LCEN)
 
         opts = dict(default=False, size=(175, -1), action=self.onPlot)
@@ -514,7 +533,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 4), LCEN)
 
@@ -543,7 +562,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
+        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
         sizer.Add(title, (irow, 0), (1, 1), LCEN)
 
@@ -572,7 +591,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
 
         wids['all_correl'] = Button(panel, 'Show All',
@@ -662,14 +681,14 @@ class FitSpectraFrame(wx.Frame):
         t = 'filt%d' % index
         thick = self.wids['%s_thk'%t]
         if den < 0.1 and thick.GetValue() < 0.1:
-            thick.SetValue(5.0)
+            thick.SetValue(10.0)
             thick.SetIncrement(0.5)
         elif den > 0.1 and thick.GetValue() < 1.e-5:
             thick.SetValue(0.0250)
             thick.SetIncrement(0.005)
 
     def onEditFilters(self, evt=None):
-        print( 'on Edit Filters ',  evt)
+        pass # print( 'on Edit Filters ',  evt)
 
     def onElemSelect(self, event=None, elem=None):
         self.ptable.tsym.SetLabel('')
@@ -745,9 +764,9 @@ class FitSpectraFrame(wx.Frame):
         for i in range(1, NFILTERS+1):
             t = 'filt%d' % i
             f_mat = opts['%s_mat'%t]
-            if f_mat not in (None, 'None'):
+            if f_mat not in (None, 'None') and int(1e6*opts['%s_thk'%t]) > 1:
                 script.append(xrfmod_filter.format(name=f_mat,
-                                                   thick=opts['%s_thk'%t] / 10.0,
+                                                   thick=opts['%s_thk'%t],
                                                    vary=opts['%s_var'%t]))
 
         bwid = bexp = 0.0
@@ -771,15 +790,14 @@ class FitSpectraFrame(wx.Frame):
         elemz.sort()
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in sorted(elemz)]
         syms = '[%s]' % (', '.join(syms))
-        script.append("for s in %s: xrfmod.add_element(s)" % syms)
-
-        script.append("{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)")
+        script.append(xrfmod_elems.format(elemlist=syms))
+        script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)")
         script = '\n'.join(script)
         self.model_script = script.format(group=self.mcagroup, bwid=bwid, bexp=bexp)
         self._larch.eval(self.model_script)
 
         cmds = []
-        self.xrfmod = self._larch.symtable.get_symbol('xrfmod')
+        self.xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         floor = 1.e-12*max(self.mca.counts)
         if match_amplitudes:
             total = 0.0 * self.mca.counts
@@ -794,7 +812,7 @@ class FitSpectraFrame(wx.Frame):
                     if nam in ('background', 'pileup', 'escape'):
                         scale = 1.0
                 paramval = self.xrfmod.params[ampname].value
-                s = "xrfmod.params['%s'].value = %.5f" % (ampname, paramval*scale)
+                s = "_xrfmodel.params['%s'].value = %.5f" % (ampname, paramval*scale)
                 cmds.append(s)
                 parr *= scale
                 parr[np.where(parr<floor)] = floor
@@ -803,7 +821,7 @@ class FitSpectraFrame(wx.Frame):
             script = '\n'.join(cmds)
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
-        s = "{group:s}.xrf_init = xrfmod.calc_spectrum({group:s}.energy_ev)"
+        s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)"
         self._larch.eval(s.format(group=self.mcagroup))
 
 
@@ -845,26 +863,26 @@ class FitSpectraFrame(wx.Frame):
 
     def onFitIteration(self, iter=0, pars=None):
         self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
-        
+
     def onFitModel(self, event=None):
         self.build_model()
-        xrfmod = self._larch.symtable.get_symbol('xrfmod')
+        xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
-        self.wids['fit_message'].SetLabel("Fit beginning... ")        
+        self.wids['fit_message'].SetLabel("Fit beginning... ")
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
                                              emin=self.wids['en_min'].GetValue(),
                                              emax=self.wids['en_max'].GetValue())
         self._larch.eval(fit_script)
         self.model_script = "%s\n%s" % (self.model_script, fit_script)
 
-        xrfmod = self._larch.symtable.get_symbol('xrfmod')
-        self._larch.symtable.get_symbol('xrfmod.result').script = self.model_script
+        xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
+        self._larch.symtable.get_symbol('_xrfmodel.result').script = self.model_script
 
-        append_hist ="{group:s}.fit_history.append(xrfmod.result)"
+        append_hist ="{group:s}.fit_history.append(_xrfmodel.result)"
         self._larch.eval(append_hist.format(group=self.mcagroup))
 
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
-        self.wids['fit_message'].SetLabel("Fit complete.")        
+        self.wids['fit_message'].SetLabel("Fit complete.")
         for i in range(len(self.nb.pagelist)):
             if 'Results' in self.nb.GetPageText(i):
                 self.nb.SetSelection(i)
@@ -908,7 +926,7 @@ class FitSpectraFrame(wx.Frame):
 
     def onPlot(self, event=None):
         result = self.get_fitresult()
-        xrfmod = self._larch.symtable.get_symbol('xrfmod')
+        xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         with_comps = self.rwids['plot_comps'].IsChecked()
         spectrum = xrfmod.calc_spectrum(self.mca.energy_ev,
                                         params=result.params,
