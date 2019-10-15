@@ -130,6 +130,7 @@ class GSEMCA_File(Group):
         counts     = []
         rois       = []
         environ    = []
+        self.incident_energy = None
         head = self.header = GSEMCA_Header()
         for l in lines:
             l  = l.strip()
@@ -163,6 +164,12 @@ class GSEMCA_File(Group):
                     if desc.startswith('(') and desc.endswith(')'):
                         desc = desc[1:-1]
                     environ.append((desc, val, addr))
+                    if 'mono' in desc.lower() and 'energy' in desc.lower():
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            pass
+                        self.incident_energy = val
                 elif tag[0:4] == 'roi_':
                     iroi, item = tag[4:].split('_')
                     iroi = int(iroi)
