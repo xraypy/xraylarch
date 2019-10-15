@@ -103,7 +103,7 @@ class XRFDisplayFrame(wx.Frame):
             self.larch = self.larch_buffer.larchshell
             self.init_larch()
 
-        self._mcagroup = self.larch.symtable.new_group('_mcas')
+        self._mcagroup = self.larch.symtable.new_group('_xrfdata')
         self.exit_callback = exit_callback
         self.roi_patch = None
         self.selected_roi = None
@@ -1030,8 +1030,8 @@ class XRFDisplayFrame(wx.Frame):
             self.oplot(self.mca.energy, self.mca.escape, label='escape prediction')
         else:
             self.plotmca(self.mca)
-            
-            
+
+
     def onYAxis(self, event=None):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
         ax = self.panel.axes
