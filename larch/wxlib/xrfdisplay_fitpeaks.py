@@ -202,18 +202,16 @@ class FitSpectraFrame(wx.Frame):
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
         wids['peak_sigma_vary'] = VarChoice(p, default=0)
 
-        btn_clear_elems = Button(p, 'Clear All', size=(95, -1),
+        btn_clear_elems = Button(p, 'Clear All', size=(150, -1),
                                  action=self.onElems_Clear)
-        btn_from_rois = Button(p, 'From ROIS', size=(95, -1),
+        btn_from_rois = Button(p, 'Select from ROIS', size=(150, -1),
                                action=self.onElems_FromROIS)
 
-        p.AddText('Elements to model:', colour='#880000', dcol=8)
+        p.AddText('Elements to model:', colour='#880000', dcol=2)
+        p.Add(btn_clear_elems,  dcol=2)
+        p.Add(btn_from_rois,    dcol=2)
         p.Add((2, 2), newrow=True)
-        p.Add(self.ptable, dcol=5, drow=3)
-        p.Add(btn_clear_elems,  icol=6, irow=2)
-        p.Add(btn_from_rois,    icol=6, irow=3)
-
-        p.irow += 3
+        p.Add(self.ptable, dcol=6)
 
         p.Add((2, 2), newrow=True)
         p.AddText('  Step (%): ')
@@ -640,11 +638,16 @@ class FitSpectraFrame(wx.Frame):
         return panel
 
     def onElems_Clear(self, event=None):
-        print("Clear elements   ", event)
+        self.ptable.on_clear_all()
 
     def onElems_FromROIS(self, event=None):
-        print("set elements from ROIS  ", event)
-
+        for roi in self.mca.rois:
+            words = roi.name.split()
+            elem = words[0].title()
+            if (elem in self.ptable.syms and
+                elem not in self.ptable.selected):
+                self.ptable.onclick(label=elem)
+        self.onSetXrayEnergy()
 
     def onSetXrayEnergy(self, event=None):
         en = self.wids['en_xray'].GetValue()
@@ -871,7 +874,7 @@ class FitSpectraFrame(wx.Frame):
         yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
         ppanel.set_viewlimits()
-        ppanel.conf.legend_loc = 'ur'
+        ppanel.conf.set_legend_location('upper right', True)
         ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
