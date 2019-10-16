@@ -2338,7 +2338,7 @@ class GSEXRM_MapFile(object):
         env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
         env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
         for name, val in zip(env_names, env_vals):
-            name = name.lower()
+            name = name.lower().replace('.', ' ')
             if name.startswith('mono energy'):
                 return float(val)
         return None
@@ -2418,9 +2418,9 @@ class GSEXRM_MapFile(object):
                                       dtcorrect=dtcorrect)
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect)
-        counts = counts[area[ymin:ymax, xmin:xmax]].sum(axis=0).sum(axis=0)
         ltime = ltime[area[ymin:ymax, xmin:xmax]].sum()
         rtime = rtime[area[ymin:ymax, xmin:xmax]].sum()
+        counts = counts[area[ymin:ymax, xmin:xmax]]
         while(len(counts.shape) > 1):
             counts = counts.sum(axis=0)
         return self._getmca(dgroup, counts, areaname, npixels=npixels,
