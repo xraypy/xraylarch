@@ -7,6 +7,8 @@ import copy
 from functools import partial
 from collections import OrderedDict
 
+from threading import Thread
+
 import numpy as np
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
@@ -90,7 +92,7 @@ xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy_ev, {group:s}.coun
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
 
 xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
-             group={group:s}, width={bwid:.2f}, exponent={bexp:.2f})
+             group={group:s}, width={bgr_wid:.2f}, exponent={bgr_exp:.2f})
 _xrfmodel.add_background({group:s}.bgr, vary=False)
 """
 
@@ -325,6 +327,10 @@ class FitSpectraFrame(wx.Frame):
         pdet = GridPanel(main, itemstyle=LEFT)
         pflt = GridPanel(main, itemstyle=LEFT)
 
+        def addLine(pan):
+            pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+
+        bgr_code1 = """
         wids['bgr_use'] = Check(pdet, label='Include Background in Fit',
                                 default=False, action=self.onUseBackground)
         wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
@@ -336,15 +342,16 @@ class FitSpectraFrame(wx.Frame):
         wids['bgr_width'].Disable()
         wids['bgr_expon'].Disable()
         wids['bgr_show'].Disable()
+        """
 
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
-                                   default=True, action=self.onUseBackground)
+                                   default=True, action=self.onUsePileupEscape)
         wids['escape_amp'] = FloatSpin(pdet, value=escape_amp,
                                          min_val=0, max_val=0.5, digits=4,
                                          increment=0.001, size=(100, -1))
 
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
-                                   default=True, action=self.onUseBackground)
+                                   default=True, action=self.onUsePileupEscape)
         wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
                                          min_val=0, max_val=10, digits=4,
                                          increment=0.005, size=(100, -1))
@@ -363,7 +370,7 @@ class FitSpectraFrame(wx.Frame):
         wids['cal_vary'] = Check(pdet, label='Vary Calibration in Fit', default=True)
 
         wids['det_mat'] = Choice(pdet, choices=Detector_Materials,
-                                 size=(55, -1), default=0,
+                                 size=(70, -1), default=0,
                                  action=self.onDetMaterial)
 
         wids['det_thk'] = FloatSpin(pdet, value=0.400, size=(100, -1),
@@ -396,16 +403,15 @@ class FitSpectraFrame(wx.Frame):
         pdet.AddText('Energy Max: ')
         pdet.Add(wids['en_max'])
 
-        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText('Energy Calibration :', colour='#880000', dcol=1, newrow=True)
-        pdet.Add(wids['cal_vary'], dcol=3)
-        pdet.AddText('   Offset: ', newrow=True)
+        addLine(pdet)
+        pdet.AddText('Energy Calibration :', colour='#880000', dcol=2, newrow=True)
+        pdet.Add(wids['cal_vary'], dcol=2)
+        pdet.AddText('   Offset (eV): ', newrow=True)
         pdet.Add(wids['cal_offset'])
         pdet.AddText('Slope (eV/bin): ')
         pdet.Add(wids['cal_slope'])
 
-
-        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
+        addLine(pdet)
         pdet.AddText(' Detector :', colour='#880000', newrow=True)
         pdet.AddText(EFano_Text, dcol=3)
         pdet.AddText('   Material:  ', newrow=True)
@@ -420,6 +426,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['det_efano'])
         pdet.Add(wids['det_efano_vary'], dcol=2)
 
+        """
         pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
         pdet.AddText(' Background: ', colour='#880000', newrow=True)
         pdet.Add(wids['bgr_use'], dcol=2)
@@ -428,28 +435,27 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['bgr_expon'])
         pdet.AddText('Energy Width: ')
         pdet.Add(wids['bgr_width'])
+        """
 
-        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(' Escape \& Pileup:', colour='#880000', newrow=True)
-        pdet.Add(wids['escape_use'], dcol=2)
-        pdet.Add(wids['pileup_use'])
-
-        pdet.AddText(' Escape Scale:', newrow=True)
+        addLine(pdet)
+        pdet.AddText(' Escape && Pileup:', colour='#880000', newrow=True)
+        pdet.AddText('   Escape Scale:', newrow=True)
         pdet.Add(wids['escape_amp'])
         pdet.Add(wids['escape_amp_vary'])
+        pdet.Add(wids['escape_use'], dcol=3)
 
-        pdet.AddText(' Pileup Scale:', newrow=True)
+        pdet.AddText('   Pileup Scale:', newrow=True)
         pdet.Add(wids['pileup_amp'])
         pdet.Add(wids['pileup_amp_vary'])
-
+        pdet.Add(wids['pileup_use'], dcol=3)
+        addLine(pdet)
         pdet.pack()
 
         # filters section
         bx = Button(pflt, 'Customize Filter List', size=(150, -1),
                     action = self.onEditFilters)
-        bx.Disable()
-        pflt.Add(HLine(pflt, size=(550, 3)), dcol=6)
-        pflt.AddText(' Filters :', colour='#880000', dcol=3, newrow=True)
+        # bx.Disable()
+        pflt.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
         pflt.Add(bx, dcol=3)
         pflt.AddManyText(('    filter', 'material',
                         'thickness (mm)', 'vary thickness'), style=CEN, newrow=True)
@@ -479,7 +485,7 @@ class FitSpectraFrame(wx.Frame):
             pflt.Add(wids['%s_thk' % t])
             pflt.Add(wids['%s_var' % t])
 
-        pflt.Add(HLine(pflt, size=(550, 3)), dcol=6, newrow=True)
+        addLine(pflt)
         pflt.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -720,6 +726,7 @@ class FitSpectraFrame(wx.Frame):
         self.wids['bgr_expon'].Enable(use_bgr)
         self.wids['bgr_show'].Enable(use_bgr)
 
+    def onUsePileupEscape(self, event=None):
         puse = self.wids['pileup_use'].IsChecked()
         self.wids['pileup_amp'].Enable(puse)
         self.wids['pileup_amp_vary'].Enable(puse)
@@ -760,9 +767,6 @@ class FitSpectraFrame(wx.Frame):
             opts[key] = val
         opts['count_time'] = getattr(self.mca, 'real_time', 1.0)
 
-        # convert thicknesses from mm to cm:
-        opts['det_thk'] /= 10.0
-
         script = [xrfmod_setup.format(**opts)]
 
         for peak in ('Elastic', 'Compton1', 'Compton2'):
@@ -789,11 +793,10 @@ class FitSpectraFrame(wx.Frame):
                                                    thick=opts['%s_thk'%t],
                                                    vary=opts['%s_var'%t]))
 
-        bwid = bexp = 0.0
-        if opts['bgr_use'] in ('True', True):
+        if opts.get('bgr_use', False) in ('True', True):
             bwid = self.wids['bgr_width'].GetValue()/1000.0
             bexp = int(self.wids['bgr_expon'].GetStringSelection())
-            script.append(xrfmod_bgr)
+            script.append(xrfmod_bgr.format(group=self.mcagroup, bwid=bwid, bexp=bexp))
 
         if opts['pileup_use'] in ('True', True):
             script.append(xrfmod_pileup.format(scale=opts['pileup_amp'],
@@ -813,7 +816,8 @@ class FitSpectraFrame(wx.Frame):
         script.append(xrfmod_elems.format(elemlist=syms))
         script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)")
         script = '\n'.join(script)
-        self.model_script = script.format(group=self.mcagroup, bwid=bwid, bexp=bexp)
+        self.model_script = script.format(group=self.mcagroup)
+
         self._larch.eval(self.model_script)
 
         cmds = []
@@ -882,16 +886,19 @@ class FitSpectraFrame(wx.Frame):
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
 
     def onFitIteration(self, iter=0, pars=None):
-        self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
+        pass
+        # print("Fit iteration %d" % iter)
+        # self.wids['fit_message'].SetLabel("Fit iteration %d" % iter)
 
     def onFitModel(self, event=None):
         self.build_model()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
-        self.wids['fit_message'].SetLabel("Fit beginning... ")
+        # self.wids['fit_message'].SetLabel("Fit beginning... ")
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
                                              emin=self.wids['en_min'].GetValue(),
                                              emax=self.wids['en_max'].GetValue())
+
         self._larch.eval(fit_script)
         self.model_script = "%s\n%s" % (self.model_script, fit_script)
 
@@ -902,7 +909,7 @@ class FitSpectraFrame(wx.Frame):
         self._larch.eval(append_hist.format(group=self.mcagroup))
 
         self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
-        self.wids['fit_message'].SetLabel("Fit complete.")
+        # self.wids['fit_message'].SetLabel("Fit complete.")
         for i in range(len(self.nb.pagelist)):
             if 'Results' in self.nb.GetPageText(i):
                 self.nb.SetSelection(i)
@@ -927,11 +934,9 @@ class FitSpectraFrame(wx.Frame):
         wcards = 'All files (*.*)|*.*'
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
-
         result = self.get_fitresult()
         if outfile is not None:
-            export_modelresult(result, filename=outfile,
-                               ydata=self.mca.counts, x=self.mca.energy)
+            print("Export model", outfile)
 
 
     def get_fitresult(self, nfit=None):
