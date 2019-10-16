@@ -274,6 +274,7 @@ class XRF_Model:
         self.comps = {}
         self.eigenvalues = {}
         self.transfer_matrix = None
+        self.matrix = []
         self.filters = []
         self.fit_iter = 0
         self.fit_toler = 1.e-5
@@ -286,7 +287,7 @@ class XRF_Model:
         if bgr is not None:
             self.add_background(bgr)
 
-    def set_detector(self, material='Si', thickness=0.025, efano=None,
+    def set_detector(self, material='Si', thickness=0.40, efano=None,
                      noise=30., peak_step=1e-4, peak_tail=0.01,
                      peak_gamma=0.5, peak_sigmax=1.0, cal_offset=0,
                      cal_slope=10., cal_quad=0, vary_thickness=False,
@@ -334,19 +335,20 @@ class XRF_Model:
     def add_element(self, elem, amplitude=1.e6, vary_amplitude=True):
         """add Element to XRF model
         """
-        self.elements.append(XRF_Element(elem,
-                                         xray_energy=self.xray_energy,
+        self.elements.append(XRF_Element(elem, xray_energy=self.xray_energy,
                                          energy_min=self.energy_min))
         self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
 
-    def add_filter(self, material, thickness, thickness_units='mm',
-                   vary_thickness=False):
+    def add_filter(self, material, thickness, vary_thickness=False):
         self.filters.append(XRF_Material(material=material,
-                                         thickness_units=thickness_units,
                                          thickness=thickness))
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
+
+    def add_matrix_layer(self, material, thickness):
+        self.matrix.append(XRF_Material(material=material,
+                                        thickness=thickness))
 
     def add_background(self, data, vary=True):
         self.bgr = data
@@ -376,6 +378,7 @@ class XRF_Model:
         tail = pars['peak_tail']
         gamma = pars['peak_gamma']
         sigmax = pars['peak_sigmax']
+
         # attenuation factor for Detector absorbance and Filters
         atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
         for f in self.filters:
