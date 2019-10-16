@@ -92,7 +92,7 @@ class XRF_Material:
         if is_pint_quantity(thickness):
             t = thickness.to('cm').magnitude
         else:
-            t = thickness * 10.0
+            t = 0.1*thickness
         return (1.0 - np.exp(-t*mu))
 
 
@@ -119,7 +119,7 @@ class XRF_Material:
         if is_pint_quantity(thickness):
             t = thickness.to('cm').magnitude
         else:
-            t = thickness * 10.0
+            t = 0.1*thickness
         return np.exp(-t*mu)
 
 
@@ -459,7 +459,8 @@ class XRF_Model:
         self.best_fit = self.calc_spectrum(self.best_en, params=params)
         if callable(self.iter_callback):
             self.iter_callback(iter=self.fit_iter, pars=pars)
-        return (data - self.best_fit) * self.fit_weight
+        return ((data - self.best_fit) * self.fit_weight)[self.imin:self.imax]
+
 
     def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
         """
@@ -467,8 +468,8 @@ class XRF_Model:
         """
         ewin = ftwindow(energy, xmin=emin, xmax=emax, dx=ewid, window='hanning')
         self.fit_window = ewin
-        stderr = 1.0 / np.sqrt(counts + 5)
-        self.fit_weight = ewin * savitzky_golay(stderr, 7, 2)
+        stderr = np.sqrt(counts + 1)
+        self.fit_weight = ewin / (0.1 + savitzky_golay(stderr, 7, 2))
 
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
         work_energy = 1.0*energy
@@ -489,6 +490,9 @@ class XRF_Model:
         if energy_max is not None:
             imax = index_of(work_energy, energy_max)
 
+        self.imin = max(0, imin-5)
+        self.imax = min(len(counts), imax+5)
+        self.npts = (self.imax - self.imin)
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
 
