@@ -34,9 +34,10 @@ def is_pint_quantity(val):
     return HAS_PINT and isinstance(val, pint.quantity._Quantity)
 
 class XRF_Material:
-    def __init__(self, material='Si', thickness=0.050, efano=None, noise=10.,
-                 thickness_units='mm'):
+    def __init__(self, material='Si', thickness=0.050, density=None,
+                 efano=None, noise=10., thickness_units='mm'):
         self.material = material
+        self.density = density
         self.thickness_units = thickness_units
         self.thickness = thickness
         if HAS_PINT:
@@ -67,8 +68,10 @@ class XRF_Material:
         return np.sqrt(efano*energy + noise**2)
 
     def calc_mu(self, energy):
-        self.mu_total = material_mu(self.material, energy, kind='total')
-        self.mu_photo = material_mu(self.material, energy, kind='photo')
+        self.mu_total = material_mu(self.material, energy,
+                                    density=self.density, kind='total')
+        self.mu_photo = material_mu(self.material, energy,
+                                    density=self.density, kind='photo')
 
     def absorbance(self, energy, thickness=None, kind='total'):
         """calculate absorbance (fraction absorbed)
@@ -274,7 +277,7 @@ class XRF_Model:
         self.comps = {}
         self.eigenvalues = {}
         self.transfer_matrix = None
-        self.matrix = []
+        self.matrix_layers = []
         self.filters = []
         self.fit_iter = 0
         self.fit_toler = 1.e-5
@@ -340,14 +343,16 @@ class XRF_Model:
         self.params.add('amp_%s' % elem.lower(), value=amplitude,
                         vary=vary_amplitude, min=0)
 
-    def add_filter(self, material, thickness, vary_thickness=False):
+    def add_filter(self, material, thickness, density=None, vary_thickness=False):
         self.filters.append(XRF_Material(material=material,
+                                         density=density,
                                          thickness=thickness))
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
 
-    def add_matrix_layer(self, material, thickness):
-        self.matrix.append(XRF_Material(material=material,
+    def add_matrix_layer(self, material, thickness, density=None):
+        self.matrix_layers.append(XRF_Material(material=material,
+                                        density=density,
                                         thickness=thickness))
 
     def add_background(self, data, vary=True):
@@ -381,6 +386,14 @@ class XRF_Model:
 
         # attenuation factor for Detector absorbance and Filters
         atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
+        ixray_en = index_of(self.xray_energy, energy)
+        print(self.xray_energy, ixray_en)
+        matrix_emssion = 0
+        for m in reversed(self.matrix_layers):
+            pass # m.absorbance(energy[ixray_eb]
+
+
+
         for f in self.filters:
            thickness = pars.get('filterlen_%s' % f.material, None)
            if thickness is not None and int(thickness*1e6) > 1:
