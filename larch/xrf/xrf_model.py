@@ -69,9 +69,11 @@ class XRF_Material:
 
     def calc_mu(self, energy):
         self.mu_total = material_mu(self.material, energy,
-                                    density=self.density, kind='total')
+                                    density=self.density,
+                                    kind='total')
         self.mu_photo = material_mu(self.material, energy,
-                                    density=self.density, kind='photo')
+                                    density=self.density,
+                                    kind='photo')
 
     def absorbance(self, energy, thickness=None, kind='total'):
         """calculate absorbance (fraction absorbed)
@@ -98,9 +100,8 @@ class XRF_Material:
             t = 0.1*thickness
         return (1.0 - np.exp(-t*mu))
 
-
-    def attenuation(self, energy, thickness=None, kind='total'):
-        """calculate attenuation (fraction attenuated)
+    def transmission(self, energy, thickness=None, kind='total'):
+        """calculate transmission (fraction transmitted through material)
 
         Arguments
         ---------
@@ -109,7 +110,7 @@ class XRF_Material:
 
         Returns
         -------
-        fraction of X-rays attenuated by material
+        fraction of X-rays transmitted through material
         """
 
         if thickness is None:
@@ -285,7 +286,7 @@ class XRF_Model:
         self.bgr = None
         self.use_pileup = False
         self.use_escape = False
-        self.clear_energy_cache()
+        self.matrix_atten = None
         self.script = ''
         if bgr is not None:
             self.add_background(bgr)
@@ -310,7 +311,6 @@ class XRF_Model:
         self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=10)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
         self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
-        self.clear_energy_cache()
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
                          step=0.010, tail=0.5, sigmax=1.0, gamma=0.75,
@@ -349,23 +349,22 @@ class XRF_Model:
                                          thickness=thickness))
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
-        self.clear_energy_cache()
 
     def add_matrix_layer(self, material, thickness, density=None):
         self.matrix_layers.append(XRF_Material(material=material,
-                                        density=density,
-                                        thickness=thickness))
-        self.clear_energy_cache()
+                                               density=density,
+                                               thickness=thickness))
+        self.matrix_atten = None
 
     def add_background(self, data, vary=True):
         self.bgr = data
         self.params.add('background_amp', value=1.0, min=0, vary=vary)
 
-    def add_escape(self, scale=0.001, vary=True):
+    def add_escape(self, scale=0.01, vary=True):
         self.use_escape = True
         self.params.add('escape_amp', value=scale, min=0, vary=vary)
 
-    def add_pileup(self, scale=1.0, vary=True):
+    def add_pileup(self, scale=0.01, vary=True):
         self.use_pileup = True
         self.params.add('pileup_amp', value=scale, min=0, vary=vary)
 
@@ -373,49 +372,29 @@ class XRF_Model:
         self.bgr = None
         self.params.pop('background_amp')
 
-    def calc_attenuation(self, energy, pars):
-        """calculate beam attenuation factors, including
-        detector efficiency
-        filters
-        matrix absorption and transmission
+    def calc_matrix_attenuation(self, energy):
         """
+        calculate beam attenuation by a matrix built from layers
+        note that matrix layers and composition cannot be variable
+        so the calculation can be done once, ahead of time.
 
-        # detector attenuation
-        atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
+        Matrix attenuation:
+        For each layer:
 
-        # filters
-        for f in self.filters:
-           thickness = pars.get('filterlen_%s' % f.material, None)
-           if thickness is not None and int(thickness*1e6) > 1:
-               atten *= f.attenuation(energy, thickness=thickness)
-
-        #  matrix
+        """
+        atten = 1.0
         if len(self.matrix_layers) > 0:
             ixray_en = index_of(self.xray_energy, energy)
-            matrix_atten = 0
+            mat_atten = 0
             for m in reversed(self.matrix_layers):
-                layer_atten = m.attenuation(energy) # attenuation of all energeies by layer
-                inx_trans   = layer_atten[ixray_en] # transmission of incident beam to lower layers
-                inx_absorb  = 1 - _trans            # absorption of incident beam
-                matrix_atten = layer_atten * (inx_absorb + inx_trans + matrix_atten)
+                layer_trans = m.transmission(energy)# transmission (all energeies) through layer
+                inx_trans   = layer_atten[ixray_en] # in beam transmission to lower layers
+                inx_absorb  = 1 - inx_trans         # in beam absorption by layer
+                mat_atten = layer_trans * (inx_absorb + inx_trans + mat_atten)
             atten *= matrix_atten
+        self.matrix_atten = atten
 
-        self.atten = atten
-        self._atten_ecache = (int(self.xray_energy*10), len(energy),
-                              int(energy[0]*10), int(energy[1]*10), int(det_thick*1e5))
-
-    def check_energy_cache(self, energy):
-        ein, len_e, e0, e1 = self._atten_ecache
-        return ((int(self.xray_energy*10) = ein) and
-                (len(energy) == len_e) and
-                (int(energy[0]*10) == e0) and
-                (int(energy[1]*10) == e1) )
-
-    def clear_energy_cache(self):
-        """clear energy cache for attenuation calcs, forcing attenuation calculation"""
-        self._atten_ecache = (-1, -1, -1, -1, -1)
-
-    def calc_spectrum(self, energy, params=None, set_init=True):
+    def calc_spectrum(self, energy, params=None):
         if params is None:
             params = self.params
         pars = params.valuesdict()
@@ -428,8 +407,19 @@ class XRF_Model:
         gamma = pars['peak_gamma']
         sigmax = pars['peak_sigmax']
 
-        if self.check_energy_cache(energy):
-            self.calc_attenuation(energy, pars)
+        # detector attenuation
+        atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
+
+        # filters
+        for f in self.filters:
+           thickness = pars.get('filterlen_%s' % f.material, None)
+           if thickness is not None and int(thickness*1e6) > 1:
+               atten *= f.transmission(energy, thickness=thickness)
+        self.atten = atten
+        # matrix
+        if self.matrix_atten is None:
+            self.calc_matrix_attenuation(energy)
+        atten *= self.matrix_atten
 
         escape_amp = pars.get('escape_amp', 0.0)
         if self.use_escape:
@@ -447,7 +437,7 @@ class XRF_Model:
                 sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail, gamma=gamma)
-            comp *= amp * self.atten * self.count_time
+            comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(escape_en, comp, energy)
             self.comps[elem.symbol] = comp
@@ -467,7 +457,7 @@ class XRF_Model:
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, gamma=gamma)
-            comp *= amp * self.atten * self.count_time
+            comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(escape_en, comp, energy)
             self.comps[p] = comp
@@ -486,17 +476,15 @@ class XRF_Model:
         if self.use_pileup:
             pamp = pars.get('pileup_amp', 0.0)
             npts = len(energy)
-            pileup = pamp * 1.e-9*np.convolve(total, total, 'full')[:npts]
+            pileup = pamp * 1.e-8*np.convolve(total, total, 'full')[:npts]
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
             total += pileup
 
-        # remove tiny values
-        floor = 1.e-12*max(total)
+        # remove tiny values so that log plots are usable
+        floor = 1.e-10*max(total)
         total[np.where(total<floor)] = floor
-
-        if set_init:
-            self.init_fit = total
+        self.current_model = total
         return total
 
     def __resid(self, params, data, index):
@@ -504,10 +492,10 @@ class XRF_Model:
         self.best_en = (pars['cal_offset'] + pars['cal_slope'] * index +
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
-        self.best_fit = self.calc_spectrum(self.best_en, params=params)
+        model = self.calc_spectrum(self.best_en, params=params)
         if callable(self.iter_callback):
             self.iter_callback(iter=self.fit_iter, pars=pars)
-        return ((data - self.best_fit) * self.fit_weight)[self.imin:self.imax]
+        return ((data - model) * self.fit_weight)[self.imin:self.imax]
 
 
     def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
@@ -522,7 +510,7 @@ class XRF_Model:
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
         work_energy = 1.0*energy
         work_counts = 1.0*counts
-        floor = 1.e-12*np.percentile(counts, [99])[0]
+        floor = 1.e-10*np.percentile(counts, [99])[0]
         work_counts[np.where(counts<floor)] = floor
 
         if max(energy) < 250.0: # if input energies are in keV
@@ -543,8 +531,13 @@ class XRF_Model:
         self.npts = (self.imax - self.imin)
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
-        self.clear_energy_cache()
+        # reset attenuation calcs for matrix, detector, filters
+        self.matrix_atten = None
+        self.detector.mu_total = None
+        for f in self.filters:
+            f.mu_total = None
 
+        self.init_fit = self.calc_spectrum(energy, params=self.params)
         index = np.arange(len(counts))
         userkws = dict(data=work_counts, index=index)
 
@@ -560,6 +553,7 @@ class XRF_Model:
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
         self.best_fit = self.calc_spectrum(energy, params=self.result.params)
+
 
         # calculate transfer matrix for linear analysis using this model
         tmat= []
