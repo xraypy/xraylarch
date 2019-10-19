@@ -1020,14 +1020,16 @@ class XRFDisplayFrame(wx.Frame):
     def onPileupPrediction(self, event=None):
         if event.IsChecked():
             self.mca.predict_pileup()
-            self.oplot(self.mca.energy, self.mca.pileup, label='pileup prediction')
+            self.oplot(self.mca.energy, self.mca.pileup,
+                       color='#555555', label='pileup prediction')
         else:
             self.plotmca(self.mca)
 
     def onEscapePrediction(self, event=None):
         if event.IsChecked():
             self.mca.predict_escape()
-            self.oplot(self.mca.energy, self.mca.escape, label='escape prediction')
+            self.oplot(self.mca.energy, self.mca.escape,
+                       color='#F07030', label='escape prediction')
         else:
             self.plotmca(self.mca)
 
