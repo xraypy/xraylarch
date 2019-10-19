@@ -192,14 +192,17 @@ class MCA(Group):
         self.pileup = interp(ex, scale*pileup, self.energy, kind='cubic')
         self.pileup_scale = scale
 
-    def predict_escape(self, scale=None, fraction=0.01, det='Si'):
+    def predict_escape(self, fraction=0.01, det='Si'):
         """
         predict detector escape for a spectrum, save to 'escape' attribute
         """
-        en = self.energy - 0.001 * xray_line(det, 'Ka').energy
-        self.escape = fraction * interp(en, self.counts*1.0,
+        fluor_en = 0.001 * xray_line(det, 'Ka').energy
+        self.escape = fraction * interp(self.energy - fluor_en,
+                                        self.counts*1.0,
                                         self.energy, kind='cubic')
-        
+        high_en = self.energy[-1] - 1.5*fluor_en
+        self.escape[np.where(self.energy > high_en)] = 0.
+
     def update_correction(self, tau=None):
         """
         Update the deadtime correction
