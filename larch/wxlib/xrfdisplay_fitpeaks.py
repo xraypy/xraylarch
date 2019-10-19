@@ -96,7 +96,7 @@ xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
 _xrfmodel.add_background({group:s}.bgr, vary=False)
 """
 
-xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
+xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.5f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.5f}, vary={vary:s})"
 
 xrfmod_elems = """
@@ -319,7 +319,7 @@ class FitSpectraFrame(wx.Frame):
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
         escape_amp = getattr(mca, 'escape_amp', 0.010)
-        pileup_amp = getattr(mca, 'pileup_amp', 0.100)
+        pileup_amp = getattr(mca, 'pileup_amp', 0.010)
 
         wids = self.wids
         main = wx.Panel(self)
@@ -353,8 +353,8 @@ class FitSpectraFrame(wx.Frame):
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
                                    default=True, action=self.onUsePileupEscape)
         wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
-                                         min_val=0, max_val=10, digits=4,
-                                         increment=0.005, size=(100, -1))
+                                         min_val=0, max_val=100, digits=4,
+                                         increment=0.001, size=(100, -1))
 
         wids['escape_amp_vary'] = VarChoice(pdet, default=True)
         wids['pileup_amp_vary'] = VarChoice(pdet, default=True)
@@ -841,13 +841,12 @@ class FitSpectraFrame(wx.Frame):
                 parr *= scale
                 parr[np.where(parr<floor)] = floor
                 total += parr
-            self.xrfmod.init_fit = total
+            self.xrfmod.current_model = total
             script = '\n'.join(cmds)
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
         s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)"
         self._larch.eval(s.format(group=self.mcagroup))
-
 
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=True,
@@ -864,7 +863,7 @@ class FitSpectraFrame(wx.Frame):
                          xlabel='E (keV)', xmin=0, with_rois=False, **plotkws)
 
         if model_spectrum is None:
-            model_spectrum = self.xrfmod.init_fit if init else self.xrfmod.best_fit
+            model_spectrum = self.xrfmod.current_model if init else self.xrfmod.best_fit
         if label is None:
             label = 'predicted model' if init else 'best fit'
 
@@ -953,11 +952,8 @@ class FitSpectraFrame(wx.Frame):
         result = self.get_fitresult()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         with_comps = self.rwids['plot_comps'].IsChecked()
-        spectrum = xrfmod.calc_spectrum(self.mca.energy_ev,
-                                        params=result.params,
-                                        set_init=False)
-
-        self.plot_model(model_spectrum=spectrum, with_comps=with_comps,
+        spect = xrfmod.calc_spectrum(self.mca.energy_ev, params=result.params)
+        self.plot_model(model_spectrum=spect, with_comps=with_comps,
                         label="Model #%d" % (1+self.nfit))
 
     def onSelectFit(self, evt=None):
