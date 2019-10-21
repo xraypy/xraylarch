@@ -100,6 +100,8 @@ def make_user_larchdirs():
         if not exists(dname):
             try:
                 os.mkdir(dname)
+            except PermissionError:
+                print("no permission to create directory ", dname)
             except (OSError, TypeError):
                 print(sys.exc_info()[1])
 
