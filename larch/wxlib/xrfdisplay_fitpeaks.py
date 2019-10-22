@@ -154,16 +154,10 @@ class FitSpectraFrame(wx.Frame):
         bpanel = wx.Panel(self)
         self.SetBackgroundColour((235, 235, 235))
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.wids['show_components'] = Check(bpanel, label='Show All Components',
-                                             default=False)
-        self.wids['fit_message'] = SimpleText(bpanel, '  ', size=(200, -1))
-
-        bsizer.Add(Button(bpanel, 'Calculate Model',
+        bsizer.Add(Button(bpanel, 'Calculate Model', size=(200, -1),
                           action=self.onShowModel), 0, LEFT)
-        bsizer.Add(Button(bpanel, 'Fit Model',
+        bsizer.Add(Button(bpanel, 'Fit Model', size=(200, -1),
                           action=self.onFitModel), 0, LEFT)
-        bsizer.Add(self.wids['show_components'], 0, LEFT)
-        bsizer.Add(self.wids['fit_message'], 0, LEFT)
 
         pack(bpanel, bsizer)
         sizer.Add(bpanel, 0, CEN)
@@ -508,24 +502,22 @@ class FitSpectraFrame(wx.Frame):
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
                                              colour=self.colors.title, style=LCEN)
 
-        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+1),
-                                       colour=self.colors.title, style=LCEN)
-
-        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
-                                       font=Font(FONTSIZE+1), colour=self.colors.title,
-                                       style=LCEN)
+        wids['fitlabel_lab'] = SimpleText(panel, ' Fit Label: ')
+        wids['fitlabel_txt'] = wx.TextCtrl(panel, -1, ' ', size=(150, -1))
+        wids['fitlabel_btn'] = Button(panel, 'Set Label',  size=(150, -1),
+                                      action=self.onChangeFitLabel)
 
         opts = dict(default=False, size=(175, -1), action=self.onPlot)
-        wids['plot_comps'] = Check(panel, label='Show All components?', **opts)
-        self.plot_choice = Button(panel, 'Plot Selected Fit',
-                                  size=(175, -1), action=self.onPlot)
+        wids['plot_comps'] = Check(panel, label='Show Components?', **opts)
+        self.plot_choice = Button(panel, 'Plot',
+                                  size=(150, -1), action=self.onPlot)
 
-        self.save_result = Button(panel, 'Save Selected Model',
-                                  size=(175, -1), action=self.onSaveFitResult)
+        self.save_result = Button(panel, 'Save Model',
+                                  size=(150, -1), action=self.onSaveFitResult)
         SetTip(self.save_result, 'save model and result to be loaded later')
 
         self.export_fit  = Button(panel, 'Export Fit',
-                                  size=(175, -1), action=self.onExportFitResult)
+                                  size=(150, -1), action=self.onExportFitResult)
         SetTip(self.export_fit, 'save arrays and results to text file')
 
         irow = 0
@@ -533,15 +525,16 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
 
         irow += 1
-        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
+        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
+        sizer.Add(self.export_fit,    (irow, 1), (1, 1), LCEN)
+        sizer.Add(self.plot_choice,   (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['plot_comps'], (irow, 3), (1, 1), LCEN)
 
         irow += 1
-        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.export_fit,    (irow, 1), (1, 2), LCEN)
-        irow += 1
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['plot_comps'], (irow, 1), (1, 3), LCEN)
+        sizer.Add(wids['fitlabel_lab'], (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['fitlabel_txt'], (irow, 1), (1, 1), LCEN)
+        sizer.Add(wids['fitlabel_btn'], (irow, 2), (1, 2), LCEN)
+
 
         irow += 1
         sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
@@ -553,7 +546,7 @@ class FitSpectraFrame(wx.Frame):
 
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn('  Fit #', width=65)
+        sview.AppendTextColumn('  Fit Label', width=90)
         sview.AppendTextColumn(' N_vary', width=65)
         sview.AppendTextColumn(' N_eval', width=65)
         sview.AppendTextColumn(' \u03c7\u00B2', width=125)
@@ -882,7 +875,7 @@ class FitSpectraFrame(wx.Frame):
 
     def onShowModel(self, event=None):
         self.build_model()
-        self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
+        self.plot_model(init=True, with_comps=True)
 
     def onFitIteration(self, iter=0, pars=None):
         pass
@@ -893,21 +886,33 @@ class FitSpectraFrame(wx.Frame):
         self.build_model()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         xrfmod.iter_callback = self.onFitIteration
-        # self.wids['fit_message'].SetLabel("Fit beginning... ")
         fit_script = xrfmod_fitscript.format(group=self.mcagroup,
                                              emin=self.wids['en_min'].GetValue(),
                                              emax=self.wids['en_max'].GetValue())
 
         self._larch.eval(fit_script)
         self.model_script = "%s\n%s" % (self.model_script, fit_script)
+        xrfmod.script = self.model_script
 
-        xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
-        self._larch.symtable.get_symbol('_xrfmodel.result').script = self.model_script
+        # xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
+        fitresult = self._larch.symtable.get_symbol('_xrfmodel.result')
+        dgroup = self._larch.symtable.get_group(self.mcagroup)
+        result = Group(script=self.model_script,
+                       label="fit %d" % (1+len(dgroup.fit_history)),
+                       fitresult=fitresult)
+        for attr in ('params', 'var_names', 'chisqr', 'redchi',
+                     'nvarys', 'nfev', 'ndata', 'aic', 'bic'):
+            setattr(result, attr, getattr(fitresult, attr))
 
-        append_hist ="{group:s}.fit_history.append(_xrfmodel.result)"
-        self._larch.eval(append_hist.format(group=self.mcagroup))
+        for attr in ('fit_report', 'count_time', 'energy_min', 'energy_max',
+                     'xray_energy', 'comps', 'eigenvalues', 'transfer_matrix'):
+            setattr(result, attr, getattr(xrfmod, attr))
 
-        self.plot_model(init=True, with_comps=self.wids['show_components'].IsChecked())
+        # append_hist = "{group:s}.fit_history.append(_xrfmodel.result)"
+        # self._larch.eval(append_hist.format(group=self.mcagroup))
+        dgroup.fit_history.append(result)
+
+        self.plot_model(init=True, with_comps=True)
         # self.wids['fit_message'].SetLabel("Fit complete.")
         for i in range(len(self.nb.pagelist)):
             if 'Results' in self.nb.GetPageText(i):
@@ -925,7 +930,9 @@ class FitSpectraFrame(wx.Frame):
                          wildcard=ModelWcards)
         if sfile is not None:
             result = self.get_fitresult()
-            # save_modelresult(result, sfile)
+            with open(sfile, 'w') as fh:
+                fh.write(json.dumps(encode4js(result)))
+                fh.write('\n')
 
     def onExportFitResult(self, event=None):
         mca = self.mca
@@ -933,10 +940,9 @@ class FitSpectraFrame(wx.Frame):
         wcards = 'All files (*.*)|*.*'
 
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
-        result = self.get_fitresult()
         if outfile is not None:
-            print("Export model", outfile)
-
+            result = self.get_fitresult()
+            print("Export model", outfile, result)
 
     def get_fitresult(self, nfit=None):
         if nfit is None:
@@ -948,13 +954,20 @@ class FitSpectraFrame(wx.Frame):
 
         return self.fit_history[self.nfit]
 
+    def onChangeFitLabel(self, event=None):
+        label = self.rwids['fitlabel_txt'].GetValue()
+        result = self.get_fitresult()
+        result.label = label
+        self.show_results()
+
     def onPlot(self, event=None):
         result = self.get_fitresult()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         with_comps = self.rwids['plot_comps'].IsChecked()
-        spect = xrfmod.calc_spectrum(self.mca.energy_ev, params=result.params)
+        spect = xrfmod.calc_spectrum(self.mca.energy_ev,
+                                     params=result.params)
         self.plot_model(model_spectrum=spect, with_comps=with_comps,
-                        label="Model #%d" % (1+self.nfit))
+                        label=result.label)
 
     def onSelectFit(self, evt=None):
         if self.rwids['stats'] is None:
@@ -1012,7 +1025,7 @@ class FitSpectraFrame(wx.Frame):
         cur = self.get_fitresult()
         self.rwids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
-            args = ['%2.2d' % (i+1)]
+            args = [res.label]
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
@@ -1022,6 +1035,7 @@ class FitSpectraFrame(wx.Frame):
                 args.append(val)
             self.rwids['stats'].AppendItem(tuple(args))
         self.rwids['data_title'].SetLabel(self.mca.filename)
+        self.rwids['fitlabel_txt'].SetValue(cur.label)
         self.show_fitresult(nfit=0)
 
     def show_fitresult(self, nfit=0, mca=None):
@@ -1030,9 +1044,8 @@ class FitSpectraFrame(wx.Frame):
         result = self.get_fitresult(nfit=nfit)
 
         self.rwids['data_title'].SetLabel(self.mca.filename)
-        self.rwids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.fit_history)))
         self.result = result
-
+        self.rwids['fitlabel_txt'].SetValue(result.label)
         self.rwids['params'].DeleteAllItems()
         self.rwids['paramsdata'] = []
         for param in reversed(result.params.values()):
