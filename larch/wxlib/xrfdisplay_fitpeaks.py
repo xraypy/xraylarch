@@ -9,6 +9,7 @@ from collections import OrderedDict
 
 from threading import Thread
 
+import json
 import numpy as np
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
@@ -34,6 +35,7 @@ from .periodictable import PeriodicTablePanel
 from larch import Group
 
 from ..xrf import xrf_background
+from ..utils.jsonutils import encode4js, decode4js
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -898,10 +900,12 @@ class FitSpectraFrame(wx.Frame):
         fitresult = self._larch.symtable.get_symbol('_xrfmodel.result')
         dgroup = self._larch.symtable.get_group(self.mcagroup)
         result = Group(script=self.model_script,
-                       label="fit %d" % (1+len(dgroup.fit_history)),
-                       fitresult=fitresult)
+                       label="fit %d" % (1+len(dgroup.fit_history)))
+
         for attr in ('params', 'var_names', 'chisqr', 'redchi',
-                     'nvarys', 'nfev', 'ndata', 'aic', 'bic'):
+                     'nvarys', 'nfev', 'ndata', 'aic', 'bic', 'aborted',
+                     'covar', 'ier', 'message', 'method', 'nfree',
+                     'init_values', 'success', 'residual'):
             setattr(result, attr, getattr(fitresult, attr))
 
         for attr in ('fit_report', 'count_time', 'energy_min', 'energy_max',
@@ -930,6 +934,8 @@ class FitSpectraFrame(wx.Frame):
                          wildcard=ModelWcards)
         if sfile is not None:
             result = self.get_fitresult()
+            print("Get Fit Result ", result)
+            print(dir(result))
             with open(sfile, 'w') as fh:
                 fh.write(json.dumps(encode4js(result)))
                 fh.write('\n')
