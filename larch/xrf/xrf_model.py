@@ -558,7 +558,10 @@ class XRF_Model:
         # calculate transfer matrix for linear analysis using this model
         tmat= []
         for key, val in self.comps.items():
-            tmat.append(val / self.eigenvalues[key])
+            arr = val / self.eigenvalues[key]
+            floor = 1.e-12*max(arr)
+            arr[np.where(arr<floor)] = 0.0
+            tmat.append(arr)
         self.transfer_matrix = np.array(tmat).transpose()
 
     def apply_model(self, spectrum):
