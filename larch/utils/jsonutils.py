@@ -113,7 +113,19 @@ def decode4js(obj, grouplist=None):
         out = {}
         for key, val in obj.items():
             out[key] = decode4js(val, grouplist)
-    elif classname in _groups:
+    elif classname in ('Parameter', 'parameter'):
+        out = {}
+        extras = {}
+        for key, val in obj.items():
+            if key in ('name', 'value', 'vary', 'min', 'max', 'expr'):
+                out[key] = decode4js(val, grouplist)
+            else:
+                extras[key] = decode4js(val, grouplist)
+        out = Parameter(**out)
+        for key, val in extras.items():
+            setattr(out, key, val)
+
+    elif classname in ('Group', 'group'):
         out = {}
         for key, val in obj.items():
             if (isinstance(val, dict) and
@@ -122,6 +134,6 @@ def decode4js(obj, grouplist=None):
                 pass  # ignore class methods for subclassed Groups
             else:
                 out[key] = decode4js(val, grouplist)
-        out = _groups[classname](**out)
+        out = Group(**out)
 
     return out
