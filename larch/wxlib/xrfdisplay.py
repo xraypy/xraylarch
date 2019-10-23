@@ -103,7 +103,6 @@ class XRFDisplayFrame(wx.Frame):
             self.larch = self.larch_buffer.larchshell
             self.init_larch()
 
-        self._mcagroup = self.larch.symtable.new_group('_xrfdata')
         self.exit_callback = exit_callback
         self.roi_patch = None
         self.selected_roi = None
@@ -146,8 +145,6 @@ class XRFDisplayFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         if mca_file is not None:
             self.mca = gsemca_group(mca_file, _larch=self.larch)
-            self._mcagroup.mca1 = self.mca
-            self._mcagroup.mca2 = None
             self.plotmca(self.mca, show_mca2=False)
 
     def ignoreEvent(self, event=None):
@@ -1072,10 +1069,10 @@ class XRFDisplayFrame(wx.Frame):
     def plotmca(self, mca, title=None, set_title=True, as_mca2=False,
                 fullrange=False, init=False, **kws):
         if as_mca2:
-            self._mcagroup.mca2 = self.mca2 = mca
+            self.mca2 = mca
             kws['new'] = False
         else:
-            self._mcagroup.mca1 = self.mca = mca
+            self.mca = mca
             self.panel.conf.show_grid = False
         xview_range = self.panel.axes.get_xlim()
 
@@ -1258,9 +1255,6 @@ class XRFDisplayFrame(wx.Frame):
             self.mca2 = copy.deepcopy(self.mca)
 
         self.mca = gsemca_group(fnew, _larch=self.larch)
-
-        setattr(self._mcagroup, 'mca1', self.mca)
-        setattr(self._mcagroup, 'mca2', self.mca2)
         self.plotmca(self.mca, show_mca2=True)
 
     def onReadGSEXRMFile(self, event=None, **kws):
@@ -1327,7 +1321,7 @@ class XRFDisplayFrame(wx.Frame):
         try:
             self.win_fit.Raise()
         except:
-            self.win_fit = FitSpectraFrame(self, mca='mca1')
+            self.win_fit = FitSpectraFrame(self)
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""

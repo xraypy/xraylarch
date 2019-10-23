@@ -34,7 +34,7 @@ from .periodictable import PeriodicTablePanel
 
 from larch import Group
 
-from ..xrf import xrf_background
+from ..xrf import xrf_background, MCA
 from ..utils.jsonutils import encode4js, decode4js
 
 def read_filterdata(flist, _larch):
@@ -107,6 +107,8 @@ for atsym in {elemlist:s}:
 #endfor
 """
 
+XRFGROUP = '_xrfdata'
+
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
@@ -117,22 +119,33 @@ class FitSpectraFrame(wx.Frame):
                         'argon', 'silicon nitride', 'pmma', 'silicon',
                         'quartz', 'sapphire', 'graphite', 'boron nitride']
 
-    def __init__(self, parent, mca='mca1', size=(600, 775)):
+    def __init__(self, parent, size=(600, 775)):
         self.parent = parent
         self._larch = parent.larch
-        if not self._larch.symtable.has_group('_xrfdata'):
-            self._larch.symtable.create_group('_xrfdata')
-        self.mcagroup = "_xrfdata.%s" % mca
-        self.mca = self._larch.symtable.get_group(self.mcagroup)
+        if not self._larch.symtable.has_group(XRFGROUP):
+            self._larch.symtable.new_group(XRFGROUP)
+        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
+        for i in range(1, 1000):
+            mcaname = 'mca%3.3d' % (i)
+            if not hasattr(xrfgroup, mcaname):
+                break
+        self.mcagroup = '%s.%s' % (XRFGROUP, mcaname)
+        self.mca = MCA()
+        for attr in ('__name__', 'filename', 'incident_energy', 'live_time',
+                     'real_time', 'slope', 'quad', 'offset'):
+            setattr(self.mca, attr, getattr(self.parent.mca, attr, None))
+        for attr in ('counts', 'energy', 'raw'):
+            setattr(self.mca, attr, 1.0*getattr(self.parent.mca, attr, None))
+        for attr in ('header', 'bad', 'mcas', 'rois', 'environ'):
+            setattr(self.mca, attr, copy.copy(getattr(self.parent.mca, attr, None)))
+
+        setattr(xrfgroup, mcaname, self.mca)
 
         efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
         self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
 
         self.fit_history = getattr(self.mca, 'fit_history', [])
         self.nfit = 0
-        self.conf = {}
-
-        self.paramgroup = Group()
         self.colors = GUIColors()
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
