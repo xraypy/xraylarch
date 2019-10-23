@@ -24,7 +24,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT, FileSave, GUIColors, RCEN, LCEN, FRAMESTYLE,
                      BitmapButton, SetTip, GridPanel,
-                     FloatSpinWithPin, get_icon)
+                     FloatSpinWithPin, get_icon, fix_filename)
 
 from . import FONTSIZE
 from xraydb import material_mu, xray_edge
@@ -928,27 +928,39 @@ class FitSpectraFrame(wx.Frame):
         self.Destroy()
 
     def onSaveFitResult(self, event=None):
-        deffile = self.mca.filename.replace('.', '_') + 'xrf.modl'
+        result = self.get_fitresult()
+        deffile = self.mca.filename + '_' + result.label
+        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.modl'
         ModelWcards = "XRF Models(*.modl)|*.modl|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
                          wildcard=ModelWcards)
         if sfile is not None:
-            result = self.get_fitresult()
-            print("Get Fit Result ", result)
-            print(dir(result))
             with open(sfile, 'w') as fh:
                 fh.write(json.dumps(encode4js(result)))
                 fh.write('\n')
 
     def onExportFitResult(self, event=None):
-        mca = self.mca
-        deffile = self.mca.filename.replace('.', '_') + '.xdi'
-        wcards = 'All files (*.*)|*.*'
+        result = self.get_fitresult()
+        deffile = self.mca.filename + '_' + result.label
+        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.xdi'
 
+        wcards = 'All files (*.*)|*.*'
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
         if outfile is not None:
-            result = self.get_fitresult()
             print("Export model", outfile, result)
+            print(dir(result))
+            buff = ['# XRF Fit %s: %s' % (self.mca.filename, result.label),
+                    '## Fit Script:']
+            for a in result.script.split('\n'):
+                buff.append('#   %s' % a)
+            buff.append('## Fit Report:')
+            for a in result.fit_report.split('\n'):
+                buff.append('#   %s' % a)
+
+            buff.append('\n')
+            with open(outfile, 'w') as fh:
+                fh.write('\n'.join(buff))
+
 
     def get_fitresult(self, nfit=None):
         if nfit is None:
