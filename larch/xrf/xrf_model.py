@@ -6,19 +6,14 @@ from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
 
-try:
-    import pint
-    HAS_PINT = True
-except ImportError:
-    HAS_PINT = False
-
 from xraydb import (material_mu, mu_elam, ck_probability,
                     xray_edges, xray_lines, xray_line)
 from xraydb.xray import XrayLine
 
+from .. import Group
 from ..math import index_of, interp, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
-from ..utils.jsonutils import encode4js, decode4js
+from ..utils import group2dict, json_dump
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
 xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step', 'tail',
@@ -30,6 +25,7 @@ xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step', 'tail'
 #
 # For many XRF Analysis needs, energies are in keV
 ####
+HAS_PINT = False
 def is_pint_quantity(val):
     return HAS_PINT and isinstance(val, pint.quantity._Quantity)
 
@@ -583,51 +579,44 @@ class XRF_Model:
 
         return xrf_prediction(weights, prediction)
 
-    def save(self, fname=None):
-        """save XRF model and result in a manner that can be loaded later"""
+    def compile_fitresults(self, label='fit result', script='# noscript'):
+        """a simple compilation of fit settings results
+        to be able to easily save and inspect"""
+        out = Group(label=label, script=script)
+        for attr in ('params', 'var_names', 'chisqr', 'redchi', 'nvarys',
+                     'nfev', 'ndata', 'aic', 'bic', 'aborted', 'covar', 'ier',
+                     'message', 'method', 'nfree', 'init_values', 'success',
+                     'residual', 'errorbars', 'lmdif_message', 'nfree'):
+            setattr(out, attr, getattr(self.result, attr))
 
-        result_attrs = ('aborted', 'aic', 'bic', 'chisqr', 'covar',
-                        'errorbars', 'ier', 'init_vals', 'init_values',
-                        'lmdif_message', 'message', 'method', 'ndata',
-                        'nfev', 'nfree', 'nvarys', 'redchi',
-                        'residual', 'success', 'var_names')
-        result = {attr: getattr(self.result, attr) for attr in result_attrs}
-        result['params'] = self.result.params.dumps()
-
-        #
-        elem_attrs = ('all_lines', 'edges', 'fyields', 'lines',
-                      'mu', 'symbol', 'xray_energy')
-        elements = []
-        for el in self.elements:
-            elements.append({attr: getattr(el, attr) for attr in elem_attrs})
-
-
-        mater_attrs = ('efano', 'material', 'mu_photo', 'mu_total',
-                       'noise', 'thickness')
-        detector = {attr: getattr(self.detector, attr) for attr in mater_attrs}
-
-        filters = []
-        for ft in self.filters:
-            filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
-
-
-        out = dict(result=result, elements=elements,
-                   detector=detector, filters=filters,
-                   params=self.params.dumps())
         for attr in ('atten', 'best_en', 'best_fit', 'bgr', 'comps', 'count_time',
                      'eigenvalues', 'energy_max', 'energy_min', 'fit_iter', 'fit_log',
                      'fit_report', 'fit_toler', 'fit_weight', 'fit_window', 'init_fit',
                      'scatter', 'script', 'transfer_matrix', 'xray_energy'):
-            out[attr] = getattr(self, attr)
+            setattr(out, attr, getattr(self, attr))
 
-        out = json.dumps(encode4js(out))
+        elem_attrs = ('all_lines', 'edges', 'fyields', 'lines', 'mu',
+                      'symbol', 'xray_energy')
+        out.elements = []
+        for el in self.elements:
+            out.elements.append({attr: getattr(el, attr) for attr in elem_attrs})
 
+        mater_attrs = ('efano', 'material', 'mu_photo', 'mu_total', 'noise',
+                       'thickness')
+        out.detector = {attr: getattr(self.detector, attr) for attr in mater_attrs}
+        out.filters = []
+        for ft in self.filters:
+            out.filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
+        return out
+
+    def save(self, fname=None):
+        """save XRF model and result in a manner that can be loaded later"""
+        result = group2dict(self.compile_fitresults())
+        result['params'] = result.pop('params').dumps()
         if fname is not None:
-            with open(fname, 'w') as fh:
-                fh.write(out)
-                fh.write("\n")
+            json_dump(result, filename=fname)
         else:
-            return out
+            return result
 
     def load(self, s):
         """load a saved XRF model from a string (json)"""
@@ -635,8 +624,7 @@ class XRF_Model:
 
     def export(self, fname):
         """save result to text file"""
-        pass
-
+        result = group2dict(self.compile_fitresults())
 
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
