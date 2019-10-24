@@ -47,11 +47,13 @@ def read_filterdata(flist, _larch):
             out[name]  = materials[name]
     return out
 
-def VarChoice(p, default=0):
+def VarChoice(p, default=0, size=(75, -1)):
     return Choice(p, choices=['Fix', 'Vary'],
-                  size=(70, -1), default=default)
+                  size=size, default=default)
 
 NFILTERS = 4
+MATRIX_LAYERNAMES = ('top', 'middle', 'bottom')
+
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
 EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
@@ -93,6 +95,7 @@ _xrfresult = _xrfmodel.compile_fitresults()
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
+xrfmod_matrix = "_xrfmodel.add_matrix_layer('{name:s}', {thick:.5f}, density={density:.5f})"
 
 xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
              group={group:s}, width={bgr_wid:.2f}, exponent={bgr_exp:.2f})
@@ -165,9 +168,10 @@ class FitSpectraFrame(wx.Frame):
         self.wids = {}
         self.result_frame = None
         self.panels = {}
-        self.panels['Beam, Detector, Filters'] = self.beamdet_page
+        self.panels['Beam and Detector']  = self.beamdet_page
+        self.panels['Filters and Matrix'] = self.materials_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
-        self.panels['Fit Results'] = self.fitresult_page
+        self.panels['Fit Results']        = self.fitresult_page
 
         self.nb = flatnotebook(self, self.panels)
 
@@ -339,10 +343,8 @@ class FitSpectraFrame(wx.Frame):
         pileup_amp = getattr(mca, 'pileup_amp', 0.010)
 
         wids = self.wids
-        main = wx.Panel(self)
-
-        pdet = GridPanel(main, itemstyle=LEFT)
-        pflt = GridPanel(main, itemstyle=LEFT)
+        # main = wx.Panel(self)
+        pdet = GridPanel(self, itemstyle=LEFT)
 
         def addLine(pan):
             pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
@@ -468,22 +470,35 @@ class FitSpectraFrame(wx.Frame):
         addLine(pdet)
         pdet.pack()
 
+        # sizer = wx.BoxSizer(wx.VERTICAL)
+        # sizer.Add(pdet)
+        # pack(main, sizer)
+        return pdet
+
+    def materials_page(self, **kws):
+        "filters and matrix settings"
+        conf = self.parent.conf
+        wids = self.wids
+
+        pan = GridPanel(self, itemstyle=LEFT)
+
         # filters section
-        bx = Button(pflt, 'Customize Filter List', size=(150, -1),
+        bx = Button(pan, 'Customize Materials List', size=(150, -1),
                     action = self.onEditFilters)
-        # bx.Disable()
-        pflt.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
-        pflt.Add(bx, dcol=3)
-        pflt.AddManyText(('    filter', 'material',
-                        'thickness (mm)', 'vary thickness'), style=CEN, newrow=True)
-        opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
+        bx.Disable()
+        pan.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
+        pan.Add(bx, dcol=3)
+        pan.AddManyText(('  Filter #', 'Material',
+                         'Thickness (mm)',
+                         'Vary Thickness'), style=CEN, newrow=True)
+        opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.005)
         for i in range(1, NFILTERS+1):
             t = 'filt%d' % i
-            wids['%s_mat'%t] = Choice(pflt, choices=self.Filter_Materials, default=0,
-                                      size=(125, -1),
+            wids['%s_mat'%t] = Choice(pan, choices=self.Filter_Materials, default=0,
+                                      size=(250, -1),
                                       action=partial(self.onFilterMaterial, index=i))
-            wids['%s_thk'%t] = FloatSpin(pflt, value=0.0, **opts)
-            wids['%s_var'%t] = VarChoice(pflt, default=0)
+            wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
+            wids['%s_var'%t] = VarChoice(pan, default=0)
             if i == 1: # first selection
                 wids['%s_mat'%t].SetStringSelection('beryllium')
                 wids['%s_thk'%t].SetValue(0.0250)
@@ -497,19 +512,32 @@ class FitSpectraFrame(wx.Frame):
                 wids['%s_mat'%t].SetStringSelection('aluminum')
                 wids['%s_thk'%t].SetValue(0.00)
 
-            pflt.AddText('     %i' % (i), newrow=True)
-            pflt.Add(wids['%s_mat' % t])
-            pflt.Add(wids['%s_thk' % t])
-            pflt.Add(wids['%s_var' % t])
+            pan.AddText('    %i  ' % (i), newrow=True)
+            pan.Add(wids['%s_mat' % t])
+            pan.Add(wids['%s_thk' % t])
+            pan.Add(wids['%s_var' % t])
 
-        addLine(pflt)
-        pflt.pack()
+        pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(pdet)
-        sizer.Add(pflt)
-        pack(main, sizer)
-        return main
+        pan.AddText(' Matrix Layers:', colour='#880000', dcol=2, newrow=True)
+        pan.AddManyText(('  Layer', 'Material',
+                         'thickness (mm)', 'density'), style=CEN, newrow=True)
+        opts = dict(size=(100, -1), min_val=0,  digits=4, increment=0.005)
+        for layer in MATRIX_LAYERNAMES:
+            t = 'matrix_%s' % layer
+            wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(250, -1))
+            wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
+            wids['%s_den'%t] = FloatSpin(pan, value=1.0, **opts)
+
+            pan.AddText('     %s' % (layer), style=LCEN, newrow=True)
+            pan.Add(wids['%s_mat' % t])
+            pan.Add(wids['%s_thk' % t])
+            pan.Add(wids['%s_den' % t])
+
+        pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+
+        pan.pack()
+        return pan
 
     def fitresult_page(self, **kws):
         sizer = wx.GridBagSizer(10, 5)
@@ -808,6 +836,14 @@ class FitSpectraFrame(wx.Frame):
                 script.append(xrfmod_filter.format(name=f_mat,
                                                    thick=opts['%s_thk'%t],
                                                    vary=opts['%s_var'%t]))
+
+        for layer in MATRIX_LAYERNAMES:
+            t = 'matrix_%s' % layer
+            m_mat = opts['%s_mat'%t].strip()
+            if len(m_mat) > 0 and int(1e6*opts['%s_thk'%t]) > 1:
+                script.append(xrfmod_matrix.format(name=m_mat,
+                                                   thick=opts['%s_thk'%t],
+                                                   density=opts['%s_den'%t]))
 
         if opts.get('bgr_use', False) in ('True', True):
             bwid = self.wids['bgr_width'].GetValue()/1000.0
