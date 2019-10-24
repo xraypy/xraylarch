@@ -380,13 +380,13 @@ class XRF_Model:
         """
         atten = 1.0
         if len(self.matrix_layers) > 0:
-            ixray_en = index_of(self.xray_energy, energy)
-            mat_atten = 0
+            ixray_en = index_of(energy, self.xray_energy)
+            matrix_atten = 0
             for m in reversed(self.matrix_layers):
-                layer_trans = m.transmission(energy)# transmission (all energeies) through layer
-                inx_trans   = layer_atten[ixray_en] # in beam transmission to lower layers
-                inx_absorb  = 1 - inx_trans         # in beam absorption by layer
-                mat_atten = layer_trans * (inx_absorb + inx_trans + mat_atten)
+                layer_trans = m.transmission(energy)# transmission through layer
+                incid_trans = layer_trans[ixray_en] # incident beam trans to lower layers
+                incid_absor = 1.0 - incid_trans     # incident beam absorption by layer
+                matrix_atten = layer_trans * (incid_absor + incid_trans + matrix_atten)
             atten *= matrix_atten
         self.matrix_atten = atten
 
@@ -607,6 +607,9 @@ class XRF_Model:
         out.filters = []
         for ft in self.filters:
             out.filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
+        out.matrix_layers = []
+        for m in self.matrix_layers:
+            out.matrix_layers.append({attr: getattr(m, attr) for attr in mater_attrs})
         return out
 
     def save(self, fname=None):
