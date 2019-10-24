@@ -949,8 +949,7 @@ class FitSpectraFrame(wx.Frame):
     def onExportFitResult(self, event=None):
         result = self.get_fitresult()
         deffile = self.mca.filename + '_' + result.label
-        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.xdi'
-
+        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.txt'
         wcards = 'All files (*.*)|*.*'
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
         if outfile is not None:
