@@ -4,6 +4,8 @@ from datetime import datetime
 from collections import OrderedDict
 import numpy as np
 import copy
+import json
+
 from .paths import uname, bindir, nativepath, get_homedir
 from .debugtime import debugtime, debugtimer
 
@@ -14,6 +16,7 @@ from .strutils import (fixName, isValidName, isNumber, bytes2str,
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
 
+
 def group2dict(group, _larch=None):
     "return dictionary of group members"
     return group.__dict__
@@ -21,7 +24,6 @@ def group2dict(group, _larch=None):
 def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
-
 
 def copy_group(group, _larch=None):
     from larch import Group
@@ -42,6 +44,15 @@ def isotime(t=None, with_tzone=False):
         sout = "%s-%2.2i:00" % (sout, time.timezone/3600)
     return sout
 
+def json_dump(data, filename):
+    """dump object or group to file using json
+    """
+    from .jsonutils import encode4js
+    with open(filename, 'w') as fh:
+        fh.write(json.dumps(encode4js(data)))
+        fh.write('\n')
+
+
 def _larch_init(_larch):
     """initialize xrf"""
     from ..symboltable import Group
@@ -54,4 +65,5 @@ _larch_builtins = dict(copy=_copy, deepcopy=_deepcopy, more= _more,
                        parent=_parent, ls=_ls, mkdir=_mkdir, cd=_cd,
                        cwd=_cwd, group2dict=group2dict,
                        copy_group=copy_group, dict2group=dict2group,
-                       debugtimer=debugtimer, isotime=isotime)
+                       debugtimer=debugtimer, isotime=isotime,
+                       json_dump=json_dump)
