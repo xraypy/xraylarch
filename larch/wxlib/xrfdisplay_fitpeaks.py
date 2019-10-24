@@ -89,6 +89,7 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
 
 xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
                 energy_min={emin:.2f}, energy_max={emax:.2f})
+_xrfresult = _xrfmodel.compile_fitresults()
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
@@ -96,6 +97,12 @@ xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={v
 xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
              group={group:s}, width={bgr_wid:.2f}, exponent={bgr_exp:.2f})
 _xrfmodel.add_background({group:s}.bgr, vary=False)
+"""
+
+xrfmod_jsondump  = """# save xrf model to json
+_o = copy(group2dict({group:s}.fit_history[{nfit:d}]))
+_o['params'] = _o.pop('params').dumps()
+json_dump(_o, '{filename:s}')
 """
 
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.5f}, vary={vary:s})"
@@ -123,12 +130,13 @@ class FitSpectraFrame(wx.Frame):
         self.parent = parent
         self._larch = parent.larch
         if not self._larch.symtable.has_group(XRFGROUP):
-            self._larch.symtable.new_group(XRFGROUP)
+            self._larch.eval("%s = group()" % XRFGROUP)
         xrfgroup = self._larch.symtable.get_group(XRFGROUP)
         for i in range(1, 1000):
             mcaname = 'mca%3.3d' % (i)
             if not hasattr(xrfgroup, mcaname):
                 break
+
         self.mcagroup = '%s.%s' % (XRFGROUP, mcaname)
         self.mca = MCA()
         for attr in ('__name__', 'filename', 'incident_energy', 'live_time',
@@ -906,31 +914,16 @@ class FitSpectraFrame(wx.Frame):
                                              emax=self.wids['en_max'].GetValue())
 
         self._larch.eval(fit_script)
-        self.model_script = "%s\n%s" % (self.model_script, fit_script)
-        xrfmod.script = self.model_script
-
-        # xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
-        fitresult = self._larch.symtable.get_symbol('_xrfmodel.result')
         dgroup = self._larch.symtable.get_group(self.mcagroup)
-        result = Group(script=self.model_script,
-                       label="fit %d" % (1+len(dgroup.fit_history)))
+        xrfresult = self._larch.symtable.get_symbol('_xrfresult')
 
-        for attr in ('params', 'var_names', 'chisqr', 'redchi',
-                     'nvarys', 'nfev', 'ndata', 'aic', 'bic', 'aborted',
-                     'covar', 'ier', 'message', 'method', 'nfree',
-                     'init_values', 'success', 'residual'):
-            setattr(result, attr, getattr(fitresult, attr))
+        xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
+        xrfresult.label = "fit %d" % (1+len(dgroup.fit_history))
 
-        for attr in ('fit_report', 'count_time', 'energy_min', 'energy_max',
-                     'xray_energy', 'comps', 'eigenvalues', 'transfer_matrix'):
-            setattr(result, attr, getattr(xrfmod, attr))
-
-        # append_hist = "{group:s}.fit_history.append(_xrfmodel.result)"
-        # self._larch.eval(append_hist.format(group=self.mcagroup))
-        dgroup.fit_history.append(result)
+        append_hist = "{group:s}.fit_history.append(_xrfresult)"
+        self._larch.eval(append_hist.format(group=self.mcagroup))
 
         self.plot_model(init=True, with_comps=True)
-        # self.wids['fit_message'].SetLabel("Fit complete.")
         for i in range(len(self.nb.pagelist)):
             if 'Results' in self.nb.GetPageText(i):
                 self.nb.SetSelection(i)
@@ -942,15 +935,16 @@ class FitSpectraFrame(wx.Frame):
 
     def onSaveFitResult(self, event=None):
         result = self.get_fitresult()
+
         deffile = self.mca.filename + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.modl'
         ModelWcards = "XRF Models(*.modl)|*.modl|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
                          wildcard=ModelWcards)
         if sfile is not None:
-            with open(sfile, 'w') as fh:
-                fh.write(json.dumps(encode4js(result)))
-                fh.write('\n')
+            self._larch.eval(xrfmod_jsondump.format(group=self.mcagroup,
+                                                    nfit=self.nfit,
+                                                    filename=sfile))
 
     def onExportFitResult(self, event=None):
         result = self.get_fitresult()
@@ -960,8 +954,6 @@ class FitSpectraFrame(wx.Frame):
         wcards = 'All files (*.*)|*.*'
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
         if outfile is not None:
-            print("Export model", outfile, result)
-            print(dir(result))
             buff = ['# XRF Fit %s: %s' % (self.mca.filename, result.label),
                     '## Fit Script:']
             for a in result.script.split('\n'):
@@ -970,10 +962,31 @@ class FitSpectraFrame(wx.Frame):
             for a in result.fit_report.split('\n'):
                 buff.append('#   %s' % a)
 
+            buff.append('#')
+            buff.append('########################################')
+
+            labels = ['energy', 'counts', 'best_fit',
+                      'best_energy', 'fit_window',
+                      'fit_weight', 'attenuation']
+            labels.extend(list(result.comps.keys()))
+
+            buff.append('# %s' % (' '.join(labels)))
+
+            npts = len(self.mca.energy)
+            for i in range(npts):
+                dline = [gformat(self.mca.energy[i]),
+                         gformat(self.mca.counts[i]),
+                         gformat(result.best_fit[i]),
+                         gformat(result.best_en[i]),
+                         gformat(result.fit_window[i]),
+                         gformat(result.fit_weight[i]),
+                         gformat(result.atten[i])]
+                for c in result.comps.values():
+                    dline.append(gformat(c[i]))
+                buff.append(' '.join(dline))
             buff.append('\n')
             with open(outfile, 'w') as fh:
                 fh.write('\n'.join(buff))
-
 
     def get_fitresult(self, nfit=None):
         if nfit is None:
@@ -982,7 +995,6 @@ class FitSpectraFrame(wx.Frame):
         self.nfit = max(0, nfit)
         if self.nfit > len(self.fit_history):
             self.nfit = 0
-
         return self.fit_history[self.nfit]
 
     def onChangeFitLabel(self, event=None):
