@@ -27,7 +27,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      FloatSpinWithPin, get_icon, fix_filename)
 
 from . import FONTSIZE
-from xraydb import material_mu, xray_edge
+from xraydb import material_mu, xray_edge, materials
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -119,15 +119,13 @@ for atsym in {elemlist:s}:
 
 XRFGROUP = '_xrfdata'
 
+Filter_Lengths = ['microns', 'mm', 'cm']
+Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
+                    'beryllium', 'aluminum', 'mylar', 'pmma']
+
+
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
-
-    Filter_Lengths = ['microns', 'mm', 'cm']
-
-    Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
-                        'aluminum', 'mylar', 'beryllium', 'diamond',
-                        'argon', 'silicon nitride', 'pmma', 'silicon',
-                        'quartz', 'sapphire', 'graphite', 'boron nitride']
 
     def __init__(self, parent, size=(600, 775)):
         self.parent = parent
@@ -160,10 +158,6 @@ class FitSpectraFrame(wx.Frame):
         self.colors = GUIColors()
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
-
-        if not hasattr(self.parent, 'filters_data'):
-            self.parent.filters_data = read_filterdata(self.Filter_Materials,
-                                                       _larch=self._larch)
 
         self.wids = {}
         self.result_frame = None
@@ -482,20 +476,16 @@ class FitSpectraFrame(wx.Frame):
 
         pan = GridPanel(self, itemstyle=LEFT)
 
-        # filters section
-        bx = Button(pan, 'Customize Materials List', size=(150, -1),
-                    action = self.onEditFilters)
-        bx.Disable()
         pan.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
-        pan.Add(bx, dcol=3)
         pan.AddManyText(('  Filter #', 'Material',
                          'Thickness (mm)',
                          'Vary Thickness'), style=CEN, newrow=True)
-        opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.005)
+        opts = dict(size=(100, -1), min_val=0, digits=5, increment=0.005)
+
         for i in range(1, NFILTERS+1):
             t = 'filt%d' % i
-            wids['%s_mat'%t] = Choice(pan, choices=self.Filter_Materials, default=0,
-                                      size=(250, -1),
+            wids['%s_mat'%t] = Choice(pan, choices=Filter_Materials, default=0,
+                                      size=(150, -1),
                                       action=partial(self.onFilterMaterial, index=i))
             wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
             wids['%s_var'%t] = VarChoice(pan, default=0)
@@ -520,21 +510,69 @@ class FitSpectraFrame(wx.Frame):
         pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
 
         pan.AddText(' Matrix Layers:', colour='#880000', dcol=2, newrow=True)
-        pan.AddManyText(('  Layer', 'Material',
+        pan.AddManyText(('  Layer', 'Material/Formula',
                          'thickness (mm)', 'density'), style=CEN, newrow=True)
-        opts = dict(size=(100, -1), min_val=0,  digits=4, increment=0.005)
         for layer in MATRIX_LAYERNAMES:
             t = 'matrix_%s' % layer
-            wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(250, -1))
+            wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(150, -1))
             wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
             wids['%s_den'%t] = FloatSpin(pan, value=1.0, **opts)
-
+            wids['%s_btn'%t] = Button(pan, 'Use Selected Material', size=(150, -1),
+                                      action=partial(self.onUseCurrentMaterial,
+                                                     layer=layer))
             pan.AddText('     %s' % (layer), style=LCEN, newrow=True)
             pan.Add(wids['%s_mat' % t])
             pan.Add(wids['%s_thk' % t])
             pan.Add(wids['%s_den' % t])
+            pan.Add(wids['%s_btn' % t])
 
         pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+
+        # Materials
+        pan.AddText(' Known Materials:', colour='#880000', dcol=4, newrow=True)
+        bx = Button(pan, 'Update Filter List', size=(150, -1),
+                    action=self.onUpdateFilterList)
+        pan.Add(bx)
+
+        mview = wids['materials'] = dv.DataViewListCtrl(pan, style=DVSTYLE)
+        mview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectMaterial)
+        self.selected_material = ('', '', 1.0)
+
+        mview.AppendTextColumn('Name',      width=150)
+        mview.AppendTextColumn('Formula',   width=325)
+        mview.AppendTextColumn('density',    width=90)
+        mview.AppendToggleColumn('Filter?',  width=50)
+        for col in range(4):
+            this = mview.Columns[col]
+            align = wx.ALIGN_LEFT
+            this.Sortable = True
+            this.Alignment = this.Renderer.Alignment = align
+
+        mview.SetMinSize((625, 175))
+        mview.DeleteAllItems()
+        self.materials_data = []
+        for name, data in materials._read_materials_db().items():
+            formula, density = data
+            mview.AppendItem((name, formula, "%9.6f"%density,
+                              name in Filter_Materials))
+            self.materials_data.append((name, formula, density))
+        pan.Add(mview, dcol=5, newrow=True)
+
+        pan.AddText(' Add Materials:', colour='#880000', dcol=2, newrow=True)
+        wids['newmat_name'] = wx.TextCtrl(pan, value='', size=(150, -1))
+        wids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
+        wids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
+
+        pan.AddText(' Name:', newrow=True)
+        pan.Add(wids['newmat_name'])
+        pan.AddText(' Density:', newrow=False)
+        pan.Add(wids['newmat_dens'])
+        pan.AddText(' Formula:', newrow=True)
+        pan.Add(wids['newmat_form'], dcol=3)
+        bx = Button(pan, 'Add Material', size=(150, -1),
+                    action=self.onAddMaterial)
+        pan.Add(bx)
+
 
         pan.pack()
         return pan
@@ -747,7 +785,10 @@ class FitSpectraFrame(wx.Frame):
 
     def onFilterMaterial(self, evt=None, index=0):
         name = evt.GetString()
-        form, den = self.parent.filters_data.get(name, ('', 0))
+        den = 1.0
+        for  _name, _form, _dens in self.materials_data:
+            if _name == name:
+                den = _dens
         t = 'filt%d' % index
         thick = self.wids['%s_thk'%t]
         if den < 0.1 and thick.GetValue() < 0.1:
@@ -757,8 +798,41 @@ class FitSpectraFrame(wx.Frame):
             thick.SetValue(0.0250)
             thick.SetIncrement(0.005)
 
-    def onEditFilters(self, evt=None):
-        pass # print( 'on Edit Filters ',  evt)
+    def onUseCurrentMaterial(self, evt=None, layer=None):
+        name, formula, density = self.selected_material
+        if layer is not None and len(name)>0:
+            self.wids['matrix_%s_den'% layer].SetValue(density)
+            self.wids['matrix_%s_mat'% layer].SetValue(name)
+
+    def onSelectMaterial(self, evt=None):
+        if self.wids['materials'] is None:
+            return
+        item = self.wids['materials'].GetSelectedRow()
+        if item > -1:
+            self.selected_material = self.materials_data[item]
+
+    def onUpdateFilterList(self, evt=None):
+        flist = ['None']
+        for i in range(len(self.materials_data)):
+            if self.wids['materials'].GetToggleValue(i, 3): # is filter
+                flist.append(self.wids['materials'].GetTextValue(i, 0))
+
+        for i in range(1, NFILTERS+1):
+            t = 'filt%d' % i
+            choice = self.wids['%s_mat'%t]
+            cur = choice.GetStringSelection()
+            choice.Clear()
+            choice.SetChoices(flist)
+            if cur in flist:
+                choice.SetStringSelection(cur)
+            else:
+                choice.SetSelection(0)
+
+    def onAddMaterial(self, evt=None):
+        print( 'on Add Material',  evt)
+        print(self.wids['newmat_name'].GetValue())
+        print(self.wids['newmat_form'].GetValue())
+        print(self.wids['newmat_dens'].GetValue())
 
     def onElemSelect(self, event=None, elem=None):
         self.ptable.tsym.SetLabel('')
