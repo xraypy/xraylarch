@@ -551,17 +551,19 @@ class FitSpectraFrame(wx.Frame):
         mview.SetMinSize((625, 175))
         mview.DeleteAllItems()
         self.materials_data = []
+        self.materials_name = []
         for name, data in materials._read_materials_db().items():
             formula, density = data
             mview.AppendItem((name, formula, "%9.6f"%density,
                               name in Filter_Materials))
             self.materials_data.append((name, formula, density))
+            self.materials_name.append(name)
         pan.Add(mview, dcol=5, newrow=True)
 
         pan.AddText(' Add Materials:', colour='#880000', dcol=2, newrow=True)
         wids['newmat_name'] = wx.TextCtrl(pan, value='', size=(150, -1))
-        wids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
         wids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
+        wids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
 
         pan.AddText(' Name:', newrow=True)
         pan.Add(wids['newmat_name'])
@@ -829,29 +831,28 @@ class FitSpectraFrame(wx.Frame):
                 choice.SetSelection(0)
 
     def onAddMaterial(self, evt=None):
-        print( 'on Add Material',  evt)
-        print(self.wids['newmat_name'].GetValue())
-        print(self.wids['newmat_form'].GetValue())
-        print(self.wids['newmat_dens'].GetValue())
 
         name = self.wids['newmat_name'].GetValue()
         formula = self.wids['newmat_form'].GetValue()
         density = self.wids['newmat_dens'].GetValue()
         add = len(name) > 0 and len(formula)>0
-        if add and name in self.materials:
+        if add and name in self.materials_name:
             add = (Popup(self,
                          "Overwrite definition of '%s'?" % name,
-                         'Re-define material?')==wx.ID_YES)
+                         'Re-define material?',
+                         style=wx.OK|wx.CANCEL)==wx.ID_OK)
             if add:
-                irow = self.materials.index(name)
+                irow = self.materials_name.index(name)
                 self.wids['materials'].DeleteItem(irow)
         if add:
             add_material(name, formula, density)
             self.materials_data.append((name, formula, density))
+            self.materials_name.append(name)
+            #print()
             self.wids['materials'].AppendItem((name, formula,
                                                "%9.6f"%density,
                                                False))
-            self.wids['materials'].SelectRowm(len(self.materials_data))
+
 
     def onElemSelect(self, event=None, elem=None):
         self.ptable.tsym.SetLabel('')
