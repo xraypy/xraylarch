@@ -23,11 +23,11 @@ from lmfit.printfuncs import gformat, CORREL_HEAD
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
                      RIGHT, FileSave, GUIColors, RCEN, LCEN, FRAMESTYLE,
-                     BitmapButton, SetTip, GridPanel,
+                     BitmapButton, SetTip, GridPanel, Popup,
                      FloatSpinWithPin, get_icon, fix_filename)
 
 from . import FONTSIZE
-from xraydb import material_mu, xray_edge, materials
+from xraydb import material_mu, xray_edge, materials, add_material
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -833,6 +833,25 @@ class FitSpectraFrame(wx.Frame):
         print(self.wids['newmat_name'].GetValue())
         print(self.wids['newmat_form'].GetValue())
         print(self.wids['newmat_dens'].GetValue())
+
+        name = self.wids['newmat_name'].GetValue()
+        formula = self.wids['newmat_form'].GetValue()
+        density = self.wids['newmat_dens'].GetValue()
+        add = len(name) > 0 and len(formula)>0
+        if add and name in self.materials:
+            add = (Popup(self,
+                         "Overwrite definition of '%s'?" % name,
+                         'Re-define material?')==wx.ID_YES)
+            if add:
+                irow = self.materials.index(name)
+                self.wids['materials'].DeleteItem(irow)
+        if add:
+            add_material(name, formula, density)
+            self.materials_data.append((name, formula, density))
+            self.wids['materials'].AppendItem((name, formula,
+                                               "%9.6f"%density,
+                                               False))
+            self.wids['materials'].SelectRowm(len(self.materials_data))
 
     def onElemSelect(self, event=None, elem=None):
         self.ptable.tsym.SetLabel('')
