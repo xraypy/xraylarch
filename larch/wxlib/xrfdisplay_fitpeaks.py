@@ -597,8 +597,8 @@ class FitSpectraFrame(wx.Frame):
         SetTip(self.export_fit, 'save arrays and results to text file')
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LCEN)
 
         irow += 1
         sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
@@ -652,14 +652,15 @@ class FitSpectraFrame(wx.Frame):
         pview = wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
-        pview.AppendTextColumn('Refined Value',  width=150)
-        pview.AppendTextColumn('Standard Error', width=150)
-        pview.AppendTextColumn('Info ',          width=150)
+        pview.AppendTextColumn('Refined Value',  width=100)
+        pview.AppendTextColumn('Standard Error', width=100)
+        pview.AppendTextColumn('% Uncertainty', width=100)
+        pview.AppendTextColumn('Initial Value',  width=150)
 
         for col in range(4):
             this = pview.Columns[col]
             align = wx.ALIGN_LEFT
-            if col in (1, 2):
+            if col > 0:
                 align = wx.ALIGN_RIGHT
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
@@ -712,23 +713,31 @@ class FitSpectraFrame(wx.Frame):
         panel.SetupScrolling()
         return panel
 
-
     def composition_page(self, **kws):
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
         wids = self.owids
         title = SimpleText(panel, 'Composition Results', font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
+        wids['data_title2'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
+                                             colour=self.colors.title, style=LCEN)
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-
         cview.AppendTextColumn('  Element ', width=100)
-        cview.AppendTextColumn(' Unscaled Amplitude', width=150)
-        cview.AppendTextColumn(' Scaled Amplitude', width=150)
-        cview.SetMinSize((550, 400))
+        cview.AppendTextColumn(' Unscaled Concentration', width=150)
+        cview.AppendTextColumn(' Scaled Concentration',  width=150)
+        cview.AppendTextColumn(' % Uncertainty',         width=150)
 
+        for col in range(4):
+            this = cview.Columns[col]
+            align = wx.ALIGN_RIGHT
+            if col==0:
+                align = wx.ALIGN_LEFT
+            this.Sortable = True
+            this.Alignment = this.Renderer.Alignment = align
 
-        wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(250, -1),
+        cview.SetMinSize((575, 400))
+        wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
         wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
@@ -736,10 +745,13 @@ class FitSpectraFrame(wx.Frame):
         wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
         wids['comp_apply'] = Button(panel, 'Apply',
                                     action=self.onCompApplyScale)
-        wids['comp_scalevalue'] = FloatCtrl(panel, value=1.0, precision=6, minval=0)
+        wids['comp_scalevalue'] = SimpleText(panel, label='--')
+        wids['comp_save'] = Button(panel, 'Save This Concentration Data',
+                                   size=(200, -1), action=self.onCompSave)
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        sizer.Add(wids['data_title2'], (irow, 2), (1, 5), LCEN)
         irow += 1
         sizer.Add(SimpleText(panel, 'Fit Label:'),  (irow, 0), (1, 1), LCEN)
         sizer.Add(wids['comp_fitlabel'],            (irow, 1), (1, 5), LCEN)
@@ -759,32 +771,93 @@ class FitSpectraFrame(wx.Frame):
         irow += 1
         sizer.Add(wids['composition'],   (irow, 0), (3, 6), LCEN)
 
+        irow += 3
+        sizer.Add(wids['comp_save'],   (irow, 0), (1, 3), LCEN)
+
         pack(panel, sizer)
         panel.SetupScrolling()
         return panel
 
     def onCompApplyScale(self, event=None):
-        print('apply composition scale')
+        result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
+        cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
+
+        self.owids['composition'].DeleteAllItems()
+        conc_vals = result.concentration_results = {}
+
+        for elem in result.comps.keys():
+            parname = 'amp_%s' % elem.lower()
+            if parname in result.params:
+                par = result.params[parname]
+                conc_vals[elem] = [par.value, par.stderr]
+
+        scale = conc_vals[cur_elem][0]/self.owids['comp_elemscale'].GetValue()
+
+        result.concentration_scale = scale
+        self.owids['comp_scalevalue'].SetLabel(gformat(scale, 12))
+
+        for elem, dat in conc_vals.items():
+            val, serr = dat
+            rval = "%15.4f" % val
+            sval = "%15.4f" % (val/scale)
+            uval = "%15.4f" % (serr/scale)
+            try:
+                uval = uval + ' ({:.2%})'.format(abs(serr/val))
+            except ZeroDivisionError:
+                pass
+            self.owids['composition'].AppendItem((elem, rval, sval, uval))
+
+    def onCompSave(self, event=None):
+        result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
+        scale = result.concentration_scale
+        deffile = self.mca.filename + '_' + result.label
+        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.csv'
+        wcards = "CSV (*.csv)|*.csv|All files (*.*)|*.*"
+        sfile = FileSave(self, 'Save Concentration Results',
+                         default_file=deffile,
+                         wildcard=wcards)
+        if sfile is not None:
+            buff = ["# results for file: %s" % self.mca.filename,
+                    "# fit label: %s" % result.label,
+                    "# concentration units: %s" % self.owids['comp_units'].GetStringSelection(),
+                    "# count time: %s" % result.count_time,
+                    "# scale: %s" % result.concentration_scale,
+                    "# Fit Report:"     ]
+            for l in result.fit_report.split('\n'):
+                buff.append("#    %s" % l)
+            buff.append("###########")
+            buff.append("#Element  Concentration  Uncertainty  RawAmplitude")
+            for elem, dat in result.concentration_results.items():
+                eout = (elem  + ' '*4)[:4]
+                val, serr = dat
+                rval = "%16.5f" % val
+                sval = "%16.5f" % (val/scale)
+                uval = "%16.5f" % (serr/scale)
+                buff.append("  ".join([elem, sval, uval, rval]))
+            buff.append('')
+            with open(sfile, 'w') as fh:
+                fh.write('\n'.join(buff))
+        print("Wrote ", sfile)
+
 
     def onCompSelectFit(self, event=None):
-        print('selected fit  ',
-              self.owids['comp_fitlabel'].GetSelection(),
-              self.owids['comp_fitlabel'].GetStringSelection(),
-              len(self.fit_history))
+        result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
+        cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
+        self.owids['comp_elemchoice'].Clear()
+        elems = [el['symbol'] for el in result.elements]
+        self.owids['comp_elemchoice'].SetChoices(elems)
+        if len(cur_elem) > 0:
+            self.owids['comp_elemchoice'].SetStringSelection(cur_elem)
+        else:
+            self.owids['comp_elemchoice'].SetSelection(0)
+        self.onCompApplyScale()
 
     def UpdateCompositionPage(self, event=None):
-        ###  print('reveal Composition Page ', len(self.fit_history))
-
         result = self.get_fitresult()
         self.owids['comp_fitlabel'].Clear()
         self.owids['comp_fitlabel'].SetChoices([a.label for a in self.fit_history])
         self.owids['comp_fitlabel'].SetStringSelection(result.label)
-        cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
-        self.owids['comp_elemchoice'].Clear()
-        self.owids['comp_elemchoice'].SetChoices(result.comps.keys())
-        if len(cur_elem) > 0:
-            self.owids['comp_elemchoice'].SetStringSelection(cur_elem)
-
+        self.onCompSelectFit()
 
     def onElems_Clear(self, event=None):
         self.ptable.on_clear_all()
@@ -1121,7 +1194,6 @@ class FitSpectraFrame(wx.Frame):
 
     def onSaveFitResult(self, event=None):
         result = self.get_fitresult()
-
         deffile = self.mca.filename + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.modl'
         ModelWcards = "XRF Models(*.modl)|*.modl|All files (*.*)|*.*"
@@ -1262,16 +1334,18 @@ class FitSpectraFrame(wx.Frame):
                     val = gformat(val, 11)
                 args.append(val)
             self.owids['stats'].AppendItem(tuple(args))
-        self.owids['data_title'].SetLabel(self.mca.filename)
+        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.filename, cur.count_time))
+        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.filename, cur.count_time))
         self.owids['fitlabel_txt'].SetValue(cur.label)
-        self.show_fitresult(nfit=0)
+        self.show_fitresult(nfit=self.nfit)
 
     def show_fitresult(self, nfit=0, mca=None):
         if mca is not None:
             self.mca = mca
         result = self.get_fitresult(nfit=nfit)
 
-        self.owids['data_title'].SetLabel(self.mca.filename)
+        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.filename, result.count_time))
+        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.filename, result.count_time))
         self.result = result
         self.owids['fitlabel_txt'].SetValue(result.label)
         self.owids['params'].DeleteAllItems()
@@ -1283,17 +1357,21 @@ class FitSpectraFrame(wx.Frame):
             except (TypeError, ValueError):
                 val = ' ??? '
 
-            serr = ' N/A '
+            serr, perr = ' N/A ', ' N/A '
             if param.stderr is not None:
                 serr = gformat(param.stderr, 10)
+                try:
+                    perr = ' {:.2%}'.format(abs(param.stderr/param.value))
+                except ZeroDivisionError:
+                    perr = '?'
             extra = ' '
             if param.expr is not None:
                 extra = ' = %s ' % param.expr
             elif not param.vary:
                 extra = ' (fixed)'
             elif param.init_value is not None:
-                extra = ' (init=%s)' % gformat(param.init_value, 8)
+                extra = gformat(param.init_value, 10)
 
-            self.owids['params'].AppendItem((pname, val, serr, extra))
+            self.owids['params'].AppendItem((pname, val, serr, perr, extra))
             self.owids['paramsdata'].append(pname)
         self.Refresh()
