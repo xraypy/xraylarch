@@ -728,10 +728,10 @@ class FitSpectraFrame(wx.Frame):
         cview.SetMinSize((550, 400))
 
 
-        wids['comp_fitlabel'] = Choice(panel, choices=[], size=(250, -1),
+        wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(250, -1),
                                        action=self.onCompSelectFit)
 
-        wids['comp_elemchoice'] = Choice(panel, choices=[], size=(100, -1))
+        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
         wids['comp_elemscale'] = FloatCtrl(panel, value=1.0, precision=6, minval=0)
         wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
         wids['comp_apply'] = Button(panel, 'Apply',
@@ -773,7 +773,18 @@ class FitSpectraFrame(wx.Frame):
               len(self.fit_history))
 
     def UpdateCompositionPage(self, event=None):
-        print('reveal Composition Page ', len(self.fit_history))
+        ###  print('reveal Composition Page ', len(self.fit_history))
+
+        result = self.get_fitresult()
+        self.owids['comp_fitlabel'].Clear()
+        self.owids['comp_fitlabel'].SetChoices([a.label for a in self.fit_history])
+        self.owids['comp_fitlabel'].SetStringSelection(result.label)
+        cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
+        self.owids['comp_elemchoice'].Clear()
+        self.owids['comp_elemchoice'].SetChoices(result.comps.keys())
+        if len(cur_elem) > 0:
+            self.owids['comp_elemchoice'].SetStringSelection(cur_elem)
+
 
     def onElems_Clear(self, event=None):
         self.ptable.on_clear_all()
