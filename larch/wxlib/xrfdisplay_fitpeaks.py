@@ -52,14 +52,16 @@ def VarChoice(p, default=0, size=(75, -1)):
                   size=size, default=default)
 
 NFILTERS = 4
-MATRIX_LAYERNAMES = ('top', 'middle', 'bottom')
+MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
+NMATRIX = len(MATRIXLAYERNAMES)
+MIN_CORREL = 0.10
+
+CompositionUnits = ('gr/cm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
 EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Energy_Text = 'All energies in eV'
-
-MIN_CORREL = 0.10
 
 mca_init = """
 {group:s}.fit_history = getattr({group:s}, 'fit_history', [])
@@ -160,14 +162,17 @@ class FitSpectraFrame(wx.Frame):
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
         self.wids = {}
+        self.owids = {}
         self.result_frame = None
         self.panels = {}
         self.panels['Beam and Detector']  = self.beamdet_page
         self.panels['Filters and Matrix'] = self.materials_page
         self.panels['Elements and Peaks'] = self.elempeaks_page
         self.panels['Fit Results']        = self.fitresult_page
+        self.panels['Composition Results'] = self.composition_page
 
-        self.nb = flatnotebook(self, self.panels)
+        self.nb = flatnotebook(self, self.panels,
+                               on_change=self.onNBChanged)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -186,6 +191,11 @@ class FitSpectraFrame(wx.Frame):
         pack(self, sizer)
         self.Show()
         self.Raise()
+
+    def onNBChanged(self, event=None):
+        pagelabel = self.nb._pages.GetPageText(event.GetSelection()).strip()
+        if pagelabel.startswith('Composition'):
+            self.UpdateCompositionPage()
 
     def elempeaks_page(self, **kws):
         "elements and peaks parameters"
@@ -314,8 +324,6 @@ class FitSpectraFrame(wx.Frame):
     def beamdet_page(self, **kws):
         "beam / detector settings"
         mca = self.parent.mca
-        conf = self.parent.conf
-
         xray_energy = getattr(mca, 'incident_energy', None)
         if xray_energy is None:
             xray_energy = 20.0
@@ -439,17 +447,6 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['det_efano'])
         pdet.Add(wids['det_efano_vary'], dcol=2)
 
-        """
-        pdet.Add(HLine(pdet, size=(550, 3)), dcol=4, newrow=True)
-        pdet.AddText(' Background: ', colour='#880000', newrow=True)
-        pdet.Add(wids['bgr_use'], dcol=2)
-        pdet.Add(wids['bgr_show'])
-        pdet.AddText('   Exponent:', newrow=True)
-        pdet.Add(wids['bgr_expon'])
-        pdet.AddText('Energy Width: ')
-        pdet.Add(wids['bgr_width'])
-        """
-
         addLine(pdet)
         pdet.AddText(' Escape && Pileup:', colour='#880000', newrow=True)
         pdet.AddText('   Escape Scale:', newrow=True)
@@ -463,17 +460,11 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_use'], dcol=3)
         addLine(pdet)
         pdet.pack()
-
-        # sizer = wx.BoxSizer(wx.VERTICAL)
-        # sizer.Add(pdet)
-        # pack(main, sizer)
         return pdet
 
     def materials_page(self, **kws):
         "filters and matrix settings"
-        conf = self.parent.conf
         wids = self.wids
-
         pan = GridPanel(self, itemstyle=LEFT)
 
         pan.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
@@ -482,27 +473,27 @@ class FitSpectraFrame(wx.Frame):
                          'Vary Thickness'), style=CEN, newrow=True)
         opts = dict(size=(100, -1), min_val=0, digits=5, increment=0.005)
 
-        for i in range(1, NFILTERS+1):
-            t = 'filt%d' % i
+        for i in range(NFILTERS):
+            t = 'filter%d' % (i+1)
             wids['%s_mat'%t] = Choice(pan, choices=Filter_Materials, default=0,
                                       size=(150, -1),
-                                      action=partial(self.onFilterMaterial, index=i))
+                                      action=partial(self.onFilterMaterial, index=i+1))
             wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
             wids['%s_var'%t] = VarChoice(pan, default=0)
-            if i == 1: # first selection
+            if i == 0: # first selection
                 wids['%s_mat'%t].SetStringSelection('beryllium')
                 wids['%s_thk'%t].SetValue(0.0250)
-            elif i == 2: # second selection
+            elif i == 1: # second selection
                 wids['%s_mat'%t].SetStringSelection('air')
                 wids['%s_thk'%t].SetValue(50.00)
-            elif i == 3: # third selection
+            elif i == 2: # third selection
                 wids['%s_mat'%t].SetStringSelection('kapton')
                 wids['%s_thk'%t].SetValue(0.00)
-            elif i == 4: # third selection
+            elif i == 3: # third selection
                 wids['%s_mat'%t].SetStringSelection('aluminum')
                 wids['%s_thk'%t].SetValue(0.00)
 
-            pan.AddText('    %i  ' % (i), newrow=True)
+            pan.AddText('  # %i  ' % (i+1), newrow=True)
             pan.Add(wids['%s_mat' % t])
             pan.Add(wids['%s_thk' % t])
             pan.Add(wids['%s_var' % t])
@@ -512,15 +503,16 @@ class FitSpectraFrame(wx.Frame):
         pan.AddText(' Matrix Layers:', colour='#880000', dcol=2, newrow=True)
         pan.AddManyText(('  Layer', 'Material/Formula',
                          'thickness (mm)', 'density'), style=CEN, newrow=True)
-        for layer in MATRIX_LAYERNAMES:
-            t = 'matrix_%s' % layer
+
+        for i in range(NMATRIX):
+            t = 'matrix%d' % (i+1)
             wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(150, -1))
             wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
             wids['%s_den'%t] = FloatSpin(pan, value=1.0, **opts)
             wids['%s_btn'%t] = Button(pan, 'Use Selected Material', size=(150, -1),
-                                      action=partial(self.onUseCurrentMaterial,
-                                                     layer=layer))
-            pan.AddText('     %s' % (layer), style=LCEN, newrow=True)
+                                      action=partial(self.onUseCurrentMaterialAsFilter,
+                                                     layer=i+1))
+            pan.AddText('     %s' % (MATRIXLAYERNAMES[i]), style=LCEN, newrow=True)
             pan.Add(wids['%s_mat' % t])
             pan.Add(wids['%s_thk' % t])
             pan.Add(wids['%s_den' % t])
@@ -534,9 +526,9 @@ class FitSpectraFrame(wx.Frame):
                     action=self.onUpdateFilterList)
         pan.Add(bx)
 
-        mview = wids['materials'] = dv.DataViewListCtrl(pan, style=DVSTYLE)
+        mview = self.owids['materials'] = dv.DataViewListCtrl(pan, style=DVSTYLE)
         mview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectMaterial)
-        self.selected_material = ('', '', 1.0)
+        self.selected_material = ''
 
         mview.AppendTextColumn('Name',      width=150)
         mview.AppendTextColumn('Formula',   width=325)
@@ -550,43 +542,36 @@ class FitSpectraFrame(wx.Frame):
 
         mview.SetMinSize((625, 175))
         mview.DeleteAllItems()
-        self.materials_data = []
-        self.materials_name = []
+        self.materials_data = {}
         for name, data in materials._read_materials_db().items():
             formula, density = data
+            self.materials_data[name] = (formula, density)
             mview.AppendItem((name, formula, "%9.6f"%density,
                               name in Filter_Materials))
-            self.materials_data.append((name, formula, density))
-            self.materials_name.append(name)
         pan.Add(mview, dcol=5, newrow=True)
 
-        pan.AddText(' Add Materials:', colour='#880000', dcol=2, newrow=True)
-        wids['newmat_name'] = wx.TextCtrl(pan, value='', size=(150, -1))
-        wids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
-        wids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
+        pan.AddText(' Add Material:', colour='#880000', dcol=2, newrow=True)
+        self.owids['newmat_name'] = wx.TextCtrl(pan, value='', size=(150, -1))
+        self.owids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
+        self.owids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
 
         pan.AddText(' Name:', newrow=True)
-        pan.Add(wids['newmat_name'])
+        pan.Add(self.owids['newmat_name'])
         pan.AddText(' Density:', newrow=False)
-        pan.Add(wids['newmat_dens'])
+        pan.Add(self.owids['newmat_dens'])
+        pan.AddText(' gr/cm^3', newrow=False)
         pan.AddText(' Formula:', newrow=True)
-        pan.Add(wids['newmat_form'], dcol=3)
-        bx = Button(pan, 'Add Material', size=(150, -1),
-                    action=self.onAddMaterial)
-        pan.Add(bx)
-
-
+        pan.Add(self.owids['newmat_form'], dcol=3)
+        pan.Add(Button(pan, 'Add Material', size=(150, -1),
+                       action=self.onAddMaterial))
         pan.pack()
         return pan
 
     def fitresult_page(self, **kws):
         sizer = wx.GridBagSizer(10, 5)
-        sizer.SetVGap(5)
-        sizer.SetHGap(5)
-
         panel = scrolled.ScrolledPanel(self)
         # title row
-        self.rwids = wids = {}
+        wids = self.owids
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+1),
                            colour=self.colors.title, style=LCEN)
 
@@ -727,6 +712,69 @@ class FitSpectraFrame(wx.Frame):
         panel.SetupScrolling()
         return panel
 
+
+    def composition_page(self, **kws):
+        sizer = wx.GridBagSizer(10, 5)
+        panel = scrolled.ScrolledPanel(self)
+        wids = self.owids
+        title = SimpleText(panel, 'Composition Results', font=Font(FONTSIZE+1),
+                           colour=self.colors.title, style=LCEN)
+
+        cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+
+        cview.AppendTextColumn('  Element ', width=100)
+        cview.AppendTextColumn(' Unscaled Amplitude', width=150)
+        cview.AppendTextColumn(' Scaled Amplitude', width=150)
+        cview.SetMinSize((550, 400))
+
+
+        wids['comp_fitlabel'] = Choice(panel, choices=[], size=(250, -1),
+                                       action=self.onCompSelectFit)
+
+        wids['comp_elemchoice'] = Choice(panel, choices=[], size=(100, -1))
+        wids['comp_elemscale'] = FloatCtrl(panel, value=1.0, precision=6, minval=0)
+        wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
+        wids['comp_apply'] = Button(panel, 'Apply',
+                                    action=self.onCompApplyScale)
+        wids['comp_scalevalue'] = FloatCtrl(panel, value=1.0, precision=6, minval=0)
+
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
+        irow += 1
+        sizer.Add(SimpleText(panel, 'Fit Label:'),  (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['comp_fitlabel'],            (irow, 1), (1, 5), LCEN)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, 'Scale Element:'),   (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['comp_elemchoice'],         (irow, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(panel, ' to:'),       (irow, 2), (1, 1), LCEN)
+        sizer.Add(wids['comp_elemscale'],          (irow, 3), (1, 1), LCEN)
+        sizer.Add(wids['comp_units'],              (irow, 4), (1, 1), LCEN)
+        sizer.Add(wids['comp_apply'],              (irow, 5), (1, 1), LCEN)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, 'Scaling Factor:'), (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['comp_scalevalue'],              (irow, 1), (1, 3), LCEN)
+
+        irow += 1
+        sizer.Add(wids['composition'],   (irow, 0), (3, 6), LCEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+        return panel
+
+    def onCompApplyScale(self, event=None):
+        print('apply composition scale')
+
+    def onCompSelectFit(self, event=None):
+        print('selected fit  ',
+              self.owids['comp_fitlabel'].GetSelection(),
+              self.owids['comp_fitlabel'].GetStringSelection(),
+              len(self.fit_history))
+
+    def UpdateCompositionPage(self, event=None):
+        print('reveal Composition Page ', len(self.fit_history))
+
     def onElems_Clear(self, event=None):
         self.ptable.on_clear_all()
 
@@ -785,13 +833,10 @@ class FitSpectraFrame(wx.Frame):
             det_mat = 'Si'
         self.wids['det_efano'].SetValue(EFano[det_mat])
 
-    def onFilterMaterial(self, evt=None, index=0):
+    def onFilterMaterial(self, evt=None, index=1):
         name = evt.GetString()
-        den = 1.0
-        for  _name, _form, _dens in self.materials_data:
-            if _name == name:
-                den = _dens
-        t = 'filt%d' % index
+        den = self.materials_data.get(name, (None, 1.0))[1]
+        t = 'filter%d' % (index)
         thick = self.wids['%s_thk'%t]
         if den < 0.1 and thick.GetValue() < 0.1:
             thick.SetValue(10.0)
@@ -800,27 +845,29 @@ class FitSpectraFrame(wx.Frame):
             thick.SetValue(0.0250)
             thick.SetIncrement(0.005)
 
-    def onUseCurrentMaterial(self, evt=None, layer=None):
-        name, formula, density = self.selected_material
+    def onUseCurrentMaterialAsFilter(self, evt=None, layer=1):
+        name = self.selected_material
+        density = self.materials_data.get(name, (None, 1.0))[1]
         if layer is not None and len(name)>0:
-            self.wids['matrix_%s_den'% layer].SetValue(density)
-            self.wids['matrix_%s_mat'% layer].SetValue(name)
+            self.wids['matrix%d_den'% layer].SetValue(density)
+            self.wids['matrix%d_mat'% layer].SetValue(name)
 
     def onSelectMaterial(self, evt=None):
-        if self.wids['materials'] is None:
+        if self.owids['materials'] is None:
             return
-        item = self.wids['materials'].GetSelectedRow()
+        item = self.owids['materials'].GetSelectedRow()
         if item > -1:
-            self.selected_material = self.materials_data[item]
+            name = list(self.materials_data.keys())[item]
+            self.selected_material = name
 
     def onUpdateFilterList(self, evt=None):
         flist = ['None']
         for i in range(len(self.materials_data)):
-            if self.wids['materials'].GetToggleValue(i, 3): # is filter
-                flist.append(self.wids['materials'].GetTextValue(i, 0))
+            if self.owids['materials'].GetToggleValue(i, 3): # is filter
+                flist.append(self.owids['materials'].GetTextValue(i, 0))
 
-        for i in range(1, NFILTERS+1):
-            t = 'filt%d' % i
+        for i in range(NFILTERS):
+            t = 'filter%d' % (i+1)
             choice = self.wids['%s_mat'%t]
             cur = choice.GetStringSelection()
             choice.Clear()
@@ -831,32 +878,30 @@ class FitSpectraFrame(wx.Frame):
                 choice.SetSelection(0)
 
     def onAddMaterial(self, evt=None):
-
-        name = self.wids['newmat_name'].GetValue()
-        formula = self.wids['newmat_form'].GetValue()
-        density = self.wids['newmat_dens'].GetValue()
+        name    = self.owids['newmat_name'].GetValue()
+        formula = self.owids['newmat_form'].GetValue()
+        density = self.owids['newmat_dens'].GetValue()
         add = len(name) > 0 and len(formula)>0
-        if add and name in self.materials_name:
+        if add and name in self.materials_data:
             add = (Popup(self,
                          "Overwrite definition of '%s'?" % name,
                          'Re-define material?',
                          style=wx.OK|wx.CANCEL)==wx.ID_OK)
             if add:
-                irow = self.materials_name.index(name)
-                self.wids['materials'].DeleteItem(irow)
+                irow = list(self.materials_data.keys()).index(name)
+                self.owids['materials'].DeleteItem(irow)
         if add:
             add_material(name, formula, density)
-            self.materials_data.append((name, formula, density))
-            self.materials_name.append(name)
-            #print()
-            self.wids['materials'].AppendItem((name, formula,
-                                               "%9.6f"%density,
-                                               False))
-
+            self.materials_data[name] = (formula, density)
+            self.selected_material = name
+            self.owids['materials'].AppendItem((name, formula,
+                                                "%9.6f"%density,
+                                                False))
 
     def onElemSelect(self, event=None, elem=None):
         self.ptable.tsym.SetLabel('')
-        self.ptable.title.SetLabel('%d elements selected' % len(self.ptable.selected))
+        self.ptable.title.SetLabel('%d elements selected' %
+                                   len(self.ptable.selected))
 
     def onUseBackground(self, event=None):
         use_bgr = self.wids['bgr_use'].IsChecked()
@@ -923,16 +968,16 @@ class FitSpectraFrame(wx.Frame):
                 d['vsigma'] = opts['%s_sigma_vary'%t]
                 script.append(xrfmod_scattpeak.format(**d))
 
-        for i in range(1, NFILTERS+1):
-            t = 'filt%d' % i
+        for i in range(NFILTERS):
+            t = 'filter%d' % (i+1)
             f_mat = opts['%s_mat'%t]
             if f_mat not in (None, 'None') and int(1e6*opts['%s_thk'%t]) > 1:
                 script.append(xrfmod_filter.format(name=f_mat,
                                                    thick=opts['%s_thk'%t],
                                                    vary=opts['%s_var'%t]))
 
-        for layer in MATRIX_LAYERNAMES:
-            t = 'matrix_%s' % layer
+        for i in range(NMATRIX):
+            t = 'matrix%d' % (i+1)
             m_mat = opts['%s_mat'%t].strip()
             if len(m_mat) > 0 and int(1e6*opts['%s_thk'%t]) > 1:
                 script.append(xrfmod_matrix.format(name=m_mat,
@@ -1055,7 +1100,7 @@ class FitSpectraFrame(wx.Frame):
 
         self.plot_model(init=True, with_comps=True)
         for i in range(len(self.nb.pagelist)):
-            if 'Results' in self.nb.GetPageText(i):
+            if self.nb.GetPageText(i).strip().startswith('Fit R'):
                 self.nb.SetSelection(i)
         time.sleep(0.002)
         self.show_results()
@@ -1127,7 +1172,7 @@ class FitSpectraFrame(wx.Frame):
         return self.fit_history[self.nfit]
 
     def onChangeFitLabel(self, event=None):
-        label = self.rwids['fitlabel_txt'].GetValue()
+        label = self.owids['fitlabel_txt'].GetValue()
         result = self.get_fitresult()
         result.label = label
         self.show_results()
@@ -1135,29 +1180,29 @@ class FitSpectraFrame(wx.Frame):
     def onPlot(self, event=None):
         result = self.get_fitresult()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
-        with_comps = self.rwids['plot_comps'].IsChecked()
+        with_comps = self.owids['plot_comps'].IsChecked()
         spect = xrfmod.calc_spectrum(self.mca.energy_ev,
                                      params=result.params)
         self.plot_model(model_spectrum=spect, with_comps=with_comps,
                         label=result.label)
 
     def onSelectFit(self, evt=None):
-        if self.rwids['stats'] is None:
+        if self.owids['stats'] is None:
             return
-        item = self.rwids['stats'].GetSelectedRow()
+        item = self.owids['stats'].GetSelectedRow()
         if item > -1:
             self.show_fitresult(nfit=item)
 
     def onSelectParameter(self, evt=None):
-        if self.rwids['params'] is None:
+        if self.owids['params'] is None:
             return
-        if not self.rwids['params'].HasSelection():
+        if not self.owids['params'].HasSelection():
             return
-        item = self.rwids['params'].GetSelectedRow()
-        pname = self.rwids['paramsdata'][item]
+        item = self.owids['params'].GetSelectedRow()
+        pname = self.owids['paramsdata'][item]
 
-        cormin= self.rwids['min_correl'].GetValue()
-        self.rwids['correl'].DeleteAllItems()
+        cormin= self.owids['min_correl'].GetValue()
+        self.owids['correl'].DeleteAllItems()
 
         result = self.get_fitresult()
         this = result.params[pname]
@@ -1165,14 +1210,14 @@ class FitSpectraFrame(wx.Frame):
             sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
             for name, corval in reversed(sort_correl):
                 if abs(corval) > cormin:
-                    self.rwids['correl'].AppendItem((pname, name, "% .4f" % corval))
+                    self.owids['correl'].AppendItem((pname, name, "% .4f" % corval))
 
     def onAllCorrel(self, evt=None):
         result = self.get_fitresult()
         params = result.params
         parnames = list(params.keys())
 
-        cormin= self.rwids['min_correl'].GetValue()
+        cormin= self.owids['min_correl'].GetValue()
         correls = {}
         for i, name in enumerate(parnames):
             par = params[name]
@@ -1187,15 +1232,15 @@ class FitSpectraFrame(wx.Frame):
         sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
         sort_correl.reverse()
 
-        self.rwids['correl'].DeleteAllItems()
+        self.owids['correl'].DeleteAllItems()
 
         for namepair, corval in sort_correl:
             name1, name2 = namepair.split('$$')
-            self.rwids['correl'].AppendItem((name1, name2, "% .4f" % corval))
+            self.owids['correl'].AppendItem((name1, name2, "% .4f" % corval))
 
     def show_results(self):
         cur = self.get_fitresult()
-        self.rwids['stats'].DeleteAllItems()
+        self.owids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
             args = [res.label]
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic'):
@@ -1205,9 +1250,9 @@ class FitSpectraFrame(wx.Frame):
                 else:
                     val = gformat(val, 11)
                 args.append(val)
-            self.rwids['stats'].AppendItem(tuple(args))
-        self.rwids['data_title'].SetLabel(self.mca.filename)
-        self.rwids['fitlabel_txt'].SetValue(cur.label)
+            self.owids['stats'].AppendItem(tuple(args))
+        self.owids['data_title'].SetLabel(self.mca.filename)
+        self.owids['fitlabel_txt'].SetValue(cur.label)
         self.show_fitresult(nfit=0)
 
     def show_fitresult(self, nfit=0, mca=None):
@@ -1215,11 +1260,11 @@ class FitSpectraFrame(wx.Frame):
             self.mca = mca
         result = self.get_fitresult(nfit=nfit)
 
-        self.rwids['data_title'].SetLabel(self.mca.filename)
+        self.owids['data_title'].SetLabel(self.mca.filename)
         self.result = result
-        self.rwids['fitlabel_txt'].SetValue(result.label)
-        self.rwids['params'].DeleteAllItems()
-        self.rwids['paramsdata'] = []
+        self.owids['fitlabel_txt'].SetValue(result.label)
+        self.owids['params'].DeleteAllItems()
+        self.owids['paramsdata'] = []
         for param in reversed(result.params.values()):
             pname = param.name
             try:
@@ -1238,6 +1283,6 @@ class FitSpectraFrame(wx.Frame):
             elif param.init_value is not None:
                 extra = ' (init=%s)' % gformat(param.init_value, 8)
 
-            self.rwids['params'].AppendItem((pname, val, serr, extra))
-            self.rwids['paramsdata'].append(pname)
+            self.owids['params'].AppendItem((pname, val, serr, extra))
+            self.owids['paramsdata'].append(pname)
         self.Refresh()
