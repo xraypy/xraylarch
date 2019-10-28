@@ -56,7 +56,7 @@ MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
 NMATRIX = len(MATRIXLAYERNAMES)
 MIN_CORREL = 0.10
 
-CompositionUnits = ('gr/cm^2', 'wt %', 'ppm')
+CompositionUnits = ('gr/cm**2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
@@ -165,11 +165,11 @@ class FitSpectraFrame(wx.Frame):
         self.owids = {}
         self.result_frame = None
         self.panels = {}
-        self.panels['Beam and Detector']  = self.beamdet_page
-        self.panels['Filters and Matrix'] = self.materials_page
-        self.panels['Elements and Peaks'] = self.elempeaks_page
+        self.panels['Beam & Detector']  = self.beamdet_page
+        self.panels['Filters & Matrix'] = self.materials_page
+        self.panels['Elements & Peaks'] = self.elempeaks_page
         self.panels['Fit Results']        = self.fitresult_page
-        self.panels['Composition Results'] = self.composition_page
+        self.panels['Composition'] = self.composition_page
 
         self.nb = flatnotebook(self, self.panels,
                                on_change=self.onNBChanged)
@@ -509,9 +509,10 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(150, -1))
             wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
             wids['%s_den'%t] = FloatSpin(pan, value=1.0, **opts)
-            wids['%s_btn'%t] = Button(pan, 'Use Selected Material', size=(150, -1),
+            wids['%s_btn'%t] = Button(pan, 'Use Material', size=(175, -1),
                                       action=partial(self.onUseCurrentMaterialAsFilter,
                                                      layer=i+1))
+            wids['%s_btn'%t].Disable()
             pan.AddText('     %s' % (MATRIXLAYERNAMES[i]), style=LCEN, newrow=True)
             pan.Add(wids['%s_mat' % t])
             pan.Add(wids['%s_thk' % t])
@@ -522,7 +523,7 @@ class FitSpectraFrame(wx.Frame):
 
         # Materials
         pan.AddText(' Known Materials:', colour='#880000', dcol=4, newrow=True)
-        bx = Button(pan, 'Update Filter List', size=(150, -1),
+        bx = Button(pan, 'Update Filter List', size=(175, -1),
                     action=self.onUpdateFilterList)
         pan.Add(bx)
 
@@ -540,7 +541,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        mview.SetMinSize((625, 175))
+        mview.SetMinSize((650, 170))
         mview.DeleteAllItems()
         self.materials_data = {}
         for name, data in materials._read_materials_db().items():
@@ -562,7 +563,7 @@ class FitSpectraFrame(wx.Frame):
         pan.AddText(' gr/cm^3', newrow=False)
         pan.AddText(' Formula:', newrow=True)
         pan.Add(self.owids['newmat_form'], dcol=3)
-        pan.Add(Button(pan, 'Add Material', size=(150, -1),
+        pan.Add(Button(pan, 'Add Material', size=(175, -1),
                        action=self.onAddMaterial))
         pan.pack()
         return pan
@@ -742,10 +743,11 @@ class FitSpectraFrame(wx.Frame):
                                        action=self.onCompSelectFit)
 
         wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
-        wids['comp_elemscale'] = FloatCtrl(panel, value=1.0, precision=6, minval=0)
+        wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=6, min_val=0,
+                                           increment=0.01,
+                                           action=self.onCompApplyScale)
+
         wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
-        wids['comp_apply'] = Button(panel, 'Apply',
-                                    action=self.onCompApplyScale)
         wids['comp_scalevalue'] = SimpleText(panel, label='--')
         wids['comp_save'] = Button(panel, 'Save This Concentration Data',
                                    size=(200, -1), action=self.onCompSave)
@@ -763,7 +765,6 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(SimpleText(panel, ' to:'),       (irow, 2), (1, 1), LCEN)
         sizer.Add(wids['comp_elemscale'],          (irow, 3), (1, 1), LCEN)
         sizer.Add(wids['comp_units'],              (irow, 4), (1, 1), LCEN)
-        sizer.Add(wids['comp_apply'],              (irow, 5), (1, 1), LCEN)
 
         irow += 1
         sizer.Add(SimpleText(panel, 'Scaling Factor:'), (irow, 0), (1, 1), LCEN)
@@ -779,7 +780,9 @@ class FitSpectraFrame(wx.Frame):
         panel.SetupScrolling()
         return panel
 
-    def onCompApplyScale(self, event=None):
+    def onCompApplyScale(self, event=None, value=None):
+        if len(self.fit_history) < 1:
+            return
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
         cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
 
@@ -946,9 +949,16 @@ class FitSpectraFrame(wx.Frame):
         if self.owids['materials'] is None:
             return
         item = self.owids['materials'].GetSelectedRow()
+        name = None
         if item > -1:
             name = list(self.materials_data.keys())[item]
             self.selected_material = name
+
+        for i in range(NMATRIX):
+            t = 'matrix%d' % (i+1)
+            self.wids['%s_btn'%t].Enable(name is not None)
+            if name is not None:
+                self.wids['%s_btn'%t].SetLabel('Use %s'  % name)
 
     def onUpdateFilterList(self, evt=None):
         flist = ['None']
