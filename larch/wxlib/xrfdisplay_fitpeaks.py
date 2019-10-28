@@ -27,7 +27,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      FloatSpinWithPin, get_icon, fix_filename)
 
 from . import FONTSIZE
-from xraydb import material_mu, xray_edge, materials, add_material
+from xraydb import material_mu, xray_edge, materials, add_material, atomic_number
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -204,7 +204,7 @@ class FitSpectraFrame(wx.Frame):
         p = GridPanel(self)
         tooltip_msg = 'Select Elements to include in model'
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=11,
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
         for roi in self.mca.rois:
@@ -723,20 +723,21 @@ class FitSpectraFrame(wx.Frame):
                                              colour=self.colors.title, style=LCEN)
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        cview.AppendTextColumn('  Element ', width=100)
-        cview.AppendTextColumn(' Unscaled Concentration', width=150)
-        cview.AppendTextColumn(' Scaled Concentration',  width=150)
-        cview.AppendTextColumn(' % Uncertainty',         width=150)
+        cview.AppendTextColumn(' Z ', width=50)
+        cview.AppendTextColumn(' Element ', width=100)
+        cview.AppendTextColumn(' Amplitude', width=150)
+        cview.AppendTextColumn(' Concentration',  width=150)
+        cview.AppendTextColumn(' Uncertainty',  width=150)
 
-        for col in range(4):
+        for col in range(5):
             this = cview.Columns[col]
             align = wx.ALIGN_RIGHT
-            if col==0:
+            if col ==  1:
                 align = wx.ALIGN_LEFT
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        cview.SetMinSize((575, 400))
+        cview.SetMinSize((620, 400))
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
@@ -797,6 +798,7 @@ class FitSpectraFrame(wx.Frame):
         self.owids['comp_scalevalue'].SetLabel(gformat(scale, 12))
 
         for elem, dat in conc_vals.items():
+            zat = "%d" % atomic_number(elem)
             val, serr = dat
             rval = "%15.4f" % val
             sval = "%15.4f" % (val/scale)
@@ -805,7 +807,7 @@ class FitSpectraFrame(wx.Frame):
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
                 pass
-            self.owids['composition'].AppendItem((elem, rval, sval, uval))
+            self.owids['composition'].AppendItem((zat, elem, rval, sval, uval))
 
     def onCompSave(self, event=None):
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
@@ -853,11 +855,15 @@ class FitSpectraFrame(wx.Frame):
         self.onCompApplyScale()
 
     def UpdateCompositionPage(self, event=None):
-        result = self.get_fitresult()
-        self.owids['comp_fitlabel'].Clear()
-        self.owids['comp_fitlabel'].SetChoices([a.label for a in self.fit_history])
-        self.owids['comp_fitlabel'].SetStringSelection(result.label)
-        self.onCompSelectFit()
+
+        self.fit_history = getattr(self.mca, 'fit_history', [])
+        if len(self.fit_history) > 0:
+            result = self.get_fitresult()
+            fitlab = self.owids['comp_fitlabel']
+            fitlab.Clear()
+            fitlab.SetChoices([a.label for a in self.fit_history])
+            fitlab.SetStringSelection(result.label)
+            self.onCompSelectFit()
 
     def onElems_Clear(self, event=None):
         self.ptable.on_clear_all()
