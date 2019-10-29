@@ -129,7 +129,8 @@ class MapPanel(GridPanel):
 
         self.owner = owner
         self.cfile, self.xrmmap = None,None
-
+        self.last_process_time = 0
+        self.detectors_set = False
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
         self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(140, -1))
@@ -466,26 +467,29 @@ class MapPanel(GridPanel):
         self.update_xrmmap(xrmfile=self.owner.current_file)
 
     def onROIMap(self, event=None, new=True, plot=True):
-        plot_type = self.plot_choice.GetStringSelection().lower()
-        xrmfile = self.owner.current_file
-        pref, fname = os.path.split(xrmfile.filename)
-        self.owner.process_file(fname, max_new_rows=10)
+        if (time.time() - self.last_process_time) > 15:
+            xrmfile = self.owner.current_file
+            pref, fname = os.path.split(xrmfile.filename)
+            self.owner.process_file(fname, max_new_rows=10)
+            self.last_process_time = time.time()
 
         if plot:
-            if 'correlation' in plot_type:
+            if 'correlation' in self.plot_choice.GetStringSelection().lower():
                 self.ShowCorrel(new=new)
             else:
                 self.ShowMap(new=new)
 
     def set_det_choices(self):
+        if self.detectors_set:
+            return
         det_list = self.cfile.get_detector_list()
         # print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
-
         self.set_roi_choices()
+        self.detectors_set = True
 
     def set_roi_choices(self, idet=None):
         if idet is None:
@@ -543,9 +547,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         pack(self, sizer)
         self.SetupScrolling()
 
-
     def update_xrmmap(self, xrmfile=None):
-
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
 
