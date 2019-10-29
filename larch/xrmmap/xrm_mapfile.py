@@ -253,6 +253,7 @@ class GSEXRM_MapFile(object):
         self._pixeltime    = None
         self.masterfile    = None
         self.force_no_dtc  = False
+        self.detector_list = None
 
         self.compress_args = {'compression': compression}
         if compression != 'lzf':
@@ -1538,21 +1539,19 @@ class GSEXRM_MapFile(object):
         """get a list of rois from detector
         """
         detname = self._det_name(det_name)
-        roigrp = ensure_subgroup('roimap', self.xrmmap)
         if not force:
             roilist = self.roi_names.get(detname, None)
             if roilist is not None:
                 return roilist
 
+        roigrp = ensure_subgroup('roimap', self.xrmmap)
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
             for name in roidetgrp.keys():
                 roi_name   += [name]
                 roi_limits += [list(roidetgrp[name]['limits'][:])]
             return [x for (y,x) in sorted(zip(roi_limits,roi_name))]
-
         rois = []
-
         if version_ge(self.version, '2.0.0'):
             if detname in roigrp.keys():
                 rois = sort_roi_limits(roigrp[detname])
@@ -1577,6 +1576,8 @@ class GSEXRM_MapFile(object):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars']
         """
+        if self.detector_list is not None:
+            return self.detector_list
         def build_dlist(group):
             detlist, sumslist = [], []
             for key, grp in group.items():
@@ -1613,8 +1614,10 @@ class GSEXRM_MapFile(object):
 #                      det_list.pop(det_list.index(det))
 #                  except:
 #                      pass
+        self.detector_list = det_list
         if len(det_list) < 1:
             det_list = ['']
+            self.detector_list = None
         return det_list
 
     def reset_flags(self):
