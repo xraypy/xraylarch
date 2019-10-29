@@ -587,13 +587,13 @@ class XRF_Model:
                      'nfev', 'ndata', 'aic', 'bic', 'aborted', 'covar', 'ier',
                      'message', 'method', 'nfree', 'init_values', 'success',
                      'residual', 'errorbars', 'lmdif_message', 'nfree'):
-            setattr(out, attr, getattr(self.result, attr))
-
+            setattr(out, attr, getattr(self.result, attr, None))
+            
         for attr in ('atten', 'best_en', 'best_fit', 'bgr', 'comps', 'count_time',
                      'eigenvalues', 'energy_max', 'energy_min', 'fit_iter', 'fit_log',
                      'fit_report', 'fit_toler', 'fit_weight', 'fit_window', 'init_fit',
                      'scatter', 'script', 'transfer_matrix', 'xray_energy'):
-            setattr(out, attr, getattr(self, attr))
+            setattr(out, attr, getattr(self, attr, None))
 
         elem_attrs = ('all_lines', 'edges', 'fyields', 'lines', 'mu',
                       'symbol', 'xray_energy')

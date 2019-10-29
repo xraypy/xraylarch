@@ -56,7 +56,7 @@ MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
 NMATRIX = len(MATRIXLAYERNAMES)
 MIN_CORREL = 0.10
 
-CompositionUnits = ('gr/cm**2', 'wt %', 'ppm')
+CompositionUnits = ('gr/cm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
@@ -129,7 +129,7 @@ Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
-    def __init__(self, parent, size=(600, 775)):
+    def __init__(self, parent, size=(655, 780)):
         self.parent = parent
         self._larch = parent.larch
         if not self._larch.symtable.has_group(XRFGROUP):
@@ -139,22 +139,26 @@ class FitSpectraFrame(wx.Frame):
             mcaname = 'mca%3.3d' % (i)
             if not hasattr(xrfgroup, mcaname):
                 break
-
         self.mcagroup = '%s.%s' % (XRFGROUP, mcaname)
         self.mca = MCA()
         for attr in ('__name__', 'filename', 'incident_energy', 'live_time',
                      'real_time', 'slope', 'quad', 'offset'):
             setattr(self.mca, attr, getattr(self.parent.mca, attr, None))
-        for attr in ('counts', 'energy', 'raw'):
-            setattr(self.mca, attr, 1.0*getattr(self.parent.mca, attr, None))
+        for attr in ('counts', 'energy'):
+            setattr(self.mca, attr, 1.0*getattr(self.parent.mca, attr))
         for attr in ('header', 'bad', 'mcas', 'rois', 'environ'):
             setattr(self.mca, attr, copy.copy(getattr(self.parent.mca, attr, None)))
 
         setattr(xrfgroup, mcaname, self.mca)
-
+        
         efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
-        self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
 
+        if self.mca.incident_energy is None:
+            self.mca.incident_energy = 20000.
+        if self.mca.incident_energy < 250:
+            self.mca.incident_energy *= 1000.0
+
+        self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
         self.fit_history = getattr(self.mca, 'fit_history', [])
         self.nfit = 0
         self.colors = GUIColors()
@@ -323,16 +327,9 @@ class FitSpectraFrame(wx.Frame):
 
     def beamdet_page(self, **kws):
         "beam / detector settings"
-        mca = self.parent.mca
-        xray_energy = getattr(mca, 'incident_energy', None)
-        if xray_energy is None:
-            xray_energy = 20.0
-        if xray_energy < 250:
-            xray_energy = 1000.0 * xray_energy
-        mca.incident_energy = xray_energy
-
+        mca = self.mca
         en_min = 2000.0
-        en_max = xray_energy
+        en_max = self.mca.incident_energy
 
         cal_offset = getattr(mca, 'offset',  0) * 1000.0
         cal_slope = getattr(mca, 'slope',  0.010) * 1000.0
@@ -403,7 +400,7 @@ class FitSpectraFrame(wx.Frame):
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
                     digits=2, increment=50)
-        wids['en_xray'] = FloatSpin(pdet, value=xray_energy,
+        wids['en_xray'] = FloatSpin(pdet, value=self.mca.incident_energy,
                                     action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
@@ -637,7 +634,7 @@ class FitSpectraFrame(wx.Frame):
                 align = wx.ALIGN_CENTER
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((625, 150))
+        sview.SetMinSize((650, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LCEN)
@@ -666,7 +663,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((625, 200))
+        pview.SetMinSize((650, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -705,7 +702,7 @@ class FitSpectraFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((550, 150))
+        cview.SetMinSize((600, 125))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
@@ -738,7 +735,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        cview.SetMinSize((620, 400))
+        cview.SetMinSize((650, 400))
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
@@ -1118,7 +1115,7 @@ class FitSpectraFrame(wx.Frame):
             total = 0.0 * self.mca.counts
             for name, parr in self.xrfmod.comps.items():
                 nam = name.lower()
-                imax = np.where(parr == parr.max())[0][0]
+                imax = np.where(parr > 0.99*parr.max())[0][0]
                 scale = self.mca.counts[imax] / (parr[imax]+1.e-5)
                 ampname = 'amp_%s' % nam
                 if nam in ('elastic', 'compton1', 'compton2', 'compton',
