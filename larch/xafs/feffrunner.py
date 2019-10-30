@@ -13,7 +13,7 @@ from larch import Group, isNamedClass
 from larch.utils import isotime, bytes2str, uname, bindir
 
 def find_exe(exename):
-    if uname == 'win' and exename.endswith('.exe'):
+    if uname == 'win' and not exename.endswith('.exe'):
         exename = "%s.exe" % exename
     exefile = join(bindir, exename)
     if os.path.exists(exefile) and os.access(exefile, os.X_OK):
