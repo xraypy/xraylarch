@@ -467,11 +467,12 @@ class MapPanel(GridPanel):
         self.update_xrmmap(xrmfile=self.owner.current_file)
 
     def onROIMap(self, event=None, new=True, plot=True):
-        if (time.time() - self.last_process_time) > 15:
-            xrmfile = self.owner.current_file
-            pref, fname = os.path.split(xrmfile.filename)
-            self.owner.process_file(fname, max_new_rows=10)
-            self.last_process_time = time.time()
+        if (time.time() - self.last_process_time) < 15:
+            return
+        xrmfile = self.owner.current_file
+        pref, fname = os.path.split(xrmfile.filename)
+        self.owner.process_file(fname, max_new_rows=10)
+        self.last_process_time = time.time()
 
         if plot:
             if 'correlation' in self.plot_choice.GetStringSelection().lower():
@@ -2151,10 +2152,10 @@ class MapViewerFrame(wx.Frame):
 
             _path, _fname = os.path.split(fname)
             self.ShowFile(filename=_fname)
-            if _fname in self.filemap:
-                for page in self.nb.pagelist:
-                    if hasattr(page, 'update_xrmmap'):
-                        page.update_xrmmap(xrmfile=self.filemap[_fname])
+            # if _fname in self.filemap:
+            #    for page in self.nb.pagelist:
+            #        if hasattr(page, 'update_xrmmap'):
+            #            page.update_xrmmap(xrmfile=self.filemap[_fname])
 
 
     def message(self, msg, win=0):
