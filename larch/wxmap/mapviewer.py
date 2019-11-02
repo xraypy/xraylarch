@@ -467,13 +467,12 @@ class MapPanel(GridPanel):
         self.update_xrmmap(xrmfile=self.owner.current_file)
 
     def onROIMap(self, event=None, new=True, plot=True):
-        if (time.time() - self.last_process_time) < 15:
-            return
+        # if (time.time() - self.last_process_time) < 15:
+        #     return
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
         self.owner.process_file(fname, max_new_rows=10)
         self.last_process_time = time.time()
-
         if plot:
             if 'correlation' in self.plot_choice.GetStringSelection().lower():
                 self.ShowCorrel(new=new)
@@ -481,8 +480,8 @@ class MapPanel(GridPanel):
                 self.ShowMap(new=new)
 
     def set_det_choices(self):
-        if self.detectors_set:
-            return
+        #if self.detectors_set:
+        #     return
         det_list = self.cfile.get_detector_list()
         # print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
@@ -490,9 +489,10 @@ class MapPanel(GridPanel):
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
         self.set_roi_choices()
-        self.detectors_set = True
+        # self.detectors_set = True
 
     def set_roi_choices(self, idet=None):
+        # print("Set ROI Choices ", idet)
         if idet is None:
             for idet, det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
