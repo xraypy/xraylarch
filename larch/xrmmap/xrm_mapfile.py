@@ -1539,10 +1539,10 @@ class GSEXRM_MapFile(object):
         """get a list of rois from detector
         """
         detname = self._det_name(det_name)
-        if not force:
-           roilist = self.roi_names.get(detname, None)
-           if roilist is not None:
-               return roilist
+        if not force and detname not in EXTRA_DETGROUPS::
+            roilist = self.roi_names.get(detname, None)
+            if roilist is not None:
+                return roilist
 
         roigrp = ensure_subgroup('roimap', self.xrmmap)
         def sort_roi_limits(roidetgrp):
