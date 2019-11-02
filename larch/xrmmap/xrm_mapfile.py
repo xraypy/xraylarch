@@ -1540,9 +1540,9 @@ class GSEXRM_MapFile(object):
         """
         detname = self._det_name(det_name)
         if not force:
-            roilist = self.roi_names.get(detname, None)
-            if roilist is not None:
-                return roilist
+           roilist = self.roi_names.get(detname, None)
+           if roilist is not None:
+               return roilist
 
         roigrp = ensure_subgroup('roimap', self.xrmmap)
         def sort_roi_limits(roidetgrp):
@@ -1555,22 +1555,21 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             if detname in roigrp.keys():
                 rois = sort_roi_limits(roigrp[detname])
-
             elif detname in EXTRA_DETGROUPS:
                 rois = rois+list(self.xrmmap[detname].keys())
 
         else:
-            if detname in self.xrmmap.keys():
+            if detname in EXTRA_DETGROUPS:
+                rois = list(self.xrmmap[detname].keys())
+            elif detname in self.xrmmap.keys():
                 rois = list(roigrp['sum_name']) + rois
-            try:
-                rois = sort_roi_limits(roigrp[detname]) + rois
-            except:
-                # print(" no rois for det ",  detname, list(roigrp.keys()))
-                pass
+                try:
+                    rois = sort_roi_limits(roigrp[detname]) + rois
+                except:
+                    pass
         rois.append('1')
         self.roi_names[detname] = [h5str(a) for a in rois]
         return self.roi_names[detname]
-
 
     def get_detector_list(self):
         """get a list of detector groups,
@@ -3000,6 +2999,7 @@ class GSEXRM_MapFile(object):
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
 
+        # print("get roi map ", roiname, det)
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
@@ -3018,11 +3018,9 @@ class GSEXRM_MapFile(object):
         elif dtcorrect:
             ext = 'cor'
 
-
         # print("EXTRA DETGROUPS ", EXTRA_DETGROUPS)
         # print(" GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
-        # print("  detaddr=%s|ext=%s|version=%s" % (
-        #    detaddr, ext, self.version))
+        # print("  detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
             if det in ('scalars', 'work'):
                 grp = self.xrmmap[det]
@@ -3042,8 +3040,12 @@ class GSEXRM_MapFile(object):
                     self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                     self.xrmmap[detaddr][roiaddr][:, :] = out
         else:  # version1
-            detname = '%s%s' % (detaddr, ext)
-            out = self.xrmmap[detname][:, :, roi]
+            if det in EXTRA_DETGROUPS:
+                detname = "%s/%s" % (det, roiname)
+                out = self.xrmmap[detname][:,:]
+            else:
+                detname = '%s%s' % (detaddr, ext)
+                out = self.xrmmap[detname][:, :, roi]
 
         if zigzag is not None and zigzag != 0:
             out = remove_zigzag(out, zigzag)
