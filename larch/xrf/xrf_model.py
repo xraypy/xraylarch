@@ -6,7 +6,7 @@ from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
 
-from xraydb import (material_mu, mu_elam, ck_probability,
+from xraydb import (material_mu, mu_elam, ck_probability, xray_edge,
                     xray_edges, xray_lines, xray_line)
 from xraydb.xray import XrayLine
 
@@ -283,6 +283,7 @@ class XRF_Model:
         self.use_pileup = False
         self.use_escape = False
         self.matrix_atten = None
+        self.escape_scale = None
         self.script = ''
         if bgr is not None:
             self.add_background(bgr)
@@ -356,11 +357,11 @@ class XRF_Model:
         self.bgr = data
         self.params.add('background_amp', value=1.0, min=0, vary=vary)
 
-    def add_escape(self, scale=0.01, vary=True):
+    def add_escape(self, scale=1.0, vary=True):
         self.use_escape = True
         self.params.add('escape_amp', value=scale, min=0, vary=vary)
 
-    def add_pileup(self, scale=0.01, vary=True):
+    def add_pileup(self, scale=1.0, vary=True):
         self.use_pileup = True
         self.params.add('pileup_amp', value=scale, min=0, vary=vary)
 
@@ -373,10 +374,6 @@ class XRF_Model:
         calculate beam attenuation by a matrix built from layers
         note that matrix layers and composition cannot be variable
         so the calculation can be done once, ahead of time.
-
-        Matrix attenuation:
-        For each layer:
-
         """
         atten = 1.0
         if len(self.matrix_layers) > 0:
@@ -389,6 +386,25 @@ class XRF_Model:
                 matrix_atten = layer_trans * (incid_absor + incid_trans + matrix_atten)
             atten *= matrix_atten
         self.matrix_atten = atten
+
+    def calc_escape_scale(self, energy, thickness=None):
+        """
+        calculate energy dependence of escape effect
+
+        X-rays penetrate a depth 1/mu(material, energy) and the
+        detector fluorescence escapes from that depth as
+            exp(-mu(material, KaEnergy)*thickness)
+        with a fluorecence yield of the material
+
+        """
+        det = self.detector
+        self.escape_energy = xray_line(det.material, 'Ka').energy
+
+        mu_emit = material_mu(det.material, self.escape_energy)
+        mu_input = material_mu(det.material, energy)
+        edge = xray_edge(det.material, 'K')
+        self.escape_scale = edge.fyield*np.exp(-mu_emit / (2*mu_input))
+        self.escape_scale[np.where(energy<edge.energy)] = 0.0
 
     def calc_spectrum(self, energy, params=None):
         if params is None:
@@ -417,10 +433,10 @@ class XRF_Model:
             self.calc_matrix_attenuation(energy)
         atten *= self.matrix_atten
 
-        escape_amp = pars.get('escape_amp', 0.0)
         if self.use_escape:
-            det_mat = self.detector.material
-            escape_en = energy - xray_line(det_mat, 'Ka').energy
+            if self.escape_scale is None:
+                self.calc_escape_scale(energy, thickness=pars['det_thickness'])
+            escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
 
         for elem in self.elements:
             comp = 0. * energy
@@ -432,10 +448,12 @@ class XRF_Model:
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
                 sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
-                                 sigma=sigma, step=step, tail=tail, gamma=gamma)
+                                 sigma=sigma, step=step, tail=tail, gamma=gamma,
+                                 voigt_gamma=0.1)
             comp *= amp * atten * self.count_time
             if self.use_escape:
-                comp += escape_amp * interp(escape_en, comp, energy)
+                comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
+
             self.comps[elem.symbol] = comp
             self.eigenvalues[elem.symbol] = amp
 
@@ -452,10 +470,11 @@ class XRF_Model:
             sigma = pars['%s_sigmax' % p]
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
-                            sigma=sigma, step=step, tail=tail, gamma=gamma)
+                            sigma=sigma, step=step, tail=tail, gamma=gamma,
+                            voigt_gamma=0.1)
             comp *= amp * atten * self.count_time
             if self.use_escape:
-                comp += escape_amp * interp(escape_en, comp, energy)
+                comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
             self.comps[p] = comp
             self.eigenvalues[p] = amp
 
@@ -472,7 +491,8 @@ class XRF_Model:
         if self.use_pileup:
             pamp = pars.get('pileup_amp', 0.0)
             npts = len(energy)
-            pileup = pamp * 1.e-8*np.convolve(total, total, 'full')[:npts]
+            pileup = pamp*1.e-9*np.convolve(total, total*1.0, 'full')[:npts]
+
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
             total += pileup
@@ -527,8 +547,10 @@ class XRF_Model:
         self.npts = (self.imax - self.imin)
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
+
         # reset attenuation calcs for matrix, detector, filters
         self.matrix_atten = None
+        self.escape_scale = None
         self.detector.mu_total = None
         for f in self.filters:
             f.mu_total = None
@@ -549,7 +571,6 @@ class XRF_Model:
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
         self.best_fit = self.calc_spectrum(energy, params=self.result.params)
-
 
         # calculate transfer matrix for linear analysis using this model
         tmat= []
@@ -588,7 +609,7 @@ class XRF_Model:
                      'message', 'method', 'nfree', 'init_values', 'success',
                      'residual', 'errorbars', 'lmdif_message', 'nfree'):
             setattr(out, attr, getattr(self.result, attr, None))
-            
+
         for attr in ('atten', 'best_en', 'best_fit', 'bgr', 'comps', 'count_time',
                      'eigenvalues', 'energy_max', 'energy_min', 'fit_iter', 'fit_log',
                      'fit_report', 'fit_toler', 'fit_weight', 'fit_window', 'init_fit',

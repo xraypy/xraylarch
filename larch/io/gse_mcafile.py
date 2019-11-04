@@ -117,19 +117,19 @@ class GSEMCA_File(Group):
             pileup += m.pileup
         self.pileup = pileup / len(self.mcas)
 
-    def predict_escape(self, fraction=0.01, det='Si'):
+    def predict_escape(self, det='Si', scale=1):
         """predict detector escape, save to `escape` attribute
 
         Options:
         --------
-          fraction  escape fraction [0.01]
           det       detector material ['Si']
+          scale     scale factor [1]
 
         Outputs 'escape' attribute will contain the average `escape` for each MCA
         """
         escape = self.mcas[0].counts * 0.0
         for m in self.mcas:
-            m.predict_escape(fraction=fraction, det=det)
+            m.predict_escape(det=det, scale=scale)
             escape += m.escape
         self.escape = escape  / len(self.mcas)
 
