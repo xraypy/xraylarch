@@ -17,6 +17,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
+from peakutils import peak
+
 from lmfit import Parameter, Minimizer
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
@@ -27,7 +29,8 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      FloatSpinWithPin, get_icon, fix_filename)
 
 from . import FONTSIZE
-from xraydb import material_mu, xray_edge, materials, add_material, atomic_number
+from xraydb import (material_mu, xray_edge, materials, add_material,
+                    atomic_number, atomic_symbol, xray_line)
 from .notebooks import flatnotebook
 from .parameter import ParameterPanel
 from .periodictable import PeriodicTablePanel
@@ -110,8 +113,8 @@ _o['params'] = _o.pop('params').dumps()
 json_dump(_o, '{filename:s}')
 """
 
-xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.5f}, vary={vary:s})"
-xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.5f}, vary={vary:s})"
+xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
+xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 
 xrfmod_elems = """
 for atsym in {elemlist:s}:
@@ -150,7 +153,7 @@ class FitSpectraFrame(wx.Frame):
             setattr(self.mca, attr, copy.copy(getattr(self.parent.mca, attr, None)))
 
         setattr(xrfgroup, mcaname, self.mca)
-        
+
         efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
 
         if self.mca.incident_energy is None:
@@ -211,12 +214,6 @@ class FitSpectraFrame(wx.Frame):
         self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
-        for roi in self.mca.rois:
-            words = roi.name.split()
-            elem = words[0].title()
-            if elem in self.ptable.syms and elem not in self.ptable.selected:
-                self.ptable.onclick(label=elem)
-
 
         dstep, dtail, dsigma, dgamma = 0.1, 0.25, 1.0, 0.25
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
@@ -233,16 +230,24 @@ class FitSpectraFrame(wx.Frame):
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
         wids['peak_sigma_vary'] = VarChoice(p, default=0)
 
-        btn_clear_elems = Button(p, 'Clear All', size=(150, -1),
-                                 action=self.onElems_Clear)
+
+        btn_from_peaks = Button(p, 'Guess Peaks', size=(150, -1),
+                                action=self.onElems_GuessPeaks)
         btn_from_rois = Button(p, 'Select from ROIS', size=(150, -1),
                                action=self.onElems_FromROIS)
+        btn_clear_elems = Button(p, 'Clear All', size=(150, -1),
+                                 action=self.onElems_Clear)
+        wx.CallAfter(self.onElems_GuessPeaks)
 
         p.AddText('Elements to model:', colour='#880000', dcol=2)
-        p.Add(btn_clear_elems,  dcol=2)
-        p.Add(btn_from_rois,    dcol=2)
         p.Add((2, 2), newrow=True)
-        p.Add(self.ptable, dcol=6)
+        p.Add(self.ptable, dcol=5, drow=5)
+        irow = p.irow
+
+        p.Add(btn_from_peaks,   icol=6, dcol=2, irow=irow)
+        p.Add(btn_from_rois,    icol=6, dcol=2, irow=irow+1)
+        p.Add(btn_clear_elems,  icol=6, dcol=2, irow=irow+2)
+        p.irow += 5
 
         p.Add((2, 2), newrow=True)
         p.AddText('  Step (%): ')
@@ -268,9 +273,9 @@ class FitSpectraFrame(wx.Frame):
         p.Add((2, 2), newrow=True)
         opts = dict(size=(100, -1),
                     min_val=0, digits=4, increment=0.010)
-        for name, escale, dsigma in (('Elastic',  1.000, 1.0),
-                                     ('Compton1', 0.975, 1.5),
-                                     ('Compton2', 0.950, 2.0)):
+        for name, escale, dsigma, dgamma in (('Elastic',  1.000, 1.0, 0.25),
+                                             ('Compton1', 0.975, 1.5, 0.50),
+                                             ('Compton2', 0.950, 2.0, 1.00)):
             en = escale * self.mca.incident_energy
             t = name.lower()
             vary_en = 1 if t.startswith('compton') else 0
@@ -338,8 +343,8 @@ class FitSpectraFrame(wx.Frame):
         det_efano = getattr(mca, 'det_efano',  EFano['Si'])
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
-        escape_amp = getattr(mca, 'escape_amp', 0.010)
-        pileup_amp = getattr(mca, 'pileup_amp', 0.010)
+        escape_amp = getattr(mca, 'escape_amp', 1.0)
+        pileup_amp = getattr(mca, 'pileup_amp', 0.1)
 
         wids = self.wids
         # main = wx.Panel(self)
@@ -365,14 +370,14 @@ class FitSpectraFrame(wx.Frame):
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
                                    default=True, action=self.onUsePileupEscape)
         wids['escape_amp'] = FloatSpin(pdet, value=escape_amp,
-                                         min_val=0, max_val=0.5, digits=4,
-                                         increment=0.001, size=(100, -1))
+                                         min_val=0, max_val=100, digits=2,
+                                         increment=0.02, size=(100, -1))
 
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
                                    default=True, action=self.onUsePileupEscape)
         wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
-                                         min_val=0, max_val=100, digits=4,
-                                         increment=0.001, size=(100, -1))
+                                         min_val=0, max_val=100, digits=2,
+                                         increment=0.02, size=(100, -1))
 
         wids['escape_amp_vary'] = VarChoice(pdet, default=True)
         wids['pileup_amp_vary'] = VarChoice(pdet, default=True)
@@ -739,7 +744,8 @@ class FitSpectraFrame(wx.Frame):
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
-        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
+        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1),
+                                         action=self.onCompApplyScale)
         wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=6, min_val=0,
                                            increment=0.01,
                                            action=self.onCompApplyScale)
@@ -855,7 +861,6 @@ class FitSpectraFrame(wx.Frame):
         self.onCompApplyScale()
 
     def UpdateCompositionPage(self, event=None):
-
         self.fit_history = getattr(self.mca, 'fit_history', [])
         if len(self.fit_history) > 0:
             result = self.get_fitresult()
@@ -867,6 +872,44 @@ class FitSpectraFrame(wx.Frame):
 
     def onElems_Clear(self, event=None):
         self.ptable.on_clear_all()
+
+    def onElems_GuessPeaks(self, event=None):
+        mca = self.mca
+        _indices = peak.indexes(mca.counts, min_dist=5, thres=0.025)
+        peak_energies = 1000*mca.energy[_indices]
+
+        elrange = range(10, 92)
+        atsyms  = [atomic_symbol(i) for i in elrange]
+        kalphas = [xray_line(i, 'Ka').energy for i in elrange]
+        kbetas  = [xray_line(i, 'Kb').energy for i in elrange]
+
+        self.ptable.on_clear_all()
+        elems = []
+        for iz, en in enumerate(peak_energies):
+            for i, ex in enumerate(kalphas):
+                if abs(en - ex) < 25:
+                    elems.append(atsyms[i])
+                    peak_energies[iz] = -ex
+
+        for iz, en in enumerate(peak_energies):
+            if en > 0:
+                for i, ex in enumerate(kbetas):
+                    if abs(en - ex) < 25:
+                        if atsyms[i] not in elems:
+                            elems.append(atsyms[i])
+                        peak_energies[iz] = -ex
+
+        en = self.wids['en_xray'].GetValue()
+        emin = self.wids['en_min'].GetValue() * 1.25
+        for elem in elems:
+            kedge = xray_edge(elem, 'K').energy
+            l3edge = xray_edge(elem, 'L3').energy
+            l2edge = xray_edge(elem, 'L3').energy
+            if ((kedge < en and kedge > emin) or
+                (l3edge < en and l3edge > emin) or
+                (l2edge < en and l2edge > emin)):
+                if elem not in self.ptable.selected:
+                    self.ptable.onclick(label=elem)
 
     def onElems_FromROIS(self, event=None):
         for roi in self.mca.rois:
@@ -1115,8 +1158,11 @@ class FitSpectraFrame(wx.Frame):
             total = 0.0 * self.mca.counts
             for name, parr in self.xrfmod.comps.items():
                 nam = name.lower()
-                imax = np.where(parr > 0.99*parr.max())[0][0]
-                scale = self.mca.counts[imax] / (parr[imax]+1.e-5)
+                try:
+                    imax = np.where(parr > 0.99*parr.max())[0][0]
+                except:  # probably means all counts are zero
+                    imax = int(len(parr)/2.0)
+                scale = self.mca.counts[imax] / (parr[imax]+1.00)
                 ampname = 'amp_%s' % nam
                 if nam in ('elastic', 'compton1', 'compton2', 'compton',
                            'background', 'pileup', 'escape'):
@@ -1135,7 +1181,6 @@ class FitSpectraFrame(wx.Frame):
             self.model_script = "%s\n%s" % (self.model_script, script)
         s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)"
         self._larch.eval(s.format(group=self.mcagroup))
-
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=True,
                    label=None):
