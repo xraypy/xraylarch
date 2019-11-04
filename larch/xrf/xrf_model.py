@@ -1,5 +1,6 @@
 
 from collections import namedtuple
+import time
 import json
 import numpy as np
 from numpy.linalg import lstsq
@@ -599,6 +600,37 @@ class XRF_Model:
             prediction += wts[i] * self.transfer_matrix[:, i]
 
         return xrf_prediction(weights, prediction)
+
+    def apply_to_map(self, mapdata):
+        """
+        apply fitted model to  NY x NX array of spectra as from an XRF Map
+        returning a dict of predicted maps for the supplied spectrum
+        """
+        if self.transfer_matrix is None:
+            raise ValueError("need to fit a spectrum first")
+
+        ny, nx, nchan = mapdata.shape
+        nchanx, ncomps = self.transfer_matrix.shape
+        nchanw = self.fit_window.shape[0]
+        if nchan != nchanx or nchan != nchanw:
+            raise ValueError("mapdata has wrong shape ", mapdata.shape)
+
+        pred = np.zeros((ny, nx, ncomps), dtype='float32')
+        print(ny, nx, ncomps)
+        t0 = time.time()
+        for iy in range(ny):
+            print(iy)
+            for ix in range(nx):
+                wts, rnorm = nnls(self.transfer_matrix,
+                                  mapdata[iy,ix,:]*self.fit_window)
+                for i in range(ncomps):
+                    pred[iy,ix,i] = wts[i]
+
+        maps = {}
+        for i, name in enumerate(self.eigenvalues.keys()):
+            maps[name] = pred[:,:,i]
+        print("Done %.2f sec " % (time.time()-t0))
+        return maps
 
     def compile_fitresults(self, label='fit result', script='# noscript'):
         """a simple compilation of fit settings results
