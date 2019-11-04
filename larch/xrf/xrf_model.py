@@ -449,7 +449,7 @@ class XRF_Model:
                 sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail, gamma=gamma,
-                                 voigt_gamma=0.1)
+                                 voigt_gamma=0.25)
             comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
@@ -471,7 +471,7 @@ class XRF_Model:
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, gamma=gamma,
-                            voigt_gamma=0.1)
+                            voigt_gamma=0.25)
             comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(energy-self.escape_energy, comp, energy)

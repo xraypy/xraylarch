@@ -19,61 +19,72 @@ s2pi = sqrt(2*pi)
 s2 = sqrt(2.0)
 
 def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
-             step=0.001, tail=0, gamma=0.1):
+             step=0.001, tail=0, gamma=0.1,
+             use_voigt=True, voigt_gamma=0.25):
     """
-    hypermet function to simulate XRF peaks and/or Compton Scatter Peak
+    hypermet function to simulate XRF peaks and/or Compton Scatter Peak,
+    slightly modified.
 
     Arguments
     ---------
       x          array of ordinate (energy) values
       amplitude  overall scale factor
       center     peak centroid
-      sigma      Gaussian sigma
+      sigma      peak width parameter sigma
       step       step parameter for low-x erfc step [0.001]
       tail       amplitude of tail function         [0]
       gamma      slope of tail function             [0.1]
+      use_voigt  use Voigt lineshape instead of Gaussian [True]
+      voigt_gammma gamma value for Voigt lineshape [0.25]
 
 
     Notes
     -----
-    The function is given by (with error checking for
-    small values of sigma, gamma and s2 = sqrt(2) and
-    s2pi = sqrt(2*pi)):
+    The function is given by (with some error checking for
+    small values of sigma, gamma, and voigt_gamma, and with
+    s2 = sqrt(2) and s2pi = sqrt(2*pi)):
 
         arg  = (x - center)/sigma
-        gauss = (1.0/(s2pi*sigma)) * exp(-arg**2 /2)
-        sfunc = step * max(gauss) * erfc(arg/2.0) / 200.0
-        tfunc = tail * exp((x-center)/(gamma*sigma)) * erfc(arg/s2 + 1.0/gamma))
-        hypermet = amplitude * (gauss + sfunc + tfunc) / 2.0
+        if use_voigt:
+            peak = wofz(arg+1j*voigt_gamma).real
+        else:
+            peak = exp(-arg**2 /2)
 
-    This follows the definitions given in
+        stepfunc = step * erfc(arg/2.0) / 200.0
+        tailfunc = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/gamma))
+        hypermet = amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
+
+    This follows (for Gaussian lineshape) the definitions given in
         ED-XRF SPECTRUM EVALUATION AND QUANTITATIVE ANALYSIS
         USING MULTIVARIATE AND NONLINEAR TECHNIQUES
         P. Van Espen, P. Lemberge
         JCPDS-International Centre for Diffraction Data 2000,
         Advances in X-ray Analysis,Vol.43 560
 
-    But is modified slightly to better preserve area with changing tail and gamma
+    But is modified to prefer Voigt of Gaussian (as Lorentzian-like tails on the
+    positive energy side of a peak are common), and to better preserve area with
+    changing values of tail and gamma.
 
     """
     sigma = max(1.e-8, sigma)
     gamma = max(1.e-8, gamma)
+    voigt_gamma = max(1.e-8, voigt_gamma)
     arg   = (x - center)/sigma
-    arg[where(arg>100)] = 100.0
-    arg[where(arg<-100)] = -100.0
-    gscale = s2pi*sigma
-    gauss = (1.0/gscale) * exp(-arg**2 / 2.0)
-    sfunc = step * special.erfc(arg/2.0) / (200.0*gscale)
+    arg[where(arg>700)] = 700.0
 
-    targ = (x-center)/(gamma*sigma)
-    targ[where(targ>100)] = 100.0
-    targ[where(targ<-100)] = -100.0
+    if use_voigt:
+        peak = special.wofz(arg + 1j*voigt_gamma).real
+    else:
+        peak = exp(-arg**2 / 2.0)
 
-    tfunc = exp(targ) * special.erfc(arg/2.0 + 1.0/gamma)
-    tfunc = tail*tfunc / (max(tfunc)*gscale)
-    return amplitude * (gauss + sfunc + tfunc) /2.0
+    stepfunc = step * special.erfc(arg/2.0) / 200.0
 
+    arg[where(arg>gamma*700)] = gamma*700.0
 
+    tailfunc = tail * exp(arg/gamma) * special.erfc(arg/2.0 + 1.0/gamma)
+    tailfunc /= max(tailfunc)
+
+    return amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
 
 def erf(x):
     """Return the error function.
