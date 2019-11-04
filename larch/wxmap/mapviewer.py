@@ -20,19 +20,9 @@ from collections import OrderedDict
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
-try:
-    from wx._core import PyDeadObjectError
-except:
-    PyDeadObjectError = Exception
 
-
-HAS_DV = False
-try:
-    import wx.dataview as dv
-    DVSTY = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-    HAS_DV = True
-except:
-    pass
+import wx.dataview as dv
+DVSTY = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 HAS_EPICS = False
 try:
@@ -48,7 +38,6 @@ import scipy.stats as stats
 #from matplotlib.widgets import Slider, Button, RadioButtons
 
 from wxmplot import PlotFrame
-
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
@@ -69,6 +58,9 @@ from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
 
 from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
+
+def timestring():
+    return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 FONTSIZE = 8
 if platform.system() in ('Windows', 'Darwin'):
@@ -832,24 +824,23 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                       0, wx.EXPAND|wx.ALL, 1)
 
         self.report = None
-        if HAS_DV:
-            rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
-            rep.AppendTextColumn('ROI ',     width=100)
-            rep.AppendTextColumn('Min',      width=75)
-            rep.AppendTextColumn('Max',      width=75)
-            rep.AppendTextColumn('Mean ',    width=75)
-            rep.AppendTextColumn('Sigma',    width=75)
-            rep.AppendTextColumn('Median',   width=75)
-            rep.AppendTextColumn('Mode',     width=75)
-            for col in range(7):
-                align = wx.ALIGN_RIGHT
-                if col == 0: align = wx.ALIGN_LEFT
-                rep.Columns[col].Sortable = False
-                rep.Columns[col].Renderer.Alignment = align
-                rep.Columns[col].Alignment = align
+        rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
+        rep.AppendTextColumn('ROI ',     width=100)
+        rep.AppendTextColumn('Min',      width=75)
+        rep.AppendTextColumn('Max',      width=75)
+        rep.AppendTextColumn('Mean ',    width=75)
+        rep.AppendTextColumn('Sigma',    width=75)
+        rep.AppendTextColumn('Median',   width=75)
+        rep.AppendTextColumn('Mode',     width=75)
+        for col in range(7):
+            align = wx.ALIGN_RIGHT
+            if col == 0: align = wx.ALIGN_LEFT
+            rep.Columns[col].Sortable = False
+            rep.Columns[col].Renderer.Alignment = align
+            rep.Columns[col].Alignment = align
 
-            rep.SetMinSize((590, 300))
-            msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
+        rep.SetMinSize((590, 300))
+        msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
 
         pack(self, msizer)
         self.SetupScrolling()
@@ -1478,8 +1469,7 @@ class MapViewerFrame(wx.Frame):
                                               _larch=self.larch)
         try:
             self.xrfdisplay.Show()
-
-        except PyDeadObjectError:
+        except:
             self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
                                               _larch=self.larch)
             self.xrfdisplay.Show()
@@ -1598,7 +1588,7 @@ class MapViewerFrame(wx.Frame):
                 tmd.display(tomo, title=title, subtitles=subtitles,
                             contrast_level=0.5)
                 displayed = True
-            except PyDeadObjectError:
+            except:
                 displayed = False
         self.tomo_displays.append(tmd)
         tmd.SetStatusText(info, 1)
@@ -1645,10 +1635,10 @@ class MapViewerFrame(wx.Frame):
                         dopts['contrast_level'] = 0.5
                     imd.display(map, **dopts)
                     displayed = True
-                except PyDeadObjectError:
-                    self.im_displays.pop()
                 except IndexError:
                     pass
+                except:
+                    self.im_displays.pop()
         imd.SetStatusText(info, 1)
         imd.Show()
         imd.Raise()
@@ -1669,7 +1659,7 @@ class MapViewerFrame(wx.Frame):
                                                  ponifile=poni)
         try:
             self.xrddisplay2D.plot2Dxrd(label,map)
-        except PyDeadObjectError:
+        except:
             self.xrddisplay2D = XRD2DViewerFrame(_larch=self.larch,flip=flptyp,
                                                  xrd1Dviewer=self.xrddisplay1D)
             self.xrddisplay2D.plot2Dxrd(label,map)
@@ -1689,7 +1679,7 @@ class MapViewerFrame(wx.Frame):
         try:
             self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
             self.xrddisplay1D.Show()
-        except PyDeadObjectError:
+        except:
             self.xrddisplay1D = XRD1DViewerFrame(_larch=self.larch)
             self.xrddisplay1D.xrd1Dviewer.add1Ddata(xdat)
             self.xrddisplay1D.Show()
@@ -2124,7 +2114,7 @@ class MapViewerFrame(wx.Frame):
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
-            self.htimer.Start(1500)
+            self.htimer.Start(500)
             maxrow = None
             if max_new_rows is not None:
                 maxrow = max_new_rows + xrmfile.last_row + 1
@@ -2140,16 +2130,18 @@ class MapViewerFrame(wx.Frame):
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
         self.h5convert_done = True if status is 'complete' else False
-
+        self.message('MapViewer processing %s:  row %i of %i' % (self.h5convert_fname,
+                                                                 self.h5convert_irow,
+                                                                 self.h5convert_nrow))
     def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
+        # self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
+        # print("Timer:  ", self.h5convert_done)
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
             self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
-
             _path, _fname = os.path.split(fname)
             self.ShowFile(filename=_fname)
             # if _fname in self.filemap:
