@@ -1089,6 +1089,8 @@ class FitSpectraFrame(wx.Frame):
                 val = vars[val.title()]
             opts[key] = val
         opts['count_time'] = getattr(self.mca, 'real_time', 1.0)
+        if opts['count_time'] is None:
+            opts['count_time'] = 1.0
 
         script = [xrfmod_setup.format(**opts)]
 
