@@ -77,7 +77,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
     else:
         peak = exp(-arg**2 / 2.0)
 
-    stepfunc = step * special.erfc((x-center)/(s2*sigma)) / (2*center)
+    stepfunc = step*special.erfc((x-center)/(s2*sigma))/1000.0
 
     arg[where(arg>gamma*700)] = gamma*700.0
 
