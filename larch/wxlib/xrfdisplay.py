@@ -1083,13 +1083,13 @@ class XRFDisplayFrame(wx.Frame):
 
         atitles = []
         if self.mca is not None:
-            if hasattr(self.mca, 'title'):
+            if getattr(self.mca, 'title', None) is not None:
                 atitles.append(bytes2str(self.mca.title))
-            if hasattr(self.mca, 'filename'):
+            if getattr(self.mca, 'filename', None) is not None:
                 atitles.append(" File={:s}".format(self.mca.filename))
-            if hasattr(self.mca, 'npixels'):
+            if getattr(self.mca, 'npixels', None) is not None:
                 atitles.append(" {:.0f} Pixels".format(self.mca.npixels))
-            if hasattr(self.mca, 'real_time'):
+            if getattr(self.mca, 'real_time', None) is not None:
                 try:
                     rtime_str = " RealTime={:.2f} sec".format(self.mca.real_time)
                 except ValueError:
@@ -1102,11 +1102,11 @@ class XRFDisplayFrame(wx.Frame):
             except ValueError:
                 pass
         if as_mca2:
-            if hasattr(self.mca2, 'title'):
+            if getattr(self.mca2, 'title', None) is not None:
                 atitles.append(" BG={:s}".format(self.mca2.title))
-            elif  hasattr(self.mca2, 'filename'):
+            elif getattr(self.mca2, 'filename', None) is not None:
                 atitles.append(" BG_File={:s}".format(self.mca2.filename))
-            if hasattr(self.mca, 'real_time'):
+            if getattr(self.mca, 'real_time', None) is not None:
                 atitles.append(" BG_RealTime={:.2f} sec".format(self.mca2.real_time))
 
             self.oplot(self.mca2.energy, self.mca2.counts,
@@ -1267,12 +1267,12 @@ class XRFDisplayFrame(wx.Frame):
 
     def onSaveMCAFile(self, event=None, **kws):
         deffile = ''
-        if hasattr(self.mca, 'sourcefile'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
-        elif hasattr(self.mca, 'filename'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
-        if hasattr(self.mca, 'areaname'):
-            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
+        if getattr(self.mca, 'sourcefile', None) is not None:
+            deffile = "%s%s" % (deffile, self.mca.sourcefile)
+        elif getattr(self.mca, 'filename', None) is not None:
+            deffile = "%s%s" % (deffile, self.mca.filename)
+        if getattr(self.mca, 'areaname', None) is not None:
+            deffile = "%s_%s" % (deffile, self.mca.areaname)
         if deffile == '':
             deffile ='test'
         if not deffile.endswith('.mca'):
@@ -1287,12 +1287,12 @@ class XRFDisplayFrame(wx.Frame):
 
     def onSaveColumnFile(self, event=None, **kws):
         deffile = ''
-        if hasattr(self.mca, 'sourcefile'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
-        elif hasattr(self.mca, 'filename'):
-            deffile = "%s%s" % (deffile, getattr(self.mca, 'filename'))
-        if hasattr(self.mca, 'areaname'):
-            deffile = "%s_%s" % (deffile, getattr(self.mca, 'areaname'))
+        if getattr(self.mca, 'sourcefile', None) is not None:
+            deffile = "%s%s" % (deffile, self.mca.sourcefile)
+        elif getattr(self.mca, 'filename', None) is not None:
+            deffile = "%s%s" % (deffile, self.mca.filename)
+        if getattr(self.mca, 'areaname', None) is not None:
+            deffile = "%s_%s" % (deffile, self.mca.areaname)
         if deffile == '':
             deffile ='test'
         if not deffile.endswith('.dat'):
