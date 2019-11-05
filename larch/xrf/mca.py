@@ -181,7 +181,7 @@ class MCA(Group):
         en = self.energy
         npts = len(en)
         counts = self.counts.astype(int)*1.0
-        pileup = np.convolve(counts, counts, 'full')[:npts]/counts.sum()
+        pileup = 1.e-8*np.convolve(counts, counts, 'full')[:npts]
         ex = en[0] + np.arange(len(pileup))*(en[1] - en[0])
         if scale is None:
             npts = len(en)
@@ -209,7 +209,7 @@ class MCA(Group):
         # the detector fluorescence can escape on either side
         mu_emit  = material_mu(det, fluor_en*1000)
         mu_input = material_mu(det, self.energy*1000)
-        escape   = scale * edge.fyield * np.exp(-mu_emit / (2*mu_input))
+        escape   = 0.5*scale*edge.fyield * np.exp(-mu_emit / (2*mu_input))
         escape[np.where(self.energy*1000 < edge.energy)] = 0.0
         escape *= interp(self.energy - fluor_en, self.counts*1.0,
                          self.energy, kind='cubic')
