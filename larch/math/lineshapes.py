@@ -35,7 +35,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
       tail       amplitude of tail function         [0]
       gamma      slope of tail function             [0.1]
       use_voigt  use Voigt lineshape instead of Gaussian [True]
-      voigt_gammma gamma value for Voigt lineshape [0.25]
+      voigt_gammma gamma value for Voigt lineshape [0.25
 
 
     Notes
@@ -77,13 +77,12 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
     else:
         peak = exp(-arg**2 / 2.0)
 
-    stepfunc = step * special.erfc(arg/2.0) / 200.0
+    stepfunc = step * special.erfc((x-center)/(s2*sigma)) / (2*center)
 
     arg[where(arg>gamma*700)] = gamma*700.0
 
-    tailfunc = tail * exp(arg/gamma) * special.erfc(arg/2.0 + 1.0/gamma)
-    tailfunc /= max(tailfunc)
-
+    tailfunc = exp(arg/gamma) * special.erfc(arg/s2 + 1.0/(s2*gamma))
+    tailfunc *= tail / (2*gamma*sigma*exp(-1/2*gamma**2))
     return amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
 
 def erf(x):
