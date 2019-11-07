@@ -82,7 +82,7 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
     arg[where(arg>beta*700)] = beta*700.0
 
     tailfunc = exp(arg/beta) * special.erfc(arg/s2 + 1.0/(s2*beta))
-    tailfunc *= tail / (2*betaa*sigma*exp(-1/2*beta**2))
+    tailfunc *= tail / (2*beta*sigma*exp(-1/2*beta**2))
     return amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
 
 def erf(x):
