@@ -82,16 +82,16 @@ _xrfmodel.set_detector(thickness={det_thk:.5f}, material='{det_mat:s}',
                 vary_cal_quad=False,
                 peak_step={peak_step:.5f}, vary_peak_step={peak_step_vary:s},
                 peak_tail={peak_tail:.5f}, vary_peak_tail={peak_tail_vary:s},
+                peak_beta={peak_beta:.5f}, vary_peak_beta={peak_beta_vary:s},
                 peak_gamma={peak_gamma:.5f}, vary_peak_gamma={peak_gamma_vary:s},
-                peak_sigmax={peak_sigma:.5f}, vary_peak_sigmax={peak_sigma_vary:s},
                 noise={det_noise:.5f}, vary_noise={det_noise_vary:s},
                 efano={det_efano:.5f}, vary_efano={det_efano_vary:s})
 """
 
 xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
-                amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, gamma={_gamma:.5f},
+                amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, beta={_beta:.5f},
                 sigmax={_sigma:.5f},  vary_center={vcen:s}, vary_step={vstep:s},
-                vary_tail={vtail:s}, vary_sigmax={vsigma:s}, vary_gamma={vgamma:s})
+                vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})
 """
 
 xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
@@ -215,24 +215,28 @@ class FitSpectraFrame(wx.Frame):
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
 
-        dstep, dtail, dsigma, dgamma = 0.1, 0.25, 1.0, 0.25
+        dstep, dtail, dbeta, dgamma = 0.1, 0.25, 0.25, 0.01
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
-                                      max_val=10.0, increment=0.01)
+                                      max_val=10.0, increment=0.01,
+                                      tooltip='step fraction extending to low energy side of peak')
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=4, min_val=0,
-                                        max_val=0.5, increment=0.01)
-
+                                      max_val=0.5, increment=0.01,
+                                      tooltip='intensity of extra tail at low energy side of peak')
+        wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=4, min_val=0,
+                                      max_val=10.0, increment=0.1,
+                                      tooltip='width of extra tail at low energy side of peak')
         wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=4, min_val=0,
-                                       max_val=30.0, increment=0.1)
-        wids['peak_sigma'] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
-                                       max_val=10.0, increment=0.1)
+                                       max_val=30.0, increment=0.1,
+                                       tooltip='lorentzian fraction of Voigt function')
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
-        wids['peak_sigma_vary'] = VarChoice(p, default=0)
+        wids['peak_beta_vary'] = VarChoice(p, default=0)
 
 
         btn_from_peaks = Button(p, 'Guess Peaks', size=(150, -1),
                                 action=self.onElems_GuessPeaks)
+        # tooltip='Guess elements from peak locations')
         btn_from_rois = Button(p, 'Select from ROIS', size=(150, -1),
                                action=self.onElems_FromROIS)
         btn_clear_elems = Button(p, 'Clear All', size=(150, -1),
@@ -259,13 +263,14 @@ class FitSpectraFrame(wx.Frame):
         p.Add(wids['peak_tail_vary'])
 
         p.Add((2, 2), newrow=True)
+        p.AddText('  Beta: ')
+        p.Add(wids['peak_beta'])
+        p.Add(wids['peak_beta_vary'])
+
         p.AddText('  Gamma : ')
         p.Add(wids['peak_gamma'])
         p.Add(wids['peak_gamma_vary'])
 
-        p.AddText('  Sigma Scale: ')
-        p.Add(wids['peak_sigma'])
-        p.Add(wids['peak_sigma_vary'])
 
         p.Add((2, 2), newrow=True)
         p.Add(HLine(p, size=(550, 3)), dcol=8)
@@ -273,7 +278,7 @@ class FitSpectraFrame(wx.Frame):
         p.Add((2, 2), newrow=True)
         opts = dict(size=(100, -1),
                     min_val=0, digits=4, increment=0.010)
-        for name, escale, dsigma, dgamma in (('Elastic',  1.000, 1.0, 0.25),
+        for name, escale, dsigma, dbeta in (('Elastic',  1.000, 1.0, 0.25),
                                              ('Compton1', 0.975, 1.5, 0.50),
                                              ('Compton2', 0.950, 2.0, 1.00)):
             en = escale * self.mca.incident_energy
@@ -283,7 +288,7 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_use'%t] = Check(p, label='Include', default=True)
             wids['%s_cen_vary'%t]   = VarChoice(p, default=vary_en)
             wids['%s_step_vary'%t]  = VarChoice(p, default=0)
-            wids['%s_gamma_vary'%t] = VarChoice(p, default=0)
+            wids['%s_beta_vary'%t] = VarChoice(p, default=0)
             wids['%s_tail_vary'%t]  = VarChoice(p, default=0)
             wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
 
@@ -293,7 +298,7 @@ class FitSpectraFrame(wx.Frame):
                                            max_val=20.0, increment=0.01)
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=4, min_val=0,
                                            max_val=30.0, increment=0.01)
-            wids['%s_gamma'%t] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
+            wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=4, min_val=0,
                                            max_val=30.0, increment=0.1)
             wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
                                            max_val=10.0, increment=0.1)
@@ -316,9 +321,9 @@ class FitSpectraFrame(wx.Frame):
             p.Add(wids['%s_tail_vary'%t])
 
             p.Add((2, 2), newrow=True)
-            p.AddText('  Gamma : ')
-            p.Add(wids['%s_gamma'%t])
-            p.Add(wids['%s_gamma_vary'%t])
+            p.AddText('  Beta : ')
+            p.Add(wids['%s_beta'%t])
+            p.Add(wids['%s_beta_vary'%t])
 
             p.AddText('  Sigma Scale : ')
             p.Add(wids['%s_sigma'%t])
@@ -1064,7 +1069,7 @@ class FitSpectraFrame(wx.Frame):
             value = event.IsChecked()
         if name is None:
             return
-        for a in ('cen', 'step', 'tail', 'sigma', 'gamma'):
+        for a in ('cen', 'step', 'tail', 'sigma', 'beta'):
             self.wids['%s_%s'%(name, a)].Enable(value)
             varwid = self.wids.get('%s_%s_vary'%(name, a), None)
             if varwid is not None:
@@ -1104,8 +1109,8 @@ class FitSpectraFrame(wx.Frame):
                 d['vstep'] = opts['%s_step_vary'%t]
                 d['_tail'] = opts['%s_tail'%t]
                 d['vtail'] = opts['%s_tail_vary'%t]
-                d['_gamma'] = opts['%s_gamma'%t]
-                d['vgamma'] = opts['%s_gamma_vary'%t]
+                d['_beta'] = opts['%s_beta'%t]
+                d['vbeta'] = opts['%s_beta_vary'%t]
                 d['_sigma'] = opts['%s_sigma'%t]
                 d['vsigma'] = opts['%s_sigma_vary'%t]
                 script.append(xrfmod_scattpeak.format(**d))
