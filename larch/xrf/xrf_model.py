@@ -291,13 +291,11 @@ class XRF_Model:
             self.add_background(bgr)
 
     def set_detector(self, material='Si', thickness=0.40, efano=None,
-                     noise=30., peak_step=1e-4, peak_tail=0.01,
-                     peak_gamma=0, peak_beta=0.5, peak_sigmax=1.0,
-                     cal_offset=0, cal_slope=10., cal_quad=0,
-                     vary_thickness=False, vary_efano=False,
-                     vary_noise=True, vary_peak_step=True,
-                     vary_peak_tail=True, vary_peak_gamma=False,
-                     vary_peak_beta=False, vary_peak_sigmax=False,
+                     noise=30., peak_step=1e-4, peak_tail=0.01, peak_gamma=0,
+                     peak_beta=0.5, cal_offset=0, cal_slope=10., cal_quad=0,
+                     vary_thickness=False, vary_efano=False, vary_noise=True,
+                     vary_peak_step=True, vary_peak_tail=True,
+                     vary_peak_gamma=False, vary_peak_beta=False,
                      vary_cal_offset=True, vary_cal_slope=True,
                      vary_cal_quad=False):
 
@@ -312,18 +310,17 @@ class XRF_Model:
         self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=10)
         self.params.add('peak_beta', value=peak_beta, vary=vary_peak_beta, min=0)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
-        self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
-                         step=0.010, tail=0.5, sigmax=1.0, beta=0.5, gamma=0,
+                         step=0.010, tail=0.5, sigmax=1.0, beta=0.5,
                          vary_center=True, vary_step=True, vary_tail=True,
-                         vary_sigmax=True, vary_beta=False, vary_gamma=False):
+                         vary_sigmax=True, vary_beta=False):
         """add Rayleigh (elastic) or Compton (inelastic) scattering peak
         """
         if name not in self.scatter:
             self.scatter.append(xrf_peak(name, amplitude, center, step, tail,
-                                         sigmax, beta, gamma, vary_center, vary_step,
-                                         vary_tail, vary_sigmax, vary_beta, vary_gamma))
+                                         sigmax, beta, 0.0, vary_center, vary_step,
+                                         vary_tail, vary_sigmax, vary_beta, False))
 
         if center is None:
             center = self.xray_energy
@@ -334,7 +331,6 @@ class XRF_Model:
         self.params.add('%s_step' % name,   value=step, vary=vary_step, min=0, max=10)
         self.params.add('%s_tail' % name,   value=tail, vary=vary_tail, min=0, max=20)
         self.params.add('%s_beta' % name,   value=beta, vary=vary_beta, min=0, max=20)
-        self.params.add('%s_gamma' % name,  value=gamma, vary=vary_gamma, min=0, max=100)
         self.params.add('%s_sigmax' % name, value=sigmax, vary=vary_sigmax,
                         min=0, max=100)
 
@@ -424,7 +420,6 @@ class XRF_Model:
         tail = pars['peak_tail']
         beta = pars['peak_beta']
         gamma = pars['peak_gamma']
-        sigmax = pars['peak_sigmax']
 
         # detector attenuation
         atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
@@ -453,7 +448,7 @@ class XRF_Model:
             for key, line in elem.lines.items():
                 ecen = line.energy
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
-                sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
+                sigma = self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail,
                                  beta=beta, gamma=gamma)
@@ -474,7 +469,6 @@ class XRF_Model:
             step = pars['%s_step' % p]
             tail = pars['%s_tail' % p]
             beta = pars['%s_beta' % p]
-            gamma = pars['%s_gamma' % p]
             sigma = pars['%s_sigmax' % p]
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
