@@ -19,8 +19,8 @@ s2pi = sqrt(2*pi)
 s2 = sqrt(2.0)
 
 def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
-             step=0.001, tail=0, gamma=0.1,
-             use_voigt=True, voigt_gamma=0.25):
+             step=0.001, tail=0, beta=0.1,
+             use_voigt=True, gamma=0.25):
     """
     hypermet function to simulate XRF peaks and/or Compton Scatter Peak,
     slightly modified.
@@ -33,25 +33,25 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
       sigma      peak width parameter sigma
       step       step parameter for low-x erfc step [0.001]
       tail       amplitude of tail function         [0]
-      gamma      slope of tail function             [0.1]
+      beta       slope of tail function             [0.1]
       use_voigt  use Voigt lineshape instead of Gaussian [True]
-      voigt_gammma gamma value for Voigt lineshape [0.25
+      gamma      gamma value for Voigt lineshape [0.25
 
 
     Notes
     -----
     The function is given by (with some error checking for
-    small values of sigma, gamma, and voigt_gamma, and with
+    small values of sigma, beta, and gamma, and with
     s2 = sqrt(2) and s2pi = sqrt(2*pi)):
 
         arg  = (x - center)/sigma
         if use_voigt:
-            peak = wofz(arg+1j*voigt_gamma).real
+            peak = wofz(arg+1j*gamma).real
         else:
             peak = exp(-arg**2 /2)
 
         stepfunc = step * erfc(arg/2.0) / 200.0
-        tailfunc = tail * exp(arg/gamma) * erfc(arg/s2 + 1.0/gamma))
+        tailfunc = tail * exp(arg/beta) * erfc(arg/s2 + 1.0/beta))
         hypermet = amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
 
     This follows (for Gaussian lineshape) the definitions given in
@@ -63,26 +63,26 @@ def hypermet(x, amplitude=1.0, center=0., sigma=1.0,
 
     But is modified to prefer Voigt of Gaussian (as Lorentzian-like tails on the
     positive energy side of a peak are common), and to better preserve area with
-    changing values of tail and gamma.
+    changing values of tail and beta.
 
     """
     sigma = max(1.e-8, sigma)
+    beta = max(1.e-8, beta)
     gamma = max(1.e-8, gamma)
-    voigt_gamma = max(1.e-8, voigt_gamma)
     arg   = (x - center)/sigma
     arg[where(arg>700)] = 700.0
 
     if use_voigt:
-        peak = special.wofz(arg + 1j*voigt_gamma).real
+        peak = special.wofz(arg + 1j*gamma).real
     else:
         peak = exp(-arg**2 / 2.0)
 
     stepfunc = step*special.erfc((x-center)/(s2*sigma))/1000.0
 
-    arg[where(arg>gamma*700)] = gamma*700.0
+    arg[where(arg>beta*700)] = beta*700.0
 
-    tailfunc = exp(arg/gamma) * special.erfc(arg/s2 + 1.0/(s2*gamma))
-    tailfunc *= tail / (2*gamma*sigma*exp(-1/2*gamma**2))
+    tailfunc = exp(arg/beta) * special.erfc(arg/s2 + 1.0/(s2*beta))
+    tailfunc *= tail / (2*betaa*sigma*exp(-1/2*beta**2))
     return amplitude * (peak + stepfunc + tailfunc) / (2.0*s2pi*sigma)
 
 def erf(x):
