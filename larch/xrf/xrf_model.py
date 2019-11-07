@@ -17,9 +17,10 @@ from ..xafs import ftwindow
 from ..utils import group2dict, json_dump
 
 xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
-xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step', 'tail',
-                                   'sigmax', 'gamma', 'vary_center', 'vary_step',
-                                   'vary_tail', 'vary_sigmax', 'vary_gamma'))
+xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
+                                   'tail', 'sigmax', 'beta', 'gamma',
+                                   'vary_center', 'vary_step', 'vary_tail',
+                                   'vary_sigmax', 'vary_beta', 'vary_gamma'))
 
 ########
 # Note on units:  energies are in eV, lengths in cm
@@ -259,7 +260,7 @@ class XRF_Model:
       incident beam (energy, angle_in, angle_out)
       matrix        (list of material, thickness)
       filters       (list of material, thickness)
-      detector      (material, thickness, efano, noise, step, tail, gamma)
+      detector      (material, thickness, efano, noise, step, tail, beta, gamma)
     """
     def __init__(self, xray_energy=None, energy_min=1500, energy_max=30000,
                  count_time=1, bgr=None, iter_callback=None, **kws):
@@ -291,12 +292,14 @@ class XRF_Model:
 
     def set_detector(self, material='Si', thickness=0.40, efano=None,
                      noise=30., peak_step=1e-4, peak_tail=0.01,
-                     peak_gamma=0.5, peak_sigmax=1.0, cal_offset=0,
-                     cal_slope=10., cal_quad=0, vary_thickness=False,
-                     vary_efano=False, vary_noise=True, vary_peak_step=True,
+                     peak_gamma=0, peak_beta=0.5, peak_sigmax=1.0,
+                     cal_offset=0, cal_slope=10., cal_quad=0,
+                     vary_thickness=False, vary_efano=False,
+                     vary_noise=True, vary_peak_step=True,
                      vary_peak_tail=True, vary_peak_gamma=False,
-                     vary_peak_sigmax=False, vary_cal_offset=True,
-                     vary_cal_slope=True, vary_cal_quad=False):
+                     vary_peak_beta=False, vary_peak_sigmax=False,
+                     vary_cal_offset=True, vary_cal_slope=True,
+                     vary_cal_quad=False):
 
         self.detector = XRF_Material(material, thickness, efano=efano, noise=noise)
         self.params.add('det_thickness', value=thickness, vary=vary_thickness, min=0)
@@ -307,19 +310,20 @@ class XRF_Model:
         self.params.add('cal_quad', value=cal_quad, vary=vary_cal_quad)
         self.params.add('peak_step', value=peak_step, vary=vary_peak_step, min=0, max=10)
         self.params.add('peak_tail', value=peak_tail, vary=vary_peak_tail, min=0, max=10)
+        self.params.add('peak_beta', value=peak_beta, vary=vary_peak_beta, min=0)
         self.params.add('peak_gamma', value=peak_gamma, vary=vary_peak_gamma, min=0)
         self.params.add('peak_sigmax', value=peak_sigmax, vary=vary_peak_sigmax, min=0)
 
     def add_scatter_peak(self, name='elastic', amplitude=1000, center=None,
-                         step=0.010, tail=0.5, sigmax=1.0, gamma=0.75,
+                         step=0.010, tail=0.5, sigmax=1.0, beta=0.5, gamma=0,
                          vary_center=True, vary_step=True, vary_tail=True,
-                         vary_sigmax=True, vary_gamma=False):
+                         vary_sigmax=True, vary_beta=False, vary_gamma=False):
         """add Rayleigh (elastic) or Compton (inelastic) scattering peak
         """
         if name not in self.scatter:
             self.scatter.append(xrf_peak(name, amplitude, center, step, tail,
-                                         sigmax, gamma, vary_center, vary_step,
-                                         vary_tail, vary_sigmax, vary_gamma))
+                                         sigmax, beta, gamma, vary_center, vary_step,
+                                         vary_tail, vary_sigmax, vary_beta, vary_gamma))
 
         if center is None:
             center = self.xray_energy
@@ -329,7 +333,8 @@ class XRF_Model:
                         min=center*0.8, max=center*1.2)
         self.params.add('%s_step' % name,   value=step, vary=vary_step, min=0, max=10)
         self.params.add('%s_tail' % name,   value=tail, vary=vary_tail, min=0, max=20)
-        self.params.add('%s_gamma' % name,  value=gamma, vary=vary_gamma, min=0, max=10)
+        self.params.add('%s_beta' % name,   value=beta, vary=vary_beta, min=0, max=20)
+        self.params.add('%s_gamma' % name,  value=gamma, vary=vary_gamma, min=0, max=100)
         self.params.add('%s_sigmax' % name, value=sigmax, vary=vary_sigmax,
                         min=0, max=100)
 
@@ -417,6 +422,7 @@ class XRF_Model:
         noise = pars['det_noise']
         step = pars['peak_step']
         tail = pars['peak_tail']
+        beta = pars['peak_beta']
         gamma = pars['peak_gamma']
         sigmax = pars['peak_sigmax']
 
@@ -449,8 +455,8 @@ class XRF_Model:
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
                 sigma = sigmax*self.detector.sigma(ecen, efano=efano, noise=noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
-                                 sigma=sigma, step=step, tail=tail, gamma=gamma,
-                                 voigt_gamma=0.25)
+                                 sigma=sigma, step=step, tail=tail,
+                                 beta=beta, gamma=gamma)
             comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
@@ -467,12 +473,13 @@ class XRF_Model:
             ecen = pars['%s_center' % p]
             step = pars['%s_step' % p]
             tail = pars['%s_tail' % p]
+            beta = pars['%s_beta' % p]
             gamma = pars['%s_gamma' % p]
             sigma = pars['%s_sigmax' % p]
             sigma *= self.detector.sigma(ecen, efano=efano, noise=noise)
             comp = hypermet(energy, amplitude=1.0, center=ecen,
-                            sigma=sigma, step=step, tail=tail, gamma=gamma,
-                            voigt_gamma=0.25)
+                            sigma=sigma, step=step, tail=tail, beta=beta,
+                            gamma=gamma)
             comp *= amp * atten * self.count_time
             if self.use_escape:
                 comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
@@ -493,7 +500,6 @@ class XRF_Model:
             pamp = pars.get('pileup_amp', 0.0)
             npts = len(energy)
             pileup = pamp*1.e-9*np.convolve(total, total*1.0, 'full')[:npts]
-
             self.comps['pileup'] = pileup
             self.eigenvalues['pileup'] = pamp
             total += pileup
