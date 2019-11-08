@@ -215,7 +215,7 @@ class FitSpectraFrame(wx.Frame):
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
 
-        dstep, dtail, dbeta, dgamma = 0.1, 0.25, 0.25, 0.01
+        dstep, dtail, dbeta, dgamma = 0.10, 0.25, 0.25, 0.01
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
                                       max_val=10.0, increment=0.01,
                                       tooltip='step fraction extending to low energy side of peak')
@@ -223,10 +223,10 @@ class FitSpectraFrame(wx.Frame):
                                       max_val=0.5, increment=0.01,
                                       tooltip='intensity of extra tail at low energy side of peak')
         wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=4, min_val=0,
-                                      max_val=10.0, increment=0.1,
+                                      max_val=10.0, increment=0.01,
                                       tooltip='width of extra tail at low energy side of peak')
         wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=4, min_val=0,
-                                       max_val=30.0, increment=0.1,
+                                       max_val=30.0, increment=0.01,
                                        tooltip='lorentzian fraction of Voigt function')
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
