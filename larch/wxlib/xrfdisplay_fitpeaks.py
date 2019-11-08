@@ -215,18 +215,18 @@ class FitSpectraFrame(wx.Frame):
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
 
-        dstep, dtail, dbeta, dgamma = 0.10, 0.25, 0.25, 0.01
-        wids['peak_step'] = FloatSpin(p, value=dstep, digits=4, min_val=0,
-                                      max_val=10.0, increment=0.01,
+        dstep, dtail, dbeta, dgamma = 0.10, 0.10, 0.5, 0.01
+        wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
+                                      max_val=1.0, increment=0.01,
                                       tooltip='step fraction extending to low energy side of peak')
-        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=4, min_val=0,
-                                      max_val=0.5, increment=0.01,
+        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
+                                      max_val=1.0, increment=0.01,
                                       tooltip='intensity of extra tail at low energy side of peak')
-        wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=4, min_val=0,
+        wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01,
                                       tooltip='width of extra tail at low energy side of peak')
-        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=4, min_val=0,
-                                       max_val=30.0, increment=0.01,
+        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
+                                       max_val=10.0, increment=0.01,
                                        tooltip='lorentzian fraction of Voigt function')
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
@@ -254,7 +254,7 @@ class FitSpectraFrame(wx.Frame):
         p.irow += 5
 
         p.Add((2, 2), newrow=True)
-        p.AddText('  Step (%): ')
+        p.AddText('  Step: ')
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 
@@ -294,14 +294,14 @@ class FitSpectraFrame(wx.Frame):
 
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=2, min_val=0,
                                            increment=10)
-            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=4, min_val=0,
-                                           max_val=20.0, increment=0.01)
-            wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=4, min_val=0,
-                                           max_val=30.0, increment=0.01)
-            wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=4, min_val=0,
-                                           max_val=30.0, increment=0.1)
-            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=4, min_val=0,
-                                           max_val=10.0, increment=0.1)
+            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
+                                           max_val=1.0, increment=0.01)
+            wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
+                                           max_val=1.0, increment=0.01)
+            wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
+                                           max_val=10.0, increment=0.01)
+            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
+                                           max_val=10.0, increment=0.01)
 
             p.Add((2, 2), newrow=True)
             p.AddText("  %s Peak:" % name,  colour='#880000')
@@ -312,7 +312,7 @@ class FitSpectraFrame(wx.Frame):
             p.Add(wids['%s_cen_vary'%t])
 
             p.Add((2, 2), newrow=True)
-            p.AddText('  Step (%): ')
+            p.AddText('  Step: ')
             p.Add(wids['%s_step'%t])
             p.Add(wids['%s_step_vary'%t])
 
