@@ -20,7 +20,7 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 from peakutils import peak
 
 from lmfit import Parameter, Minimizer
-from lmfit.printfuncs import gformat, CORREL_HEAD
+from lmfit.printfuncs import gformat
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
@@ -215,7 +215,7 @@ class FitSpectraFrame(wx.Frame):
                                          tooltip_msg=tooltip_msg,
                                          onselect=self.onElemSelect)
 
-        dstep, dtail, dbeta, dgamma = 0.10, 0.10, 0.5, 0.01
+        dstep, dtail, dbeta, dgamma = 0.05, 0.10, 0.5, 0.05
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
                                       tooltip='step fraction extending to low energy side of peak')
@@ -475,8 +475,7 @@ class FitSpectraFrame(wx.Frame):
         pan = GridPanel(self, itemstyle=LEFT)
 
         pan.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
-        pan.AddManyText(('  Filter #', 'Material',
-                         'Thickness (mm)',
+        pan.AddManyText(('  Filter #', 'Material', 'Thickness (mm)',
                          'Vary Thickness'), style=CEN, newrow=True)
         opts = dict(size=(100, -1), min_val=0, digits=5, increment=0.005)
 
@@ -749,14 +748,16 @@ class FitSpectraFrame(wx.Frame):
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
+        self.compscale_lock = 0.0
         wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1),
-                                         action=self.onCompApplyScale)
+                                         action=self.onCompSetElemAbundance)
         wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=6, min_val=0,
                                            increment=0.01,
-                                           action=self.onCompApplyScale)
-
+                                           action=self.onCompSetElemAbundance)
         wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
-        wids['comp_scalevalue'] = SimpleText(panel, label='--')
+        wids['comp_scalevalue'] = FloatCtrl(panel, value=0, size=(200, -1),
+                                            action=self.onCompSetScale)
+
         wids['comp_save'] = Button(panel, 'Save This Concentration Data',
                                    size=(200, -1), action=self.onCompSave)
 
@@ -788,25 +789,26 @@ class FitSpectraFrame(wx.Frame):
         panel.SetupScrolling()
         return panel
 
-    def onCompApplyScale(self, event=None, value=None):
-        if len(self.fit_history) < 1:
+    def onCompSetScale(self, event=None, value=None):
+        if len(self.fit_history) < 1 or (time.time() - self.compscale_lock) < 0.25:
             return
-        result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
-        cur_elem  = self.owids['comp_elemchoice'].GetStringSelection()
-
-        self.owids['composition'].DeleteAllItems()
-        conc_vals = result.concentration_results = {}
-
+        self.compscale_lock = time.time()
+        owids = self.owids
+        result = self.get_fitresult(nfit=owids['comp_fitlabel'].GetSelection())
+        cur_elem  = owids['comp_elemchoice'].GetStringSelection()
+        conc_vals = {}
         for elem in result.comps.keys():
             parname = 'amp_%s' % elem.lower()
             if parname in result.params:
                 par = result.params[parname]
                 conc_vals[elem] = [par.value, par.stderr]
 
-        scale = conc_vals[cur_elem][0]/self.owids['comp_elemscale'].GetValue()
+        scale = self.owids['comp_scalevalue'].GetValue()
 
+        owids['comp_elemscale'].SetValue(conc_vals[cur_elem][0]/scale)
+        owids['composition'].DeleteAllItems()
+        result.concentration_results = conc_vals
         result.concentration_scale = scale
-        self.owids['comp_scalevalue'].SetLabel(gformat(scale, 12))
 
         for elem, dat in conc_vals.items():
             zat = "%d" % atomic_number(elem)
@@ -818,7 +820,40 @@ class FitSpectraFrame(wx.Frame):
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
                 pass
-            self.owids['composition'].AppendItem((zat, elem, rval, sval, uval))
+            owids['composition'].AppendItem((zat, elem, rval, sval, uval))
+
+    def onCompSetElemAbundance(self, event=None, value=None):
+        if len(self.fit_history) < 1 or (time.time() - self.compscale_lock) < 0.25:
+            return
+        self.compscale_lock = time.time()
+        owids = self.owids
+        result = self.get_fitresult(nfit=owids['comp_fitlabel'].GetSelection())
+        cur_elem = owids['comp_elemchoice'].GetStringSelection()
+        conc_vals = {}
+        for elem in result.comps.keys():
+            parname = 'amp_%s' % elem.lower()
+            if parname in result.params:
+                par = result.params[parname]
+                conc_vals[elem] = [par.value, par.stderr]
+
+        result.concentration_results = conc_vals
+
+        scale = conc_vals[cur_elem][0]/owids['comp_elemscale'].GetValue()
+        result.concentration_scale = scale
+        owids['comp_scalevalue'].SetValue(scale)
+        owids['composition'].DeleteAllItems()
+        for elem, dat in conc_vals.items():
+            zat = "%d" % atomic_number(elem)
+            val, serr = dat
+            rval = "%15.4f" % val
+            sval = "%15.4f" % (val/scale)
+            uval = "%15.4f" % (serr/scale)
+            try:
+                uval = uval + ' ({:.2%})'.format(abs(serr/val))
+            except ZeroDivisionError:
+                pass
+            owids['composition'].AppendItem((zat, elem, rval, sval, uval))
+
 
     def onCompSave(self, event=None):
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
@@ -863,7 +898,7 @@ class FitSpectraFrame(wx.Frame):
             self.owids['comp_elemchoice'].SetStringSelection(cur_elem)
         else:
             self.owids['comp_elemchoice'].SetSelection(0)
-        self.onCompApplyScale()
+        self.onCompSetElemAbundance()
 
     def UpdateCompositionPage(self, event=None):
         self.fit_history = getattr(self.mca, 'fit_history', [])
