@@ -22,7 +22,7 @@ xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
                                    'vary_center', 'vary_step', 'vary_tail',
                                    'vary_sigmax', 'vary_beta', 'vary_gamma'))
 
-########
+####
 # Note on units:  energies are in eV, lengths in cm
 #
 # For many XRF Analysis needs, energies are in keV
@@ -172,7 +172,7 @@ class XRF_Element:
                     nlines = 3.0
                     fy3 = fy3 + fy1 * (ck13 + ck12*ck23)
                     fy2 = fy2 + fy1 * ck12
-                    fy1 = fy1 * (1 - ck12 - ck13)
+                    fy1 = fy1 * (1 - ck12 - ck13 - ck12*ck23)
                     self.fyields['L1'] = fy1
                 self.fyields['L2'] = fy2
             self.fyields['L3'] = fy3/nlines
