@@ -59,7 +59,7 @@ MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
 NMATRIX = len(MATRIXLAYERNAMES)
 MIN_CORREL = 0.10
 
-CompositionUnits = ('gr/cm^2', 'wt %', 'ppm')
+CompositionUnits = ('ng/mm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
 EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
