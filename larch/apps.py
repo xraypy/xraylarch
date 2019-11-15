@@ -72,7 +72,7 @@ class LarchApp:
         self.icon = "%s.%s" % (icon, ico_ext)
         bindir = 'Scripts' if uname == 'win' else 'bin'
         self.bindir = os.path.join(sys.prefix, bindir)
-        
+
     def create_shortcut(self):
         script = os.path.join(self.bindir, self.script)
         icon = os.path.join(icondir, self.icon)
@@ -83,8 +83,8 @@ class LarchApp:
                 fh = open(baserunner, 'w')
                 fh.write(WIN_BASERUNNER)
                 fh.close()
-                time.sleep(0.5)                                        
-        
+                time.sleep(0.5)
+
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
 
@@ -133,16 +133,14 @@ def run_xas_viewer():
 def run_xrfdisplay():
     """ XRF Display"""
     use_mpl_wxagg()
-    from larch.wxlib import XRFApp
+    from larch.wxlib.xrfdisplay import XRFApp
     XRFApp().MainLoop()
-
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
     use_mpl_wxagg()
     from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
-
 
 def run_xrd1d_viewer():
     """XRD Display for 1D patternss"""
