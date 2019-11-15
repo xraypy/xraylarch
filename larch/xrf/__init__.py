@@ -17,7 +17,7 @@ from .xrf_calib import (xrf_calib_fitrois, xrf_calib_compute,
                         xrf_calib_apply, xrf_calib_init_roi)
 
 from .xrf_peak import xrf_peak
-from .xrf_model import xrf_model
+from .xrf_model import xrf_model, FanoFactors
 
 _larch_groups = (ROI, MCA)
 

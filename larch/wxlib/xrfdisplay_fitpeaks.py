@@ -37,7 +37,7 @@ from .periodictable import PeriodicTablePanel
 
 from larch import Group
 
-from ..xrf import xrf_background, MCA
+from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
 
 def read_filterdata(flist, _larch):
@@ -62,30 +62,26 @@ MIN_CORREL = 0.10
 CompositionUnits = ('ng/mm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
-EFano = {'Si': 3.66 * 0.115, 'Ge': 3.0 * 0.130}
 EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
-Energy_Text = 'All energies in eV'
+Energy_Text = 'All energies in keV'
 
 mca_init = """
 {group:s}.fit_history = getattr({group:s}, 'fit_history', [])
-{group:s}.energy_ev = {group:s}.energy*{efactor:.1f}
+### {group:s}.energy_ev = {group:s}.energy*{efactor:.1f}
 """
 
 xrfmod_setup = """## Set up XRF Model
-_xrfmodel = xrf_model(xray_energy={en_xray:.2f},
-                      count_time={count_time:.5f},
+_xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
                       energy_min={en_min:.2f}, energy_max={en_max:.2f})
 
 _xrfmodel.set_detector(thickness={det_thk:.5f}, material='{det_mat:s}',
                 cal_offset={cal_offset:.5f}, cal_slope={cal_slope:.5f},
                 vary_cal_offset={cal_vary!r}, vary_cal_slope={cal_vary!r},
-                vary_cal_quad=False,
                 peak_step={peak_step:.5f}, vary_peak_step={peak_step_vary:s},
                 peak_tail={peak_tail:.5f}, vary_peak_tail={peak_tail_vary:s},
                 peak_beta={peak_beta:.5f}, vary_peak_beta={peak_beta_vary:s},
                 peak_gamma={peak_gamma:.5f}, vary_peak_gamma={peak_gamma_vary:s},
-                noise={det_noise:.5f}, vary_noise={det_noise_vary:s},
-                efano={det_efano:.5f}, vary_efano={det_efano_vary:s})
+                noise={det_noise:.5f}, vary_noise={det_noise_vary:s})
 """
 
 xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
@@ -94,7 +90,7 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})
 """
 
-xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy_ev, {group:s}.counts,
+xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
                 energy_min={emin:.2f}, energy_max={emax:.2f})
 _xrfresult = _xrfmodel.compile_fitresults()
 """
@@ -154,12 +150,12 @@ class FitSpectraFrame(wx.Frame):
 
         setattr(xrfgroup, mcaname, self.mca)
 
-        efactor = 1.0 if max(self.mca.energy) > 250.0 else 1000.0
+        efactor = 1.0 if max(self.mca.energy) < 250. else 1000.0
 
         if self.mca.incident_energy is None:
-            self.mca.incident_energy = 20000.
-        if self.mca.incident_energy < 250:
-            self.mca.incident_energy *= 1000.0
+            self.mca.incident_energy = 20.0
+        if self.mca.incident_energy > 250:
+            self.mca.incident_energy /= 1000.0
 
         self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
         self.fit_history = getattr(self.mca, 'fit_history', [])
@@ -219,15 +215,16 @@ class FitSpectraFrame(wx.Frame):
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
                                       tooltip='step fraction extending to low energy side of peak')
+        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
+                                       max_val=10.0, increment=0.01,
+                                       tooltip='lorentzian fraction of Voigt function')
+
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
                                       tooltip='intensity of extra tail at low energy side of peak')
         wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01,
                                       tooltip='width of extra tail at low energy side of peak')
-        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
-                                       max_val=10.0, increment=0.01,
-                                       tooltip='lorentzian fraction of Voigt function')
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
@@ -307,7 +304,7 @@ class FitSpectraFrame(wx.Frame):
             p.AddText("  %s Peak:" % name,  colour='#880000')
             p.Add(wids['%s_use' % t], dcol=2)
 
-            p.AddText('  Energy (eV): ')
+            p.AddText('  Energy (keV): ')
             p.Add(wids['%s_cen'%t])
             p.Add(wids['%s_cen_vary'%t])
 
@@ -338,14 +335,12 @@ class FitSpectraFrame(wx.Frame):
     def beamdet_page(self, **kws):
         "beam / detector settings"
         mca = self.mca
-        en_min = 2000.0
+        en_min = 2.0
         en_max = self.mca.incident_energy
 
-        cal_offset = getattr(mca, 'offset',  0) * 1000.0
-        cal_slope = getattr(mca, 'slope',  0.010) * 1000.0
-        det_efano = getattr(mca, 'det_efano',  EFano['Si'])
-        det_noise = getattr(mca, 'det_noise',  30)
-        det_efano = getattr(mca, 'det_efano',  EFano['Si'])
+        cal_offset = getattr(mca, 'offset',  0)
+        cal_slope = getattr(mca, 'slope',  0.010)
+        det_noise = getattr(mca, 'det_noise',  0.035)
         width = getattr(mca, 'bgr_width',    3000)
         expon = getattr(mca, 'bgr_exponent', 2)
         escape_amp = getattr(mca, 'escape_amp', 1.0)
@@ -406,7 +401,6 @@ class FitSpectraFrame(wx.Frame):
                                      digits=4)
 
         wids['det_noise_vary'] = VarChoice(pdet, default=1)
-        wids['det_efano_vary'] = VarChoice(pdet, default=0)
 
         opts = dict(size=(100, -1), min_val=0, max_val=250000,
                     digits=2, increment=50)
@@ -417,10 +411,8 @@ class FitSpectraFrame(wx.Frame):
 
         opts.update({'digits': 3, 'max_val': 500, 'increment': 1})
         wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
-
-        opts.update({'max_val': 1, 'increment': 0.001})
-        wids['det_efano'] = FloatSpin(pdet, value=det_efano, **opts)
-
+        wids['det_efano'] = SimpleText(pdet, size=(200, -1),
+                                       label='E_Fano= %.4e' % FanoFactors['Si'])
 
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText(Energy_Text, dcol=2)
@@ -432,11 +424,11 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['en_max'])
 
         addLine(pdet)
-        pdet.AddText('Energy Calibration :', colour='#880000', dcol=2, newrow=True)
+        pdet.AddText(' Energy Calibration :', colour='#880000', dcol=2, newrow=True)
         pdet.Add(wids['cal_vary'], dcol=2)
-        pdet.AddText('   Offset (eV): ', newrow=True)
+        pdet.AddText('   Offset (keV): ', newrow=True)
         pdet.Add(wids['cal_offset'])
-        pdet.AddText('Slope (eV/bin): ')
+        pdet.AddText('Slope (keV/bin): ')
         pdet.Add(wids['cal_slope'])
 
         addLine(pdet)
@@ -444,15 +436,12 @@ class FitSpectraFrame(wx.Frame):
         pdet.AddText(EFano_Text, dcol=3)
         pdet.AddText('   Material:  ', newrow=True)
         pdet.Add(wids['det_mat'])
-        pdet.AddText('Thickness (mm): ')
+        pdet.Add(wids['det_efano'], dcol=2)
+        pdet.AddText('   Thickness (mm): ', newrow=True)
         pdet.Add(wids['det_thk'])
-
-        pdet.AddText('   Noise: ', newrow=True)
+        pdet.AddText('   Noise (keV): ', newrow=True)
         pdet.Add(wids['det_noise'])
         pdet.Add(wids['det_noise_vary'], dcol=2)
-        pdet.AddText('   E_Fano: ', newrow=True)
-        pdet.Add(wids['det_efano'])
-        pdet.Add(wids['det_efano_vary'], dcol=2)
 
         addLine(pdet)
         pdet.AddText(' Escape && Pileup:', colour='#880000', newrow=True)
@@ -885,7 +874,6 @@ class FitSpectraFrame(wx.Frame):
             buff.append('')
             with open(sfile, 'w') as fh:
                 fh.write('\n'.join(buff))
-        print("Wrote ", sfile)
 
 
     def onCompSelectFit(self, event=None):
@@ -916,35 +904,36 @@ class FitSpectraFrame(wx.Frame):
     def onElems_GuessPeaks(self, event=None):
         mca = self.mca
         _indices = peak.indexes(mca.counts, min_dist=5, thres=0.025)
-        peak_energies = 1000*mca.energy[_indices]
+        peak_energies = mca.energy[_indices]
 
+        print("Guess Peaks: ", peak_energies)
         elrange = range(10, 92)
         atsyms  = [atomic_symbol(i) for i in elrange]
-        kalphas = [xray_line(i, 'Ka').energy for i in elrange]
-        kbetas  = [xray_line(i, 'Kb').energy for i in elrange]
+        kalphas = [0.001*xray_line(i, 'Ka').energy for i in elrange]
+        kbetas  = [0.001*xray_line(i, 'Kb').energy for i in elrange]
 
         self.ptable.on_clear_all()
         elems = []
         for iz, en in enumerate(peak_energies):
             for i, ex in enumerate(kalphas):
-                if abs(en - ex) < 25:
+                if abs(en - ex) < 0.025:
                     elems.append(atsyms[i])
                     peak_energies[iz] = -ex
 
         for iz, en in enumerate(peak_energies):
             if en > 0:
                 for i, ex in enumerate(kbetas):
-                    if abs(en - ex) < 25:
+                    if abs(en - ex) < 0.025:
                         if atsyms[i] not in elems:
                             elems.append(atsyms[i])
                         peak_energies[iz] = -ex
 
         en = self.wids['en_xray'].GetValue()
-        emin = self.wids['en_min'].GetValue() * 1.25
+        emin = self.wids['en_min'].GetValue()
         for elem in elems:
-            kedge = xray_edge(elem, 'K').energy
-            l3edge = xray_edge(elem, 'L3').energy
-            l2edge = xray_edge(elem, 'L3').energy
+            kedge  = 0.001*xray_edge(elem, 'K').energy
+            l3edge = 0.001*xray_edge(elem, 'L3').energy
+            l2edge = 0.001*xray_edge(elem, 'L3').energy
             if ((kedge < en and kedge > emin) or
                 (l3edge < en and l3edge > emin) or
                 (l2edge < en and l2edge > emin)):
@@ -974,9 +963,9 @@ class FitSpectraFrame(wx.Frame):
             elem = words[0].title()
             kedge = l3edge = l2edge = 0.0
             try:
-                kedge = xray_edge(elem, 'K').energy
-                l3edge = xray_edge(elem, 'L3').energy
-                l2edge = xray_edge(elem, 'L3').energy
+                kedge  = 0.001*xray_edge(elem, 'K').energy
+                l3edge = 0.001*xray_edge(elem, 'L3').energy
+                l2edge = 0.001*xray_edge(elem, 'L3').energy
             except:
                 pass
             if ((kedge < en and kedge > emin) or
@@ -988,7 +977,7 @@ class FitSpectraFrame(wx.Frame):
     def onShowBgr(self, event=None):
         mca    = self.mca
         parent = self.parent
-        width  = self.wids['bgr_width'].GetValue()/1000.0
+        width  = self.wids['bgr_width'].GetValue()
         expon  = int(self.wids['bgr_expon'].GetStringSelection())
 
         xrf_background(energy=mca.energy, counts=mca.counts, group=mca,
@@ -1001,10 +990,10 @@ class FitSpectraFrame(wx.Frame):
                      color=parent.conf.bgr_color, linewidth=2, style='--')
 
     def onDetMaterial(self, event=None):
-        det_mat = self.wids['det_mat'].GetStringSelection()
-        if det_mat not in EFano:
-            det_mat = 'Si'
-        self.wids['det_efano'].SetValue(EFano[det_mat])
+        dmat = self.wids['det_mat'].GetStringSelection()
+        if dmat not in FanoFactors:
+            dmat = 'Si'
+        self.wids['det_efano'].SetLabel('E_Fano= %.4e' % FanoFactors[dmat])
 
     def onFilterMaterial(self, evt=None, index=1):
         name = evt.GetString()
@@ -1187,7 +1176,7 @@ class FitSpectraFrame(wx.Frame):
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in sorted(elemz)]
         syms = '[%s]' % (', '.join(syms))
         script.append(xrfmod_elems.format(elemlist=syms))
-        script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)")
+        script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
         script = '\n'.join(script)
         self.model_script = script.format(group=self.mcagroup)
 
@@ -1221,7 +1210,9 @@ class FitSpectraFrame(wx.Frame):
             script = '\n'.join(cmds)
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
-        s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy_ev)"
+
+        print(self.model_script)
+        s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)"
         self._larch.eval(s.format(group=self.mcagroup))
 
     def plot_model(self, model_spectrum=None, init=False, with_comps=True,
@@ -1364,7 +1355,7 @@ class FitSpectraFrame(wx.Frame):
         result = self.get_fitresult()
         xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         with_comps = self.owids['plot_comps'].IsChecked()
-        spect = xrfmod.calc_spectrum(self.mca.energy_ev,
+        spect = xrfmod.calc_spectrum(self.mca.energy,
                                      params=result.params)
         self.plot_model(model_spectrum=spect, with_comps=with_comps,
                         label=result.label)
