@@ -59,6 +59,14 @@ MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
 NMATRIX = len(MATRIXLAYERNAMES)
 MIN_CORREL = 0.10
 
+tooltips = {'ptable': 'Select Elements to include in model',
+            'step': 'size of step extending to low energy side of peak, fraction of peak height',
+            'gamma': 'gamma (lorentzian-like weight) of Voigt function',
+            'tail': 'intensity of tail function at low energy side of peak',
+            'beta': 'width of tail function at low energy side of peak',
+            'sigmax': 'scale sigma from Energy/Noise by this amount',
+        }
+
 CompositionUnits = ('ng/mm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
@@ -205,26 +213,26 @@ class FitSpectraFrame(wx.Frame):
         mca = self.parent.mca
         wids = self.wids
         p = GridPanel(self)
-        tooltip_msg = 'Select Elements to include in model'
         self.selected_elems = []
         self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
-                                         tooltip_msg=tooltip_msg,
+                                         tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
 
         dstep, dtail, dbeta, dgamma = 0.05, 0.10, 0.5, 0.05
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
-                                      tooltip='step fraction extending to low energy side of peak')
+                                      tooltip=tooltips['step'])
+
         wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
                                        max_val=10.0, increment=0.01,
-                                       tooltip='lorentzian fraction of Voigt function')
-
+                                      tooltip=tooltips['gamma'])
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
-                                      tooltip='intensity of extra tail at low energy side of peak')
+                                      tooltip=tooltips['tail'])
+
         wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
                                       max_val=10.0, increment=0.01,
-                                      tooltip='width of extra tail at low energy side of peak')
+                                      tooltip=tooltips['beta'])
         wids['peak_step_vary'] = VarChoice(p, default=0)
         wids['peak_tail_vary'] = VarChoice(p, default=0)
         wids['peak_gamma_vary'] = VarChoice(p, default=0)
@@ -255,18 +263,19 @@ class FitSpectraFrame(wx.Frame):
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 
-        p.AddText('  Tail: ')
-        p.Add(wids['peak_tail'])
-        p.Add(wids['peak_tail_vary'])
+        p.AddText('  Gamma : ')
+        p.Add(wids['peak_gamma'])
+        p.Add(wids['peak_gamma_vary'])
 
         p.Add((2, 2), newrow=True)
         p.AddText('  Beta: ')
         p.Add(wids['peak_beta'])
         p.Add(wids['peak_beta_vary'])
 
-        p.AddText('  Gamma : ')
-        p.Add(wids['peak_gamma'])
-        p.Add(wids['peak_gamma_vary'])
+        p.AddText('  Tail: ')
+        p.Add(wids['peak_tail'])
+        p.Add(wids['peak_tail_vary'])
+
 
 
         p.Add((2, 2), newrow=True)
@@ -292,13 +301,17 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=2, min_val=0,
                                            increment=10)
             wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
-                                           max_val=1.0, increment=0.01)
+                                          max_val=1.0, increment=0.01,
+                                          tooltip=tooltips['step'])
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                           max_val=1.0, increment=0.01)
+                                          max_val=1.0, increment=0.01,
+                                          tooltip=tooltips['tail'])
             wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
-                                           max_val=10.0, increment=0.01)
+                                          max_val=10.0, increment=0.01,
+                                          tooltip=tooltips['beta'])
             wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
-                                           max_val=10.0, increment=0.01)
+                                           max_val=10.0, increment=0.01,
+                                           tooltip=tooltips['sigmax'])
 
             p.Add((2, 2), newrow=True)
             p.AddText("  %s Peak:" % name,  colour='#880000')
@@ -313,18 +326,18 @@ class FitSpectraFrame(wx.Frame):
             p.Add(wids['%s_step'%t])
             p.Add(wids['%s_step_vary'%t])
 
-            p.AddText('  Tail: ')
-            p.Add(wids['%s_tail'%t])
-            p.Add(wids['%s_tail_vary'%t])
+            p.AddText('  Sigma Scale : ')
+            p.Add(wids['%s_sigma'%t])
+            p.Add(wids['%s_sigma_vary'%t])
 
             p.Add((2, 2), newrow=True)
             p.AddText('  Beta : ')
             p.Add(wids['%s_beta'%t])
             p.Add(wids['%s_beta_vary'%t])
 
-            p.AddText('  Sigma Scale : ')
-            p.Add(wids['%s_sigma'%t])
-            p.Add(wids['%s_sigma_vary'%t])
+            p.AddText('  Tail: ')
+            p.Add(wids['%s_tail'%t])
+            p.Add(wids['%s_tail_vary'%t])
 
             p.Add((2, 2), newrow=True)
             p.Add(HLine(p, size=(550, 3)), dcol=7)
@@ -906,7 +919,6 @@ class FitSpectraFrame(wx.Frame):
         _indices = peak.indexes(mca.counts, min_dist=5, thres=0.025)
         peak_energies = mca.energy[_indices]
 
-        print("Guess Peaks: ", peak_energies)
         elrange = range(10, 92)
         atsyms  = [atomic_symbol(i) for i in elrange]
         kalphas = [0.001*xray_line(i, 'Ka').energy for i in elrange]
