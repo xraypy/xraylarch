@@ -83,7 +83,6 @@ class XRFDisplayFrame(wx.Frame):
         wx.Frame.__init__(self, parent=parent,
                           title=title, size=size,  **kws)
         self.conf = XRFDisplayConfig()
-
         self.subframes = {}
         self.data = None
         self.title = title
@@ -100,6 +99,7 @@ class XRFDisplayFrame(wx.Frame):
                 self.larch_buffer.Show()
                 self.larch_buffer.Raise()
                 self.larch_buffer.Hide()
+                self.subframes['larchframe'] = self.larch_buffer
             self.larch = self.larch_buffer.larchshell
             self.init_larch()
 
@@ -801,7 +801,8 @@ class XRFDisplayFrame(wx.Frame):
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
+            self.larch_buffer = LarchFrame(_larch=self.larch,
+                                           is_standalone=False)
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
@@ -839,11 +840,13 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-
-        try:
-            self.Destroy()
-        except:
-            pass
+        for name, wid in self.subframes.items():
+            if wid is not None:
+                try:
+                    wid.Destroy()
+                except:
+                    pass
+        self.Destroy()
 
     def config_colors(self, event=None):
         """show configuration frame"""
