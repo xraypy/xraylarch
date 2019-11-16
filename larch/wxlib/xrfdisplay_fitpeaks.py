@@ -40,6 +40,8 @@ from larch import Group
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
 
+from .xrfdisplay_utils import XRFGROUP, mcaname
+
 def read_filterdata(flist, _larch):
     """ read filters data"""
     materials = _larch.symtable.get_symbol('_xray._materials')
@@ -74,8 +76,7 @@ EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Energy_Text = 'All energies in keV'
 
 mca_init = """
-{group:s}.fit_history = getattr({group:s}, 'fit_history', [])
-### {group:s}.energy_ev = {group:s}.energy*{efactor:.1f}
+if not hasattr({group:s}, 'fit_history'): {group:s}.fit_history = []
 """
 
 xrfmod_setup = """## Set up XRF Model
@@ -98,7 +99,8 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})
 """
 
-xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
+xrfmod_fitscript = """
+_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
                 energy_min={emin:.2f}, energy_max={emax:.2f})
 _xrfresult = _xrfmodel.compile_fitresults()
 """
@@ -126,8 +128,6 @@ for atsym in {elemlist:s}:
 #endfor
 """
 
-XRFGROUP = '_xrfdata'
-
 Filter_Lengths = ['microns', 'mm', 'cm']
 Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
                     'beryllium', 'aluminum', 'mylar', 'pmma']
@@ -139,24 +139,12 @@ class FitSpectraFrame(wx.Frame):
     def __init__(self, parent, size=(655, 780)):
         self.parent = parent
         self._larch = parent.larch
-        if not self._larch.symtable.has_group(XRFGROUP):
-            self._larch.eval("%s = group()" % XRFGROUP)
-        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
-        for i in range(1, 1000):
-            mcaname = 'mca%3.3d' % (i)
-            if not hasattr(xrfgroup, mcaname):
-                break
-        self.mcagroup = '%s.%s' % (XRFGROUP, mcaname)
-        self.mca = MCA()
-        for attr in ('__name__', 'filename', 'incident_energy', 'live_time',
-                     'real_time', 'slope', 'quad', 'offset'):
-            setattr(self.mca, attr, getattr(self.parent.mca, attr, None))
-        for attr in ('counts', 'energy'):
-            setattr(self.mca, attr, 1.0*getattr(self.parent.mca, attr))
-        for attr in ('header', 'bad', 'mcas', 'rois', 'environ'):
-            setattr(self.mca, attr, copy.copy(getattr(self.parent.mca, attr, None)))
 
-        setattr(xrfgroup, mcaname, self.mca)
+        # fetch current spectra from parent
+        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
+        mcagroup = getattr(xrfgroup, '_mca')
+        self.mca = getattr(xrfgroup, mcagroup)
+        self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
 
         efactor = 1.0 if max(self.mca.energy) < 250. else 1000.0
 
@@ -165,7 +153,7 @@ class FitSpectraFrame(wx.Frame):
         if self.mca.incident_energy > 250:
             self.mca.incident_energy /= 1000.0
 
-        self._larch.eval(mca_init.format(group=self.mcagroup, efactor=efactor))
+        self._larch.eval(mca_init.format(group=self.mcagroup))
         self.fit_history = getattr(self.mca, 'fit_history', [])
         self.nfit = 0
         self.colors = GUIColors()
@@ -222,7 +210,6 @@ class FitSpectraFrame(wx.Frame):
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
                                       tooltip=tooltips['step'])
-
         wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
                                        max_val=10.0, increment=0.01,
                                       tooltip=tooltips['gamma'])
@@ -259,7 +246,7 @@ class FitSpectraFrame(wx.Frame):
         p.irow += 5
 
         p.Add((2, 2), newrow=True)
-        p.AddText('  Step: ')
+        p.AddText('  Step: ', tooltip=tooltips['step'])
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 

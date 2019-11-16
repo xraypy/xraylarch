@@ -19,6 +19,11 @@ from xraydb import xray_line
 from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
                    xrf_calib_compute, xrf_calib_apply)
 
+# Group used to hold MCA data
+XRFGROUP = '_xrfdata'
+def mcaname(i):
+    return "mca{:03d}".format(i)
+
 class XRFCalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, size=(-1, -1), callback=None):
         self.mca = mca
@@ -259,6 +264,8 @@ class ColorsFrame(wx.Frame):
         scolor(' Minor X-ray Lines:',   'minor_elinecolor')
         scolor(' Selected X-ray Line:', 'emph_elinecolor', newrow=True)
         scolor(' Held  X-ray Lines:',   'hold_elinecolor')
+        scolor(' Pileup Prediction:',   'pileup_color', newrow=True)
+        scolor(' Escape Prediction:',   'escape_color')
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
@@ -433,6 +440,8 @@ class XRFDisplayConfig:
     spectra2_color   = '#2ca02c'
     bgr_color        = '#ff7f0e'
     fit_color        = '#d62728'
+    pileup_color     = '#555555'
+    escape_color     = '#F07030'
 
     K_major = ['Ka1', 'Ka2', 'Kb1']
     K_minor = ['Kb3', 'Kb2']

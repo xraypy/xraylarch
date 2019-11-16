@@ -34,16 +34,16 @@ from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
 
 from ..math import index_of
 from ..utils import bytes2str, debugtime
-from ..io import GSEMCA_File, gsemca_group
+from ..io import GSEMCA_File
 from ..site_config import icondir
 from ..interpreter import Interpreter
 
 from .larchframe import LarchFrame
 from .periodictable import PeriodicTablePanel
-from .xrfdisplay_utils import (XRFCalibrationFrame,
-                               ColorsFrame,
-                               XrayLinesFrame,
-                               XRFDisplayConfig)
+
+from .xrfdisplay_utils import (XRFCalibrationFrame, ColorsFrame,
+                               XrayLinesFrame, XRFDisplayConfig, XRFGROUP,
+                               mcaname)
 
 from .xrfdisplay_fitpeaks import FitSpectraFrame
 
@@ -54,6 +54,11 @@ has already been read.
 """
 
 ICON_FILE = 'ptable.ico'
+
+make_xrfgroup = """
+%s = group(__doc__='MCA spectra groups for XRF Display',
+           _mca='', _mca2='', _mcas={})
+""" %  XRFGROUP
 
 def txt(panel, label, size=75, colour=None, font=None, style=None):
     if style is None:
@@ -110,12 +115,12 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = None
         self.mca = None
         self.mca2 = None
-        self.xdata = np.arange(2048)*0.015
+        self.xdata = np.arange(2048)*0.01
         self.ydata = np.ones(2048)*1.e-4
         self.x2data = None
         self.y2data = None
         self.rois_shown = False
-        # self.show_pileup = False
+        self.mca_index = 0
         self.major_markers = []
         self.minor_markers = []
         self.hold_markers = []
@@ -144,7 +149,7 @@ class XRFDisplayFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         if mca_file is not None:
-            self.mca = gsemca_group(mca_file, _larch=self.larch)
+            self.add_mca(GSEMCA_File(mca_file))
             self.plotmca(self.mca, show_mca2=False)
 
     def ignoreEvent(self, event=None):
@@ -476,11 +481,31 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
 
+        if not symtab.has_group(XRFGROUP):
+            self.larch.eval(make_xrfgroup)
+
         fico = os.path.join(icondir, ICON_FILE)
         try:
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
             pass
+
+    def add_mca(self, mca):
+        self.mca2 = self.mca
+        self.mca = mca
+
+        xrfgroup = self.larch.symtable.get_group(XRFGROUP)
+        group_exists = True
+        while group_exists:
+            self.mca_index += 1
+            name = mcaname(self.mca_index)
+            group_exists = hasattr(xrfgroup, name)
+
+        # push mca to mca2, save id of this mca
+        setattr(xrfgroup, '_mca2', getattr(xrfgroup, '_mca', ''))
+        setattr(xrfgroup, '_mca', name)
+        getattr(xrfgroup, '_mcas')[self.mca_index] = id(mca)
+        setattr(xrfgroup, name, mca)
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -716,19 +741,17 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
 
-        fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Save MCA File\tCtrl+S",
                  "Save GSECARS MCA File",  self.onSaveMCAFile)
         MenuItem(self, fmenu, "&Save ASCII Column File\tCtrl+A",
                  "Save Column File",  self.onSaveColumnFile)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Save ROIs to File",
-                 "Save ROIs to File",  self.onSaveROIs)
-        MenuItem(self, fmenu, "Restore ROIs File",
-                 "Read ROIs from File",  self.onRestoreROIs)
-
-        fmenu.AppendSeparator()
+        # MenuItem(self, fmenu, "Save ROIs to File",
+        #         "Save ROIs to File",  self.onSaveROIs)
+        # MenuItem(self, fmenu, "Restore ROIs File",
+        #         "Read ROIs from File",  self.onRestoreROIs)
+        # fmenu.AppendSeparator()
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L',
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
@@ -756,7 +779,7 @@ class XRFDisplayFrame(wx.Frame):
                  "Zoom out to full data range", self.unzoom_all)
         MenuItem(self, omenu, "Toggle Grid\tCtrl+G",
                  "Toggle Grid Display", self.toggle_grid)
-        MenuItem(self, omenu,  "Toggle Plot legend\tCtrl+L",
+        MenuItem(self, omenu,  "Toggle Plot legend",
                  "Toggle Plot Legend", self.onToggleLegend)
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
@@ -775,12 +798,16 @@ class XRFDisplayFrame(wx.Frame):
                  "Close Background MCA", self.close_bkg_mca)
 
         amenu = wx.Menu()
-        ix = amenu.Append(-1, "Show Pileup Prediction",
-                          "Show Pileup Prediction", kind=wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU, self.onPileupPrediction, ix)
-        ix = amenu.Append(-1, "Show Escape Prediction",
-                          "Show Escape Prediction", kind=wx.ITEM_CHECK)
-        self.Bind(wx.EVT_MENU, self.onEscapePrediction, ix)
+        MenuItem(self, amenu, "Show Pileup Prediction",
+                 "Show Pileup Prediction", kind=wx.ITEM_CHECK,
+                 checked=False, action=self.onPileupPrediction)
+        MenuItem(self, amenu, "Show Escape Prediction",
+                 "Show Escape Prediction", kind=wx.ITEM_CHECK,
+                 checked=False, action=self.onEscapePrediction)
+
+#         ix = amenu.Append(-1, "Show Escape Prediction",
+#                           "Show Escape Prediction", kind=wx.ITEM_CHECK)
+#         self.Bind(wx.EVT_MENU, self.onEscapePrediction, ix)
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
         MenuItem(self, amenu, "Fit Spectrum\tCtrl+F",
@@ -1021,7 +1048,7 @@ class XRFDisplayFrame(wx.Frame):
         if event.IsChecked():
             self.mca.predict_pileup()
             self.oplot(self.mca.energy, self.mca.pileup,
-                       color='#555555', label='pileup prediction')
+                       color=self.conf.pileup_color, label='pileup prediction')
         else:
             self.plotmca(self.mca)
 
@@ -1029,7 +1056,7 @@ class XRFDisplayFrame(wx.Frame):
         if event.IsChecked():
             self.mca.predict_escape()
             self.oplot(self.mca.energy, self.mca.escape,
-                       color='#F07030', label='escape prediction')
+                       color=self.conf.escape_color, label='escape prediction')
         else:
             self.plotmca(self.mca)
 
@@ -1150,14 +1177,13 @@ class XRFDisplayFrame(wx.Frame):
 
         panel.plot(x, ydat, label='spectrum',  **kwargs)
         if with_rois and mca is not None:
-            xnpts = 1.0/len(self.mca.energy)
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
             yroi = -1.0*np.ones(len(y))
+            max_width = 0.5*len(self.mca.energy) # suppress very large ROIs
             for r in mca.rois:
-                if (r.left, r.right) in ((0, 0), (-1, -1)):
-                    continue
-                if xnpts*(r.right - r.left) > 0.5: # suppress very large ROIs
+                if ((r.left, r.right) in ((0, 0), (-1, -1)) or
+                    (r.right - r.left) > max_width):
                     continue
                 yroi[r.left:r.right] = y[r.left:r.right]
             yroi = np.ma.masked_less(yroi, 0)
@@ -1246,27 +1272,18 @@ class XRFDisplayFrame(wx.Frame):
                             wildcard=FILE_WILDCARDS,
                             style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
-        fnew= None
+        mca_file = None
         if dlg.ShowModal() == wx.ID_OK:
-            fnew = os.path.abspath(dlg.GetPath())
+            mca_file = os.path.abspath(dlg.GetPath())
         dlg.Destroy()
 
-        if fnew is None:
+        if mca_file is None:
             return
-        self.mca2 = None
         if self.mca is not None:
             self.mca2 = copy.deepcopy(self.mca)
 
-        self.mca = gsemca_group(fnew, _larch=self.larch)
+        self.add_mca(GSEMCA_File(mca_file))
         self.plotmca(self.mca, show_mca2=True)
-
-    def onReadGSEXRMFile(self, event=None, **kws):
-        print( '  onReadGSEXRMFile   ')
-        pass
-
-    def onOpenEpicsMCA(self, event=None, **kws):
-        print( '  onOpenEpicsMCA   ')
-        pass
 
     def onSaveMCAFile(self, event=None, **kws):
         deffile = ''
@@ -1281,6 +1298,7 @@ class XRFDisplayFrame(wx.Frame):
         if not deffile.endswith('.mca'):
             deffile = deffile + '.mca'
 
+        _, deffile = os.path.split(deffile)
         deffile = fix_filename(str(deffile))
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
@@ -1294,6 +1312,7 @@ class XRFDisplayFrame(wx.Frame):
             deffile = "%s%s" % (deffile, self.mca.sourcefile)
         elif getattr(self.mca, 'filename', None) is not None:
             deffile = "%s%s" % (deffile, self.mca.filename)
+
         if getattr(self.mca, 'areaname', None) is not None:
             deffile = "%s_%s" % (deffile, self.mca.areaname)
         if deffile == '':
@@ -1301,13 +1320,14 @@ class XRFDisplayFrame(wx.Frame):
         if not deffile.endswith('.dat'):
             deffile = deffile + '.dat'
 
+        _, deffile = os.path.split(deffile)
         deffile = fix_filename(str(deffile))
         ASCII_WILDCARDS = "Data File (*.dat)|*.dat|All files (*.*)|*.*"
         outfile = FileSave(self, "Save ASCII File for MCA Data",
                            default_file=deffile,
                            wildcard=ASCII_WILDCARDS)
         if outfile is not None:
-            self.mca.save_columnfile(outfile)
+            self.mca.save_ascii(outfile)
 
     def onCalibrateEnergy(self, event=None, **kws):
         try:
