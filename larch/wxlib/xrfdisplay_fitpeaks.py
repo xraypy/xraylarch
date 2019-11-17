@@ -73,6 +73,7 @@ CompositionUnits = ('ng/mm^2', 'wt %', 'ppm')
 
 Detector_Materials = ['Si', 'Ge']
 EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
+Geom_Text = 'Angles in degrees: 90=normal to surface, 0=grazing surface'
 Energy_Text = 'All energies in keV'
 
 mca_init = """
@@ -214,7 +215,7 @@ class FitSpectraFrame(wx.Frame):
                                        max_val=10.0, increment=0.01,
                                       tooltip=tooltips['gamma'])
         wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                      max_val=1.0, increment=0.01,
+                                      max_val=1.0, increment=0.05,
                                       tooltip=tooltips['tail'])
 
         wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
@@ -229,9 +230,9 @@ class FitSpectraFrame(wx.Frame):
         btn_from_peaks = Button(p, 'Guess Peaks', size=(150, -1),
                                 action=self.onElems_GuessPeaks)
         # tooltip='Guess elements from peak locations')
-        btn_from_rois = Button(p, 'Select from ROIS', size=(150, -1),
+        btn_from_rois = Button(p, 'Use ROIS as Peaks', size=(150, -1),
                                action=self.onElems_FromROIS)
-        btn_clear_elems = Button(p, 'Clear All', size=(150, -1),
+        btn_clear_elems = Button(p, 'Clear All Peaks', size=(150, -1),
                                  action=self.onElems_Clear)
         wx.CallAfter(self.onElems_GuessPeaks)
 
@@ -263,17 +264,16 @@ class FitSpectraFrame(wx.Frame):
         p.Add(wids['peak_tail'])
         p.Add(wids['peak_tail_vary'])
 
-
-
         p.Add((2, 2), newrow=True)
         p.Add(HLine(p, size=(550, 3)), dcol=8)
-
         p.Add((2, 2), newrow=True)
-        opts = dict(size=(100, -1),
-                    min_val=0, digits=4, increment=0.010)
-        for name, escale, dsigma, dbeta in (('Elastic',  1.000, 1.0, 0.25),
-                                             ('Compton1', 0.975, 1.5, 0.50),
-                                             ('Compton2', 0.950, 2.0, 1.00)):
+
+        #                name, escale, step, sigmax, beta, tail
+        scatter_peaks = (('Elastic',  1.00, 0.05, 1.0, 0.5, 0.10),
+                         ('Compton1', 0.97, 0.05, 1.5, 2.0, 0.25),
+                         ('Compton2', 0.94, 0.05, 2.0, 2.5, 0.25))
+        opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
+        for name, escale, dstep, dsigma, dbeta, dtail in scatter_peaks:
             en = escale * self.mca.incident_energy
             t = name.lower()
             vary_en = 1 if t.startswith('compton') else 0
@@ -281,23 +281,23 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_use'%t] = Check(p, label='Include', default=True)
             wids['%s_cen_vary'%t]   = VarChoice(p, default=vary_en)
             wids['%s_step_vary'%t]  = VarChoice(p, default=0)
-            wids['%s_beta_vary'%t] = VarChoice(p, default=0)
+            wids['%s_beta_vary'%t]  = VarChoice(p, default=0)
             wids['%s_tail_vary'%t]  = VarChoice(p, default=0)
             wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
 
-            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=2, min_val=0,
-                                           increment=10)
+            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=3, min_val=0,
+                                           increment=0.01)
             wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                           max_val=1.0, increment=0.01,
                                           tooltip=tooltips['step'])
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                          max_val=1.0, increment=0.01,
+                                          max_val=1.0, increment=0.05,
                                           tooltip=tooltips['tail'])
             wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
-                                          max_val=10.0, increment=0.01,
+                                          max_val=10.0, increment=0.10,
                                           tooltip=tooltips['beta'])
             wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
-                                           max_val=10.0, increment=0.01,
+                                           max_val=10.0, increment=0.05,
                                            tooltip=tooltips['sigmax'])
 
             p.Add((2, 2), newrow=True)
@@ -414,6 +414,10 @@ class FitSpectraFrame(wx.Frame):
         wids['det_efano'] = SimpleText(pdet, size=(200, -1),
                                        label='E_Fano= %.4e' % FanoFactors['Si'])
 
+        opts.update(digits=1, max_val=90, min_val=0, increment=1)
+        wids['angle_in'] = FloatSpin(pdet, value=45, **opts)
+        wids['angle_out'] = FloatSpin(pdet, value=45, **opts)
+
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText(Energy_Text, dcol=2)
         pdet.AddText('   X-ray Energy: ', newrow=True)
@@ -454,6 +458,16 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_amp'])
         pdet.Add(wids['pileup_amp_vary'])
         pdet.Add(wids['pileup_use'], dcol=3)
+
+
+        addLine(pdet)
+        pdet.AddText(' Geometry:', colour='#880000', newrow=True)
+        pdet.AddText(Geom_Text, dcol=3)
+        pdet.AddText('   Incident Angle:', newrow=True)
+        pdet.Add(wids['angle_in'])
+        pdet.AddText('   Exit Angle:', newrow=False)
+        pdet.Add(wids['angle_out'])
+
         addLine(pdet)
         pdet.pack()
         return pdet
@@ -1210,7 +1224,6 @@ class FitSpectraFrame(wx.Frame):
             self._larch.eval(script)
             self.model_script = "%s\n%s" % (self.model_script, script)
 
-        print(self.model_script)
         s = "{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)"
         self._larch.eval(s.format(group=self.mcagroup))
 
