@@ -56,8 +56,7 @@ has already been read.
 ICON_FILE = 'ptable.ico'
 
 make_xrfgroup = """
-%s = group(__doc__='MCA spectra groups for XRF Display',
-           _mca='', _mca2='', _mcas={})
+%s = group(__doc__='MCA spectra groups for XRF Display', _mca='', _mca2='')
 """ %  XRFGROUP
 
 def txt(panel, label, size=75, colour=None, font=None, style=None):
@@ -504,7 +503,6 @@ class XRFDisplayFrame(wx.Frame):
         # push mca to mca2, save id of this mca
         setattr(xrfgroup, '_mca2', getattr(xrfgroup, '_mca', ''))
         setattr(xrfgroup, '_mca', name)
-        getattr(xrfgroup, '_mcas')[self.mca_index] = id(mca)
         setattr(xrfgroup, name, mca)
 
     def _getlims(self):
@@ -1258,13 +1256,20 @@ class XRFDisplayFrame(wx.Frame):
         if self.mca2 is None:
             return
         self.mca, self.mca2 = self.mca2, self.mca
+        xrfgroup = self.larch.symtable.get_group(XRFGROUP)
+        _mca = getattr(xrfgroup, '_mca', '')
+        _mca2 = getattr(xrfgroup, '_mca2', '')
+        setattr(xrfgroup, '_mca2', _mca)
+        setattr(xrfgroup, '_mca', _mca2)
+
         self.plotmca(self.mca)
         self.plotmca(self.mca2, as_mca2=True)
 
     def close_bkg_mca(self, event=None):
         self.mca2 = None
+        xrfgroup = self.larch.symtable.get_group(XRFGROUP)
+        setattr(xrfgroup, '_mca2', '')
         self.plotmca(self.mca)
-
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
