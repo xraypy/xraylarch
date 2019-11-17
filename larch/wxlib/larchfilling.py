@@ -173,7 +173,7 @@ class FillingTree(wx.TreeCtrl):
         """Return true if object has children."""
         children = self.objGetChildren(obj)
         if isinstance(children, dict):
-            return len(children) > 1
+            return len(children) > 0
         else:
             return False
 
