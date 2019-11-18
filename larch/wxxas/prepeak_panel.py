@@ -1181,7 +1181,8 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         cmds = ["## do peak fit: "]
 
         yerr_type = 'set_yerr_const'
-        if getattr(dgroup, 'yerr', 1.0)  == 1.0:
+        yerr = getattr(dgroup, 'yerr', None)
+        if yerr is None:
             if hasattr(dgroup, 'norm_std'):
                 cmds.append("{group}.yerr = {group}.norm_std")
                 yerr_type = 'set_yerr_array'
@@ -1190,8 +1191,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                 yerr_type = 'set_yerr_array'
             else:
                 cmds.append("{group}.yerr = 1")
-        else:
-            if isinstance(dgroup.yerr, np.ndarray):
+        elif isinstance(dgroup.yerr, np.ndarray):
                 yerr_type = 'set_yerr_array'
 
 
