@@ -247,7 +247,7 @@ class FitSpectraFrame(wx.Frame):
         p.irow += 5
 
         p.Add((2, 2), newrow=True)
-        p.AddText('  Step: ', tooltip=tooltips['step'])
+        p.AddText('  Step: ')
         p.Add(wids['peak_step'])
         p.Add(wids['peak_step_vary'])
 
