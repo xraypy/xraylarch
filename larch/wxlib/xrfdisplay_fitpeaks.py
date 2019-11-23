@@ -91,28 +91,20 @@ _xrfmodel.set_detector(thickness={det_thk:.5f}, material='{det_mat:s}',
                 peak_tail={peak_tail:.5f}, vary_peak_tail={peak_tail_vary:s},
                 peak_beta={peak_beta:.5f}, vary_peak_beta={peak_beta_vary:s},
                 peak_gamma={peak_gamma:.5f}, vary_peak_gamma={peak_gamma_vary:s},
-                noise={det_noise:.5f}, vary_noise={det_noise_vary:s})
-"""
+                noise={det_noise:.5f}, vary_noise={det_noise_vary:s})"""
 
 xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
                 amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, beta={_beta:.5f},
                 sigmax={_sigma:.5f},  vary_center={vcen:s}, vary_step={vstep:s},
-                vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})
-"""
+                vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})"""
 
-xrfmod_fitscript = """
-_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
+xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
                 energy_min={emin:.2f}, energy_max={emax:.2f})
 _xrfresult = _xrfmodel.compile_fitresults()
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
 xrfmod_matrix = "_xrfmodel.add_matrix_layer('{name:s}', {thick:.5f}, density={density:.5f})"
-
-xrfmod_bgr = """xrf_background(energy={group:s}.energy, counts={group:s}.counts,
-             group={group:s}, width={bgr_wid:.2f}, exponent={bgr_exp:.2f})
-_xrfmodel.add_background({group:s}.bgr, vary=False)
-"""
 
 xrfmod_jsondump  = """# save xrf model to json
 _o = copy(group2dict({group:s}.fit_history[{nfit:d}]))
@@ -127,7 +119,7 @@ xrfmod_elems = """
 for atsym in {elemlist:s}:
     _xrfmodel.add_element(atsym)
 #endfor
-"""
+del atsym"""
 
 Filter_Lengths = ['microns', 'mm', 'cm']
 Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
@@ -144,6 +136,8 @@ class FitSpectraFrame(wx.Frame):
         # fetch current spectra from parent
         xrfgroup = self._larch.symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
+        print("XRF Group ", xrfgroup, mcagroup)
+        print("XRF Group ", getattr(xrfgroup, mcagroup, '??'))
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
 
@@ -341,8 +335,6 @@ class FitSpectraFrame(wx.Frame):
         cal_offset = getattr(mca, 'offset',  0)
         cal_slope = getattr(mca, 'slope',  0.010)
         det_noise = getattr(mca, 'det_noise',  0.035)
-        width = getattr(mca, 'bgr_width',    3000)
-        expon = getattr(mca, 'bgr_exponent', 2)
         escape_amp = getattr(mca, 'escape_amp', 1.0)
         pileup_amp = getattr(mca, 'pileup_amp', 0.1)
 
@@ -353,19 +345,6 @@ class FitSpectraFrame(wx.Frame):
         def addLine(pan):
             pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
 
-        bgr_code1 = """
-        wids['bgr_use'] = Check(pdet, label='Include Background in Fit',
-                                default=False, action=self.onUseBackground)
-        wids['bgr_width'] = FloatSpin(pdet, value=width, min_val=0, max_val=15000,
-                                   digits=0, increment=500, size=(100, -1))
-        wids['bgr_expon'] = Choice(pdet, choices=['2', '4', '6'],
-                                   size=(70, -1), default=0)
-        wids['bgr_show'] = Button(pdet, 'Show', size=(80, -1),
-                                  action=self.onShowBgr)
-        wids['bgr_width'].Disable()
-        wids['bgr_expon'].Disable()
-        wids['bgr_show'].Disable()
-        """
 
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
                                    default=True, action=self.onUsePileupEscape)
@@ -402,14 +381,16 @@ class FitSpectraFrame(wx.Frame):
 
         wids['det_noise_vary'] = VarChoice(pdet, default=1)
 
-        opts = dict(size=(100, -1), min_val=0, max_val=250000,
-                    digits=2, increment=50)
+        opts = dict(size=(100, -1), min_val=0, max_val=500, digits=3,
+                    increment=0.10)
         wids['en_xray'] = FloatSpin(pdet, value=self.mca.incident_energy,
                                     action=self.onSetXrayEnergy, **opts)
         wids['en_min'] = FloatSpin(pdet, value=en_min, **opts)
         wids['en_max'] = FloatSpin(pdet, value=en_max, **opts)
+        wids['flux_in'] = FloatCtrl(pdet, value=5.e10, gformat=True,
+                                    minval=0, size=(100, -1))
 
-        opts.update({'digits': 3, 'max_val': 500, 'increment': 1})
+        opts.update({'increment': 0.005})
         wids['det_noise'] = FloatSpin(pdet, value=det_noise, **opts)
         wids['det_efano'] = SimpleText(pdet, size=(200, -1),
                                        label='E_Fano= %.4e' % FanoFactors['Si'])
@@ -418,17 +399,24 @@ class FitSpectraFrame(wx.Frame):
         wids['angle_in'] = FloatSpin(pdet, value=45, **opts)
         wids['angle_out'] = FloatSpin(pdet, value=45, **opts)
 
+        opts.update(digits=1, max_val=5e9, min_val=0, increment=1)
+        wids['det_dist'] = FloatSpin(pdet, value=50, **opts)
+        wids['det_area'] = FloatSpin(pdet, value=50, **opts)
+
+
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
-        pdet.AddText(Energy_Text, dcol=2)
-        pdet.AddText('   X-ray Energy: ', newrow=True)
+        pdet.AddText('   X-ray Energy (keV): ', newrow=True)
         pdet.Add(wids['en_xray'])
-        pdet.AddText('   Energy Min: ', newrow=True)
+        pdet.AddText('Incident Flux (Hz): ', newrow=False)
+        pdet.Add(wids['flux_in'])
+        pdet.AddText('   Fit Energy Min (keV): ', newrow=True)
         pdet.Add(wids['en_min'])
-        pdet.AddText('Energy Max: ')
+        pdet.AddText('Fit Energy Max (keV): ')
         pdet.Add(wids['en_max'])
 
+
         addLine(pdet)
-        pdet.AddText(' Energy Calibration :', colour='#880000', dcol=2, newrow=True)
+        pdet.AddText(' Energy Calibration :', colour='#880000', dcol=1, newrow=True)
         pdet.Add(wids['cal_vary'], dcol=2)
         pdet.AddText('   Offset (keV): ', newrow=True)
         pdet.Add(wids['cal_offset'])
@@ -436,7 +424,7 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['cal_slope'])
 
         addLine(pdet)
-        pdet.AddText(' Detector :', colour='#880000', newrow=True)
+        pdet.AddText(' Detector Material:', colour='#880000', dcol=1, newrow=True)
         pdet.AddText(EFano_Text, dcol=3)
         pdet.AddText('   Material:  ', newrow=True)
         pdet.Add(wids['det_mat'])
@@ -448,7 +436,20 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['det_noise_vary'], dcol=2)
 
         addLine(pdet)
-        pdet.AddText(' Escape && Pileup:', colour='#880000', newrow=True)
+        pdet.AddText(' Geometry:', colour='#880000', dcol=1, newrow=True)
+        pdet.AddText(Geom_Text, dcol=3)
+        pdet.AddText('   Incident Angle (deg):', newrow=True)
+        pdet.Add(wids['angle_in'])
+        pdet.AddText('   Exit Angle (deg):', newrow=False)
+        pdet.Add(wids['angle_out'])
+        pdet.AddText('   Detector Distance (mm): ', newrow=True)
+        pdet.Add(wids['det_dist'])
+        pdet.AddText('   Detector Area (mm^2): ', newrow=False)
+        pdet.Add(wids['det_area'])
+
+
+        addLine(pdet)
+        pdet.AddText(' Escape && Pileup:', colour='#880000', dcol=2, newrow=True)
         pdet.AddText('   Escape Scale:', newrow=True)
         pdet.Add(wids['escape_amp'])
         pdet.Add(wids['escape_amp_vary'])
@@ -458,15 +459,6 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_amp'])
         pdet.Add(wids['pileup_amp_vary'])
         pdet.Add(wids['pileup_use'], dcol=3)
-
-
-        addLine(pdet)
-        pdet.AddText(' Geometry:', colour='#880000', newrow=True)
-        pdet.AddText(Geom_Text, dcol=3)
-        pdet.AddText('   Incident Angle:', newrow=True)
-        pdet.Add(wids['angle_in'])
-        pdet.AddText('   Exit Angle:', newrow=False)
-        pdet.Add(wids['angle_out'])
 
         addLine(pdet)
         pdet.pack()
@@ -806,7 +798,10 @@ class FitSpectraFrame(wx.Frame):
                 par = result.params[parname]
                 conc_vals[elem] = [par.value, par.stderr]
 
-        scale = self.owids['comp_scalevalue'].GetValue()
+        try:
+            scale = self.owids['comp_scalevalue'].GetValue()
+        except:
+            return
 
         owids['comp_elemscale'].SetValue(conc_vals[cur_elem][0]/scale)
         owids['composition'].DeleteAllItems()
@@ -861,14 +856,14 @@ class FitSpectraFrame(wx.Frame):
     def onCompSave(self, event=None):
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
         scale = result.concentration_scale
-        deffile = self.mca.filename + '_' + result.label
+        deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.csv'
         wcards = "CSV (*.csv)|*.csv|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save Concentration Results',
                          default_file=deffile,
                          wildcard=wcards)
         if sfile is not None:
-            buff = ["# results for file: %s" % self.mca.filename,
+            buff = ["# results for MCA labeled: %s" % self.mca.label,
                     "# fit label: %s" % result.label,
                     "# concentration units: %s" % self.owids['comp_units'].GetStringSelection(),
                     "# count time: %s" % result.count_time,
@@ -924,7 +919,6 @@ class FitSpectraFrame(wx.Frame):
         atsyms  = [atomic_symbol(i) for i in elrange]
         kalphas = [0.001*xray_line(i, 'Ka').energy for i in elrange]
         kbetas  = [0.001*xray_line(i, 'Kb').energy for i in elrange]
-
         self.ptable.on_clear_all()
         elems = []
         for iz, en in enumerate(peak_energies):
@@ -986,21 +980,6 @@ class FitSpectraFrame(wx.Frame):
                 (l2edge < en and l2edge > emin)):
                 if elem not in self.ptable.selected:
                     self.ptable.onclick(label=elem)
-
-    def onShowBgr(self, event=None):
-        mca    = self.mca
-        parent = self.parent
-        width  = self.wids['bgr_width'].GetValue()
-        expon  = int(self.wids['bgr_expon'].GetStringSelection())
-
-        xrf_background(energy=mca.energy, counts=mca.counts, group=mca,
-                       width=width, exponent=expon, _larch=parent.larch)
-
-        mca.bgr_width = width
-        mca.bgr_expoent = expon
-        parent.plotmca(mca)
-        parent.oplot(mca.energy, mca.bgr, label='background',
-                     color=parent.conf.bgr_color, linewidth=2, style='--')
 
     def onDetMaterial(self, event=None):
         dmat = self.wids['det_mat'].GetStringSelection()
@@ -1085,12 +1064,6 @@ class FitSpectraFrame(wx.Frame):
         self.ptable.title.SetLabel('%d elements selected' %
                                    len(self.ptable.selected))
 
-    def onUseBackground(self, event=None):
-        use_bgr = self.wids['bgr_use'].IsChecked()
-        self.wids['bgr_width'].Enable(use_bgr)
-        self.wids['bgr_expon'].Enable(use_bgr)
-        self.wids['bgr_show'].Enable(use_bgr)
-
     def onUsePileupEscape(self, event=None):
         puse = self.wids['pileup_use'].IsChecked()
         self.wids['pileup_amp'].Enable(puse)
@@ -1167,11 +1140,6 @@ class FitSpectraFrame(wx.Frame):
                 script.append(xrfmod_matrix.format(name=m_mat,
                                                    thick=opts['%s_thk'%t],
                                                    density=opts['%s_den'%t]))
-
-        if opts.get('bgr_use', False) in ('True', True):
-            bwid = self.wids['bgr_width'].GetValue()/1000.0
-            bexp = int(self.wids['bgr_expon'].GetStringSelection())
-            script.append(xrfmod_bgr.format(group=self.mcagroup, bwid=bwid, bexp=bexp))
 
         if opts['pileup_use'] in ('True', True):
             script.append(xrfmod_pileup.format(scale=opts['pileup_amp'],
@@ -1297,7 +1265,7 @@ class FitSpectraFrame(wx.Frame):
 
     def onSaveFitResult(self, event=None):
         result = self.get_fitresult()
-        deffile = self.mca.filename + '_' + result.label
+        deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.modl'
         ModelWcards = "XRF Models(*.modl)|*.modl|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
@@ -1309,12 +1277,12 @@ class FitSpectraFrame(wx.Frame):
 
     def onExportFitResult(self, event=None):
         result = self.get_fitresult()
-        deffile = self.mca.filename + '_' + result.label
+        deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.txt'
         wcards = 'All files (*.*)|*.*'
         outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
         if outfile is not None:
-            buff = ['# XRF Fit %s: %s' % (self.mca.filename, result.label),
+            buff = ['# XRF Fit %s: %s' % (self.mca.label, result.label),
                     '## Fit Script:']
             for a in result.script.split('\n'):
                 buff.append('#   %s' % a)
@@ -1437,8 +1405,8 @@ class FitSpectraFrame(wx.Frame):
                     val = gformat(val, 11)
                 args.append(val)
             self.owids['stats'].AppendItem(tuple(args))
-        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.filename, cur.count_time))
-        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.filename, cur.count_time))
+        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.label, cur.count_time))
+        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.label, cur.count_time))
         self.owids['fitlabel_txt'].SetValue(cur.label)
         self.show_fitresult(nfit=self.nfit)
 
@@ -1447,8 +1415,8 @@ class FitSpectraFrame(wx.Frame):
             self.mca = mca
         result = self.get_fitresult(nfit=nfit)
 
-        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.filename, result.count_time))
-        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.filename, result.count_time))
+        self.owids['data_title'].SetLabel("%s:  %.3f sec" % (self.mca.label, result.count_time))
+        self.owids['data_title2'].SetLabel("%s:  %.3f sec" % (self.mca.label, result.count_time))
         self.result = result
         self.owids['fitlabel_txt'].SetValue(result.label)
         self.owids['params'].DeleteAllItems()

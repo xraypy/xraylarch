@@ -55,9 +55,8 @@ has already been read.
 
 ICON_FILE = 'ptable.ico'
 
-make_xrfgroup = """
-%s = group(__doc__='MCA spectra groups for XRF Display', _mca='', _mca2='')
-""" %  XRFGROUP
+make_xrfgroup = "%s = group(__doc__='MCA spectra data groups for XRF Display', _mca='', _mca2='')" % XRFGROUP
+read_mcafile = "# {group:s}.{name:s} = read_gsemca('{filename:s}')"
 
 def txt(panel, label, size=75, colour=None, font=None, style=None):
     if style is None:
@@ -94,7 +93,7 @@ class XRFDisplayFrame(wx.Frame):
         self.wids = {}
         self.larch = _larch
         if isinstance(self.larch, Interpreter):  # called from shell
-            pass
+            self.larch_buffer = None
         else:
             self.larch_buffer = parent
             if not isinstance(parent, LarchFrame):
@@ -148,8 +147,7 @@ class XRFDisplayFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         if mca_file is not None:
-            self.add_mca(GSEMCA_File(mca_file))
-            self.plotmca(self.mca, show_mca2=False)
+            self.add_mca(GSEMCA_File(mca_file), filename=mca_file, plot=True)
 
     def ignoreEvent(self, event=None):
         pass
@@ -489,7 +487,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-    def add_mca(self, mca):
+    def add_mca(self, mca, filename=None, label=None, plot=True):
         self.mca2 = self.mca
         self.mca = mca
 
@@ -500,10 +498,20 @@ class XRFDisplayFrame(wx.Frame):
             name = mcaname(self.mca_index)
             group_exists = hasattr(xrfgroup, name)
 
+        if filename is not None:
+            self.larch.eval(read_mcafile.format(group=XRFGROUP,
+                                                name=name, filename=filename))
+            if label is None:
+                label = filename
+        if label is None:
+            label = name
+        self.mca.label = label
         # push mca to mca2, save id of this mca
         setattr(xrfgroup, '_mca2', getattr(xrfgroup, '_mca', ''))
         setattr(xrfgroup, '_mca', name)
         setattr(xrfgroup, name, mca)
+        if plot:
+            self.plotmca(self.mca)
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
@@ -825,11 +833,9 @@ class XRFDisplayFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.onExit)
 
     def onShowLarchBuffer(self, evt=None):
-        if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch,
-                                           is_standalone=False)
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
+        if self.larch_buffer is not None:
+            self.larch_buffer.Show()
+            self.larch_buffer.Raise()
 
     def onSavePNG(self, event=None):
         if self.panel is not None:
@@ -1287,8 +1293,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.mca is not None:
             self.mca2 = copy.deepcopy(self.mca)
 
-        self.add_mca(GSEMCA_File(mca_file))
-        self.plotmca(self.mca, show_mca2=True)
+        self.add_mca(GSEMCA_File(mca_file), filename=mca_file)
 
     def onSaveMCAFile(self, event=None, **kws):
         deffile = ''
