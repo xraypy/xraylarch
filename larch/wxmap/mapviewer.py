@@ -1625,7 +1625,7 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             if len(self.im_displays) == 0:
                 imd = self.add_imdisplay(title=title, det=det)
-                imd.display(map, contrast_level=0.5, **dopts)
+                imd.display(map, **dopts)
             else:
                 try:
                     imd = self.im_displays[-1]
