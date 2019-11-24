@@ -104,7 +104,7 @@ class XRFDisplayFrame(wx.Frame):
                 self.larch_buffer.Hide()
                 self.subframes['larchframe'] = self.larch_buffer
             self.larch = self.larch_buffer.larchshell
-            self.init_larch()
+        self.init_larch()
 
         self.exit_callback = exit_callback
         self.roi_patch = None
@@ -148,6 +148,7 @@ class XRFDisplayFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         if mca_file is not None:
             self.add_mca(GSEMCA_File(mca_file), filename=mca_file, plot=True)
+
 
     def ignoreEvent(self, event=None):
         pass
@@ -487,9 +488,12 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-    def add_mca(self, mca, filename=None, label=None, plot=True):
-        self.mca2 = self.mca
-        self.mca = mca
+    def add_mca(self, mca, filename=None, label=None, as_mca2=False, plot=True):
+        if as_mca2:
+            self.mca2 = mca
+        else:
+            self.mca2 = self.mca
+            self.mca = mca
 
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
         group_exists = True
@@ -512,6 +516,8 @@ class XRFDisplayFrame(wx.Frame):
         setattr(xrfgroup, name, mca)
         if plot:
             self.plotmca(self.mca)
+            if as_mca2:
+                self.plotmca(self.mca, as_mca2=True)
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()

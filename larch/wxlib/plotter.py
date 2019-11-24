@@ -322,24 +322,30 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     plotter.Raise()
     if x is None:
         return
+
+
     if isLarchMCAGroup(x):
         mca = x
         y = x.counts
         x = x.energy
 
     if as_mca2:
-        new = False
         if isLarchMCAGroup(mca):
-            plotter.plotmca(mca, as_mca2=True, new=False, **kws)
+            plotter.add_mca(mca, as_mca2=True, plot=False)
+            plotter.plotmca(mca, as_mca2=True, **kws)
         elif y is not None:
             plotter.oplot(x, y, mca=mca, as_mca2=True, **kws)
     elif new:
         if isLarchMCAGroup(mca):
+            plotter.add_mca(mca, plot=False)
             plotter.plotmca(mca, **kws)
         elif y is not None:
             plotter.plot(x, y, mca=mca, **kws)
-    else:
+    elif y is not None:
+        if isLarchMCAGroup(mca):
+            plotter.add_mca(mca, plot=False)
         plotter.oplot(x, y, mca=mca, **kws)
+
 
 @larch.ValidateLarchPlugin
 def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):

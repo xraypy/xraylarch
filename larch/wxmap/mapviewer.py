@@ -1173,15 +1173,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         label = bytes2str(area.attrs.get('description', aname))
         self._mca  = None
-
-
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
-
         def _getmca_area(aname):
             o = self.owner
             self._mca = o.current_file.get_mca_area(aname,
                                                     dtcorrect=o.dtcor)
-
         mca_thread = Thread(target=_getmca_area, args=(aname,))
         mca_thread.start()
         self.owner.show_XRFDisplay()
@@ -1193,11 +1189,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         self._mca.title = label
         self._mca.npixels = npix
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
-        self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
+        self.owner.xrfdisplay.add_mca(self._mca, label="%s:%s" % (fname, label),
+                                      plot=not as_mca2)
+        if as_mca2:
+            self.owner.xrfdisplay.swap_mcas()
 
     def onXRD(self, event=None, save=False, show=False,
               xrd1d=False, xrd2d=False, verbose=True):
-
         try:
             aname = self._getarea()
             xrmfile = self.owner.current_file
@@ -1449,8 +1447,8 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.filename = fname
             self.sel_mca.title = aname
             self.sel_mca.npixels = npix
-            self.xrfdisplay.plotmca(self.sel_mca)
-
+            self.xrfdisplay.add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
+                                    plot=True)
             for page in self.nb.pagelist:
                 if hasattr(page, 'update_xrmmap'):
                     page.update_xrmmap(xrmfile=self.current_file)
