@@ -96,7 +96,7 @@ class MCA(Group):
     ###############################################################################
     def __init__(self, counts=None, nchans=2048, start_time='',
                  offset=0, slope=0, quad=0, name='mca', dt_factor=1,
-                 real_time=0, live_time = 0, input_counts=0, tau=0, **kws):
+                 real_time=0, live_time=0, input_counts=0, tau=0, **kws):
 
         self.name    = name
         self.nchans  = nchans

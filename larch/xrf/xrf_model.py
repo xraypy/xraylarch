@@ -265,6 +265,8 @@ class XRF_Model:
         self.eigenvalues = {}
         self.transfer_matrix = None
         self.matrix_layers = []
+        self.matrix = None
+        self.matrix_atten = 1.0
         self.filters = []
         self.fit_iter = 0
         self.fit_toler = 1.e-5
@@ -272,7 +274,6 @@ class XRF_Model:
         self.bgr = None
         self.use_pileup = False
         self.use_escape = False
-        self.matrix_atten = None
         self.escape_scale = None
         self.script = ''
         if bgr is not None:
@@ -343,11 +344,10 @@ class XRF_Model:
         self.params.add('filterlen_%s' % material,
                         value=thickness, min=0, vary=vary_thickness)
 
-    def add_matrix_layer(self, material, thickness, density=None):
-        self.matrix_layers.append(XRF_Material(material=material,
-                                               density=density,
-                                               thickness=thickness))
-        self.matrix_atten = None
+    def set_matrix(self, material, thickness, density=None):
+        self.matrix = XRF_Material(material=material, density=density,
+                                   thickness=thickness)
+        self.matrix_atten = 1.0
 
     def add_background(self, data, vary=True):
         self.bgr = data
@@ -372,15 +372,13 @@ class XRF_Model:
         so the calculation can be done once, ahead of time.
         """
         atten = 1.0
-        if len(self.matrix_layers) > 0:
+        if self.matrix is not None:
             ixray_en = index_of(energy, self.xray_energy)
-            matrix_atten = 0
-            for m in reversed(self.matrix_layers):
-                layer_trans = m.transmission(energy)# transmission through layer
-                incid_trans = layer_trans[ixray_en] # incident beam trans to lower layers
-                incid_absor = 1.0 - incid_trans     # incident beam absorption by layer
-                matrix_atten = layer_trans * (incid_absor + incid_trans + matrix_atten)
-            atten *= matrix_atten
+            print("MATRIX ", ixray_en, self.matrix)
+           # layer_trans = self.matrix.transmission(energy) # transmission through layer
+            # incid_trans = layer_trans[ixray_en] # incident beam trans to lower layers
+            # ncid_absor = 1.0 - incid_trans     # incident beam absorption by layer
+            # atten = layer_trans * incid_absor
         self.matrix_atten = atten
 
     def calc_escape_scale(self, energy, thickness=None):
@@ -432,9 +430,9 @@ class XRF_Model:
                atten *= f.transmission(energy, thickness=thickness)
         self.atten = atten
         # matrix
-        if self.matrix_atten is None:
-            self.calc_matrix_attenuation(energy)
-        atten *= self.matrix_atten
+        # if self.matrix_atten is None:
+        #     self.calc_matrix_attenuation(energy)
+        # atten *= self.matrix_atten
         if self.use_escape:
             if self.escape_scale is None:
                 self.calc_escape_scale(energy, thickness=pars['det_thickness'])
@@ -550,7 +548,7 @@ class XRF_Model:
         self.fit_iter = 0
 
         # reset attenuation calcs for matrix, detector, filters
-        self.matrix_atten = None
+        self.matrix_atten = 1.0
         self.escape_scale = None
         self.detector.mu_total = None
         for f in self.filters:
@@ -656,12 +654,13 @@ class XRF_Model:
 
         mater_attrs = ('material', 'mu_photo', 'mu_total', 'thickness')
         out.detector = {attr: getattr(self.detector, attr) for attr in mater_attrs}
+        out.matrix = None
+        if self.matrix is not None:
+            out.matrix = {attr: getattr(self.matrix, attr) for attr in mater_attrs}
         out.filters = []
         for ft in self.filters:
             out.filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
-        out.matrix_layers = []
-        for m in self.matrix_layers:
-            out.matrix_layers.append({attr: getattr(m, attr) for attr in mater_attrs})
+        # out.matrix_layers = []
         return out
 
     def save(self, fname=None):
