@@ -816,10 +816,6 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, amenu, "Show Escape Prediction",
                  "Show Escape Prediction", kind=wx.ITEM_CHECK,
                  checked=False, action=self.onEscapePrediction)
-
-#         ix = amenu.Append(-1, "Show Escape Prediction",
-#                           "Show Escape Prediction", kind=wx.ITEM_CHECK)
-#         self.Bind(wx.EVT_MENU, self.onEscapePrediction, ix)
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
         MenuItem(self, amenu, "Fit Spectrum\tCtrl+F",
