@@ -57,8 +57,6 @@ def VarChoice(p, default=0, size=(75, -1)):
                   size=size, default=default)
 
 NFILTERS = 4
-MATRIXLAYERNAMES = ('top', 'middle', 'bottom')
-NMATRIX = len(MATRIXLAYERNAMES)
 MIN_CORREL = 0.10
 
 tooltips = {'ptable': 'Select Elements to include in model',
@@ -104,7 +102,7 @@ _xrfresult = _xrfmodel.compile_fitresults()
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
-xrfmod_matrix = "_xrfmodel.add_matrix_layer('{name:s}', {thick:.5f}, density={density:.5f})"
+xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:.5f})"
 
 xrfmod_jsondump  = """# save xrf model to json
 _o = copy(group2dict({group:s}.fit_history[{nfit:d}]))
@@ -136,8 +134,6 @@ class FitSpectraFrame(wx.Frame):
         # fetch current spectra from parent
         xrfgroup = self._larch.symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
-        print("XRF Group ", xrfgroup, mcagroup)
-        print("XRF Group ", getattr(xrfgroup, mcagroup, '??'))
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
 
@@ -157,7 +153,34 @@ class FitSpectraFrame(wx.Frame):
 
         self.wids = {}
         self.owids = {}
-        self.result_frame = None
+
+        pan = GridPanel(self)
+        mca_groups = []
+        mca_default = 0
+        for attr in dir(xrfgroup):
+            if attr.startswith('mca'):
+                obj = getattr(xrfgroup, attr)
+                label = getattr(obj, 'label', '')
+                if hasattr(obj, 'counts') and label is not None and len(label) > 1:
+                    mca_groups.append(label)
+                    if attr == self.mcagroup:
+                        mca_default = len(mca_groups)-1
+
+
+        self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(350, -1),
+                                         default=mca_default)
+        #                                 action=self.onDetMaterial)
+
+        self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(175, -1),
+                                       action=self.onShowModel)
+        self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(175, -1),
+                                       action=self.onFitModel)
+
+        pan.AddText("  XRF Spectrum: ", colour='#880000')
+        pan.Add(self.wids['mca_choice'], dcol=3)
+        pan.Add(self.wids['btn_calc'], newrow=True)
+        pan.Add(self.wids['btn_fit'])
+
         self.panels = {}
         self.panels['Beam & Detector']  = self.beamdet_page
         self.panels['Filters & Matrix'] = self.materials_page
@@ -165,24 +188,13 @@ class FitSpectraFrame(wx.Frame):
         self.panels['Fit Results']        = self.fitresult_page
         self.panels['Composition'] = self.composition_page
 
-        self.nb = flatnotebook(self, self.panels,
+        self.nb = flatnotebook(pan, self.panels,
                                on_change=self.onNBChanged)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
+        pan.Add((5, 5), newrow=True)
+        pan.Add(self.nb, dcol=5, drow=10, newrow=True)
+        pan.pack()
 
-        bpanel = wx.Panel(self)
-        self.SetBackgroundColour((235, 235, 235))
-        bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bsizer.Add(Button(bpanel, 'Calculate Model', size=(200, -1),
-                          action=self.onShowModel), 0, LEFT)
-        bsizer.Add(Button(bpanel, 'Fit Model', size=(200, -1),
-                          action=self.onFitModel), 0, LEFT)
-
-        pack(bpanel, bsizer)
-        sizer.Add(bpanel, 0, CEN)
-        sizer.Add((5,5))
-        pack(self, sizer)
         self.Show()
         self.Raise()
 
@@ -471,8 +483,8 @@ class FitSpectraFrame(wx.Frame):
 
         pan.AddText(' Filters :', colour='#880000', dcol=2) # , newrow=True)
         pan.AddManyText(('  Filter #', 'Material', 'Thickness (mm)',
-                         'Vary Thickness'), style=CEN, newrow=True)
-        opts = dict(size=(100, -1), min_val=0, digits=5, increment=0.005)
+                         'Vary Thickness'), style=LEFT, newrow=True)
+        opts = dict(size=(125, -1), min_val=0, digits=5, increment=0.005)
 
         for i in range(NFILTERS):
             t = 'filter%d' % (i+1)
@@ -494,39 +506,33 @@ class FitSpectraFrame(wx.Frame):
                 wids['%s_mat'%t].SetStringSelection('aluminum')
                 wids['%s_thk'%t].SetValue(0.00)
 
-            pan.AddText('  # %i  ' % (i+1), newrow=True)
+            pan.AddText('      %i' % (i+1), newrow=True)
             pan.Add(wids['%s_mat' % t])
             pan.Add(wids['%s_thk' % t])
             pan.Add(wids['%s_var' % t])
 
         pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
 
-        pan.AddText(' Matrix Layers:', colour='#880000', dcol=2, newrow=True)
-        pan.AddManyText(('  Layer', 'Material/Formula',
-                         'thickness (mm)', 'density'), style=CEN, newrow=True)
+        pan.AddText(' Matrix:', colour='#880000', dcol=2, newrow=True)
 
-        for i in range(NMATRIX):
-            t = 'matrix%d' % (i+1)
-            wids['%s_mat'%t] = wx.TextCtrl(pan, value='', size=(150, -1))
-            wids['%s_thk'%t] = FloatSpin(pan, value=0.0, **opts)
-            wids['%s_den'%t] = FloatSpin(pan, value=1.0, **opts)
-            wids['%s_btn'%t] = Button(pan, 'Use Material', size=(175, -1),
-                                      action=partial(self.onUseCurrentMaterialAsFilter,
-                                                     layer=i+1))
-            wids['%s_btn'%t].Disable()
-            pan.AddText('     %s' % (MATRIXLAYERNAMES[i]), style=LCEN, newrow=True)
-            pan.Add(wids['%s_mat' % t])
-            pan.Add(wids['%s_thk' % t])
-            pan.Add(wids['%s_den' % t])
-            pan.Add(wids['%s_btn' % t])
+        wids['matrix_mat'] = wx.TextCtrl(pan, value='', size=(275, -1))
+        wids['matrix_thk'] = FloatSpin(pan, value=0.0, **opts)
+        wids['matrix_den'] = FloatSpin(pan, value=1.0, **opts)
+        wids['matrix_btn'] = Button(pan, 'Use Material', size=(175, -1),
+                                  action=self.onUseCurrentMaterialAsFilter)
+        wids['matrix_btn'].Disable()
+        pan.AddText('  Material/Formula:', dcol=1, newrow=True)
+        pan.Add(wids['matrix_mat'], dcol=2)
+        pan.Add(wids['matrix_btn'], dcol=3)
+        pan.AddText('  Thickness (mm):', newrow=True)
+        pan.Add(wids['matrix_thk'])
+        pan.AddText(' Density (gr/cm^3):', newrow=False)
+        pan.Add(wids['matrix_den'])
 
         pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
 
         # Materials
         pan.AddText(' Known Materials:', colour='#880000', dcol=4, newrow=True)
-        bx = Button(pan, 'Update Filter List', size=(175, -1),
-                    action=self.onUpdateFilterList)
-        pan.Add(bx)
 
         mview = self.owids['materials'] = dv.DataViewListCtrl(pan, style=DVSTYLE)
         mview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectMaterial)
@@ -535,7 +541,7 @@ class FitSpectraFrame(wx.Frame):
         mview.AppendTextColumn('Name',      width=150)
         mview.AppendTextColumn('Formula',   width=325)
         mview.AppendTextColumn('density',    width=90)
-        mview.AppendToggleColumn('Filter?',  width=50)
+        mview.AppendToggleColumn('Filter?',  width=75)
         for col in range(4):
             this = mview.Columns[col]
             align = wx.ALIGN_LEFT
@@ -552,20 +558,24 @@ class FitSpectraFrame(wx.Frame):
                               name in Filter_Materials))
         pan.Add(mview, dcol=5, newrow=True)
 
-        pan.AddText(' Add Material:', colour='#880000', dcol=2, newrow=True)
-        self.owids['newmat_name'] = wx.TextCtrl(pan, value='', size=(150, -1))
+        pan.AddText(' Add Material:', colour='#880000', newrow=True)
+        pan.Add(Button(pan, 'Add', size=(175, -1),
+                       action=self.onAddMaterial))
+        pan.Add((10, 10))
+        bx = Button(pan, 'Update Filter List', size=(175, -1),
+                    action=self.onUpdateFilterList)
+        pan.Add(bx)
+
+        self.owids['newmat_name'] = wx.TextCtrl(pan, value='', size=(175, -1))
         self.owids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
         self.owids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
 
         pan.AddText(' Name:', newrow=True)
         pan.Add(self.owids['newmat_name'])
-        pan.AddText(' Density:', newrow=False)
+        pan.AddText(' Density (gr/cm^3):', newrow=False)
         pan.Add(self.owids['newmat_dens'])
-        pan.AddText(' gr/cm^3', newrow=False)
         pan.AddText(' Formula:', newrow=True)
         pan.Add(self.owids['newmat_form'], dcol=3)
-        pan.Add(Button(pan, 'Add Material', size=(175, -1),
-                       action=self.onAddMaterial))
         pan.pack()
         return pan
 
@@ -999,12 +1009,11 @@ class FitSpectraFrame(wx.Frame):
             thick.SetValue(0.0250)
             thick.SetIncrement(0.005)
 
-    def onUseCurrentMaterialAsFilter(self, evt=None, layer=1):
+    def onUseCurrentMaterialAsFilter(self, evt=None):
         name = self.selected_material
         density = self.materials_data.get(name, (None, 1.0))[1]
-        if layer is not None and len(name)>0:
-            self.wids['matrix%d_den'% layer].SetValue(density)
-            self.wids['matrix%d_mat'% layer].SetValue(name)
+        self.wids['matrix_den'].SetValue(density)
+        self.wids['matrix_mat'].SetValue(name)
 
     def onSelectMaterial(self, evt=None):
         if self.owids['materials'] is None:
@@ -1015,11 +1024,9 @@ class FitSpectraFrame(wx.Frame):
             name = list(self.materials_data.keys())[item]
             self.selected_material = name
 
-        for i in range(NMATRIX):
-            t = 'matrix%d' % (i+1)
-            self.wids['%s_btn'%t].Enable(name is not None)
-            if name is not None:
-                self.wids['%s_btn'%t].SetLabel('Use %s'  % name)
+        self.wids['matrix_btn'].Enable(name is not None)
+        if name is not None:
+            self.wids['matrix_btn'].SetLabel('Use %s'  % name)
 
     def onUpdateFilterList(self, evt=None):
         flist = ['None']
@@ -1133,13 +1140,11 @@ class FitSpectraFrame(wx.Frame):
                                                    thick=opts['%s_thk'%t],
                                                    vary=opts['%s_var'%t]))
 
-        for i in range(NMATRIX):
-            t = 'matrix%d' % (i+1)
-            m_mat = opts['%s_mat'%t].strip()
-            if len(m_mat) > 0 and int(1e6*opts['%s_thk'%t]) > 1:
-                script.append(xrfmod_matrix.format(name=m_mat,
-                                                   thick=opts['%s_thk'%t],
-                                                   density=opts['%s_den'%t]))
+        m_mat = opts['matrix_mat'].strip()
+        if len(m_mat) > 0 and int(1e6*opts['matrix_thk']) > 1:
+            script.append(xrfmod_matrix.format(name=m_mat,
+                                               thick=opts['matrix_thk'],
+                                               density=opts['matrix_den']))
 
         if opts['pileup_use'] in ('True', True):
             script.append(xrfmod_pileup.format(scale=opts['pileup_amp'],
