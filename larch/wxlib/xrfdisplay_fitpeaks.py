@@ -127,7 +127,7 @@ Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
-    def __init__(self, parent, size=(655, 780)):
+    def __init__(self, parent, size=(700, 825)):
         self.parent = parent
         self._larch = parent.larch
 
@@ -167,13 +167,13 @@ class FitSpectraFrame(wx.Frame):
                         mca_default = len(mca_groups)-1
 
 
-        self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(350, -1),
+        self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(400, -1),
                                          default=mca_default)
         #                                 action=self.onDetMaterial)
 
-        self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(175, -1),
+        self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
-        self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(175, -1),
+        self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
                                        action=self.onFitModel)
 
         pan.AddText("  XRF Spectrum: ", colour='#880000')
@@ -190,7 +190,6 @@ class FitSpectraFrame(wx.Frame):
 
         self.nb = flatnotebook(pan, self.panels,
                                on_change=self.onNBChanged)
-
         pan.Add((5, 5), newrow=True)
         pan.Add(self.nb, dcol=5, drow=10, newrow=True)
         pan.pack()
@@ -271,7 +270,7 @@ class FitSpectraFrame(wx.Frame):
         p.Add(wids['peak_tail_vary'])
 
         p.Add((2, 2), newrow=True)
-        p.Add(HLine(p, size=(550, 3)), dcol=8)
+        p.Add(HLine(p, size=(650, 3)), dcol=8)
         p.Add((2, 2), newrow=True)
 
         #                name, escale, step, sigmax, beta, tail
@@ -333,7 +332,7 @@ class FitSpectraFrame(wx.Frame):
             p.Add(wids['%s_tail_vary'%t])
 
             p.Add((2, 2), newrow=True)
-            p.Add(HLine(p, size=(550, 3)), dcol=7)
+            p.Add(HLine(p, size=(650, 3)), dcol=7)
 
         p.pack()
         return p
@@ -355,7 +354,7 @@ class FitSpectraFrame(wx.Frame):
         pdet = GridPanel(self, itemstyle=LEFT)
 
         def addLine(pan):
-            pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+            pan.Add(HLine(pan, size=(650, 3)), dcol=6, newrow=True)
 
 
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
@@ -511,7 +510,7 @@ class FitSpectraFrame(wx.Frame):
             pan.Add(wids['%s_thk' % t])
             pan.Add(wids['%s_var' % t])
 
-        pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(650, 3)), dcol=6, newrow=True)
 
         pan.AddText(' Matrix:', colour='#880000', dcol=2, newrow=True)
 
@@ -529,7 +528,7 @@ class FitSpectraFrame(wx.Frame):
         pan.AddText(' Density (gr/cm^3):', newrow=False)
         pan.Add(wids['matrix_den'])
 
-        pan.Add(HLine(pan, size=(600, 3)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(650, 3)), dcol=6, newrow=True)
 
         # Materials
         pan.AddText(' Known Materials:', colour='#880000', dcol=4, newrow=True)
@@ -548,7 +547,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        mview.SetMinSize((650, 170))
+        mview.SetMinSize((675, 170))
         mview.DeleteAllItems()
         self.materials_data = {}
         for name, data in materials._read_materials_db().items():
@@ -625,7 +624,7 @@ class FitSpectraFrame(wx.Frame):
 
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+1),
@@ -648,13 +647,13 @@ class FitSpectraFrame(wx.Frame):
                 align = wx.ALIGN_CENTER
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((650, 150))
+        sview.SetMinSize((675, 150))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+1),
@@ -677,14 +676,14 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((650, 200))
+        pview.SetMinSize((675, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
         sizer.Add(pview, (irow, 0), (1, 5), LCEN)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(625, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+1),
@@ -716,7 +715,7 @@ class FitSpectraFrame(wx.Frame):
             if col == 2:
                 align = wx.ALIGN_RIGHT
             this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((600, 125))
+        cview.SetMinSize((675, 125))
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
@@ -749,7 +748,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        cview.SetMinSize((650, 400))
+        cview.SetMinSize((675, 400))
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
