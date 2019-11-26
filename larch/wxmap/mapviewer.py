@@ -181,7 +181,7 @@ class MapPanel(GridPanel):
                                action=partial(self.onROIMap, new=True))
         map_update  =  Button(self, 'Replace', size=(140, -1),
                               action=partial(self.onROIMap, new=False))
-        map_process =  Button(self, 'Add Rows from Raw Data', size=(250, -1),
+        map_process =  Button(self, 'Add Rows and Update ROI List', size=(275, -1),
                               action=self.onProcessMap)
         self.map_process = map_process
 
@@ -248,12 +248,13 @@ class MapPanel(GridPanel):
                 zigzag = int(self.zigoff.GetValue())
             xrmfile.zigzag = zigzag
 
-    def update_xrmmap(self, xrmfile=None):
+    def update_xrmmap(self, xrmfile=None, set_detectors=False):
         if xrmfile is None:
             xrmfile = self.owner.current_file
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-        self.set_det_choices()
+        if set_detectors or (not self.detectors_set):
+            self.set_det_choices()
         self.plotSELECT()
 
     def onLimitRange(self, event=None):
@@ -456,14 +457,16 @@ class MapPanel(GridPanel):
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
         self.owner.process_file(fname, max_new_rows=max_new_rows)
-        self.update_xrmmap(xrmfile=self.owner.current_file)
+        self.update_xrmmap(xrmfile=self.owner.current_file, set_detectors=True)
+        # self.set_det_choices()        
 
     def onROIMap(self, event=None, new=True, plot=True):
         # if (time.time() - self.last_process_time) < 15:
         #     return
         xrmfile = self.owner.current_file
-        pref, fname = os.path.split(xrmfile.filename)
-        self.owner.process_file(fname, max_new_rows=10)
+        if not new:
+            pref, fname = os.path.split(xrmfile.filename)
+            self.owner.process_file(fname, max_new_rows=10)
         self.last_process_time = time.time()
         if plot:
             if 'correlation' in self.plot_choice.GetStringSelection().lower():
@@ -481,7 +484,7 @@ class MapPanel(GridPanel):
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
         self.set_roi_choices()
-        # self.detectors_set = True
+        self.detectors_set = True
 
     def set_roi_choices(self, idet=None):
         # print("Set ROI Choices ", idet)
@@ -541,9 +544,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
 
     def update_xrmmap(self, xrmfile=None):
+        
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
-
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
             d2 = datetime.datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
@@ -955,7 +958,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def update_xrmmap(self, xrmfile=None):
         if xrmfile is None: xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
-
         self.set_area_choices(xrmmap, show_last=True)
         self.set_enabled_btns(xrmfile=xrmfile)
 
@@ -1400,9 +1402,9 @@ class MapViewerFrame(wx.Frame):
         pack(parent, sizer)
 
     def onNBChanged(self, event=None):
-        callback = getattr(self.nb.GetCurrentPage(), 'on_select', None)
-        if callable(callback):
-            callback()
+        cb = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
+        if callable(cb):
+            cb()
 
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
         if xrmfile is None:
@@ -1449,9 +1451,10 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.npixels = npix
             self.xrfdisplay.add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
                                     plot=True)
-            for page in self.nb.pagelist:
-                if hasattr(page, 'update_xrmmap'):
-                    page.update_xrmmap(xrmfile=self.current_file)
+            
+            update_xrmmap = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
+            if callable(update_xrmmap):
+                update_xrmmap(xrmfile=self.current_file)
 
         if self.showxrd:
             for page in self.nb.pagelist:
@@ -1515,10 +1518,13 @@ class MapViewerFrame(wx.Frame):
         tmask = np.zeros((ny, nx)).astype(bool)
         tmask[int(iy), int(ix)] = True
         xrmfile.add_area(tmask, name=name)
-        for page in self.nb.pagelist:
-            if hasattr(page, 'update_xrmmap'):
-                page.update_xrmmap(xrmfile=xrmfile)
-
+        # for page in self.nb.pagelist:
+        #     if hasattr(page, 'update_xrmmap'):
+        #         page.update_xrmmap(xrmfile=xrmfile)
+        update_xrmmap = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
+        if callable(update_xrmmap):
+            update_xrmmap(xrmfile=xrmfile)
+                
         # show position on map
         self.im_displays[-1].panel.add_highlight_area(tmask, label=name)
 
@@ -1712,24 +1718,26 @@ class MapViewerFrame(wx.Frame):
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
-
         if not self.h5convert_done or filename not in self.filemap:
             return
+        print("ShowFile ", filename)
+        self.current_file = self.filemap[filename]
         if (self.check_ownership(filename) and
-            self.filemap[filename].folder_has_newdata()):
+            self.current_file.folder_has_newdata()):
             if process_file:
                 self.process_file(filename, max_new_rows=25)
 
-        self.current_file = self.filemap[filename]
-        ny, nx = self.filemap[filename].get_shape()
+        ny, nx = self.current_file.get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
 
         fnames = self.filelist.GetItems()
-        for page in self.nb.pagelist:
-            if hasattr(page, 'update_xrmmap'):
-                page.update_xrmmap(xrmfile=self.current_file)
-            if hasattr(page, 'set_file_choices'):
-                page.set_file_choices(fnames)
+
+        cb = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
+        if callable(cb):
+            cb(xrmfile=self.current_file)
+        cb = getattr(self.nb.GetCurrentPage(), 'set_file_choices', None)
+        if callable(cb):
+            cb(fnames)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -1996,9 +2004,11 @@ class MapViewerFrame(wx.Frame):
 
             if read:
                 self.current_file.add_XRDfiles(xrdcalfile=path,flip=flip)
-                for page in self.nb.pagelist:
-                    if hasattr(page, 'update_xrmmap'):
-                        page.update_xrmmap(xrmfile=self.current_file)
+                update_xrmmap = getattr(self.nb.GetCurrentPage(),
+                                        'update_xrmmap', None)
+                if callable(update_xrmmap):
+                    update_xrmmap(xrmfile=self.current_file)
+
 
     def defineROI(self, event=None):
         if not self.h5convert_done:
@@ -2014,12 +2024,12 @@ class MapViewerFrame(wx.Frame):
             myDlg.Destroy()
 
             if read:
-                for page in self.nb.pagelist:
-                    if hasattr(page, 'update_xrmmap'):
-                        page.update_xrmmap(xrmfile=self.current_file)
+                update_xrmmap = getattr(self.nb.GetCurrentPage(),
+                                        'update_xrmmap', None)
+                if callable(update_xrmmap):
+                    update_xrmmap(xrmfile=self.current_file)
 
     def add1DXRDFile(self, event=None):
-
         if len(self.filemap) > 0:
             read = False
             wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
@@ -2122,7 +2132,9 @@ class MapViewerFrame(wx.Frame):
                                            kwargs={'callback':self.updateTimer,
                                                    'maxrow': maxrow})
             self.h5convert_thread.start()
+            # xrmfile.process(maxrow=maxrow, callback=self.updateTimer)
 
+            
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
@@ -2133,20 +2145,21 @@ class MapViewerFrame(wx.Frame):
                                                                  self.h5convert_nrow))
     def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        # self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
-        # print("Timer:  ", self.h5convert_done)
+        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
             self.files_in_progress = []
             self.message('MapViewer processing %s: complete!' % fname)
             _path, _fname = os.path.split(fname)
-            self.ShowFile(filename=_fname)
-            # if _fname in self.filemap:
-            #    for page in self.nb.pagelist:
-            #        if hasattr(page, 'update_xrmmap'):
-            #            page.update_xrmmap(xrmfile=self.filemap[_fname])
-
+            if _fname in self.filemap:
+                cfile = self.current_file = self.filemap[_fname]        
+                ny, nx = cfile.get_shape()
+                self.title.SetLabel('%s: (%i x %i)' % (_fname, nx, ny))
+                update_xrmmap = getattr(self.nb.GetCurrentPage(),
+                                        'update_xrmmap', None)
+                if callable(update_xrmmap) and _fname in self.filemap:
+                    update_xrmmap(xrmfile=cfile)
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
