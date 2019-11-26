@@ -460,19 +460,19 @@ class MapPanel(GridPanel):
         self.update_xrmmap(xrmfile=self.owner.current_file, set_detectors=True)
         # self.set_det_choices()        
 
-    def onROIMap(self, event=None, new=True, plot=True):
-        # if (time.time() - self.last_process_time) < 15:
-        #     return
-        xrmfile = self.owner.current_file
-        if not new:
-            pref, fname = os.path.split(xrmfile.filename)
-            self.owner.process_file(fname, max_new_rows=10)
+    def onROIMap(self, event=None, new=True):
+        plotcmd = partial(self.ShowMap, new=new)
+        if 'correlation' in self.plot_choice.GetStringSelection().lower():
+            plotcmd = partial(self.ShowCorrel, new=new)
+
+        if new:
+            plotcmd()
+        else:
+            pref, fname = os.path.split(self.owner.current_file.filename)
+            self.owner.process_file(fname, max_new_rows=25,
+                                    on_complete=plotcmd)
+
         self.last_process_time = time.time()
-        if plot:
-            if 'correlation' in self.plot_choice.GetStringSelection().lower():
-                self.ShowCorrel(new=new)
-            else:
-                self.ShowMap(new=new)
 
     def set_det_choices(self):
         #if self.detectors_set:
@@ -2103,8 +2103,7 @@ class MapViewerFrame(wx.Frame):
                 path, fname = os.path.split(self.current_file.filename)
                 self.process_file(fname, max_new_rows=1200300)
 
-
-    def process_file(self, filename, max_new_rows=None):
+    def process_file(self, filename, max_new_rows=None, on_complete=None):
         """Request processing of map file.
         This can take awhile, so is done in a separate thread,
         with updates displayed in message bar
@@ -2122,6 +2121,7 @@ class MapViewerFrame(wx.Frame):
             self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
+            self.h5convert_oncomplete = on_complete
             self.htimer.Start(500)
             maxrow = None
             if max_new_rows is not None:
@@ -2160,6 +2160,9 @@ class MapViewerFrame(wx.Frame):
                                         'update_xrmmap', None)
                 if callable(update_xrmmap) and _fname in self.filemap:
                     update_xrmmap(xrmfile=cfile)
+                if self.h5convert_oncomplete is not None:
+                    self.h5convert_oncomplete()
+                    
 
     def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
