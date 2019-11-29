@@ -1720,7 +1720,6 @@ class MapViewerFrame(wx.Frame):
             filename = evt.GetString()
         if not self.h5convert_done or filename not in self.filemap:
             return
-        print("ShowFile ", filename)
         self.current_file = self.filemap[filename]
         if (self.check_ownership(filename) and
             self.current_file.folder_has_newdata()):
@@ -1829,7 +1828,10 @@ class MapViewerFrame(wx.Frame):
 
         save_workdir('gsemap.dat')
         for xrmfile in self.filemap.values():
-            xrmfile.close()
+            try:
+                xrmfile.close()
+            except KeyError:
+                pass
 
         ## Closes maps, 2D XRD image
         for disp in self.im_displays + self.plot_displays + self.tomo_displays:
@@ -2133,7 +2135,6 @@ class MapViewerFrame(wx.Frame):
                                                    'maxrow': maxrow})
             self.h5convert_thread.start()
             # xrmfile.process(maxrow=maxrow, callback=self.updateTimer)
-
             
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
         if row      is not None: self.h5convert_irow  = row
