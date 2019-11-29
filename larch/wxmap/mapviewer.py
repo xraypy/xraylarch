@@ -2134,7 +2134,8 @@ class MapViewerFrame(wx.Frame):
                                            kwargs={'callback':self.updateTimer,
                                                    'maxrow': maxrow})
             self.h5convert_thread.start()
-            # xrmfile.process(maxrow=maxrow, callback=self.updateTimer)
+        elif callable(on_complete):
+            on_complete()
             
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
         if row      is not None: self.h5convert_irow  = row
