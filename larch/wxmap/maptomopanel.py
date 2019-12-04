@@ -197,7 +197,7 @@ class TomographyPanel(GridPanel):
     def onHotCols(self, event=None):
         self.owner.current_file.hotcols = self.use_hotcols.IsChecked()
 
-    def update_xrmmap(self, xrmfile=None):
+    def update_xrmmap(self, xrmfile=None, set_detectors=None):
 
         if xrmfile is None:
             xrmfile = self.owner.current_file

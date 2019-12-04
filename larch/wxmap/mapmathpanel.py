@@ -198,14 +198,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
                 xrmfile.del_work_array(h5str(name))
             else:
                 return
-        # print("Add Work Array: ", name, info)
         xrmfile.add_work_array(self.map, h5str(name),
                                expression=h5str(expr),
                                info=json.dumps(info))
 
         for p in self.owner.nb.pagelist:
             if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmfile=xrmfile)
+                p.update_xrmmap(xrmfile=xrmfile, set_detectors=True)
 
     def onFILE(self, evt=None, varname='a'):
 
@@ -229,14 +228,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
         map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
         self.varrange[varname].SetLabel('[%g:%g]' % (map.min(), map.max()))
 
-    def update_xrmmap(self, xrmfile=None):
-
+    def update_xrmmap(self, xrmfile=None, set_detectors=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
 
         self.cfile = xrmfile
         self.xrmmap = xrmfile.xrmmap
-
+        self.set_file_choices(self.owner.filelist.GetItems())
         self.set_det_choices()
         self.set_workarray_choices(self.xrmmap)
 
