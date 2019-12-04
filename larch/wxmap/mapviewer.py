@@ -105,6 +105,7 @@ BEAMLINE = '13-ID-E'
 FACILITY = 'APS'
 
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
+PROCROWS_CHOICES = ('All', '10', '25', '50', '100', '250', '500')
 PLOT_OPERS = ('/', '*', '-', '+')
 
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
@@ -183,6 +184,9 @@ class MapPanel(GridPanel):
                               action=partial(self.onROIMap, new=False))
         map_process =  Button(self, 'Add Rows and Update ROI List', size=(275, -1),
                               action=self.onProcessMap)
+        self.map_rows2process = Choice(self, choices=PROCROWS_CHOICES,
+                                       size=(140, -1))
+        self.map_rows2process.SetStringSelection('50')
         self.map_process = map_process
 
         self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
@@ -206,7 +210,9 @@ class MapPanel(GridPanel):
         self.Add(SimpleText(self, 'Display:'),   dcol=1, style=LEFT, newrow=True)
         self.Add(map_shownew,      dcol=1, style=LEFT)
         self.Add(map_update,       dcol=1, style=LEFT)
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(map_process,      dcol=2, style=LEFT)
+        self.Add(self.map_rows2process, dcol=1)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
