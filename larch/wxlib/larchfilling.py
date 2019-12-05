@@ -211,8 +211,10 @@ class FillingTree(wx.TreeCtrl):
             if not ((key.startswith('__') and key.endswith('__')) or
                     key.startswith('_SymbolTable') or
                     key == '_main'):
-                a = getattr(obj, key)
-                out[key] = a
+                try:
+                    out[key] = getattr(obj, key)
+                except:
+                    out[key] = key
         return out
 
     def addChildren(self, item):
