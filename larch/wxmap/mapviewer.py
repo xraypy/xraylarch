@@ -182,12 +182,10 @@ class MapPanel(GridPanel):
                                action=partial(self.onROIMap, new=True))
         map_update  =  Button(self, 'Replace', size=(140, -1),
                               action=partial(self.onROIMap, new=False))
-        map_process =  Button(self, 'Add Rows and Update ROI List', size=(275, -1),
-                              action=self.onProcessMap)
-        self.map_rows2process = Choice(self, choices=PROCROWS_CHOICES,
-                                       size=(140, -1))
-        self.map_rows2process.SetStringSelection('50')
-        self.map_process = map_process
+        self.mapproc_btn =  Button(self, 'Update Map', size=(140, -1),
+                                   action=self.onProcessMap)
+        self.mapproc_nrows = Choice(self, choices=PROCROWS_CHOICES, size=(140, -1))
+        self.mapproc_nrows.SetStringSelection('50')
 
         self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
                      style=LEFT,  newrow=True)
@@ -206,13 +204,13 @@ class MapPanel(GridPanel):
         self.AddMany((SimpleText(self,''),self.roi_label[0],
                       self.roi_label[1],self.roi_label[2], self.roi_label[3]),
                      style=LEFT,  newrow=True)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
         self.Add(SimpleText(self, 'Display:'),   dcol=1, style=LEFT, newrow=True)
         self.Add(map_shownew,      dcol=1, style=LEFT)
         self.Add(map_update,       dcol=1, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(map_process,      dcol=2, style=LEFT)
-        self.Add(self.map_rows2process, dcol=1)
+        self.Add(SimpleText(self, 'Process:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.mapproc_btn, dcol=1, style=LEFT)
+        self.Add(SimpleText(self, 'Max # Rows:'),   dcol=1, style=LEFT, newrow=False)
+        self.Add(self.mapproc_nrows, dcol=1)
 
         self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
@@ -462,6 +460,12 @@ class MapPanel(GridPanel):
     def onProcessMap(self, event=None, max_new_rows=None):
         xrmfile = self.owner.current_file
         pref, fname = os.path.split(xrmfile.filename)
+        if max_new_rows is None:
+            max_new_rows = self.mapproc_nrows.GetStringSelection().lower()
+            if max_new_rows.lower() == 'all':
+                max_new_rows = None
+            else:
+                max_new_rows = int(max_new_rows)
         self.owner.process_file(fname, max_new_rows=max_new_rows)
         self.update_xrmmap(xrmfile=self.owner.current_file, set_detectors=True)
         # self.set_det_choices()
@@ -484,7 +488,6 @@ class MapPanel(GridPanel):
         #if self.detectors_set:
         #     return
         det_list = self.cfile.get_detector_list()
-        # print("map panel set_det_choices ", det_list, self.det_choice)
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
