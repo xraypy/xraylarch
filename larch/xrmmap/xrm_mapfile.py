@@ -1556,7 +1556,7 @@ class GSEXRM_MapFile(object):
             if detname in roigrp.keys():
                 rois = sort_roi_limits(roigrp[detname])
             elif detname in EXTRA_DETGROUPS:
-                rois = rois+list(self.xrmmap[detname].keys())
+                rois = list(self.xrmmap[detname].keys())
 
         else:
             if detname in EXTRA_DETGROUPS:
@@ -1573,8 +1573,9 @@ class GSEXRM_MapFile(object):
 
     def get_detector_list(self):
         """get a list of detector groups,
-        ['mcasum', 'mca1', ..., 'scalars']
+        ['mcasum', 'mca1', ..., 'scalars', 'work', 'xrd1d']
         """
+        workgroup = ensure_subgroup('work', self.xrmmap)
         if self.detector_list is not None:
             return self.detector_list
         def build_dlist(group):
@@ -1588,15 +1589,13 @@ class GSEXRM_MapFile(object):
                         detlist.append(key)
             return sumslist + detlist
 
-
+        # print("Get Det List done ", self.version)
         xrmmap = self.xrmmap
         det_list = []
         if version_ge(self.version, '2.0.0'):
             det_list = build_dlist(xrmmap['roimap'])
             for det in EXTRA_DETGROUPS:
-                if (det in xrmmap and
-                    len(xrmmap[det]) > 0 and
-                    det not in det_list):
+                if det in xrmmap and det not in det_list:
                     det_list.append(det)
         else:
             det_list = build_dlist(xrmmap)
@@ -1604,15 +1603,9 @@ class GSEXRM_MapFile(object):
                 if det not in det_list:
                     det_list.append(det)
             for det in EXTRA_DETGROUPS:
-                if (det in xrmmap and
-                    len(xrmmap[det]) > 0 and
-                    det not in det_list):
+                if (det in xrmmap and det not in det_list):
                     det_list.append(det)
-#             for det in EXTRA_DETGROUPS:
-#                  try:
-#                      det_list.pop(det_list.index(det))
-#                  except:
-#                      pass
+
         self.detector_list = det_list
         if len(det_list) < 1:
             det_list = ['']
@@ -1752,7 +1745,7 @@ class GSEXRM_MapFile(object):
         '''
         add an array to the work group of processed arrays
         '''
-        workgroup = ensure_subgroup('work',self.xrmmap)
+        workgroup = ensure_subgroup('work', self.xrmmap)
         if name is None:
             name = 'array_%3.3i' % (1+len(workgroup))
         if name in workgroup:
