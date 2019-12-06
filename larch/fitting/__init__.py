@@ -119,6 +119,9 @@ def param(*args, **kws):
         kws.pop('_larch')
     if 'vary' not in kws:
         kws['vary'] = False
+    if 'name' not in kws:
+        kws['name'] = '_tmp_param_'
+
     return Parameter(*args, **kws)
 
 def guess(value,  **kws):
