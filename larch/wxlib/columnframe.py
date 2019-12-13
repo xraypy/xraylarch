@@ -664,7 +664,8 @@ class ColumnDataFileFrame(wx.Frame) :
                 buff.append("{group}.energy = {group}.xdat")
             buff.append("{group}.mu = {group}.ydat")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
-
+        else:
+            buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
 
         if self.read_ok_cb is not None:
