@@ -16,7 +16,7 @@ from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
 from .larchlib import parse_group_args, LarchExceptionHolder
-from .symboltable import isgroup
+from .symboltable import isgroup as sym_isgroup
 
 from . import math
 from . import io
@@ -162,6 +162,9 @@ numpy_renames = {'ln':'log', 'asin':'arcsin', 'acos':'arccos',
 
 def _group(_larch=None, **kws):
     """create a group"""
+    if _larch is None:
+        raise Warning("cannot create group -- larch broken?")
+
     group = _larch.symtable.create_group()
     for key, val in kws.items():
         setattr(group, key, val)
@@ -171,7 +174,7 @@ def _eval(text, filename=None, _larch=None):
     """evaluate a string of larch text
     """
     if _larch is None:
-        raise Warning("cannot eval string. larch broken?")
+        raise Warning("cannot eval string -- larch broken?")
     return _larch.eval(text, fname=filename)
 
 
@@ -181,7 +184,7 @@ def _run(filename=None, new_module=None, _larch=None):
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
     return _larch.runfile(filename, new_module=new_module)
 
-def _reload(mod, _larch=None, **kws):
+def _reload(mod, _larch=None):
     """reload a module, either larch or python"""
     if _larch is None:
         raise Warning("cannot reload module '%s' -- larch broken?" % mod)
@@ -202,10 +205,9 @@ def _reload(mod, _larch=None, **kws):
     if modname is not None:
         return _larch.import_module(modname, do_reload=True)
 
-def _help(*args, **kws):
+def _help(*args, _larch=None):
     "show help on topic or object"
     helper.buffer = []
-    _larch = kws.get('_larch', None)
     if helper._larch is None and _larch is not None:
         helper._larch = _larch
     if args == ('',):
@@ -223,7 +225,7 @@ def _help(*args, **kws):
 def add_plugin(plugin, _larch=None, verbose=False, **kws):
     """add plugin components from plugin directory"""
     if _larch is None:
-        raise Warning("cannot add plugins. larch broken?")
+        raise Warning("cannot add plugins -- larch broken?")
     symtable = _larch.symtable
     write = _larch.writer.write
     errmsg = 'is not a valid larch plugin\n'
@@ -417,33 +419,34 @@ def add_plugin(plugin, _larch=None, verbose=False, **kws):
         write('plugin added: %s \n' % out)
 
 
-def _dir(obj=None, _larch=None, **kws):
+def _dir(obj=None, _larch=None):
     "return directory of an object -- thin wrapper about python builtin"
+    print(" --> dir " , _larch)
     if _larch is None:
         raise Warning("cannot run dir() -- larch broken?")
     if obj is None:
         obj = _larch.symtable
     return dir(obj)
 
-def _subgroups(obj, _larch=None, **kws):
+def _subgroups(obj, _larch=None):
     "return list of subgroups"
     if _larch is None:
         raise Warning("cannot run subgroups() -- larch broken?")
-    if isgroup(obj):
+    if sym_isgroup(obj):
         return obj._subgroups()
     else:
         raise Warning("subgroups() argument must be a group")
 
-def _groupitems(obj, _larch=None, **kws):
+def _groupitems(obj, _larch=None):
     "returns group items as if items() method of a dict"
     if _larch is None:
         raise Warning("cannot run subgroups() -- larch broken?")
-    if isgroup(obj):
+    if sym_isgroup(obj):
         return obj._members().items()
     else:
         raise Warning("group_items() argument must be a group")
 
-def _which(sym, _larch=None, **kws):
+def _which(sym, _larch=None):
     "return full path of object, or None if object cannot be found"
     if _larch is None:
         raise Warning("cannot run which() -- larch broken?")
@@ -458,9 +461,9 @@ def _which(sym, _larch=None, **kws):
 
 def _exists(sym, _larch=None):
     "return True if a named symbol exists and can be found, False otherwise"
-    return which(sym, _larch=_larch, **kws) is not None
+    return which(sym, _larch=_larch) is not None
 
-def _isgroup(obj, *args, **kws):
+def _isgroup(obj, _larch=None):
     """return whether argument is a group or the name of a group
 
     With additional arguments (all must be strings), it also tests
@@ -480,13 +483,12 @@ def _isgroup(obj, *args, **kws):
         False
 
     """
-    _larch = kws.get('_larch', None)
     if _larch is None:
         raise Warning("cannot run isgroup() -- larch broken?")
     stable = _larch.symtable
     if isinstance(obj, str) and stable.has_symbol(obj):
         obj = stable.get_symbol(obj)
-    return isgroup(obj, *args)
+    return sym_isgroup(obj)
 
 
 def _pause(msg='Hit return to continue', _larch=None):
@@ -517,7 +519,7 @@ def show_history(max_lines=10000, _larch=None):
     for hline in _larch.history.buffer[-nhist:]:
         _larch.writer.write("%s\n" % hline)
 
-def reset_fiteval(_larch=None, **kws):
+def reset_fiteval(_larch=None):
     """initiailze fiteval for fitting with lmfit"""
     fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
     # remove 'print' from asteval symtable, as it is not picklable

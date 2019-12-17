@@ -606,7 +606,6 @@ def ValidateLarchPlugin(fcn):
         symtab = getattr(_larch, 'symtable', None)
         writer = getattr(_larch, 'writer', None)
         if not (isgroup(symtab) and callable(getattr(writer, 'write', None))):
-            print(" NOT VALID ", symtab, isgroup(symtab), getattr(writer, 'write', None))
             raise LarchPluginException(errmsg2 % (fcn.__name__, _larch))
         return fcn(*args, **keywords)
     wrapper.__doc__ = fcn.__doc__
