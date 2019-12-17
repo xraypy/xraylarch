@@ -6,12 +6,11 @@ import os
 import sys
 import types
 import numpy
-from larch import Group, ValidateLarchPlugin
+from larch import Group
 
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
-@ValidateLarchPlugin
-def get(sym=None, _larch=None, **kws):
+def get(sym=None, _larch=None):
     """get object from symbol table from symbol name:
 
     >>> g = group(a = 1,  b=2.3, z = 'a string')
@@ -32,8 +31,7 @@ def get(sym=None, _larch=None, **kws):
     return group
 
 
-@ValidateLarchPlugin
-def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
+def show_tree(group, indent=0, groups_shown=None, _larch=None):
     """show members of a Group, with a tree structure for sub-groups
 
     > show_tree(group1)
@@ -61,9 +59,8 @@ def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
                                                          repr(obj.dtype))
             _larch.writer.write('%s %s: %s\n' % (indent*' ', item, dval))
 
-@ValidateLarchPlugin
-def show(sym=None, _larch=None, with_private=False, with_color=True,
-          color=None, color2=None, truncate=True, with_methods=True, **kws):
+def show(sym=None, with_private=False, with_color=True, color=None,
+         color2=None, truncate=True, with_methods=True, _larch=None):
     """show group members:
     Options
     -------
@@ -149,7 +146,6 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
 
     _larch.writer.flush()
 
-@ValidateLarchPlugin
 def get_termcolor_opts(dtype, _larch=None):
     """ get color options suitable for passing to
     larch's writer.write() for color output
@@ -161,7 +157,6 @@ def get_termcolor_opts(dtype, _larch=None):
     if display.use_color:
         out = getattr(display.colors, dtype, out)
     return out
-
 
 
 _larch_builtins = dict(show=show, show_tree=show_tree, get=get,

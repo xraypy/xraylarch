@@ -2682,13 +2682,14 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].SetValue(str(path))
 
 class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, use_scandb=False, with_inspect=False, **kws):
+    def __init__(self, use_scandb=False, _larch=None, with_inspect=False, **kws):
+        self._larch = _larch
         self.use_scandb = use_scandb
         self.with_inspect = with_inspect
         wx.App.__init__(self, **kws)
 
     def createApp(self):
-        frame = MapViewerFrame(use_scandb=self.use_scandb)
+        frame = MapViewerFrame(use_scandb=self.use_scandb, _larch=self._larch)
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -2699,7 +2700,8 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
             self.ShowInspectionTool()
         return True
 
-def mapviewer(**kws):
-    s = MapViewer(**kws)
+def mapviewer(use_scandb=False, _larch=None, with_inspect=False, **kws):
+    s = MapViewer(use_scandb=use_scandb, _larch=_larch,
+                  with_inspect=with_inspect, **kws)
     s.Show()
     s.Raise()

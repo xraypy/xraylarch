@@ -12,19 +12,19 @@ import sys
 from copy import copy, deepcopy
 from glob import glob
 
-def _copy(obj, **kws):
+def _copy(obj):
     """copy an object"""
     return copy(obj)
 
-def _deepcopy(obj, **kws):
+def _deepcopy(obj):
     """deep copy an object"""
     return deepcopy(obj)
 
-def _parent(name, _larch=None, **kw):
-    "print out parent group name of an object"
-    print(_larch.symtable._lookup(name, create=False))
+def _parent(name, _larch=None):
+    "return parent group name of an object"
+    return _larch.symtable._lookup(name)
 
-def _ls(directory='.', **kws):
+def _ls(directory='.'):
     """return a list of files in the current directory,
     optionally using '*' to match file names
 
@@ -57,14 +57,14 @@ def _ls(directory='.', **kws):
             ret[i] = ret[i].replace('\\','/')
     return ret
 
-def _cwd(**kws):
+def _cwd():
     "return current working directory"
     ret = os.getcwd()
     if sys.platform == 'win32':
         ret = ret.replace('\\','/')
     return ret
 
-def _cd(name, **kws):
+def _cd(name):
     """change directory to specified directory"""
     name = name.strip()
     if name:
@@ -75,7 +75,7 @@ def _cd(name, **kws):
         ret = ret.replace('\\','/')
     return ret
 
-def _mkdir(name, mode=0o777, **kws):
+def _mkdir(name, mode=0o777):
     """create directory (and any intermediate subdirectories
 
     Options:
@@ -85,7 +85,7 @@ def _mkdir(name, mode=0o777, **kws):
     return os.makedirs(name, mode=mode)
 
 def show_more(text, filename=None, writer=None,
-              pagelength=30, prefix='', _larch=None, **kws):
+              pagelength=30, prefix='', _larch=None):
     """show lines of text in the style of more """
     txt = text[:]
     if isinstance(txt, str):
@@ -115,7 +115,7 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
-def _more(fname, pagelength=32, _larch=None, **kws):
+def _more(fname, pagelength=32, _larch=None):
     """list file contents:
     > more('file.txt')
 by default, the file is shown 32 lines at a time.
@@ -139,4 +139,4 @@ with the  pagelength option:
         return
 
     show_more(text, filename=fname, _larch=_larch,
-              pagelength=pagelength, **kws)
+              pagelength=pagelength)
