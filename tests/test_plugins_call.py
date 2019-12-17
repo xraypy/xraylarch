@@ -112,7 +112,7 @@ class TestPlugins(TestCase):
         self.isValue('b', 10)
         self.NoExceptionRaised()
 
-        self.trytext("c = _tests.f1_larch(5, _larch=None)")
+        self.trytext("c = _tests.f1_larch(5, option=True)")
         self.isValue('c', 5)
         self.NoExceptionRaised()
 
@@ -128,7 +128,7 @@ class TestPlugins(TestCase):
         self.NoExceptionRaised()
 
         self.trytext("b = _tests.f1_kwargs(False, foo=0, scale=1)")
-        self.isValue('b', 3)
+        self.isValue('b', 2)
         self.NoExceptionRaised()
 
 

@@ -16,9 +16,9 @@ def add_scale(x, y, scale=1):
     """2 pos args, 1 var  """
     return (2*x + y)*scale
 
-def f1_larch(x, _larch=None):
-    """1 arg, with _larch="""
-    if _larch is None:
+def f1_larch(x, option=False):
+    """1 arg, with an option="""
+    if option:
         return x
     else:
         return 2*x
@@ -30,10 +30,10 @@ def f1_kwargs(x, **kws):
     else:
         return len(kws)
 
-def f1_varargs(x, *args):
+def f1_varargs(x, *args): # , **kws):
     """1 arg, with *args"""
+    print(" f1 varargs ", args, kws)
     return 2*x
-    # return kws
 
 def registerLarchPlugin():
     return ('_tests', dict(fcn0=fcn0, fcn1=fcn1,
