@@ -22,22 +22,26 @@ class Closure(object):
     The code is based on the Command class from
     J. Grayson's Tkinter book.
     """
-    def __init__(self, func=None, _name=None, **kwds):
+    def __init__(self, func=None, _name=None, _larch=None, **kwds):
         self.func = func
         self.kwds = kwds
         self.__name__ = _name
         if _name is None:
             self.__name__ = self.func.__name__
 
+        self._larch = None
         argspec = inspect.getfullargspec(self.func)
         self._haskwargs  = argspec.varkw is not None
         self._hasvarargs = argspec.varargs is not None
         self._argvars    = argspec.args
+        if (_larch is not None and ('_larch' in argspec.args or
+                                    '_larch' in argspec.kwonlyargs)):
+            self._larch = _larch
         self._nkws  = 0
         if argspec.defaults is not None:
             self._nkws   = len(argspec.defaults)
-        self._nargs      = len(self._argvars) - self._nkws
-
+        self._nargs  = len(self._argvars) - self._nkws
+        self.argspec = argspec
 
     def __repr__(self):
         return "<function %s, file=%s>" % (self.__name__, self.__file__)
@@ -61,16 +65,12 @@ class Closure(object):
             return None
         kwds = self.kwds.copy()
         kwds.update(c_kwds)
-        if ('_larch' in kwds and not self._haskwargs and
-            '_larch' not in self._argvars):
-            kwds.pop('_larch')
-
         ngot = len(args) + len(kwds)
         nexp = self._nargs + self._nkws
-        if not self._haskwargs and (ngot > nexp):
+        if not self._haskwargs and not self._hasvarargs and (ngot > nexp):
             exc_msg = "%s expected %i arguments, got %i "
-            if '_larch' in kwds and '_larch' not in self._argvars:
-                ngot -= 1
-                nexp -= 1
             raise TypeError(exc_msg % (self.__name__, nexp, ngot))
+        if self._larch is not None and kwds.get('_larch', None) is None:
+            kwds['_larch'] = self._larch
+
         return self.func(*args, **kwds)
