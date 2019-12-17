@@ -61,7 +61,7 @@ def peakfinder_methods():
 
 
 def peakfinder(y, method='scipy.signal.find_peaks_cwt',
-               widths=20, gapthrsh=5, thres=0.0, min_dist=10,**kwargs):
+               widths=20, gapthrsh=5, thres=0.0, min_dist=10):
     '''
     Returns indices for peaks in y from dataset
     '''

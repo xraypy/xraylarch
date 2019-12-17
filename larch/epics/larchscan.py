@@ -92,7 +92,7 @@ import random
 
 from datetime import timedelta
 
-from larch import Group, ValidateLarchPlugin
+from larch import Group
 from larch.utils import debugtime, fix_varname
 
 try:

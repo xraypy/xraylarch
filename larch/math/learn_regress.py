@@ -23,7 +23,7 @@ from .lincombo_fitting import get_arrays, groups2matrix
 
 def pls_train(groups, varname='valence', arrayname='norm', scale=True,
               ncomps=2, cv_folds=None, cv_repeats=None, skip_cv=False,
-              xmin=-np.inf, xmax=np.inf, _larch=None, **kws):
+              xmin=-np.inf, xmax=np.inf, **kws):
 
     """use a list of data groups to train a Partial Least Squares model
 
@@ -114,7 +114,7 @@ def pls_train(groups, varname='valence', arrayname='norm', scale=True,
 def lasso_train(groups, varname='valence', arrayname='norm', alpha=None,
                 use_lars=True, fit_intercept=True, normalize=True,
                 cv_folds=None, cv_repeats=None, skip_cv=False,
-                xmin=-np.inf, xmax=np.inf, _larch=None, **kws):
+                xmin=-np.inf, xmax=np.inf, **kws):
 
     """use a list of data groups to train a Lasso/LassoLars model
 
@@ -223,7 +223,7 @@ def _predict(group, model):
     spectra.shape = (1, len(spectra))
     return model.model.predict(spectra)[0]
 
-def lasso_predict(group, model, _larch=None):
+def lasso_predict(group, model):
     """
     Predict the external value for a group based on a Lasso model
 
@@ -243,7 +243,7 @@ def lasso_predict(group, model, _larch=None):
         raise ValueError("lasso_predict needs a Lasso training model")
     return _predict(group, mod)
 
-def pls_predict(group, model, _larch=None):
+def pls_predict(group, model):
     """
     Predict the external value for a group based on a PLS model
 

@@ -7,10 +7,8 @@ import h5py
 import numpy
 from functools import partial
 from larch.utils import fixName
-from larch import ValidateLarchPlugin
 import scipy.io.netcdf
 
-@ValidateLarchPlugin
 def netcdf_group(fname, _larch=None, **kws):
     """open a NetCDF file and map the variables in it to larch groups
     g = netcdf_group('tmp.nc')
@@ -35,7 +33,6 @@ def h5file(fname, mode='r', _larch=None):
     """
     return h5py.File(fname, mode)
 
-@ValidateLarchPlugin
 def h5group(fname, mode='r+', _larch=None):
     """open an HDF5 file, and map to larch groups
     g = h5group('myfile.h5')

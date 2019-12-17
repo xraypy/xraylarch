@@ -199,7 +199,7 @@ def _pca_scale_resid(params, ydat=None, pca_model=None, comps=None):
     return (scale*ydat - yfit)
 
 
-def pca_fit(group, pca_model, ncomps=None, rescale=True, _larch=None):
+def pca_fit(group, pca_model, ncomps=None, rescale=True):
     """
     fit a spectrum from a group to a PCA training model from pca_train()
 

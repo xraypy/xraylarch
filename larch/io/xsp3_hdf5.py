@@ -9,7 +9,7 @@ import h5py
 import sys
 import os
 
-from .. import Group, ValidateLarchPlugin
+from .. import Group
 
 # Default tau values for xspress3
 

@@ -174,10 +174,8 @@ def conv(e, mu, kernel='gaussian', fwhm_e=None, efermi=None):
         z[n] = zn
     return z
 
-def glinbroad(e, mu, fwhm_e=None, efermi=None, _larch=None):
+def glinbroad(e, mu, fwhm_e=None, efermi=None):
     """ gaussian linear convolution in Larch """
-    if _larch is None:
-        raise Warning("larch broken?")
     return conv(e, mu, kernel='gaussian', fwhm_e=fwhm_e, efermi=efermi)
 glinbroad.__doc__ = conv.__doc__
 

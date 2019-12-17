@@ -8,7 +8,7 @@ import time
 import gc
 
 import numpy as np
-from .. import Group, ValidateLarchPlugin
+from .. import Group
 from ..utils import OrderedDict
 from ..utils.strutils import bytes2str
 
@@ -16,7 +16,6 @@ from . import XDIFile, XDIFileException
 
 from .xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
-@ValidateLarchPlugin
 def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
@@ -181,7 +180,6 @@ def is_GSEXDI(filename):
     line1 = open(filename, 'r').readline()
     return (line1.startswith('#XDI/1') and 'Epics StepScan File' in line1)
 
-@ValidateLarchPlugin
 def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
                             bad=None, _larch=None):
     """convert GSE XDI fluorescence XAFS scans to dead time corrected files"""

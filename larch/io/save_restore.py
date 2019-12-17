@@ -11,7 +11,7 @@ from ..utils.jsonutils import encode4js, decode4js
 from . import fix_varname
 
 
-def save(fname,  *args, **kws):
+def save(fname,  *args, _larch=None, **kws):
     """save groups and data into a portable json file
 
     save(fname, arg1, arg2, ....)
@@ -23,7 +23,6 @@ def save(fname,  *args, **kws):
 
     See Also:  restore()
     """
-    _larch = kws.get('_larch', None)
     isgroup =  _larch.symtable.isgroup
 
     expr = getattr(_larch, 'this_expr', 'save(foo)')

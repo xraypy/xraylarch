@@ -5,7 +5,7 @@ from larch.math import index_of, interp1d, remove_dups
 from .xafsutils import ktoe, etok
 
 @Make_CallArgs(["energy", "mu"])
-def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _larch=None):
+def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True):
     """sort energy, mu pair of XAFS data so that energy is monotonically increasing
 
     Arguments
@@ -48,7 +48,7 @@ def sort_xafs(energy, mu=None, group=None, fix_repeats=True, overwrite=True, _la
 @Make_CallArgs(["energy", "mu"])
 def rebin_xafs(energy, mu=None, group=None, e0=None, pre1=None, pre2=-30,
                pre_step=2, xanes_step=None, exafs1=15, exafs2=None,
-               exafs_kstep=0.05, method='centroid', _larch=None):
+               exafs_kstep=0.05, method='centroid'):
     """rebin XAFS energy and mu to a 'standard 3 region XAFS scan'
 
     Arguments

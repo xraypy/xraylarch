@@ -113,7 +113,7 @@ def parse_labelline(labelline, header):
 
 
 def read_ascii(filename, labels=None, simple_labels=False,
-               sort=False, sort_column=0, delimeter=None, _larch=None):
+               sort=False, sort_column=0, delimeter=None):
     """read a column ascii column file, returning a group containing the data
     extracted from the file.
 
@@ -368,7 +368,8 @@ def set_array_labels(group, labels=None, simple_labels=False,
     return group
 
 
-def write_ascii(filename, *args, **kws):
+def write_ascii(filename, *args, commentchar='#', label=None, header=None,
+                _larch=None, **kws):
     """write a list of items to an ASCII column file
 
     write_ascii(filename, arg1, arg2, arg3, ... **args)
@@ -381,14 +382,14 @@ def write_ascii(filename, *args, **kws):
 
     """
     ARRAY_MINLEN = 2
-    _larch = kws.get('_larch', None)
     write = sys.stdout.write
     if _larch is not None:
         write = _larch.writer.write
 
-    com = kws.get('commentchar', '#')
-    label = kws.get('label', None)
-    header = kws.get('header', [])
+    com = commentchar
+    label = label
+    if header is None:
+        header = []
 
     arrays = []
     arraylen = None
@@ -485,7 +486,7 @@ def write_group(filename, group, scalars=None, arrays=None,
                 label=label, header=header, _larch=_larch)
 
 
-def guess_filereader(filename, _larch=None):
+def guess_filereader(filename):
     """guess function name to use to read an ASCII data file based
     on the file header
 

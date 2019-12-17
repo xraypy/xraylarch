@@ -8,7 +8,7 @@ import h5py
 import sys
 import os
 
-from larch import Group, ValidateLarchPlugin
+from larch import Group
 
 def read_xrd_hdf5(fname, verbose=False, _larch=None):
     # Reads a HDF5 file created for XRD mapping

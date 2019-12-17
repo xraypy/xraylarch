@@ -97,8 +97,6 @@ def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
     see also: interp
 
     """
-    if '_larch' in kws:
-        kws.pop('_larch')
     kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
                'copy': False, 'bounds_error': False}
     kwargs.update(kws)
