@@ -179,6 +179,7 @@ class SymbolTable(Group):
                                  history_file= site_config.history_file,
                                  init_files  = site_config.init_files,
                                  modules_path= site_config.modules_path,
+                                 plugins_path= site_config.plugins_path,
                                  user_larchdir= site_config.usr_larchdir,
                                  larch_version= site_config.larch_version)
 
