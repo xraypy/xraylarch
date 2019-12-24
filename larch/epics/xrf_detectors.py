@@ -8,7 +8,7 @@ try:
     from epics.devices.struck import Struck
     from epics.wx import EpicsFunction, DelayedEpicsCallback
     HAS_EPICS = True
-except (NameError, ImportError):
+except (NameError, ImportError, AttributeError):
     HAS_EPICS = False
     EpicsFunction = lambda fcn: fcn
     DelayedEpicsCallback = lambda fcn: fcn
