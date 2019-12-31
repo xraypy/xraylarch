@@ -502,9 +502,6 @@ _sleep.__doc__ = time.sleep.__doc__
 def _time():  return time.time()
 _time.__doc__ = time.time.__doc__
 
-def _clock():  return time.clock()
-_clock.__doc__ = time.clock.__doc__
-
 def _strftime(format, *args):  return time.strftime(format, *args)
 _strftime.__doc__ = time.strftime.__doc__
 
@@ -555,7 +552,7 @@ _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
                       isgroup=_isgroup, subgroups=_subgroups,
                       group_items=_groupitems,
                       parse_group_args=parse_group_args, pause=_pause,
-                      sleep=_sleep, systime=_time, clock=_clock,
+                      sleep=_sleep, systime=_time, clock=_time,
                       strftime=_strftime, reload=_reload, run=_run,
                       eval=_eval, help=_help, add_plugin=add_plugin,
                       save_history=save_history, show_history=show_history)
