@@ -14,7 +14,7 @@ Downloading and Installation
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46.tar.gz
-.. _Larch for 64bit Windows:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Windows-x86_64.exe
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Windows-x86_64.exe
 .. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-MacOSX-x86_64.pkg
 .. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Linux-x86_64.sh
 .. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-docs-examples.zip
@@ -27,25 +27,51 @@ Downloading and Installation
 
 The latest release version of Larch is |release|.
 
-Larch is in active and continuing development. The intention is to tag a
-new release version every few months.  Larch's tools for XAFS data analysis
-and working with XRF data and XRF maps from X-ray microprobes are working
-and ready for general use.  There may be bugs and unintended features, and
-some missing or incomplete desired features as we add new functionality.
-Your support, feedback, and patience is greatly appreciated.
+Larch is in active and continuing development. The goal is to release a new
+version every few months, but without specific timelines.  Larch's tools
+for XAFS data analysis and working with XRF data and XRF maps from X-ray
+microprobes are working and ready for general use.  There may be bugs and
+unintended features, and some missing or incomplete desired features as we
+add new functionality.  Your feedback, bug reports, and patience are greatly
+appreciated.
 
 
-Single-File Installers
-=========================
+Single-File Installers and Source Installation Files
+==========================================================
+
+.. _installers_table:
+
+**Table of Larch Installers and Downloads**
+
+  +----------------------+------------------------------+-----------------------------+
+  | Operating System     |   Installer File             | Installation Notes          |
+  +======================+==============================+=============================+
+  | Windows (64 bit)     | `Larch for Windows`_         | :ref:`Notes install-win`    |
+  +----------------------+------------------------------+-----------------------------+
+  | Mac OSX (64 bit)     | `Larch for MacOSX`_          | :ref:`Notes <install-mac>`  |
+  +----------------------+------------------------------+-----------------------------+
+  | Linux (64 bit)       | `Larch for Linux`_           | :ref:`Notes <install-lin>`  |
+  +----------------------+------------------------------+-----------------------------+
+  | Source Code          | `source code (tar.gz)`_      | :ref:`Notes <install-src>`  |
+  +----------------------+------------------------------+-----------------------------+
+  | Docs and Examples    | `Larch Docs and Examples`_   | :ref:`Notes <install-exa>`  |
+  | (all systems)        |                              |                             |
+  +----------------------+------------------------------+-----------------------------+
 
 Installers for Windows, MacOSX, and Linux, are available at `Larch Binary
-Installers`_.  These are self-contained files that will install a complete
-Anaconda Python environment with all of libraries needed by Larch.
-Normally, this installation will be create a folder called `xraylarch` in
-your home folder. On Linux and MacOSX, this folder will be in the top-level
-of your home directory, while on Windows this folder will typically be in
-`C:\Users\YourName\AppData\Local\Continuum\xraylarch` or in
-`C:\Users\YourName\xraylarch`.
+Installers`_.  These are fairly large (400 to 600 Mb files) self-contained
+files that will install a complete Anaconda Python environment with all of
+libraries needed by Larch.  Normally, this installation will be create a folder
+called `xraylarch` in your home folder -- see platform-specific notes below.
+
+.. note::
+
+   There can be no spaces in your username or the path in which Larch is installed.
+
+Installing with these installers should write to files only to folders
+owned by the user account. It should not require administrative privilege and
+should not interfere with any thing else on your system (such as system
+Python).
 
 These installers will also create a folder called `Larch` on your desktop
 that contains links (or shortcuts or Apps) to many of the Larch GUI
@@ -53,85 +79,68 @@ applications listed in :ref:`Table of Larch Applications and Programs
 <larch_app_table>`.  This includes tools for X-ray Absorption spectroscopy,
 X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
 
-.. note::
 
-   There can be no spaces in your username or the path in which Larch is installed.
+.. _install-win:
 
-Installing Larch this way should only write to files owned by the user
-account and does not require administrative privilege.  It should not
-interfere with anything else on your system (like, say, system Python), and
-you can uninstall simply by removing `xraylarch` folder.  The installers
-are fairly large (400 to 600 Mb), but includes an entire scientific python
-environment.  Installing by the other means described below will not
-actually take less disk space, but will involve downloading many more
-smaller files, which may be an advantage for some people with poor
-connectivity.
+Windows Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Windows, download the `Larch for Windows`_ installer above and run it to install Larch.  This
+will be installed to ``C:\Users\<YourName>\xraylarch`` for most individual Windows installations or
+to ``C:\Users\<YourName>\AppData\Local\Continuum\xraylarch`` if your machine is part of a Windows
+Workgroup or Domain.
 
 .. note::
 
-   If you get prompted for an Administrative password, go back and choose
-   "Install only for me" or explicitly choose the Installation Location to
-   be a folder in your home directory.
+   If you get prompted for an administrative password during the installation process, you
+   should make sure you are installing to a folder that is writable by the user.
+
+.. _install-mac:
+
+MacOS Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. _installers_table:
-
-**Table of Larch Installers**
-
-  +-------------------------+-------------------------------------+
-  | Operating System        |   installer                         |
-  +=========================+=====================================+
-  | Windows (64 bit)        | `Larch for 64bit Windows`_          |
-  +-------------------------+-------------------------------------+
-  | Mac OSX (64 bit)        | `Larch for MacOSX`_                 |
-  +-------------------------+-------------------------------------+
-  | Linux (64 bit)          | `Larch for Linux`_                  |
-  +-------------------------+-------------------------------------+
-  | Source Code             | `source code (tar.gz)`_             |
-  +-------------------------+-------------------------------------+
-  | Docs and Examples       | `Larch Docs and Examples`_          |
-  | (all systems)           |                                     |
-  +-------------------------+-------------------------------------+
-
-If you need a versions for 32-bit Windows or Linux, contact the authors.
-
-For Windows, download the executable installer::
-
-    xraylarch-0.9.46-Windows-x86_64.exe
-
-and double-click to run it to install Larch.
-
-For Mac OSX, download the package installer::
-
-
-    xraylarch-0.9.46-MacOSX-x86_64.pkg
-
-and double-click to run it to install Larch.
-
-For Linux, download the shell installer file, then open a Terminal, use
-`cd` to move to the download folder (typically `Downloads`) and run::
-
-    bash xraylarch-0.9.46-Linux-x86_64.sh
-
-
-Once installed, you will be able to upgrade to future versions of Larch using::
-
-    conda update -yc GSECARS xraylarch
-
-Note that for Windows, The `xraylarch` folder is not typically put in your
-path, and so you would need to open a Command or Powershell window and type::
-
-   C:\Users\YourName\AppData\Local\Continuum\xraylarch\Scripts\conda.exe -yc GSECARS xraylarch
+For Mac OS, download the `Larch for MacOSX`_ installer above and click it to install Larch.  There
+are two important notes:
 
 .. note::
-   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.46,
-   but it *will* work to upgrade from 0.9.43 or higher to 0.9.46.
+
+   With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party packages by default.
+   You may need to go into General Settings part of the **Security & Privacy** section of **System
+   Preferences** and explicitly allow this package to be installed. You probably will be prompted for
+   an Administrative password.
+
+.. note::
+
+   You need to explicitly click on "Install only for me" during the installation process.  If you
+   get prompted for an Administrative password by the installer, go back and explicitly choose
+   "Install only for me".
+
+
+.. _install-lin:
+
+Linux Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
+move to the download folder (typically `$HOME/Downloads`) and run::
+
+    ~> bash ./xraylarch-0.9.46-Linux-x86_64.sh
+
+Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
+actually appear on your desktop depends on the Windowing system used:  they will appear on the
+desktop with KDE and many other systems, but not with Gnome.  Clickable icons should also show up
+in the Applications selection of the "Start Menu" or Applications list.
+
+
+.. _install-src:
 
 Install with Python
 ======================================
 
-For those familiar with Python, Larch can be installed into an existing
-Python environment.  Larch requires Python 3.6 or higher.
+For those familiar with Python, Larch can be installed into an existing Python environment.  Larch
+requires Python 3.6 or higher.
 
 If you are starting out with Python and interested in Larch, using
 `Anaconda Python`_ for Larch is a good option as Anaconda provides and
@@ -141,15 +150,14 @@ Python packages needed for Larch.
 You can also install Larch in other Python environments.
 
 Using Anaconda Python
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, Anaconda Python installs into your own home folder (on Windows,
-this will be the `APPDATA` location, which is typically something like
-`C:\\Users\\YourName\\AppData\\Local\\Continuum\\Anaconda3`).  As with the
-single-file installers above, installing Anaconda Python does not require
-extra permissions to install, upgrade, or remove components.  Anaconda
-includes a robust package manager called *conda* that makes it easy to
-update the packages it manages, including Larch.
+By default, Anaconda Python installs into your own home folder (on Windows, this will be the
+`APPDATA` location, which is typically something like ``C:\\Users\<YourName>\Anaconda3`` or
+``C:\\Users\<YourName>\AppData\Local\Continuum\Anaconda3``).  As with the single-file installers
+above, installing Anaconda Python does not require extra permissions to install, upgrade, or remove
+components.  Anaconda includes a robust package manager called *conda* that makes it easy to update
+the packages it manages, including Larch.
 
 Start by installing the latest version of Anaconda Python from the `Anaconda
 Downloads`_ site.  Python 3.7 is recommended.  Larch should work with Python
@@ -180,6 +188,9 @@ from Linux or MacOSX or::
 
 from Windows.
 
+Updating with `conda`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Anaconda Python makes updates very easy for us to provide and for you to
 install.  As new releases of Larch and the required packages are released,
 you may be able to upgrade to the latest versions with::
@@ -189,12 +200,19 @@ you may be able to upgrade to the latest versions with::
 This approach to updating will not work for all new versions of Larch,
 depending on which underlying libraries are used.
 
+Note that for Windows, The `xraylarch` folder is not typically put in your
+path, and so you would need to open a Command or Powershell window and type::
+
+   C:\Users\<YourName>\xraylarch\Scripts\conda.exe update --all
+
 .. note::
-   `conda update --all` will *not* work to upgrade from 0.9.42 to 0.9.43.
+   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.47,
+   but it *will* work to upgrade from 0.9.43 or higher to 0.9.47.
+
 
 
 Using `pip`
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting with Larch version 0.9.46, Larch can be used with Python versions
 from `Python.org`_.  That is, you can install one of the installers there,
@@ -207,12 +225,8 @@ This will install Larch and all of the required packages. Some of the
 to forgo thes capabilities or install those packages by hand.
 
 
-.. note::
-   This is currently *not* working on Windows....
-
-
-Source Inxstallation
-------------------------
+Source Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For developers, Larch is an open-source project, with active development
 happening at the `Larch Repository (github.com)`_.  There, you will find
@@ -232,7 +246,7 @@ elevated permissions as from `sudo` to install Larch to a system folder.
 
 
 Optional Python Packages
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While most of the packages required for Larch will be installed
 automatically (and are listed in the `requirements.txt` file in the source
@@ -278,6 +292,8 @@ Getting Help and Support
 For questions and support about Larch, please use the `Ifeffit Mailing List`_.
 
 
+.. _install-exa:
+
 Docs and Examples
 ================================
 
@@ -293,6 +309,13 @@ Citing Larch
 Currently, the best citation for Larch is M. Newville, *Larch: An Analysis
 Package For XAFS And Related Spectroscopies*. Journal of Physics:
 Conference Series, 430:012007 (2013).  :cite:`larch2013`
+
+.. raw:: html
+
+    <span class="__dimensions_badge_embed__"
+          data-doi="10.1088/1742-6596/430/1/012007"
+          data-style="large_rectangle">
+    </span>
 
 
 Funding and Support
