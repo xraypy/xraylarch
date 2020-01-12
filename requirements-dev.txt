@@ -1,8 +1,9 @@
 # List of larch development dependencies
-# Those ARE NOT required for installation, at runtime or to build from source
-# (except for the doc)
-# First install required dependencies:
-# conda install --file ./requirements.txt
+# Those ARE NOT required for installation, at runtime, or to build from source
+# but are required to build the documentation.   Install with :
+#    pip install -r ./requirements-devs.txt
+#  or
+#   conda install --file ./requirements-devs.txt
 pytest
 sphinx
 numpydoc
