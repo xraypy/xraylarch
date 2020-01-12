@@ -284,7 +284,7 @@ class SymbolTable(Group):
             return
         out = []
         for s in reversed(self.__parents):
-            if s.__name__ is not '_main' or '_main' not in out:
+            if s.__name__ != '_main' or '_main' not in out:
                 out.append(s.__name__)
         out.reverse()
         return '.'.join(out)

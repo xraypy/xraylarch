@@ -2149,7 +2149,7 @@ class MapViewerFrame(wx.Frame):
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
-        self.h5convert_done = True if status is 'complete' else False
+        self.h5convert_done = True if status == 'complete' else False
         msg = 'processing %s:  row %i of %i' % (self.h5convert_fname,
                                                 self.h5convert_irow,
                                                 self.h5convert_nrow)

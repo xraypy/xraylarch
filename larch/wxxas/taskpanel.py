@@ -303,7 +303,7 @@ class TaskPanel(wx.Panel):
         _x, _y = last_cursor_pos(win=win, _larch=self.larch)
 
         if _x is not None:
-            if relative_e0 and 'e0' in self.wids and opt is not 'e0':
+            if relative_e0 and 'e0' in self.wids and opt != 'e0':
                 _x -= self.wids['e0'].GetValue()
             self.wids[opt].SetValue(_x)
             cb = getattr(self, 'onProcess', None)

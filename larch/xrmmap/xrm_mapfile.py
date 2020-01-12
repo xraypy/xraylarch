@@ -3023,7 +3023,7 @@ class GSEXRM_MapFile(object):
                 if detaddr.startswith('roimap'):
                     roi_ext = '%s/' + ext
                 else:
-                    roi_ext = '%s_' + ext if ext is 'raw' else '%s'
+                    roi_ext = '%s_' + ext if ext == 'raw' else '%s'
                 roiaddr =  roi_ext % roi
                 out = self.xrmmap[detaddr][roiaddr][:]
                 if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):

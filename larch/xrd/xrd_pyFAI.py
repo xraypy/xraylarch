@@ -166,7 +166,7 @@ def integrate_xrd(xrd2d, calfile, unit='q', steps=2048, file='',  wedge_limits=N
     if dark:
         if np.shape(dark) == np.shape(xrd2d): attrs.update({'dark':dark})
 
-    if file is not '':
+    if file != '':
         if verbose:
             print('\nSaving %s data to file: %s' % (unit,file))
         attrs.update({'filename':file})
