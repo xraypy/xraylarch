@@ -20,7 +20,7 @@ Downloading and Installation
 .. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-docs-examples.zip
 
 
-.. _Ifeffit Mailing List: http://cars9.uchicago.edu/mailman/listinfo/ifeffit/
+.. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
 .. _Larch Github Pages: https://github.com/xraypy/xraylarch
 

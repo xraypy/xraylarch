@@ -1,107 +1,90 @@
 .. xraylarch documentation master file
 
-=====================================
-Larch
-=====================================
-
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
 .. _matplotlib: https://matplotlib.org/
 .. _h5py: https://code.google.com/p/h5py/
-.. _Dioptqs: https://github.com/Dioptas/Dioptas
+.. _Demeter: https://bruceravel.github.io/demeter/
+.. _Dioptas: https://github.com/Dioptas/Dioptas
 
-Larch is an open-source library and set of applications for processing and
-analyzing X-ray spectroscopic, imaging, and scattering data collected at
-synchrotron sources.  Larch is written in Python, making heavy use of many
-scientific python libraries (`numpy`_, `scipy`_, `h5py`_, `matplotlib`_,
-and many more).  It providing a Python package for processing and analyzing
-X-ray absorption and fluorescence spectra and X-ray fluorescence and
-diffraction image data, as well as having some support for processing X-ray
-diffraction data.  In addition to providing a Python package for
-programmers, Larch comes with several GUI applications for visualizing,
-processing, and analyzing X-ray absorption spectroscopy and fluorescence
-and diffraction imaging data.
+=====================================
+Larch
+=====================================
 
+Larch is a open-source library and set of :ref:`applications <larch_app_table>`
+for processing and analyzing X-ray absorption and fluorescence spectroscopy data
+and X-ray fluorescence and diffraction image data from synchrotron beamlines.
+It is especially focussed on X-ray absorption fine-structure spectroscopy (XAFS)
+including X-ray absorption near-edge spectroscopy (XANES) and extended X-ray
+absorption fine-structure spectroscopy (EXAFS). It also supports visualization
+and analysis tools for X-ray fluorescence (XRF) spectra and XRF and X-ray
+diffraction (XRD) images as collected at scanning X-ray microprobe beamlines.
 
-Larch has several related target application areas:
+Larch is written in Python, making heavy use of the excellent scientific python
+libraries (`numpy`_, `scipy`_, `h5py`_, `matplotlib`_,and many more). Larch can
+be used as a Python library for processing and analyzing X-ray spectroscopy and
+imaging data. In addition, the applications built with it also use a built-in
+Python-like macro language for interactive and batch processing.  This
+domain-specific language is intended to be very easy to use for novices while
+also being complete enough to automate data processing and analysis and to
+encourage and facilitate a gentle transition to transition from GUI-only
+analyses to scripted and programmatic analysis of larger data sets.  This macro
+language also allows Larch to be run as a service, interacting with other
+processes or languages via XML-RPC, and so be used by the popular `Demeter`_
+XAFS application suite.
 
-  * XAFS analysis, replacing and extending the Ifeffit Package for EXAFS analysis.
-  * Visualizing and analyzing micro-X-ray fluorescence and X-ray diffraction maps.
-  * Quantitative X-ray fluorescence analysis.
-  * Data collection software for synchrotron data.
-  * Providing simple access to tabulated X-ray properties of the elements
-    and materials.
+Larch is distribute under an open-source license that is nearly identical to the
+BSD license.  It is under active and open development centered at the
+GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at the
+University of Chicago has been supported by the US National Science Foundation -
+Earth Sciences (EAR-1128799), and Department of Energy GeoSciences
+(DE-FG02-94ER14466).  In addition, funding specifically for Larch was granted by
+the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
 
-By using the scientific Python suite of software, these otherwise different
-application areas can share many components and algorithms.
+The best citable reference for Larch is:
 
-While Larch is intended to be used as a Python library, it also comes with
-a built-in Python-like macro language that aims to be very easy to use for
-novices while also being complete enough for advanced data processing and
-analysis.  This macro language is available in all the GUI applications for
-automating analysis tasks and to help the GUI user transition from GUI-only
-analyses to scripted and programmatic analysis of larger data sets.
+.. raw:: html
 
-The following table lists the main Larch applications.  New and
-in-development features and application will be explicitly described as
-"beta".
+  <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+  <p>M. Newville.
+  <a href="https://doi.org/10.1088/1742-6596/430/1/012007"> Larch: An Analysis Package For XAFS And Related Spectroscopies.
+  <em>Journal of Physics: Conference Series</em>, <b>430</b>:012007, 2013. </a>
+  <span class="__dimensions_badge_embed__"  data-doi="10.1088/1742-6596/430/1/012007"
+        data-style="large_rectangle"> </span>
+
 
 .. _larch_app_table:
 
-**Table of Larch Applications and Programs**
+**Table of Larch Applications**
 
-	These applications installed with Larch. Here, GUI = Graphical User
-	Interface, CLI = Command Line Interface, and `beta` indicates a work in
-	progress.  The `Dioptas`_ program is written and maintained by Clemens
-	Prescher and included with Larch.
-
-
-  +----------------------+-----------+---------------------------------------------------------+
-  | Application Name     | GUI / CLI | Description                                             |
-  +======================+===========+=========================================================+
-  | larch                | CLI & GUI | simple 'shell' command-line interface, or enhanced      |
-  |                      |           | enhanced command-line interface with data browser       |
-  +----------------------+-----------+---------------------------------------------------------+
-  | xas_viewer           | GUI       | XAFS Processing and Analysis: XANES pre-edge peak       |
-  |                      |           | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
-  +----------------------+-----------+---------------------------------------------------------+
-  | gse_mapviewer        | GUI       | XRF Map Viewer for GSECARS X-ray microprobe data.       |
-  +----------------------+-----------+---------------------------------------------------------+
-  | xrfdisplay           | GUI       | Display and analyze XRF Spectra.                        |
-  +----------------------+-----------+---------------------------------------------------------+
-  | Dioptas              | GUI       | Display XRD images, calibrate to XRD patterns.          |
-  +----------------------+-----------+---------------------------------------------------------+
-  | 1D XRD Viewer        | GUI       | Display and work with 1-D XRD patterns (beta).          |
-  +----------------------+-----------+---------------------------------------------------------+
-  | 2D XRD Viewer        | GUI       | Display  XRD images (beta)                              |
-  +----------------------+-----------+---------------------------------------------------------+
-  | feff6l               | CLI       | Feff 6 EXAFS calculations                               |
-  +----------------------+-----------+---------------------------------------------------------+
-  | feff8l               | CLI       | Feff 8 EXAFS calculations (no XANES)                    |
-  +----------------------+-----------+---------------------------------------------------------+
-  | qtrixs               | `beta`    | Display RIXS planes, take profiles                      |
-  +----------------------+-----------+---------------------------------------------------------+
+    These applications installed with Larch, in addition to a basic Python library. Here,
+    GUI = Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in progress.
+    The `Dioptas`_ program is written and maintained by Clemens Prescher, and included with Larch.
 
 
-Larch is under active and open development, and has support from the U. S. National Science
-Foundation.
-
-
-.. toctree::
-   :maxdepth: 2
-
-   installation.rst
-   getting_started.rst
-   guis.rst
-   xasviewer/index.rst
-   gsemapviewer/index.rst
-   qtrixs/index.rst
-   tutorial/index.rst
-   data/index.rst
-   plotting/index.rst
-   fitting/index.rst
-   xafs/index.rst
-   xray/index.rst
-   xrf/index.rst
-   devel/index.rst
-   biblio.rst
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | Application Name                      | GUI/CLI    | Description                                             |
+  +=======================================+============+=========================================================+
+  | :ref:`larch <larchcli_app>`           | CLI        | simple shell command-line interface                     |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`Larch GUI <larchgui_app>`       | GUI        | enhanced command-line interface with data browser       |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`XAS Viewer <xasviewer_app>`     | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
+  |                                       |            | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`GSE Map Viewer <mapviewer_app>` | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`XRF Display <xrfdisplay_app>`   | GUI        | Display and analyze XRF Spectra.                        |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`Dioptas <dioptas_app>`          | GUI        | Display XRD images, calibrate to XRD patterns.          |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`feff6l <feff6l_app>`            | CLI        | Feff 6 EXAFS calculations                               |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`qtrixs <qtrixs_app>`            | GUI `beta` | Display RIXS planes, take profiles                      |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`1D XRD Viewer <xrd1d_app>`      | GUI `beta` | Display and work with 1-D XRD patterns                  |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`2D XRD Viewer <xrd2d_app>`      | GUI `beta` | Display  XRD images                                     |
+  +---------------------------------------+------------+---------------------------------------------------------+

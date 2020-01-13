@@ -30,7 +30,5 @@ A simple session might look like this::
 Larch submodules
 ============================
 
-.. module:: larch
-
 The `larch` module is broken up into a number of submodules, based mostly
 on type of data being processed.

@@ -5,7 +5,7 @@
     :width: 18pt
     :height: 18pt
 
-.. _xasviewer-chapter:
+.. _xasviewer_app:
 
 XASViewer
 =======================

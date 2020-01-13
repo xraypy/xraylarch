@@ -129,7 +129,6 @@ gives the following results:
     XAFS Pre-edge subtraction.
 
 
-
 The MBACK algorithm
 ===================
 

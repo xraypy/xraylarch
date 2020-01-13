@@ -81,7 +81,7 @@ function.
 
 An example plot is shown below
 
-.. _xrf_fig1:
+.. _xrf_mca1:
 
 .. figure::  ../_images/xrf_display1.png
     :target: ../_images/xrf_display1.png
