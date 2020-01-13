@@ -53,47 +53,39 @@ The best citable reference for Larch is M. Newville, *Larch: An Analysis
 Package For XAFS And Related Spectroscopies*. Journal of Physics:
 Conference Series, 430:012007 (2013).
 
-.. raw:: html
+Larch Applications
+-----------------------
 
-<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
-<span class="__dimensions_badge_embed__"
-          data-doi="10.1088/1742-6596/430/1/012007"
-          data-style="large_rectangle"> </span>
-
-
-
-.. _larch_app_table:
-
-**Table of Larch Applications**
-
-    These applications installed with Larch, in addition to a basic Python library. Here,
-    GUI = Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in progress.
-    The `Dioptas`_ program is written and maintained by Clemens Prescher, and included with Larch.
+    These applications installed with Larch, in addition to a basic Python
+    library. Here, GUI = Graphical User Interface, CLI = Command Line
+    Interface, and `beta` indicates a work in progress.  The `Dioptas`_
+    program is written and maintained by Clemens Prescher, and included
+    with Larch.
 
 
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | Application Name                      | GUI/CLI    | Description                                             |
-  +=======================================+============+=========================================================+
-  | :ref:`larch <larchcli_app>`           | CLI        | simple shell command-line interface                     |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Larch GUI <larchgui_app>`       | GUI        | enhanced command-line interface with data browser       |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`XAS Viewer <xasviewer_app>`     | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
-  |                                       |            | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`GSE Map Viewer <mapviewer_app>` | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`XRF Display <xrfdisplay_app>`   | GUI        | Display and analyze XRF Spectra.                        |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Dioptas <dioptas_app>`          | GUI        | Display XRD images, calibrate to XRD patterns.          |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`feff6l <feff6l_app>`            | CLI        | Feff 6 EXAFS calculations                               |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`qtrixs <qtrixs_app>`            | GUI `beta` | Display RIXS planes, take profiles                      |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`1D XRD Viewer <xrd1d_app>`      | GUI `beta` | Display and work with 1-D XRD patterns                  |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`2D XRD Viewer <xrd2d_app>`      | GUI `beta` | Display  XRD images                                     |
-  +---------------------------------------+------------+---------------------------------------------------------+
+  +-------------------+------------+---------------------------------------------------------+
+  | Application Name  | GUI/CLI    | Description                                             |
+  +===================+============+=========================================================+
+  | larch             | CLI        | simple shell command-line interface                     |
+  +-------------------+------------+---------------------------------------------------------+
+  | Larch GUI         | GUI        | enhanced command-line interface with data browser       |
+  +-------------------+------------+---------------------------------------------------------+
+  | XAS Viewer        | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
+  |                   |            | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
+  +-------------------+------------+---------------------------------------------------------+
+  | GSE Map Viewer    | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
+  +-------------------+------------+---------------------------------------------------------+
+  | XRF Display       | GUI        | Display and analyze XRF Spectra.                        |
+  +-------------------+------------+---------------------------------------------------------+
+  | Dioptas           | GUI        | Display XRD images, calibrate to XRD patterns.          |
+  +-------------------+------------+---------------------------------------------------------+
+  | feff6l            | CLI        | Feff 6 EXAFS calculations                               |
+  +-------------------+------------+---------------------------------------------------------+
+  | feff8l            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
+  +-------------------+------------+---------------------------------------------------------+
+  | qtrixs            | GUI `beta` | Display RIXS planes, take profiles                      |
+  +-------------------+------------+---------------------------------------------------------+
+  | 1D XRD Viewer     | GUI `beta` | Display and work with 1-D XRD patterns                  |
+  +-------------------+------------+---------------------------------------------------------+
+  | 2D XRD Viewer     | GUI `beta` | Display  XRD images                                     |
+  +-------------------+------------+---------------------------------------------------------+
