@@ -64,19 +64,19 @@ the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`GSE Map Viewer <mapviewer_app>` | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`XRF Display <xrfdisplay_app>`   | GUI        | Display and analyze XRF Spectra.                        |
-  +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Dioptas <dioptas_app>`          | GUI        | Display XRD images, calibrate to XRD patterns.          |
+  | :ref:`XRF Viewer <xrfviewer_app>`     | GUI        | Display and Analyze XRF Spectra.                        |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`feff6l <feff6l_app>`            | CLI        | Feff 6 EXAFS calculations                               |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`qtrixs <qtrixs_app>`            | GUI `beta` | Display RIXS planes, take profiles                      |
+  | :ref:`Dioptas <dioptas_app>`          | GUI        | Display XRD images, calibrate to XRD patterns.          |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`1D XRD Viewer <xrd1d_app>`      | GUI `beta` | Display and work with 1-D XRD patterns                  |
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`2D XRD Viewer <xrd2d_app>`      | GUI `beta` | Display  XRD images                                     |
+  +---------------------------------------+------------+---------------------------------------------------------+
+  | :ref:`qtrixs <qtrixs_app>`            | GUI `beta` | Display RIXS planes, take profiles                      |
   +---------------------------------------+------------+---------------------------------------------------------+
 
 .. _contents:
@@ -90,6 +90,7 @@ Table of Contents
 
    installation.rst
    getting_started.rst
+   overview.rst
    guis.rst
    xasviewer/index.rst
    gsemapviewer/index.rst

@@ -30,9 +30,9 @@ scatternig paths with changing geometries.  This is a work-in-progress.  If
 you're interested in exploring or helping with this, contact us!
 
 
-
 The main interface for this is the :func:`feffpath` function that
 reads *feffNNNN.dat* file and creates a FeffPath Group.
+
 
 Running Feff
 =====================
@@ -42,6 +42,9 @@ simple functions for running the external Feff6l andFeff8l programs from
 within Larch: :func:`feff6l` and :func:`feff8l`.  Note that the input files
 for these two programs are similar but have important differences in syntax
 such that the input for one cannot be used for running the other.
+
+
+.. _feff6l_app:
 
 
 Running Feff6l with :func:`feff6l`
@@ -59,6 +62,8 @@ Running Feff6l with :func:`feff6l`
 This will generate a number of outputs, including the *feffNNNN.dat* files
 containing the data for each scattering path.
 
+.. _feff8l_app:
+   
 
 Running Feff8l with :func:`feff8l`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

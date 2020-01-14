@@ -86,6 +86,5 @@ elemental abundance.
    :maxdepth: 2
 
    mca
-   xrf_display
-   xrf_concepts
+   xrfviewer
    xrf_modelling

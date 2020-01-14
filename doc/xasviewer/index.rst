@@ -202,7 +202,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Deconvolution dialog.	    
+    Deconvolution   dialog.	    
 
 .. _fig_xasviewer_dialog_rebin:
 
