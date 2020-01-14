@@ -1009,6 +1009,8 @@ changing ``vary=True`` to ``vary=False``) and re-run the fits, :math:`S_0^2`
 has a slight negative dependence on :math:`Z`.
 
 
+.. subfigstart::
+
 .. _fig_znse_fit-zn:
 
 .. figure::  ../_images/Feffit_ZnSe_Zn.png
@@ -1016,9 +1018,6 @@ has a slight negative dependence on :math:`Z`.
     :width: 100%
 
     Fit to ZnSe with Zn back-scatterer
-
-
-.. subfigstart::
 
 .. _fig_znse_fit-ge:
 
@@ -1034,14 +1033,8 @@ has a slight negative dependence on :math:`Z`.
     :target: ../_images/Feffit_ZnSe_Se.png
     :width: 100%
 
-.. subfigend::
-    :width: .45
-    :label: fig-feffit-znse
-
     Fit to ZnSe with Se back-scatterer
 
-
-.. subfigstart::
 
 .. _fig_znse_fit-br:
 
@@ -1057,11 +1050,11 @@ has a slight negative dependence on :math:`Z`.
     :target: ../_images/Feffit_ZnSe_Rb.png
     :width: 100%
 
-.. subfigend::
-    :width: .48
-    :label: fig-feffit-znse2
-
     Fit to ZnSe with Rb back-scatterer
+	    
+.. subfigend::
+    :width: .32
+    :label: fig-feffit-znse2
 
 
 .. index:: Phase-corrected Fourier transforms

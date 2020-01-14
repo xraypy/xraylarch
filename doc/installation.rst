@@ -45,7 +45,7 @@ Single-File Installers and Source Installation Files
   +----------------------+------------------------------+-----------------------------+
   | Operating System     |   Installer File             | Installation Notes          |
   +======================+==============================+=============================+
-  | Windows (64 bit)     | `Larch for Windows`_         | :ref:`Notes install-win`    |
+  | Windows (64 bit)     | `Larch for Windows`_         | :ref:`Notes <install-win>`  |
   +----------------------+------------------------------+-----------------------------+
   | Mac OSX (64 bit)     | `Larch for MacOSX`_          | :ref:`Notes <install-mac>`  |
   +----------------------+------------------------------+-----------------------------+
@@ -301,8 +301,11 @@ Docs and Examples
 
 The source kit includes sources for documentation in the `docs` folder
 and several examples (including all those shown in this documentation)
-in the `examples` folder.  These are also available separately at
-`Larch Docs and Examples`_.
+in the `examples` folder.
+
+These are also available separately in the zip file at `Larch Docs and
+Examples`_ that contains a `doc` folder with this full documentation,
+and an `examples` folder with all of the Larch examples. 
 
 
 Citing Larch
