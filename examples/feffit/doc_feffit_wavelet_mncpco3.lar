@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
@@ -16,16 +16,23 @@ print( nk, nr, xk.shape, xr.shape)
 
 _ka, _ra = meshgrid(xk, xr)
 
-plot2 = get_display(2)
-plot2.panel.fig.clear()
-plot2.panel.cursor_modes['zoom']['motion'] = None
-plot2.panel.cursor_modes['zoom']['leftup'] = None
-plot2.panel.cursor_modes['zoom']['leftdown'] = None
-plot2.panel.axes = plot2.panel.fig.add_subplot(111, projection='3d')
-surf = plot2.panel.axes.plot_surface(_ka, _ra, data.wcauchy_mag,
-                                     cmap=cm.inferno_r,
-                                     rstride=2, cstride=2,
-                                     linewidth=0,
-                                     antialiased=True) # , shade=False)
+print(data.wcauchy_mag.shape, data.wcauchy_mag.dtype)
 
-imshow(data.wcauchy_mag, x=xk, y=xr, win=2)
+imshow(data.wcauchy_mag) # , x=xk, y=xr, win=2)
+
+plot = get_display(1)
+plot.panel.fig.clear()
+plot.panel.cursor_modes['zoom']['motion'] = None
+
+plot.panel.cursor_modes['zoom']['leftup'] = None
+plot.panel.cursor_modes['zoom']['leftdown'] = None
+plot.panel.axes = plot.panel.fig.add_subplot(111, projection='3d')
+
+surf = plot.panel.axes.plot_surface(_ka, _ra, data.wcauchy_mag,
+                                   cmap=cm.inferno_r,
+                                   rstride=2, cstride=2,
+                                   linewidth=0,
+                                   antialiased=True) # , shade=False)
+#
+
+
