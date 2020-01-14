@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>7.8. Builtin Functions &#8212; larch 0.9.46 documentation</title>
+    <title>8.8. Builtin Functions &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8. Reading and Writing Data" href="../data/index.html" />
-    <link rel="prev" title="7.7. Running Larch Scripts, and Modules" href="modules.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="9. Reading and Writing Data" href="../data/index.html" />
+    <link rel="prev" title="8.7. Running Larch Scripts, and Modules" href="modules.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="8. Reading and Writing Data"
+          <a href="../data/index.html" title="9. Reading and Writing Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="7.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="8.7. Running Larch Scripts, and Modules"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +65,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -70,20 +73,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.8. Builtin Functions</a><ul>
-<li><a class="reference internal" href="#builtin-data-values">7.8.1. Builtin data values</a></li>
-<li><a class="reference internal" href="#larch-specific-builtin-functions">7.8.2. Larch-Specific Builtin functions</a></li>
-<li><a class="reference internal" href="#builtin-functions-inherited-from-python">7.8.3. Builtin functions inherited from Python</a></li>
+<li><a class="reference internal" href="#">8.8. Builtin Functions</a><ul>
+<li><a class="reference internal" href="#builtin-data-values">8.8.1. Builtin data values</a></li>
+<li><a class="reference internal" href="#larch-specific-builtin-functions">8.8.2. Larch-Specific Builtin functions</a></li>
+<li><a class="reference internal" href="#builtin-functions-inherited-from-python">8.8.3. Builtin functions inherited from Python</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="previous chapter">7.7. Running Larch Scripts, and Modules</a></p>
+                        title="previous chapter"><span class="section-number">8.7. </span>Running Larch Scripts, and Modules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../data/index.html"
-                        title="next chapter">8. Reading and Writing Data</a></p>
+                        title="next chapter"><span class="section-number">9. </span>Reading and Writing Data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -110,18 +113,18 @@
           <div class="body" role="main">
             
   <div class="section" id="builtin-functions">
-<h1>7.8. Builtin Functions<a class="headerlink" href="#builtin-functions" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">8.8. </span>Builtin Functions<a class="headerlink" href="#builtin-functions" title="Permalink to this headline">¶</a></h1>
 <p>Larch has several general built-in functions for basic manipulation of data and
 programming needs.  Many of these are copied directly from Python, but
 several are Larch-specifc.   Note that the advanced math and scientific
 functions are not listed here, but elsewhere in the documentation.</p>
 <div class="section" id="builtin-data-values">
-<h2>7.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.8.1. </span>Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
 <p>The values <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>  represent the boolean values
 for true and false.  <code class="docutils literal notranslate"><span class="pre">None</span></code> is the null value.</p>
 </div>
 <div class="section" id="larch-specific-builtin-functions">
-<h2>7.8.2. Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.8.2. </span>Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
 <p>These built-in functions are specific to Larch (that is, not inherited from
 Python).  Many help you work with Larch groups or otherwise simplify common tasks.</p>
 <dl class="function">
@@ -299,7 +302,7 @@ members.</p>
 
 </div>
 <div class="section" id="builtin-functions-inherited-from-python">
-<h2>7.8.3. Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.8.3. </span>Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="abs">
 <code class="sig-name descname">abs</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#abs" title="Permalink to this definition">¶</a></dt>
@@ -775,10 +778,10 @@ in length to the length of the shortest argument sequence.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="8. Reading and Writing Data"
+          <a href="../data/index.html" title="9. Reading and Writing Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="7.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="8.7. Running Larch Scripts, and Modules"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -787,12 +790,12 @@ in length to the length of the shortest argument sequence.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

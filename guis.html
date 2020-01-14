@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>3. Larch GUIs &#8212; larch 0.9.46 documentation</title>
+    <title>4. Larch GUIs &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="4. XASViewer" href="xasviewer/index.html" />
-    <link rel="prev" title="2. Downloading and Installation" href="installation.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="5. XASViewer" href="xasviewer/index.html" />
+    <link rel="prev" title="3. Larch: Motivation and Overview" href="overview.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xasviewer/index.html" title="4. XASViewer"
+          <a href="xasviewer/index.html" title="5. XASViewer"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="2. Downloading and Installation"
+          <a href="overview.html" title="3. Larch: Motivation and Overview"
              accesskey="P">previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -69,18 +72,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3. Larch GUIs</a><ul>
-<li><a class="reference internal" href="#basic-larch-gui">3.1. Basic Larch GUI</a></li>
+<li><a class="reference internal" href="#">4. Larch GUIs</a><ul>
+<li><a class="reference internal" href="#larch-command-line-application">4.1. Larch Command-Line Application</a></li>
+<li><a class="reference internal" href="#basic-larch-gui">4.2. Basic Larch GUI</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="previous chapter">2. Downloading and Installation</a></p>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter"><span class="section-number">3. </span>Larch: Motivation and Overview</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xasviewer/index.html"
-                        title="next chapter">4. XASViewer</a></p>
+                        title="next chapter"><span class="section-number">5. </span>XASViewer</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -107,33 +111,42 @@
           <div class="body" role="main">
             
   <div class="section" id="larch-guis">
-<span id="guis-chapter"></span><h1>3. Larch GUIs<a class="headerlink" href="#larch-guis" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-guis"></span><p>Larch provides several Graphical User Interfaces for easier manipulating,
-viewing, and processing of data.  Many of the GUI displays are
-interrelated, so that they can bring up the other windows for displaying,
-interacting, and processing data.  The main GUIs for Larch are</p>
+<span id="guis-chapter"></span><h1><span class="section-number">4. </span>Larch GUIs<a class="headerlink" href="#larch-guis" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-guis"></span><p>Larch provides several Graphical User Interfaces for manipulating, viewing,
+and processing of X-ray spectroscopy, scattering, and imaging data.  Many
+of the GUI displays are interrelated, so that they can bring up the other
+windows for displaying, interacting, and processing data.  The main GUIs
+for Larch are</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference internal" href="xasviewer/index.html#xasviewer-chapter"><span class="std std-ref">XAS Viewer</span></a>: Visualization and Analysis of  XAS data.</p></li>
-<li><p><a class="reference internal" href="gsemapviewer/index.html#gsemapviewer-chapter"><span class="std std-ref">GSE_Mapviewer</span></a>: visualization and Analysis of XRF and XRD maps.</p></li>
-<li><p><a class="reference internal" href="#larchgui-section"><span class="std std-ref">larch_gui</span></a>: simple command-line + data browser for Larch.</p></li>
+<li><p><a class="reference internal" href="xasviewer/index.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>: Visualization and Analysis of  XAS data.</p></li>
+<li><p><a class="reference internal" href="gsemapviewer/index.html#mapviewer-app"><span class="std std-ref">GSE_Mapviewer</span></a>: visualization and Analysis of XRF and XRD maps.</p></li>
+<li><p><a class="reference internal" href="#larchgui-app"><span class="std std-ref">larch_gui</span></a>: simple command-line + data browser for Larch.</p></li>
 </ul>
 </div></blockquote>
+<div class="section" id="larch-command-line-application">
+<span id="larchcli-app"></span><h2><span class="section-number">4.1. </span>Larch Command-Line Application<a class="headerlink" href="#larch-command-line-application" title="Permalink to this headline">¶</a></h2>
+<p>The basic <cite>larch</cite> program gives a simple shell interface to an interactive Larch session, using the
+Larch macro language.  With it you can read, visualize, and manipulate data and run any of the
+Larch functions to process, analyze, and plot data.</p>
+</div>
 <div class="section" id="basic-larch-gui">
-<span id="larchgui-section"></span><h2>3.1. Basic Larch GUI<a class="headerlink" href="#basic-larch-gui" title="Permalink to this headline">¶</a></h2>
+<span id="larchgui-app"></span><h2><span class="section-number">4.2. </span>Basic Larch GUI<a class="headerlink" href="#basic-larch-gui" title="Permalink to this headline">¶</a></h2>
 <p>The simplest Graphical Interface to Larch provides a basic interactive
 Larch session, showing data and methods and commands using the Larch DSL
 entered into the session.</p>
-<a class="reference external image-reference" href="_images/LarchGUI.png"><img alt="_images/LarchGUI.png" src="_images/LarchGUI.png" style="width: 45%;" /></a>
-<p>This Graphical Interface shows a command-line interface at the bottom of
-the screen.  In this window, you can copy or type Larch commands – that is
-commands in the Larch language.  When you hit Enter or Return, the command
-will be executed.  The history of the commands and any outputs written by
-the command will be displayed in the output panel taking up most of the
-bottom half of the main window.  The top part of the window shows a Data
-Browser which allows you to browse through the various groups for modules
-and datasets, and examine their contents and view function documentation
-and so on.</p>
+<div class="figure align-default" id="id1">
+<span id="larchgui-fig"></span><a class="reference external image-reference" href="_images/LarchGUI.png"><img alt="_images/LarchGUI.png" src="_images/LarchGUI.png" style="width: 45%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.2.1 </span><span class="caption-text">Basic Larch Ehanced Shell GUI</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>This Graphical Interface in <a class="reference internal" href="#larchgui-fig"><span class="std std-numref">Figure 4.2.1</span></a> shows a command-line interface at
+the bottom of the screen.  In this window, you can copy or type Larch commands –
+that is commands in the Larch language.  When you hit Enter or Return, the command
+will be executed.  The history of the commands and any outputs written by the
+command will be displayed in the output panel taking up most of the bottom half of
+the main window.  The top part of the window shows a Data Browser which allows you
+to browse through the various groups for modules and datasets, and examine their
+contents and view function documentation and so on.</p>
 <p>This Graphical User Interface is deliberately basic, giving a low-level
 interface to Larch commands and data, and is mainly intended for scripting
 analysis and debugging.  From the File Menu you can read in data from text
@@ -145,21 +158,20 @@ to a file.</p>
 <p>The main Larch GUI also provides simple launchers for several of the main
 Larch Applications, including XAS Viewer.</p>
 <p>From the Larch GUI, one can browse and act on data.  This includes the
-ability make Simple plot of 1-D data, using <a class="reference external" href="http://newville.github.io/wxmplot">wxmplot</a>.  This wraps
-<a class="reference external" href="http://matplotlib.org/">matplotlib</a>, and gives a fully interactive with point selection,
+ability make Simple plot of 1-D data, using <a class="reference external" href="https://newville.github.io/wxmplot">wxmplot</a>.  This wraps
+<a class="reference external" href="https://matplotlib.org/">matplotlib</a>, and gives a fully interactive with point selection,
 rubber-band zoom, and a configuration frame (right) for the user to select
 colors and line properties, and so forth.</p>
-<div class="figure compound align-center" id="fig_plotter">
-<div style="width: 45%" class="subfigure align-center" id="id1">
-<span id="fig-gui-plottera"></span><a class="reference external image-reference" href="_images/Larch_LinePlot.png"><img alt="_images/Larch_LinePlot.png" src="_images/Larch_LinePlot.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 3.1.1 </span><span class="caption-text">Basic Plot</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<div class="figure align-default" id="id2">
+<span id="fig-gui-plottera"></span><a class="reference external image-reference" href="_images/Larch_LinePlot.png"><img alt="_images/Larch_LinePlot.png" src="_images/Larch_LinePlot.png" style="width: 40%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.2.2 </span><span class="caption-text">Basic Plot</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="id2">
-<span id="fig-gui-plotterb"></span><a class="reference external image-reference" href="_images/Larch_LinePlot_Config.png"><img alt="_images/Larch_LinePlot_Config.png" src="_images/Larch_LinePlot_Config.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 3.1.2 </span><span class="caption-text">Plot Configuration Window</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<div class="figure align-default" id="id3">
+<a class="reference external image-reference" href="_images/Larch_LinePlot_Config.png"><img alt="_images/Larch_LinePlot_Config.png" src="_images/Larch_LinePlot_Config.png" style="width: 40%;" /></a>
+<p class="caption"><span class="caption-number">Figure 4.2.3 </span><span class="caption-text">Plot Configuration Window</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
-<p class="caption"><span class="caption-text">Example plots and plot configuration.</span></p>
-<span class="target" id="fig_plotter"></span></div></div>
+<p>Example plots and plot configuration.</p>
+</div>
 </div>
 
 
@@ -175,10 +187,10 @@ colors and line properties, and so forth.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xasviewer/index.html" title="4. XASViewer"
+          <a href="xasviewer/index.html" title="5. XASViewer"
              >next</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="2. Downloading and Installation"
+          <a href="overview.html" title="3. Larch: Motivation and Overview"
              >previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
@@ -191,7 +203,7 @@ colors and line properties, and so forth.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

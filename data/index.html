@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>8. Reading and Writing Data &#8212; larch 0.9.46 documentation</title>
+    <title>9. Reading and Writing Data &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9. Plotting and Displaying Data" href="../plotting/index.html" />
-    <link rel="prev" title="7.8. Builtin Functions" href="../tutorial/builtins.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="10. Plotting and Displaying Data" href="../plotting/index.html" />
+    <link rel="prev" title="8.8. Builtin Functions" href="../tutorial/builtins.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="10. Plotting and Displaying Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="7.8. Builtin Functions"
+          <a href="../tutorial/builtins.html" title="8.8. Builtin Functions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,30 +72,30 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8. Reading and Writing Data</a><ul>
-<li><a class="reference internal" href="#simple-ascii-column-files">8.1. Simple ASCII Column Files</a></li>
-<li><a class="reference internal" href="#athena-project-files">8.2. Athena Project Files</a><ul>
-<li><a class="reference internal" href="#reading-athena-project-files">8.2.1. Reading Athena Project Files</a></li>
-<li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">8.2.2. Creating and Writing to Athena Project Files</a></li>
+<li><a class="reference internal" href="#">9. Reading and Writing Data</a><ul>
+<li><a class="reference internal" href="#simple-ascii-column-files">9.1. Simple ASCII Column Files</a></li>
+<li><a class="reference internal" href="#athena-project-files">9.2. Athena Project Files</a><ul>
+<li><a class="reference internal" href="#reading-athena-project-files">9.2.1. Reading Athena Project Files</a></li>
+<li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">9.2.2. Creating and Writing to Athena Project Files</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-hdf5-files">8.3. Using HDF5 Files</a></li>
-<li><a class="reference internal" href="#reading-netcdf-files">8.4. Reading NetCDF Files</a></li>
-<li><a class="reference internal" href="#reading-tiff-images">8.5. Reading TIFF Images</a></li>
-<li><a class="reference internal" href="#working-with-epics-channel-access">8.6. Working with Epics Channel Access</a></li>
-<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">8.7. Reading Scan Data from APS Beamlines</a></li>
-<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">8.8. Reading XAFS Data Interchange (XDI) Files</a></li>
-<li><a class="reference internal" href="#saving-and-restoring-larch-groups">8.9. Saving and Restoring Larch Groups</a></li>
+<li><a class="reference internal" href="#using-hdf5-files">9.3. Using HDF5 Files</a></li>
+<li><a class="reference internal" href="#reading-netcdf-files">9.4. Reading NetCDF Files</a></li>
+<li><a class="reference internal" href="#reading-tiff-images">9.5. Reading TIFF Images</a></li>
+<li><a class="reference internal" href="#working-with-epics-channel-access">9.6. Working with Epics Channel Access</a></li>
+<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">9.7. Reading Scan Data from APS Beamlines</a></li>
+<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">9.8. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li><a class="reference internal" href="#saving-and-restoring-larch-groups">9.9. Saving and Restoring Larch Groups</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../tutorial/builtins.html"
-                        title="previous chapter">7.8. Builtin Functions</a></p>
+                        title="previous chapter"><span class="section-number">8.8. </span>Builtin Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../plotting/index.html"
-                        title="next chapter">9. Plotting and Displaying Data</a></p>
+                        title="next chapter"><span class="section-number">10. </span>Plotting and Displaying Data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -119,7 +122,7 @@
           <div class="body" role="main">
             
   <div class="section" id="reading-and-writing-data">
-<span id="data-io-chapter"></span><h1>8. Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
+<span id="data-io-chapter"></span><h1><span class="section-number">9. </span>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
 <p>Larch has several built-in functions for reading and writing scientific
 data.  The intention is that the types and varieties of supported files
 will increase.  In addition, because standard Python modules can be used
@@ -127,7 +130,7 @@ from Larch, many types of standard data and image types can be used by
 importing the appropriate Python module.  This chapter describes the Larch
 functions for data handling.</p>
 <span class="target" id="module-_io"></span><div class="section" id="simple-ascii-column-files">
-<h2>8.1. Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.1. </span>Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to store small amounts of numerical data, and one that is
 widely used in the XAFS community, is to store data in plaintext (ASCII
 encoded) data files, with whitespace delimited numbers layed out as a
@@ -222,13 +225,13 @@ data.</p>
 
 </div>
 <div class="section" id="athena-project-files">
-<h2>8.2. Athena Project Files<a class="headerlink" href="#athena-project-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.2. </span>Athena Project Files<a class="headerlink" href="#athena-project-files" title="Permalink to this headline">¶</a></h2>
 <p>The popular Athena program for XAFS Analysis uses an “Athena Project File”
 to store many XAFS spectra and processing parameters.  Larch can read and
 extract the data from these project files, and can also write Athena
 Project files from existing groups of data.</p>
 <div class="section" id="reading-athena-project-files">
-<h3>8.2.1. Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">9.2.1. </span>Reading Athena Project Files<a class="headerlink" href="#reading-athena-project-files" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_io.read_athena">
 <code class="sig-prename descclassname">_io.</code><code class="sig-name descname">read_athena</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">match=None</em>, <em class="sig-param">do_preedge=True</em>, <em class="sig-param">do_bkg=True</em>, <em class="sig-param">do_fft=True</em>, <em class="sig-param">use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.read_athena" title="Permalink to this definition">¶</a></dt>
@@ -300,7 +303,7 @@ Project would be:</p>
 </div>
 </div>
 <div class="section" id="creating-and-writing-to-athena-project-files">
-<h3>8.2.2. Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">9.2.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this headline">¶</a></h3>
 <p>You can create an Athena Project File with <a class="reference internal" href="#_io.create_athena" title="_io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
 add a group of XAFS data to that pct with the <a class="reference internal" href="#_io.add_group" title="_io.add_group"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code></a>
 method of that project file.  The group is expected to have array names of
@@ -395,7 +398,7 @@ Python list of groups for each group in the Athena Project.</p>
 </div>
 </div>
 <div class="section" id="using-hdf5-files">
-<h2>8.3. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.3. </span>Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -441,7 +444,7 @@ and schemas become standardized, better interfaces can easily be made on
 top of this approach.</p>
 </div>
 <div class="section" id="reading-netcdf-files">
-<h2>8.4. Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.4. </span>Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
 <p>NetCDF4 is an older and less flexible file format than HDF5, but is
 efficient for storing array data and still in wide use.</p>
 <dl class="function">
@@ -458,7 +461,7 @@ efficient for storing array data and still in wide use.</p>
 
 </div>
 <div class="section" id="reading-tiff-images">
-<h2>8.5. Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.5. </span>Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
 <p>TIFF is a popular image format used by many cameras and detectors. The
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="function">
@@ -477,7 +480,7 @@ and multiple series.</p>
 
 </div>
 <div class="section" id="working-with-epics-channel-access">
-<h2>8.6. Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.6. </span>Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
 <p>Many synchrotron facilities use the Epics control system.  If the Epics
 Channel Access layer, which requires network access and configuration
 discussed elsewhere, are set correcty, then Larch can read and write data
@@ -511,7 +514,7 @@ which will be run with new values everytime the PV value changes.</p>
 
 </div>
 <div class="section" id="reading-scan-data-from-aps-beamlines">
-<h2>8.7. Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.7. </span>Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="function">
@@ -536,7 +539,7 @@ very well tested – use with caution!</p>
 
 </div>
 <div class="section" id="reading-xafs-data-interchange-xdi-files">
-<h2>8.8. Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.8. </span>Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
 <p>The X-ray Data Interchange Format has been developed as part of an effort
 to standardize the format of XAFS data files (see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange">xdi</a>.)</p>
 <dl class="function">
@@ -547,7 +550,7 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 
 </div>
 <div class="section" id="saving-and-restoring-larch-groups">
-<h2>8.9. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">9.9. </span>Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to save groups of data and be able to open them again
 later.  The <a class="reference internal" href="#_io.save" title="_io.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore()</span></code></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
@@ -588,10 +591,10 @@ the save file will be put inside that group, and will not be returned.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="10. Plotting and Displaying Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="7.8. Builtin Functions"
+          <a href="../tutorial/builtins.html" title="8.8. Builtin Functions"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -604,7 +607,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

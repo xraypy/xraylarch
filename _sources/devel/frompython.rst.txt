@@ -20,7 +20,6 @@ order for the ``import`` statements to work.
 
 .. module:: larch
 
-
 Thus to get the :func:`_xafs.autobk` function into a Python module, you
 could do either::
 

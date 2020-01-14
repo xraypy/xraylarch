@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>7.3. Basic Array Manipulation &#8212; larch 0.9.46 documentation</title>
+    <title>8.3. Basic Array Manipulation &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.4. Conditional Execution and Flow Control" href="flow.html" />
-    <link rel="prev" title="7.2. Basic and Complex Data Types" href="datatypes.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="8.4. Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="8.2. Basic and Complex Data Types" href="datatypes.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="flow.html" title="7.4. Conditional Execution and Flow Control"
+          <a href="flow.html" title="8.4. Conditional Execution and Flow Control"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="7.2. Basic and Complex Data Types"
+          <a href="datatypes.html" title="8.2. Basic and Complex Data Types"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +65,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -70,23 +73,23 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.3. Basic Array Manipulation</a><ul>
-<li><a class="reference internal" href="#functions-for-creating-arrays">7.3.1. Functions for creating arrays</a></li>
-<li><a class="reference internal" href="#the-array-dtype-datatype">7.3.2. The array <em>dtype</em> – datatype</a></li>
-<li><a class="reference internal" href="#id1">7.3.3. Basic array manipulation</a></li>
-<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">7.3.4. Slicing and extracting sub-arrays</a></li>
-<li><a class="reference internal" href="#array-attributes-and-methods">7.3.5. Array attributes and methods</a></li>
-<li><a class="reference internal" href="#mathematical-functions-for-arrays">7.3.6. Mathematical functions for arrays</a></li>
+<li><a class="reference internal" href="#">8.3. Basic Array Manipulation</a><ul>
+<li><a class="reference internal" href="#functions-for-creating-arrays">8.3.1. Functions for creating arrays</a></li>
+<li><a class="reference internal" href="#the-array-dtype-datatype">8.3.2. The array <em>dtype</em> – datatype</a></li>
+<li><a class="reference internal" href="#id1">8.3.3. Basic array manipulation</a></li>
+<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">8.3.4. Slicing and extracting sub-arrays</a></li>
+<li><a class="reference internal" href="#array-attributes-and-methods">8.3.5. Array attributes and methods</a></li>
+<li><a class="reference internal" href="#mathematical-functions-for-arrays">8.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="datatypes.html"
-                        title="previous chapter">7.2. Basic and Complex Data Types</a></p>
+                        title="previous chapter"><span class="section-number">8.2. </span>Basic and Complex Data Types</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="next chapter">7.4. Conditional Execution and Flow Control</a></p>
+                        title="next chapter"><span class="section-number">8.4. </span>Conditional Execution and Flow Control</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -113,7 +116,7 @@
           <div class="body" role="main">
             
   <div class="section" id="basic-array-manipulation">
-<span id="tutor-array-sec"></span><h1>7.3. Basic Array Manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-array-sec"></span><h1><span class="section-number">8.3. </span>Basic Array Manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Arrays are sequences of numerical data, with each element having the same
 underlying data type – integers, real (floating point) numbers, or complex
 numbers.  Of course, arrays are very important for scientific data, and the
@@ -130,10 +133,10 @@ intended to get you far enough along to be able to manipulate arrays
 sufficiently for most needs.  The <a class="reference external" href="http://docs.scipy.org/doc">numpy documentation</a> is quite extensive
 and well-written, and should be consulted for more details.</p>
 <div class="section" id="functions-for-creating-arrays">
-<h2>7.3.1. Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.1. </span>Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
 <p>There are a handful of builtin functions for creating arrays from scratch.
 These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><span class="std std-ref">Table of Array Creation Functions</span></a> In addition, when dealing with data stored in
-files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter"><span class="std std-ref">8</span></a>) with Larch will create
+files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter"><span class="std std-ref">Reading and Writing Data</span></a>) with Larch will create
 arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
 arrays can be changed without changing the rest of the array.</p>
 <blockquote id="tutor-arraycreate-table">
@@ -279,7 +282,7 @@ arrays.  That is:</p>
 two-dimensional mesh or map of the input <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
-<h2>7.3.2. The array <em>dtype</em> – datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.2. </span>The array <em>dtype</em> – datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
 <p>Arrays are sequences of numbers stored in memory to make access to the
 elements of the arrays fast and memory use efficient.  As mentioned above,
 each array will use one of several storage conventions depending on what
@@ -350,7 +353,7 @@ functions using the <code class="docutils literal notranslate"><span class="pre"
 </div></blockquote>
 </div>
 <div class="section" id="id1">
-<h2>7.3.3. Basic array manipulation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.3. </span>Basic array manipulation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
@@ -387,7 +390,7 @@ all of the Boolean values are <code class="docutils literal notranslate"><span c
 <p>which leads us to the next section.</p>
 </div>
 <div class="section" id="slicing-and-extracting-sub-arrays">
-<h2>7.3.4. Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.4. </span>Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
 <p>An important aspect of arrays is that they can be treated as a single entity.  That is, <code class="docutils literal notranslate"><span class="pre">sin(x)</span></code>
 operates on each element of <code class="docutils literal notranslate"><span class="pre">x</span></code>.  But sometimes it is necessary to get a particular element from
 an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
@@ -464,7 +467,7 @@ dimension:</p>
 of 0, for <code class="docutils literal notranslate"><span class="pre">j</span></code> of the length of the array, and for <code class="docutils literal notranslate"><span class="pre">k</span></code> of 1.</p>
 </div>
 <div class="section" id="array-attributes-and-methods">
-<h2>7.3.5. Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.5. </span>Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
 <p>Arrays have several useful attributes and methods.  As mentioned above, each array has a
 <code class="xref py py-data docutils literal notranslate"><span class="pre">dtype</span></code> attribute describing how its data is mapped in memory.  In addition, each
 has a <code class="xref py py-data docutils literal notranslate"><span class="pre">size</span></code> attribute giving the number of elements, a <code class="xref py py-data docutils literal notranslate"><span class="pre">ndim</span></code> giving the
@@ -621,7 +624,7 @@ attributes and methods marked <code class="docutils literal notranslate"><span c
 </div></blockquote>
 </div>
 <div class="section" id="mathematical-functions-for-arrays">
-<h2>7.3.6. Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.3.6. </span>Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
 element-by-element.  For example, <code class="xref py py-func docutils literal notranslate"><span class="pre">sqrt()</span></code> returns the square-root of a single
 value or for each element in an array:</p>
@@ -1080,10 +1083,10 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="flow.html" title="7.4. Conditional Execution and Flow Control"
+          <a href="flow.html" title="8.4. Conditional Execution and Flow Control"
              >next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="7.2. Basic and Complex Data Types"
+          <a href="datatypes.html" title="8.2. Basic and Complex Data Types"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -1092,12 +1095,12 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><co
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

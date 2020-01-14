@@ -1,4 +1,4 @@
-.. _gsemapviewer-chapter:
+.. _mapviewer_app:
 
 ==========================
 GSECARS Mapviewr

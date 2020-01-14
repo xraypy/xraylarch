@@ -137,7 +137,7 @@ tabulated :math:`f'(E)`.
 
 .. figure::  ../_images/diffkk_ceo2_xafs.png
     :target: ../_images/diffkk_ceo2_xafs.png
-    :width: 100%
+    :width: 90%
 
     L edge data measured on CeO\ :sub:`2`
 
@@ -145,7 +145,7 @@ tabulated :math:`f'(E)`.
 
 .. figure::  ../_images/diffkk_ceo2_notok.png
     :target: ../_images/diffkk_ceo2_notok.png
-    :width: 100%
+    :width: 90%
 
     A poor stab at diffKK analysis of CeO\ :sub:`2`
 
@@ -153,15 +153,15 @@ tabulated :math:`f'(E)`.
 
 .. figure::  ../_images/diffkk_ceo2_ok.png
     :target: ../_images/diffkk_ceo2_ok.png
-    :width: 100%
+    :width: 90%
 
     A better stab at diffKK analysis of CeO\ :sub:`2`
 
 .. subfigend::
-    :width: 0.32
+    :width: .32
     :label: fig-ceo2-diffkkcomp
 
-    DiffKK analysis of CeO\ :sub:`2`\  L edge data
+     DiffKK analysis of CeO\ :sub:`2`\  L edge data
 
 
 These larch command created the plot in :numref:`fig-ceo2-notok`.

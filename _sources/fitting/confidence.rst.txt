@@ -241,8 +241,9 @@ and a pair with high correlation::
 
 with the resulting Chi-square maps looking like this:
 
-.. subfigstart::
 
+.. subfigstart::
+   
 .. _fig-chi2map1a:
 
 .. figure::  ../_images/fit_example_conf3a.png
@@ -258,15 +259,15 @@ with the resulting Chi-square maps looking like this:
     :align: center
 
 .. subfigend::
-    :width: 0.45
-    :label: fig-chi2map1
+   :width: 0.45
+   :label: fig-chi2map1
 
     Chi-square maps for two pairs of variables for the fit to Gaussian
     data.  With the best-fit chi-square value of 0.5134, the contour map
     for relatively uncorrelated parameters *amp* and *cen* is shown on the
     left, while that for the more highlycorrelated parameters *amp* and
     *wid* is shown on the right.
-
+    
 
 The circular map for the uncorrelated parameters *amp* and *cen*
 and the elliptical map for the highly correlated parameters *amp* and *wid*
@@ -284,10 +285,8 @@ exponential, we calculate the chi-square maps as::
 
 with the resulting contour plots:
 
-
-
 .. subfigstart::
-
+   
 .. _fig-chi2map2a:
 
 .. figure::  ../_images/fit_example_conf4a.png
@@ -303,9 +302,9 @@ with the resulting contour plots:
     :align: center
 
 .. subfigend::
-    :width: 0.45
-    :label: fig-chi2map2
-
+   :width: 0.45
+   :label: fig-chi2map2
+	    
     Chi-square maps for two pairs of variables for the fit to Double
     Exponential.  With the best-fit chi-square value of 0.1913, the contour
     map for *a1 and *a2* is shown on the left, while that for *a1* and *t2*

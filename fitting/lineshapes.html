@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>10.5. Some Builtin Line-shape Functions &#8212; larch 0.9.46 documentation</title>
+    <title>11.5. Some Builtin Line-shape Functions &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="10.6. Fit Examples" href="examples.html" />
-    <link rel="prev" title="10.4. Fit Results and Outputs" href="results.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="11.6. Fit Examples" href="examples.html" />
+    <link rel="prev" title="11.4. Fit Results and Outputs" href="results.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="examples.html" title="10.6. Fit Examples"
+          <a href="examples.html" title="11.6. Fit Examples"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="results.html" title="10.4. Fit Results and Outputs"
+          <a href="results.html" title="11.4. Fit Results and Outputs"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +65,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">10. Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
 
@@ -70,10 +73,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="results.html"
-                        title="previous chapter">10.4. Fit Results and Outputs</a></p>
+                        title="previous chapter"><span class="section-number">11.4. </span>Fit Results and Outputs</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
-                        title="next chapter">10.6. Fit Examples</a></p>
+                        title="next chapter"><span class="section-number">11.6. </span>Fit Examples</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -100,7 +103,7 @@
           <div class="body" role="main">
             
   <div class="section" id="some-builtin-line-shape-functions">
-<span id="lineshape-functions-label"></span><h1>10.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
+<span id="lineshape-functions-label"></span><h1><span class="section-number">11.5. </span>Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
 <div class="versionchanged">
 <p><span class="versionmodified changed">Changed in version 0.9.34: </span>The definitions of these line shapes are now taken from the
 <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> package, and have a more uniform interface.</p>
@@ -189,7 +192,7 @@ in</p>
 \[f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}\]</div>
 </div></blockquote>
 <p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the beta function (see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
-in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.3.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
+in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.4.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
 </dd></dl>
 
 <dl class="function">
@@ -285,8 +288,8 @@ in the <a class="reference internal" href="#fit-funcs-table"><span class="std st
 </div></blockquote>
 <p>Other standard special functions (Bessel functions, Legendre polynomials,
 etc) can be accessed from scipy.special:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
-<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c1"># Bessel function of order 0,</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c1"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>
 <p>A host of functions to generate other distribution functions can be accessed from scipy.stats.</p>
@@ -305,10 +308,10 @@ etc) can be accessed from scipy.special:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="examples.html" title="10.6. Fit Examples"
+          <a href="examples.html" title="11.6. Fit Examples"
              >next</a> |</li>
         <li class="right" >
-          <a href="results.html" title="10.4. Fit Results and Outputs"
+          <a href="results.html" title="11.4. Fit Results and Outputs"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -317,12 +320,12 @@ etc) can be accessed from scipy.special:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >10. Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

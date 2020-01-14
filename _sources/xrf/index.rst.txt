@@ -1,99 +1,90 @@
 ===========================================
-X-ray Fluorescence Analysis with Larch
+X-ray Fluorescence Analysis
 ===========================================
 
-X-ray Fluorescence Data can be manipulated and displayed with
-Larch. Some tools for XRF analysis, to convert XRF spectra into elemental
-concentrations, are also available and more are being added.   A work in
-progress, this chapter discusses some of the existing tools.
+X-ray Fluorescence (XRF) Data can be manipulated, viewed, and analyzed with
+Larch.  In this chapter, we'll discuss how to transform data into Larch
+Groups of XRF data and how to use the Graphical visualization tool `XRF
+Display` to visualize and work with XRF spectr.  We'll also discuss how to
+analyze XRF spectra to quantify elemental compositions of samples.  As part
+of that discussion of fitting XRF spectra, we'll review some of the
+fundamental concepts of XRF Analysis and discuss how these features can
+affect the results of XRF analysis.
 
-MCA and ROI objects
----------------------------
+Since XRF spectra can be collected in as little as a few milliseconds with
+modern X-ray sources and solid-state detectors, it is common to build 2- or
+even 3-dimensional maps of XRF data, with each pixel in the map holding an
+XRF spectrum that can be analyzed.  Larch's `GSE MapViewer` is designed to
+work with and display such XRF maps, and to support the quantitative XRF
+analysis shown here.
 
-Traditionally, XRF spectra have been measured with MCAs (Multi Channel
-Analyzers) which holds an array of intensities.  Because of this history,
-the two concepts are often mixed, and one often talks about MCA traces as
-being the same as XRF spectra.  To be sure, an XRF spectrum :math:`I(E)`
-can be represented well with an MCA trace (intensities per bin) as long as
-one can convert bin number to energy.  Fortunately, most measurement
-systems in use have a linear relation (calibration) between bin number and
-energy, and the use of an MCA trace as an XRF spectrum is straightforward.
-We will probably use the terms interchangeably here as well.
-
-To be clear, an XRF spectrum collected by an MCA will have a one
-dimensional array of intensities (or counts, as detectors typically count
-X-rays the numbers are small enough to highlight the difference) with a
-single, well-defined energy for each bin.  There will typically be between
-1000 and 10,000 bins in each spectrum.
-
-An ROI (Region of Interest) is a continuous portion of the XRF spectrum,
-generally representing a range of energies corresponding to a particular
-peak or X-ray emission line or family of lines.   One often sums the counts
-in such an ROI to give a total number of counts for that emission line.  An
-MCA spectrum may have many (typically 10s) of ROIs defined for particular
-emission lines.
-
-In Larch, MCAs and ROIs are exposed as Groups, each with several
-attributes, and some built-in functions.  For example, An MCA has arrays
-for ``energy`` and ``counts``, as well as values for ``real_time`` and
-``live_time``, a deadtime correction factor ``dt_factor``, and several
-ROIs.  Each ROI has a ``left`` and ``right`` channel index, and a
-:meth:`roi.get_counts` method.
+A basic XRF spectrum from a solid-state detector -- a silicon drift
+detector -- as displayed in the `XRF Display` program is shown below.  The
+spectrum consists of two arrays of a few thousand points: an `energy` array
+that holds energy at each point (or "channel") in the array and a `counts`
+array that holds the counts in each channel.
 
 
-Creating MCA objects
---------------------------
-
-A simple way to create an MCA object is to read one from a disk file.  For
-data collected at GSECARS, this can be done with the :func:`read_gsemca`
-function.
-
-.. function:: read_gsemca(filename)
-
-   read a GSECARS MCA spectra file, returning a Group
-
-   :param filename: name of GSECARS MCA file
-
-   The returned Group has the following components:
-
-      =================== ==========================================================
-       component name        description
-      =================== ==========================================================
-       filename            name of file
-       mcas                list of MCA objects for each MCA saved in the file
-       rois                list of ROIs
-       environ             list of Environmental Variables
-       energy              array of energy values
-       counts              array of counts, deadtime corrected and summed over MCAs
-       raw                 array of counts, summed over MCAs, not corrected.
-       calib               dictionary of calibration values
-       dt_factor           deadtime correction factor
-       real_time           real time for data acquisition
-       live_time           live time for data acquisition
-       nchans              number of energy points in spectra
-       get_roi_counts()    function to get counts for a named ROI
-       save_mcafile()      function to save MCA to file
-      =================== ==========================================================
-
-
-.. function:: xrf_plot(energy, counts, mca=None)
-
-   create an interactive window for displaying an X-ray Fluorescence spectra
-
-   :param energy: array of energy values
-   :param counts: array of counts
-   :param mca:    MCA group (as read from :func:`read_gsemca`), containing
-                  ROI definitions, calibration values, and related data.
-
-
-An example plot is shown below
 
 .. _xrf_fig1:
 
 .. figure::  ../_images/xrf_display1.png
     :target: ../_images/xrf_display1.png
-    :width: 75%
+    :width: 65%
+    :align: center
 
-    Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
-    (in red), and Periodic Table for showing predicted emission lines.
+    Typical X-ray fluorescence spectrum.
 
+The peaks in this specra correpsond to characteristic X-ray emission lines
+from the elements.  The presence of a particular peak in the spectrum
+indicates that the corresponding element was in the illuminated X-ray beam
+-- the spectrum above indicates that Cu and Mn (and also Ca, V, and Co) are
+present in the sample.  Furthermore, the intensity of each peak can be used
+to determine (or at least "infer") the concentration of that particular
+element in the illuminated sample.
+
+From a spectroscopic point-of-view XRF spectra are relatively easy to
+interpret: the characteristic emission energies for each atom are well
+known to high precision and the absorption and emission probabilities are
+known to pretty good precision (though perhaps only 10%).  In this sense, a
+crude approach to XRF analysis is to use the area under the appropriate
+peaks as a quantifiable value for the elements abundance.  This should
+definitely be taken as a rough approximation.  The complications preventing
+such a simle interpretion of XRF spectra are due mostly to:
+
+    1. Strong X-ray attenuation effects.  The attenuation of X-rays goes
+    approximately as :math:`\mu \sim Z^4E^{-3}`, which is to say it has
+    extremely high and non-linear dependence on the atomic number Z of the
+    elements in the X-ray beam, and extremely high and non-linear
+    dependence on the X-ray energy.
+
+    2. Overlaps of elemental peaks.  That is, the emission energies for
+    each element are known, but not unique.  Each element will have
+    multiple series of lines (K, L, M, etc), and these can be close enough
+    in energy to cause some uncertainty in which elements are present.
+
+    3. Detector artefacts. Even the best energy-discriminating detectors
+    used for most XRF analysis are limited in the resolution with which
+    they can determine an X-ray energy. They also sneed some finite time
+    (:math:`100ns` to  :math:`10\{mu}s`) to count each X-ray and so have a
+    "dead time" and can suffer from "pileup" that can distort the spectra.
+
+These effects are understood pretty well and can mostly be compensated for
+in a thorough analysis, as will be discussed in more detail below.
+Importantly, together they means that simply taking the area under a
+portion of the curve in the XRF spectrum is generally not a good measure of
+the absolute abundance of an atom in the illuminated sample.  In limited
+cases, where the bulk of the sample composition does change much, where
+peak overlaps are small, and where the detector is not saturated, the
+integrated intensities of selected peaks can be a good relative measure of
+elemental abundance.
+
+.. module:: _xrf
+   :synopsis: X-ray Fluorescence Analysis
+
+.. toctree::
+   :maxdepth: 2
+
+   mca
+   xrfviewer
+   xrf_modelling

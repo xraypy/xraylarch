@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>7.6. Writing Functions or Procedures &#8212; larch 0.9.46 documentation</title>
+    <title>8.6. Writing Functions or Procedures &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.7. Running Larch Scripts, and Modules" href="modules.html" />
-    <link rel="prev" title="7.5. Dealing With Errors" href="errors.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="8.7. Running Larch Scripts, and Modules" href="modules.html" />
+    <link rel="prev" title="8.5. Dealing With Errors" href="errors.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modules.html" title="7.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="8.7. Running Larch Scripts, and Modules"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="errors.html" title="7.5. Dealing With Errors"
+          <a href="errors.html" title="8.5. Dealing With Errors"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +65,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -70,22 +73,22 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.6. Writing Functions or Procedures</a><ul>
-<li><a class="reference internal" href="#def-statement">7.6.1. Def statement</a></li>
-<li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">7.6.2. Namespace and “Scope” inside a Procedure</a></li>
-<li><a class="reference internal" href="#the-return-statement-and-multiple-return-values">7.6.3. The return statement, and multiple Return values</a></li>
-<li><a class="reference internal" href="#keyword-arguments">7.6.4. Keyword arguments</a></li>
-<li><a class="reference internal" href="#documentation-strings">7.6.5. Documentation Strings</a></li>
+<li><a class="reference internal" href="#">8.6. Writing Functions or Procedures</a><ul>
+<li><a class="reference internal" href="#def-statement">8.6.1. Def statement</a></li>
+<li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">8.6.2. Namespace and “Scope” inside a Procedure</a></li>
+<li><a class="reference internal" href="#the-return-statement-and-multiple-return-values">8.6.3. The return statement, and multiple Return values</a></li>
+<li><a class="reference internal" href="#keyword-arguments">8.6.4. Keyword arguments</a></li>
+<li><a class="reference internal" href="#documentation-strings">8.6.5. Documentation Strings</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="errors.html"
-                        title="previous chapter">7.5. Dealing With Errors</a></p>
+                        title="previous chapter"><span class="section-number">8.5. </span>Dealing With Errors</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="next chapter">7.7. Running Larch Scripts, and Modules</a></p>
+                        title="next chapter"><span class="section-number">8.7. </span>Running Larch Scripts, and Modules</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -112,7 +115,7 @@
           <div class="body" role="main">
             
   <div class="section" id="writing-functions-or-procedures">
-<h1>7.6. Writing Functions or Procedures<a class="headerlink" href="#writing-functions-or-procedures" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">8.6. </span>Writing Functions or Procedures<a class="headerlink" href="#writing-functions-or-procedures" title="Permalink to this headline">¶</a></h1>
 <p>Any moderately complex script will eventually include calcluations that
 need to be repeated.  The preferred way to do this is write your own
 function or <strong>procedure</strong>, which can be called exactly as the built-in
@@ -124,7 +127,7 @@ lax about referring to functions written in Larch as functions.</p>
 <p>Once you’re ready to write procedures, you’ll almost certainly want to read
 about running Larch scripts and modules in the next section of this tutorial.</p>
 <div class="section" id="def-statement">
-<h2>7.6.1. Def statement<a class="headerlink" href="#def-statement" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.6.1. </span>Def statement<a class="headerlink" href="#def-statement" title="Permalink to this headline">¶</a></h2>
 <p>To define a procedure, you use the <strong>def</strong> statement, and write a block of
 code.  This looks much like the <strong>if</strong>, <strong>for</strong>, and <strong>while</strong> blocks
 discussed earlier. A simple example would be:</p>
@@ -190,14 +193,14 @@ say a <strong>tuple</strong>.  As an example:</p>
 </div>
 <p>This is discussed in more detail below.</p>
 <p>The formal definition of a procedure looks like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>def &lt;procedure_name&gt;(&lt;arguments&gt;):
-    &lt;block of statements&gt;
-#enddef
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="o">&lt;</span><span class="n">procedure_name</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&lt;</span><span class="n">arguments</span><span class="o">&gt;</span><span class="p">):</span>
+    <span class="o">&lt;</span><span class="n">block</span> <span class="n">of</span> <span class="n">statements</span><span class="o">&gt;</span>
+<span class="c1">#enddef</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="namespace-and-scope-inside-a-procedure">
-<span id="tut-namespaces-label"></span><h2>7.6.2. Namespace and “Scope” inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
+<span id="tut-namespaces-label"></span><h2><span class="section-number">8.6.2. </span>Namespace and “Scope” inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
 <p>While inside a procedure, and important consideration is “what variables
 does this procedure have access to?”.  In fact, the question can be
 extended beyond procedures and functions to ask “what variables are
@@ -264,7 +267,7 @@ in from some plug-in.</p>
 This is a really bad idea, and you should avoid doing it at all costs.</p>
 </div>
 <div class="section" id="the-return-statement-and-multiple-return-values">
-<h2>7.6.3. The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.6.3. </span>The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this headline">¶</a></h2>
 <p>As seen above, the <strong>return</strong> statement will exit a procedure, and send
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
@@ -295,7 +298,7 @@ is, and when using a procedure that you’re getting the correct number of
 values.</p>
 </div>
 <div class="section" id="keyword-arguments">
-<h2>7.6.4. Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.6.4. </span>Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h2>
 <p>For the procedures defined so far, the arguments have been both required
 and in a fixed order.  Sometimes, you’ll want to give a procedure optional
 arguments, and perhaps allow some flexibility in the order of the
@@ -401,7 +404,7 @@ appear after any named keyword parameters, and will not include the named
 keyword parameters.</p>
 </div>
 <div class="section" id="documentation-strings">
-<h2>7.6.5. Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.6.5. </span>Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this headline">¶</a></h2>
 <p>It is generally a good idea to document your procedures so that you and
 others can read what it is meant to do and how to use it.  Larch has a
 built-in mechanism for supporting procedure documentaion.  If the first
@@ -440,10 +443,10 @@ mechanism, or when viewing details of the procedure.  For example:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modules.html" title="7.7. Running Larch Scripts, and Modules"
+          <a href="modules.html" title="8.7. Running Larch Scripts, and Modules"
              >next</a> |</li>
         <li class="right" >
-          <a href="errors.html" title="7.5. Dealing With Errors"
+          <a href="errors.html" title="8.5. Dealing With Errors"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -452,12 +455,12 @@ mechanism, or when viewing details of the procedure.  For example:</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

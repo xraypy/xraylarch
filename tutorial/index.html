@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>7. Larch Language Tutorial &#8212; larch 0.9.46 documentation</title>
+    <title>8. Larch Macro Language Tutorial &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.1. Getting Started" href="start.html" />
-    <link rel="prev" title="6. QtRIXS" href="../qtrixs/index.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="8.1. Getting Started" href="start.html" />
+    <link rel="prev" title="7. QtRIXS" href="../qtrixs/index.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="start.html" title="7.1. Getting Started"
+          <a href="start.html" title="8.1. Getting Started"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../qtrixs/index.html" title="6. QtRIXS"
+          <a href="../qtrixs/index.html" title="7. QtRIXS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,10 +72,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../qtrixs/index.html"
-                        title="previous chapter">6. QtRIXS</a></p>
+                        title="previous chapter"><span class="section-number">7. </span>QtRIXS</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="start.html"
-                        title="next chapter">7.1. Getting Started</a></p>
+                        title="next chapter"><span class="section-number">8.1. </span>Getting Started</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -98,8 +101,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="larch-language-tutorial">
-<span id="tutorial-chapter"></span><h1>7. Larch Language Tutorial<a class="headerlink" href="#larch-language-tutorial" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="larch-macro-language-tutorial">
+<span id="tutorial-chapter"></span><h1><span class="section-number">8. </span>Larch Macro Language Tutorial<a class="headerlink" href="#larch-macro-language-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>Larch provides both a Python programming library and Python-like
 programming or macro language (which we’ll call <em>Larch macro language</em>
 here) for processing of scientific data.  You can use either of these to
@@ -135,60 +138,60 @@ knowledge of Python will make Larch easy to learn.  For further details on
 Python, including tutorials, see the Python documentation at
 <a class="reference external" href="http://python.org/">http://python.org/</a></p>
 <p>If you are familar with Python and want to use the <cite>larch</cite> module from
-Python, skip ahead to <a class="reference internal" href="../devel/index.html#programming-chapter"><span class="std std-ref">14</span></a>.</p>
+Python, skip ahead to <a class="reference internal" href="../devel/index.html#programming-chapter"><span class="std std-ref">Programming with Larch from Python</span></a>.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="start.html">7.1. Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">7.1.1. Larch as a Basic Calculator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">8.1. Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">8.1.1. Larch as a Basic Calculator</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="datatypes.html">7.2. Basic and Complex Data Types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">7.2.1. Basic Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">7.2.2. Objects and Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">7.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="datatypes.html#object-identities-copying-and-equality-vs-identity">7.2.4. Object identities, copying, and equality vs. identity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datatypes.html">8.2. Basic and Complex Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">8.2.1. Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">8.2.2. Objects and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">8.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#object-identities-copying-and-equality-vs-identity">8.2.4. Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="arrays.html">7.3. Basic Array Manipulation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#functions-for-creating-arrays">7.3.1. Functions for creating arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#the-array-dtype-datatype">7.3.2. The array <em>dtype</em> – datatype</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#id1">7.3.3. Basic array manipulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#slicing-and-extracting-sub-arrays">7.3.4. Slicing and extracting sub-arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#array-attributes-and-methods">7.3.5. Array attributes and methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrays.html#mathematical-functions-for-arrays">7.3.6. Mathematical functions for arrays</a></li>
+<li class="toctree-l1"><a class="reference internal" href="arrays.html">8.3. Basic Array Manipulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#functions-for-creating-arrays">8.3.1. Functions for creating arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#the-array-dtype-datatype">8.3.2. The array <em>dtype</em> – datatype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#id1">8.3.3. Basic array manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#slicing-and-extracting-sub-arrays">8.3.4. Slicing and extracting sub-arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#array-attributes-and-methods">8.3.5. Array attributes and methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arrays.html#mathematical-functions-for-arrays">8.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="flow.html">7.4. Conditional Execution and Flow Control</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">7.4.1. Conditional Evaluation with if and else</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">7.4.2. For loops</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">7.4.3. While loops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">8.4. Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">8.4.1. Conditional Evaluation with if and else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">8.4.2. For loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">8.4.3. While loops</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="errors.html">7.5. Dealing With Errors</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">7.5.1. Syntax Errors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">7.5.2. Exceptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">7.5.3. Try and Except</a></li>
-<li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">7.5.4. Raising your own exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">8.5. Dealing With Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">8.5.1. Syntax Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">8.5.2. Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">8.5.3. Try and Except</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">8.5.4. Raising your own exceptions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="procedures.html">7.6. Writing Functions or Procedures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">7.6.1. Def statement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">7.6.2. Namespace and “Scope” inside a Procedure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">7.6.3. The return statement, and multiple Return values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#keyword-arguments">7.6.4. Keyword arguments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">7.6.5. Documentation Strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedures.html">8.6. Writing Functions or Procedures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">8.6.1. Def statement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">8.6.2. Namespace and “Scope” inside a Procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">8.6.3. The return statement, and multiple Return values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#keyword-arguments">8.6.4. Keyword arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">8.6.5. Documentation Strings</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">7.7. Running Larch Scripts, and Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">7.7.1. Running a larch script with <code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">7.7.2. Importing a Larch Script as a Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">8.7. Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">8.7.1. Running a larch script with <code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">8.7.2. Importing a Larch Script as a Module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="builtins.html">7.8. Builtin Functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-data-values">7.8.1. Builtin data values</a></li>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#larch-specific-builtin-functions">7.8.2. Larch-Specific Builtin functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-functions-inherited-from-python">7.8.3. Builtin functions inherited from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="builtins.html">8.8. Builtin Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-data-values">8.8.1. Builtin data values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#larch-specific-builtin-functions">8.8.2. Larch-Specific Builtin functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="builtins.html#builtin-functions-inherited-from-python">8.8.3. Builtin functions inherited from Python</a></li>
 </ul>
 </li>
 </ul>
@@ -208,10 +211,10 @@ Python, skip ahead to <a class="reference internal" href="../devel/index.html#pr
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="start.html" title="7.1. Getting Started"
+          <a href="start.html" title="8.1. Getting Started"
              >next</a> |</li>
         <li class="right" >
-          <a href="../qtrixs/index.html" title="6. QtRIXS"
+          <a href="../qtrixs/index.html" title="7. QtRIXS"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -224,7 +227,7 @@ Python, skip ahead to <a class="reference internal" href="../devel/index.html#pr
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

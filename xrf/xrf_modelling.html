@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>15.2.4. Modules &#8212; xraylarch 0.9.46 documentation</title>
+    <title>14.3. Modelling XRF Data &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,8 +18,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="16. Bibliography" href="../biblio.html" />
-    <link rel="prev" title="15.2.3. Plugins" href="plugins.html" />
+    <link rel="next" title="15. Programming with Larch from Python" href="../devel/index.html" />
+    <link rel="prev" title="14.2. The XRF Viewer Application" href="xrfviewer.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,34 +53,34 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../biblio.html" title="16. Bibliography"
+          <a href="../devel/index.html" title="15. Programming with Larch from Python"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="plugins.html" title="15.2.3. Plugins"
+          <a href="xrfviewer.html" title="14.2. The XRF Viewer Application"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">15. </span>Programming with Larch from Python</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">14. </span>X-ray Fluorescence Analysis</a> &#187;</li> 
       </ul>
     </div>
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plugins.html"
-                        title="previous chapter"><span class="section-number">15.2.3. </span>Plugins</a></p>
+  <p class="topless"><a href="xrfviewer.html"
+                        title="previous chapter"><span class="section-number">14.2. </span>The XRF Viewer Application</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../biblio.html"
-                        title="next chapter"><span class="section-number">16. </span>Bibliography</a></p>
+  <p class="topless"><a href="../devel/index.html"
+                        title="next chapter"><span class="section-number">15. </span>Programming with Larch from Python</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/devel/modules.rst.txt"
+      <li><a href="../_sources/xrf/xrf_modelling.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -102,13 +102,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="modules">
-<span id="modules-section"></span><h1><span class="section-number">15.2.4. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<p>As discussed in Section <a class="reference internal" href="../tutorial/modules.html#tutorial-modules-section"><span class="std std-ref">Running Larch Scripts, and Modules</span></a>, Larch can import
-modules either written in Larch (with a ‘.lar’ extension) or Python (with a
-‘.py’ extension).  When importing a Python module, the full set of Python
-objects is imported as a Python module, which acts very much like a Larch
-Group.</p>
+  <div class="section" id="modelling-xrf-data">
+<span id="xrf-modelling"></span><h1><span class="section-number">14.3. </span>Modelling XRF Data<a class="headerlink" href="#modelling-xrf-data" title="Permalink to this headline">¶</a></h1>
+<p>X-ray fluorescence (XRF) is the emission of X-rays of well-defined
+energies that correspond to the known electronic enery levels of
+atoms.  This phenomenon is closely associated to the quantum
+understanding of atom and the use of X-rays of certain characteristic
+energies to identify the presence of particular elements has been used
+very soon after the discovery of X-rays.  While the basic XRF
+phenomenon and the use of X-ray emission to identify the presence of
+certain atomic species are well understood, the quantivative analysis
+of X-ray fluorescence spectra to accurately determine atomic
+concentrations is a bit complicated by several different factors.
+With these complicating factors accounted for, accurate elemental
+abundances can be extracted from XRF data.  Here, we’ll cover some of
+the details of what makes XRF analysis somewhat challenging and
+discuss how to use Larch to analyze XRF data to extract quantitative
+values for concentrations.</p>
 </div>
 
 
@@ -124,19 +134,19 @@ Group.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../biblio.html" title="16. Bibliography"
+          <a href="../devel/index.html" title="15. Programming with Larch from Python"
              >next</a> |</li>
         <li class="right" >
-          <a href="plugins.html" title="15.2.3. Plugins"
+          <a href="xrfviewer.html" title="14.2. The XRF Viewer Application"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">15. </span>Programming with Larch from Python</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">14. </span>X-ray Fluorescence Analysis</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

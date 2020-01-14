@@ -1,8 +1,8 @@
 .. _tutorial_chapter:
 
-============================
-Larch Language Tutorial
-============================
+===============================
+Larch Macro Language Tutorial
+===============================
 
 Larch provides both a Python programming library and Python-like
 programming or macro language (which we'll call *Larch macro language*

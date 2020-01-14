@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Differences between Larch and Python &#8212; larch 0.9.46 documentation</title>
+    <title>15.2.2. Differences between Larch and Python &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,10 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="15.2.3. Plugins" href="plugins.html" />
+    <link rel="prev" title="15.2.1. Using Larch from Python" href="frompython.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -47,13 +52,20 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="plugins.html" title="15.2.3. Plugins"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="frompython.html" title="15.2.1. Using Larch from Python"
+             accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">15. </span>Programming with Larch from Python</a> &#187;</li> 
       </ul>
     </div>
 
@@ -61,15 +73,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Differences between Larch and Python</a><ul>
-<li><a class="reference internal" href="#code-block-ends">Code Block Ends</a></li>
-<li><a class="reference internal" href="#groups-vs-modules">Groups vs Modules</a></li>
-<li><a class="reference internal" href="#symbol-lookup-rules">Symbol Lookup Rules</a></li>
-<li><a class="reference internal" href="#unimplemented-features">Unimplemented features</a></li>
+<li><a class="reference internal" href="#">15.2.2. Differences between Larch and Python</a><ul>
+<li><a class="reference internal" href="#code-block-ends">15.2.2.1. Code Block Ends</a></li>
+<li><a class="reference internal" href="#groups-vs-modules">15.2.2.2. Groups vs Modules</a></li>
+<li><a class="reference internal" href="#symbol-lookup-rules">15.2.2.3. Symbol Lookup Rules</a></li>
+<li><a class="reference internal" href="#unimplemented-features">15.2.2.4. Unimplemented features</a></li>
 </ul>
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="frompython.html"
+                        title="previous chapter"><span class="section-number">15.2.1. </span>Using Larch from Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plugins.html"
+                        title="next chapter"><span class="section-number">15.2.3. </span>Plugins</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -96,7 +114,7 @@
           <div class="body" role="main">
             
   <div class="section" id="differences-between-larch-and-python">
-<span id="python-diffs-section"></span><h1>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h1>
+<span id="python-diffs-section"></span><h1><span class="section-number">15.2.2. </span>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h1>
 <p>Larch is based on and very similar to Python, but there are some very
 important differences that need to be noted, especially for those familiar
 with Python.  These differences are not here because we feel Python is
@@ -156,7 +174,7 @@ changes from the standard Python name lookup rules.</p></li>
 <p>You can also see that Python’s syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.</p>
 <div class="section" id="code-block-ends">
-<span id="id1"></span><h2>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><span class="section-number">15.2.2.1. </span>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h2>
 <p>Unlike Python, Larch does not use significant whitespace to define blocks.
 There, that was easy.  Instead, Larch uses “end blocks”, of the form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">test</span><span class="p">:</span>
@@ -181,14 +199,14 @@ Python, which can be useful in translating code:</p>
 <p>This code is both valid Larch and valid Python.</p>
 </div>
 <div class="section" id="groups-vs-modules">
-<h2>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.2.2.2. </span>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h2>
 <p>This is at least partly a semantic distinction.  Larch organizes data and
 code into Groups – simple containers that hold data, functions, and other
 groups.  These are implemented as a simple, empty class that is part of the
 symbol table.</p>
 </div>
 <div class="section" id="symbol-lookup-rules">
-<h2>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.2.2.3. </span>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h2>
 <p>Looking up symbol names is a key feature of any language.  Python and Larch
 both allow <em>namespaces</em> in which symbols can be nested into a heirarchy,
 using a syntax of <strong>parent.child</strong>, with a dot (‘.’) separating the
@@ -235,7 +253,7 @@ they are not available outside the function.  The functions <code class="xref py
 and <code class="xref py py-func docutils literal notranslate"><span class="pre">sqrt()</span></code> are taken from the module-level namespace, using the name
 as defined in the import statement.  A third alternative would be to
 import only the names ‘sqrt’ and ‘arange’ into the modules namespace:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
 
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
@@ -243,7 +261,7 @@ import only the names ‘sqrt’ and ‘arange’ into the modules namespace:</p
 </pre></div>
 </div>
 <p>For quick and dirty Python scripts, there is a tendency to use <cite>import *</cite>, as in:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="o">*</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -278,7 +296,7 @@ while it is running; ‘_sys.moduleGroup’, which holds the namespace for a
 module associated with a currently running function.</p>
 </div>
 <div class="section" id="unimplemented-features">
-<h2>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.2.2.4. </span>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h2>
 <p>A domain-specific-language like Larch does not need to be as full-featured
 as Python, so we left a few things out.  These include (this may not be an
 exhaustive list):</p>
@@ -307,18 +325,25 @@ exhaustive list):</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="plugins.html" title="15.2.3. Plugins"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="frompython.html" title="15.2.1. Using Larch from Python"
+             >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
    <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">15. </span>Programming with Larch from Python</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

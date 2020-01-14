@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>14. Programming with Larch from Python &#8212; larch 0.9.46 documentation</title>
+    <title>15. Programming with Larch from Python &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="15. Bibliography" href="../biblio.html" />
-    <link rel="prev" title="13. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="15.2.1. Using Larch from Python" href="frompython.html" />
+    <link rel="prev" title="14.3. Modelling XRF Data" href="../xrf/xrf_modelling.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../biblio.html" title="15. Bibliography"
+          <a href="frompython.html" title="15.2.1. Using Larch from Python"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xrf/index.html" title="13. X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/xrf_modelling.html" title="14.3. Modelling XRF Data"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,18 +72,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">14. Programming with Larch from Python</a><ul>
-<li><a class="reference internal" href="#module-larch">14.1. Larch submodules</a></li>
+<li><a class="reference internal" href="#">15. Programming with Larch from Python</a><ul>
+<li><a class="reference internal" href="#larch-submodules">15.1. Larch submodules</a></li>
+<li><a class="reference internal" href="#modules">15.2. Modules</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../xrf/index.html"
-                        title="previous chapter">13. X-ray Fluorescence Analysis with Larch</a></p>
+  <p class="topless"><a href="../xrf/xrf_modelling.html"
+                        title="previous chapter"><span class="section-number">14.3. </span>Modelling XRF Data</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../biblio.html"
-                        title="next chapter">15. Bibliography</a></p>
+  <p class="topless"><a href="frompython.html"
+                        title="next chapter"><span class="section-number">15.2.1. </span>Using Larch from Python</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -107,7 +111,7 @@
           <div class="body" role="main">
             
   <div class="section" id="programming-with-larch-from-python">
-<span id="programming-chapter"></span><h1>14. Programming with Larch from Python<a class="headerlink" href="#programming-with-larch-from-python" title="Permalink to this headline">¶</a></h1>
+<span id="programming-chapter"></span><h1><span class="section-number">15. </span>Programming with Larch from Python<a class="headerlink" href="#programming-with-larch-from-python" title="Permalink to this headline">¶</a></h1>
 <p>This chapter describes some of the key concepts of programming with the
 <cite>larch</cite> module from Python.  All the functionality described elsewhere in
 this documentation is available from the <cite>larch</cite> Python module:</p>
@@ -115,24 +119,50 @@ this documentation is available from the <cite>larch</cite> Python module:</p>
 </pre></div>
 </div>
 <p>A simple session might look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="k">import</span> <span class="n">autobk</span>
-<span class="kn">from</span> <span class="nn">larch.io</span> <span class="k">import</span> <span class="n">read_xdi</span>
-<span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="k">import</span> <span class="n">plot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
+<span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
+<span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
 
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;examples/xafsdata/fe3c_rt.xdi&#39;</span><span class="p">)</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">mutrans</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">*</span><span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;k 1/A&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;chi*k&#39;</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">larch.xray</span> <span class="k">import</span> <span class="n">xray_line</span>
+<span class="kn">from</span> <span class="nn">larch.xray</span> <span class="kn">import</span> <span class="n">xray_line</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">))</span>
 <span class="p">(</span><span class="mf">8046.3</span><span class="p">,</span> <span class="mf">0.577108</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;L3&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="module-larch">
-<span id="larch-submodules"></span><h2>14.1. Larch submodules<a class="headerlink" href="#module-larch" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="larch-submodules">
+<h2><span class="section-number">15.1. </span>Larch submodules<a class="headerlink" href="#larch-submodules" title="Permalink to this headline">¶</a></h2>
 <p>The <cite>larch</cite> module is broken up into a number of submodules, based mostly
 on type of data being processed.</p>
+</div>
+<div class="section" id="modules">
+<h2><span class="section-number">15.2. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
+<p>As discussed in Section <a class="reference internal" href="../tutorial/modules.html#tutorial-modules-section"><span class="std std-ref">Running Larch Scripts, and Modules</span></a>, Larch can import
+modules either written in Larch (with a ‘.lar’ extension) or Python (with a
+‘.py’ extension).  When importing a Python module, the full set of Python
+objects is imported as a Python module, which acts very much like a Larch
+Group.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="frompython.html">15.2.1. Using Larch from Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notpython.html">15.2.2. Differences between Larch and Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notpython.html#code-block-ends">15.2.2.1. Code Block Ends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notpython.html#groups-vs-modules">15.2.2.2. Groups vs Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notpython.html#symbol-lookup-rules">15.2.2.3. Symbol Lookup Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notpython.html#unimplemented-features">15.2.2.4. Unimplemented features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">15.2.3. Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html#locations-of-plugins">15.2.3.1. Locations of Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html#customizing-plugins-and-folders-of-plugins">15.2.3.2. Customizing Plugins and  Folders of Plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">15.2.4. Modules</a></li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -149,10 +179,10 @@ on type of data being processed.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../biblio.html" title="15. Bibliography"
+          <a href="frompython.html" title="15.2.1. Using Larch from Python"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xrf/index.html" title="13. X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/xrf_modelling.html" title="14.3. Modelling XRF Data"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -165,7 +195,7 @@ on type of data being processed.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

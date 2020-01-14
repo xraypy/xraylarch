@@ -59,8 +59,8 @@ and so "fits in" with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.
 
 These three of these approaches are exposed in the XAS Viewer application
-described in Chapter :ref:`xasviewer-chapter`, and the documentation here
-largely reflects the operations done there.
+(:ref:`xasviewer_app`), and the documentation here largely reflects the
+operations done there.
 
 But first a note for all XANES analysis.  All these methods rely on
 comparing the spectral intensities normalized to the main absorption edge.
@@ -257,6 +257,7 @@ and is on a log scale).
     :width: 100%
     :align: center
 
+    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
     Mean and 4 most important components.
 
 .. _fig_xanes_pca1b:
@@ -266,15 +267,14 @@ and is on a log scale).
     :width: 100%
     :align: center
 
+    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
     Fractional weights or variances for the 4 most important components of
     the Au XANES spectra -- not including the mean spectrum.
 
 .. subfigend::
-    :width: 0.45
-    :alt: PCA figure
-    :label: fig_xanes_pca1
+    :width: .45
+    :label: fig-xanes-pca
 
-    Results for the PCA training set of  6 Au :math:`L_{III}` XANES spectra.
 
 We also print out the weights of the components which will give::
 

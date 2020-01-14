@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>10. Fitting and Modeling Data &#8212; larch 0.9.46 documentation</title>
+    <title>11. Fitting and Modeling Data &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="10.1. Fitting Overview" href="overview.html" />
-    <link rel="prev" title="9. Plotting and Displaying Data" href="../plotting/index.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="11.1. Fitting Overview" href="overview.html" />
+    <link rel="prev" title="10. Plotting and Displaying Data" href="../plotting/index.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="overview.html" title="10.1. Fitting Overview"
+          <a href="overview.html" title="11.1. Fitting Overview"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="10. Plotting and Displaying Data"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -69,10 +72,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../plotting/index.html"
-                        title="previous chapter">9. Plotting and Displaying Data</a></p>
+                        title="previous chapter"><span class="section-number">10. </span>Plotting and Displaying Data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="overview.html"
-                        title="next chapter">10.1. Fitting Overview</a></p>
+                        title="next chapter"><span class="section-number">11.1. </span>Fitting Overview</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -99,7 +102,7 @@
           <div class="body" role="main">
             
   <div class="section" id="fitting-and-modeling-data">
-<span id="fitting-chapter"></span><h1>10. Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this headline">¶</a></h1>
+<span id="fitting-chapter"></span><h1><span class="section-number">11. </span>Fitting and Modeling Data<a class="headerlink" href="#fitting-and-modeling-data" title="Permalink to this headline">¶</a></h1>
 <p>A key motivation for Larch is to provide easy and robust ways to model data
 and perform complex fits of data to models.  Data modeling and fitting can
 be messy and challenging tasks, so a major factor in Larch’s design was to
@@ -120,34 +123,34 @@ expression evaluator used.</p>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">10.1. Fitting Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">10.2. Parameters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#setting-bounds">10.2.1. setting bounds</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#using-algebraic-constraints">10.2.2. using algebraic constraints</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#param-group-creating-a-parameter-group-for-fitting-constraints">10.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#fiteval-and-details-about-algebraic-constraints">10.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parameters.html#working-with-uncertainties">10.2.5. working with uncertainties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">11.1. Fitting Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">11.2. Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#setting-bounds">11.2.1. setting bounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#using-algebraic-constraints">11.2.2. using algebraic constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#param-group-creating-a-parameter-group-for-fitting-constraints">11.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#fiteval-and-details-about-algebraic-constraints">11.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#working-with-uncertainties">11.2.5. working with uncertainties</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="minimize.html">10.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="results.html">10.4. Fit Results and Outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lineshapes.html">10.5. Some Builtin Line-shape Functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">10.6. Fit Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#example-1-fitting-a-simple-gaussian">10.6.1. Example 1: Fitting a Simple Gaussian</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#example-2-fitting-xanes-pre-edge-peaks">10.6.2. Example 2: Fitting XANES Pre-edge Peaks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">10.6.3. Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minimize.html">11.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">11.4. Fit Results and Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineshapes.html">11.5. Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">11.6. Fit Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-1-fitting-a-simple-gaussian">11.6.1. Example 1: Fitting a Simple Gaussian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-2-fitting-xanes-pre-edge-peaks">11.6.2. Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">11.6.3. Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fitpeaks.html">10.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-gaussian-background-with-fit-peak">10.7.1. Example: Fitting a Gaussian + background with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-rectangular-function-with-fit-peak">10.7.2. Example: Fitting a Rectangular function with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#using-lmfit-model">10.7.3. Using lmfit.Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fitpeaks.html">11.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-gaussian-background-with-fit-peak">11.7.1. Example: Fitting a Gaussian + background with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#example-fitting-a-rectangular-function-with-fit-peak">11.7.2. Example: Fitting a Rectangular function with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitpeaks.html#using-lmfit-model">11.7.3. Using lmfit.Model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="confidence.html">10.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="confidence.html#confidence-interval-example-1">10.8.1. Confidence interval, Example 1</a></li>
-<li class="toctree-l2"><a class="reference internal" href="confidence.html#confidence-interval-example-2">10.8.2. Confidence interval, Example 2</a></li>
-<li class="toctree-l2"><a class="reference internal" href="confidence.html#chi-square-maps">10.8.3. Chi-square Maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="confidence.html">11.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="confidence.html#confidence-interval-example-1">11.8.1. Confidence interval, Example 1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="confidence.html#confidence-interval-example-2">11.8.2. Confidence interval, Example 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="confidence.html#chi-square-maps">11.8.3. Chi-square Maps</a></li>
 </ul>
 </li>
 </ul>
@@ -167,10 +170,10 @@ expression evaluator used.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="overview.html" title="10.1. Fitting Overview"
+          <a href="overview.html" title="11.1. Fitting Overview"
              >next</a> |</li>
         <li class="right" >
-          <a href="../plotting/index.html" title="9. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="10. Plotting and Displaying Data"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -183,7 +186,7 @@ expression evaluator used.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>

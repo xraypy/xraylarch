@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>7.2. Basic and Complex Data Types &#8212; larch 0.9.46 documentation</title>
+    <title>8.2. Basic and Complex Data Types &#8212; xraylarch 0.9.46 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -18,12 +18,15 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="7.3. Basic Array Manipulation" href="arrays.html" />
-    <link rel="prev" title="7.1. Getting Started" href="start.html" />
-  <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-			 "HTML-CSS": {scale: 90}});
-  </script>
+    <link rel="next" title="8.3. Basic Array Manipulation" href="arrays.html" />
+    <link rel="prev" title="8.1. Getting Started" href="start.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
 
   </head><body>
 <div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
@@ -50,10 +53,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="arrays.html" title="7.3. Basic Array Manipulation"
+          <a href="arrays.html" title="8.3. Basic Array Manipulation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="start.html" title="7.1. Getting Started"
+          <a href="start.html" title="8.1. Getting Started"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -62,7 +65,7 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
 
@@ -70,34 +73,34 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.2. Basic and Complex Data Types</a><ul>
-<li><a class="reference internal" href="#basic-data-types">7.2.1. Basic Data Types</a></li>
-<li><a class="reference internal" href="#objects-and-groups">7.2.2. Objects and Groups</a><ul>
-<li><a class="reference internal" href="#objects">7.2.2.1. Objects</a></li>
-<li><a class="reference internal" href="#groups">7.2.2.2. Groups</a></li>
-<li><a class="reference internal" href="#builtin-larch-groups">7.2.2.3. Builtin Larch Groups</a></li>
-<li><a class="reference internal" href="#how-larch-finds-variable-names">7.2.2.4. How Larch finds variable names</a></li>
+<li><a class="reference internal" href="#">8.2. Basic and Complex Data Types</a><ul>
+<li><a class="reference internal" href="#basic-data-types">8.2.1. Basic Data Types</a></li>
+<li><a class="reference internal" href="#objects-and-groups">8.2.2. Objects and Groups</a><ul>
+<li><a class="reference internal" href="#objects">8.2.2.1. Objects</a></li>
+<li><a class="reference internal" href="#groups">8.2.2.2. Groups</a></li>
+<li><a class="reference internal" href="#builtin-larch-groups">8.2.2.3. Builtin Larch Groups</a></li>
+<li><a class="reference internal" href="#how-larch-finds-variable-names">8.2.2.4. How Larch finds variable names</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#more-complex-data-structures-lists-arrays-dictionaries">7.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
-<li><a class="reference internal" href="#lists">7.2.3.1. Lists</a></li>
-<li><a class="reference internal" href="#tuples">7.2.3.2. Tuples</a></li>
-<li><a class="reference internal" href="#a-second-look-at-strings">7.2.3.3. A second look at Strings</a></li>
-<li><a class="reference internal" href="#arrays">7.2.3.4. Arrays</a></li>
-<li><a class="reference internal" href="#dictionaries">7.2.3.5. Dictionaries</a></li>
+<li><a class="reference internal" href="#more-complex-data-structures-lists-arrays-dictionaries">8.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
+<li><a class="reference internal" href="#lists">8.2.3.1. Lists</a></li>
+<li><a class="reference internal" href="#tuples">8.2.3.2. Tuples</a></li>
+<li><a class="reference internal" href="#a-second-look-at-strings">8.2.3.3. A second look at Strings</a></li>
+<li><a class="reference internal" href="#arrays">8.2.3.4. Arrays</a></li>
+<li><a class="reference internal" href="#dictionaries">8.2.3.5. Dictionaries</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-identity">7.2.4. Object identities, copying, and equality vs. identity</a></li>
+<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-identity">8.2.4. Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="start.html"
-                        title="previous chapter">7.1. Getting Started</a></p>
+                        title="previous chapter"><span class="section-number">8.1. </span>Getting Started</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="arrays.html"
-                        title="next chapter">7.3. Basic Array Manipulation</a></p>
+                        title="next chapter"><span class="section-number">8.3. </span>Basic Array Manipulation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -124,11 +127,11 @@
           <div class="body" role="main">
             
   <div class="section" id="basic-and-complex-data-types">
-<span id="tutor-datatypes-sec"></span><h1>7.2. Basic and Complex Data Types<a class="headerlink" href="#basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-datatypes-sec"></span><h1><span class="section-number">8.2. </span>Basic and Complex Data Types<a class="headerlink" href="#basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
 <p>This section of the Larch tutorial describes the types of data that Larch
 has, and how to use them.</p>
 <div class="section" id="basic-data-types">
-<h2>7.2.1. Basic Data Types<a class="headerlink" href="#basic-data-types" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.2.1. </span>Basic Data Types<a class="headerlink" href="#basic-data-types" title="Permalink to this headline">¶</a></h2>
 <p>As with most programming languages, Larch has several built-in data types
 to express different kinds of data.  These include the usual integers,
 floating point numbers, and strings common to many programming languages.
@@ -245,7 +248,7 @@ corresponding Python objects, so you can consult python documentation for
 further details and notes.</p>
 </div>
 <div class="section" id="objects-and-groups">
-<h2>7.2.2. Objects and Groups<a class="headerlink" href="#objects-and-groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.2.2. </span>Objects and Groups<a class="headerlink" href="#objects-and-groups" title="Permalink to this headline">¶</a></h2>
 <p>Since Larch is built upon Python, an object-oriented programming language,
 all named quantities or <strong>variables</strong> in Larch are python objects.  Because
 of this, most Larch variables come with built-in functionality derived from
@@ -254,7 +257,7 @@ define their own new objects, objects created in Python this can be used by
 Larch, so that extensions and plugins for Larch can define new classes of
 object types.</p>
 <div class="section" id="objects">
-<h3>7.2.2.1. Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.2.1. </span>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
 <p>All Larch variables are Python objects, and so have a well-defined <strong>type</strong>
 and a set of <strong>attributes</strong> and <strong>methods</strong> that go with it.   To see the
 Python type of any variable, use the builtin <a class="reference internal" href="builtins.html#type" title="type"><code class="xref py py-func docutils literal notranslate"><span class="pre">type()</span></code></a> function:</p>
@@ -317,7 +320,7 @@ builtin <a class="reference internal" href="builtins.html#dir" title="dir"><code
 interesting data types, or you can look into Python documentation.</p>
 </div>
 <div class="section" id="groups">
-<h3>7.2.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.2.2. </span>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
 <p>While all values in Larch are Python objects, Larch organizes data into
 Groups, which are a key concept to Larch.  A Group is simply a named
 container for variables of any kind, including other Groups.  As Larch
@@ -372,7 +375,7 @@ contents:</p>
 </pre></div>
 </div>
 <p>(The ‘0x1b8cbfb0’ is the default name, discussed in more detail below in
-<a class="reference internal" href="#tutor-objectids-sec"><span class="std std-ref">7.2.4</span></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><code class="xref py py-func docutils literal notranslate"><span class="pre">group()</span></code></a> function can take arguments
+<a class="reference internal" href="#tutor-objectids-sec"><span class="std std-ref">Object identities, copying, and equality vs. identity</span></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><code class="xref py py-func docutils literal notranslate"><span class="pre">group()</span></code></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
@@ -388,7 +391,7 @@ something like:</p>
 </div>
 </div>
 <div class="section" id="builtin-larch-groups">
-<h3>7.2.2.3. Builtin Larch Groups<a class="headerlink" href="#builtin-larch-groups" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.2.3. </span>Builtin Larch Groups<a class="headerlink" href="#builtin-larch-groups" title="Permalink to this headline">¶</a></h3>
 <p>Larch starts up with several groups, organizing builtin functionality into
 different groups.  The top-level ‘_main’ group begins with 3 principle
 subgroups, ‘_builtin’, ‘_sys’, and ‘_math’ for basic functionality.  For
@@ -438,7 +441,7 @@ built-in functions.  The functions in ‘_math’ are mostly inherited from
 Numpy, and contain basic array handling and math.</p>
 </div>
 <div class="section" id="how-larch-finds-variable-names">
-<h3>7.2.2.4. How Larch finds variable names<a class="headerlink" href="#how-larch-finds-variable-names" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.2.4. </span>How Larch finds variable names<a class="headerlink" href="#how-larch-finds-variable-names" title="Permalink to this headline">¶</a></h3>
 <p>With several builtin groups, and even more groups created to store your own
 data to be processed, Larch ends up with a complex heirarchy of data.  This
 gives a good way of organizing data, but it also leads to a question of how
@@ -468,14 +471,14 @@ sets as groups, and want to access the contents of the different groups.</p>
 </div>
 </div>
 <div class="section" id="more-complex-data-structures-lists-arrays-dictionaries">
-<h2>7.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries<a class="headerlink" href="#more-complex-data-structures-lists-arrays-dictionaries" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">8.2.3. </span>More Complex Data Structures:  Lists, Arrays, Dictionaries<a class="headerlink" href="#more-complex-data-structures-lists-arrays-dictionaries" title="Permalink to this headline">¶</a></h2>
 <p>Larch has many more data types built on top of the primitive types above.
 These are generally useful for storing collections of data, and can be
 built up to construct very complex structures.  These are all described in
 some detail here.  But as these are all closely related to Python objects,
 further details can be found in the standard Python documentation.</p>
 <div class="section" id="lists">
-<h3>7.2.3.1. Lists<a class="headerlink" href="#lists" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.3.1. </span>Lists<a class="headerlink" href="#lists" title="Permalink to this headline">¶</a></h3>
 <p>A list is an ordered sequence of other data types.  They are
 <strong>heterogeneous</strong> – they can be made up of data with different types.  A
 list is constructed using brackets, with commas to separate the
@@ -606,7 +609,7 @@ set its entire value.</p>
 <p>As always, consult the Python documentation for more details.</p>
 </div>
 <div class="section" id="tuples">
-<h3>7.2.3.2. Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.3.2. </span>Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h3>
 <p>Like lists, tuples are sequences of heterogenous objects.  The principle
 difference is that tuples are <strong>immutable</strong> – they cannot be changed once
 they are created.  Instead, tuples are a simple ordered container of data.
@@ -648,7 +651,7 @@ the it directly to a set of (the correct number of) variables:</p>
 </div>
 </div>
 <div class="section" id="a-second-look-at-strings">
-<h3>7.2.3.3. A second look at Strings<a class="headerlink" href="#a-second-look-at-strings" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.3.3. </span>A second look at Strings<a class="headerlink" href="#a-second-look-at-strings" title="Permalink to this headline">¶</a></h3>
 <p>Though discussed earlier in the basic data types, strings are closely
 related to lists as well – they are best thought of as a sequence of
 characters.  Like tuples, strings are actually immutable, in that you
@@ -686,7 +689,7 @@ functionality, and consulting standard Python documentation is recommended
 for more information.</p>
 </div>
 <div class="section" id="arrays">
-<h3>7.2.3.4. Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.3.4. </span>Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
 <p>Whereas lists are sequences of heterogeneous objects that can grow and
 shrink, and included deeply nested structures, they are not well suited for
 holding numerical data.  Arrays are sequences of the same primitive data
@@ -701,7 +704,7 @@ of several other methods to create arrays.</p>
 is devoted to them.</p>
 </div>
 <div class="section" id="dictionaries">
-<h3>7.2.3.5. Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">8.2.3.5. </span>Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
 <p>Our final basic data-structure is the dictionary, which is a container that
 maps values to keys.  This is sometimes called a hash or associative array.
 Like a list, a dictionary holds many heterogeneous values, and can be
@@ -756,7 +759,7 @@ and are in fact used throughout python.</p>
 </div>
 </div>
 <div class="section" id="object-identities-copying-and-equality-vs-identity">
-<span id="tutor-objectids-sec"></span><h2>7.2.4. Object identities, copying, and equality vs. identity<a class="headerlink" href="#object-identities-copying-and-equality-vs-identity" title="Permalink to this headline">¶</a></h2>
+<span id="tutor-objectids-sec"></span><h2><span class="section-number">8.2.4. </span>Object identities, copying, and equality vs. identity<a class="headerlink" href="#object-identities-copying-and-equality-vs-identity" title="Permalink to this headline">¶</a></h2>
 <p>OK, this may be a bit advanced for a section in a <em>tutorial</em>, but there are
 a few important topics we need to make about objects, groups, and the idea
 of <em>mutability</em> discussed above.  Though it may at first pass seem
@@ -932,10 +935,10 @@ another variable that points to the same value.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="arrays.html" title="7.3. Basic Array Manipulation"
+          <a href="arrays.html" title="8.3. Basic Array Manipulation"
              >next</a> |</li>
         <li class="right" >
-          <a href="start.html" title="7.1. Getting Started"
+          <a href="start.html" title="8.1. Getting Started"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -944,12 +947,12 @@ another variable that points to the same value.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" >7. Larch Language Tutorial</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">8. </span>Larch Macro Language Tutorial</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
 </html>
