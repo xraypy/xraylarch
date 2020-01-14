@@ -20,7 +20,6 @@ dylibs/*/*.so
 dylibs/*/*.dylib
 dylibs/*/Mk.install
 dylibs/*/Mk.config
-examples/*/*.out
 sandbox/
 tests/.cover
 play/
