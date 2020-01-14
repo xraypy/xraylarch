@@ -241,7 +241,6 @@ and a pair with high correlation::
 
 with the resulting Chi-square maps looking like this:
 
-.. subfigstart::
 
 .. _fig-chi2map1a:
 
@@ -256,10 +255,6 @@ with the resulting Chi-square maps looking like this:
     :target: ../_images/fit_example_conf3b.png
     :width: 100%
     :align: center
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-chi2map1
 
     Chi-square maps for two pairs of variables for the fit to Gaussian
     data.  With the best-fit chi-square value of 0.5134, the contour map
@@ -285,9 +280,6 @@ exponential, we calculate the chi-square maps as::
 with the resulting contour plots:
 
 
-
-.. subfigstart::
-
 .. _fig-chi2map2a:
 
 .. figure::  ../_images/fit_example_conf4a.png
@@ -301,10 +293,6 @@ with the resulting contour plots:
     :target: ../_images/fit_example_conf4b.png
     :width: 100%
     :align: center
-
-.. subfigend::
-    :width: 0.45
-    :label: fig-chi2map2
 
     Chi-square maps for two pairs of variables for the fit to Double
     Exponential.  With the best-fit chi-square value of 0.1913, the contour

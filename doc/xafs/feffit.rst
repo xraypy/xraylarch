@@ -17,7 +17,7 @@ The Feffit Strategy for Modeling EXAFS Data
 
 The basic approach to modeling EXAFS data in Larch (see
 :cite:`feffit`) is to create a model EXAFS :math:`\chi(k)` as a
-sum of scattering paths that will be compared to experimentally derived
+sum of scattering path<s that will be compared to experimentally derived
 :math:`\chi(k)`. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
 As discussed in :ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed
@@ -481,7 +481,8 @@ and generates the plots shown below
     :target: ../_images/feffit_example1.png
     :width: 100%
 
-    Data and Fit in :math:`k` space
+    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+    metal.  Data and Fit in :math:`k` space
 
 .. _fig-feffit1b:
 
@@ -489,14 +490,13 @@ and generates the plots shown below
     :target: ../_images/feffit_example2.png
     :width: 100%
 
-    Data and Fit in :math:`R` space
-
 .. subfigend::
-    :width: 0.45
+    :width: .45
     :label: fig-feffit1
 
     Results for Feffit for a simple 1-shell fit to a spectrum from Cu
-    metal.
+    metal.    Data and Fit in :math:`R` space
+
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -584,7 +584,7 @@ With plots of data and fits as shown below.
     :width: 100%
 
 .. subfigend::
-    :width: 0.45
+    :width: .45
     :label: fig-feffit2
 
     Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
@@ -616,7 +616,7 @@ to generate the following plots of the contributions of the different paths:
     :width: 100%
 
 .. subfigend::
-    :width: 0.45
+    :width: .45
     :label: fig-feffit3
 
     Path contributions to full mode for the 3-shell fit to Cu spectrum.
@@ -738,7 +738,7 @@ The output plots for the fits to the three datasets are given below.
     Fit to Cu :math:`\chi(R)` at 150 K
 
 .. subfigend::
-    :width: 0.32
+    :width: .32
     :label: fig-feffit3temps
 
     Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
@@ -795,7 +795,7 @@ with plots:
     :target: ../_images/feffit_feo_k.png
     :width: 100%
 
-    Fit to FeO spectra, :math:`k` space
+    Fits to 2-path fit to FeO EXAFS, :math:`k` space
 
 .. _fig-feffit-feo-b:
 
@@ -803,13 +803,11 @@ with plots:
     :target: ../_images/feffit_feo_r.png
     :width: 100%
 
-    Fit to FeO spectra, :math:`R` space
+    Fits to 2-path fit to FeO EXAFS, :math:`R` space
 
 .. subfigend::
-    :width: 0.45
+    :width: .45
     :label: fig-feffit-feo
-
-    Fits to 2-path fit to FeO EXAFS.
 
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1010,7 +1008,6 @@ factor here is :math:`\sigma^2` -- if we fix :math:`\sigma^2` to 0.006 (by
 changing ``vary=True`` to ``vary=False``) and re-run the fits, :math:`S_0^2`
 has a slight negative dependence on :math:`Z`.
 
-.. subfigstart::
 
 .. _fig_znse_fit-zn:
 
@@ -1019,6 +1016,9 @@ has a slight negative dependence on :math:`Z`.
     :width: 100%
 
     Fit to ZnSe with Zn back-scatterer
+
+
+.. subfigstart::
 
 .. _fig_znse_fit-ge:
 
@@ -1034,7 +1034,14 @@ has a slight negative dependence on :math:`Z`.
     :target: ../_images/Feffit_ZnSe_Se.png
     :width: 100%
 
+.. subfigend::
+    :width: .45
+    :label: fig-feffit-znse
+
     Fit to ZnSe with Se back-scatterer
+
+
+.. subfigstart::
 
 .. _fig_znse_fit-br:
 
@@ -1050,14 +1057,11 @@ has a slight negative dependence on :math:`Z`.
     :target: ../_images/Feffit_ZnSe_Rb.png
     :width: 100%
 
-    Fit to ZnSe with Rb back-scatterer
-
-
 .. subfigend::
-    :width: 0.30
-    :label: fig_znse_fitscomp
+    :width: .48
+    :label: fig-feffit-znse2
 
-    Fits to ZnSe XAFS data using different back-scattering atoms.
+    Fit to ZnSe with Rb back-scatterer
 
 
 .. index:: Phase-corrected Fourier transforms

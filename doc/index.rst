@@ -6,6 +6,7 @@
 .. _h5py: https://code.google.com/p/h5py/
 .. _Demeter: https://bruceravel.github.io/demeter/
 .. _Dioptas: https://github.com/Dioptas/Dioptas
+.. _Feff Project: http://feff.phys.washington.edu/
 
 =====================================
 Larch
@@ -41,26 +42,15 @@ Earth Sciences (EAR-1128799), and Department of Energy GeoSciences
 (DE-FG02-94ER14466).  In addition, funding specifically for Larch was granted by
 the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
 
-The best citable reference for Larch is:
-
-.. raw:: html
-
-  <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
-  <p>M. Newville.
-  <a href="https://doi.org/10.1088/1742-6596/430/1/012007"> Larch: An Analysis Package For XAFS And Related Spectroscopies.
-  <em>Journal of Physics: Conference Series</em>, <b>430</b>:012007, 2013. </a>
-  <span class="__dimensions_badge_embed__"  data-doi="10.1088/1742-6596/430/1/012007"
-        data-style="large_rectangle"> </span>
-
-
 .. _larch_app_table:
 
 **Table of Larch Applications**
 
-    These applications installed with Larch, in addition to a basic Python library. Here,
-    GUI = Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in progress.
-    The `Dioptas`_ program is written and maintained by Clemens Prescher, and included with Larch.
-
+    These applications installed with Larch, in addition to a basic Python library. Here, GUI =
+    Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in
+    progress.  The `Dioptas`_ program is written and maintained by Clemens Prescher, and included
+    with Larch.  The Feff6L and Feff8L codes are written by the `Feff Project`_, and included with
+    Larch by permission.make
 
   +---------------------------------------+------------+---------------------------------------------------------+
   | Application Name                      | GUI/CLI    | Description                                             |
@@ -88,3 +78,28 @@ The best citable reference for Larch is:
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`2D XRD Viewer <xrd2d_app>`      | GUI `beta` | Display  XRD images                                     |
   +---------------------------------------+------------+---------------------------------------------------------+
+
+.. _contents:
+
+Table of Contents
+============================
+
+.. toctree::
+   :maxdepth: 3
+   :numbered:
+
+   installation.rst
+   getting_started.rst
+   guis.rst
+   xasviewer/index.rst
+   gsemapviewer/index.rst
+   qtrixs/index.rst
+   tutorial/index.rst
+   data/index.rst
+   plotting/index.rst
+   fitting/index.rst
+   xafs/index.rst
+   xray/index.rst
+   xrf/index.rst
+   devel/index.rst
+   biblio.rst

@@ -114,8 +114,6 @@ groups can be read in, compared, and merged.  These datasets can then be
 exported to Athena Project files, or to CSV files.
 
 
-.. subfigstart::
-
 .. _fig_xasviewer_2a:
 
 .. figure:: ../_images/DataImporter.png
@@ -134,10 +132,6 @@ exported to Athena Project files, or to CSV files.
 
     Athena Project importer.
 
-.. subfigend::
-    :width: 0.48
-    :alt: data importers
-    :label: fig_xasviewer_2
 
 When reading in raw data, the data importer shown in
 :numref:`fig_xasviewer_2a` will help you build XAFS :math:`\mu(E)` from the
@@ -167,15 +161,11 @@ data corrections.  These include speciality dialogs for:
 Screenshots of some of these dialogs are shown in the images below.
 
 
-
-
-.. subfigstart::
-
 .. _fig_xasviewer_dialog_cal:
 
 .. figure:: ../_images/XASViewer_calibrate_dialog.png
     :target: ../_images/XASViewer_calibrate_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
 
     Energy calibration dialog.
@@ -184,25 +174,16 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: ../_images/XASViewer_deglitch_dialog.png
     :target: ../_images/XASViewer_deglitch_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
 
     Deglitching dialog
-
-
-.. subfigend::
-    :width: 0.48
-    :alt: xasviewer dialogs 1
-    :label: fig_xasviewer_dialogs1
-
-
-.. subfigstart::
 
 .. _fig_xasviewer_dialog_smooth:
 
 .. figure:: ../_images/XASViewer_smooth_dialog.png
     :target: ../_images/XASViewer_smooth_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
 
     Energy smoothing dialog.
@@ -211,25 +192,14 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: ../_images/XASViewer_deconvolve_dialog.png
     :target: ../_images/XASViewer_deconvolve_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
-
-    Deglitching dialog
-
-
-.. subfigend::
-    :width: 0.48
-    :alt: xasviewer dialogs 2
-    :label: fig_xasviewer_dialogs2
-
-
-.. subfigstart::
 
 .. _fig_xasviewer_dialog_rebin:
 
 .. figure:: ../_images/XASViewer_rebin_dialog.png
     :target: ../_images/XASViewer_rebin_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
 
     Energy rebinning dialog.
@@ -238,17 +208,10 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: ../_images/XASViewer_overabsorption_dialog.png
     :target: ../_images/XASViewer_overabsorption_dialog.png
-    :width: 75%
+    :width: 45%
     :align: center
 
     Over-absortion correction dialog
-
-
-.. subfigend::
-    :width: 0.48
-    :alt: xasviewer dialogs 3
-    :label: fig_xasviewer_dialogs3
-
 
 .. _xasviewer_preedge:
 
@@ -311,8 +274,6 @@ above, clicking on the plot will select an energy that can then be
 transferred to any of the bounds energy using the corresponding pin icon
 |pin| on the form.
 
-.. subfigstart::
-
 .. _fig_xasviewer_3a:
 
 .. figure:: ../_images/XASViewer_prepeaks_baseline_form.png
@@ -336,11 +297,6 @@ transferred to any of the bounds energy using the corresponding pin icon
     range ignored in the baseline fit. The pink line shows the centroid of
     the pre-edge peaks after removal of the baseline.
 
-
-.. subfigend::
-    :width: 0.48
-    :alt: pre-edge peak baseline
-    :label: fig_xasviewer_3
 
 We will allow the baseline to be refined when fitting the peaks, so it does
 not need to be modeled perfectly, but it is helpful to get a decent fit to
@@ -381,7 +337,6 @@ for example.  If using multiple peaks, it is often helpful to give
 realistic energy bounds for the `center` of each peak, so that the peaks
 don't try to exchange.
 
-.. subfigstart::
 
 .. _fig_xasviewer_4a:
 
@@ -404,10 +359,6 @@ don't try to exchange.
     Plot of initial Gaussian guessed from the "two click method" for
     modeling pre-edge peaks.
 
-.. subfigend::
-    :width: 0.49
-    :alt: pre-edge peak model1
-    :label: fig_xasviewer_4
 
 Once the model function is defined and initial parameters values set,
 clicking the Fit Model button will perform the fit. This will bring up
@@ -434,10 +385,6 @@ variable parameter to show it correlations with other variables.  Note that
 the baseline parameters *are* refined (by default) in the fit to the
 pre-edge peaks.
 
-.. _fig_xasviewer_5:
-
-.. subfigstart::
-
 .. _fig_xasviewer_5a:
 
 .. figure:: ../_images/XASViewer_prepeaks_fitresult1_form.png
@@ -455,11 +402,6 @@ pre-edge peaks.
     :align: center
 
     Pre-edge Peak data and best-fit with 1 Gaussian and baseline.
-
-.. subfigend::
-    :width: 0.48
-    :alt: pre-edge peak results1
-    :label: fig_xasviewer_5
 
 Though the plot of the fit in :numref:`fig_xasviewer_5b` does not look too
 bad, we can see the fit is not perfect. Checking the "Plot with residual?"
@@ -487,16 +429,13 @@ drop-down menu of "Add component:", select initial values for that second
 Gaussian before, and re-run the fit, we'll see the Fit Results form and
 plot as shown in :numref:`fig_xasviewer_7a` and :numref:`fig_xasviewer_7b`.
 
-
-.. _fig_xasviewer_7:
-
 .. subfigstart::
 
 .. _fig_xasviewer_7a:
 
 .. figure:: ../_images/XASViewer_prepeaks_fitresult2_form.png
     :target: ../_images/XASViewer_prepeaks_fitresult2_form.png
-    :width: 75%
+    :width: 95%
     :align: left
 
     Fit result frame for Pre-edge peak fit for a fit with 2 Gaussians.
@@ -505,15 +444,16 @@ plot as shown in :numref:`fig_xasviewer_7a` and :numref:`fig_xasviewer_7b`.
 
 .. figure:: ../_images/XASViewer_prepeaks_fitresult2_plot.png
     :target: ../_images/XASViewer_prepeaks_fitresult2_plot.png
-    :width: 60%
+    :width: 95%
     :align: center
 
     Pre-edge Peak data and best-fit with 2 Gaussians and baseline.
 
 .. subfigend::
-    :width: 0.48
-    :alt: pre-edge peak results2
-    :label: fig_xasviewer_7
+   :width: 0.48
+   :alt: pre-edge peak results2
+   :label: fig_xasviewer_7
+
 
 As mentioned above, fit results can be saved in two different ways, using
 the "PreEdge Peaks" menu.  First, the model to set up the fit can be saved
@@ -543,7 +483,6 @@ systematic structure.  In addition, all the fit statistics are improved
 despite now using 14 variables: reduced :math:`\chi^2` becomes from 5.1e-7,
 AIC is -1957 and BIC is -1917.
 
-.. _fig_xasviewer_8:
 
 .. subfigstart::
 
@@ -551,7 +490,7 @@ AIC is -1957 and BIC is -1917.
 
 .. figure:: ../_images/XASViewer_prepeaks_fitresult3_plot.png
     :target: ../_images/XASViewer_prepeaks_fitresult3_plot.png
-    :width: 50%
+    :width: 95%
     :align: left
 
     Fit result frame for Pre-edge peak fit
@@ -562,16 +501,16 @@ AIC is -1957 and BIC is -1917.
 
 .. figure:: ../_images/XASViewer_prepeaks_fitresult4_plot.png
     :target: ../_images/XASViewer_prepeaks_fitresult4_plot.png
-    :width: 50%
+    :width: 95%
     :align: center
 
     Pre-edge Peak data and best-fit for a fit with 3 Voigt functions plus
     the baseline.
 
 .. subfigend::
-    :width: 0.48
-    :alt: pre-edge peak results3
-    :label: fig_xasviewer_8
+   :width: 0.48
+   :alt: pre-edge peak results3
+   :label: fig_xasviewer_8
 
 
 .. _xasviewer_lincombo:

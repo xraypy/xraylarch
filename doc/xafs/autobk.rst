@@ -307,8 +307,6 @@ using all the default inputs would be:
 with the resulting outputs looking like this:
 
 
-.. subfigstart::
-
 .. _fig_xafs2a:
 
 .. figure::  ../_images/xafs_autobk1a.png
@@ -316,6 +314,7 @@ with the resulting outputs looking like this:
     :width: 100%
     :align: center
 
+    Example of simple usage of :func:`autobk` for Cu metal.
     Cu metal: :math:`\mu(E)` and background :math:`\mu_0(E)`
 
 .. _fig_xafs2b:
@@ -325,14 +324,8 @@ with the resulting outputs looking like this:
     :width: 100%
     :align: center
 
-    resulting :math:`k\chi(k)`
-
-.. subfigend::
-    :width: 0.45
-    :alt: a fig
-    :label: fig_xafs2
-
     Example of simple usage of :func:`autobk` for Cu metal.
+    resulting :math:`k\chi(k)`
 
 
 Thus demonstrating that we can process data on Cu metal.
@@ -357,6 +350,8 @@ The resulting outputs looks OK:
     :target: ../_images/xafs_autobk2a.png
     :width: 100%
 
+    Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+
 .. _fig-xafs3b:
 
 .. figure::  ../_images/xafs_autobk2b.png
@@ -367,7 +362,10 @@ The resulting outputs looks OK:
     :width: 0.45
     :label: fig-xafs3
 
+
     Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+
+
 
 A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
 better, which brings us to the next section.

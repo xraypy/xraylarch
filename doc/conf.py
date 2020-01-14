@@ -27,9 +27,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
-              'sphinxcontrib.argdoc',
-              'numpydoc',
-              'subfig']
+              'sphinxcontrib.argdoc', 'subfig']
 
 # extensions.extend(['fix_equation_ref', 'subfig', 'figtable', 'numsec',
 #                    'singlehtml_toc', 'singletext'])
@@ -46,10 +44,6 @@ extlinks = {
     'lmfitx' : ('https://lmfit.github.io/lmfit-py/%s', ' '),
     }
 
-
-# Turns on numbered figures for HTML output
-# number_figures = True
-
 # List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,7 +58,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'larch'
+project = 'xraylarch'
 author = 'Matthew Newville'
 copyright = 'Matthew Newville, The University of Chicago, 2019'
 
@@ -131,12 +125,8 @@ pygments_style = 'sphinx'
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['sphinx/theme']
-
-
 # html_theme = 'nature'
-
 html_theme = 'larchdoc'
-
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

@@ -24,7 +24,6 @@ Downloading and Installation
 .. _Demeter: https://bruceravel.github.io/demeter/
 .. _Larch Github Pages: https://github.com/xraypy/xraylarch
 
-
 The latest release version of Larch is |release|.
 
 Larch is in active and continuing development. The goal is to release a new
@@ -286,10 +285,13 @@ If using Anaconda Python, all of these will be installed with
 To be clear, most of Larch will work fine without these modules installed,
 but the corresponding functionality will not be available.
 
-Getting Help and Support
+
+Getting Help
 ============================
 
-For questions and support about Larch, please use the `Ifeffit Mailing List`_.
+For questions about using or installing Larch, please use the `Ifeffit Mailing List`_.
+
+For reporting bugs or working with the development process, please use the `Larch Github Pages`_.
 
 
 .. _install-exa:

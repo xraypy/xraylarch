@@ -42,7 +42,7 @@ Analysis, replacing the older Ifeffit library and its many limitations.
 Even using Larch instead of Ifeffit, Athena still has some limitations for
 XAFS Analysis, and development and support for it has declined in recent
 years.  You may be interested in the XAS Viewer program for XAFS processing
-and visualization.  At this writing, :ref:`XAS Viewer <xasviewer-chapter>`
+and visualization.  At this writing, :ref:`XAS Viewer <xasviewer_app>`
 is nearly a complete replacement for Athena, with several improvements in
 graphics and handling of large data sets.  XAS Viewer is especially aimed
 at XANES Analysis, and so includes robust tools for peak-fitting, and
@@ -50,12 +50,12 @@ machine-learning methods such as Principal Component Analysis, Partial
 Least Squares and LASSO regression.
 
 If you are a user of the GSECARS microprobe beamline or have XRF Mapping
-data from a compatible beamline (XFM at NSLS-II, maybe others), you'll
-want to start using the :ref:`GSE Mapviewer <gsemapviewer-chapter>` program
-for reading, displaying, and working with X-ray fluorescence maps.  Much of
-the documentation here discusses commands you can type in the "Larch
-Buffer", available from the Mapviewer program for scripting and more
-detailed access to the data in the XRF map HDF5 files.
+data from a compatible beamline (XFM at NSLS-II, maybe others), you'll want
+to start using the :ref:`GSE Mapviewer <mapviewer_app>` program for
+reading, displaying, and working with X-ray fluorescence maps.  Much of the
+documentation here discusses commands you can type in the "Larch Buffer",
+available from the Mapviewer program for scripting and more detailed access
+to the data in the XRF map HDF5 files.
 
 If you are a general-purpose user or ready for more control over data
 analysis for many types of data, the Larch GUI can help you browse through
