@@ -160,12 +160,13 @@ class FitSpectraFrame(wx.Frame):
         for attr in dir(xrfgroup):
             if attr.startswith('mca'):
                 obj = getattr(xrfgroup, attr)
-                label = getattr(obj, 'label', '')
+                if not hasattr(obj, 'label') and hasattr(obj, 'filename'):
+                    obj.label = obj.filename
+                label = getattr(obj, 'label', '?')
                 if hasattr(obj, 'counts') and label is not None and len(label) > 1:
                     mca_groups.append(label)
                     if attr == self.mcagroup:
                         mca_default = len(mca_groups)-1
-
 
         self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(400, -1),
                                          default=mca_default)
@@ -1254,7 +1255,7 @@ class FitSpectraFrame(wx.Frame):
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
         xrfresult.label = "fit %d" % (1+len(dgroup.fit_history))
 
-        append_hist = "{group:s}.fit_history.append(_xrfresult)"
+        append_hist = "{group:s}.fit_history.insert(0, _xrfresult)"
         self._larch.eval(append_hist.format(group=self.mcagroup))
 
         self.plot_model(init=True, with_comps=True)

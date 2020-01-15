@@ -507,6 +507,8 @@ class XRFDisplayFrame(wx.Frame):
                                                 name=name, filename=filename))
             if label is None:
                 label = filename
+        if label is None and mca.filename is not None:
+            label = mca.filename
         if label is None:
             label = name
         self.mca.label = label
