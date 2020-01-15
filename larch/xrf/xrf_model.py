@@ -512,15 +512,14 @@ class XRF_Model:
             self.iter_callback(iter=self.fit_iter, pars=pars)
         return ((data - model) * self.fit_weight)[self.imin:self.imax]
 
-
-    def set_fit_weight(self, energy, counts, emin, emax, ewid=25.0):
+    def set_fit_weight(self, energy, counts, emin, emax, ewid=0.050):
         """
         set weighting factor to smoothed square-root of data
         """
         ewin = ftwindow(energy, xmin=emin, xmax=emax, dx=ewid, window='hanning')
         self.fit_window = ewin
-        stderr = np.sqrt(counts + 1)
-        self.fit_weight = ewin / (0.1 + savitzky_golay(stderr, 7, 2))
+        fit_wt = 0.5 + savitzky_golay(np.sqrt(counts+1.0), 25, 1)
+        self.fit_weight = fit_wt.max()/fit_wt
 
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
         work_energy = 1.0*energy
