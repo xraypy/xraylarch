@@ -754,14 +754,14 @@ class FitSpectraFrame(wx.Frame):
                                        action=self.onCompSelectFit)
 
         self.compscale_lock = 0.0
-        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1),
-                                         action=self.onCompSetElemAbundance)
-        wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=6, min_val=0,
+        wids['comp_elemchoice'] = Choice(panel, choices=[''], size=(100, -1))
+        # action=self.onCompSetElemAbundance)
+        wids['comp_elemscale'] = FloatSpin(panel, value=1.0, digits=5, min_val=0,
                                            increment=0.01,
                                            action=self.onCompSetElemAbundance)
         wids['comp_units'] = Choice(panel, choices=CompositionUnits, size=(100, -1))
-        wids['comp_scalevalue'] = FloatCtrl(panel, value=0, size=(200, -1),
-                                            action=self.onCompSetScale)
+        wids['comp_scale'] = FloatCtrl(panel, value=0, size=(200, -1), precision=5,
+                                       minval=0, action=self.onCompSetScale)
 
         wids['comp_save'] = Button(panel, 'Save This Concentration Data',
                                    size=(200, -1), action=self.onCompSave)
@@ -782,7 +782,7 @@ class FitSpectraFrame(wx.Frame):
 
         irow += 1
         sizer.Add(SimpleText(panel, 'Scaling Factor:'), (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['comp_scalevalue'],              (irow, 1), (1, 3), LCEN)
+        sizer.Add(wids['comp_scale'],              (irow, 1), (1, 3), LCEN)
 
         irow += 1
         sizer.Add(wids['composition'],   (irow, 0), (3, 6), LCEN)
@@ -809,11 +809,11 @@ class FitSpectraFrame(wx.Frame):
                 conc_vals[elem] = [par.value, par.stderr]
 
         try:
-            scale = self.owids['comp_scalevalue'].GetValue()
+            scale = self.owids['comp_scale'].GetValue()
         except:
             return
 
-        owids['comp_elemscale'].SetValue(conc_vals[cur_elem][0]/scale)
+        owids['comp_elemscale'].SetValue(conc_vals[cur_elem][0]*scale)
         owids['composition'].DeleteAllItems()
         result.concentration_results = conc_vals
         result.concentration_scale = scale
@@ -822,8 +822,8 @@ class FitSpectraFrame(wx.Frame):
             zat = "%d" % atomic_number(elem)
             val, serr = dat
             rval = "%15.4f" % val
-            sval = "%15.4f" % (val/scale)
-            uval = "%15.4f" % (serr/scale)
+            sval = "%15.4f" % (val*scale)
+            uval = "%15.4f" % (serr*scale)
             try:
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
@@ -831,7 +831,7 @@ class FitSpectraFrame(wx.Frame):
             owids['composition'].AppendItem((zat, elem, rval, sval, uval))
 
     def onCompSetElemAbundance(self, event=None, value=None):
-        if len(self.fit_history) < 1 or (time.time() - self.compscale_lock) < 0.25:
+        if len(self.fit_history) < 1  or (time.time() - self.compscale_lock) < 0.25:
             return
         self.compscale_lock = time.time()
         owids = self.owids
@@ -845,17 +845,18 @@ class FitSpectraFrame(wx.Frame):
                 conc_vals[elem] = [par.value, par.stderr]
 
         result.concentration_results = conc_vals
+        elem_value = owids['comp_elemscale'].GetValue()
 
-        scale = conc_vals[cur_elem][0]/owids['comp_elemscale'].GetValue()
+        scale = elem_value/conc_vals[cur_elem][0]
         result.concentration_scale = scale
-        owids['comp_scalevalue'].SetValue(scale)
+        owids['comp_scale'].SetValue(scale)
         owids['composition'].DeleteAllItems()
         for elem, dat in conc_vals.items():
             zat = "%d" % atomic_number(elem)
             val, serr = dat
             rval = "%15.4f" % val
-            sval = "%15.4f" % (val/scale)
-            uval = "%15.4f" % (serr/scale)
+            sval = "%15.4f" % (val*scale)
+            uval = "%15.4f" % (serr*scale)
             try:
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
@@ -893,7 +894,6 @@ class FitSpectraFrame(wx.Frame):
             buff.append('')
             with open(sfile, 'w') as fh:
                 fh.write('\n'.join(buff))
-
 
     def onCompSelectFit(self, event=None):
         result = self.get_fitresult(nfit=self.owids['comp_fitlabel'].GetSelection())
