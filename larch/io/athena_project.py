@@ -261,6 +261,7 @@ def clean_bkg_params(grp):
     grp.spl2 = getattr(grp, 'spl2', 30)
     grp.kw   = getattr(grp, 'kw', 1)
     grp.dk   = getattr(grp, 'dk', 3)
+    grp.flatten  = getattr(grp, 'flatten', 0)    
     if getattr(grp, 'kwindow', None) is None:
         grp.kwindow = getattr(grp, 'win', 'hanning')
 
