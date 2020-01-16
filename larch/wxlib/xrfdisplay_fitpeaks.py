@@ -720,8 +720,8 @@ class FitSpectraFrame(wx.Frame):
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LCEN)
-
         pack(panel, sizer)
+        panel.SetMinSize((675, 725))
         panel.SetupScrolling()
         return panel
 
@@ -749,7 +749,7 @@ class FitSpectraFrame(wx.Frame):
             this.Sortable = True
             this.Alignment = this.Renderer.Alignment = align
 
-        cview.SetMinSize((675, 400))
+        cview.SetMinSize((675, 500))
         wids['comp_fitlabel'] = Choice(panel, choices=[''], size=(175, -1),
                                        action=self.onCompSelectFit)
 
@@ -791,6 +791,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['comp_save'],   (irow, 0), (1, 3), LCEN)
 
         pack(panel, sizer)
+        panel.SetMinSize((675, 750))
         panel.SetupScrolling()
         return panel
 
