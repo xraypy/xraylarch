@@ -22,6 +22,8 @@ xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
                                    'vary_center', 'vary_step', 'vary_tail',
                                    'vary_sigmax', 'vary_beta', 'vary_gamma'))
 
+predict_methods = {'lstsq': lstsq, 'nnls': nnls}
+
 ####
 # Note on units:  energies are in keV, lengths in cm
 #
@@ -519,7 +521,7 @@ class XRF_Model:
         ewin = ftwindow(energy, xmin=emin, xmax=emax, dx=ewid, window='hanning')
         self.fit_window = ewin
         fit_wt = 0.5 + savitzky_golay(np.sqrt(counts+1.0), 25, 1)
-        self.fit_weight = fit_wt.max()/fit_wt
+        self.fit_weight = 1.0/fit_wt
 
     def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
         work_energy = 1.0*energy
@@ -579,7 +581,7 @@ class XRF_Model:
             tmat.append(arr)
         self.transfer_matrix = np.array(tmat).transpose()
 
-    def apply_model(self, spectrum):
+    def apply_model(self, spectrum, scale=1.0, count_time=None, method='lstsq'):
         """
         apply fitted model to another spectrum,
         returning a dict of predicted eigenvalues
@@ -588,23 +590,33 @@ class XRF_Model:
         if self.transfer_matrix is None:
             raise ValueError("need to fit a spectrum first")
 
-        wts, rnorm = nnls(self.transfer_matrix, spectrum*self.fit_window)
+        fit_method = predict_methods.get(method, lstsq)
+        results = fit_method(self.transfer_matrix, spectrum*self.fit_window)
+
+        # scale by scaling factor and relative count time
+        if count_time is None:
+            count_time = self.count_time
+        scale = scale * self.count_time / count_time
 
         weights = {}
         prediction = 0.0*spectrum[:]
         for i, name in enumerate(self.eigenvalues.keys()):
-            weights[name] = wts[i]
-            prediction += wts[i] * self.transfer_matrix[:, i]
+            weights[name] = results[0][i] * scale
+            prediction += results[0][i] * self.transfer_matrix[:, i]
 
         return xrf_prediction(weights, prediction)
 
-    def apply_to_map(self, mapdata):
+    def apply_to_map(self, mapdata, pixel_time=None, scale=1.0, method='lstsq'):
         """
         apply fitted model to  NY x NX array of spectra as from an XRF Map
         returning a dict of predicted maps for the supplied spectrum
         """
         if self.transfer_matrix is None:
             raise ValueError("need to fit a spectrum first")
+        # scale by scaling factor and relative count time
+        if pixel_time is None:
+            pixel_time = 1
+        scale = scale * self.count_time / pixel_time
 
         ny, nx, nchan = mapdata.shape
         nchanx, ncomps = self.transfer_matrix.shape
@@ -612,22 +624,17 @@ class XRF_Model:
         if nchan != nchanx or nchan != nchanw:
             raise ValueError("mapdata has wrong shape ", mapdata.shape)
 
+        fit_method = predict_methods.get(method, lstsq)
         pred = np.zeros((ny, nx, ncomps), dtype='float32')
-        print(ny, nx, ncomps)
-        t0 = time.time()
         for iy in range(ny):
-            print(iy)
             for ix in range(nx):
-                wts, rnorm = nnls(self.transfer_matrix,
-                                  mapdata[iy,ix,:]*self.fit_window)
+                results = fit_method(self.transfer_matrix,
+                                     mapdata[iy,ix,:]*self.fit_window)
                 for i in range(ncomps):
-                    pred[iy,ix,i] = wts[i]
+                    pred[iy,ix,i] = results[0][i] * scale
 
-        maps = {}
-        for i, name in enumerate(self.eigenvalues.keys()):
-            maps[name] = pred[:,:,i]
-        print("Done %.2f sec " % (time.time()-t0))
-        return maps
+        return {name: pred[:,:,i] for i, name in enumerate(self.eigenvalues.keys())}
+
 
     def compile_fitresults(self, label='fit result', script='# noscript'):
         """a simple compilation of fit settings results
