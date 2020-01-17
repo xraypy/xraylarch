@@ -415,6 +415,9 @@ class FitSpectraFrame(wx.Frame):
         wids['det_dist'] = FloatSpin(pdet, value=50, **opts)
         wids['det_area'] = FloatSpin(pdet, value=50, **opts)
 
+        for notyet in ('angle_in', 'angle_out', 'det_dist', 'det_area',
+                       'flux_in'):
+            wids[notyet].Disable()
 
         pdet.AddText(' Beam Energy, Fit Range :', colour='#880000', dcol=2)
         pdet.AddText('   X-ray Energy (keV): ', newrow=True)
@@ -447,18 +450,6 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['det_noise'])
         pdet.Add(wids['det_noise_vary'], dcol=2)
 
-        addLine(pdet)
-        pdet.AddText(' Geometry:', colour='#880000', dcol=1, newrow=True)
-        pdet.AddText(Geom_Text, dcol=3)
-        pdet.AddText('   Incident Angle (deg):', newrow=True)
-        pdet.Add(wids['angle_in'])
-        pdet.AddText('   Exit Angle (deg):', newrow=False)
-        pdet.Add(wids['angle_out'])
-        pdet.AddText('   Detector Distance (mm): ', newrow=True)
-        pdet.Add(wids['det_dist'])
-        pdet.AddText('   Detector Area (mm^2): ', newrow=False)
-        pdet.Add(wids['det_area'])
-
 
         addLine(pdet)
         pdet.AddText(' Escape && Pileup:', colour='#880000', dcol=2, newrow=True)
@@ -471,6 +462,19 @@ class FitSpectraFrame(wx.Frame):
         pdet.Add(wids['pileup_amp'])
         pdet.Add(wids['pileup_amp_vary'])
         pdet.Add(wids['pileup_use'], dcol=3)
+
+        addLine(pdet)
+        pdet.AddText(' Geometry:', colour='#880000', dcol=1, newrow=True)
+        pdet.AddText(Geom_Text, dcol=3)
+        pdet.AddText('   Incident Angle (deg):', newrow=True)
+        pdet.Add(wids['angle_in'])
+        pdet.AddText('   Exit Angle (deg):', newrow=False)
+        pdet.Add(wids['angle_out'])
+        pdet.AddText('   Detector Distance (mm): ', newrow=True)
+        pdet.Add(wids['det_dist'])
+        pdet.AddText('   Detector Area (mm^2): ', newrow=False)
+        pdet.Add(wids['det_area'])
+
 
         addLine(pdet)
         pdet.pack()
@@ -513,7 +517,8 @@ class FitSpectraFrame(wx.Frame):
 
         pan.Add(HLine(pan, size=(650, 3)), dcol=6, newrow=True)
 
-        pan.AddText(' Matrix:', colour='#880000', dcol=2, newrow=True)
+        pan.AddText(' Matrix:', colour='#880000', newrow=True)
+        pan.AddText('    NOTE: thin film limit only',  dcol=3)
 
         wids['matrix_mat'] = wx.TextCtrl(pan, value='', size=(275, -1))
         wids['matrix_thk'] = FloatSpin(pan, value=0.0, **opts)
@@ -537,6 +542,7 @@ class FitSpectraFrame(wx.Frame):
         mview = self.owids['materials'] = dv.DataViewListCtrl(pan, style=DVSTYLE)
         mview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectMaterial)
         self.selected_material = ''
+
 
         mview.AppendTextColumn('Name',      width=150)
         mview.AppendTextColumn('Formula',   width=325)
@@ -569,6 +575,11 @@ class FitSpectraFrame(wx.Frame):
         self.owids['newmat_name'] = wx.TextCtrl(pan, value='', size=(175, -1))
         self.owids['newmat_dens'] = FloatSpin(pan, value=1.0, **opts)
         self.owids['newmat_form'] = wx.TextCtrl(pan, value='', size=(400, -1))
+
+
+        for notyet in ('matrix_mat', 'matrix_thk', 'matrix_den',
+                       'matrix_btn'):
+            wids[notyet].Disable()
 
         pan.AddText(' Name:', newrow=True)
         pan.Add(self.owids['newmat_name'])
