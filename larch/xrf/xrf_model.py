@@ -6,6 +6,7 @@ import numpy as np
 from numpy.linalg import lstsq
 from scipy.optimize import nnls
 from lmfit import  Parameters, minimize, fit_report
+from lmfit.printfuncs import gformat
 
 from xraydb import (material_mu, mu_elam, ck_probability, xray_edge,
                     xray_edges, xray_lines, xray_line)
@@ -278,6 +279,7 @@ class XRF_Model:
         self.use_escape = False
         self.escape_scale = None
         self.script = ''
+        self._mca = None
         if bgr is not None:
             self.add_background(bgr)
 
@@ -523,16 +525,17 @@ class XRF_Model:
         fit_wt = 0.5 + savitzky_golay(np.sqrt(counts+1.0), 25, 1)
         self.fit_weight = 1.0/fit_wt
 
-    def fit_spectrum(self, energy, counts, energy_min=None, energy_max=None):
-        work_energy = 1.0*energy
-        work_counts = 1.0*counts
-        floor = 1.e-10*np.percentile(counts, [99])[0]
-        work_counts[np.where(counts<floor)] = floor
+    def fit_spectrum(self, mca, energy_min=None, energy_max=None):
+        self._mca = mca
+        work_energy = 1.0*mca.energy
+        work_counts = 1.0*mca.counts
+        floor = 1.e-10*np.percentile(work_counts, [99])[0]
+        work_counts[np.where(work_counts<floor)] = floor
 
-        if max(energy) > 250.0: # if input energies are in eV
-            work_energy = 0.001 * energy
+        if max(work_energy) > 250.0: # if input energies are in eV
+            work_energy /= 1000.0
 
-        imin, imax = 0, len(counts)
+        imin, imax = 0, len(work_counts)
         if energy_min is None:
             energy_min = self.energy_min
         if energy_min is not None:
@@ -543,7 +546,7 @@ class XRF_Model:
             imax = index_of(work_energy, energy_max)
 
         self.imin = max(0, imin-5)
-        self.imax = min(len(counts), imax+5)
+        self.imax = min(len(work_counts), imax+5)
         self.npts = (self.imax - self.imin)
         self.set_fit_weight(work_energy, work_counts, energy_min, energy_max)
         self.fit_iter = 0
@@ -555,8 +558,8 @@ class XRF_Model:
         for f in self.filters:
             f.mu_total = None
 
-        self.init_fit = self.calc_spectrum(energy, params=self.params)
-        index = np.arange(len(counts))
+        self.init_fit = self.calc_spectrum(work_energy, params=self.params)
+        index = np.arange(len(work_counts))
         userkws = dict(data=work_counts, index=index)
 
         tol = self.fit_toler
@@ -570,7 +573,7 @@ class XRF_Model:
         self.best_en = (pars['cal_offset'] + pars['cal_slope'] * index +
                         pars['cal_quad'] * index**2)
         self.fit_iter += 1
-        self.best_fit = self.calc_spectrum(energy, params=self.result.params)
+        self.best_fit = self.calc_spectrum(work_energy, params=self.result.params)
 
         # calculate transfer matrix for linear analysis using this model
         tmat= []
@@ -640,6 +643,10 @@ class XRF_Model:
         """a simple compilation of fit settings results
         to be able to easily save and inspect"""
         out = Group(label=label, script=script)
+
+        for attr in ('filename', 'label'):
+            setattr(out, 'mca' + attr, getattr(self._mca, attr, 'unknown'))
+
         for attr in ('params', 'var_names', 'chisqr', 'redchi', 'nvarys',
                      'nfev', 'ndata', 'aic', 'bic', 'aborted', 'covar', 'ier',
                      'message', 'method', 'nfree', 'init_values', 'success',
@@ -669,22 +676,47 @@ class XRF_Model:
         # out.matrix_layers = []
         return out
 
-    def save(self, fname=None):
+    def save(self, filename):
         """save XRF model and result in a manner that can be loaded later"""
-        result = group2dict(self.compile_fitresults())
-        result['params'] = result.pop('params').dumps()
-        if fname is not None:
-            json_dump(result, filename=fname)
-        else:
-            return result
+        json_dump(self.compile_fitresults(), filename)
 
-    def load(self, s):
-        """load a saved XRF model from a string (json)"""
-        pass
-
-    def export(self, fname):
+    def export(self, filename):
         """save result to text file"""
-        result = group2dict(self.compile_fitresults())
+        result = self.compile_fitresults()
+
+        buff = ['# XRF Fit %s: %s' % (self._mca.label, result.label),
+                '## Fit Script:']
+        for a in result.script.split('\n'):
+            buff.append('#   %s' % a)
+        buff.append('## Fit Report:')
+        for a in result.fit_report.split('\n'):
+            buff.append('#   %s' % a)
+
+        buff.append('#')
+        buff.append('########################################')
+
+        labels = ['energy', 'counts', 'best_fit',
+                  'best_energy', 'fit_window',
+                  'fit_weight', 'attenuation']
+        labels.extend(list(result.comps.keys()))
+        buff.append('# %s' % (' '.join(labels)))
+
+        npts = len(self._mca.energy)
+        for i in range(npts):
+            dline = [gformat(self._mca.energy[i]),
+                     gformat(self._mca.counts[i]),
+                     gformat(result.best_fit[i]),
+                     gformat(result.best_en[i]),
+                     gformat(result.fit_window[i]),
+                     gformat(result.fit_weight[i]),
+                     gformat(result.atten[i])]
+            for c in result.comps.values():
+                dline.append(gformat(c[i]))
+            buff.append(' '.join(dline))
+        buff.append('\n')
+        with open(filename, 'w') as fh:
+            fh.write('\n'.join(buff))
+
 
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
