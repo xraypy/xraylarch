@@ -421,7 +421,6 @@ def add_plugin(plugin, _larch=None, verbose=False, **kws):
 
 def _dir(obj=None, _larch=None):
     "return directory of an object -- thin wrapper about python builtin"
-    print(" --> dir " , _larch)
     if _larch is None:
         raise Warning("cannot run dir() -- larch broken?")
     if obj is None:
