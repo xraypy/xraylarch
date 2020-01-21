@@ -96,20 +96,15 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
                 sigmax={_sigma:.5f},  vary_center={vcen:s}, vary_step={vstep:s},
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})"""
 
-xrfmod_fitscript = """_xrfmodel.fit_spectrum({group:s}.energy, {group:s}.counts,
-                energy_min={emin:.2f}, energy_max={emax:.2f})
+xrfmod_fitscript = """
+_xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
 _xrfresult = _xrfmodel.compile_fitresults()
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
 xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:.5f})"
 
-xrfmod_jsondump  = """# save xrf model to json
-_o = copy(group2dict({group:s}.fit_history[{nfit:d}]))
-_o['params'] = _o.pop('params').dumps()
-json_dump(_o, '{filename:s}')
-"""
-
+xrfmod_savejs = "json_dump({group:s}.fit_history[{nfit:d}], '{filename:s}')"
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 
@@ -1281,16 +1276,15 @@ class FitSpectraFrame(wx.Frame):
         self.Destroy()
 
     def onSaveFitResult(self, event=None):
-        result = self.get_fitresult()
         deffile = self.mca.label + '_' + result.label
-        deffile = fix_filename(deffile.replace('.', '_')) + '_xrf.modl'
-        ModelWcards = "XRF Models(*.modl)|*.modl|All files (*.*)|*.*"
+        deffile = fix_filename(deffile.replace('.', '_')) + '.xrfmodel'
+        ModelWcards = "XRF Models(*.xrfmodel)|*.xrfmodel|All files (*.*)|*.*"
         sfile = FileSave(self, 'Save XRF Model', default_file=deffile,
                          wildcard=ModelWcards)
         if sfile is not None:
-            self._larch.eval(xrfmod_jsondump.format(group=self.mcagroup,
-                                                    nfit=self.nfit,
-                                                    filename=sfile))
+            self._larch.eval(xrfmod_savejs.format(group=self.mcagroup,
+                                                  nfit=self.nfit,
+                                                  filename=sfile))
 
     def onExportFitResult(self, event=None):
         result = self.get_fitresult()
