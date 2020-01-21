@@ -56,6 +56,8 @@ from ..wxlib.xrfdisplay import XRFDisplayFrame
 from .mapimageframe import MapImageFrame, CorrelatedMapFrame
 from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
+from .mapxrfpanel import XRFAnalysisPanel
+from .maptomopanel import TomographyPanel
 
 from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
 
@@ -1398,7 +1400,7 @@ class MapViewerFrame(wx.Frame):
 
         nbpanels = OrderedDict()
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
-                      TomographyPanel):
+                      TomographyPanel, XRFAnalysisPanel):
             nbpanels[panel.label] = panel
 
         self.nb = flatnotebook(parent, nbpanels, panelkws={'owner':self},
