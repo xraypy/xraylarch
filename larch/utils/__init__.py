@@ -23,18 +23,17 @@ def group2dict(group, _larch=None):
 
 def dict2group(d, _larch=None):
     "return group created from a dictionary"
+    from larch import Group
     return Group(**d)
 
 def copy_group(group, _larch=None):
     from larch import Group
-
     out = Group(datatype=getattr(group, 'datatype', 'unknown'),
                 copied_from=getattr(group, 'groupname', repr(group)))
 
     for attr in dir(group):
         setattr(out, attr, copy.deepcopy(getattr(group, attr)))
     return out
-
 
 def isotime(t=None, with_tzone=False):
     if t is None:
@@ -45,13 +44,22 @@ def isotime(t=None, with_tzone=False):
     return sout
 
 def json_dump(data, filename):
-    """dump object or group to file using json
+    """
+    dump object or group to file using json
     """
     from .jsonutils import encode4js
     with open(filename, 'w') as fh:
         fh.write(json.dumps(encode4js(data)))
         fh.write('\n')
 
+def json_load(filename):
+    """
+    load object from json dump file
+    """
+    from .jsonutils import decode4js
+    with open(filename, 'r') as fh:
+        data = fh.read()
+    return decode4js(json.loads(data))
 
 def _larch_init(_larch):
     """initialize xrf"""
@@ -66,4 +74,4 @@ _larch_builtins = dict(copy=_copy, deepcopy=_deepcopy, more= _more,
                        cwd=_cwd, group2dict=group2dict,
                        copy_group=copy_group, dict2group=dict2group,
                        debugtimer=debugtimer, isotime=isotime,
-                       json_dump=json_dump)
+                       json_dump=json_dump, json_load=json_load)

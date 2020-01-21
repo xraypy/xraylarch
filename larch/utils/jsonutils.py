@@ -2,10 +2,12 @@
 """
  json utilities for larch objects
 """
+import numpy as np
+import json
+
 from .. import isgroup, Group
 from ..fitting import isParameter, Parameter
-
-import numpy as np
+from lmfit import Parameters
 
 def encode4js(obj, grouplist=None):
     """return an object ready for json encoding.
@@ -48,6 +50,10 @@ def encode4js(obj, grouplist=None):
         for item in dir(obj):
             out[item] = encode4js(getattr(obj, item), grouplist=grouplist)
         return out
+    elif isinstance(obj, Parameters):
+        out = json.loads(obj.dumps())
+        out['__class__'] = 'Parameters'
+        return out
     elif isParameter(obj):
         out = {'__class__': 'Parameter'}
         for attr in ('value', 'name', 'vary', 'min', 'max',
@@ -77,7 +83,7 @@ def decode4js(obj, grouplist=None):
     return decoded Python object from encoded object.
 
     grouplist: list of subclassed Groups to assist reconstucting the object
-   """
+    """
     if not isinstance(obj, dict):
         return obj
     out = obj
@@ -113,6 +119,10 @@ def decode4js(obj, grouplist=None):
         out = {}
         for key, val in obj.items():
             out[key] = decode4js(val, grouplist)
+    elif classname == 'Parameters':
+        out = Parameters()
+        out.loads(json.dumps(obj))
+
     elif classname in ('Parameter', 'parameter'):
         out = {}
         extras = {}
