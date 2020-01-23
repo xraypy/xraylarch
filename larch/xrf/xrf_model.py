@@ -642,7 +642,7 @@ class XRF_Model:
     def compile_fitresults(self, label='fit result', script='# noscript'):
         """a simple compilation of fit settings results
         to be able to easily save and inspect"""
-        out = Group(label=label, script=script)
+        out = Group(label=label, script=script, mca=self._mca)
 
         for attr in ('filename', 'label'):
             setattr(out, 'mca' + attr, getattr(self._mca, attr, 'unknown'))
