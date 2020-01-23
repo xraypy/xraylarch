@@ -21,8 +21,20 @@ from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
 
 # Group used to hold MCA data
 XRFGROUP = '_xrfdata'
+MAKE_XRFGROUP_CMD = "%s = group(__doc__='MCA/XRF data groups', _mca='', _mca2='')" % XRFGROUP
+
 def mcaname(i):
     return "mca{:03d}".format(i)
+
+def next_mcaname(_larch):
+    xrfgroup = _larch.symtable.get_group(XRFGROUP)
+    i, exists = 1, True
+    name = "mca{:03d}".format(i)
+    while hasattr(xrfgroup, name):
+        i += 1
+        name = "mca{:03d}".format(i)
+    return name
+
 
 class XRFCalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, size=(-1, -1), callback=None):
