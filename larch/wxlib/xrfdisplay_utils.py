@@ -20,8 +20,10 @@ from ..xrf import (xrf_calib_fitrois, xrf_calib_init_roi,
                    xrf_calib_compute, xrf_calib_apply)
 
 # Group used to hold MCA data
-XRFGROUP = '_xrfdata'
+XRFGROUP   = '_xrfdata'
 MAKE_XRFGROUP_CMD = "%s = group(__doc__='MCA/XRF data groups', _mca='', _mca2='')" % XRFGROUP
+XRFRESULTS_GROUP   = '_xrfresults'
+MAKE_XRFRESULTS_GROUP = "_xrfresults = []"
 
 def mcaname(i):
     return "mca{:03d}".format(i)
