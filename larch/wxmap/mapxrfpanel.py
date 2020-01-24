@@ -2,7 +2,7 @@
 """
 XRF Analysis Panel
 """
-
+import os
 import json
 from functools import partial
 
@@ -13,7 +13,7 @@ import numpy as np
 
 from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
-                     Choice, Check, GridPanel, FileSave, HLine)
+                     Choice, Check, GridPanel, FileSave, FileOpen, HLine)
 from ..utils.strutils import bytes2str, version_ge
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
@@ -29,6 +29,9 @@ NOFITS_MSG = "No XRF fits available.  Use XRF Viewer to fit spectrum first."
 HASFITS_MSG = "Select Spectrum and Fit to it to Apply to Map."
 
 
+from ..wxlib.xrfdisplay_utils import (XRFGROUP, MAKE_XRFGROUP_CMD, next_mcaname)
+
+
 class XRFAnalysisPanel(scrolled.ScrolledPanel):
     """Panel of XRF Analysis results"""
     label  = 'XRF Analysis'
@@ -41,14 +44,17 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         sizer = wx.GridBagSizer(3, 3)
 
-        self.mca_choice = Choice(self, size=(400, -1), choices=[],
+        self.mca_choice = Choice(self, size=(375, -1), choices=[],
                                    action=self.onSpectrum)
-        self.fit_choice = Choice(self, size=(300, -1), choices=[])
+        self.fit_choice = Choice(self, size=(375, -1), choices=[])
         self.use_nnls = Check(self, label='force non-negative (~4x slower)',
                               default=False)
 
         save_btn = Button(self, 'Calculate and Save Element Mapss', size=(300, -1),
                           action=self.onSaveArrays)
+
+        load_btn = Button(self, 'Load Saved XRF Model', size=(200, -1),
+                          action=self.onLoadXRFModel)
 
         self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(150, -1))
         self.name  = wx.TextCtrl(self, value='abundance', size=(300, -1))
@@ -56,26 +62,27 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         self.fit_status = SimpleText(self, label=NOFITS_MSG)
 
         ir = 0
-        sizer.Add(SimpleText(self, TOP_MSG), (ir, 0), (1, 5), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, TOP_MSG), (ir, 0), (1, 3), ALL_LEFT, 2)
+        sizer.Add(load_btn,                  (ir, 3), (1, 2), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(self.fit_status,           (ir, 0), (1, 5), ALL_LEFT, 2)
 
+        ir += 1
+        sizer.Add(SimpleText(self, 'XRF Spectrum:'), (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.mca_choice,                 (ir, 1), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'XRF Spectrum:'), (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.mca_choice,                 (ir, 1), (1, 2), ALL_LEFT, 2)
-        ir += 1
-        sizer.Add(SimpleText(self, 'Fit Label:'), (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Fit Label:'), (ir, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.fit_choice,                (ir, 1), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Scaling Factor:'), (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Scaling Factor:'), (ir, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.scale,                       (ir, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.use_nnls,                    (ir, 2), (1, 1), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Group Name:'), (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Group Name:'), (ir, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.name,                       (ir, 1), (1,21), ALL_LEFT, 2)
         ir += 1
         sizer.Add(save_btn,                        (ir, 0), (1, 3), ALL_LEFT, 2)
@@ -103,6 +110,29 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
     def onSaveArrays(self, evt=None):
         print("on save arrays")
         print(self.owner.larch)
+
+    def onLoadXRFModel(self, evt=None):
+        _larch = self.owner.larch
+        symtab = _larch.symtable
+        FILE_WILDCARDS = "XRF Model Files(*.xrf_model)|*.xrf_model|All files (*.*)|*.*"
+
+        dlg = wx.FileDialog(self, message="Read XRF Model File",
+                            defaultDir=os.getcwd(),
+                            wildcard=FILE_WILDCARDS,
+                            style=wx.FD_OPEN)
+        path = None
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        dlg.Destroy()
+        if path is not None:
+            print("load XRF Model from file ", path)
+            if not symtab.has_group(XRFGROUP):
+                _larch.eval(MAKE_XRFGROUP_CMD)
+
+            cmd = "json_load('{:s}')".format(path)
+
+
+        setattr(xrfgroup, mcaname, mca)
 
     def onOtherSaveArray(self, evt=None):
         name = self.name_in.GetValue()
