@@ -51,7 +51,7 @@ def read_netcdf(fname,verbose=False,keyword=None):
             return file_netcdf.variables[keyword].data
         else:
             netcdf_dict = {}
-            for key,val in dict(file_netcdf.variables).iteritems():
+            for key,val in dict(file_netcdf.variables).items():
                 netcdf_dict[key] = val.data
             return netcdf_dict
 

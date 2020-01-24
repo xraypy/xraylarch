@@ -845,7 +845,8 @@ class GSEXRM_MapFile(object):
             self.has_xrd2d = False
 
         # eiger XRD maps with 1D data
-        if xrdf.startswith('eig') and xrdf.endswith('.h5'):
+        if (xrdf.startswith('eig') and xrdf.endswith('.h5') or
+            xrdf.startswith('pexrd')):
             self.has_xrd2d = False
             self.has_xrd1d = True
 

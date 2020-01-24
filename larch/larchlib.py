@@ -241,7 +241,7 @@ class Procedure(object):
         if len(self.kwargs) > 0:
             if len(sig) > 0:
                 sig = "%s, " % sig
-            _kw = ["%s=%s" % (k, v) for k, v in self.kwargs]
+            _kw = ["%s=%s" % (k, repr(v)) for k, v in self.kwargs]
             sig = "%s%s" % (sig, ', '.join(_kw))
 
             if self.varkws is not None:
