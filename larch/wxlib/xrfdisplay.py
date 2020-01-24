@@ -43,7 +43,7 @@ from .periodictable import PeriodicTablePanel
 
 from .xrfdisplay_utils import (XRFCalibrationFrame, ColorsFrame,
                                XrayLinesFrame, XRFDisplayConfig, XRFGROUP,
-                               mcaname)
+                               MAKE_XRFGROUP_CMD, next_mcaname)
 
 from .xrfdisplay_fitpeaks import FitSpectraFrame
 
@@ -55,7 +55,6 @@ has already been read.
 
 ICON_FILE = 'ptable.ico'
 
-make_xrfgroup = "%s = group(__doc__='MCA spectra data groups for XRF Display', _mca='', _mca2='')" % XRFGROUP
 read_mcafile = "# {group:s}.{name:s} = read_gsemca('{filename:s}')"
 
 def txt(panel, label, size=75, colour=None, font=None, style=None):
@@ -480,7 +479,7 @@ class XRFDisplayFrame(wx.Frame):
             symtab.set_symbol('_sys.wx.parent', self)
 
         if not symtab.has_group(XRFGROUP):
-            self.larch.eval(make_xrfgroup)
+            self.larch.eval(MAKE_XRFGROUP_CMD)
 
         fico = os.path.join(icondir, ICON_FILE)
         try:
@@ -496,26 +495,22 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
 
         xrfgroup = self.larch.symtable.get_group(XRFGROUP)
-        group_exists = True
-        while group_exists:
-            self.mca_index += 1
-            name = mcaname(self.mca_index)
-            group_exists = hasattr(xrfgroup, name)
-
+        mcaname = next_mcaname(self.larch)
         if filename is not None:
             self.larch.eval(read_mcafile.format(group=XRFGROUP,
-                                                name=name, filename=filename))
+                                                name=mcaname,
+                                                filename=filename))
             if label is None:
                 label = filename
         if label is None and mca.filename is not None:
             label = mca.filename
         if label is None:
-            label = name
+            label = mcaname
         self.mca.label = label
         # push mca to mca2, save id of this mca
         setattr(xrfgroup, '_mca2', getattr(xrfgroup, '_mca', ''))
-        setattr(xrfgroup, '_mca', name)
-        setattr(xrfgroup, name, mca)
+        setattr(xrfgroup, '_mca', mcaname)
+        setattr(xrfgroup, mcaname, mca)
         if plot:
             self.plotmca(self.mca)
             if as_mca2:
