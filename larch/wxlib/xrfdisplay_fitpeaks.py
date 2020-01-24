@@ -40,7 +40,9 @@ from larch import Group
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
 
-from .xrfdisplay_utils import XRFGROUP, mcaname
+from .xrfdisplay_utils import (XRFGROUP, mcaname,
+                               XRFRESULTS_GROUP,
+                               MAKE_XRFRESULTS_GROUP)
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -74,10 +76,6 @@ EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Geom_Text = 'Angles in degrees: 90=normal to surface, 0=grazing surface'
 Energy_Text = 'All energies in keV'
 
-mca_init = """
-if not hasattr({group:s}, 'fit_history'): {group:s}.fit_history = []
-"""
-
 xrfmod_setup = """## Set up XRF Model
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
                       energy_min={en_min:.2f}, energy_max={en_max:.2f})
@@ -98,15 +96,15 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
 
 xrfmod_fitscript = """
 _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
-_xrfresult = _xrfmodel.compile_fitresults()
+_xrfresults.insert(0, _xrfmodel.compile_fitresults())
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
 xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:.5f})"
-
-xrfmod_savejs = "json_dump({group:s}.fit_history[{nfit:d}], '{filename:s}')"
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
+
+xrfmod_savejs = "json_dump(_xrfresults[{nfit:d}], '{filename:s}')"
 
 xrfmod_elems = """
 for atsym in {elemlist:s}:
@@ -127,6 +125,10 @@ class FitSpectraFrame(wx.Frame):
         self._larch = parent.larch
 
         # fetch current spectra from parent
+        if not symtab.has_group(XRFRESULTS_GROUP):
+            self.larch.eval(MAKE_XRFRESULTS_GROUP_CMD)
+
+        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
         xrfgroup = self._larch.symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
@@ -139,8 +141,6 @@ class FitSpectraFrame(wx.Frame):
         if self.mca.incident_energy > 250:
             self.mca.incident_energy /= 1000.0
 
-        self._larch.eval(mca_init.format(group=self.mcagroup))
-        self.fit_history = getattr(self.mca, 'fit_history', [])
         self.nfit = 0
         self.colors = GUIColors()
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
@@ -802,7 +802,7 @@ class FitSpectraFrame(wx.Frame):
         return panel
 
     def onCompSetScale(self, event=None, value=None):
-        if len(self.fit_history) < 1 or (time.time() - self.compscale_lock) < 0.25:
+        if len(self.xrfresults) < 1 or (time.time() - self.compscale_lock) < 0.25:
             return
         self.compscale_lock = time.time()
         owids = self.owids
@@ -838,7 +838,7 @@ class FitSpectraFrame(wx.Frame):
             owids['composition'].AppendItem((zat, elem, rval, sval, uval))
 
     def onCompSetElemAbundance(self, event=None, value=None):
-        if len(self.fit_history) < 1  or (time.time() - self.compscale_lock) < 0.25:
+        if len(self.xrfresults) < 1  or (time.time() - self.compscale_lock) < 0.25:
             return
         self.compscale_lock = time.time()
         owids = self.owids
@@ -915,12 +915,12 @@ class FitSpectraFrame(wx.Frame):
         self.onCompSetElemAbundance()
 
     def UpdateCompositionPage(self, event=None):
-        self.fit_history = getattr(self.mca, 'fit_history', [])
-        if len(self.fit_history) > 0:
+        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        if len(self.xrfresults) > 0:
             result = self.get_fitresult()
             fitlab = self.owids['comp_fitlabel']
             fitlab.Clear()
-            fitlab.SetChoices([a.label for a in self.fit_history])
+            fitlab.SetChoices([a.label for a in self.xrfresults])
             fitlab.SetStringSelection(result.label)
             self.onCompSelectFit()
 
@@ -1257,14 +1257,11 @@ class FitSpectraFrame(wx.Frame):
 
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
-        xrfresult = self._larch.symtable.get_symbol('_xrfresult')
+        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
 
+        xrfresult = self.xrfresults[0]
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
-        xrfresult.label = "fit %d" % (1+len(dgroup.fit_history))
-
-        append_hist = "{group:s}.fit_history.insert(0, _xrfresult)"
-        self._larch.eval(append_hist.format(group=self.mcagroup))
-
+        xrfresult.label = "fit %d" % (1+len(self.xrfresults))
         self.plot_model(init=True, with_comps=True)
         for i in range(len(self.nb.pagelist)):
             if self.nb.GetPageText(i).strip().startswith('Fit R'):
@@ -1276,6 +1273,7 @@ class FitSpectraFrame(wx.Frame):
         self.Destroy()
 
     def onSaveFitResult(self, event=None):
+        result = self.get_fitresult()
         deffile = self.mca.label + '_' + result.label
         deffile = fix_filename(deffile.replace('.', '_')) + '.xrfmodel'
         ModelWcards = "XRF Models(*.xrfmodel)|*.xrfmodel|All files (*.*)|*.*"
@@ -1330,11 +1328,11 @@ class FitSpectraFrame(wx.Frame):
     def get_fitresult(self, nfit=None):
         if nfit is None:
             nfit = self.nfit
-        self.fit_history = getattr(self.mca, 'fit_history', [])
+
+        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
         self.nfit = max(0, nfit)
-        if self.nfit > len(self.fit_history):
-            self.nfit = 0
-        return self.fit_history[self.nfit]
+        self.nfit = min(self.nfit, len(self.xrfresults)-1)
+        return self.xrfresults[self.nfit]
 
     def onChangeFitLabel(self, event=None):
         label = self.owids['fitlabel_txt'].GetValue()
@@ -1406,7 +1404,7 @@ class FitSpectraFrame(wx.Frame):
     def show_results(self):
         cur = self.get_fitresult()
         self.owids['stats'].DeleteAllItems()
-        for i, res in enumerate(self.fit_history):
+        for i, res in enumerate(self.xrfresults):
             args = [res.label]
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic'):
                 val = getattr(res, attr)
