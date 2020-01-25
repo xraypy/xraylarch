@@ -1,7 +1,7 @@
 from __future__ import print_function
 import os
 import sys
-import socket
+import uuid
 import time
 import h5py
 import numpy as np
@@ -62,6 +62,10 @@ def h5str(obj):
     if out.startswith("b'") and out.endswith("'"):
         out = out[2:-1]
     return out
+
+def get_machineid():
+    "machine id / MAC address, independent of hostname"
+    return hex(uuid.getnode())[2:]
 
 def strlist(alist):
     return [a.encode('utf-8') for a in alist]
@@ -2122,7 +2126,7 @@ class GSEXRM_MapFile(object):
         "claim ownership of file"
         if self.xrmmap is None:
             return
-        self.xrmmap.attrs['Process_Machine'] = socket.gethostname()
+        self.xrmmap.attrs['Process_Machine'] = get_machineid()
         self.xrmmap.attrs['Process_ID'] = os.getpid()
         self.h5root.flush()
 
@@ -2142,14 +2146,12 @@ class GSEXRM_MapFile(object):
             return
         attrs = self.xrmmap.attrs
         self.folder = attrs['Map_Folder']
-
         file_mach = attrs['Process_Machine']
         file_pid  = attrs['Process_ID']
         if len(file_mach) < 1 or file_pid < 1:
             self.take_ownership()
             return True
-        return (file_mach == socket.gethostname() and
-                file_pid == os.getpid())
+        return (file_mach == get_machineid() and file_pid == os.getpid())
 
     def folder_has_newdata(self):
         if self.folder is not None and isGSEXRM_MapFolder(self.folder):
