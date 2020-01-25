@@ -813,11 +813,7 @@ def _saveimg(fname, _larch=None, **kws):
     _saveplot(fname, _larch=_larch, **kws)
 
 def _closeDisplays(_larch=None, **kws):
-    names = PLOT_DISPLAYS.keys()
-    for name in names:
-        win = PLOT_DISPLAYS.pop(name)
-        win.Destroy()
-    names = IMG_DISPLAYS.keys()
-    for name in names:
-        win = IMG_DISPLAYS.pop(name)
-        win.Destroy()
+    for display in (PLOT_DISPLAYS, IMG_DISPLAYS,
+                    FITPLOT_DISPLAYS, XRF_DISPLAYS):
+        for win in display.values():
+            win.Destroy()
