@@ -1395,7 +1395,7 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def OnInit(self):
         self.Init()
-        frame = XRFDisplayFrame(filename=filename)
+        frame = XRFDisplayFrame(filename=self.filename)
         frame.Show()
         self.SetTopWindow(frame)
         return True

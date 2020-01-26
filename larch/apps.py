@@ -147,7 +147,7 @@ def run_xrfdisplay():
     from larch.wxlib.xrfdisplay import XRFApp
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
-    XRFApp(**kws).MainLoop()
+    XRFApp(**kwargs).MainLoop()
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
