@@ -123,13 +123,13 @@ class FitSpectraFrame(wx.Frame):
     def __init__(self, parent, size=(700, 825)):
         self.parent = parent
         self._larch = parent.larch
-
+        symtable = self._larch.symtable
         # fetch current spectra from parent
-        if not symtab.has_group(XRFRESULTS_GROUP):
-            self.larch.eval(MAKE_XRFRESULTS_GROUP_CMD)
+        if not symtable.has_group(XRFRESULTS_GROUP):
+            self._larch.eval(MAKE_XRFRESULTS_GROUP)
 
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
-        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
+        self.xrfresults = symtable.get_symbol(XRFRESULTS_GROUP)
+        xrfgroup = symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
@@ -915,7 +915,7 @@ class FitSpectraFrame(wx.Frame):
         self.onCompSetElemAbundance()
 
     def UpdateCompositionPage(self, event=None):
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
         if len(self.xrfresults) > 0:
             result = self.get_fitresult()
             fitlab = self.owids['comp_fitlabel']
@@ -1257,11 +1257,11 @@ class FitSpectraFrame(wx.Frame):
 
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
 
         xrfresult = self.xrfresults[0]
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
-        xrfresult.label = "fit %d" % (1+len(self.xrfresults))
+        xrfresult.label = "fit %d" % (len(self.xrfresults))
         self.plot_model(init=True, with_comps=True)
         for i in range(len(self.nb.pagelist)):
             if self.nb.GetPageText(i).strip().startswith('Fit R'):
@@ -1329,7 +1329,7 @@ class FitSpectraFrame(wx.Frame):
         if nfit is None:
             nfit = self.nfit
 
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
         self.nfit = max(0, nfit)
         self.nfit = min(self.nfit, len(self.xrfresults)-1)
         return self.xrfresults[self.nfit]
