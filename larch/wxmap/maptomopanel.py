@@ -56,6 +56,8 @@ ALL_RIGHT =  wx.ALL|RIGHT
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
 PLOT_OPERS = ('/', '*', '-', '+')
 
+CWID = 150
+WWID = 100 + CWID*4
 
 class TomographyPanel(GridPanel):
     '''Panel of Controls for reconstructing a tomographic slice'''
@@ -69,17 +71,17 @@ class TomographyPanel(GridPanel):
 
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=PLOT_TYPES[:-1], size=(140, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES[:-1], size=(CWID, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1))]
-        self.roi_choice = [Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1))]
+        self.det_choice = [Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1))]
+        self.roi_choice = [Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1))]
 
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
@@ -87,7 +89,7 @@ class TomographyPanel(GridPanel):
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
-        self.det_label = [SimpleText(self,''),
+        self.det_label = [SimpleText(self,'Intensity'),
                           SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self,'Normalization')]
@@ -106,16 +108,16 @@ class TomographyPanel(GridPanel):
         self.i1trans = Check(self, default=True,
                              label='Column labeled "i1" is transmission data')
 
-        self.tomo_show = [Button(self, 'Show New',     size=(100, -1),
+        self.tomo_show = [Button(self, 'Show New Map',     size=(CWID, -1),
                                action=partial(self.onShowTomograph, new=True)),
-                          Button(self, 'Replace Last', size=(100, -1),
+                          Button(self, 'Replace Last Map', size=(CWID, -1),
                                action=partial(self.onShowTomograph, new=False))]
 
-        self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(140, -1),
+        self.tomo_algo = Choice(self, choices=TOMOPY_ALG, size=(CWID, -1),
                                 action=self.onALGchoice)
-        self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(140, -1))
+        self.tomo_filt = Choice(self, choices=TOMOPY_FILT, size=(CWID, -1))
         self.tomo_niter = wx.SpinCtrl(self, min=1, max=500, initial=1,
-                                      size=(100, -1),
+                                      size=(CWID, -1),
                                       style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
 
         self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
@@ -130,8 +132,11 @@ class TomographyPanel(GridPanel):
 
 
         #################################################################################
-        self.AddMany((SimpleText(self,'Plot type:'),self.plot_choice),
-                     style=LEFT,  newrow=True)
+
+        self.Add(SimpleText(self, 'Display Virtual Slices:    Plot Type:'), dcol=2,
+                 style=LEFT, newrow=True)
+
+        self.Add(self.plot_choice, dcol=1, style=LEFT)
         self.AddMany((SimpleText(self,''), self.det_label[0],
                         self.det_label[1], self.det_label[2], self.det_label[3]),
                      style=LEFT,  newrow=True)
@@ -149,11 +154,11 @@ class TomographyPanel(GridPanel):
                      style=LEFT,  newrow=True)
 
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Display:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add((5, 5),                        dcol=1, style=LEFT, newrow=True)
         self.Add(self.tomo_show[0],             dcol=1, style=LEFT)
         self.Add(self.tomo_show[1],             dcol=1, style=LEFT)
 
-        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
         self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
@@ -162,7 +167,7 @@ class TomographyPanel(GridPanel):
         self.Add(self.i1trans,                  dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
 
-        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
 
         self.Add(SimpleText(self,'Reconstruction '), dcol=2, style=LEFT,  newrow=True)
 
@@ -181,7 +186,7 @@ class TomographyPanel(GridPanel):
         self.Add(self.refine_center, dcol=1, style=LEFT)
 
 
-        self.Add(HLine(self, size=(600, 5)),     dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(WWID, 5)),     dcol=8, style=LEFT,  newrow=True)
 
 
         self.Add(SimpleText(self,'Data:'),             dcol=1, style=LEFT,  newrow=True)
@@ -278,7 +283,7 @@ class TomographyPanel(GridPanel):
                     self.det_choice[i].Disable()
                     self.roi_choice[i].Disable()
                     self.roi_label[i].SetLabel('')
-                for i,label in enumerate([' Map ', ' ', ' ']):
+                for i,label in enumerate(['Intensity', ' ', ' ']):
                     self.det_label[i].SetLabel(label)
             elif 'three' in plot_type:
                 for i in (1,2):

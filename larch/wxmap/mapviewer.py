@@ -117,6 +117,9 @@ if ESCAN_CRED is not None:
     except ImportError:
         ESCAN_CRED = None
 
+CWID = 150
+WWID = 100 + CWID*4
+
 class MapPanel(GridPanel):
     '''Panel of Controls for viewing maps'''
     label  = 'ROI Map'
@@ -128,25 +131,25 @@ class MapPanel(GridPanel):
         self.detectors_set = False
         GridPanel.__init__(self, parent, nrows=8, ncols=6, **kws)
 
-        self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(140, -1))
+        self.plot_choice = Choice(self, choices=PLOT_TYPES, size=(CWID, -1))
         self.plot_choice.Bind(wx.EVT_CHOICE, self.plotSELECT)
 
-        self.det_choice = [Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1))]
+        self.det_choice = [Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1))]
 
-        self.roi_choice = [Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1)),
-                           Choice(self, size=(140, -1))]
+        self.roi_choice = [Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1)),
+                           Choice(self, size=(CWID, -1))]
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
 
         for i,roi_chc in enumerate(self.roi_choice):
             roi_chc.Bind(wx.EVT_CHOICE, partial(self.roiSELECT,i))
 
-        self.det_label = [SimpleText(self,''),
+        self.det_label = [SimpleText(self,'Intensity'),
                           SimpleText(self,''),
                           SimpleText(self,''),
                           SimpleText(self, 'Normalization')]
@@ -180,17 +183,28 @@ class MapPanel(GridPanel):
                                label=' Limit Map Range to Pixel Range:',
                                action=self.onLimitRange)
 
-        map_shownew = Button(self, 'New Map',     size=(140, -1),
+        map_shownew = Button(self, 'Show New Map',      size=(CWID, -1),
                                action=partial(self.onROIMap, new=True))
-        map_update  =  Button(self, 'Replace', size=(140, -1),
+        map_update  =  Button(self, 'Replace Last Map', size=(CWID, -1),
                               action=partial(self.onROIMap, new=False))
-        self.mapproc_btn =  Button(self, 'Update Map', size=(140, -1),
+        self.mapproc_btn =  Button(self, 'Add More Rows', size=(CWID, -1),
                                    action=self.onProcessMap)
-        self.mapproc_nrows = Choice(self, choices=PROCROWS_CHOICES, size=(140, -1))
+        self.mapproc_nrows = Choice(self, choices=PROCROWS_CHOICES, size=(CWID, -1))
         self.mapproc_nrows.SetStringSelection('50')
 
-        self.AddMany((SimpleText(self,'Plot type:'), self.plot_choice),
-                     style=LEFT,  newrow=True)
+        self.Add(SimpleText(self, 'Build Map From Raw Data Folder:'),
+                 dcol=2, style=LEFT, newrow=True)
+        self.Add(self.mapproc_btn,              dcol=1, style=LEFT)
+        self.Add(SimpleText(self, 'Max # Rows to Add:'), dcol=1,
+                 style=LEFT, newrow=False)
+        self.Add(self.mapproc_nrows, dcol=1, style=LEFT)
+
+        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
+        self.Add((5, 5), newrow=True)
+
+        self.Add(SimpleText(self, 'Display ROI Maps:          Plot Type:'), dcol=2,
+                 style=LEFT, newrow=True)
+        self.Add(self.plot_choice, dcol=1, style=LEFT)
         self.AddMany((SimpleText(self,''), self.det_label[0],
                       self.det_label[1], self.det_label[2], self.det_label[3]),
                      style=LEFT,  newrow=True)
@@ -206,15 +220,11 @@ class MapPanel(GridPanel):
         self.AddMany((SimpleText(self,''),self.roi_label[0],
                       self.roi_label[1],self.roi_label[2], self.roi_label[3]),
                      style=LEFT,  newrow=True)
-        self.Add(SimpleText(self, 'Display:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add((5, 5),           dcol=1, style=LEFT, newrow=True)
         self.Add(map_shownew,      dcol=1, style=LEFT)
         self.Add(map_update,       dcol=1, style=LEFT)
-        self.Add(SimpleText(self, 'Process:'),   dcol=1, style=LEFT, newrow=True)
-        self.Add(self.mapproc_btn, dcol=1, style=LEFT)
-        self.Add(SimpleText(self, 'Max # Rows:'),   dcol=1, style=LEFT, newrow=False)
-        self.Add(self.mapproc_nrows, dcol=1)
 
-        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT, newrow=True)
+        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
         self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
         self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
@@ -233,7 +243,7 @@ class MapPanel(GridPanel):
         self.Add(self.lims[2],                  dcol=1, style=LEFT)
         self.Add(self.lims[3],                  dcol=1, style=LEFT)
 
-        self.Add(HLine(self, size=(600, 5)),    dcol=8, style=LEFT,  newrow=True)
+        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT, newrow=True)
         self.pack()
 
     def onDTCorrect(self, event=None):
@@ -307,7 +317,7 @@ class MapPanel(GridPanel):
                     self.det_choice[i].Disable()
                     self.roi_choice[i].Disable()
                     self.roi_label[i].SetLabel('')
-                for i, label in enumerate([' Map ', ' ', ' ']):
+                for i, label in enumerate(['Intensity', ' ', ' ']):
                     self.det_label[i].SetLabel(label)
             elif 'three' in plot_type:
                 for i in (1, 2):
@@ -742,7 +752,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         pane = wx.Panel(self)
         sizer = wx.GridBagSizer(3, 3)
         self.choices = {}
-        bsize = (140, -1)
+        bsize = (CWID, -1)
         self.choice = Choice(pane, size=(225, -1), action=self.onSelect)
         self.desc    = wx.TextCtrl(pane,   -1, '',  size=(225, -1))
         self.info1   = wx.StaticText(pane, -1, '',  size=(275, -1))
@@ -1305,7 +1315,8 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None,  size=(925, 650), _larch=None, use_scandb=False, **kwds):
+    def __init__(self, parent=None, filename=None, _larch=None, use_scandb=False,
+                 size=(925, 650), **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,  **kwds)
@@ -1344,7 +1355,6 @@ class MapViewerFrame(wx.Frame):
         self.SetTitle('GSE XRM MapViewer')
 
         self.createMainPanel()
-
         self.SetFont(Font(FONTSIZE))
 
         self.createMenus()
@@ -1365,12 +1375,14 @@ class MapViewerFrame(wx.Frame):
         w1, h1 = self.GetBestSize()
         self.SetSize((max(w0, w1)+5, max(h0, h1)+5))
         self.SetMinSize((500, 300))
+        self.Show()
 
         self.scandb = None
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
-
+        if filename is not None:
+            wx.CallAfter(self.onRead, filename)
 
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
@@ -1709,9 +1721,7 @@ class MapViewerFrame(wx.Frame):
             pass
 
         self.Raise()
-
         self.onFolderSelect()
-
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
             try:
@@ -1755,8 +1765,10 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, '&Open XRM Map File\tCtrl+O',  'Read XRM Map File',  self.onReadFile)
         MenuItem(self, fmenu, '&Open XRM Map Folder\tCtrl+F', 'Read XRM Map Folder',  self.onReadFolder)
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu, 'Change &Working Folder',    'Choose working directory',        self.onFolderSelect)
-        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L', 'Show Larch Programming Buffer',  self.onShowLarchBuffer)
+        MenuItem(self, fmenu, 'Change &Working Folder',    'Choose working directory',
+                 self.onFolderSelect)
+        MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L', 'Show Larch Programming Buffer',
+                 self.onShowLarchBuffer)
 
         cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W', 'Watch HDF5 Files', kind=wx.ITEM_CHECK)
         fmenu.Check(cmenu.Id, self.watch_files) ## False
@@ -1864,23 +1876,13 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
-            try:
-                obj.Destroy()
-            except:
-                pass
-
+        wx.CallAfter(self.larch.symtable._plotter.close_all_displays)
         if self.larch_buffer is not None:
             try:
                 self.larch_buffer.Show()
                 self.larch_buffer.onExit(force=True)
             except:
                 pass
-
-        for nam in dir(self.larch.symtable._sys.wx):
-            obj = getattr(self.larch.symtable._sys.wx, nam)
-            del obj
         self.Destroy()
 
     def onReadFile(self, evt=None):
@@ -1910,6 +1912,11 @@ class MapViewerFrame(wx.Frame):
             if read:
                 xrmfile = GSEXRM_MapFile(filename=str(path), scandb=self.scandb)
                 self.add_xrmfile(xrmfile)
+
+    def onRead(self, path):
+        "simple Read and install XRM Map File"
+        xrmfile = GSEXRM_MapFile(filename=str(path), scandb=self.scandb)
+        self.add_xrmfile(xrmfile)
 
 
     def onReadFolder(self, evt=None):
@@ -2686,15 +2693,17 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].SetValue(str(path))
 
 class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, use_scandb=False, _larch=None, with_inspect=False, **kws):
+    def __init__(self, use_scandb=False, _larch=None, filename=None,
+                 with_inspect=False, **kws):
         self._larch = _larch
+        self.filename = filename
         self.use_scandb = use_scandb
         self.with_inspect = with_inspect
         wx.App.__init__(self, **kws)
 
     def createApp(self):
-        frame = MapViewerFrame(use_scandb=self.use_scandb, _larch=self._larch)
-        frame.Show()
+        frame = MapViewerFrame(use_scandb=self.use_scandb,
+                               filename=self.filename, _larch=self._larch)
         self.SetTopWindow(frame)
 
     def OnInit(self):
@@ -2704,8 +2713,7 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
             self.ShowInspectionTool()
         return True
 
-def mapviewer(use_scandb=False, _larch=None, with_inspect=False, **kws):
-    s = MapViewer(use_scandb=use_scandb, _larch=_larch,
-                  with_inspect=with_inspect, **kws)
-    s.Show()
-    s.Raise()
+def mapviewer(use_scandb=False, filename=None, _larch=None,
+              with_inspect=False, **kws):
+    MapViewer(use_scandb=use_scandb, filename=filename, _larch=_larch,
+              with_inspect=with_inspect, **kws)
