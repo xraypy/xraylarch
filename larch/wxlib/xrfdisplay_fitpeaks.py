@@ -116,7 +116,6 @@ Filter_Lengths = ['microns', 'mm', 'cm']
 Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
                     'beryllium', 'aluminum', 'mylar', 'pmma']
 
-
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
@@ -150,30 +149,18 @@ class FitSpectraFrame(wx.Frame):
         self.owids = {}
 
         pan = GridPanel(self)
-        mca_groups = []
-        mca_default = 0
-        for attr in dir(xrfgroup):
-            if attr.startswith('mca'):
-                obj = getattr(xrfgroup, attr)
-                if not hasattr(obj, 'label') and hasattr(obj, 'filename'):
-                    obj.label = obj.filename
-                label = getattr(obj, 'label', '?')
-                if hasattr(obj, 'counts') and label is not None and len(label) > 1:
-                    mca_groups.append(label)
-                    if attr == self.mcagroup:
-                        mca_default = len(mca_groups)-1
+        mca_label = getattr(self.mca, 'label', None)
+        if mca_label is None:
+            mca_label = getattr(self.mca, 'filename', 'mca')
 
-        self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(400, -1),
-                                         default=mca_default)
-        #                                 action=self.onDetMaterial)
-
+        self.wids['mca_name'] = SimpleText(pan, mca_label, size=(300, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
         self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
                                        action=self.onFitModel)
 
         pan.AddText("  XRF Spectrum: ", colour='#880000')
-        pan.Add(self.wids['mca_choice'], dcol=3)
+        pan.Add(self.wids['mca_name'], dcol=3)
         pan.Add(self.wids['btn_calc'], newrow=True)
         pan.Add(self.wids['btn_fit'])
 
@@ -1104,6 +1091,7 @@ class FitSpectraFrame(wx.Frame):
         vars = {'Vary':'True', 'Fix': 'False', 'True':True, 'False': False}
         opts = {}
         for key, wid in self.wids.items():
+            val = None
             if hasattr(wid, 'GetValue'):
                 val = wid.GetValue()
             elif hasattr(wid, 'IsChecked'):
@@ -1112,8 +1100,8 @@ class FitSpectraFrame(wx.Frame):
                 val = wid.GetStringSelection()
             elif hasattr(wid, 'GetStringSelection'):
                 val = wid.GetStringSelection()
-            else:
-                opts[key] = '????'
+            elif hasattr(wid, 'GetLabel'):
+                val = wid.GetLabel()
             if isinstance(val, str) and val.title() in vars:
                 val = vars[val.title()]
             opts[key] = val
