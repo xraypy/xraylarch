@@ -90,12 +90,10 @@ class MapMathPanel(scrolled.ScrolledPanel):
         sizer.Add(SimpleText(self, 'ROI'),         (ir, 3), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'DT Correct?'), (ir, 4), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Array Shape'), (ir, 5), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Data Range'), (ir, 6), (1, 1), ALL_CEN, 2)
 
         self.varfile  = {}
         self.varroi   = {}
         self.varshape = {}
-        self.varrange = {}
         self.vardet   = {}
         self.varcor   = {}
         for varname in VARNAMES:
@@ -108,8 +106,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
             self.varcor[varname]   = vcor   = wx.CheckBox(self, -1, ' ')
             self.varshape[varname] = vshape = SimpleText(self, '(, )',
                                                           size=(125, -1))
-            self.varrange[varname] = vrange = SimpleText(self, '[   :    ]',
-                                                         size=(125, -1))
             vcor.SetValue(self.owner.dtcor)
             vdet.SetSelection(0)
 
@@ -120,7 +116,6 @@ class MapMathPanel(scrolled.ScrolledPanel):
             sizer.Add(vroi,                         (ir, 3), (1, 1), ALL_CEN, 2)
             sizer.Add(vcor,                         (ir, 4), (1, 1), ALL_CEN, 2)
             sizer.Add(vshape,                       (ir, 5), (1, 1), ALL_LEFT, 2)
-            sizer.Add(vrange,                       (ir, 6), (1, 3), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(HLine(self, size=(350, 4)), (ir, 0), (1, 5), ALL_LEFT, 2)
@@ -224,9 +219,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         shape = self.owner.filemap[fname].get_shape()
         self.varshape[varname].SetLabel('%s' % repr(shape))
-
         map = self.owner.filemap[fname].get_roimap(roiname, det=dname, dtcorrect=dtcorr)
-        self.varrange[varname].SetLabel('[%g:%g]' % (map.min(), map.max()))
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
         if xrmfile is None:
