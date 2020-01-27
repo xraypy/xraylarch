@@ -508,11 +508,11 @@ class MapPanel(GridPanel):
         self.detectors_set = True
 
     def set_roi_choices(self, idet=None):
-        # print("Set ROI Choices ", idet)
+        force_rois = not self.detectors_set
         if idet is None:
             for idet, det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
-                rois = self.update_roi(detname)
+                rois = self.cfile.get_roi_list(detname, force=force_rois)
                 cur = self.roi_choice[idet].GetStringSelection()
                 self.roi_choice[idet].SetChoices(rois)
                 if cur in rois:
@@ -520,7 +520,7 @@ class MapPanel(GridPanel):
                 self.roiSELECT(idet)
         else:
             detname = self.det_choice[idet].GetStringSelection()
-            rois = self.update_roi(detname)
+            rois = self.cfile.get_roi_list(detname, force=force_rois)
             cur = self.roi_choice[idet].GetStringSelection()
             self.roi_choice[idet].SetChoices(rois)
             if cur in rois:
@@ -528,7 +528,8 @@ class MapPanel(GridPanel):
             self.roiSELECT(idet)
 
     def update_roi(self, detname):
-        return self.cfile.get_roi_list(detname)
+        force = not self.detectors_set
+        return self.cfile.get_roi_list(detname, force=force)
 
 class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
@@ -1071,7 +1072,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             fout.close()
         except IOError:
             print('could not write %s' % outfile)
-
 
     def _getarea(self):
         return self.choices[self.choice.GetStringSelection()]
@@ -1918,12 +1918,10 @@ class MapViewerFrame(wx.Frame):
         xrmfile = GSEXRM_MapFile(filename=str(path), scandb=self.scandb)
         self.add_xrmfile(xrmfile)
 
-
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
             return
-
 
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
@@ -1988,6 +1986,7 @@ class MapViewerFrame(wx.Frame):
                 break
 
         setattr(self.datagroups, gname, xrmfile)
+        xrmfile.groupname = gname
 
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
