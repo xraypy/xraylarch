@@ -40,8 +40,7 @@ from larch import Group
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
 
-from .xrfdisplay_utils import (XRFGROUP, mcaname,
-                               XRFRESULTS_GROUP,
+from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
                                MAKE_XRFRESULTS_GROUP)
 
 def read_filterdata(flist, _larch):
@@ -95,8 +94,8 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})"""
 
 xrfmod_fitscript = """
-_xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
-_xrfresults.insert(0, _xrfmodel.compile_fitresults())
+_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
+_xrfresults.insert(0, _xrffitresult)
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
@@ -104,7 +103,7 @@ xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 
-xrfmod_savejs = "json_dump(_xrfresults[{nfit:d}], '{filename:s}')"
+xrfmod_savejs = "_xrfresults[{nfit:d}].save('{filename:s}')"
 
 xrfmod_elems = """
 for atsym in {elemlist:s}:
