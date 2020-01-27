@@ -5,6 +5,8 @@ import json
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.optimize import nnls
+
+
 from lmfit import  Parameters, minimize, fit_report
 from lmfit.printfuncs import gformat
 
@@ -720,7 +722,8 @@ class XRFFitResult(Group):
 
         return xrf_prediction(weights, total)
 
-    def decompose_map(self, map, scale=1.0, pixel_time=1.0, method='lstsq'):
+    def decompose_map(self, map, scale=1.0, pixel_time=1.0, method='lstsq',
+                      nworkers=4):
         """
         Apply XRFFitResult to an XRF Map, decomposing it into maps of elemental weights
 
@@ -743,14 +746,48 @@ class XRFFitResult(Group):
         if nchan != nchanx or nchan != nchanw:
             raise ValueError("map data has wrong shape ", map.shape)
 
-        pred = np.zeros((ny, nx, ncomps), dtype='float32')
-        for iy in range(ny):
-            for ix in range(nx):
-                results = fit_method(self.transfer_matrix, map[iy,ix,:]*self.fit_window)
-                for i in range(ncomps):
-                    pred[iy,ix,i] = results[0][i] * scale
+        win = np.where(self.fit_window > 0)[0]
+        w0 = max(0, win[0]-100)
+        w1 = min(nchan-1,  win[-1]+100)
 
-        return {name: pred[:,:,i] for i, name in enumerate(array_names)}
+        xfer = self.transfer_matrix[w0:w1, :]
+        win = self.fit_window[w0:w1]
+        result = np.zeros((ny, nx, ncomps), dtype='float32')
+
+        def decomp_lstsq(i0, i1):
+            """very efficient lstsq"""
+            tmap = map[i0:i1, :, w0:w1].swapaxes(1, 2)
+            ny = tmap.shape[0]
+            win.shape = (win.shape[0], 1)
+            for iy in range(ny):
+                results = lstsq(xfer, win*tmap[iy])
+                for i in range(ncomps):
+                    result[i0+iy,:,i] = results[0][i] * scale
+
+        def decomp_nnls(i0, i1):
+            """need to explicitly loop of nx as well as ny"""
+            tmap = map[i0:i1, :, w0:w1]
+            ny = tmap.shape[0]
+            for iy in range(ny):
+                for ix in range(nx):
+                    results = nnls(xfer, win*tmap[iy,ix,:])
+                    for i in range(ncomps):
+                        result[i0+iy,ix,i] = results[0][i] * scale
+
+        decomp = decomp_lstsq
+        if method == nnls:
+            decomp = decomp_nnls
+        # if we're going to use up more than ~1Gb per lstsq, do it in chunks
+        if (ny*nx*(w1-w0) > 1e8):
+            nchunks = 1+int(1.e-8*ny*nx*(w1-w0))
+            ns = int(ny/nchunks)
+            for i in range(nchunks):
+                ilast = (i+1)*ns
+                if i == nchunks-1: ilast = ny
+                decomp(i*ns, ilast)
+        else:
+            decomp(0, ny)
+        return {name: result[:,:,i] for i, name in enumerate(self.eigenvalues.keys())}
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
     """create an XRF Peak
