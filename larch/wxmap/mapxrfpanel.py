@@ -14,7 +14,7 @@ import numpy as np
 from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
                      Choice, Check, GridPanel, FileSave, FileOpen, HLine)
-from ..utils.strutils import bytes2str, version_ge
+from ..utils.strutils import bytes2str, version_ge, fix_varname
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
@@ -29,7 +29,7 @@ ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 
 NOFITS_MSG  = "No XRF Fits: Use XRFViewer to fit spectrum."
-HASFITS_MSG = "Select XRF Fit to build elemental maps."
+HASFITS_MSG = "Select XRF Fit to build elemental maps"
 
 from ..wxlib.xrfdisplay_utils import (XRFGROUP, MAKE_XRFGROUP_CMD, next_mcaname)
 
@@ -44,9 +44,9 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         sizer = wx.GridBagSizer(3, 3)
         self.current_fit = 0
-        self.fit_choice = Choice(self, size=(350, -1), choices=[])
+        self.fit_choice = Choice(self, size=(375, -1), choices=[])
 
-        self.use_nnls = Check(self, label='force non-negative (~4x slower)',
+        self.use_nnls = Check(self, label='force non-negative (~5x slower)',
                               default=False)
 
         save_btn = Button(self, 'Calculate Element Maps', size=(200, -1),
@@ -55,8 +55,8 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         load_btn = Button(self, 'Load Saved XRF Model', size=(200, -1),
                           action=self.onLoadXRFModel)
 
-        self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(150, -1))
-        self.name  = wx.TextCtrl(self, value='abundance', size=(350, -1))
+        self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(100, -1))
+        self.name  = wx.TextCtrl(self, value='abundance', size=(375, -1))
 
         self.fit_status = SimpleText(self, label=NOFITS_MSG)
 
@@ -65,8 +65,8 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         sizer.Add(load_btn,                  (ir, 2), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Fit Label:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.fit_choice,                (ir, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Use Fit Label:'),  (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.fit_choice,                     (ir, 1), (1, 3), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(SimpleText(self, 'Scaling Factor:'), (ir, 0), (1, 1), ALL_LEFT, 2)
@@ -74,30 +74,18 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         sizer.Add(self.use_nnls,                       (ir, 2), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Group Name:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.name,                       (ir, 1), (1,21), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Save to Group:'), (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.name,                          (ir, 1), (1, 3), ALL_LEFT, 2)
         ir += 1
-        sizer.Add(save_btn,                        (ir, 0), (1, 3), ALL_LEFT, 2)
+        sizer.Add(save_btn,                           (ir, 0), (1, 3), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(HLine(self, size=(600, 5)), (ir, 0), (1, 4), ALL_LEFT, 2)
-
-#         ir += 1
-#         sizer.Add(SimpleText(self, 'Work Arrays: '), (ir, 0), (1, 1), ALL_LEFT, 2)
-#
-#         self.workarray_choice = Choice(self, size=(200, -1),
-#                                        action=self.onSelectArray)
-#         btn_delete  = Button(self, 'Delete Array',  size=(90, -1),
-#                               action=self.onDeleteArray)
-#         self.info1   = wx.StaticText(self, -1, '',  size=(250, -1))
-#         self.info2   = wx.StaticText(self, -1, '',  size=(250, -1))
-
 
         pack(self, sizer)
         self.SetupScrolling()
 
     def onSaveArrays(self, evt=None):
-        print(" Selection: ", self.fit_choice.GetSelection())
         self.current_fit = cfit = self.fit_choice.GetSelection()
         try:
             thisfit = self.owner.larch.symtable._xrfresults[cfit]
@@ -106,11 +94,27 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         if thisfit is None:
             print("Unknown fit? " , cfit,
                   self.owner.larch.symtable._xrfresults)
-        else:
-            print("Use fit ", thisfit)
-            print(dir(thisfit))
+            return
 
+        scale = self.scale.GetValue()
+        method = 'nnls' if self.use_nnls.IsChecked() else 'lstsq'
+        xrmfile = self.owner.current_file
+        workname = fix_varname(self.name.GetValue())
 
+        cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
+        scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
+        for key, val in weights.items():
+             {groupname:s}.add_work_array(val, fix_varname(key.lower()), parent='{workname:s}')
+        #endfor
+        """
+        cmd = cmd.format(cfit=cfit, groupname=xrmfile.groupname, ptime=xrmfile.pixeltime,
+                         workname=workname, scale=scale, method=method)
+        # print("## decompose script: ")
+        # print(cmd)
+
+        self.owner.larch.eval(cmd)
+        self.owner.detectors_set = False
+        xrmfile.get_detector_list(use_cache=False)
 
     def onLoadXRFModel(self, evt=None):
         _larch = self.owner.larch
@@ -126,10 +130,13 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             path = dlg.GetPath()
         dlg.Destroy()
         if path is not None:
-            print("load XRF Model from file ", path)
+            _, fname = os.path.split(path)
             if not symtab.has_group(XRFRESULTS_GROUP):
                 _larch.eval(MAKE_XRFRESULTS_GROUP)
-            _larch.eval("_xrfresults.insert(0, json_load('{:s}'))".format(path))
+            _larch.eval("tmp = xrf_fitresult('{:s}')".format(path))
+            _larch.eval("tmp.filename = '{:s}'".format(fname))
+            _larch.eval("_xrfresults.insert(0, tmp)")
+            _larch.eval("del tmp")
             self.current_fit = 0
             self.update_xrmmap()
 
