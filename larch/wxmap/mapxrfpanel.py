@@ -14,9 +14,13 @@ import numpy as np
 from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
                      Choice, Check, GridPanel, FileSave, FileOpen, HLine)
-from ..utils.strutils import bytes2str, version_ge
+from ..utils.strutils import bytes2str, version_ge, fix_varname
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
+
+from ..wxlib.xrfdisplay_utils import (XRFGROUP, mcaname,
+                                      XRFRESULTS_GROUP,
+                                      MAKE_XRFRESULTS_GROUP)
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -24,92 +28,93 @@ RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 
-TOP_MSG = "Select Spectrum and Fit to Apply to Map"
-NOFITS_MSG = "No XRF fits available.  Use XRF Viewer to fit spectrum first."
-HASFITS_MSG = "Select Spectrum and Fit to it to Apply to Map."
-
+NOFITS_MSG  = "No XRF Fits: Use XRFViewer to fit spectrum."
+HASFITS_MSG = "Select XRF Fit to build elemental maps"
 
 from ..wxlib.xrfdisplay_utils import (XRFGROUP, MAKE_XRFGROUP_CMD, next_mcaname)
-
 
 class XRFAnalysisPanel(scrolled.ScrolledPanel):
     """Panel of XRF Analysis results"""
     label  = 'XRF Analysis'
     def __init__(self, parent, owner=None, **kws):
-
         self.owner = owner
         self.map   = None
         self.cfile = None
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         sizer = wx.GridBagSizer(3, 3)
-
-        self.mca_choice = Choice(self, size=(375, -1), choices=[],
-                                   action=self.onSpectrum)
+        self.current_fit = 0
         self.fit_choice = Choice(self, size=(375, -1), choices=[])
-        self.use_nnls = Check(self, label='force non-negative (~4x slower)',
+
+        self.use_nnls = Check(self, label='force non-negative (~5x slower)',
                               default=False)
 
-        save_btn = Button(self, 'Calculate and Save Element Mapss', size=(300, -1),
+        save_btn = Button(self, 'Calculate Element Maps', size=(200, -1),
                           action=self.onSaveArrays)
 
         load_btn = Button(self, 'Load Saved XRF Model', size=(200, -1),
                           action=self.onLoadXRFModel)
 
-        self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(150, -1))
-        self.name  = wx.TextCtrl(self, value='abundance', size=(300, -1))
+        self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(100, -1))
+        self.name  = wx.TextCtrl(self, value='abundance', size=(375, -1))
 
         self.fit_status = SimpleText(self, label=NOFITS_MSG)
 
         ir = 0
-        sizer.Add(SimpleText(self, TOP_MSG), (ir, 0), (1, 3), ALL_LEFT, 2)
-        sizer.Add(load_btn,                  (ir, 3), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.fit_status,           (ir, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(load_btn,                  (ir, 2), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(self.fit_status,           (ir, 0), (1, 5), ALL_LEFT, 2)
-
-        ir += 1
-        sizer.Add(SimpleText(self, 'XRF Spectrum:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.mca_choice,                 (ir, 1), (1, 2), ALL_LEFT, 2)
-
-        ir += 1
-        sizer.Add(SimpleText(self, 'Fit Label:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.fit_choice,                (ir, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Use Fit Label:'),  (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.fit_choice,                     (ir, 1), (1, 3), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(SimpleText(self, 'Scaling Factor:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.scale,                       (ir, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.use_nnls,                    (ir, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.scale,                          (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.use_nnls,                       (ir, 2), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(self, 'Group Name:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.name,                       (ir, 1), (1,21), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Save to Group:'), (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.name,                          (ir, 1), (1, 3), ALL_LEFT, 2)
         ir += 1
-        sizer.Add(save_btn,                        (ir, 0), (1, 3), ALL_LEFT, 2)
+        sizer.Add(save_btn,                           (ir, 0), (1, 3), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(HLine(self, size=(400, 4)), (ir, 0), (1, 4), ALL_LEFT, 2)
-
-#         ir += 1
-#         sizer.Add(SimpleText(self, 'Work Arrays: '), (ir, 0), (1, 1), ALL_LEFT, 2)
-#
-#         self.workarray_choice = Choice(self, size=(200, -1),
-#                                        action=self.onSelectArray)
-#         btn_delete  = Button(self, 'Delete Array',  size=(90, -1),
-#                               action=self.onDeleteArray)
-#         self.info1   = wx.StaticText(self, -1, '',  size=(250, -1))
-#         self.info2   = wx.StaticText(self, -1, '',  size=(250, -1))
-
+        sizer.Add(HLine(self, size=(600, 5)), (ir, 0), (1, 4), ALL_LEFT, 2)
 
         pack(self, sizer)
         self.SetupScrolling()
 
-    def onSpectrum(self, event=None):
-        print("selected spectrum ", self.spect_choice.GetStringSelection())
-
     def onSaveArrays(self, evt=None):
-        print("on save arrays")
-        print(self.owner.larch)
+        self.current_fit = cfit = self.fit_choice.GetSelection()
+        try:
+            thisfit = self.owner.larch.symtable._xrfresults[cfit]
+        except:
+            thisfit = None
+        if thisfit is None:
+            print("Unknown fit? " , cfit,
+                  self.owner.larch.symtable._xrfresults)
+            return
+
+        scale = self.scale.GetValue()
+        method = 'nnls' if self.use_nnls.IsChecked() else 'lstsq'
+        xrmfile = self.owner.current_file
+        workname = fix_varname(self.name.GetValue())
+
+        cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
+        scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
+        for key, val in weights.items():
+             {groupname:s}.add_work_array(val, fix_varname(key), parent='{workname:s}')
+        #endfor
+        """
+        cmd = cmd.format(cfit=cfit, groupname=xrmfile.groupname, ptime=xrmfile.pixeltime,
+                         workname=workname, scale=scale, method=method)
+        self.owner.larch.eval(cmd)
+        dlist = xrmfile.get_detector_list(use_cache=False)
+        for p in self.owner.nb.pagelist:
+            if hasattr(p, 'update_xrmmap'):
+                p.detectors_set = False
+                p.update_xrmmap(xrmfile=xrmfile, set_detectors=True)
 
     def onLoadXRFModel(self, evt=None):
         _larch = self.owner.larch
@@ -125,14 +130,15 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             path = dlg.GetPath()
         dlg.Destroy()
         if path is not None:
-            print("load XRF Model from file ", path)
-            if not symtab.has_group(XRFGROUP):
-                _larch.eval(MAKE_XRFGROUP_CMD)
-
-            cmd = "json_load('{:s}')".format(path)
-
-
-        setattr(xrfgroup, mcaname, mca)
+            _, fname = os.path.split(path)
+            if not symtab.has_group(XRFRESULTS_GROUP):
+                _larch.eval(MAKE_XRFRESULTS_GROUP)
+            _larch.eval("tmp = xrf_fitresult('{:s}')".format(path))
+            _larch.eval("tmp.filename = '{:s}'".format(fname))
+            _larch.eval("_xrfresults.insert(0, tmp)")
+            _larch.eval("del tmp")
+            self.current_fit = 0
+            self.update_xrmmap()
 
     def onOtherSaveArray(self, evt=None):
         name = self.name_in.GetValue()
@@ -165,45 +171,16 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             if hasattr(p, 'update_xrmmap'):
                 p.update_xrmmap(xrmfile=xrmfile, set_detectors=True)
 
-
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
         self.cfile = xrmfile
         symtab = self.owner.larch.symtable
-        xrfdat_group = getattr(symtab, '_xrfdata', None)
-        mcas = {}
-        if xrfdat_group is not None:
-            for sym in dir(xrfdat_group):
-                obj = getattr(xrfdat_group, sym)
-                label = getattr(obj, 'label', None)
-                hist = getattr(obj, 'fit_history', None)
-                if label is not None and hist is not None:
-                    mcas[label] = [h.label for h in hist]
-        if len(mcas) > 0:
+        xrfresults = getattr(symtab, '_xrfresults', [])
+        fit_names = ["%s: %s" % (a.label, a.mcalabel) for a in xrfresults]
+
+        if len(fit_names) > 0:
             self.fit_status.SetLabel(HASFITS_MSG)
-            cur_mcalabel = self.mca_choices.GetSelection()
-            self.mca_choices.Clear()
-            mca_names = list(mca.keys())
-            self.mca_choices.AppendItems(mca_names)
-            self.mca_choices.SetSelection(cur_mcalabel)
-            hist = mca[mca_names[0]]
-            self.fit_choices.AppendItems(hist)
-            self.fit_choices.SetSelection(0)
-
-#         print(symtab,
-#               ' model: ', getattr(symtab, '_xrfmodel', 'no xrf model'),
-#               ' data : ', getattr(symtab, '_xrfdata', 'no xrf data'))
-
-
-
-
-#         self.xrmmap = xrmfile.xrmmap
-#         self.set_file_choices(self.owner.filelist.GetItems())
-#         self.set_det_choices()
-#         self.set_workarray_choices(self.xrmmap)
-#
-#         for vfile in self.varfile.values():
-#             vfile.SetSelection(-1)
-#         self.info1.SetLabel('')
-#         self.info2.SetLabel('')
+            self.fit_choice.Clear()
+            self.fit_choice.AppendItems(fit_names)
+            self.fit_choice.SetSelection(self.current_fit)

@@ -110,12 +110,22 @@ def make_desktop_shortcuts():
     for app in APPS:
         app.create_shortcut()
 
+
+def make_cli(description='run larch program', filedesc='data file'):
+    usage = "usage: %prog [options] file"
+    parser = ArgumentParser(description=description)
+    parser.add_argument('filename', nargs='?',  help=filedesc)
+    args = parser.parse_args()
+    return dict(filename=args.filename)
+
 # entry points:
 def run_gse_mapviewer():
-    """GSE Mapviewer """
+    """Mapviewer"""
     use_mpl_wxagg()
     from larch.wxmap import MapViewer
-    MapViewer().MainLoop()
+    kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
+                      filedesc='XRM Map File (.h5)')
+    MapViewer(**kwargs).MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
@@ -127,14 +137,17 @@ def run_xas_viewer():
     """XAS Viewer """
     use_mpl_wxagg()
     from larch.wxxas import XASViewer
-    XASViewer().MainLoop()
-
+    kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program",
+                      filedesc='XAS data file or Project File (.dat, .prj)')
+    XASViewer(**kwargs).MainLoop()
 
 def run_xrfdisplay():
     """ XRF Display"""
     use_mpl_wxagg()
     from larch.wxlib.xrfdisplay import XRFApp
-    XRFApp().MainLoop()
+    kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
+                    filedesc='MCA File (.mca)')
+    XRFApp(**kwargs).MainLoop()
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""

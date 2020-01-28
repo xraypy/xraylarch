@@ -14,6 +14,7 @@ from functools import partial
 from collections import OrderedDict
 import wx
 import wx.lib.scrolledpanel as scrolled
+
 import wx.lib.mixins.inspection
 
 from wx.richtext import RichTextCtrl
@@ -166,6 +167,10 @@ class XASController():
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
         self.wxparent.statusbar.SetStatusText(msg, panel)
+
+    def close_all_displays(self):
+        "close all displays, as at exit"
+        self.symtable._plotter.close_all_displays()
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
@@ -363,7 +368,7 @@ class XASFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, _larch=None, **kws):
+    def __init__(self, parent=None, _larch=None, filename=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
 
         self.last_array_sel = {}
@@ -381,7 +386,6 @@ class XASFrame(wx.Frame):
         self.larch.symtable._sys.xas_viewer = Group()
 
         self.controller = XASController(wxparent=self, _larch=self.larch)
-        self.current_filename = None
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -396,16 +400,18 @@ class XASFrame(wx.Frame):
         statusbar_fields = [" ", "initializing...."]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+            self.current_filename = filename
+        self.Show()
+        if filename is not None:
+            wx.CallAfter(self.onRead, filename)
 
     def createMainPanel(self):
-
         display0 = wx.Display(0)
         client_area = display0.ClientArea
         xmin, ymin, xmax, ymax = client_area
         xpos = int((xmax-xmin)*0.02) + xmin
         ypos = int((ymax-ymin)*0.04) + ymin
         self.SetPosition((xpos, ypos))
-
 
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(250)
@@ -422,10 +428,8 @@ class XASFrame(wx.Frame):
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
         self.controller.filelist = FileCheckList(leftpanel,
-                                                 # main=self,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
-
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
         tsizer.Add(sel_none, 1, LCEN|wx.GROW, 1)
@@ -850,32 +854,14 @@ class XASFrame(wx.Frame):
                 self.save_athena_project(groups[0], groups, prompt=True)
 
         self.controller.save_config()
-        self.controller.get_display().Destroy()
+        wx.CallAfter(self.controller.close_all_displays)
 
         if self.larch_buffer is not None:
-            try:
-                self.larch_buffer.Destroy()
-            except:
-                pass
-            time.sleep(0.05)
-
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
-            time.sleep(0.05)
-            try:
-                obj.Destroy()
-            except:
-                pass
+            wx.CallAfter(self.larch_buffer.Destroy)
 
         for name, wid in self.subframes.items():
-            if wid is not None:
-                try:
-                    wid.Destroy()
-                except:
-                    pass
-
-        for nam in dir(self.larch.symtable._sys.wx):
-            obj = getattr(self.larch.symtable._sys.wx, nam)
+            if hasattr(wid, 'Destroy'):
+                wx.CallAfter(wid.Destroy)
 
         self.Destroy()
 
@@ -929,7 +915,7 @@ class XASFrame(wx.Frame):
             self.onRead(path)
 
     def onRead(self, path):
-        filedir, filename = os.path.split(path)
+        filedir, filename = os.path.split(os.path.abspath(path))
         if self.controller.get_config('chdir_on_fileopen'):
             os.chdir(filedir)
             self.controller.set_workdir()
@@ -1063,15 +1049,15 @@ class XASFrame(wx.Frame):
 
 
 class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
+    def __init__(self, filename=None, **kws):
+        self.filename = filename
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = XASFrame()
-        frame.Show()
+        frame = XASFrame(filename=self.filename)
         self.SetTopWindow(frame)
 
     def OnInit(self):
@@ -1079,6 +1065,4 @@ class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         return True
 
 def xas_viewer(**kws):
-    s = XASViewer(**kws)
-    s.Show()
-    s.Raise()
+    XASViewer(**kws)

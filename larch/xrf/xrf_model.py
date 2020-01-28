@@ -5,6 +5,8 @@ import json
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.optimize import nnls
+
+
 from lmfit import  Parameters, minimize, fit_report
 from lmfit.printfuncs import gformat
 
@@ -15,9 +17,9 @@ from xraydb.xray import XrayLine
 from .. import Group
 from ..math import index_of, interp, savitzky_golay, hypermet, erfc
 from ..xafs import ftwindow
-from ..utils import group2dict, json_dump
+from ..utils import group2dict, json_dump, json_load
 
-xrf_prediction = namedtuple("xrf_prediction", ("weights", "prediction"))
+xrf_prediction = namedtuple("xrf_prediction", ("weights", "total"))
 xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
                                    'tail', 'sigmax', 'beta', 'gamma',
                                    'vary_center', 'vary_step', 'vary_tail',
@@ -279,7 +281,7 @@ class XRF_Model:
         self.use_escape = False
         self.escape_scale = None
         self.script = ''
-        self._mca = None
+        self.mca = None
         if bgr is not None:
             self.add_background(bgr)
 
@@ -526,7 +528,7 @@ class XRF_Model:
         self.fit_weight = 1.0/fit_wt
 
     def fit_spectrum(self, mca, energy_min=None, energy_max=None):
-        self._mca = mca
+        self.mca = mca
         work_energy = 1.0*mca.energy
         work_counts = 1.0*mca.counts
         floor = 1.e-10*np.percentile(work_counts, [99])[0]
@@ -583,69 +585,15 @@ class XRF_Model:
             arr[np.where(arr<floor)] = 0.0
             tmat.append(arr)
         self.transfer_matrix = np.array(tmat).transpose()
+        return self.get_fitresult()
 
-    def apply_model(self, spectrum, scale=1.0, count_time=None, method='lstsq'):
-        """
-        apply fitted model to another spectrum,
-        returning a dict of predicted eigenvalues
-        for the supplied spectrum
-        """
-        if self.transfer_matrix is None:
-            raise ValueError("need to fit a spectrum first")
-
-        fit_method = predict_methods.get(method, lstsq)
-        results = fit_method(self.transfer_matrix, spectrum*self.fit_window)
-
-        # scale by scaling factor and relative count time
-        if count_time is None:
-            count_time = self.count_time
-        scale = scale * self.count_time / count_time
-
-        weights = {}
-        prediction = 0.0*spectrum[:]
-        for i, name in enumerate(self.eigenvalues.keys()):
-            weights[name] = results[0][i] * scale
-            prediction += results[0][i] * self.transfer_matrix[:, i]
-
-        return xrf_prediction(weights, prediction)
-
-    def apply_to_map(self, mapdata, pixel_time=None, scale=1.0, method='lstsq'):
-        """
-        apply fitted model to  NY x NX array of spectra as from an XRF Map
-        returning a dict of predicted maps for the supplied spectrum
-        """
-        if self.transfer_matrix is None:
-            raise ValueError("need to fit a spectrum first")
-        # scale by scaling factor and relative count time
-        if pixel_time is None:
-            pixel_time = 1
-        scale = scale * self.count_time / pixel_time
-
-        ny, nx, nchan = mapdata.shape
-        nchanx, ncomps = self.transfer_matrix.shape
-        nchanw = self.fit_window.shape[0]
-        if nchan != nchanx or nchan != nchanw:
-            raise ValueError("mapdata has wrong shape ", mapdata.shape)
-
-        fit_method = predict_methods.get(method, lstsq)
-        pred = np.zeros((ny, nx, ncomps), dtype='float32')
-        for iy in range(ny):
-            for ix in range(nx):
-                results = fit_method(self.transfer_matrix,
-                                     mapdata[iy,ix,:]*self.fit_window)
-                for i in range(ncomps):
-                    pred[iy,ix,i] = results[0][i] * scale
-
-        return {name: pred[:,:,i] for i, name in enumerate(self.eigenvalues.keys())}
-
-
-    def compile_fitresults(self, label='fit result', script='# noscript'):
+    def get_fitresult(self, label='XRF fit result', script='# no script supplied'):
         """a simple compilation of fit settings results
         to be able to easily save and inspect"""
-        out = Group(label=label, script=script, mca=self._mca)
+        out = XRFFitResult(label=label, script=script, mca=self.mca)
 
         for attr in ('filename', 'label'):
-            setattr(out, 'mca' + attr, getattr(self._mca, attr, 'unknown'))
+            setattr(out, 'mca' + attr, getattr(self.mca, attr, 'unknown'))
 
         for attr in ('params', 'var_names', 'chisqr', 'redchi', 'nvarys',
                      'nfev', 'ndata', 'aic', 'bic', 'aborted', 'covar', 'ier',
@@ -673,51 +621,173 @@ class XRF_Model:
         out.filters = []
         for ft in self.filters:
             out.filters.append({attr: getattr(ft, attr) for attr in mater_attrs})
-        # out.matrix_layers = []
         return out
 
+class XRFFitResult(Group):
+    """Result of XRF Fit"""
+    def __init__(self, label='xrf fit', filename=None, script='# No script',
+                 mca=None, **kws):
+        kwargs = dict(label=label, filename=filename, script=script, mca=mca)
+        kwargs.update(kws)
+        Group.__init__(self,  **kwargs)
+
+    def __repr__(self):
+        return 'XRFFitResult(%r, filename=%r)' % (self.label, self.filename)
+
     def save(self, filename):
-        """save XRF model and result in a manner that can be loaded later"""
-        json_dump(self.compile_fitresults(), filename)
+        """save XRFFitResult result in a manner that can be loaded later"""
+        tmp = {}
+        for key, val in group2dict(self).items():
+            if key in ('__name__', '__repr__', 'save', 'load', 'export',
+                       '_prep_decompose', 'decompose_mca', 'decompose_map'):
+                continue
+            if key == 'mca':
+                val = val.dump_mcafile()
+            tmp[key] = val
+        json_dump(tmp, filename)
+
+    def load(self, filename):
+        from ..io import GSEMCA_File
+        for key, val in json_load(filename).items():
+            if key == 'mca':
+                val = GSEMCA_File(text=val)
+            setattr(self, key, val)
 
     def export(self, filename):
         """save result to text file"""
-        result = self.compile_fitresults()
-
-        buff = ['# XRF Fit %s: %s' % (self._mca.label, result.label),
-                '## Fit Script:']
-        for a in result.script.split('\n'):
+        buff = ['# XRF Fit %s: %s' % (self.mca.label, self.label),
+                '#### Fit Script:']
+        for a in self.script.split('\n'):
             buff.append('#   %s' % a)
-        buff.append('## Fit Report:')
-        for a in result.fit_report.split('\n'):
+        buff.append('#'*60)
+        buff.append('#### Fit Report:')
+        for a in self.fit_report.split('\n'):
             buff.append('#   %s' % a)
-
-        buff.append('#')
-        buff.append('########################################')
-
-        labels = ['energy', 'counts', 'best_fit',
-                  'best_energy', 'fit_window',
+        buff.append('#'*60)
+        labels = ['energy', 'counts', 'best_fit', 'best_energy', 'fit_window',
                   'fit_weight', 'attenuation']
-        labels.extend(list(result.comps.keys()))
+        labels.extend(list(self.comps.keys()))
         buff.append('# %s' % (' '.join(labels)))
 
-        npts = len(self._mca.energy)
+        npts = len(self.mca.energy)
         for i in range(npts):
-            dline = [gformat(self._mca.energy[i]),
-                     gformat(self._mca.counts[i]),
-                     gformat(result.best_fit[i]),
-                     gformat(result.best_en[i]),
-                     gformat(result.fit_window[i]),
-                     gformat(result.fit_weight[i]),
-                     gformat(result.atten[i])]
-            for c in result.comps.values():
+            dline = [gformat(self.mca.energy[i]),
+                     gformat(self.mca.counts[i]),
+                     gformat(self.best_fit[i]),
+                     gformat(self.best_en[i]),
+                     gformat(self.fit_window[i]),
+                     gformat(self.fit_weight[i]),
+                     gformat(self.atten[i])]
+            for c in self.comps.values():
                 dline.append(gformat(c[i]))
             buff.append(' '.join(dline))
         buff.append('\n')
         with open(filename, 'w') as fh:
             fh.write('\n'.join(buff))
 
+    def _prep_decompose(self, scale, count_time, method):
+        if self.transfer_matrix is None:
+            raise ValueError("XRFFitResult incomplete: need to fit a spectrum first")
+        fit_method = predict_methods.get(method, lstsq)
+        if count_time is None:
+            count_time = self.count_time
+        scale *= self.count_time / count_time
+        return fit_method, scale
 
+    def decompose_spectrum(self, counts, scale=1.0, count_time=None, method='lstsq'):
+        """
+        Apply XRFFitResult to another spectrum, decomposing it into elemenetal weights
+
+        Arguments:
+        ----------
+        counts       MCA counts for spectrum, on the same energy grid as the fitted data.
+        scale        scale factor to apply to output weights [1]
+        count_time   count time in seconds [None - use count_time of fitted spectrum]
+        method       decomposition method: one of `lstsq` for basic least-squares or
+                     `nnls` for non-negative least-squares [`lstsq`]
+
+        Returns:
+        ---------
+        namedtuple of XRF prediction with elements:
+             weights   dict of element: weights for all components used in the fit
+             total     predicted total spectrum
+        """
+        method, scale = self._prep_decompose(scale, count_time, method)
+        results = method(self.transfer_matrix, counts*self.fit_window)
+        weights = {}
+        total = 0.0*counts
+        for i, name in enumerate(self.eigenvalues.keys()):
+            weights[name] = results[0][i] * scale
+            total += results[0][i] * self.transfer_matrix[:, i]
+
+        return xrf_prediction(weights, total)
+
+    def decompose_map(self, map, scale=1.0, pixel_time=1.0, method='lstsq',
+                      nworkers=4):
+        """
+        Apply XRFFitResult to an XRF Map, decomposing it into maps of elemental weights
+
+        Arguments:
+        ----------
+        map          XRF map array: [NY, NX, NMCA], on the same energy grid as the fitted data.
+        scale        scale factor to apply to output weights [1]
+        pixel_time   count time in seconds for each pixel [1.0]
+        method       decomposition method: one of `lstsq` for basic least-squares or
+                     `nnls` for non-negative least-squares [`lstsq`]
+
+        Returns:
+        ---------
+        dict of elements: weights maps (NY, NX) for all components used in the fit
+        """
+        method, scale = self._prep_decompose(scale, pixel_time, method)
+        ny, nx, nchan = map.shape
+        nchanx, ncomps = self.transfer_matrix.shape
+        nchanw = self.fit_window.shape[0]
+        if nchan != nchanx or nchan != nchanw:
+            raise ValueError("map data has wrong shape ", map.shape)
+
+        win = np.where(self.fit_window > 0)[0]
+        w0 = max(0, win[0]-100)
+        w1 = min(nchan-1,  win[-1]+100)
+
+        xfer = self.transfer_matrix[w0:w1, :]
+        win = self.fit_window[w0:w1]
+        result = np.zeros((ny, nx, ncomps), dtype='float32')
+
+        def decomp_lstsq(i0, i1):
+            """very efficient lstsq"""
+            tmap = map[i0:i1, :, w0:w1].swapaxes(1, 2)
+            ny = tmap.shape[0]
+            win.shape = (win.shape[0], 1)
+            for iy in range(ny):
+                results = lstsq(xfer, win*tmap[iy])
+                for i in range(ncomps):
+                    result[i0+iy,:,i] = results[0][i] * scale
+
+        def decomp_nnls(i0, i1):
+            """need to explicitly loop of nx as well as ny"""
+            tmap = map[i0:i1, :, w0:w1]
+            ny = tmap.shape[0]
+            for iy in range(ny):
+                for ix in range(nx):
+                    results = nnls(xfer, win*tmap[iy,ix,:])
+                    for i in range(ncomps):
+                        result[i0+iy,ix,i] = results[0][i] * scale
+
+        decomp = decomp_lstsq
+        if method == nnls:
+            decomp = decomp_nnls
+        # if we're going to use up more than ~1Gb per lstsq, do it in chunks
+        if (ny*nx*(w1-w0) > 1e8):
+            nchunks = 1+int(1.e-8*ny*nx*(w1-w0))
+            ns = int(ny/nchunks)
+            for i in range(nchunks):
+                ilast = (i+1)*ns
+                if i == nchunks-1: ilast = ny
+                decomp(i*ns, ilast)
+        else:
+            decomp(0, ny)
+        return {name: result[:,:,i] for i, name in enumerate(self.eigenvalues.keys())}
 
 def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False, **kws):
     """create an XRF Peak
@@ -726,6 +796,18 @@ def xrf_model(xray_energy=None, energy_min=1500, energy_max=None, use_bgr=False,
     ---------
      an XRF_Model instance
     """
-
     return XRF_Model(xray_energy=xray_energy, use_bgr=use_bgr,
                      energy_min=energy_min, energy_max=energy_max, **kws)
+
+def xrf_fitresult(save_file=None):
+    """create an XRF Fit Result, possibly restoring from saved file
+
+    Returns:
+    ---------
+     an XRFFitResult instance
+    """
+
+    out =  XRFFitResult()
+    if save_file is not None:
+        out.load(save_file)
+    return out

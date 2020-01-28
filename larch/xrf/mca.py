@@ -311,6 +311,35 @@ class MCA(Group):
         f.write("\n")
         f.close()
 
+    def dump_mcafile(self):
+        """return text of mca file, not writing to disk, as for dump/load"""
+        b = ['VERSION:    3.1', 'ELEMENTS:   1',
+             'DATE:       %s' % self.start_time,
+             'CHANNELS:   %d' % len(self.counts),
+             'REAL_TIME:  %f' % self.real_time,
+             'LIVE_TIME:  %f' % self.live_time,
+             'CAL_OFFSET: %e' % self.offset,
+             'CAL_SLOPE:  %e' % self.slope,
+             'CAL_QUAD:   %e' % self.quad,
+             'ROIS:       %d' % len(self.rois)]
+
+        # ROIS
+        for i, roi in enumerate(self.rois):
+            b.extend(['ROI_%i_LEFT:  %d' % (i, roi.left),
+                      'ROI_%i_RIGHT: %d' % (i, roi.right),
+                      'ROI_%i_LABEL: %s &' % (i, roi.name)])
+
+        # environment
+        for e in self.environ:
+            b.append('ENVIRONMENT: %s="%s" (%s)' % (e.addr, e.val, e.desc))
+
+        # data
+        b.append('DATA: ')
+        for d in self.counts:
+            b.append(" %d" % d)
+        b.append('')
+        return '\n'.join(b)
+
     def save_mcafile(self, filename):
         """write MCA file
 
@@ -318,33 +347,8 @@ class MCA(Group):
         -----------
         * filename: output file name
         """
-        fp = open(filename, 'w')
-        fp.write('VERSION:    3.1\n')
-        fp.write('ELEMENTS:   1\n')
-        fp.write('DATE:       %s\n' % self.start_time)
-        fp.write('CHANNELS:   %i\n' % len(self.counts))
-        fp.write('REAL_TIME:  %f\n' % self.real_time)
-        fp.write('LIVE_TIME:  %f\n' % self.live_time)
-        fp.write('CAL_OFFSET: %e\n' % self.offset)
-        fp.write('CAL_SLOPE:  %e\n' % self.slope)
-        fp.write('CAL_QUAD:   %e\n' % self.quad)
-
-        # Write ROIS  in channel units
-        fp.write('ROIS:      %i\n' % len(self.rois))
-        for i, roi in enumerate(self.rois):
-            fp.write('ROI_%i_LEFT:  %i\n' % (i, roi.left))
-            fp.write('ROI_%i_RIGHT:  %i\n' % (i, roi.right))
-            fp.write('ROI_%i_LABEL: %s &\n' % (i, roi.name))
-
-        # environment
-        for e in self.environ:
-            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
-
-        # data
-        fp.write('DATA: \n')
-        for d in self.counts:
-            fp.write(" %s\n" % d)
-        fp.close()
+        with open(filename, 'w') as fh:
+            fh.write(self.dump_mcafile())
 
 def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
                name='mca', start_time='', real_time=0, live_time=0,

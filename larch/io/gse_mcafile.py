@@ -35,9 +35,7 @@ class GSEMCA_File(Group):
     """
     Read GSECARS style MCA / Multi-element MCA files
     """
-    def __init__(self, filename=None, bad=None, **kws):
-
-
+    def __init__(self, filename=None, text=None, bad=None, **kws):
         kwargs = {'name': 'GSE MCA File: %s' % filename}
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -50,6 +48,8 @@ class GSEMCA_File(Group):
         self.filename = filename
         if filename:
             self.read(filename=filename)
+        elif text is not None:
+            self.readtext(text)
 
     def __get_mca0(self, chan_min=2, min_counts=2):
         """ find first good detector for alignment
@@ -135,13 +135,15 @@ class GSEMCA_File(Group):
 
     def read(self, filename=None, bad=None):
         """read GSE MCA file"""
-
         self.filename = filename
+        with open(filename, 'r') as fh:
+            return self.readtext(fh.read(), bad=bad)
+
+    def readtext(self, text, bad=None):
+        """read text of GSE MCA file"""
+        lines = text.split('\n')
         if bad is None:
             bad = self.bad
-        fh    = open(filename)
-        lines = fh.readlines()
-        fh.close()
         nrow       = 0
         data_mode  = 'HEADER'
         counts     = []
@@ -292,6 +294,11 @@ class GSEMCA_File(Group):
         -----------
         * filename: output file name
         """
+        with open(filename, 'w') as fh:
+            fh.write(self.dump_mcafile())
+
+    def dump_mcafile(self):
+        """return text of MCA file, not writing to disk, as for dumping"""
         nchans = len(self.counts)
         ndet   = len(self.mcas)
 
@@ -302,21 +309,20 @@ class GSEMCA_File(Group):
         slopes  = ["%e" % m.slope     for m in self.mcas]
         quads   = ["%e" % m.quad      for m in self.mcas]
 
-        fp = open(filename, 'w')
-        fp.write('VERSION:    3.1\n')
-        fp.write('ELEMENTS:   %i\n' % ndet)
-        fp.write('DATE:       %s\n' % self.mcas[0].start_time)
-        fp.write('CHANNELS:   %i\n' % nchans)
-        fp.write('REAL_TIME:  %s\n' % ' '.join(rtimes))
-        fp.write('LIVE_TIME:  %s\n' % ' '.join(ltimes))
-        fp.write('CAL_OFFSET: %s\n' % ' '.join(offsets))
-        fp.write('CAL_SLOPE:  %s\n' % ' '.join(slopes))
-        fp.write('CAL_QUAD:   %s\n' % ' '.join(quads))
+        b = ['VERSION:    3.1']
+        b.append('ELEMENTS:   %i' % ndet)
+        b.append('DATE:       %s' % self.mcas[0].start_time)
+        b.append('CHANNELS:   %i' % nchans)
+        b.append('REAL_TIME:  %s' % ' '.join(rtimes))
+        b.append('LIVE_TIME:  %s' % ' '.join(ltimes))
+        b.append('CAL_OFFSET: %s' % ' '.join(offsets))
+        b.append('CAL_SLOPE:  %s' % ' '.join(slopes))
+        b.append('CAL_QUAD:   %s' % ' '.join(quads))
 
         # Write ROIS  in channel units
         nrois = ["%i" % len(m.rois) for m in self.mcas]
         rois = [m.rois for m in self.mcas]
-        fp.write('ROIS:      %s\n' % ' '.join(nrois))
+        b.append('ROIS:      %s' % ' '.join(nrois))
 
         # don't assume number of ROIS is same for all elements
         nrois = max([len(r) for r in rois])
@@ -330,19 +336,20 @@ class GSEMCA_File(Group):
             names = ' &  '.join([r[i].name  for r in rois])
             left  = ' '.join(['%i' % r[i].left  for r in rois])
             right = ' '.join(['%i' % r[i].right for r in rois])
-            fp.write('ROI_%i_LEFT:  %s\n' % (i, left))
-            fp.write('ROI_%i_RIGHT:  %s\n' % (i, right))
-            fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
+            b.append('ROI_%i_LEFT:  %s' % (i, left))
+            b.append('ROI_%i_RIGHT:  %s' % (i, right))
+            b.append('ROI_%i_LABEL: %s &' % (i, names))
 
         # environment
         for e in self.environ:
-            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+            b.append('ENVIRONMENT: %s="%s" (%s)' % (e.addr, e.val, e.desc))
         # data
-        fp.write('DATA: \n')
+        b.append('DATA: ')
         for i in range(nchans):
             d = ' '.join(["%i" % m.counts[i] for m in self.mcas])
-            fp.write(" %s\n" % d)
-        fp.close()
+            b.append(" %s" % d)
+        b.append('')
+        return '\n'.join(b)
 
     def save_ascii(self, filename):
         """
@@ -396,6 +403,6 @@ class GSEMCA_File(Group):
         fp.close()
 
 
-def gsemca_group(fname, _larch=None, **kws):
+def gsemca_group(filename=None, text=None, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
-    return GSEMCA_File(fname)
+    return GSEMCA_File(filename=filename, text=text)

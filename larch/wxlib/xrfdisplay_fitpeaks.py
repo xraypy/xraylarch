@@ -40,8 +40,7 @@ from larch import Group
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
 
-from .xrfdisplay_utils import (XRFGROUP, mcaname,
-                               XRFRESULTS_GROUP,
+from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
                                MAKE_XRFRESULTS_GROUP)
 
 def read_filterdata(flist, _larch):
@@ -95,8 +94,8 @@ xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_c
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})"""
 
 xrfmod_fitscript = """
-_xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
-_xrfresults.insert(0, _xrfmodel.compile_fitresults())
+_xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
+_xrfresults.insert(0, _xrffitresult)
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
@@ -104,7 +103,7 @@ xrfmod_matrix = "_xrfmodel.set_matrix('{name:s}', {thick:.5f}, density={density:
 xrfmod_pileup = "_xrfmodel.add_pileup(scale={scale:.3f}, vary={vary:s})"
 xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 
-xrfmod_savejs = "json_dump(_xrfresults[{nfit:d}], '{filename:s}')"
+xrfmod_savejs = "_xrfresults[{nfit:d}].save('{filename:s}')"
 
 xrfmod_elems = """
 for atsym in {elemlist:s}:
@@ -116,20 +115,19 @@ Filter_Lengths = ['microns', 'mm', 'cm']
 Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
                     'beryllium', 'aluminum', 'mylar', 'pmma']
 
-
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
     def __init__(self, parent, size=(700, 825)):
         self.parent = parent
         self._larch = parent.larch
-
+        symtable = self._larch.symtable
         # fetch current spectra from parent
-        if not symtab.has_group(XRFRESULTS_GROUP):
-            self.larch.eval(MAKE_XRFRESULTS_GROUP_CMD)
+        if not symtable.has_group(XRFRESULTS_GROUP):
+            self._larch.eval(MAKE_XRFRESULTS_GROUP)
 
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
-        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
+        self.xrfresults = symtable.get_symbol(XRFRESULTS_GROUP)
+        xrfgroup = symtable.get_group(XRFGROUP)
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
@@ -150,30 +148,18 @@ class FitSpectraFrame(wx.Frame):
         self.owids = {}
 
         pan = GridPanel(self)
-        mca_groups = []
-        mca_default = 0
-        for attr in dir(xrfgroup):
-            if attr.startswith('mca'):
-                obj = getattr(xrfgroup, attr)
-                if not hasattr(obj, 'label') and hasattr(obj, 'filename'):
-                    obj.label = obj.filename
-                label = getattr(obj, 'label', '?')
-                if hasattr(obj, 'counts') and label is not None and len(label) > 1:
-                    mca_groups.append(label)
-                    if attr == self.mcagroup:
-                        mca_default = len(mca_groups)-1
+        mca_label = getattr(self.mca, 'label', None)
+        if mca_label is None:
+            mca_label = getattr(self.mca, 'filename', 'mca')
 
-        self.wids['mca_choice'] = Choice(pan, choices=mca_groups, size=(400, -1),
-                                         default=mca_default)
-        #                                 action=self.onDetMaterial)
-
+        self.wids['mca_name'] = SimpleText(pan, mca_label, size=(300, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
         self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
                                        action=self.onFitModel)
 
         pan.AddText("  XRF Spectrum: ", colour='#880000')
-        pan.Add(self.wids['mca_choice'], dcol=3)
+        pan.Add(self.wids['mca_name'], dcol=3)
         pan.Add(self.wids['btn_calc'], newrow=True)
         pan.Add(self.wids['btn_fit'])
 
@@ -915,7 +901,7 @@ class FitSpectraFrame(wx.Frame):
         self.onCompSetElemAbundance()
 
     def UpdateCompositionPage(self, event=None):
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
         if len(self.xrfresults) > 0:
             result = self.get_fitresult()
             fitlab = self.owids['comp_fitlabel']
@@ -1104,6 +1090,7 @@ class FitSpectraFrame(wx.Frame):
         vars = {'Vary':'True', 'Fix': 'False', 'True':True, 'False': False}
         opts = {}
         for key, wid in self.wids.items():
+            val = None
             if hasattr(wid, 'GetValue'):
                 val = wid.GetValue()
             elif hasattr(wid, 'IsChecked'):
@@ -1112,8 +1099,8 @@ class FitSpectraFrame(wx.Frame):
                 val = wid.GetStringSelection()
             elif hasattr(wid, 'GetStringSelection'):
                 val = wid.GetStringSelection()
-            else:
-                opts[key] = '????'
+            elif hasattr(wid, 'GetLabel'):
+                val = wid.GetLabel()
             if isinstance(val, str) and val.title() in vars:
                 val = vars[val.title()]
             opts[key] = val
@@ -1257,11 +1244,11 @@ class FitSpectraFrame(wx.Frame):
 
         self._larch.eval(fit_script)
         dgroup = self._larch.symtable.get_group(self.mcagroup)
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
 
         xrfresult = self.xrfresults[0]
         xrfresult.script = "%s\n%s" % (self.model_script, fit_script)
-        xrfresult.label = "fit %d" % (1+len(self.xrfresults))
+        xrfresult.label = "fit %d" % (len(self.xrfresults))
         self.plot_model(init=True, with_comps=True)
         for i in range(len(self.nb.pagelist)):
             if self.nb.GetPageText(i).strip().startswith('Fit R'):
@@ -1329,7 +1316,7 @@ class FitSpectraFrame(wx.Frame):
         if nfit is None:
             nfit = self.nfit
 
-        self.xrfresults = self._larch.symtable.get_group(XRFRESULTS_GROUP)
+        self.xrfresults = self._larch.symtable.get_symbol(XRFRESULTS_GROUP)
         self.nfit = max(0, nfit)
         self.nfit = min(self.nfit, len(self.xrfresults)-1)
         return self.xrfresults[self.nfit]
