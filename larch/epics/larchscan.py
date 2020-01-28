@@ -213,6 +213,7 @@ def set_dbinfo(key, value, notes=None, _larch=None, **kws):
     return _scandb.set_info(key, value, notes=notes)
 
 def connect_scandb(scandb=None, dbname=None, _larch=None, **kwargs):
+    from epicsscan.scandb import ScanDB, InstrumentDB
     global _scandb, _instdb
     if _scandb is not None:
         return _scandb
