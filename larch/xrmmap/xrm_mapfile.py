@@ -1571,13 +1571,11 @@ class GSEXRM_MapFile(object):
         if version_ge(self.version, '2.0.0'):
             if detname in roigrp.keys():
                 rois = sort_roi_limits(roigrp[detname])
-            elif detname in EXTRA_DETGROUPS:
-                rois = list(self.xrmmap[detname].keys())
             else:
                 det = self.xrmmap[detname]
-                if 'detector' in det.attrs.get('type'):
+                if (detname in EXTRA_DETGROUPS or
+                    'detector' in det.attrs.get('type')):
                     rois = list(det.keys())
-
         else:
             if detname in EXTRA_DETGROUPS:
                 rois = list(self.xrmmap[detname].keys())

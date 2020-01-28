@@ -104,17 +104,17 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
         scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
         for key, val in weights.items():
-             {groupname:s}.add_work_array(val, fix_varname(key.lower()), parent='{workname:s}')
+             {groupname:s}.add_work_array(val, fix_varname(key), parent='{workname:s}')
         #endfor
         """
         cmd = cmd.format(cfit=cfit, groupname=xrmfile.groupname, ptime=xrmfile.pixeltime,
                          workname=workname, scale=scale, method=method)
-        # print("## decompose script: ")
-        # print(cmd)
-
         self.owner.larch.eval(cmd)
-        self.owner.detectors_set = False
-        xrmfile.get_detector_list(use_cache=False)
+        dlist = xrmfile.get_detector_list(use_cache=False)
+        for p in self.owner.nb.pagelist:
+            if hasattr(p, 'update_xrmmap'):
+                p.detectors_set = False
+                p.update_xrmmap(xrmfile=xrmfile, set_detectors=True)
 
     def onLoadXRFModel(self, evt=None):
         _larch = self.owner.larch

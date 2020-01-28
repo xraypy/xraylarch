@@ -497,8 +497,6 @@ class MapPanel(GridPanel):
         self.last_process_time = time.time()
 
     def set_det_choices(self):
-        #if self.detectors_set:
-        #     return
         det_list = self.cfile.get_detector_list()
         for det_ch in self.det_choice:
             det_ch.SetChoices(det_list)
@@ -566,7 +564,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
-        if xrmfile is None: xrmfile = self.owner.current_file
+
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
         def time_between(d1, d2):
             d1 = datetime.datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
