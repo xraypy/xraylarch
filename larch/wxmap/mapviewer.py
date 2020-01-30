@@ -2165,7 +2165,7 @@ class MapViewerFrame(wx.Frame):
 
     def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
+        # self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
