@@ -24,7 +24,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         if self.hist_file is None:
             self.hist_file= os.path.join(os.environ.get('HOME','.'),
                                          DEFAULT_HISTORYFILE)
-        self.LoadHistory()
+        # self.LoadHistory()
         self.hist_mark = len(self.hist_buff)
         self.hist_sessionstart = self.hist_mark
 
