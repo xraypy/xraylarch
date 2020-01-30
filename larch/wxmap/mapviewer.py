@@ -107,7 +107,7 @@ BEAMLINE = '13-ID-E'
 FACILITY = 'APS'
 
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
-PROCROWS_CHOICES = ('All', '10', '25', '50', '100', '250', '500')
+PROCROWS_CHOICES = ('All', '500', '200', '100', '50', '20', '10')
 PLOT_OPERS = ('/', '*', '-', '+')
 
 ESCAN_CRED = os.environ.get('ESCAN_CREDENTIALS', None)
@@ -190,7 +190,7 @@ class MapPanel(GridPanel):
         self.mapproc_btn =  Button(self, 'Add More Rows', size=(CWID, -1),
                                    action=self.onProcessMap)
         self.mapproc_nrows = Choice(self, choices=PROCROWS_CHOICES, size=(CWID, -1))
-        self.mapproc_nrows.SetStringSelection('50')
+        self.mapproc_nrows.SetStringSelection('100')
 
         self.Add(SimpleText(self, 'Build Map From Raw Data Folder:'),
                  dcol=2, style=LEFT, newrow=True)
