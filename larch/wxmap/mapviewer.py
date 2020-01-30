@@ -541,7 +541,6 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids = {}
 
         ir = 0
-
         for label in ('Facility','Run Cycle','Proposal Number','User group',
                       'H5 Map Created',
                       'Scan Time','File Compression','Map Data',
@@ -564,7 +563,6 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
-
         if xrmfile is None:
             xrmfile = self.owner.current_file
         xrmmap = xrmfile.xrmmap
@@ -981,23 +979,20 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         xrmmap = xrmfile.xrmmap
         self.set_area_choices(xrmmap, show_last=True)
         self.set_enabled_btns(xrmfile=xrmfile)
-
         self.report.DeleteAllItems()
         self.report_data = []
         try:
             self.onSelect()
         except:
             pass
-
+        
     def set_enabled_btns(self, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
 
         xrmfile.reset_flags()
-
         self.xrd2d_plot.Enable(xrmfile.has_xrd2d)
         self.xrd1d_plot.Enable(xrmfile.has_xrd1d)
-
 
     def clear_area_choices(self):
 
@@ -1103,12 +1098,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         yvals, xvals = np.where(area.value)
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
-        try:
-            mca   = self.owner.current_file.get_mca_area(aname)
-            dtime = mca.real_time
-        except:
-            pass
-
         info1_fmt = '%i Pixels, %.3f seconds'
         info2_fmt = ' Range (pixels)   X: [%i:%i], Y: [%i:%i] '
         self.info1.SetLabel(info1_fmt % (npix, dtime))
@@ -1427,7 +1416,7 @@ class MapViewerFrame(wx.Frame):
         cb = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
         if callable(cb):
             cb()
-
+            
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.current_file
