@@ -142,16 +142,16 @@ def create_xrmmap(h5root, root=None, dimension=2, folder='', start_time=None):
     ROI definitions, MCA calibration, Environment Data, etc'''
 
     g = xrmmap.create_group('areas')
-    g.attr['type'] = 'areas'
+    g.attrs['type'] = 'areas'
 
     g = xrmmap.create_group('positions')
-    g.attr['type'] = 'position arrays'
+    g.attrs['type'] = 'position arrays'
 
     g = xrmmap.create_group('scalars')
-    g.attr['type'] = 'scalar detectors'
+    g.attrs['type'] = 'scalar detectors'
 
-    xrmmap.create_group('work')
-    g.attr['type'] = 'virtual detectors for work/analysis arrays'
+    g = xrmmap.create_group('work')
+    g.attrs['type'] = 'virtual detectors for work/analysis arrays'
 
     conf = xrmmap['config']
     for name in ('scan', 'general', 'environ', 'positioners', 'notes',
