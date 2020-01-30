@@ -1803,9 +1803,9 @@ class MapViewerFrame(wx.Frame):
         self.larch_buffer.Raise()
 
     def onFolderSelect(self, evt=None):
-        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
-        dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
-                           style=style)
+        dlg = wx.DirDialog(self, 'Select Working Directory:',
+                           os.getcwd(),
+                           style=wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE)
 
         if dlg.ShowModal() == wx.ID_OK:
             basedir = os.path.abspath(str(dlg.GetPath()))
