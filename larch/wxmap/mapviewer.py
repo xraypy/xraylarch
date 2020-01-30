@@ -480,21 +480,12 @@ class MapPanel(GridPanel):
                 max_new_rows = int(max_new_rows)
         self.owner.process_file(fname, max_new_rows=max_new_rows)
         self.update_xrmmap(xrmfile=self.owner.current_file, set_detectors=True)
-        # self.set_det_choices()
 
     def onROIMap(self, event=None, new=True):
         plotcmd = partial(self.ShowMap, new=new)
         if 'correlation' in self.plot_choice.GetStringSelection().lower():
             plotcmd = partial(self.ShowCorrel, new=new)
-
-        if new:
-            plotcmd()
-        else:
-            pref, fname = os.path.split(self.owner.current_file.filename)
-            self.owner.process_file(fname, max_new_rows=25,
-                                    on_complete=plotcmd)
-
-        self.last_process_time = time.time()
+        plotcmd()
 
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
@@ -1403,9 +1394,9 @@ class MapViewerFrame(wx.Frame):
         for panel in (MapPanel, MapInfoPanel, MapAreaPanel, MapMathPanel,
                       TomographyPanel, XRFAnalysisPanel):
             nbpanels[panel.label] = panel
-
         self.nb = flatnotebook(parent, nbpanels, panelkws={'owner':self},
                                on_change=self.onNBChanged)
+        self.roimap_panel = self.nb.GetPage(0)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.title, 0, ALL_CEN)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -1733,7 +1724,12 @@ class MapViewerFrame(wx.Frame):
         if (self.check_ownership(filename) and
             self.current_file.folder_has_newdata()):
             if process_file:
-                self.process_file(filename, max_new_rows=25)
+                mnew = self.roimap_panel.mapproc_nrows.GetStringSelection()
+                try:
+                    mnew = int(mnew)
+                except:
+                    mnew = None
+                self.process_file(filename, max_new_rows=mnew)
 
         ny, nx = self.current_file.get_shape()
         self.title.SetLabel('%s: (%i x %i)' % (filename, nx, ny))
@@ -1984,7 +1980,12 @@ class MapViewerFrame(wx.Frame):
             self.filelist.SetStringSelection(fname)
 
         if self.check_ownership(fname):
-            self.process_file(fname, max_new_rows=50)
+            mnew = self.roimap_panel.mapproc_nrows.GetStringSelection()
+            try:
+                mnew = int(mnew)
+            except:
+                mnew = None
+            self.process_file(fname, max_new_rows=mnew)
 
         self.ShowFile(filename=fname)
         if parent is not None and len(parent) > 0:
@@ -2108,7 +2109,7 @@ class MapViewerFrame(wx.Frame):
         if self.current_file is not None and len(self.files_in_progress) == 0:
             if self.current_file.folder_has_newdata():
                 path, fname = os.path.split(self.current_file.filename)
-                self.process_file(fname, max_new_rows=1200300)
+                self.process_file(fname, max_new_rows=1e6)
 
     def process_file(self, filename, max_new_rows=None, on_complete=None):
         """Request processing of map file.
