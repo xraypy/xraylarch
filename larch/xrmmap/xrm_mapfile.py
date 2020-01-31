@@ -1550,6 +1550,7 @@ class GSEXRM_MapFile(object):
 
         return dlist
 
+
     def get_roi_list(self, det_name, force=False):
         """
         get a list of rois from detector
@@ -1611,16 +1612,10 @@ class GSEXRM_MapFile(object):
         det_list = []
         if version_ge(self.version, '2.0.0'):
             det_list = build_dlist(xrmmap['roimap'])
-            for det in EXTRA_DETGROUPS:
-                if det in xrmmap and det not in det_list:
-                    det_list.append(det)
         else:
             det_list = build_dlist(xrmmap)
             for det in build_dlist(xrmmap['roimap']):
                 if det not in det_list:
-                    det_list.append(det)
-            for det in EXTRA_DETGROUPS:
-                if (det in xrmmap and det not in det_list):
                     det_list.append(det)
 
         # add any other groups with 'detector' in the `type` attribute:
@@ -2928,14 +2923,14 @@ class GSEXRM_MapFile(object):
         if roiname is not None: roiname = roiname.lower()
 
         if version_ge(version, '2.0.0'):
-            if detname is not None:
-                detname = detname.replace('det','mca')
+            for d in self.get_detector_list():
+                if detname.lower() == d.lower():
+                    for rname in self.xrmmap[d]:
+                        if roiname.lower() == rname.lower():
+                            return rname, d
 
-            for xdname in EXTRA_DETGROUPS:
-                if xdname in self.xrmmap:
-                    for rname in self.xrmmap[xdname]:
-                        if roiname == rname.lower():
-                            return rname.strip('_raw'), xdname
+            if detname is not None:
+                detname = detname.replace('det', 'mca')
 
             if detname is None:
                 detname = 'roimap/mcasum'
@@ -3009,46 +3004,41 @@ class GSEXRM_MapFile(object):
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
 
-        # print("get roi map ", roiname, det)
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
+
+        det = self._det_name(det)
+        dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         if roiname == '1' or roiname == 1:
             out = np.ones((nrow, ncol))
             if hotcols:
                 out = out[1:-1]
             return out
-        if det is not None:
-            dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         roi, detaddr = self.check_roi(roiname, det)
-        ext = 'raw'
-        if det in ('scalars', 'work'):
-            ext = ''
-        elif dtcorrect:
+        ext = ''
+        if detaddr.startswith('roimap'):
+            ext = 'raw'
+        if dtcorrect:
             ext = 'cor'
 
-        # print("EXTRA DETGROUPS ", EXTRA_DETGROUPS)
-        # print(" GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
-        # print("  detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
+        # print("GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
+        # print("detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
-            grp = self.xrmmap[det]
-            if 'detector' in grp.attrs['type']:
-                if roiname in grp:
-                    out = grp[roiname][:]
+            if detaddr.startswith('roimap'):
+                roi_ext = '%s/' + ext
             else:
-                if detaddr.startswith('roimap'):
-                    roi_ext = '%s/' + ext
-                else:
-                    roi_ext = '%s_' + ext if ext == 'raw' else '%s'
-                roiaddr =  roi_ext % roi
-                out = self.xrmmap[detaddr][roiaddr][:]
-                if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
-                    _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
-                    detname = '%s%s' % (_detaddr, ext)
-                    out = self.xrmmap[detname][:, :, _roi]
-                    self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
-                    self.xrmmap[detaddr][roiaddr][:, :] = out
+                roi_ext = '%s_' + ext if ext == 'raw' else '%s'
+            roiaddr =  roi_ext % roi
+            out = self.xrmmap[detaddr][roiaddr][:]
+            if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
+                _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
+                detname = '%s%s' % (_detaddr, ext)
+                out = self.xrmmap[detname][:, :, _roi]
+                self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
+                self.xrmmap[detaddr][roiaddr][:, :] = out
+
         else:  # version1
             if det in EXTRA_DETGROUPS:
                 detname = "%s/%s" % (det, roiname)
