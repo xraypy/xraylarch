@@ -34,15 +34,6 @@ class FeffRunner(Group):
                and so on to run individual parts of feff
                ('rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
-          By default, installed versions of the feff executables are
-          run.  To run newly compiled versions from the feff85exafs
-          git repository, set the repo attribute to the top of the
-          respository:
-
-            feff = feffrunner(feffinp='path/to/feff.inp')
-            feff.repo = '/home/bruce/git/feff85exafs'
-            feff.run()
-
           If the symbol _xafs._feff_executable is set to a Feff executable,
           it can be run by doing
 
@@ -65,9 +56,8 @@ class FeffRunner(Group):
           file by that name.
 
     Attributes:
-        feffinp  -- the feff.inp file, absolute or relative to CWD
-        repo     -- when set to the top of the feff85exfas repository,
-                    the newly compiled executables will be used
+        folder   -- the folder to run in, containing feff.inp file
+        feffinp  -- the feff.inp file, absolute or relative to `folder`
         resolved -- the fully resolved path to the most recently run executable
         verbose  -- write screen messages if True
         mpse     -- run opconsat after pot if True
@@ -76,18 +66,18 @@ class FeffRunner(Group):
 
     Feff8l_modules = ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
-    def __init__(self, feffinp='feff.inp', folder=None, verbose=True,
-                 repo=None, _larch=None, **kws):
+    def __init__(self, feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
         kwargs = dict(name='Feff runner')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
         self._larch = _larch
 
-        self.folder   = folder or '.'
+        if folder is None:
+            folder = '.'
+        self.folder   = folder
         self.feffinp  = feffinp
         self.verbose  = verbose
         self.mpse     = False
-        self.repo     = repo
         self.resolved = None
         self.threshold = []
         self.chargetransfer = []
@@ -123,7 +113,7 @@ class FeffRunner(Group):
         if not isfile(feffinp_file):
             raise Exception("feff.inp file '%s' could not be found" % feffinp_file)
 
-        if exe is None:
+        if exe in (None, 'feff8l'):
             for module in self.Feff8l_modules:
                 os.chdir(here)
                 self.run(exe=module)
@@ -224,11 +214,12 @@ class FeffRunner(Group):
         return None
 
 ######################################################################
-def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
+def feffrunner(folder=None, feffinp=None, verbose=True, _larch=None, **kws):
     """
     Make a FeffRunner group given a folder containing a baseline calculation
     """
-    return FeffRunner(feffinp=feffinp, verbose=verbose, repo=repo, _larch=_larch)
+    return FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose,
+                      _larch=_larch, **kws)
 
 def feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
     """
@@ -312,7 +303,7 @@ def feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=Non
       many results data files are generated in the Feff working folder
     """
     feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
-    feffrunner.run(exe=None)
+    feffrunner.run(exe='feff8l')
     return feffrunner
 
 
