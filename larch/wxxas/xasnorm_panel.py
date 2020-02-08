@@ -54,7 +54,7 @@ PlotOne_Choices_nonxas = {'Raw Data': 'mu',
                           'Data + Derivative': 'norm+dmude'}
 
 PlotSel_Choices_nonxas = {'Raw Data': 'mu',
-                          'Scaled Data': 'norm',                          
+                          'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
@@ -130,7 +130,7 @@ class XASNormPanel(TaskPanel):
 
         opts['value'] = 1.0
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
-        
+
         self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
@@ -310,7 +310,7 @@ class XASNormPanel(TaskPanel):
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
-            self.wids['scale'].SetValue(opts['scale'])            
+            self.wids['scale'].SetValue(opts['scale'])
             # self.plotone_op.SetStringSelection('Raw Data')
             # self.plotsel_op.SetStringSelection('Raw Data')
             # self.wids['scale'].SetValue(opts['scale'])
@@ -318,7 +318,7 @@ class XASNormPanel(TaskPanel):
                          'atsym', 'step', 'norm_method'):
                 self.wids[attr].Disable()
             self.wids['scale'].Enable()
-                
+
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
             frozen = dgroup.is_frozen
@@ -502,7 +502,7 @@ class XASNormPanel(TaskPanel):
         self.update_config({'scale': self.wids['scale'].GetValue()})
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
-        
+
     def onSet_Ranges(self, evt=None, **kws):
         conf = {}
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
@@ -564,7 +564,7 @@ class XASNormPanel(TaskPanel):
         self.skip_process = True
         __conf = self.get_config(dgroup)
         dgroup.custom_plotopts = {}
-        print("process ", dgroup.filename)
+        # print("process ", dgroup.filename)
 
         form = self.read_form()
         form['group'] = dgroup.groupname
