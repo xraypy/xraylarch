@@ -210,7 +210,7 @@ class EditColumnFrame(wx.Frame) :
         panel = scrolled.ScrolledPanel(self)
 
         self.SetMinSize((675, 450))
-
+        
         self.wids = {}
         ir = 0
         sizer.Add(Button(panel, 'Apply Changes', size=(200, -1),
@@ -361,6 +361,8 @@ class ColumnDataFileFrame(wx.Frame) :
                           'Build Arrays from Data Columns for %s' % group.filename,
                           style=FRAMESTYLE)
 
+        x0, y0 = parent.GetPosition()
+        self.SetPosition((x0+60, y0+60))
         self.SetFont(Font(10))
 
         panel = wx.Panel(self)
