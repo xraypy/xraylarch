@@ -32,7 +32,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
         chi = chi - chi_std
-    out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:2*irbkg])
+    out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
     if nclamp == 0:
         return out
     # spline clamps:
