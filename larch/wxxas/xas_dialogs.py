@@ -1144,22 +1144,22 @@ clear undo history''')
 
 
 SPECCALC_SETUP = """#From SpectraCalc dialog:
-a = b = c = d = e = f = g = None
 _x = {group:s}.{xname:s}
-a = {group:s}.{yname:s}"""
+a = {group:s}.{yname:s}
+b = c = d = e = f = g = None
+"""
 
 SPECCALC_INTERP = "{key:s} = interp({group:s}.{xname:s}, {group:s}.{yname:s}, _x)"
 SPECCALC_PLOT = """plot(_x, ({expr:s}), label='{expr:s}', new=True,
    show_legend=True, xlabel='{xname:s}', title='Spectral Calculation')"""
 
-SPECCALC_SAVE = """{new:s} = copy_group({group:s})
+SPECCALC_SAVE = """{new:s} = copy_xafs_group({group:s})
 {new:s}.groupname = '{new:s}'
 {new:s}.filename = '{fname:s}'
 {new:s}.calc_groups = {group_map:s}
 {new:s}.calc_arrayname = '{yname:s}'
 {new:s}.calc_expr = '{expr:s}'
 {new:s}.mu = ({expr:s})
-del {new:s}.norm, {new:s}.pre_edge, {new:s}.post_edge, {new:s}.edge_step, {new:s}.e0
 del _x, a, b, c, d, e, f, g"""
 
 
