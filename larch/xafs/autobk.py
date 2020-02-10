@@ -32,11 +32,11 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
         chi = chi - chi_std
-    out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
+    out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:2*irbkg])
     if nclamp == 0:
         return out
     # spline clamps:
-    scale = (1.0 + 100*(out*out).sum())/(len(out)*nclamp)
+    scale = (1.0 + 10*(out*out).sum())/(len(out)*nclamp)
     scaled_chik = scale * chi * kout**kweight
     return np.concatenate((out,
                            abs(clamp_lo)*scaled_chik[:nclamp],
@@ -147,7 +147,11 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk, dx2=dk)
     # calc k-value and initial guess for y-values of spline params
-    nspl = max(5, min(64, int(2*rbkg*(kmax-kmin)/np.pi) + 2))
+    nspl = 1 + int(2*rbkg*(kmax-kmin)/np.pi)
+    if nknots is not None:
+        nspl = nknots
+    nspl = max(5, min(128, nspl))
+
     spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
     for i in range(nspl):
         q  = kmin + i*(kmax-kmin)/(nspl - 1)
