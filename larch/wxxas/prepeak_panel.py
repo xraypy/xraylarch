@@ -79,6 +79,7 @@ ModelFuncs = {'constant': 'ConstantModel',
 
 Array_Choices = {'Raw \u03BC(E)': 'mu',
                  'Normalized \u03BC(E)': 'norm',
+                 'Flattened \u03BC(E)': 'flat',
                  'Deconvolved \u03BC(E)': 'deconv',
                  'Derivative \u03BC(E)': 'dmude'}
 
