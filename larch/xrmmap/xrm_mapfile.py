@@ -2137,6 +2137,7 @@ class GSEXRM_MapFile(object):
         "claim ownership of file"
         if self.xrmmap is None:
             return
+        print("TAKING Ownership" )
         self.xrmmap.attrs['Process_Machine'] = get_machineid()
         self.xrmmap.attrs['Process_ID'] = os.getpid()
         self.h5root.flush()
@@ -2146,8 +2147,8 @@ class GSEXRM_MapFile(object):
         self.xrmmap.attrs['Process_ID'] = 0
         self.xrmmap.attrs['Last_Row'] = self.last_row
 
-    def check_ownership(self):
-        return self.check_hostid()
+    def check_ownership(self, take_ownership=True):
+        return self.check_hostid(take_ownership=take_ownership)
 
     def check_hostid(self, take_ownership=True):
         '''checks host and id of file:
