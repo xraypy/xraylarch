@@ -2149,9 +2149,11 @@ class GSEXRM_MapFile(object):
     def check_ownership(self):
         return self.check_hostid()
 
-    def check_hostid(self):
+    def check_hostid(self, take_ownership=True):
         '''checks host and id of file:
         returns True if this process the owner of the file
+
+        By default, this takes ownership if it can.
         '''
         if self.xrmmap is None:
             return
@@ -2160,7 +2162,8 @@ class GSEXRM_MapFile(object):
         file_mach = attrs['Process_Machine']
         file_pid  = attrs['Process_ID']
         if len(file_mach) < 1 or file_pid < 1:
-            self.take_ownership()
+            if take_ownership:
+                self.take_ownership()
             return True
         return (file_mach == get_machineid() and file_pid == os.getpid())
 
