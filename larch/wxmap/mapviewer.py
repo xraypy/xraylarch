@@ -1584,8 +1584,11 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
+                clevel = tmd.panel.conf.contrast_level
+                if clevel in (0, None):
+                    clevel = 0.5
                 tmd.display(tomo, title=title, subtitles=subtitles,
-                            contrast_level=0.5)
+                            contrast_level=clevel)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
