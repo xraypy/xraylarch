@@ -443,11 +443,27 @@ class TomographyPanel(GridPanel):
                                      center=center, omega=omega,
                                      sinogram_order=sino_order,
                                      hotcols=xrmfile.hotcols)
+        
+        # sharpness estimates:
+        if len(tomo.shape) == 3:
+            t = tomo.sum(axis=2)/tomo.max()
+        else:
+            t = tomo/tomo.max()
 
+        _mean = ((t-t.mean())**2).mean()
+        hist, _ = np.histogram(t, bins=128, range=[t.min(), t.max()])
+        hist = hist.astype('float64')/t.size
+        hist[np.where(hist<1.e-15)] = 1.e-15
+        _negent = -np.dot(hist, np.log(hist))
+        # print("sharpness center=%f  mean=%g ent=%g" % (center, _mean, _negent))      
+
+        
         if refine_center:
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
             self.refine_center.SetValue(False)
 
+
+            
         omeoff, xoff = 0, 0
         title = '%s, center=%0.1f' % (title, center)
 
