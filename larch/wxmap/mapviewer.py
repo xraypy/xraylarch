@@ -976,7 +976,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             self.onSelect()
         except:
             pass
-        
+
     def set_enabled_btns(self, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.owner.current_file
@@ -1407,7 +1407,7 @@ class MapViewerFrame(wx.Frame):
         cb = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
         if callable(cb):
             cb()
-            
+
     def get_mca_area(self, mask, xoff=0, yoff=0, det=None, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.current_file
@@ -1633,7 +1633,7 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             if len(self.im_displays) == 0:
                 imd = self.add_imdisplay(title=title, det=det)
-                imd.display(map, **dopts)
+                imd.display(map, contrast_level=0.5, **dopts)
             else:
                 try:
                     imd = self.im_displays[-1]
