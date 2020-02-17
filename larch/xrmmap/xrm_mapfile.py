@@ -240,7 +240,7 @@ class GSEXRM_MapFile(object):
                  bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E', run='', proposal='',
-                 user='', scandb=None, **kws):
+                 user='', scandb=None, save_each_mca=True, **kws):
 
         self.filename      = filename
         self.folder        = folder
@@ -267,6 +267,7 @@ class GSEXRM_MapFile(object):
         self._pixeltime    = None
         self.masterfile    = None
         self.force_no_dtc  = False
+        self.save_each_mca = save_each_mca
         self.detector_list = None
 
         self.compress_args = {'compression': compression}
@@ -738,9 +739,12 @@ class GSEXRM_MapFile(object):
                 callback(filename=self.filename, status='complete')
 
     def process(self, maxrow=None, force=False, callback=None, offset=None,
-                force_no_dtc=False):
+                force_no_dtc=False, save_each_mca=None):
         "look for more data from raw folder, process if needed"
         self.force_no_dtc = force_no_dtc
+        if save_each_mca is not None:
+            self.save_each_mca = save_each_mca
+        # nt("process ", maxrow, self.save_each_mca)
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
@@ -952,9 +956,13 @@ class GSEXRM_MapFile(object):
                 _nr, npts, nchan = self.xrmmap[mca_dets[0]]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
                 dt.add(" map xrf 3")
+                # print("ADD ROW ", self.save_each_mca, mca_dets)
                 for idet, gname in enumerate(mca_dets):
                     grp = self.xrmmap[gname]
-                    grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
+                    if self.save_each_mca:
+                        grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
+                    #else:
+                    #    grp['counts'][thisrow, :npts, :] = 0.0*row.counts[idet, :npts, :]
                     grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
                     grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
                     grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
@@ -1131,9 +1139,8 @@ class GSEXRM_MapFile(object):
         # dt.show()
 
 
-    def build_schema(self, npts, nmca=1, nchan=2048,
-                     scaler_names=None, scaler_addrs=None,
-                     xrd2d_shape=None, verbose=False):
+    def build_schema(self, npts, nmca=1, nchan=2048, scaler_names=None,
+                     scaler_addrs=None, xrd2d_shape=None, verbose=False):
         '''build schema for detector and scan data'''
 
         if not self.check_hostid():
@@ -2137,7 +2144,6 @@ class GSEXRM_MapFile(object):
         "claim ownership of file"
         if self.xrmmap is None:
             return
-        print("TAKING Ownership" )
         self.xrmmap.attrs['Process_Machine'] = get_machineid()
         self.xrmmap.attrs['Process_ID'] = os.getpid()
         self.h5root.flush()
@@ -2549,7 +2555,6 @@ class GSEXRM_MapFile(object):
 
         if npixels is not None:
             _mca.npixels=npixels
-
 
         if version_ge(self.version, '2.0.0'):
             for roi in self.xrmmap['roimap'][dgroup]:
@@ -3163,7 +3168,7 @@ class GSEXRM_MapFile(object):
         roi_names.pop(iroi)
 
 
-def read_xrmmap(filename, root=None):
+def read_xrmmap(filename, root=None, **kws):
     '''read GSE XRF FastMap data from HDF5 file or raw map folder'''
     key = 'filename'
     if os.path.isdir(filename):
