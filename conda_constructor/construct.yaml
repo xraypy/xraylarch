@@ -56,8 +56,8 @@ specs:
     - pycifrw
     - peakutils
     - pyshortcuts
-    - pyepics
-    - lmfit
+    - pyepics>=3.4.1
+    - lmfit>=1.0
     - asteval
     - wxutils
     - wxmplot
