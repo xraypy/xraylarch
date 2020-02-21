@@ -17,6 +17,7 @@ from .xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
+sqrtpi = sqrt(pi)
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', _larch=None, **kws):
@@ -312,7 +313,7 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return (kstep / sqrt(pi)) * fft(cchi)[:int(nfft/2)]
+    return (kstep / sqrtpi) * fft(cchi)[:int(nfft/2)]
 
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -337,4 +338,4 @@ def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chir)] = chir
-    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:int(nfft/2)]
+    return  (4*sqrtpi/kstep) * ifft(cchi)[:int(nfft/2)]
