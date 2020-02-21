@@ -61,8 +61,8 @@ xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
       kweight={fft_kweight: .3f}, dk={fft_dk: .3f}, window='{fft_kwindow:s}')"""
 
 
-defaults = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=2,
-                bkg_clamphi=50, bkg_kweight=1, fft_kmin=2, fft_kmax=None,
+defaults = dict(e0=0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=0,
+                bkg_clamphi=1, bkg_kweight=1, fft_kmin=2.5, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel')
 
 class EXAFSPanel(TaskPanel):

@@ -47,7 +47,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
-           pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
+           pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=1,
            calc_uncertainties=True, err_sigma=1, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
 
@@ -71,8 +71,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       kstep:     k step size to use for FFT [0.05]
       k_std:     optional k array for standard chi(k).
       chi_std:   optional chi array for standard chi(k).
-      nclamp:    number of energy end-points for clamp [2]
-      clamp_lo:  weight of low-energy clamp [1]
+      nclamp:    number of energy end-points for clamp [3]
+      clamp_lo:  weight of low-energy clamp [0]
       clamp_hi:  weight of high-energy clamp [1]
       calc_uncertaintites:  Flag to calculate uncertainties in
                             mu_0(E) and chi(k) [True]
