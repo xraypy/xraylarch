@@ -4,7 +4,8 @@ import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
 from scipy.special import erf
-from lmfit import Parameter, Parameters, minimize
+from lmfit import Parameter, Parameters, minimize, fit_report
+
 import uncertainties
 
 from larch import (Group, Make_CallArgs, parse_group_args, isgroup)
@@ -37,10 +38,9 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
         return out
     # spline clamps:
     scale = (1.0 + 10*(out*out).sum())/(len(out)*nclamp)
-    scaled_chik = scale * chi * kout**kweight
-    return np.concatenate((out,
-                           abs(clamp_lo)*scaled_chik[:nclamp],
-                           abs(clamp_hi)*scaled_chik[-nclamp:]))
+    return  np.concatenate((out,
+                            abs(clamp_lo)*scale*chi[:nclamp],
+                            abs(clamp_hi)*scale*chi[-nclamp:]))
 
 
 @Make_CallArgs(["energy" ,"mu"])
@@ -151,20 +151,28 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     if nknots is not None:
         nspl = nknots
     nspl = max(5, min(128, nspl))
-
-    spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
+    spl_y, spl_k  = np.ones(nspl), np.zeros(nspl)
     for i in range(nspl):
         q  = kmin + i*(kmax-kmin)/(nspl - 1)
         ik = index_nearest(kraw, q)
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
-        spl_e[i] = energy[ik+ie0]
         spl_y[i] = (2*mu[ik+ie0] + mu[i1+ie0] + mu[i2+ie0] ) / 4.0
 
-    # get spline represention: knots, coefs, order=3
-    # coefs will be varied in fit.
+    order = 3
+    qmin, qmax  = spl_k[0], spl_k[nspl-1]
+    knots = [spl_k[0] - 1.e-4*(order-i) for i in range(order)]
+
+    for i in range(order, nspl):
+        knots.append((i-order)*(qmax - qmin)/(nspl-order+1))
+    qlast = knots[-1]
+    for i in range(order+1):
+        knots.append(qlast + 1.e-4*(i+1))
+
+    coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
     knots, coefs, order = splrep(spl_k, spl_y)
+    coefs[nspl:] = coefs[nspl-1]
 
     # set fit parameters from initial coefficients
     params = Parameters()
@@ -174,7 +182,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     initbkg, initchi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                                    knots, coefs, order, kout)
 
-    # do fit
     result = minimize(__resid, params, method='leastsq',
                       gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
                       kws = dict(ncoefs=len(coefs), chi_std=chi_std,
@@ -186,12 +193,12 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
                                  clamp_lo=clamp_lo, clamp_hi=clamp_hi))
 
     # write final results
+    # print(fit_report(result))
     coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
     bkg, chi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                            knots, coefs, order, kout)
     obkg = np.copy(mu)
     obkg[ie0:ie0+len(bkg)] = bkg
-
     # outputs to group
     group = set_xafsGroup(group, _larch=_larch)
     group.bkg  = obkg
@@ -206,7 +213,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     details.init_bkg = np.copy(mu)
     details.init_bkg[ie0:ie0+len(bkg)] = initbkg
     details.init_chi = initchi/edge_step
-    details.knots_e  = spl_e
+    details.knots_k  = knots
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
     details.init_knots_y = spl_y
     details.nfev = result.nfev
