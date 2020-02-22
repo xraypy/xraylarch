@@ -415,6 +415,20 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     if force_draw:
         wx_update(_larch=_larch)
 
+def _redraw_plot(win=1, xrf=False, stacked=False, size=None, wintitle=None,
+                 _larch=None, wxparent=None):
+    """redraw_plot(win=1)
+
+    redraw a plot window, especially convenient to force setting limits after
+    multiple plot()s with delay_draw=True
+    """
+
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          xrf=xrf, stacked=stacked,
+                          wintitle=wintitle,  _larch=_larch)
+    plotter.panel.unzoom_all()
+
+
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side='left', redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
