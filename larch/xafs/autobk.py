@@ -37,7 +37,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     if nclamp == 0:
         return out
     # spline clamps:
-    scale = (1.0 + 10*(out*out).sum())/(len(out)*nclamp)
+    scale = 1.0 + 100*(out*out).mean()
     return  np.concatenate((out,
                             abs(clamp_lo)*scale*chi[:nclamp],
                             abs(clamp_hi)*scale*chi[-nclamp:]))
@@ -127,7 +127,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     ie0 = index_of(energy, e0)
     rgrid = np.pi/(kstep*nfft)
     if rbkg < 2*rgrid: rbkg = 2*rgrid
-    irbkg = int(1.01 + rbkg/rgrid)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
@@ -148,6 +147,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
                                      window=win, dx=dk, dx2=dk)
     # calc k-value and initial guess for y-values of spline params
     nspl = 1 + int(2*rbkg*(kmax-kmin)/np.pi)
+    irbkg = int(1 + (nspl-1)*np.pi/(2*rgrid*(kmax-kmin)))
     if nknots is not None:
         nspl = nknots
     nspl = max(5, min(128, nspl))
@@ -171,7 +171,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         knots.append(qlast + 1.e-4*(i+1))
 
     coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
-    knots, coefs, order = splrep(spl_k, spl_y)
+    knots, coefs, order = splrep(spl_k, spl_y, k=order)
     coefs[nspl:] = coefs[nspl-1]
 
     # set fit parameters from initial coefficients
@@ -182,8 +182,9 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     initbkg, initchi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                                    knots, coefs, order, kout)
 
+    # do fit
     result = minimize(__resid, params, method='leastsq',
-                      gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                      gtol=1.e-6, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
                       kws = dict(ncoefs=len(coefs), chi_std=chi_std,
                                  knots=knots, order=order,
                                  kraw=kraw[:iemax-ie0+1],
@@ -193,12 +194,12 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
                                  clamp_lo=clamp_lo, clamp_hi=clamp_hi))
 
     # write final results
-    # print(fit_report(result))
     coefs = [result.params[FMT_COEF % i].value for i in range(len(coefs))]
     bkg, chi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
                            knots, coefs, order, kout)
     obkg = np.copy(mu)
     obkg[ie0:ie0+len(bkg)] = bkg
+
     # outputs to group
     group = set_xafsGroup(group, _larch=_larch)
     group.bkg  = obkg
@@ -208,18 +209,15 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     group.e0   = e0
 
     # now fill in 'autobk_details' group
-    details = Group(params=result.params)
-
+    details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
+                    knots_k=knots, init_knots_y=spl_y, nspl=nspl,
+                    init_chi=initchi/edge_step, report=fit_report(result))
     details.init_bkg = np.copy(mu)
     details.init_bkg[ie0:ie0+len(bkg)] = initbkg
-    details.init_chi = initchi/edge_step
-    details.knots_k  = knots
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
-    details.init_knots_y = spl_y
-    details.nfev = result.nfev
-    details.kmin = kmin
-    details.kmax = kmax
     group.autobk_details = details
+    for attr in ('nfev', 'redchi', 'chisqr', 'aic', 'bic', 'params'):
+        setattr(details, attr, getattr(result, attr, None))
 
     # uncertainties in mu0 and chi: can be fairly slow.
     if calc_uncertainties:
