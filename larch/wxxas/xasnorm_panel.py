@@ -58,7 +58,7 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Derivative': 'dmude'}
 
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
-                show_e0=True, pre1=-200, pre2=-30, norm1=100, norm2=-10,
+                show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
                 norm_method='polynomial', edge='K', atsym='?',
                 nvict=0, nnorm=1, scale=1,
                 plotone_op='Normalized \u03BC(E)',
@@ -289,11 +289,10 @@ class XASNormPanel(TaskPanel):
 
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
+            for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+                if opts[attr] is not None:
+                    self.wids[attr].SetValue(opts[attr])
 
-            self.wids['pre1'].SetValue(opts['pre1'])
-            self.wids['pre2'].SetValue(opts['pre2'])
-            self.wids['norm1'].SetValue(opts['norm1'])
-            self.wids['norm2'].SetValue(opts['norm2'])
             self.wids['nvict'].SetSelection(opts['nvict'])
             self.wids['nnorm'].SetSelection(opts['nnorm'])
             self.wids['showe0'].SetValue(opts['show_e0'])
@@ -335,13 +334,13 @@ class XASNormPanel(TaskPanel):
         form_opts = {}
         form_opts['e0'] = self.wids['e0'].GetValue()
         form_opts['edge_step'] = self.wids['step'].GetValue()
-        form_opts['pre1'] = self.wids['pre1'].GetValue()
-        form_opts['pre2'] = self.wids['pre2'].GetValue()
-        form_opts['norm1'] = self.wids['norm1'].GetValue()
-        form_opts['norm2'] = self.wids['norm2'].GetValue()
+        for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+            val = self.wids[attr].GetValue()
+            if val == 0: val = None
+            form_opts[attr] = val
+
         form_opts['nnorm'] = int(self.wids['nnorm'].GetSelection())
         form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
-
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
         form_opts['plot_voff'] = self.wids['plot_voff'].GetValue()
@@ -353,7 +352,6 @@ class XASNormPanel(TaskPanel):
         form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
         form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
         form_opts['scale'] = self.wids['scale'].GetValue()
-        # print("Read form ",  self.wids['scale'].GetValue())
         return form_opts
 
     def onNormMethod(self, evt=None):
@@ -379,7 +377,6 @@ class XASNormPanel(TaskPanel):
         for wattr in ('e0', 'step', 'pre1', 'pre2', 'norm1', 'norm2',
                       'nvict', 'nnorm', 'showe0', 'auto_e0', 'auto_step',
                       'norm_method', 'edge', 'atsym'):
-
             self.wids[wattr].Enable(not frozen)
 
     def onFreezeGroup(self, evt=None):
@@ -564,7 +561,6 @@ class XASNormPanel(TaskPanel):
         self.skip_process = True
         __conf = self.get_config(dgroup)
         dgroup.custom_plotopts = {}
-        # print("process ", dgroup.filename)
 
         form = self.read_form()
         form['group'] = dgroup.groupname
@@ -582,7 +578,6 @@ class XASNormPanel(TaskPanel):
 
         if en_units != 'eV':
             mono_dspace = getattr(dgroup, 'mono_dspace', 1)
-            # print("Group dspace : ", mono_dspace)
             dlg = EnergyUnitsDialog(self.parent, dgroup.energy,
                                     unitname=en_units,
                                     dspace=mono_dspace)
@@ -606,7 +601,10 @@ class XASNormPanel(TaskPanel):
             copts.append("step=%s" % gformat(float(edge_step)))
 
         for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-            copts.append("%s=%.2f" % (attr, form[attr]))
+            if form[attr] is None:
+                copts.append("%s=None" % attr)
+            else:
+                copts.append("%s=%.2f" % (attr, form[attr]))
 
         self.larch_eval("pre_edge(%s)" % (', '.join(copts)))
         self.larch_eval("{group:s}.norm_poly = 1.0*{group:s}.norm".format(**form))
