@@ -16,7 +16,7 @@ import warnings
 warnings.simplefilter('ignore')
 
 if (sys.version_info.major < 3 or sys.version_info.minor < 5):
-    raise EnvironmentError('larch requires python 3.5 or higher')
+    raise EnvironmentError('larch requires python 3.6 or higher')
 
 # note: for HDF5 File / Filter Plugins to be useful, the
 # hdf5plugin module needs to be imported before h5py
