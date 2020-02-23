@@ -126,7 +126,7 @@ class XASNormPanel(TaskPanel):
 
         xas_e0   = self.add_floatspin('e0', action=self.onSet_XASE0Val, **opts)
         xas_step = self.add_floatspin('step', action=self.onSet_XASStep,
-                                      with_pin=False, **opts)
+                                      with_pin=False, min_val=0.0, **opts)
 
         opts['value'] = 1.0
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
@@ -242,8 +242,10 @@ class XASNormPanel(TaskPanel):
         else:
             conf = self.get_defaultconfig()
             if hasattr(dgroup, 'bkg_params'): # from Athena
-                for attr in ('e0', 'pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
+                for attr in ('e0', 'pre1', 'pre2', 'nnorm'):
                     conf[attr]   = getattr(dgroup.bkg_params, attr, conf[attr])
+                for attr, aattr in (('norm1', 'nor1'), ('norm2', 'nor2')):
+                    conf[attr]   = getattr(dgroup.bkg_params, aattr, conf[attr])
                 conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
                 conf['edge_step'] = getattr(dgroup.bkg_params, 'step', conf['edge_step'])
 
@@ -267,7 +269,6 @@ class XASNormPanel(TaskPanel):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.skip_process = True
-
         if dgroup.datatype == 'xas':
             # for k in self.wids.values():
             #     k.Enable()
@@ -290,8 +291,9 @@ class XASNormPanel(TaskPanel):
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
             for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
-                if opts[attr] is not None:
-                    self.wids[attr].SetValue(opts[attr])
+                val = opts[attr]
+                if val is not None:
+                    self.wids[attr].SetValue(val)
 
             self.wids['nvict'].SetSelection(opts['nvict'])
             self.wids['nnorm'].SetSelection(opts['nnorm'])
@@ -488,9 +490,11 @@ class XASNormPanel(TaskPanel):
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
         edge_step = self.wids['step'].GetValue()
+        if edge_step < 0:
+            self.wids['step'].SetValue(abs(edge_step))
         self.wids['auto_step'].SetValue(0)
-        self.update_config({'edge_step': edge_step, 'auto_step': False})
-        autoset_fs_increment(self.wids['step'], edge_step)
+        self.update_config({'edge_step': abs(edge_step), 'auto_step': False})
+        autoset_fs_increment(self.wids['step'], abs(edge_step))
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
@@ -645,20 +649,16 @@ class XASNormPanel(TaskPanel):
             self.wids['step'].SetValue(dgroup.edge_step)
             autoset_fs_increment(self.wids['step'], dgroup.edge_step)
 
-        self.wids['pre1'].SetValue(dgroup.pre_edge_details.pre1)
-        self.wids['pre2'].SetValue(dgroup.pre_edge_details.pre2)
-        self.wids['norm1'].SetValue(dgroup.pre_edge_details.norm1)
-        self.wids['norm2'].SetValue(dgroup.pre_edge_details.norm2)
-
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
 
-        conf = {}
-
+        conf = {'nnorm':  dgroup.pre_edge_details.nnorm}
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
-        for attr in ('pre1', 'pre2', 'nnorm', 'norm1', 'norm2'):
-            conf[attr] = getattr(dgroup.pre_edge_details, attr)
+        for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+            conf[attr] = val = getattr(dgroup.pre_edge_details, attr, None)
+            if val is not None:
+                self.wids[attr].SetValue(val)
 
         if hasattr(dgroup, 'mback_params'): # from mback
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
