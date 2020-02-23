@@ -50,7 +50,7 @@ the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
     Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in
     progress.  The `Dioptas`_ program is written and maintained by Clemens Prescher, and included
     with Larch.  The Feff6L and Feff8L codes are written by the `Feff Project`_, and included with
-    Larch by permission.make
+    Larch by permission.
 
   +---------------------------------------+------------+---------------------------------------------------------+
   | Application Name                      | GUI/CLI    | Description                                             |
