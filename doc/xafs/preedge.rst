@@ -68,20 +68,19 @@ Notes:
 
     1. pre_edge: a line is fit to :math:`\mu(E) E^{\rm{nvict}}` in the
     region :math:`E={\rm{[e0+pre1, e0+pre2]}}`. `pre1` and `pre2` default
-    to `None`, which will set
-         - `pre1` = `e0` - 2nd energy point
-         - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
+    to `None`, which will set:
+      - `pre1` = `e0` - 2nd energy point
+      - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
 
     2. post-edge: a polynomial of order `nnorm` is fit to
     :math:`\mu(E) E^{\rm{nvict}}` in the region
     :math:`E={\rm{[e0+norm1, e0+norm2]}}`. `norm1`, `norm2`, and `nnorm`
     default to `None`, which will set:
-         - `norm2` = max energy - `e0`
-         - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
-         - `nnorm` = 2 in `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if
-           less.
+       - `norm2` = max energy - `e0`
+c       - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
+       - `nnorm` = 2 in `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if less.
 
-    4. flattening fits a quadratic curve (no matter nnorm) to the post-edge
+    3. flattening fits a quadratic curve (no matter nnorm) to the post-edge
     normalized mu(E) and subtracts that curve from it.
 
 ..  function:: find_e0(energy, mu=None, group=None, ...)
@@ -179,8 +178,7 @@ adjusted by breaking the minimization function into two regions: the
 data points above the absorption edge.  :math:`n_1+n_2=N`, where N is
 the total number of data points.
 
-If this is used in publication, a citation should be given to
-Weng :cite:`Weng`.
+If this is used in publication, a citation should be given to Weng :cite:`Weng`.
 
 ..  function:: mback(energy, mu, group=None, ...)
 
@@ -279,12 +277,56 @@ large features near the edge.
     Using MBACK to match Si K edge data measured on talc.
 
 
+
+
+..  function:: mback_norm(energy, mu, group=None, ...)
+
+    A simplified version of :func:`mback` to normalize :math:`\mu(E)` data
+    to tabulated cross-section data for :math:`f''(E)`.
+
+
+    Returns:
+      group.norm_poly:     normalized mu(E) from pre_edge()
+      group.norm:          normalized mu(E) from this method
+      group.mback_mu:      tabulated f2 scaled and pre_edge added to match mu(E)
+      group.mback_params:  Group of parameters for the minimization
+
+    References:
+      * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
+      * Chantler: http://dx.doi.org/10.1063/1.555974
+
+
+    :param energy:   1-d array of x-ray energies, in eV
+    :param mu:       1-d array of :math:`\mu(E)`
+    :param group:    output group
+    :param z:        the Z number of the absorber
+    :param edge:     the absorption edge, usually 'K' or 'L3'
+    :param e0:       edge energy, :math:`E_0` in eV.  If None, the tabulated value is used.
+    :param pre1:     low E range (relative to E0) as for :func:`pre_edge`.
+    :param pre2:     high E range (relative to E0) as for :func:`pre_edge`.
+    :param norm1:    low E range (relative to E0) as for :func:`pre_edge`.
+    :param norm2:    high E range (relative to E0) as for :func:`pre_edge`.
+    :param nnorm:    degree of polynomial as for :func:`pre_edge`.
+
+    Follows the :ref:`First Argument Group<first_argument_group>`
+    convention, using group members named ``energy`` and ``mu``.  The
+    following data is put into the output group:
+
+       ==============   ===========================================================
+        attribute        meaning
+       ==============   ===========================================================
+        norm_poly        normalized :math:`\mu(E)` from :func:`pre_edge`.
+        norm             normalized :math:`\mu(E)` from this method/
+        mback_mu         tabulated :math:`f'(E)` scalerd and pre-edge added
+	mback_params     params group for the MBACK minimization function
+       ==============   ===========================================================
+
+
 Pre-edge baseline subtraction
 ======================================
 
-
 A common application of XAFS is the analysis of "pre-edge peaks" of
-transition metal oxides to determine oxidation state and molecular
+matransition metal oxides to determine oxidation state and molecular
 configuration. These peaks sit just below the main absorption edge
 (typically, due to metal *4p* electrons) of a main *K* edge, and are due to
 overlaps of the metal *d*-electrons and oxygen *p*-electrons, and are often
