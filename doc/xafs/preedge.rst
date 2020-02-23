@@ -17,7 +17,7 @@ called *self-absorption*) and for spectral convolution and de-convolution.
 The :func:`pre_edge` function
 =================================
 
-..  function:: pre_edge(energy, mu, group=None, ...)
+..  function:: pre_edge(energy, mu, group=None, e0=None, step=None, pre1=None, pre2=None, norm1=None, norm2=None, nnorm=None, nvict=0)
 
     Pre-edge subtraction and normalization.  This performs a number of steps:
        1. determine :math:`E_0` (if not supplied) from max of deriv(mu)
@@ -25,22 +25,21 @@ The :func:`pre_edge` function
        3. fit a polynomial to the region above the edge
        4. extrapolate the two curves to :math:`E_0` to determine the edge jump
 
-
     :param energy:  1-d array of x-ray energies, in eV
     :param mu:      1-d array of :math:`\mu(E)`
     :param group:   output group
-    :param e0:      edge energy, :math:`E_0` in eV.  If None, it will be determined here.
-    :param step:    edge jump.  If None, it will be determined here.
-    :param pre1:    low E range (relative to E0) for pre-edge fit
-    :param pre2:    high E range (relative to E0) for pre-edge fit
-    :param nvict:   energy exponent to use for pre-edge fit.  See Note below.
-    :param norm1:   low E range (relative to E0) for post-edge fit
-    :param norm2:   high E range (relative to E0) for post-edge fit
+    :param e0:      edge energy, :math:`E_0` in eV.  If None, it will be found.
+    :param step:    edge jump.  If None, it will be found here.
+    :param pre1:    low E range (relative to E0) for pre-edge fit. See Notes.
+    :param pre2:    high E range (relative to E0) for pre-edge fit. See Notes.
+    :param norm1:   low E range (relative to E0) for post-edge fit. See Notes.
+    :param norm2:   high E range (relative to E0) for post-edge fit. See Notes.
     :param nnorm:   degree of polynomial (ie, norm+1 coefficients will be found) for
-                    post-edge normalization curve. Default=2 (quadratic).
+                    post-edge normalization curve. See Notes.
+    :param nvict:   energy exponent to use.  See Notes.
+    :param make_flat: boolean (Default True) to calculate flattened output.
 
     :returns:  None.
-
 
     Follows the :ref:`First Argument Group<first_argument_group>`
     convention, using group members named ``energy`` and ``mu``.  The
@@ -52,6 +51,7 @@ The :func:`pre_edge` function
         e0               energy origin
         edge_step        edge step
         norm             normalized mu(E)   (array)
+        flat             flattened, normalized mu(E)   (array)
         pre_edge         pre-edge curve (array)
         post_edge        post-edge, normalization curve  (array)
         pre_slope        slope of pre-edge line
@@ -66,14 +66,23 @@ The :func:`pre_edge` function
 
 Notes:
 
-   -  nvict gives an exponent to the energy term for the pre-edge fit.
-      That is, a line :math:`(m E + b)` is fit to
-      :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1,
-      E0+pre2].
+    1. pre_edge: a line is fit to :math:`\mu(E) E^{\rm{nvict}}` in the
+    region :math:`E={\rm{[e0+pre1, e0+pre2]}}`. `pre1` and `pre2` default
+    to `None`, which will set
+         - `pre1` = `e0` - 2nd energy point
+         - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
 
-   - nnorm is the degree of the post-edge normalization polynomial.  Use
-     `nnorm=0` to use constant, `nnorm=1` for a linear normalization curve,
-     `nnorm=2` for  a quadratic normalization curve, etc.
+    2. post-edge: a polynomial of order `nnorm` is fit to
+    :math:`\mu(E) E^{\rm{nvict}}` in the region
+    :math:`E={\rm{[e0+norm1, e0+norm2]}}`. `norm1`, `norm2`, and `nnorm`
+    default to `None`, which will set:
+         - `norm2` = max energy - `e0`
+         - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
+         - `nnorm` = 2 in `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if
+           less.
+
+    4. flattening fits a quadratic curve (no matter nnorm) to the post-edge
+    normalized mu(E) and subtracts that curve from it.
 
 ..  function:: find_e0(energy, mu=None, group=None, ...)
 
@@ -571,10 +580,10 @@ with results shown below:
     :target: ../_images/xafs_deconv2b.png
     :width: 100%
     :align: center
-	    
+
     Comparison of original and re-convolved XAS spectrum for Cu metal.
     The difference shown in red is multiplied by 100.
-	    
+
 .. subfigend::
     :width: 0.45
     :label: fig_xafs_deconv
@@ -612,7 +621,7 @@ with results shown below:
 .. subfigend::
     :width: 0.45
     :label: fig_xafs_deconv3
-	    
+
     Example of simple usage of :func:`xas_deconvolve` and
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
     :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw
