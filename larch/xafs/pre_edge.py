@@ -90,16 +90,16 @@ def flat_resid(pars, en, mu):
     return (pars['c0'] + en * (pars['c1'] + en * pars['c2']) - mu)
 
 
-def preedge(energy, mu, e0=None, step=None,
-            nnorm=None, nvict=0, pre1=None, pre2=None,
-            norm1=None, norm2=None):
+def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
+            pre2=None, norm1=None, norm2=None):
     """pre edge subtraction, normalization for XAFS (straight python)
 
     This performs a number of steps:
        1. determine E0 (if not supplied) from max of deriv(mu)
-       2. fit a line of polymonial to the region below the edge
+       2. fit a line to the region below the edge
        3. fit a polymonial to the region above the edge
-       4. extrapolae the two curves to E0 to determine the edge jump
+       4. extrapolate the two curves to E0 and take their difference
+          to determine the edge jump
 
     Arguments
     ----------
@@ -125,20 +125,17 @@ def preedge(energy, mu, e0=None, step=None,
 
     Notes
     -----
-    1  nvict gives an exponent to the energy term for the fits to the pre-edge
-       and the post-edge region.  For the pre-edge, a line (m * energy + b) is
-       fit to mu(energy)*energy**nvict over the pre-edge region,
-       energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
-       nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
-       energy=[e0+norm1, e0+norm2].
-    2  nnorm will default to 2 in norm2-norm1>300, to 1 if 100>norm2-norm1>300, and
-       to 0 in norm2-norm1<100.
-    3  if left as None, pre1 and pre2 will be set as:
-           pre2 = e0 - 2nd energy point
-           pre1 = roughly pre1/3.0, rounded to 5 eV steps
-    4. if left as None, norm1 and norm2 will be set as
-           norm2 = max energy - e0
-           norm1 = roughly norm2/3.0, rounded to 5 eV
+    1  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
+       energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
+           pre1 = e0 - 2nd energy point
+           pre2 = roughly pre1/3.0, rounded to 5 eV steps
+
+    2  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
+       between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
+       which will set:
+         nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
+         norm2 = max energy - e0
+         norm1 = roughly norm2/3.0, rounded to 5 eV
     """
     energy = remove_dups(energy)
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -146,9 +143,6 @@ def preedge(energy, mu, e0=None, step=None,
 
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
-
-    pre1_input = pre1
-    norm2_input = norm2
 
     if pre1 is None:
         if ie0 > 20:
@@ -171,7 +165,13 @@ def preedge(energy, mu, e0=None, step=None,
         norm1 = 5.0*int(norm2/15.0)
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
+    if nnorm is None:
+        nnorm = 2
+        if norm2-norm1 < 350: nnorm = 1
+        if norm2-norm1 <  50: nnorm = 0
+    nnorm = max(min(nnorm, MAX_NNORM), 0)
 
+    # preedge
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
     if p2-p1 < 2:
@@ -181,19 +181,12 @@ def preedge(energy, mu, e0=None, step=None,
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
     precoefs = polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
+
     # normalization
     p1 = index_of(energy, norm1+e0)
     p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
-
-    if nnorm is None:
-        nnorm = 0
-        if norm2-norm1 > 100:
-            nnorm = 1
-        if norm2-norm1 > 400:
-            nnorm = 2
-    nnorm = max(min(nnorm, MAX_NNORM), 0)
 
     presub = (mu-pre_edge)[p1:p2]
     coefs = polyfit(energy[p1:p2], presub, nnorm)
@@ -212,23 +205,21 @@ def preedge(energy, mu, e0=None, step=None,
             'pre_edge': pre_edge, 'post_edge': post_edge,
             'norm_coefs': norm_coefs, 'nvict': nvict,
             'nnorm': nnorm, 'norm1': norm1, 'norm2': norm2,
-            'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs,
-            'norm2_input': norm2_input,  'pre1_input': pre1_input}
-
+            'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs}
 
 @Make_CallArgs(["energy","mu"])
-def pre_edge(energy, mu=None, group=None, e0=None, step=None,
-             nnorm=None, nvict=0, pre1=None, pre2=-50,
-             norm1=100, norm2=None, make_flat=True, emin_area=None,
-             _larch=None):
+
+def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
+             nvict=0, pre1=None, pre2=None, norm1=None, norm2=None,
+             make_flat=True, _larch=None):
     """pre edge subtraction, normalization for XAFS
 
     This performs a number of steps:
        1. determine E0 (if not supplied) from max of deriv(mu)
        2. fit a line of polymonial to the region below the edge
        3. fit a polymonial to the region above the edge
-       4. extrapolae the two curves to E0 to determine the edge jump
-       5. estimate area from emin_area to norm2, to get norm_area
+       4. extrapolate the two curves to E0 and take their difference
+          to determine the edge jump
 
     Arguments
     ----------
@@ -239,14 +230,12 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     step:    edge jump.  If None, it will be determined here.
     pre1:    low E range (relative to E0) for pre-edge fit
     pre2:    high E range (relative to E0) for pre-edge fit
-    nvict:   energy exponent to use for pre-edg fit.  See Note
+    nvict:   energy exponent to use for pre-edg fit.  See Notes.
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
-             post-edge normalization curve. Default=None (see note)
+             post-edge normalization curve. See Notes.
     make_flat: boolean (Default True) to calculate flattened output.
-    emin_area: energy threshold for area normalization (see note)
-
 
     Returns
     -------
@@ -269,20 +258,20 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     1  If the first argument is a Group, it must contain 'energy' and 'mu'.
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
-    2  nvict gives an exponent to the energy term for the fits to the pre-edge
-       and the post-edge region.  For the pre-edge, a line (m * energy + b) is
-       fit to mu(energy)*energy**nvict over the pre-edge region,
-       energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
-       nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
-       energy=[e0+norm1, e0+norm2].
-    3  nnorm will default to 2 in norm2-norm1>400, to 1 if 100>norm2-norm1>300,
-       and to 0 in norm2-norm1<100.
-    4  norm_area will be estimated so that the area between emin_area and norm2
-       is equal to (norm2-emin_area).  By default emin_area will be set to the
-       *nominal* edge energy for the element and edge - 3*core_level_width
 
+    2  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
+       energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
+           pre1 = e0 - 2nd energy point
+           pre2 = roughly pre1/3.0, rounded to 5 eV steps
+    3  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
+       between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
+       which will set:
+         nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
+         norm2 = max energy - e0
+         norm1 = roughly norm2/3.0, rounded to 5 eV
+    4  flattening fits a quadratic curve (no matter nnorm) to the post-edge
+       normalized mu(E) and subtracts that curve from it.
     """
-
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
@@ -343,14 +332,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.post_edge  = pre_dat['post_edge']
 
     group.pre_edge_details = Group()
-    group.pre_edge_details.pre1   = pre_dat['pre1']
-    group.pre_edge_details.pre2   = pre_dat['pre2']
-    group.pre_edge_details.nnorm  = pre_dat['nnorm']
-    group.pre_edge_details.norm1  = pre_dat['norm1']
-    group.pre_edge_details.norm2  = pre_dat['norm2']
-    group.pre_edge_details.nvict  = pre_dat['nvict']
-    group.pre_edge_details.pre1_input  = pre_dat['pre1_input']
-    group.pre_edge_details.norm2_input  = pre_dat['norm2_input']
+    for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'nvict'):
+        setattr(group.pre_edge_details, attr, pre_dat.get(attr, None))
+
     group.pre_edge_details.pre_slope  = pre_dat['precoefs'][0]
     group.pre_edge_details.pre_offset = pre_dat['precoefs'][1]
 
@@ -368,22 +352,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         _atsym, _edge = guess_edge(group.e0)
         if group.atsym is None: group.atsym = _atsym
         if group.edge is None:  group.edge = _edge
-
-    # calcuate area-normalization
-    if emin_area is None:
-        emin_area = (xray_edge(group.atsym, group.edge).energy
-                     - 2*core_width(group.atsym, group.edge))
-    i1 = index_of(energy, emin_area)
-    i2 = index_of(energy, e0+norm2)
-    if i2-i1 > 2:
-        en = energy[i1:i2]
-        area_step = max(1.e-15, simps(norm[i1:i2], en) / en.ptp())
-    else:
-        area_step = norm[i1:i2].mean()
-    group.edge_step_area = group.edge_step_poly * area_step
-    group.norm_area = norm/area_step
-    group.pre_edge_details.emin_area = emin_area
-
     return
 
 
