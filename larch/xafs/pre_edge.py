@@ -127,14 +127,14 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     -----
     1  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
        energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
-           pre1 = e0 - 2nd energy point
-           pre2 = roughly pre1/3.0, rounded to 5 eV steps
+           pre1 = e0 - 2nd energy point, rounded to 5 eV
+           pre2 = roughly pre1/3.0, rounded to 5 eV
 
     2  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
        between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
        which will set:
          nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
-         norm2 = max energy - e0
+         norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly norm2/3.0, rounded to 5 eV
     """
     energy = remove_dups(energy)
@@ -145,24 +145,25 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     e0 = energy[ie0]
 
     if pre1 is None:
+        # skip first energy point, often bad
         if ie0 > 20:
-            pre1  = energy[1] - e0  # skip first energy point, often bad
+            pre1  = 5.0*round((energy[1] - e0)/5.0)
         else:
-            pre1  = energy[0] - e0
+            pre1  = 2.0*round((energy[1] - e0)/2.0)
 
     pre1 = max(pre1,  (min(energy) - e0))
     if pre2 is None:
-        pre2 = 5.0*int(pre1/15.0)
+        pre2 = 5.0*round(pre1/15.0)
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
 
     if norm2 is None:
-        norm2 = max(energy) - e0
+        norm2 = 5.0*round((max(energy) - e0)/5.0)
     if norm2 < 0:
         norm2 = max(energy) - e0 - norm2
     norm2 = min(norm2, (max(energy) - e0))
     if norm1 is None:
-        norm1 = 5.0*int(norm2/15.0)
+        norm1 = 5.0*round(norm2/15.0)
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
     if nnorm is None:
@@ -261,13 +262,13 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
 
     2  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
        energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
-           pre1 = e0 - 2nd energy point
-           pre2 = roughly pre1/3.0, rounded to 5 eV steps
+           pre1 = e0 - 2nd energy point, rounded to 5 eV
+           pre2 = roughly pre1/3.0, rounded to 5 eV
     3  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
        between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
        which will set:
          nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
-         norm2 = max energy - e0
+         norm2 = max energy - e0, rounded to 5 eV
          norm1 = roughly norm2/3.0, rounded to 5 eV
     4  flattening fits a quadratic curve (no matter nnorm) to the post-edge
        normalized mu(E) and subtracts that curve from it.
