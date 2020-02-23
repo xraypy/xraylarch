@@ -3,11 +3,9 @@
 fname = '../xafsdata/scorodite_as_xafs.001'
 title = 'FeAsSO4  (scorodite)'
 dat = read_ascii(fname)
-dat.mu    = ln(dat.i0/dat.i1)
+dat.mu = ln(dat.i0/dat.i1)
 
-autobk(dat.energy, dat.mu, rbkg=1.0, group=dat,
-       pre_edge_kws={'pre1':-100, 'pre2':-40, 'nnorm': 1})
-
+autobk(dat.energy, dat.mu, rbkg=1.0, group=dat)
 plot_bkg(dat, emin=-150)
 plot_chik(dat, kweight=2, win=2)
 
