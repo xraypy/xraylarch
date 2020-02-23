@@ -35,9 +35,8 @@ PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
                    'Normalized \u03BC(E)': 'norm',
                    '\u03BC(E) + Pre-/Post-edge': 'prelines',
                    'Flattened \u03BC(E)': 'flat',
-                   '\u03BC(E) + MBACK tabulated \u03BC(E)': 'mback_norm',
-                   'MBACK- + Poly-Normalized \u03BC(E)': 'mback_poly',
-                   # 'Area- + Poly-Normalized \u03BC(E)': 'area_norm',
+                   '\u03BC(E) + MBACK  \u03BC(E)': 'mback_norm',
+                   'MBACK + Poly Normalized': 'mback_poly',
                    'd\u03BC(E)/dE': 'dmude',
                    'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
                    'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde'}
@@ -76,17 +75,17 @@ class XASNormPanel(TaskPanel):
         self.wids = {}
 
         self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
-                                 action=self.onPlotOne, size=(225, -1))
+                                 action=self.onPlotOne, size=(200, -1))
         self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
-                                 action=self.onPlotSel, size=(225, -1))
+                                 action=self.onPlotSel, size=(200, -1))
 
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
-        plot_one = Button(panel, 'Plot This Group', size=(175, -1),
+        plot_one = Button(panel, 'Plot Current Group', size=(170, -1),
                           action=self.onPlotOne)
 
-        plot_sel = Button(panel, 'Plot Selected Groups', size=(175, -1),
+        plot_sel = Button(panel, 'Plot Selected Groups', size=(170, -1),
                           action=self.onPlotSel)
 
         e0panel = wx.Panel(panel)
@@ -104,7 +103,7 @@ class XASNormPanel(TaskPanel):
                                       action=self.onNormMethod)
 
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
-                                    size=(60, -1), action=self.onNormMethod,
+                                    size=(100, -1), action=self.onNormMethod,
                                     default=0)
         self.wids['nnorm'] = Choice(panel, choices=('constant', 'linear',
                                                     'quadratic', 'cubic'),
@@ -146,6 +145,11 @@ class XASNormPanel(TaskPanel):
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
 
+        use_auto = Button(panel, 'Use Default Settings', size=(175, -1),
+                          action=self.onAutoNorm)
+        copy_auto = Button(panel, 'Use Defaults for Selected Groups',
+                           size=(200, -1), action=self.onCopyAuto)
+
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
@@ -157,7 +161,7 @@ class XASNormPanel(TaskPanel):
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, '  Vertical offset:'), style=RCEN)
+        panel.Add(SimpleText(panel, 'Vertical offset:'), style=RCEN)
         panel.Add(plot_voff, style=RCEN)
 
         panel.Add((5, 5), dcol=3, newrow=True)
@@ -170,10 +174,14 @@ class XASNormPanel(TaskPanel):
         panel.Add((5, 5), newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
-        add_text('Data Scale (non-XAS): ')
+        add_text('Non-XAS Data:  Scale:')
         panel.Add(scale, dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
+        add_text('XAS Data:')
+        panel.Add(use_auto, dcol=2)
+        panel.Add(copy_auto, dcol=3, style=RCEN)
+
         add_text('Element and Edge: ', newrow=True)
         panel.Add(self.wids['atsym'])
         panel.Add(self.wids['edge'], dcol=3)
@@ -199,7 +207,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RCEN)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
-        panel.Add(self.wids['nvict'], dcol=3)
+        panel.Add(self.wids['nvict'], dcol=2)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -214,6 +222,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(xas_norm2, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=2)
+
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
@@ -312,9 +321,6 @@ class XASNormPanel(TaskPanel):
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
             self.wids['scale'].SetValue(opts['scale'])
-            # self.plotone_op.SetStringSelection('Raw Data')
-            # self.plotsel_op.SetStringSelection('Raw Data')
-            # self.wids['scale'].SetValue(opts['scale'])
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
                 self.wids[attr].Disable()
@@ -432,6 +438,49 @@ class XASNormPanel(TaskPanel):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.conf.show_legend=True
         ppanel.conf.draw_legend()
+
+    def onAutoNorm(self, evt=None):
+        dgroup = self.controller.get_group()
+        try:
+            norm2 = max(dgroup.energy) - dgroup.e0
+            norm1 = 5.0*int(norm2/15.0)
+            nnorm = 2
+            if (norm2-norm1 < 350): nnorm = 1
+            if (norm2-norm1 < 50): nnorm = 0
+        except:
+            nnorm = 1
+        self.wids['auto_step'].SetValue(1)
+        self.wids['auto_e0'].SetValue(1)
+        self.wids['nvict'].SetSelection(0)
+        self.wids['pre1'].SetValue(0)
+        self.wids['pre2'].SetValue(0)
+        self.wids['norm1'].SetValue(0)
+        self.wids['norm2'].SetValue(0)
+        self.wids['nnorm'].SetSelection(nnorm)
+        self.wids['norm_method'].SetSelection(0)
+        self.onReprocess()
+
+    def onCopyAuto(self, evt=None):
+        opts = dict(pre1=0, pre2=0, nvict=0, norm1=0, norm2=0,
+                    norm_method='polynomial', nnorm=2, auto_e0=1,
+                    auto_step=1)
+        for checked in self.controller.filelist.GetCheckedStrings():
+            groupname = self.controller.file_groups[str(checked)]
+            grp = self.controller.get_group(groupname)
+            if grp != self.controller.group and not grp.is_frozen:
+                try:
+                    norm2 = max(grp.energy) - grp.e0
+                    norm1 = 5.0*int(norm2/15.0)
+                    nnorm = 2
+                    if (norm2-norm1 < 350): nnorm = 1
+                    if (norm2-norm1 < 50): nnorm = 0
+                except:
+                    nnorm = 1
+                opts['nnorm'] = nnorm
+                self.update_config(opts, dgroup=grp)
+                self.fill_form(grp)
+                self.process(grp, noskip=True)
+
 
     def onSaveConfigBtn(self, evt=None):
         conf = self.get_config()
