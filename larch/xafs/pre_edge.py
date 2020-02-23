@@ -91,8 +91,8 @@ def flat_resid(pars, en, mu):
 
 
 def preedge(energy, mu, e0=None, step=None,
-            nnorm=None, nvict=0, pre1=None, pre2=-50,
-            norm1=100, norm2=None):
+            nnorm=None, nvict=0, pre1=None, pre2=None,
+            norm1=None, norm2=None):
     """pre edge subtraction, normalization for XAFS (straight python)
 
     This performs a number of steps:
@@ -133,7 +133,12 @@ def preedge(energy, mu, e0=None, step=None,
        energy=[e0+norm1, e0+norm2].
     2  nnorm will default to 2 in norm2-norm1>300, to 1 if 100>norm2-norm1>300, and
        to 0 in norm2-norm1<100.
-
+    3  if left as None, pre1 and pre2 will be set as:
+           pre2 = e0 - 2nd energy point
+           pre1 = roughly pre1/3.0, rounded to 5 eV steps
+    4. if left as None, norm1 and norm2 will be set as
+           norm2 = max energy - e0
+           norm1 = roughly norm2/3.0, rounded to 5 eV
     """
     energy = remove_dups(energy)
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -145,14 +150,25 @@ def preedge(energy, mu, e0=None, step=None,
     pre1_input = pre1
     norm2_input = norm2
 
-    if pre1 is None:  pre1  = min(energy) - e0
-    if norm2 is None: norm2 = max(energy) - e0
-    if norm2 < 0:     norm2 = max(energy) - e0 - norm2
-    pre1  = max(pre1,  (min(energy) - e0))
-    norm2 = min(norm2, (max(energy) - e0))
+    if pre1 is None:
+        if ie0 > 20:
+            pre1  = energy[1] - e0  # skip first energy point, often bad
+        else:
+            pre1  = energy[0] - e0
 
+    pre1 = max(pre1,  (min(energy) - e0))
+    if pre2 is None:
+        pre2 = 5.0*int(pre1/15.0)
     if pre1 > pre2:
         pre1, pre2 = pre2, pre1
+
+    if norm2 is None:
+        norm2 = max(energy) - e0
+    if norm2 < 0:
+        norm2 = max(energy) - e0 - norm2
+    norm2 = min(norm2, (max(energy) - e0))
+    if norm1 is None:
+        norm1 = 5.0*int(norm2/15.0)
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
 
@@ -189,6 +205,7 @@ def preedge(energy, mu, e0=None, step=None,
     edge_step = step
     if edge_step is None:
         edge_step = post_edge[ie0] - pre_edge[ie0]
+    edge_step = abs(edge_step)
 
     norm = (mu - pre_edge)/edge_step
     return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
