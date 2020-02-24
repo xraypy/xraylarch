@@ -10,12 +10,6 @@ import subprocess
 import importlib
 from setuptools import setup, find_packages
 
-try:
-    from pip._internal import main as pipmain
-    HAS_PIPMAIN = True
-except ImportError:
-    HAS_PIPMAIN = False
-
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
 cmdline_args = sys.argv[1:]
@@ -41,21 +35,8 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
 ## Dependencies: required and recommended modules
 ## do not use `install_requires` for conda environments
 install_reqs = []
-if not HAS_CONDA:
-    with open('requirements.txt', 'r') as f:
-        install_reqs = f.read().splitlines()
-
-if HAS_PIPMAIN and not HAS_CONDA:
-    mods = ['install']
-    for req in install_reqs:
-        req = req.strip()
-        if not req.startswith('#'):
-            mods.append(req.split()[0])
-    try:
-        pipmain(mods)
-    except:
-        pass
-
+with open('requirements.txt', 'r') as f:
+    install_reqs = f.read().splitlines()
 
 recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('tomopy', 'tomopy', 'Tomographic reconstructions'),
@@ -77,16 +58,6 @@ for modname, impname, desc in recommended:
         import_ok = True
     except ImportError:
         import_ok = False
-    if HAS_PIPMAIN and not import_ok:
-        try:
-            pipmain(['install', modname])
-        except:
-            pass
-        try:
-            x = importlib.import_module(impname)
-            import_ok = True
-        except ImportError:
-            import_ok = False
     if not import_ok:
         missing.append('     {:25.25s} {:s}'.format(modname, desc))
 
