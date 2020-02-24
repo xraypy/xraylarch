@@ -16,7 +16,6 @@ cmdline_args = sys.argv[1:]
 INSTALL = len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 DEVELOP = len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
 
-
 uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
@@ -40,8 +39,6 @@ with open('requirements.txt', 'r') as f:
 
 recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('tomopy', 'tomopy', 'Tomographic reconstructions'),
-               ('psycopg2', 'psycopg2', 'Interacting with PostgresQL databases'),
-               ('pycifrw', 'CifFile', 'Reading CIF files'),
                )
 
 missing = []
