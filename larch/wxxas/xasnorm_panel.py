@@ -120,6 +120,7 @@ class XASNormPanel(TaskPanel):
 
         opts = {'digits': 3, 'increment': 0.1, 'value': 0}
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
+                                       size=(80, -1),
                                        action=self.onVoffset, **opts)
 
 
@@ -145,33 +146,31 @@ class XASNormPanel(TaskPanel):
         saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
                           action=self.onSaveConfigBtn)
 
-        use_auto = Button(panel, 'Use Default Settings', size=(175, -1),
+        use_auto = Button(panel, 'Use Default Settings',
+                          size=(200, -1),
                           action=self.onAutoNorm)
-        copy_auto = Button(panel, 'Use Defaults for Selected Groups',
-                           size=(200, -1), action=self.onCopyAuto)
+        copy_auto = Button(panel, 'Copy',
+                           size=(60, -1), action=self.onCopyAuto)
 
         def CopyBtn(name):
             return Button(panel, 'Copy', size=(60, -1),
                           action=partial(self.onCopyParam, name))
 
         add_text = self.add_text
-        HLINEWID = 600
-        panel.Add(SimpleText(panel, ' XAS Pre-edge subtraction and Normalization',
-                             **self.titleopts), dcol=7)
+        HLINEWID = 575
+        panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
+                             **self.titleopts), dcol=4)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
+                  style=RCEN, dcol=2)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Vertical offset:'), style=RCEN)
+        panel.Add(SimpleText(panel, 'Y Offset:'), style=RCEN)
         panel.Add(plot_voff, style=RCEN)
 
-        panel.Add((5, 5), dcol=3, newrow=True)
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RCEN, dcol=3)
         panel.Add(plot_one, newrow=True)
         panel.Add(self.plotone_op, dcol=4)
         panel.Add(CopyBtn('plotone_op'), dcol=1, style=RCEN)
-
-        panel.Add((5, 5), newrow=True)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data:  Scale:')
@@ -179,8 +178,8 @@ class XASNormPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('XAS Data:')
-        panel.Add(use_auto, dcol=2)
-        panel.Add(copy_auto, dcol=3, style=RCEN)
+        panel.Add(use_auto, dcol=4)
+        panel.Add(copy_auto, dcol=1, style=RCEN)
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(self.wids['atsym'])
@@ -194,8 +193,8 @@ class XASNormPanel(TaskPanel):
 
         add_text('Edge Step: ')
         panel.Add(xas_step)
-        panel.Add(self.wids['auto_step'], dcol=2)
-        panel.Add(CopyBtn('xas_step'), dcol=2, style=RCEN)
+        panel.Add(self.wids['auto_step'], dcol=3)
+        panel.Add(CopyBtn('xas_step'), dcol=1, style=RCEN)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -207,7 +206,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('xas_pre'), dcol=1, style=RCEN)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
-        panel.Add(self.wids['nvict'], dcol=2)
+        panel.Add(self.wids['nvict'], dcol=4)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -221,13 +220,13 @@ class XASNormPanel(TaskPanel):
         add_text(' : ', newrow=False)
         panel.Add(xas_norm2, dcol=2)
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
-        panel.Add(self.wids['nnorm'], dcol=2)
+        panel.Add(self.wids['nnorm'], dcol=4)
 
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
-        panel.Add(saveconf, dcol=4)
+        panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -448,7 +447,7 @@ class XASNormPanel(TaskPanel):
             if (norm2-norm1 < 350): nnorm = 1
             if (norm2-norm1 < 50): nnorm = 0
         except:
-            nnorm = 1
+            nnorm = None
         self.wids['auto_step'].SetValue(1)
         self.wids['auto_e0'].SetValue(1)
         self.wids['nvict'].SetSelection(0)
@@ -456,7 +455,8 @@ class XASNormPanel(TaskPanel):
         self.wids['pre2'].SetValue(0)
         self.wids['norm1'].SetValue(0)
         self.wids['norm2'].SetValue(0)
-        self.wids['nnorm'].SetSelection(nnorm)
+        if nnorm is not None:
+            self.wids['nnorm'].SetSelection(nnorm)
         self.wids['norm_method'].SetSelection(0)
         self.onReprocess()
 
