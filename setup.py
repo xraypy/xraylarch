@@ -39,7 +39,12 @@ with open('requirements.txt', 'r') as f:
 
 recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('tomopy', 'tomopy', 'Tomographic reconstructions'),
-               )
+               ('silx', 'silx', 'Spec File reading, XRD'),
+               ('fabio', 'fabio', 'XRD File reading'),
+               ('pyfai', 'pyFAI', 'XRD intgration'),
+               ('pycifrw', 'CifFile', 'Crystallographic Information files'),
+               ('psycopg2', 'psycopg2', 'Postgres databases'),
+               ('pyepics', 'epics', 'Epics Channel Access'))
 
 missing = []
 
