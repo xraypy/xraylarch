@@ -13,13 +13,13 @@ requests
 scikit-image
 scikit-learn
 asteval>=0.9.18
-lmfit>=0.9.15
+lmfit>=1.0
 uncertainties>=3.0
 pyshortcuts>=1.7
-pyepics>=3.4.0
+pyepics>=3.4.1
 wxpython>=4.0.3
 wxutils>=0.2.3
-wxmplot>=0.9.38
+wxmplot>=0.9.40
 xraydb>=4.3
 pip
 pyyaml
