@@ -11,6 +11,7 @@ welcome_image: larch_3cones.png
 license_file: ../LICENSE
 attempt_hardlinks: True
 ignore_duplicate_files: True
+signing_identity_name: Matthew Newville
 
 post_install: post_install_linux.sh [linux]
 post_install: post_install_macosx.sh [osx]
