@@ -7,10 +7,13 @@ channels:
     - https://conda.anaconda.org/gsecars/
 
 installer_type: pkg [osx]
-welcome_image: larch_3cones.png
+welcome_image: larch_3cones.png  [win64]
+welcome_image: LarchInstaller.png  [osx]
 license_file: ../LICENSE
-attempt_hardlinks: True
 ignore_duplicate_files: True
+attempt_hardlinks: True
+
+userhome_install_only: True  [osx]
 signing_identity_name: Matthew Newville
 
 post_install: post_install_linux.sh [linux]
