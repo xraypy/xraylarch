@@ -8,6 +8,7 @@ fi
 # force install of packages that are noarch or have install problems
 # $PREFIX/bin/conda install --force-reinstall qtpy dask pytz pyparsing networkx bokeh
 
+
 # fix pythonw on MacOSX
 wxapps='gse_dtcorrect gse_mapviewer larch xas_viewer xrd1d_viewer xrd2d_viewer xrfdisplay xrfdisplay_epics'
 
@@ -20,6 +21,7 @@ done
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m
-
 echo '# Larch post install done!'
-sleep 1
+chown -R $USER  $HOME/.larch
+printenv > $HOME/.larch/xraylarch_pkginstall.log
+sleep 3
