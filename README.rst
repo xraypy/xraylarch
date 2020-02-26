@@ -17,7 +17,7 @@ Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 * Documentation: http://xraypy.github.io/xraylarch
 * Code: http://github.com/xraypy/xraylarch
 
-Larch is a open-source library and set of applications for processing and
+Larch is an open-source library and set of applications for processing and
 analyzing X-ray absorption and fluorescence spectroscopy data and X-ray
 fluorescence and diffraction image data from synchrotron beamlines.  It is
 especially focussed on X-ray absorption fine-structure spectroscopy (XAFS)
@@ -41,13 +41,14 @@ service, interacting with other processes or languages via XML-RPC, and so
 be used by the popular `Demeter`_ XAFS application suite.
 
 
-Larch is distribute under an open-source license that is nearly identical to the
-BSD license.  It is under active and open development centered at the
-GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at the
-University of Chicago has been supported by the US National Science Foundation -
-Earth Sciences (EAR-1128799), and Department of Energy GeoSciences
-(DE-FG02-94ER14466).  In addition, funding specifically for Larch was granted by
-the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
+Larch is distributed under an open-source license that is nearly identical
+to the BSD license.  It is under active and open development centered at
+the GeoScoilEnviroCARS sector of Center for Advanced Radiation Sources at
+the University of Chicago has been supported by the US National Science
+Foundation - Earth Sciences (EAR-1128799), and Department of Energy
+GeoSciences (DE-FG02-94ER14466).  In addition, funding specifically for
+Larch was granted by the National Science Foundation - Advanced
+CyberInfrastructure (ACI-1450468).
 
 The best citable reference for Larch is M. Newville, *Larch: An Analysis
 Package For XAFS And Related Spectroscopies*. Journal of Physics:
