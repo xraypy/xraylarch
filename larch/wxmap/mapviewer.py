@@ -1245,6 +1245,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
+
                 dlg.Destroy()
 
                 print('\nSaving 1D XRD in file: %s' % (filename))
@@ -1266,20 +1267,18 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 return
             
             label = '%s: %s' % (os.path.split(_xrd.filename)[-1], title)
-            self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile,
-                                     flip=True)
+            self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile)
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+            fname = xrm.filename + '_' + aname 
             dlg = wx.FileDialog(self, 'Save file as...',
                                 defaultDir=os.getcwd(),
-                                defaultFile='%s.tiff' % stem,
+                                defaultFile='%s.tiff' % fname,
                                 wildcard=wildcards,
                                 style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
             if dlg.ShowModal() == wx.ID_OK:
-                filename = dlg.GetPath().replace('\\', '/')
+                filename = os.path.abspath(dlg.GetPath().replace('\\', '/'))
+                _xrd.save_2D(file=filename, verbose=True)
             dlg.Destroy()
-            _xrd.save_2D(file=filename,verbose=True)
-
-                
 
                 
 class MapViewerFrame(wx.Frame):
