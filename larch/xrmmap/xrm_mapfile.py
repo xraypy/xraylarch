@@ -2658,7 +2658,7 @@ class GSEXRM_MapFile(object):
         npix = area.sum()
         if npix < 1:
             return None
-
+        
         xrdgroup = 'xrd2d'
         xrdgrp = ensure_subgroup('xrd2d', self.xrmmap, dtype='2DXRD')
 
@@ -2668,9 +2668,11 @@ class GSEXRM_MapFile(object):
         nx, ny = (xmax-xmin), (ymax-ymin)
         xrd_file = os.path.join(self.folder, self.rowdata[0][4])
         if os.path.exists(xrd_file):
+            print("Reading XRD Patterns for rows %d to %d" %(ymin, ymax))
             data = None
             for yrow in range(ymin, ymax+1):
                 xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
+                print("row ", yrow)
                 h5file = h5py.File(xrd_file, 'r')
                 rowdat = h5file['entry/data/data'][1:,:,:]
                 h5file.close()
@@ -2687,11 +2689,13 @@ class GSEXRM_MapFile(object):
         kws['energy'] = energy = 0.001 * self.get_incident_energy()
         kws['wavelength'] = lambda_from_E(energy, E_units='keV')
         xrd = XRD(data2D=data, name=name, **kws)
+        print("made xrd ", xrd, kws)
         path, fname = os.path.split(self.filename)
         xrd.filename = fname
         xrd.areaname = xrd.title = areaname
         fmt = "Data from File '%s', XRD 2d, area '%s'"
         xrd.info  =  fmt % (self.filename, areaname)
+        xrd.ponifile = self.xrdcalfile
         return xrd
 
 
