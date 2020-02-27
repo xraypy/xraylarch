@@ -2,9 +2,6 @@
 XAFS: Fitting XAFS to Feff Paths
 ==============================================
 
-.. module:: _xafs
-   :synopsis: XAFS Feff Path and fitting functions
-
 Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
@@ -1051,7 +1048,7 @@ has a slight negative dependence on :math:`Z`.
     :width: 100%
 
     Fit to ZnSe with Rb back-scatterer
-	    
+
 .. subfigend::
     :width: .32
     :label: fig-feffit-znse2

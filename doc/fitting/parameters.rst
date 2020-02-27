@@ -9,8 +9,6 @@
 Parameters
 ===============
 
-.. module:: _math
-
 The parameters used in the fitting model are all meant to be continuous
 variables -- floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to

@@ -2,9 +2,7 @@
 XAFS: Computing anomalous scattering factors from XAFS data
 ===========================================================
 
-.. module:: _xafs
-   :synopsis: Differential Kramers-Kronig transforms
-
+:synopsis: Differential Kramers-Kronig transforms
 
 An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom

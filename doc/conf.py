@@ -32,7 +32,7 @@ extensions = ['sphinx.ext.autodoc',
 # extensions.extend(['fix_equation_ref', 'subfig', 'figtable', 'numsec',
 #                    'singlehtml_toc', 'singletext'])
 
-intersphinx_mapping = {'py':    ('https://docs.python.org/2', None),
+intersphinx_mapping = {'py':    ('https://docs.python.org/3', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
                        }
@@ -60,7 +60,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'xraylarch'
 author = 'Matthew Newville'
-copyright = 'Matthew Newville, The University of Chicago, 2019'
+copyright = 'Matthew Newville, The University of Chicago, 2020'
 
 numfig = True
 numfig_secnum_depth = 3

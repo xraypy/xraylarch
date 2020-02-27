@@ -312,7 +312,6 @@ a reasonable enough approximation of the main absorption edge (say,
 :math:`4p`) so that its tail represents the background of the main edge
 underneath the pre-edge peaks.
 
-
 Fitting the baseline requires identifying energy ranges for both the main
 spectrum to be fitted and the pre-edge peaks -- the part of the spectrum
 which should be ignored when fitting the baseline.  This is illustrated in
@@ -591,7 +590,6 @@ AIC is -1957 and BIC is -1917.
 
 Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Linear Combination Analysis is useful for modeling a XANES spectrum as a
 combination of other spectra.
