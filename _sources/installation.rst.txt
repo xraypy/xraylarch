@@ -13,11 +13,11 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46.tar.gz
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.46-docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47.tar.gz
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47_docs-examples.zip
 
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
@@ -125,7 +125,7 @@ Linux Notes
 For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
 move to the download folder (typically `$HOME/Downloads`) and run::
 
-    ~> bash ./xraylarch-0.9.46-Linux-x86_64.sh
+    ~> bash ./xraylarch-0.9.47-Linux-x86_64.sh
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
@@ -305,7 +305,7 @@ in the `examples` folder.
 
 These are also available separately in the zip file at `Larch Docs and
 Examples`_ that contains a `doc` folder with this full documentation,
-and an `examples` folder with all of the Larch examples. 
+and an `examples` folder with all of the Larch examples.
 
 
 Citing Larch

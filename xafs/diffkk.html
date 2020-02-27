@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>12.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.46 documentation</title>
+    <title>12.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -111,8 +111,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_xafs">
-<span id="xafs-computing-anomalous-scattering-factors-from-xafs-data"></span><h1><span class="section-number">12.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-computing-anomalous-scattering-factors-from-xafs-data">
+<h1><span class="section-number">12.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#xafs-computing-anomalous-scattering-factors-from-xafs-data" title="Permalink to this headline">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">synopsis</dt>
+<dd class="field-odd"><p>Differential Kramers-Kronig transforms</p>
+</dd>
+</dl>
 <p>An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom
 anomalous scattering factors of :cite::<cite>Cromer_Liberman</cite>,
@@ -156,8 +161,8 @@ shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span
 a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <dl class="function">
-<dt id="_xafs.diffkk">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">diffkk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk" title="Permalink to this definition">¶</a></dt>
+<dt id="diffkk">
+<code class="sig-name descname">diffkk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a diffKK Group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -176,8 +181,8 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 </dd></dl>
 
 <dl class="function">
-<dt id="_xafs.diffkk.kk">
-<code class="sig-prename descclassname">diffkk.</code><code class="sig-name descname">kk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.diffkk.kk" title="Permalink to this definition">¶</a></dt>
+<dt id="diffkk.kk">
+<code class="sig-prename descclassname">diffkk.</code><code class="sig-name descname">kk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the KK transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -328,7 +333,7 @@ algorithm would be more appropriate for L edge data.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>12.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.46 documentation</title>
+    <title>12.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -111,23 +111,23 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_xafs">
-<span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1><span class="section-number">12.6. </span>XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-wavelet-transforms-for-xafs">
+<span id="xafs-wavelet-sec"></span><h1><span class="section-number">12.6. </span>XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#xafs-wavelet-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
 <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
 applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
-Munoz <em>et al</em> <a class="bibtex reference internal" href="../biblio.html#munoz-wavelet" id="id1">[Munoz, Argoul, and Farges (2003)]</a> being one early application.   The
-<a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
+Munoz <em>et al</em> <span class="bibtex" id="id1">[munoz_wavelet]</span> being one early application.   The
+<a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
-<h2><span class="section-number">12.6.1. </span><a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
-<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <a class="bibtex reference internal" href="../biblio.html#munoz-wavelet" id="id2">[Munoz, Argoul, and Farges (2003)]</a>
-is implemented as the function <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
+<h2><span class="section-number">12.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
+<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <span class="bibtex" id="id2">[munoz_wavelet]</span>
+is implemented as the function <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
 <dl class="function">
-<dt id="_xafs.cauchy_wavelet">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">cauchy_wavelet</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi</em>, <em class="sig-param">group=None</em>, <em class="sig-param">kweight=0</em>, <em class="sig-param">rmax_out=10</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
+<dt id="cauchy_wavelet">
+<code class="sig-name descname">cauchy_wavelet</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi</em>, <em class="sig-param">group=None</em>, <em class="sig-param">kweight=0</em>, <em class="sig-param">rmax_out=10</em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -274,7 +274,7 @@ is shown for comparison.</span></p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

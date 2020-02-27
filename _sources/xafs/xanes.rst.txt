@@ -2,24 +2,26 @@
 XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting
 ====================================================================================================
 
-.. module:: _xafs
-   :synopsis: XANES Linear Combination Analysis
 
+XANES is highly sensitive to oxidation state and coordination environment
+of the absorbing atom, and spectral features such as the energy and
+intensity of observed peaks can often be used to qualitatively identify
+these chemical and physical configurations.  To be clear, while the
+physical and chemical origin of spectal features can be identified and
+understood, the details of these peaks can be complicated enough that
+direct and complete quantitative analysis from first principles is
+difficult.
 
-XANES is extremely sensitive to oxidation state and coordination
-environment of the absorbing atom, and spectral features can often be used
-to qualitatively identify these characteristics.  On the other hand, the
-physical origin of the spectal features are complicated enough that direct
-and complete quantitative analysis is difficult.  As a result, "XANES
-Analysis" of a spectrum typically involves making linear combinations of
-spectra from known compounds or fitting the spectral features and
-correlating trends in their positions and intensities to known changes in
-spectral features with the desired characteristic such as oxidation state.
-This approach to spectroscopy can be incredibly accurate and sensitive but
-ultimately relies on comparisons to spectra of known materials.  In all
-cases, XANES analysis uses *normalized* XAFS spectra, as done with either
-the :func:`pre_edge` or :func:`mback` function.
-
+As a result, "XANES Analysis" of a spectrum typically involves making
+linear combinations of spectra from known compounds or fitting the spectral
+features and correlating trends in their positions and intensities to known
+changes in spectral features with the desired characteristic such as
+oxidation state.  This approach XANES spectroscopy is similar to the
+empirical approaches used in other spectroscopies and can be incredibly
+accurate and sensitive even if it ultimately relies on comparisons to
+spectra of known materials.  In all cases, XANES analysis uses *normalized*
+XAFS spectra, as from either the :func:`pre_edge` or :func:`mback`
+function.
 
 Within the context of Larch, there are two basic approaches to analyzing
 XANES spectra.  The first of these involves fitting of the so-called
@@ -41,15 +43,14 @@ XANES spectra as a linear mixture of the XANES spectra of idealized
 components.  This works on the assumption that the XANES signature of a
 collection of atoms is the linear sum of the XANES from individual
 components, which is valid in all but the most extreme conditions. In this
-sense **Linear Combination Analysis** is a very useful approach to XANES
+sense **Linear Combination Analysis** is a useful approach to XANES
 analysis, and generally quite easy to do.  If done carefully, it can also
 quite robust, though its sensitiviy can be somewhat limited.
 
-
 What is not always clear in Linear Combination Analysis is what the proper
 "standard" components should be, or even how many can be determined from a
-collection of data.  In this sense standard spectroscopic methods such as
-**Principal Component Analysis** (or PCA) and other linear-algebra based
+collection of data.  For this question, standard spectroscopic methods such
+as **Principal Component Analysis** (or PCA) and other linear-algebra based
 analysis tools (which are nowadays often included in "Machine Learning"
 methods) can be useful.  Strictly speaking, PCA is very limited in what it
 can really tell you about a set of spectra -- it helps you identify how
@@ -58,7 +59,7 @@ if another spectrum is also explained well by those principal components,
 and so "fits in" with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.
 
-These three of these approaches are exposed in the XAS Viewer application
+These three approaches are exposed in the XAS Viewer application
 (:ref:`xasviewer_app`), and the documentation here largely reflects the
 operations done there.
 
@@ -91,7 +92,7 @@ pre-edge peak fitting.  These challenges include
    coincident.
 
 The XAS Viewer application helps with each of the tasks, and it is highly
-recommended that you start with this GUI.
+recommended that you start with this GUI.  See :ref:`xasviewer_preedge`.
 
 
 
@@ -104,7 +105,6 @@ reaction is occuring.  In these cases and many related problems, using
 linear combinations of spectra from known compounds to understand the
 makeup of the unknown sample is an important analysis method.
 
-.. module:: _math
 
 ..  function:: lincombo_fit(group, components, weights=None, minvals=None, maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf, sum_to_one=True)
 
@@ -154,7 +154,6 @@ makeup of the unknown sample is an important analysis method.
 
 Principal Component Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 To use Principal Component Analysis, you must first use a collection of
 spectra to build or "train" the model.  With a trained model, you can ask

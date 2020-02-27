@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>12.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 0.9.46 documentation</title>
+    <title>12.5. XAFS: Fourier Transforms for XAFS &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -116,14 +116,14 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_xafs">
-<span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1><span class="section-number">12.5. </span>XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-fourier-transforms-for-xafs">
+<span id="xafs-ft-sec"></span><h1><span class="section-number">12.5. </span>XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#xafs-fourier-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
 <p>Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
 parameters and arguments described here have names and meanings used
 throughout the XAFS functionality of Larch.  For example, both
-<a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> and <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a> rely on XAFS Fourier transforms, and use
+<a class="reference internal" href="autobk.html#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code> rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
 <h2><span class="section-number">12.5.1. </span>Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
@@ -159,7 +159,7 @@ the discrete sampling of energy and <span class="math notranslate nohighlight">\
 allows Fast Fourier Transform techniques to be used.  It does change the
 definitions of the transforms used somewhat. First, the <span class="math notranslate nohighlight">\(\chi(k)\)</span>
 data must be on <em>uniformly spaced</em> set of <span class="math notranslate nohighlight">\(k\)</span> values.  The default
-<span class="math notranslate nohighlight">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>)
+<span class="math notranslate nohighlight">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>)
 is <span class="math notranslate nohighlight">\(\delta k\)</span> = 0.05 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>.  Second, the array size for
 <span class="math notranslate nohighlight">\(\chi(k)\)</span> used in the Fourier transform should be a power of 2. The
 default used in Larch is <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> = 2048.   Together, these
@@ -207,10 +207,10 @@ concerned about the differences of the real and imaginary parts of
 <h2><span class="section-number">12.5.2. </span>Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms-k-rightarrow-r" title="Permalink to this headline">¶</a></h2>
 <p>The forward Fourier transform converts <span class="math notranslate nohighlight">\(\chi(k)\)</span> to <span class="math notranslate nohighlight">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
-encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
+encapsulated in the <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> function.</p>
 <dl class="function">
-<dt id="_xafs.xftf">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">xftf</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
+<dt id="xftf">
+<code class="sig-name descname">xftf</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#xftf" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <dl class="field-list simple">
@@ -276,12 +276,12 @@ The following data is put into the output group:</p>
 values with spacing <code class="docutils literal notranslate"><span class="pre">kstep</span></code>, starting a 0.  If it is not, the <code class="docutils literal notranslate"><span class="pre">k</span></code>
 and <code class="docutils literal notranslate"><span class="pre">chi</span></code> data will be linearly interpolated onto the proper grid.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
-<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>.</p>
+<a class="reference internal" href="#ftwindow" title="ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_xafs.xftf_fast">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">xftf_fast</code><span class="sig-paren">(</span><em class="sig-param">chi</em>, <em class="sig-param">nfft=2048</em>, <em class="sig-param">kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf_fast" title="Permalink to this definition">¶</a></dt>
+<dt id="xftf_fast">
+<code class="sig-name descname">xftf_fast</code><span class="sig-paren">(</span><em class="sig-param">chi</em>, <em class="sig-param">nfft=2048</em>, <em class="sig-param">kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#xftf_fast" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(k)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(R)\)</span>, using common XAFS conventions.  This version demands
 <code class="docutils literal notranslate"><span class="pre">chi</span></code> to include any weighting and windowing, and so to represent
@@ -310,8 +310,8 @@ emphasize the distinction between the two.  The filtered <span class="math notra
 complex.  By convention, the real part of <span class="math notranslate nohighlight">\(\chi(q)\)</span> corresponds to
 the explicitly real <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="function">
-<dt id="_xafs.xftr">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">xftr</code><span class="sig-paren">(</span><em class="sig-param">r</em>, <em class="sig-param">chir</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
+<dt id="xftr">
+<code class="sig-name descname">xftr</code><span class="sig-paren">(</span><em class="sig-param">r</em>, <em class="sig-param">chir</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#xftr" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>.</p>
 <dl class="field-list simple">
@@ -373,22 +373,22 @@ The following data is put into the output group:</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>In analogy with <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, it is expected that the input <code class="docutils literal notranslate"><span class="pre">r</span></code> be a
+<p>In analogy with <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, it is expected that the input <code class="docutils literal notranslate"><span class="pre">r</span></code> be a
 uniformly spaced array of values starting a 0.</p>
 <p>The input <code class="docutils literal notranslate"><span class="pre">chir</span></code> array can be either the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> array
-as output to <code class="docutils literal notranslate"><span class="pre">Group.chir</span></code> from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, or one of the real or
+as output to <code class="docutils literal notranslate"><span class="pre">Group.chir</span></code> from <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, or one of the real or
 imaginary parts of the <span class="math notranslate nohighlight">\(\chi(R)\)</span> as output to <code class="docutils literal notranslate"><span class="pre">Group.chir_re</span></code> or
 <code class="docutils literal notranslate"><span class="pre">Group.chir_im</span></code>.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
-<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>.</p>
+<a class="reference internal" href="#ftwindow" title="ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_xafs.xftr_fast">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">xftr_fast</code><span class="sig-paren">(</span><em class="sig-param">chir</em>, <em class="sig-param">nfft=2048</em>, <em class="sig-param">kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr_fast" title="Permalink to this definition">¶</a></dt>
+<dt id="xftr_fast">
+<code class="sig-name descname">xftr_fast</code><span class="sig-paren">(</span><em class="sig-param">chir</em>, <em class="sig-param">nfft=2048</em>, <em class="sig-param">kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#xftr_fast" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math notranslate nohighlight">\(\chi(R)\)</span> to
 <span class="math notranslate nohighlight">\(\chi(q)\)</span>, using common XAFS conventions.  This version demands
-<code class="docutils literal notranslate"><span class="pre">chir</span></code> be  the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.
+<code class="docutils literal notranslate"><span class="pre">chir</span></code> be  the complex <span class="math notranslate nohighlight">\(\chi(R)\)</span> as created from <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.
 It returns the complex array of <span class="math notranslate nohighlight">\(\chi(q)\)</span> without putting any
 values into a group.</p>
 <dl class="field-list simple">
@@ -407,15 +407,15 @@ values into a group.</p>
 
 </div>
 <div class="section" id="ftwindow-generating-fourier-transform-windows">
-<h2><span class="section-number">12.5.4. </span><a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.5.4. </span><a class="reference internal" href="#ftwindow" title="ftwindow"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
 <p>As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
 result from a sudden truncation data at the end of it range.  There is an
 extensive literature on such windows, and a lot of choices and parameters
 available for constructing windows.  A sampling of windows is shown below.</p>
 <dl class="function">
-<dt id="_xafs.ftwindow">
-<code class="sig-prename descclassname">_xafs.</code><code class="sig-name descname">ftwindow</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">xmin=0</em>, <em class="sig-param">xmax=None</em>, <em class="sig-param">dk=1</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
+<dt id="ftwindow">
+<code class="sig-name descname">ftwindow</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">xmin=0</em>, <em class="sig-param">xmax=None</em>, <em class="sig-param">dk=1</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#ftwindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a Fourier transform window array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -561,7 +561,7 @@ use a single XAFS dataset from FeO for all these examples, with a
 well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
 <p>We start with a comparison of a small value of <code class="docutils literal notranslate"><span class="pre">dk</span></code> and a larger value.
-A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, changing on <code class="docutils literal notranslate"><span class="pre">dk</span></code> would look like:</p>
+A script that runs <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>, changing on <code class="docutils literal notranslate"><span class="pre">dk</span></code> would look like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
@@ -581,7 +581,7 @@ A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs
 <p class="caption"><span class="caption-text">Comparison of the effect of different values of <code class="docutils literal notranslate"><span class="pre">dk</span></code> on real XAFS
 Fourier transforms.  Increasing <code class="docutils literal notranslate"><span class="pre">dk</span></code> reduces peak heights and tends
 to broaden peaks, but the effects are rather small.</span></p>
-</div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> with consistent parameters, but different
+</div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a> with consistent parameters, but different
 window types:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
@@ -631,7 +631,7 @@ below:</p>
 <span id="fig-xafsft-ri"></span><a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 12.5.6.5 </span><span class="caption-text">The real and imaginary components of the XAFS Fourier transform.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>, the real and
+<p>In fact, in the analysis discussed with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code>, the real and
 imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
@@ -687,7 +687,7 @@ array.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

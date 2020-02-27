@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11. Fitting and Modeling Data &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11. Fitting and Modeling Data &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -109,18 +109,11 @@ be messy and challenging tasks, so a major factor in Larch’s design was to
 make this as simple as possible.  This chapter discusses the basic concepts
 for building models, setting up and performing fits, and inspecting the
 results.</p>
-<span class="target" id="module-_math"></span><p>The concepts presented here focus on modeling and fitting of general
+<p>The concepts presented here focus on modeling and fitting of general
 spectra and data.  Of course, Larch can provides other, specific functions
-for doing fits, such as the EXAFS procedures <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.autobk()</span></code></a> and
-<a class="reference internal" href="../xafs/feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.feffit()</span></code></a>.  Many of these concepts (and the underlying fitting
+for doing fits, such as the EXAFS procedures <code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.autobk()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_xafs.feffit()</span></code>.  Many of these concepts (and the underlying fitting
 algorithms) are used for those other functions as well.</p>
-<div class="versionchanged">
-<p><span class="versionmodified changed">Changed in version 0.9.34: </span>Several changes in the implementation of fitting were made in
-0.9.34. All fitting now uses the <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> package.  The use of
-<cite>_sys.paramGroup</cite> as a group to hold default fitting parameters is no
-longer used.  For constraint expressions, <cite>_sys.fiteval</cite> now holds the
-expression evaluator used.</p>
-</div>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">11.1. Fitting Overview</a></li>
@@ -185,7 +178,7 @@ expression evaluator used.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>5. XASViewer &#8212; xraylarch 0.9.46 documentation</title>
+    <title>5. XASViewer &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -138,15 +138,15 @@ special emphasis on helping users with XANES analysis.  Current features
 </ul>
 </div></blockquote>
 <p>The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
-and normalization of XAFS spectra. <a class="reference internal" href="#fig-xasviewer-1"><span class="std std-numref">Figure 5.1</span></a> shows the
-main window for the XAS Viewer program.  The left-hand portion contains a
-list of files (or data groups) that have been read into the program either
-from individual ASCII column files or Athena Project files.  Clicking on
-the file or group name makes that “the current data group”, while checking
-the boxes next to each name will select multiple files or group.  Buttons
-at the top of the list of files can be used to “Select All” or “Select
-None”.  In addition, right-clicking on the file list will pop up a menu
-that allows more detailed selecting of data sets.</p>
+and normalization of XAFS spectra. <a class="reference internal" href="#fig-xasviewer-1"><span class="std std-numref">Figure 5.1</span></a> shows the main
+window for the XAS Viewer program.  The left-hand portion contains a list
+of files (or data groups) that have been read into the program either from
+individual ASCII column files or Athena Project files.  Clicking on the
+file or group name makes that “the current data group”, while checking the
+boxes next to each name will select multiple files or group.  Buttons at
+the top of the list of files can be used to “Select All” or “Select None”.
+Right-clicking on the file list will pop up a menu that allows more
+detailed selecting of data sets.</p>
 <div class="figure align-center" id="id1">
 <span id="fig-xasviewer-1"></span><a class="reference external image-reference" href="../_images/XASViewer_norm_panel.png"><img alt="../_images/XASViewer_norm_panel.png" src="../_images/XASViewer_norm_panel.png" style="width: 55%;" /></a>
 <p class="caption"><span class="caption-number">Figure 5.1 </span><span class="caption-text">XASViewer showing the File/Group list on the left-hand side and the
@@ -154,49 +154,64 @@ the XAFS pre-edge subtraction and normalization panel on the right.</span><a cla
 </div>
 <p>The right-hand portion of the XAS Viewer window shows multiple forms for
 more specialized XAFS data processing tasks, each on a separate Notebook
-tab.  These will be covered in more detail in sections below. The main
-panel is for pre-edge subtraction and Normalization
+tab.  These will be covered in more detail in sections below. The default
+panel shown is for pre-edge subtraction and normalization
 (<a class="reference internal" href="#xasviewer-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>), with other available tabs for fitting pre-edge
 peaks (<a class="reference internal" href="#xasviewer-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>), Linear Combinaton Analysis
-(<a class="reference internal" href="#xasviewer-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>), Principal Component Analysis
-(<a class="reference internal" href="#xasviewer-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>), and EXAFS Analysis (<a class="reference internal" href="#xasviewer-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and
+(<a class="reference internal" href="#xasviewer-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>),
+Principal Component Analysis (<a class="reference internal" href="#xasviewer-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>),
+Advanced Linear Regression (<span class="xref std std-ref">xasviewer_regression</span>),
+and EXAFS Analysis (<a class="reference internal" href="#xasviewer-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and
 <a class="reference internal" href="#xasviewer-exafs-fft"><span class="std std-ref">EXAFS Processing:  Fourier Transforms</span></a>).</p>
 <p>There are a few important general notes to mention about XAS Viewer before
-going into more detail about how to use it.  First, XAS Viewer is still
-very new and in active development.  If you find problems with it or
-unexpected or missing functionality, please let us know.  Second, XAS
-Viewer has many features and functionality in common with Athena and
-Sixpack.  This is partly intentional, as we expect that XAS Viewer may be a
-useful alternative to these that may be better supported and maintained,
-especially on macOS. That also means that if you find things that you think
-are missing or different from how Athena or Sixpack work, let us know.</p>
+going into more detail about how to use it.  First, XAS Viewer is somewhat
+new, and in active development.  If you find problems with it or unexpected
+or missing functionality, please let us know.  Second, XAS Viewer has many
+features, functionality, and concepts in common with Athena and
+Sixpack. This is intentional, as we intend XAS Viewer to be a useful
+alternative to these applications, possibly with new or better features but
+also without requiring too much relearning of concepts or workflow.  As an
+important example of this compatibility, XAS Viewer can read in and import
+data from Athena Project files, and can save these project files as well,
+so that if you have lots of data organized with Athena Project Files, you
+can use XAS Viewer and Athena on the same datasets.  This aim for
+compatibility also means that if you find features to be missing or
+different from how Athena or Sixpack work, let us know.</p>
 <p>As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
-complex analysis, batch processing, and scripting of analysis.  To do this,
-essentially all the real processing work in XAS Viewer is done through the
-Larch Buffer (as shown in <span class="xref std std-ref">larchgui-section</span>) which records the commands
-that it executes.  If, at any point you want to know exactly what XAS
-Viewer is “really doing”, you can open the Larch Buffer and see.  You can
+complex analysis, batch processing, and scripting of analysis tasks.  To do
+this, essentially all the real processing work, including most of the
+plotting of data, in XAS Viewer is done through the Larch Buffer (as shown
+in <a class="reference internal" href="../guis.html#larchgui-app"><span class="std std-ref">Basic Larch GUI</span></a>) which records the commands that it executes.  If,
+at any point you want to know exactly what XAS Viewer is “really doing”,
+you can open the Larch Buffer and see the commands being executed.  You can
 also copy the code from the Larch buffer to reproduce the analysis steps,
-or modify into procedures for batch processing.</p>
+or modify into procedures for batch processing with the Larch scripting
+language or with Python.</p>
 <p>XAS Viewer will display many different datasets as 2-d line plots.  As with
 all such plots made with Larch (see <a class="reference internal" href="../plotting/index.html#plotting-chapter"><span class="std std-ref">Plotting and Displaying Data</span></a>), these are
 highly interactive, customizable, and can produce publication-quality
-images.  Larch plots can be zoomed in an out, and configured to change the
-colors, linestyles, margins, text for labels, and more. From any plot
-window you can use Ctrl-C to copy the image to the clipboard, Ctrl-S to
-Save the image (as PNG) to a file, or Ctrl-P to print the image. Ctrl-K
-will bring up a window to configure the colors, text, and so on.  These and
-a few other common options are available from the File and Options menu.</p>
-<p>In particular for XAS Viewer, clicking on the legend for any labeled curve
-on a plot will toggle whether that curve is displayed.  This allows us to
-draw plot components as you can turn them on or off interactively.  Also,
-note that many of the entries for numbers on the form panels in XAS Viewer
-have a button with a ‘pin’ icon <a class="reference internal" href="../_images/pin_icon.png"><img alt="pin" src="../_images/pin_icon.png" style="width: 18pt; height: 18pt;" /></a>.  Clicking anywhere on the plot
-window will remember the energy value of the last point clicked, and show
-the value in the middle section of the status bar, just below the plot
-itself. Clicking on any of these ‘pin’ buttons will insert that “most
-recent energy” value into the corresponding field.</p>
+images.  The plots can be zoomed in and out, and can be configured to
+change the colors, linestyles, margins, text for labels, and more. From any
+plot window you can use Ctrl-C to copy the image to the clipboard, Ctrl-S
+to Save the image as PNG file, or Ctrl-P to print the image with your
+systems printer. Ctrl-K will bring up a window with forms to configure the
+colors, text, styles and so on. These common options are available from the
+File and Options menu of the plotting window.</p>
+<p>In particular, clicking on the legend for any labeled curve on a plot will
+toggle whether that curve is displayed and partially lighten the label
+itself.  This feature of the plotting window means that XAS Viewer may draw
+several different traces on the same plot window and allow (or even expect)
+you to turn some of them on or off interactively to better view the
+different components being shown.  This can be especially useful for
+comparing XANES spectra or for inspecting the results of peakfitting.</p>
+<p>Also note that many of the entries for numbers on the form panels in XAS
+Viewer have a button with a ‘pin’ icon <a class="reference internal" href="../_images/pin_icon.png"><img alt="pin" src="../_images/pin_icon.png" style="width: 18pt; height: 18pt;" /></a>.  Clicking anywhere on the
+plot window will remember the X and Y values of the last point clicked, and
+show the value in the middle section of the status bar, just below the plot
+itself. Clicking on any of these ‘pin’ buttons will insert the appropriate
+value (usually the energy) from that “most recently clicked position” into
+the corresponding field.</p>
 <div class="section" id="reading-data-into-xas-viewer">
 <span id="xasviewer-io"></span><h2><span class="section-number">5.1. </span>Reading Data into XAS Viewer<a class="headerlink" href="#reading-data-into-xas-viewer" title="Permalink to this headline">¶</a></h2>
 <p>Data groups can be read from plain ASCII data files using a GUI form to
@@ -266,28 +281,52 @@ data corrections.  These include speciality dialogs for:</p>
 </div></div>
 <div class="section" id="pre-edge-subtraction-and-normalization">
 <span id="xasviewer-preedge"></span><span id="fig-xasviewer-dialogs"></span><h2><span class="section-number">5.3. </span>Pre-edge subtraction and Normalization<a class="headerlink" href="#pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h2>
-<p>As above, <a class="reference internal" href="#fig-xasviewer-1"><span class="std std-numref">Figure 5.1</span></a> shows the main window for the XAS
-Viewer program with the right hand side showing the “XAS Normalization”
-Panel.  This panel helps you do pre-edge subtraction and normalization of
-XAFS data using the <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function.   This processing step is
-important for getting normalized XAFS spectra that is used for further
-analysis of both XANES and EXAFS.</p>
-<p>From the form, you can plot the data for the current selected group in
-several ways: Raw <span class="math notranslate nohighlight">\(\mu(E)\)</span>, normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span>, the derivative
-<span class="math notranslate nohighlight">\(d\mu(E)/dE\)</span>, flattened <span class="math notranslate nohighlight">\(\mu(E)\)</span>, or the raw <span class="math notranslate nohighlight">\(\mu(E)\)</span>
-with the pre-edge line and post-edge normalization curve.  You can also set
-the parameters like <span class="math notranslate nohighlight">\(E_0\)</span> and the edge step and ranges for the
-pre-edge line and normalization curve.  Consult with <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>
-function for more details on these parameters.  You can also plot several
-selected groups together, and copy processing parameters from one group to
-another.</p>
+<p>As shown above in <a class="reference internal" href="#fig-xasviewer-1"><span class="std std-numref">Figure 5.1</span></a>, the main analysis panel for
+the XAS Viewer program is the “XAS Normalization” Panel.  This panel helps
+you do pre-edge subtraction and normalization of XAFS data using the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code>, <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>, or <a class="reference internal" href="../xafs/preedge.html#mback_norm" title="mback_norm"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback_norm()</span></code></a> functions.  This
+processing step is important for getting normalized XAFS spectra that is
+used for further analysis of both XANES and EXAFS.  In general, the idea is
+to get the main step of each XAS spectrum to go from 0 below the main edge
+to 1 above the edge, so that the normalized spectrum represents the average
+absorption of each absorbing element in the sample.</p>
+<p>The first step in the process is to identify <span class="math notranslate nohighlight">\(E_0\)</span>, the absorption
+threshold energy.  This is typically (and by default) chosen as the energy
+point where the first derivative <span class="math notranslate nohighlight">\(d\mu(E)/dE\)</span> has a maximum.  This
+may not necessarily reflect the onset of absorption or the Fermi level, but
+it is easy to identify reliably for any spectrum.  At this point, the value
+does not have to be highly accurate, so that predictability and
+reproducibility are favored.  You can set the value of <span class="math notranslate nohighlight">\(E_0\)</span> or allow
+it to be determined automatically.</p>
+<p>The next step is to measure how large the jump in absorption is. This
+process can be somewhat trickier, so that there are some heuristics built
+in to XAS Viewer (and <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>) to help make this more robust.
+You can explicitly set the the value of the edge step, or allow it to be
+calculated from the spectra in one of two ways.</p>
+<p>The classic way for determining the edge step is encapsulated in the
+<a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function.  Default values for ranges for the fitted
+pre-edge line and post-edge normalization curve can be set, or you can rely
+on the default settings for these values.  In general, the default settings
+give pretty good results, but the value for the edge step or the fitting
+ranges and curve forms can be altered here.</p>
+<p>Consult with <a class="reference internal" href="../xafs/preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> and <a class="reference internal" href="../xafs/preedge.html#mback_norm" title="mback_norm"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback_norm()</span></code></a> function for more
+details on these parameters.  Note that you can copy processing parameters
+from one group to other groups with the set of “copy” buttons that will
+copy the corresponding parameters to all the selected groups.</p>
+<p>Finally, from the normalization panel, you can plot the data for the one
+currently selected group or for all selected groups in a few different
+ways: Raw <span class="math notranslate nohighlight">\(\mu(E)\)</span>, normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span>, the derivative
+<span class="math notranslate nohighlight">\(d\mu(E)/dE\)</span>, flattened <span class="math notranslate nohighlight">\(\mu(E)\)</span>.  For the current group there
+are even mor options, including the raw <span class="math notranslate nohighlight">\(\mu(E)\)</span> with the pre-edge
+line and post-edge normalization curve, or compare with the
+MBACK-calculation for normalization.</p>
 </div>
 <div class="section" id="pre-edge-peak-fitting">
 <span id="xasviewer-peakfit"></span><h2><span class="section-number">5.4. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h2>
 <p>The “Pre-edge Peak Fit” tab (show in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 5.4.1</span></a>) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
 or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a>
-and the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function for curve-fitting with the ability to
+and the <a class="reference internal" href="../fitting/minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function for curve-fitting with the ability to
 constrain fitting Parameters.</p>
 <p>Fitting of pre-edge peaks with this panel is a two step process.</p>
 <p>First, one fits a “baseline” curve to account for the main absorption edge.
@@ -527,7 +566,7 @@ the results of PCA to ask:</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

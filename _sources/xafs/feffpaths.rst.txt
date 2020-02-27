@@ -7,8 +7,6 @@ XAFS: Reading and using Feff Paths
 .. _feff85exafs: https://github.com/xraypy/feff85exafs
 .. _feff85exafs unit tests: https://github.com/xraypy/feff85exafs/tree/master/tests
 
-.. module:: _xafs
-
 For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using Feff.  Being able to run Feff and use its
 results is of fundamental importance for using Larch for fitting EXAFS
@@ -63,7 +61,7 @@ This will generate a number of outputs, including the *feffNNNN.dat* files
 containing the data for each scattering path.
 
 .. _feff8l_app:
-   
+
 
 Running Feff8l with :func:`feff8l`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

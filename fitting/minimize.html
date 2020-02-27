@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11.3. minimize() and objective Functions &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11.3. minimize() and objective Functions &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -102,8 +102,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_math">
-<span id="minimize-and-objective-functions"></span><span id="fitting-minimize-sec"></span><h1><span class="section-number">11.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="minimize-and-objective-functions">
+<span id="fitting-minimize-sec"></span><h1><span class="section-number">11.3. </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> and objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the
 least-squares sense in the fitting process.  For most fits, the objective
@@ -130,8 +130,8 @@ best approach.</p>
 </pre></div>
 </div>
 <p>Here <code class="docutils literal notranslate"><span class="pre">params</span></code> is a Group containing two Parameters as defined by
-<a class="reference internal" href="parameters.html#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code></a>, discussed earlier.</p>
-<p>To actually perform the fit, the <a class="reference internal" href="#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function must be
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code>, discussed earlier.</p>
+<p>To actually perform the fit, the <a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function must be
 called.  This takes the objective function as its first argument, and
 the group containing all the Parameters as its second argument,
 keyword arguments for the optional arguments for the objective
@@ -147,11 +147,11 @@ the objective function will be called to recalculate the residual array.
 Thus the objective function may be called many times before the fitting
 procedure decides it has found the best solution that it can.</p>
 <div class="versionchanged">
-<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> returns a result group containing fit statistics.</p>
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> returns a result group containing fit statistics.</p>
 </div>
 <dl class="function">
-<dt id="_math.minimize">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param">fcn</em>, <em class="sig-param">paramgroup</em>, <em class="sig-param">args=None</em>, <em class="sig-param">kws=None</em>, <em class="sig-param">method='leastsq'</em>, <em class="sig-param">**extra_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.minimize" title="Permalink to this definition">¶</a></dt>
+<dt id="minimize">
+<code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param">fcn</em>, <em class="sig-param">paramgroup</em>, <em class="sig-param">args=None</em>, <em class="sig-param">kws=None</em>, <em class="sig-param">method='leastsq'</em>, <em class="sig-param">**extra_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the best-fit values for the Parameters in <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> such that the
 output array from the objective function <code class="xref py py-func docutils literal notranslate"><span class="pre">fcn()</span></code> has minimal sum-of-squares.</p>
 <dl class="field-list simple">
@@ -184,7 +184,7 @@ used.  Several methods are available, as described below in
 <blockquote id="minimize-methods-table">
 <div><p>Table of Fitting Methods.</p>
 <p>Listed are the names and description of fitting methods available to the
-<a class="reference internal" href="#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function.  The <em>leastsq</em> method is the default, and the
+<a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function.  The <em>leastsq</em> method is the default, and the
 only method for which uncertainties and correlations are automatically
 calculated.</p>
 <blockquote>
@@ -316,7 +316,7 @@ used.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

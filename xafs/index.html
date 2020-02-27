@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>12. XAFS Analysis &#8212; xraylarch 0.9.46 documentation</title>
+    <title>12. XAFS Analysis &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -104,13 +104,13 @@
   <div class="section" id="xafs-analysis">
 <span id="xafs-chapter"></span><h1><span class="section-number">12. </span>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit <a class="bibtex reference internal" href="../biblio.html#ifeffit" id="id1">[Newville (2001)b]</a>,
+was originally conceived to be version 2 of Ifeffit <span class="bibtex" id="id1">[ifeffit]</span>,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
 functionality of Ifeffit is available in Larch.  There may still be a few
 minor features of Ifeffit that are not yet available, and some
-functionality to port from Athena <a class="bibtex reference internal" href="../biblio.html#athena" id="id2">[Ravel and Newville (2005)]</a> back to the core
+functionality to port from Athena <span class="bibtex" id="id2">[athena]</span> back to the core
 library.  In addition, there are some minor differences in implementation
 details, so that slightly different numerical results may be obtained.
 Importantly, several features are available with Larch that were not
@@ -129,9 +129,14 @@ fixed.</p>
 </ol>
 </div></blockquote>
 <p>The XAFS-specific functions in Larch follow these general steps.  They are
-all kept in the <a class="reference internal" href="xanes.html#module-_xafs" title="_xafs: XANES Linear Combination Analysis"><code class="xref py py-data docutils literal notranslate"><span class="pre">_xafs</span></code></a> Group, which can be easily accessed, as this
+all kept in the <code class="xref py py-data docutils literal notranslate"><span class="pre">_xafs</span></code> Group, which can be easily accessed, as this
 is in the default search path.</p>
-<span class="target" id="module-_xafs"></span><div class="toctree-wrapper compound">
+<dl class="field-list simple">
+<dt class="field-odd">synopsis</dt>
+<dd class="field-odd"><p>Basic XAFS Functions</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">12.1. XAFS Functions: Overview and Naming Conventions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utilities.html#naming-conventions-for-xafs-arrays">12.1.1. Naming conventions for XAFS arrays</a></li>
@@ -140,12 +145,13 @@ is in the default search path.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="preedge.html">12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">12.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-subtraction-example">12.2.2. Pre-Edge Subtraction Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-mback-algorithm">12.2.3. The MBACK algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-baseline-subtraction">12.2.4. Pre-edge baseline subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#over-absorption-corrections">12.2.5. Over-absorption Corrections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#spectral-deconvolution">12.2.6. Spectral deconvolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-find-e0-function">12.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">12.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-subtraction-example">12.2.3. Pre-Edge Subtraction Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-mback-algorithm">12.2.4. The MBACK algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-baseline-subtraction">12.2.5. Pre-edge baseline subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#over-absorption-corrections">12.2.6. Over-absorption Corrections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#spectral-deconvolution">12.2.7. Spectral deconvolution</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xanes.html">12.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a><ul>
@@ -241,7 +247,7 @@ is in the default search path.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -117,7 +117,7 @@
 <p>Having good estimates for uncertainties in fitted parameters is important
 for any scientific analysis.  One of principle attractions to using the
 Levenberg-Marquardt algorithm that is the default fitting mechanism with
-the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function is that it will automatically calculate
+the <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function is that it will automatically calculate
 estimates of parameter uncertainties and correlations.  This is very
 convenient and generally reliable, but it should be made clear that the
 basic assumptions made when these uncertainties are estimated are not
@@ -137,7 +137,7 @@ automatic method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>minimizer</strong> – the minimizer object returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</p></li>
+<li><p><strong>minimizer</strong> – the minimizer object returned by <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p></li>
 <li><p><strong>sigmas</strong> – list of sigma-levels to find parameter values for.</p></li>
 <li><p><strong>prob_func</strong> – <code class="docutils literal notranslate"><span class="pre">None</span></code> or callable function to calculate the
 probability from the optimized chi-square. By default,
@@ -241,7 +241,7 @@ section.</p>
     <span class="o">-</span><span class="n">best</span>     <span class="o">-</span><span class="mf">0.052057</span>   <span class="o">-</span><span class="mf">0.03452</span>  <span class="o">-</span><span class="mf">0.017248</span>          <span class="mi">0</span>   <span class="mf">0.017249</span>   <span class="mf">0.034524</span>   <span class="mf">0.052068</span>
 </pre></div>
 </div>
-<p>The automatic error estimates given from <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> are meant to be
+<p>The automatic error estimates given from <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> are meant to be
 1-<span class="math notranslate nohighlight">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
 <blockquote>
 <div><table class="docutils align-default">
@@ -437,7 +437,7 @@ of variable parameters by brute force.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>minimizer</strong> – the minimizer object returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</p></li>
+<li><p><strong>minimizer</strong> – the minimizer object returned by <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p></li>
 <li><p><strong>xname</strong> – name of variable for x-axis</p></li>
 <li><p><strong>yname</strong> – name of variable for y-axis</p></li>
 <li><p><strong>nx</strong> – number of steps in x [11]</p></li>
@@ -533,7 +533,7 @@ correlation, or when nearing a final analysis.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

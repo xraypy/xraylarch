@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11.2. Parameters &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11.2. Parameters &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -114,8 +114,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_math">
-<span id="parameters"></span><span id="fitting-parameters-sec"></span><h1><span class="section-number">11.2. </span>Parameters<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="parameters">
+<span id="fitting-parameters-sec"></span><h1><span class="section-number">11.2. </span>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <p>The parameters used in the fitting model are all meant to be continuous
 variables – floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to
@@ -139,14 +139,14 @@ Thus:</p>
 <span class="mi">12</span>
 </pre></div>
 </div>
-<p>To create a Parameter, use the <a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> function, which takes a value
+<p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> function, which takes a value
 as its first argument, and a few optional keyword arguments to control
 whether the value is to be varied in a fit or kept fixed, to set optional
 upper and lower bounds for the Parameter value, or to set an algebraic
 expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
 <dl class="function">
-<dt id="_math.param">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">param</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">vary=False</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.param" title="Permalink to this definition">¶</a></dt>
+<dt id="param">
+<code class="sig-name descname">param</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">vary=False</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a Parameter, setting some of it principle attributes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -185,56 +185,56 @@ or give additional information about its value:</p>
 <tr class="row-even"><td><p>value</p></td>
 <td><p>value</p></td>
 <td></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>vary</p></td>
 <td><p>value can change in fit</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p>min</p></td>
 <td><p>lower bound</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>max</p></td>
 <td><p>upper bound</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p>name</p></td>
 <td><p>optional name</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>expr</p></td>
 <td><p>algebraic constraint</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p>stderr</p></td>
 <td><p>standard error</p></td>
 <td></td>
-<td><p><a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+<td><p><a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>correl</p></td>
 <td><p>correlations</p></td>
 <td></td>
-<td><p><a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+<td><p><a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p>uvalue</p></td>
 <td><p>value with uncertainty</p></td>
 <td></td>
-<td><p><a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+<td><p><a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <dl class="function">
-<dt id="_math.guess">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">guess</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.guess" title="Permalink to this definition">¶</a></dt>
+<dt id="guess">
+<code class="sig-name descname">guess</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a variable Parameter, setting some of it principle attributes.
-The arguments here are identical to <a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a>, except that
+The arguments here are identical to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a>, except that
 <code class="docutils literal notranslate"><span class="pre">vary=True</span></code> is set.</p>
 </dd></dl>
 
@@ -259,7 +259,7 @@ The arguments here are identical to <a class="reference internal" href="#_math.p
 <div class="section" id="setting-bounds">
 <h2><span class="section-number">11.2.1. </span>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
 <p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
-<em>max</em> arguments to <a class="reference internal" href="#_math.param" title="_math.param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> or by setting the <em>min</em> and <em>max</em>
+<em>max</em> arguments to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> or by setting the <em>min</em> and <em>max</em>
 attribute of an existing Parameter.  To remove a bound, set the
 corresponding attribute to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <p>During a fit, a Parameter’s value may approach or even equal one of the
@@ -317,7 +317,7 @@ and array methods. Some additional details are discussed below
 </div>
 </div>
 <div class="section" id="param-group-creating-a-parameter-group-for-fitting-constraints">
-<span id="param-param-group-label"></span><h2><span class="section-number">11.2.3. </span><a class="reference internal" href="#_math.param_group" title="_math.param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a>: creating a Parameter Group for fitting constraints<a class="headerlink" href="#param-group-creating-a-parameter-group-for-fitting-constraints" title="Permalink to this headline">¶</a></h2>
+<span id="param-param-group-label"></span><h2><span class="section-number">11.2.3. </span><a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a>: creating a Parameter Group for fitting constraints<a class="headerlink" href="#param-group-creating-a-parameter-group-for-fitting-constraints" title="Permalink to this headline">¶</a></h2>
 <p>While the examples of constraint expressions above will work during a fit,
 the constraint values will not be updated immediately in the main Larch
 interpreter.  That is, doing:</p>
@@ -330,7 +330,7 @@ interpreter.  That is, doing:</p>
 <p>That is, the value of constrained parameter <cite>amp2</cite> is not properly set yet.
 To be clear, a fit with this group of parameters will work, but it’s
 sometimes useful to see the values for the constrained parameters.</p>
-<p>The function <a class="reference internal" href="#_math.param_group" title="_math.param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> will create a “live, working” group of
+<p>The function <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> will create a “live, working” group of
 parameters:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
                             <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
@@ -346,8 +346,8 @@ larch&gt; print(params.amp1, params.amp2)
 (&lt;Parameter ‘amp1’, 0.2, bounds=[0:1]&gt;, &lt;Parameter ‘amp2’, 0.8, bounds=[-inf:inf], expr=’1-amp1’&gt;)</p>
 </div></blockquote>
 <dl class="function">
-<dt id="_math.param_group">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">param_group</code><span class="sig-paren">(</span><em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.param_group" title="Permalink to this definition">¶</a></dt>
+<dt id="param_group">
+<code class="sig-name descname">param_group</code><span class="sig-paren">(</span><em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return a <em>Parameter Group</em> that uses <cite>_sys.fiteval</cite> for
 constraint expression.</p>
 <dl class="field-list simple">
@@ -362,7 +362,7 @@ constraint expression.</p>
 
 <p>A Parameter Group can contain non-Parameter values as well as fitting
 Parameters.  For backward compatibility, a simple group containing
-parameters will work with fitting, but a <a class="reference internal" href="#_math.param_group" title="_math.param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> is recommended
+parameters will work with fitting, but a <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> is recommended
 for many cases.</p>
 </div>
 <div class="section" id="fiteval-and-details-about-algebraic-constraints">
@@ -378,12 +378,12 @@ The set of available functions and variables is in its symbol table,
 <cite>_sys.fiteval.symtable</cite>, which has more than 400 named functions and
 variables available, most of them from numpy.</p>
 <p>During a fit, all the components of the <em>paramgroup</em> given to
-<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> will be put put into the <cite>_sys.fiteval</cite> symbol table.  Any
+<a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> will be put put into the <cite>_sys.fiteval</cite> symbol table.  Any
 of these variables can be used in the constraint expressions.  In addition,
 all the true parameters in the <em>paramgroup</em> will be converted into
 <cite>lmfit.Parameters</cite>.  After the fit is complete, the updated parameter
 values will be put back into the</p>
-<p>The <a class="reference internal" href="#_math.param_group" title="_math.param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> function discussed above keeps an internal link to
+<p>The <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> function discussed above keeps an internal link to
 <cite>_sys.fiteval</cite> and uses that for evaluating constraint expressions.  That
 is, following the above example, one can see the current values for
 <cite>params.amp1</cite> and <cite>params.amp2</cite> within the <cite>_sys.fiteval</cite> symbol table:</p>
@@ -400,13 +400,13 @@ is, following the above example, one can see the current values for
 <span class="mf">0.9</span>
 </pre></div>
 </div>
-<p>Because <cite>_sys.fiteval</cite> is used for all fits with <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> (and for
+<p>Because <cite>_sys.fiteval</cite> is used for all fits with <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> (and for
 XAFS, with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code>), you may find yourself wanting to clear or reset
 the fitting symbol table for a new fit.  This should not be necessary, but
-it is available with the function <a class="reference internal" href="#_math.reset_fiteval" title="_math.reset_fiteval"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_fiteval()</span></code></a>:</p>
+it is available with the function <a class="reference internal" href="#reset_fiteval" title="reset_fiteval"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_fiteval()</span></code></a>:</p>
 <dl class="function">
-<dt id="_math.reset_fiteval">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">reset_fiteval</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_math.reset_fiteval" title="Permalink to this definition">¶</a></dt>
+<dt id="reset_fiteval">
+<code class="sig-name descname">reset_fiteval</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reset_fiteval" title="Permalink to this definition">¶</a></dt>
 <dd><p>clear and reset <cite>_sys.fiteval</cite> for a new fit.   This function takes no
 arguments.</p>
 </dd></dl>
@@ -467,7 +467,7 @@ to the result (ignoring correlations).</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

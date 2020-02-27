@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.46 documentation</title>
+    <title>12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -113,21 +113,26 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-_xafs">
-<span id="xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting"></span><h1><span class="section-number">12.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
-<p>XANES is extremely sensitive to oxidation state and coordination
-environment of the absorbing atom, and spectral features can often be used
-to qualitatively identify these characteristics.  On the other hand, the
-physical origin of the spectal features are complicated enough that direct
-and complete quantitative analysis is difficult.  As a result, “XANES
-Analysis” of a spectrum typically involves making linear combinations of
-spectra from known compounds or fitting the spectral features and
-correlating trends in their positions and intensities to known changes in
-spectral features with the desired characteristic such as oxidation state.
-This approach to spectroscopy can be incredibly accurate and sensitive but
-ultimately relies on comparisons to spectra of known materials.  In all
-cases, XANES analysis uses <em>normalized</em> XAFS spectra, as done with either
-the <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> or <a class="reference internal" href="preedge.html#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a> function.</p>
+  <div class="section" id="xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting">
+<h1><span class="section-number">12.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting<a class="headerlink" href="#xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h1>
+<p>XANES is highly sensitive to oxidation state and coordination environment
+of the absorbing atom, and spectral features such as the energy and
+intensity of observed peaks can often be used to qualitatively identify
+these chemical and physical configurations.  To be clear, while the
+physical and chemical origin of spectal features can be identified and
+understood, the details of these peaks can be complicated enough that
+direct and complete quantitative analysis from first principles is
+difficult.</p>
+<p>As a result, “XANES Analysis” of a spectrum typically involves making
+linear combinations of spectra from known compounds or fitting the spectral
+features and correlating trends in their positions and intensities to known
+changes in spectral features with the desired characteristic such as
+oxidation state.  This approach XANES spectroscopy is similar to the
+empirical approaches used in other spectroscopies and can be incredibly
+accurate and sensitive even if it ultimately relies on comparisons to
+spectra of known materials.  In all cases, XANES analysis uses <em>normalized</em>
+XAFS spectra, as from either the <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> or <a class="reference internal" href="preedge.html#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a>
+function.</p>
 <p>Within the context of Larch, there are two basic approaches to analyzing
 XANES spectra.  The first of these involves fitting of the so-called
 pre-edge peaks that are (generally) due to hybridization of <span class="math notranslate nohighlight">\(d\)</span>
@@ -147,13 +152,13 @@ XANES spectra as a linear mixture of the XANES spectra of idealized
 components.  This works on the assumption that the XANES signature of a
 collection of atoms is the linear sum of the XANES from individual
 components, which is valid in all but the most extreme conditions. In this
-sense <strong>Linear Combination Analysis</strong> is a very useful approach to XANES
+sense <strong>Linear Combination Analysis</strong> is a useful approach to XANES
 analysis, and generally quite easy to do.  If done carefully, it can also
 quite robust, though its sensitiviy can be somewhat limited.</p>
 <p>What is not always clear in Linear Combination Analysis is what the proper
 “standard” components should be, or even how many can be determined from a
-collection of data.  In this sense standard spectroscopic methods such as
-<strong>Principal Component Analysis</strong> (or PCA) and other linear-algebra based
+collection of data.  For this question, standard spectroscopic methods such
+as <strong>Principal Component Analysis</strong> (or PCA) and other linear-algebra based
 analysis tools (which are nowadays often included in “Machine Learning”
 methods) can be useful.  Strictly speaking, PCA is very limited in what it
 can really tell you about a set of spectra – it helps you identify how
@@ -161,7 +166,7 @@ many unique components make up a collection of spectra, and can help answer
 if another spectrum is also explained well by those principal components,
 and so “fits in” with the starting collecion of data.  This is admittedly
 limited knowledge, but can be very useful in enabling further analysis.</p>
-<p>These three of these approaches are exposed in the XAS Viewer application
+<p>These three approaches are exposed in the XAS Viewer application
 (<a class="reference internal" href="../xasviewer/index.html#xasviewer-app"><span class="std std-ref">XASViewer</span></a>), and the documentation here largely reflects the
 operations done there.</p>
 <p>But first a note for all XANES analysis.  All these methods rely on
@@ -192,7 +197,7 @@ coincident.</p></li>
 </ul>
 </div></blockquote>
 <p>The XAS Viewer application helps with each of the tasks, and it is highly
-recommended that you start with this GUI.</p>
+recommended that you start with this GUI.  See <a class="reference internal" href="../xasviewer/index.html#xasviewer-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>.</p>
 </div>
 <div class="section" id="linear-combination-analysis">
 <h2><span class="section-number">12.3.2. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this headline">¶</a></h2>
@@ -201,9 +206,9 @@ engineered samples in which a predictable if not completely understood
 reaction is occuring.  In these cases and many related problems, using
 linear combinations of spectra from known compounds to understand the
 makeup of the unknown sample is an important analysis method.</p>
-<span class="target" id="module-_math"></span><dl class="function">
-<dt id="_math.lincombo_fit">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">lincombo_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.lincombo_fit" title="Permalink to this definition">¶</a></dt>
+<dl class="function">
+<dt id="lincombo_fit">
+<code class="sig-name descname">lincombo_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fitting for a group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -235,8 +240,8 @@ group to be fitted.</p></li>
 </dd></dl>
 
 <dl class="function">
-<dt id="_math.lincombo_fitall">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">lincombo_fitall</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.lincombo_fitall" title="Permalink to this definition">¶</a></dt>
+<dt id="lincombo_fitall">
+<code class="sig-name descname">lincombo_fitall</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fitall" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fittings for a group with all combinations
 of 2 or more of the components given</p>
 <dl class="field-list simple">
@@ -258,7 +263,7 @@ of 2 or more of the components given</p>
 ordered by reduced chi-square (best first)</p>
 </dd>
 </dl>
-<p>See notes for <a class="reference internal" href="#_math.lincombo_fit" title="_math.lincombo_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lincombo_fit()</span></code></a>.</p>
+<p>See notes for <a class="reference internal" href="#lincombo_fit" title="lincombo_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lincombo_fit()</span></code></a>.</p>
 </dd></dl>
 
 </div>
@@ -269,8 +274,8 @@ spectra to build or “train” the model.  With a trained model, you can ask
 how many independent components are needed to describe the variation in the
 collection.</p>
 <dl class="function">
-<dt id="_math.pca_train">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">pca_train</code><span class="sig-paren">(</span><em class="sig-param">groups</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.pca_train" title="Permalink to this definition">¶</a></dt>
+<dt id="pca_train">
+<code class="sig-name descname">pca_train</code><span class="sig-paren">(</span><em class="sig-param">groups</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pca_train" title="Permalink to this definition">¶</a></dt>
 <dd><p>use a list of data groups to train a Principal Component Analysis model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -282,7 +287,7 @@ collection.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>group with trained PCA model, to be used with <a class="reference internal" href="#_math.pca_fit" title="_math.pca_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></p>
+<dd class="field-even"><p><p>group with trained PCA model, to be used with <a class="reference internal" href="#pca_fit" title="pca_fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_fit()</span></code></a></p>
 <ol class="arabic simple">
 <li><p>The group members for the components must match each other
 in data content and array names.</p></li>
@@ -340,14 +345,14 @@ in data content and array names.</p></li>
 </table>
 </div></blockquote>
 <dl class="function">
-<dt id="_math.pca_fit">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">pca_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">pca_model</em>, <em class="sig-param">ncomps=None</em>, <em class="sig-param">_larch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.pca_fit" title="Permalink to this definition">¶</a></dt>
+<dt id="pca_fit">
+<code class="sig-name descname">pca_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">pca_model</em>, <em class="sig-param">ncomps=None</em>, <em class="sig-param">_larch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pca_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit a spectrum from a group to a pca training model from pca_train()</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>group</strong> – group with data to fit</p></li>
-<li><p><strong>pca_model</strong> – PCA model as found from <a class="reference internal" href="#_math.pca_train" title="_math.pca_train"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_train()</span></code></a></p></li>
+<li><p><strong>pca_model</strong> – PCA model as found from <a class="reference internal" href="#pca_train" title="pca_train"><code class="xref py py-func docutils literal notranslate"><span class="pre">pca_train()</span></code></a></p></li>
 <li><p><strong>ncomps</strong> – number of components to included</p></li>
 </ul>
 </dd>
@@ -531,7 +536,7 @@ by the variances seen in the main 4 components from the training set.</span><a c
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11.6. Fit Examples &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11.6. Fit Examples &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -175,16 +175,16 @@ some detail.</p>
 function to create the model function.  We also add simulated noise to
 the model data with the <code class="xref py py-func docutils literal notranslate"><span class="pre">random.normal()</span></code> function from numpy.</p>
 <p>2. <strong>create a group of fit parameters</strong>:  Here we create a group with
-several components, all defined by the <a class="reference internal" href="parameters.html#_math.guess" title="_math.guess"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.guess()</span></code></a> function to
+several components, all defined by the <code class="xref py py-func docutils literal notranslate"><span class="pre">_math.guess()</span></code> function to
 create variable Parameters.  Two of the parameters have a lower bound
 set.   We also calculate the initial value for the model using the
 initial guesses for the parameter values.</p>
 <p>3. <strong>define objective function for fit residual</strong>: As above, this
 function will receive the group of fit parameters as the first argument,
 and may also receive other arguments as specified in the call to
-<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.minimize()</span></code></a>.  This function returns the residual of the fit
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_math.minimize()</span></code>.  This function returns the residual of the fit
 (data - model).</p>
-<p>4. <strong>perform fit</strong>.  Here we call <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">_math.minimize()</span></code></a>  with
+<p>4. <strong>perform fit</strong>.  Here we call <code class="xref py py-func docutils literal notranslate"><span class="pre">_math.minimize()</span></code>  with
 arguments of the objective function, the parameter group, and any
 additional positional arguments to the objective function (keyword/value
 arguments can also be supplied).   When this has completed, we calculate
@@ -487,7 +487,7 @@ result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.</p>
 <p>The example here is borrowed from Bruce Ravel’s data and tutorials, and
-based on the work published by <a class="bibtex reference internal" href="../biblio.html#lengke2006" id="id1">[Lengke et al. (2006)]</a>, The goal here is not
+based on the work published by <span class="bibtex" id="id1">[Lengke2006]</span>, The goal here is not
 to repeat the whole of that analysis, but to present the mechanics of the
 fitting approach.  Essentially, we’re asserting that a particular measured
 spectrum is made of a linear combination of 2 or more other spectra.  We
@@ -516,7 +516,7 @@ important component.</p>
 <p class="caption"><span class="caption-number">Figure 11.6.3.2 </span><span class="caption-text">Fit and residual with components <em>s1</em> and <em>s2</em>.</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
 </div>
 <p class="caption"><span class="caption-text">Linear Combination Fit of gold XANES in cyanobacteria, after
-<a class="bibtex reference internal" href="../biblio.html#lengke2006" id="id2">[Lengke et al. (2006)]</a>.</span></p>
+<span class="bibtex" id="id2">[Lengke2006]</span>.</span></p>
 </div><p id="fig-fit5comp">To quantitatively fit these spectra, we read in all the data, and then
 create a single group <em>dat</em> that will contain all the data we need.  It
 turns out (and a common issue for XAFS data), the scans here do not have
@@ -903,7 +903,7 @@ implies that component <em>s3</em> is important even if at a very small fraction
 and that either component <em>s5</em> or <em>s6</em> (which aren’t that different
 spectroscopically or chemically (see <a class="reference internal" href="#fig-fit5"><span class="std std-numref">Figure 11.6.3.1</span></a>) is present.
 Of course, the analysis here is not meant to be definitive, and there are
-many more checks that could be done.  To be clear, <a class="bibtex reference internal" href="../biblio.html#lengke2006" id="id3">[Lengke et al. (2006)]</a>
+many more checks that could be done.  To be clear, <span class="bibtex" id="id3">[Lengke2006]</span>
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em> were the best
 components, with concentrations of the components very similar to the ones
@@ -940,7 +940,7 @@ found here.</p>
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>

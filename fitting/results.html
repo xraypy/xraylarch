@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>11.4. Fit Results and Outputs &#8212; xraylarch 0.9.46 documentation</title>
+    <title>11.4. Fit Results and Outputs &#8212; xraylarch 0.9.47 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -105,12 +105,12 @@
   <div class="section" id="fit-results-and-outputs">
 <span id="fitting-results-sec"></span><h1><span class="section-number">11.4. </span>Fit Results and Outputs<a class="headerlink" href="#fit-results-and-outputs" title="Permalink to this headline">¶</a></h1>
 <div class="versionchanged">
-<p><span class="versionmodified changed">Changed in version 0.9.34: </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> returns a result group containing fit statistics.</p>
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> returns a result group containing fit statistics.</p>
 </div>
 <p>After the fit has completed, several statistics are output and available to
 describe the quality of the fit and the estimated values for the Parameter
 values and uncertainties.  The main statistics are written to group
-returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>, while the parameter values in <em>paramgroup</em>
+returned by <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>, while the parameter values in <em>paramgroup</em>
 are updated to their best-fit values.</p>
 <p>The estimated values, uncertainties, and correlations for each varied
 Parameter are written as attributes of that Parameter.  Thus, after a fit,
@@ -124,9 +124,9 @@ variable names and meanings as outlines in
 <a class="reference internal" href="#minimize-stats-table"><span class="std std-ref">Table of Fit Statistics</span></a>.  For advanced users,
 the fitting class instance and result from <cite>lmfit</cite> are available.</p>
 <blockquote id="minimize-stats-table">
-<div><p>Table of Fit Statistics and Results contained in the return value of <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</p>
+<div><p>Table of Fit Statistics and Results contained in the return value of <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p>
 <p>Listed are the names and description of items in the fit result group
-returned by the <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> function.  Many of these items are
+returned by the <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function.  Many of these items are
 directly from <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>.</p>
 <blockquote>
 <div><table class="docutils align-default">
@@ -199,7 +199,7 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 </div></blockquote>
 </div></blockquote>
 <div class="versionchanged">
-<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_report()</span></code></a> uses a result group returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></p>
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#fit_report" title="fit_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_report()</span></code></a> uses a result group returned by <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p>
 </div>
 <dl class="function">
 <dt id="fit_report">
@@ -208,7 +208,7 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>result</strong> – fit result group, returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code>.</p></li>
+<li><p><strong>result</strong> – fit result group, returned by <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p></li>
 <li><p><strong>show_correl</strong> – flag (<code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>) to show parameter correlations.</p></li>
 <li><p><strong>min_correl</strong> – smallest absolute value of correlation to show.</p></li>
 </ul>
@@ -271,7 +271,7 @@ directly from <a class="reference external" href="https://lmfit.github.io/lmfit-
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright Matthew Newville, The University of Chicago, 2019.
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
     </div>
   </body>
