@@ -12,10 +12,10 @@ license_file: ../LICENSE
 ignore_duplicate_files: True
 attempt_hardlinks: True
 
-osxpkg_readme: readme.rtf
-osxpkg_image: LarchInstaller.png
-osxpkg_userhome_only: True
-signing_identity_name: Matthew Newville
+osxpkg_readme: readme.rtf # [osx]
+osxpkg_image: LarchInstaller.png # [osx]
+osxpkg_userhome_only: True # [osx]
+signing_identity_name: Matthew Newville # [osx]
 
 post_install: post_install_linux.sh [linux]
 post_install: post_install_macosx.sh [osx]
