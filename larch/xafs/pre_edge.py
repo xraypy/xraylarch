@@ -32,25 +32,24 @@ MODNAME = '_xafs'
 MAX_NNORM = 5
 
 def find_e0(energy, mu=None, group=None, _larch=None):
-    """calculate E0 given mu(energy)
+    """calculate :math:`E_0`, the energy threshold of absorption, or
+    'edge energy', given :math:`\mu(E)`.
 
-    This finds the point with maximum derivative with some
-    checks to avoid spurious glitches.
+    :math:`E_0` is found as the point with maximum derivative with
+    some checks to avoid spurious glitches.
 
-    Arguments
-    ----------
-    energy:  array of x-ray energies, in eV or group
-    mu:      array of mu(E)
-    group:   output group
+    Arguments:
+        energy (ndarray or group): array of x-ray energies, in eV, or group
+        mu     (ndaarray or None): array of mu(E) values
+        group  (group or None):    output group
+        _larch (larch instance or None):  current larch session.
 
-    Returns
-    -------
-    Value of e0.  If provided, group.e0 will be set to this value.
+    Returns:
+        float: Value of e0. If a group is provided, group.e0 will also be set.
 
-    Notes
-    -----
-       Supports First Argument Group convention, requiring group
-       members 'energy' and 'mu'
+    Notes:
+        1. Supports :ref:`First Argument Group` convention, requiring group members `energy` and `mu`
+        2. Supports :ref:`Set XAFS Group` convention within Larch or if `_larch` is set.
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
@@ -224,7 +223,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
 
     Arguments
     ----------
-    energy:  array of x-ray energies, in eV, or group (see note)
+    energy:  array of x-ray energies, in eV, or group (see note 1)
     mu:      array of mu(E)
     group:   output group
     e0:      edge energy, in eV. If None, it will be determined here.
@@ -240,9 +239,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
 
     Returns
     -------
-      None
-
-    The following attributes will be written to the output group:
+      None: The following attributes will be written to the output group:
         e0          energy origin
         edge_step   edge step
         norm        normalized mu(E), using polynomial
@@ -256,22 +253,20 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
 
     Notes
     -----
-    1  If the first argument is a Group, it must contain 'energy' and 'mu'.
-       If it exists, group.e0 will be used as e0.
-       See First Argrument Group in Documentation
-
-    2  pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
-       energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
-           pre1 = e0 - 2nd energy point, rounded to 5 eV
-           pre2 = roughly pre1/3.0, rounded to 5 eV
-    3  post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
-       between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
-       which will set:
-         nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
-         norm2 = max energy - e0, rounded to 5 eV
-         norm1 = roughly norm2/3.0, rounded to 5 eV
-    4  flattening fits a quadratic curve (no matter nnorm) to the post-edge
-       normalized mu(E) and subtracts that curve from it.
+      1. Supports `First Argument Group` convention, requiring group members `energy` and `mu`.
+      2. Support `Set XAFS Group` convention within Larch or if `_larch` is set.
+      3. pre_edge: a line is fit to mu(energy)*energy**nvict over the region,
+         energy=[e0+pre1, e0+pre2]. pre1 and pre2 default to None, which will set
+             pre1 = e0 - 2nd energy point, rounded to 5 eV
+             pre2 = roughly pre1/3.0, rounded to 5 eV
+      4. post-edge: a polynomial of order nnorm is fit to mu(energy)*energy**nvict
+         between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
+         which will set:
+              norm2 = max energy - e0, rounded to 5 eV
+              norm1 = roughly norm2/3.0, rounded to 5 eV
+              nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
+      5. flattening fits a quadratic curve (no matter nnorm) to the post-edge
+         normalized mu(E) and subtracts that curve from it.
     """
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -359,35 +354,33 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
 @Make_CallArgs(["energy", "norm"])
 def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
                    elo=None, ehi=None, _larch=None):
-    """set up pre edge peak group
+    """set up pre edge peak group.
 
     This assumes that pre_edge() has been run successfully on the spectra
     and that the spectra has decent pre-edge subtraction and normalization.
 
-    Arguments
-    ----------
-    energy:    array of x-ray energies, in eV, or group (see note 1)
-    norm:      array of normalized mu(E)
-    group:     output group
-    emax:      max energy (eV) to use for baesline fit [e0-5]
-    emin:      min energy (eV) to use for baesline fit [e0-40]
-    elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
-    ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
+    Arguments:
+       energy (ndarray or group): array of x-ray energies, in eV, or group (see note 1)
+       norm (ndarray or None):    array of normalized mu(E)
+       group (group or None):     output group
+       emax (float or None):      max energy (eV) to use for baesline fit [e0-5]
+       emin (float or None):      min energy (eV) to use for baesline fit [e0-40]
+       elo: (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]
+       ehi: (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]
+       _larch (larch instance or None):  current larch session.
 
+    A group named `prepeaks` will be created in the output group, containing:
 
-    Returns
-    -------
-      None
+        ==============   ===========================================================
+         attribute        meaning
+        ==============   ===========================================================
+         energy           energy array for pre-edge peaks = energy[emin:emax]
+         norm             spectrum over pre-edge peak energies
+        ==============   ===========================================================
 
-    A group named 'prepeaks' will be created in the output group, with the following
-    attributes:
-        energy        energy array for pre-edge peaks = energy[emin:emax]
-        norm          spectrum over pre-edge peak energies
-
-    Notes
-    -----
-     1 If the first argument is a Group, it must contain 'energy' and 'norm'.
-       See First Argrument Group in Documentation
+    Notes:
+        1. Supports :ref:`First Argument Group` convention, requiring group members `energy` and `norm`
+        2. Supports :ref:`Set XAFS Group` convention within Larch or if `_larch` is set.
     """
     energy, norm, group = parse_group_args(energy, members=('energy', 'norm'),
                                            defaults=(norm,), group=group,
@@ -466,52 +459,48 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     This assumes that pre_edge() has been run successfully on the spectra
     and that the spectra has decent pre-edge subtraction and normalization.
 
-    Arguments
-    ----------
-    energy:    array of x-ray energies, in eV, or group (see note 1)
-    norm:      array of normalized mu(E)
-    group:     output group
-    elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
-    ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
-    emax:      max energy (eV) to use for baesline fit [e0-5]
-    emin:      min energy (eV) to use for baesline fit [e0-40]
-    form:      form used for baseline (see note 2)  ['lorentzian']
-    with_line: whether to include linear component in baseline ['True']
+    Arguments:
+       energy (ndarray or group): array of x-ray energies, in eV, or group (see note 1)
+       norm (ndarray or group):   array of normalized mu(E)
+       group (group or None):     output group
+       elo (float or None):       low energy of pre-edge peak region to not fit baseline [e0-20]
+       ehi (float or None):       high energy of pre-edge peak region ot not fit baseline [e0-10]
+       emax (float or None):      max energy (eV) to use for baesline fit [e0-5]
+       emin (float or None):      min energy (eV) to use for baesline fit [e0-40]
+       form (string):             form used for baseline (see note 2)  ['lorentzian']
+       with_line (bool):          whether to include linear component in baseline ['True']
+       _larch (larch instance or None):  current larch session.
 
 
-    Returns
-    -------
-      None
+    A function will be fit to the input mu(E) data over the range between
+    [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the region
+    [elo:ehi].  The baseline function is specified with the `form` keyword
+    argument, which can be one of 'lorentzian', 'gaussian', or 'voigt',
+    with 'lorentzian' the default.  In addition, the `with_line` keyword
+    argument can be used to add a line to this baseline function.
 
-    A group named 'prepeaks' will be created in the output group, with the following
-    attributes:
-        energy        energy array for pre-edge peaks = energy[emin:emax]
-        baseline      fitted baseline array over pre-edge peak energies
-        norm          spectrum over pre-edge peak energies
-        peaks         baseline-subtraced spectrum over pre-edge peak energies
-        centroid      estimated centroid of pre-edge peaks (see note 3)
-        peak_energies list of predicted peak energies (see note 4)
-        fit_details   details of fit to extract pre-edge peaks.
+    A group named 'prepeaks' will be used or created in the output group, containing
 
-    (if the output group is None, _sys.xafsGroup will be written to)
+        ==============   ===========================================================
+         attribute        meaning
+        ==============   ===========================================================
+         energy           energy array for pre-edge peaks = energy[emin:emax]
+         energy           energy array for pre-edge peaks = energy[emin:emax]
+         baseline         fitted baseline array over pre-edge peak energies
+         norm             spectrum over pre-edge peak energies
+         peaks            baseline-subtraced spectrum over pre-edge peak energies
+         centroid         estimated centroid of pre-edge peaks (see note 3)
+         peak_energies    list of predicted peak energies (see note 4)
+         fit_details      details of fit to extract pre-edge peaks.
+        ==============   ===========================================================
 
-    Notes
-    -----
-     1 If the first argument is a Group, it must contain 'energy' and 'norm'.
-       See First Argrument Group in Documentation
-
-     2 A function will be fit to the input mu(E) data over the range between
-       [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
-       region [elo:ehi].  The baseline function is specified with the `form`
-       keyword argument, which can be one of
-           'lorentzian', 'gaussian', or 'voigt',
-       with 'lorentzian' the default.  In addition, the `with_line` keyword
-       argument can be used to add a line to this baseline function.
-
-     3 The value calculated for `prepeaks.centroid`  will be found as
-         (prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()
-     4 The values in the `peak_energies` list will be predicted energies
-       of the peaks in `prepeaks.peaks` as found by peakutils.
+    Notes:
+       1. Supports :ref:`First Argument Group` convention, requiring group members `energy` and `norm`
+       2. Supports :ref:`Set XAFS Group` convention within Larch or if `_larch` is set.
+       3. The value calculated for `prepeaks.centroid`  will be found as
+          (prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()
+       4. The values in the `peak_energies` list will be predicted energies
+          of the peaks in `prepeaks.peaks` as found by peakutils.
 
     """
     energy, norm, group = parse_group_args(energy, members=('energy', 'norm'),

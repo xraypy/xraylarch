@@ -14,6 +14,12 @@ data including corrections for over-absorption (sometimes confusingly
 called *self-absorption*) and for spectral convolution and de-convolution.
 
 
+The :func:`find_e0` function
+=================================
+
+.. autofunction:: larch.xafs.find_e0
+
+
 The :func:`pre_edge` function
 =================================
 
@@ -41,9 +47,9 @@ The :func:`pre_edge` function
 
     :returns:  None.
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The following data is put into the output
+    group:
 
        ==============   =======================================================
         attribute        meaning
@@ -64,66 +70,60 @@ The :func:`pre_edge` function
         norm_c*          higher power coefficients of normalization polynomial
        ==============   =======================================================
 
-Notes:
+For the pre-edge portion of the spectrum, a line is fit to :math:`\mu(E)
+E^{\rm{nvict}}` in the region :math:`E={\rm{[e0+pre1, e0+pre2]}}`. `pre1`
+and `pre2` default to `None`, which will set:
 
-    1. pre_edge: a line is fit to :math:`\mu(E) E^{\rm{nvict}}` in the
-    region :math:`E={\rm{[e0+pre1, e0+pre2]}}`. `pre1` and `pre2` default
-    to `None`, which will set:
-      - `pre1` = `e0` - 2nd energy point
-      - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
+  - `pre1` = `e0` - 2nd energy point
+  - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
 
-    2. post-edge: a polynomial of order `nnorm` is fit to
-    :math:`\mu(E) E^{\rm{nvict}}` in the region
-    :math:`E={\rm{[e0+norm1, e0+norm2]}}`. `norm1`, `norm2`, and `nnorm`
-    default to `None`, which will set:
-       - `norm2` = max energy - `e0`
-c       - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
-       - `nnorm` = 2 in `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if less.
+For the post-edge, a polynomial of order `nnorm` is fit to :math:`\mu(E)
+E^{\rm{nvict}}` in the region :math:`E={\rm{[e0+norm1,
+e0+norm2]}}`. `norm1`, `norm2`, and `nnorm` default to `None`, which will
+set:
 
-    3. flattening fits a quadratic curve (no matter nnorm) to the post-edge
-    normalized mu(E) and subtracts that curve from it.
+   - `norm2` = max energy - `e0`
+   - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
 
-..  function:: find_e0(energy, mu=None, group=None, ...)
+The value for `nnorm` = 2 if `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if less.
 
-    Determine :math:`E_0`, the energy threshold of the absorption edge,
-    from the arrays energy and mu for :math:`\mu(E)`.
-
-    This finds the point with maximum derivative with some
-    checks to avoid spurious glitches.
-
-
-    :param energy:  array of x-ray energies, in eV
-    :param   mu:    array of :math:`\mu(E)`
-    :param group:   output group
-
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The value
-    of ``e0`` will be written to the output group.
-
+The "flattened" :math:`\mu(E)` is found by fitting a quadratic curve (no
+matter the value of `nnorm`) to the post-edge normalized :math:`\mu(E)` and
+subtracts that curve from it.
 
 
 Pre-Edge Subtraction Example
 =================================
 
-A simple example of pre-edge subtraction::
+A simple example of pre-edge subtraction:
+
+.. code:: python
+
+    # Larch
+    fname = 'fe2o3_rt1.xmu'
+    dat = read_ascii(fname, labels='energy mu i0')
+
+    pre_edge(dat, group=dat)
+
+    plot_mu(dat, show_pre=True, show_post=True)
+
+or in plain Python:
+
+.. code:: python
+
+    from larch.io import read_ascii
+    from larch.xafs import pre_edge
+    from wxmplot.interactive import plot
 
     fname = 'fe2o3_rt1.xmu'
     dat = read_ascii(fname, labels='energy mu i0')
 
     pre_edge(dat, group=dat)
 
-    show(dat)
-
-    newplot(dat.energy, dat.mu, label=' $ \mu(E) $ ',
-            xlabel='Energy (eV)',
-            title='%s Pre-Edge ' % fname,
-            show_legend=True)
-
-    plot(dat.energy, dat.pre_edge, label='pre-edge line',
-         color='black', style='dashed' )
-
-    plot(dat.energy, dat.post_edge, label='normalization line',
-         color='black', style='dotted' )
+    plot(dat.energy, dat.mu, label='mu', xlabel='Energy (eV)',
+         title=fname,show_legend=True)
+    plot(dat.energy, dat.pre_edge, label='pre-edge line')
+    plot(dat.energy, dat.post_edge, label='post-edge curve')
 
 gives the following results:
 
@@ -201,9 +201,9 @@ If this is used in publication, a citation should be given to Weng :cite:`Weng`.
     :returns:  None.
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The following data is put into the output
+    group:
 
        ==============   ===========================================================
         attribute        meaning
@@ -235,11 +235,15 @@ result shown in :numref:`fig-mback-copper`.
 
 .. code:: python
 
-  data=read_ascii('../xafsdata/cu_10k.xmu')
-  mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
-  newplot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
-          legend_loc='lr', show_legend=True)
-  plot(data.energy, data.fpp, label='Copper foil')
+    from larch.io import read_ascii
+    from larch.xafs import mback
+    from wxmplot.interactive import plot
+
+    data = read_ascii('../xafsdata/cu_10k.xmu')
+    mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
+    plot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
+         legend_loc='lr', show_legend=True)
+    plot(data.energy, data.fpp, label='Copper foil')
 
 .. _fig-mback-copper:
 
@@ -278,7 +282,6 @@ large features near the edge.
 
 
 
-
 ..  function:: mback_norm(energy, mu, group=None, ...)
 
     A simplified version of :func:`mback` to normalize :math:`\mu(E)` data
@@ -308,9 +311,9 @@ large features near the edge.
     :param norm2:    high E range (relative to E0) as for :func:`pre_edge`.
     :param nnorm:    degree of polynomial as for :func:`pre_edge`.
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members
+    named ``energy`` and ``mu``.  The following data is put into the output
+    group:
 
        ==============   ===========================================================
         attribute        meaning
@@ -338,62 +341,10 @@ edge (or at least its low energy side) can be modeled reasonably well as a
 Lorentzian function for these purposes of describing the tail below the
 pre-edge peaks.
 
-.. function:: pre_edge_baseline(energy, norm, group=None, form='lorentzian', ...)
 
-    remove baseline from main edge over pre edge peak region
+.. autofunction:: larch.xafs.prepeaks_setup
 
-    This assumes that :func:`pre_edge` has been run successfully on the spectra
-    and that the spectra has decent pre-edge subtraction and normalization.
-
-    :param energy:    array of x-ray energies, in eV, or group (see note 1)
-    :param norm:      array of normalized :math:`\mu(E)`
-    :param group:     output group
-    :param elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
-    :param ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
-    :param emax:      max energy (eV) to use for baseline fit [e0-5]
-    :param emin:      min energy (eV) to use for baseline fit [e0-40]
-    :param form:      form used for baseline (see note 2)  ['lorentzian']
-    :param with_line: whether to include linear component in baseline [``True``]
-
-
-
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.
-
-    For output, a sub-group name ``prepeaks`` is created in the output
-    group (if the output group is ``None``, ``_sys.xafsGroup`` will be
-    used), with the following attributes:
-
-       ==============   ===========================================================
-        attribute        meaning
-       ==============   ===========================================================
-        energy           energy array for pre-edge peaks = energy[emin:emax]
-        baseline         fitted baseline array over pre-edge peak energies
-        mu               spectrum over pre-edge peak energies
-        peaks            baseline-subtraced spectrum over pre-edge peak energies
-        dmu              estimated uncertainty in peaks from fit
-        centroid         estimated centroid of pre-edge peaks (see note below)
-        peak_energies    list of predicted peak energies (see note belo)
-        fit_details      details of fit to extract pre-edge peaks.
-       ==============   ===========================================================
-
-
-Notes:
-
-     - A function will be fit to the input :math:`\mu(E)` data over the range between
-       [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
-       region [elo:ehi].  The baseline function is specified with the `form`
-       keyword argument, which can be one of 'lorentzian', 'gaussian', or 'voigt',
-       with 'lorentzian' the default.  In addition, the `with_line` keyword
-       argument can be used to add a line to this baseline function.
-
-     - The value calculated for `prepeaks.centroid`  will be found as
-       `(prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()`
-
-     - The values in the `peak_energies` list will be predicted energies
-       of the peaks in `prepeaks.peaks` as found by peakutils.
-
-
+.. autofunction:: larch.xafs.pre_edge_baseline
 
 
 Over-absorption Corrections
@@ -439,11 +390,10 @@ For XANES, a common correction method from the FLUO program by D. Haskel
 
     :returns:         None
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The value
-    of ``mu_corr`` and ``norm_corr`` will be written to the output group,
-    containing :math:`\mu(E)` and normalized :math:`\mu(E)` corrected for
-    over-absorption.
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will
+    be written to the output group, containing :math:`\mu(E)` and
+    normalized :math:`\mu(E)` corrected for over-absorption.
 
 
 Spectral deconvolution
@@ -516,9 +466,9 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param eshift:   energy shift (in eV) to apply to result. [0.0]
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``norm``.  The following data is put into the output
+    group:
 
 
        ================= ===============================================================
@@ -555,8 +505,8 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param sgorder:  order for the Savitzky-Golay function [3]
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``norm``.
 
     Smoothing with :func:`savitzky_golay` requires a window and order.  By
     default, ``window = int(esigma / estep)`` where estep is step size for
