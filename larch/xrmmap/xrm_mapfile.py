@@ -1627,7 +1627,7 @@ class GSEXRM_MapFile(object):
 
         # add any other groups with 'detector' in the `type` attribute:
         for det, grp in xrmmap.items():
-            if det not in det_list and 'detector' in grp.attrs.get('type', ''):
+            if det not in det_list and 'detector' in h5str(grp.attrs.get('type', '')):
                 det_list.append(det)
         self.detector_list = det_list
         if len(det_list) < 1:
@@ -2658,7 +2658,7 @@ class GSEXRM_MapFile(object):
         npix = area.sum()
         if npix < 1:
             return None
-        
+
         xrdgroup = 'xrd2d'
         xrdgrp = ensure_subgroup('xrd2d', self.xrmmap, dtype='2DXRD')
 
