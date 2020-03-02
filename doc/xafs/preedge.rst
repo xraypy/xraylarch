@@ -194,7 +194,7 @@ If this is used in publication, a citation should be given to Weng :cite:`Weng`.
     :param emax:      the maximum energy to include in the fit.  If None, use last energy point
     :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
     :param leexiang:  flag for using the use the Lee&Xiang extension [False]
-    :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['CL']
+    :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['Chantler']
     :param fit_erfc:  if True, fit the amplitude and width of the complementary error function [False]
     :param return_f1: if True, put f1 in the output group [False]
     :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
@@ -320,7 +320,7 @@ large features near the edge.
        ==============   ===========================================================
         norm_poly        normalized :math:`\mu(E)` from :func:`pre_edge`.
         norm             normalized :math:`\mu(E)` from this method/
-        mback_mu         tabulated :math:`f'(E)` scalerd and pre-edge added
+        mback_mu         tabulated :math:`f'(E)` scaler and pre-edge added
 	mback_params     params group for the MBACK minimization function
        ==============   ===========================================================
 
@@ -329,7 +329,7 @@ Pre-edge baseline subtraction
 ======================================
 
 A common application of XAFS is the analysis of "pre-edge peaks" of
-matransition metal oxides to determine oxidation state and molecular
+transition metal oxides to determine oxidation state and molecular
 configuration. These peaks sit just below the main absorption edge
 (typically, due to metal *4p* electrons) of a main *K* edge, and are due to
 overlaps of the metal *d*-electrons and oxygen *p*-electrons, and are often
@@ -361,7 +361,7 @@ different effect from self-absorption in X-ray fluorescence analysis.  In
 fact, the effect is more like *extinction* in that the fluorescence
 probability approaches a constant, with no XAFS oscillations, as the total
 absorption coefficient is dominated by the element of interest.
-Over-absorption most stongly effects the XAFS oscillation amplitude, and so
+Over-absorption most strongly effects the XAFS oscillation amplitude, and so
 coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.
@@ -375,7 +375,7 @@ For XANES, a common correction method from the FLUO program by D. Haskel
 .. function:: fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45, angout=45, **pre_kws)
 
     calculate :math:`\mu(E)` corrected for over-absorption in fluorescence
-    XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
+    XAFS using the FLUO algorithm (suitable for XANES, but questionable for
     EXAFS).
 
     :param energy:    1-d array of x-ray energies, in eV
@@ -400,9 +400,9 @@ Spectral deconvolution
 =================================
 
 In order to readily compare XAFS data from different sources, it is
-sometimes necessary to considert the energy resolution used to collect each
+sometimes necessary to consider the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
-contributions from the x-ray sourse, instrumental broadening from the x-ray
+contributions from the x-ray sources, instrumental broadening from the x-ray
 optics (especially the X-ray monochromator used in most measurements), and
 the intrinsic lifetime of the excited core electronic level.  For data
 measured in X-ray fluorescence or electron emission mode, the energy
@@ -427,20 +427,20 @@ of XAFS spectra.  For example, one may need to reduce the resolution to
 match data measured with degraded resolution.  This can be done with
 :func:`xas_convolve` which convolves an XAFS spectrum with either a
 Gaussian or Lorentzian function with a known energy width.  Note that
-convolving with a Gaussian is less dramatic than using a Lorenztian, and
+convolving with a Gaussian is less dramatic than using a Lorentzian, and
 usually better reflects the effect of an incident X-ray beam with degraded
 resolution due to source or monochromator.
 
 One may also want to try to improve the energy resolution of an XAFS
 spectrum, either to compare it to data taken with higher resolution or to
 better identify and enumerate peaks in a XANES spectrum.  This can be done
-with :func:`xas_deconvolve` function which deconvolves either a Gaussian or
+with :func:`xas_deconvolve` function which de-convolves either a Gaussian or
 Lorentzian function from an XAFS spectrum.  This usually requires fairly
 good data.  Whereas a Gaussian most closely reflects broadening from the
 X-ray source, broadening due to the natural energy width of the core levels
-is better described by a Lorenztian.   Therefore, to try to reduce the
+is better described by a Lorentzian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
-fluorescence data, deconvolving with a Lorenztian is often better.
+fluorescence data, de-convolving with a Lorentzian is often better.
 
 
 
@@ -545,7 +545,7 @@ resulting in deconvolved data:
 
 
 To de-convolve an XAFS spectrum using the energy width of the core level,
-we can use the :func:`_xray.core_width` functiion, as shown below for Cu metal.
+we can use the :func:`_xray.core_width` function, as shown below for Cu metal.
 We can also test that the deconvolution is correct by using
 :func:`xas_convolve` to re-convolve the result and comparing it to original
 data.  This can be done with:

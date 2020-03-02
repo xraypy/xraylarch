@@ -19,7 +19,7 @@ special emphasis on helping users with XANES analysis.  Current features
    * XAFS pre-edge removal and normalization.
    * visualization of normalization steps.
    * data merging
-   * data deglitching, and energy recalibration
+   * data de-glitching, and energy recalibration
    * data smoothing, rebinning, and deconvolution.
    * over-absorption corrections (for XANES)
    * linear combination analysis of spectra.
@@ -53,7 +53,7 @@ more specialized XAFS data processing tasks, each on a separate Notebook
 tab.  These will be covered in more detail in sections below. The default
 panel shown is for pre-edge subtraction and normalization
 (:ref:`xasviewer_preedge`), with other available tabs for fitting pre-edge
-peaks (:ref:`xasviewer_peakfit`), Linear Combinaton Analysis
+peaks (:ref:`xasviewer_peakfit`), Linear Combination Analysis
 (:ref:`xasviewer_lincombo`),
 Principal Component Analysis (:ref:`xasviewer_pca`),
 Advanced Linear Regression (:ref:`xasviewer_regression`),
@@ -104,7 +104,7 @@ itself.  This feature of the plotting window means that XAS Viewer may draw
 several different traces on the same plot window and allow (or even expect)
 you to turn some of them on or off interactively to better view the
 different components being shown.  This can be especially useful for
-comparing XANES spectra or for inspecting the results of peakfitting.
+comparing XANES spectra or for inspecting the results of peak fitting.
 
 Also note that many of the entries for numbers on the form panels in XAS
 Viewer have a button with a 'pin' icon |pin|.  Clicking anywhere on the
@@ -168,12 +168,12 @@ Common XAS Processing Dialogs
 There are several dialogs for interacting with data groups and for doing
 data corrections.  These include speciality dialogs for:
 
-  * copying, removing, and renaming data grouos.
+  * copying, removing, and renaming data groups.
   * merging of data groups -- summing spectra.
   * de-glitching spectra.
   * recalibrating spectra.
   * smoothing of noisy spectra.
-  * rebinning of spectra onto a "normal" XAFS energy grid.
+  * re-binning of spectra onto a "normal" XAFS energy grid.
   * de-convolving spectra.
   * correcting over-absorption in fluorescence XANES spectra.
 
@@ -197,7 +197,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Deglitching dialog
+    De-glitching dialog
 
 .. _fig_xasviewer_dialog_smooth:
 
@@ -215,7 +215,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Deconvolution   dialog.
+    Deconvolution dialog.
 
 .. _fig_xasviewer_dialog_rebin:
 
@@ -224,7 +224,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Energy rebinning dialog.
+    Energy re-binning dialog.
 
 .. _fig_xasviewer_dialog_overabs:
 
@@ -233,7 +233,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Over-absortion correction dialog
+    Over-absorption correction dialog
 
 .. subfigend::
     :width: 0.32
@@ -350,7 +350,7 @@ transferred to any of the bounds energy using the corresponding pin icon
     :align: center
 
     Plot of pre-edge peaks with baseline.  The grey vertical lines show the
-    fit range and blue cicrles show the boundaries of the pre-edge peak
+    fit range and blue circles show the boundaries of the pre-edge peak
     range ignored in the baseline fit. The pink line shows the centroid of
     the pre-edge peaks after removal of the baseline.
 
@@ -361,7 +361,7 @@ transferred to any of the bounds energy using the corresponding pin icon
 
 We will allow the baseline to be refined when fitting the peaks, so it does
 not need to be modeled perfectly, but it is helpful to get a decent fit to
-the baseline.  Once this baseline is satisfactorally modeled, you can add
+the baseline.  Once this baseline is satisfactorily modeled, you can add
 functions to model the pre-edge peaks themselves.  Selecting one of the
 "Peak Models" (typically Gaussian, Lorentzian, or Voigt) will show a new
 tab in the "model components area" in the lower part of the form.  Since
@@ -442,7 +442,7 @@ In the lower portion of the form, you can read the values and uncertainties
 for the fitting parameters and for a number of *derived* parameters,
 including `fit_centroid` that is the (area-weighted) centroid of the
 functions that comprise the pre-edge peaks (not including the baseline) and
-the full-width-at-half-maximumn and height of each of the peaks (note that
+the full-width-at-half-maximum and height of each of the peaks (note that
 `amplitude` represents the area of the unit-normalized peak and `height`
 represents the maximum height for a peak).  You can click on the button
 labeled "Update Model with these Values" to put these best-fit values back
@@ -602,14 +602,14 @@ Principal Component and Non-negative Factor Analysis
 Principal Component Analysis (PCA) is one of a family of numerical
 techniques to reduce the number of variable components in a set of data.
 There are many related techniques and procedures, and quite a bit of
-nomeclature and jargon around the methods.
+nomenclature and jargon around the methods.
 
 In essence, all these methods are aimed at taking a large set of similar
 data and trying to determine how many independent components make up that
 larger dataset.    That is, the only question PCA and related methods can
 ever really answer is::
 
-    how many indepedent spectra make up my collection of spectra?
+    how many independent spectra make up my collection of spectra?
 
 It is important to note that PCA cannot tell you what those independent
 spectra represent or even what they look like.  However, you can also use

@@ -5,7 +5,7 @@ XAFS Functions: Overview and Naming Conventions
 As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
-out several output values, including both scalaras and arrays.  While
+out several output values, including both scalars and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.
 
@@ -18,7 +18,7 @@ set of XAFS data is held within a Group, then the Group members named
 `energy` and `k` and `chi` can be assumed to have the same standard meaning
 for all groups of XAFS Data.  To make this most common usage easy, all of
 the XAFS functions follow a couple conventions for working more easily with
-Groups tht can work on arbitrary arrays of data, but assume that they will
+Groups that can work on arbitrary arrays of data, but assume that they will
 write output values to a Group.  In addition, the XAFS functions can
 usually just be given a Group that follows the expected XAFS naming
 convention.  This is not rigidly enforced, and is not exclusive (that is,
@@ -142,7 +142,7 @@ While the XAFS functions can take arrays of data as the first two arguments
 most work will have these arrays in a single group with array names that
 follows the conventions above.  As an example, the most general use of the
 :func:`autobk` function takes an array of energy as the first argument, an
-array of mu as the second argument, and supplyng an output group for
+array of mu as the second argument, and supplying an output group for
 placing all the arrays and data calculated within the function.  That is,
 the most general use would look like::
 
@@ -482,7 +482,7 @@ An example use would be to print out a table of energies and :math:`k` values::
     The method uses an XAFS Fourier transform, and many of arguments
     (**kmin**, **kmax**, etc) are identical to those of :func:`xftf`.
 
-    This function follows the First Argument Group convention with arrarys named `k` and `chi`.
+    This function follows the First Argument Group convention with arrays named `k` and `chi`.
     The following outputs are written to the supplied **group** (or `_sys.xafsGroup` if
     **group** is not supplied):
 
