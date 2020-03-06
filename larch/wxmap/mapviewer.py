@@ -1265,11 +1265,11 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             if _xrd is None:
                 print("no 2D XRD Data")
                 return
-            
+
             label = '%s: %s' % (os.path.split(_xrd.filename)[-1], title)
             self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile)
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-            fname = xrm.filename + '_' + aname 
+            fname = xrmfile.filename + '_' + aname
             dlg = wx.FileDialog(self, 'Save file as...',
                                 defaultDir=os.getcwd(),
                                 defaultFile='%s.tiff' % fname,
@@ -1280,7 +1280,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 _xrd.save_2D(file=filename, verbose=True)
             dlg.Destroy()
 
-                
+
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
