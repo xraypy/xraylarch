@@ -261,7 +261,7 @@ def clean_bkg_params(grp):
     grp.spl2 = getattr(grp, 'spl2', 30)
     grp.kw   = getattr(grp, 'kw', 1)
     grp.dk   = getattr(grp, 'dk', 3)
-    grp.flatten  = getattr(grp, 'flatten', 0)    
+    grp.flatten  = getattr(grp, 'flatten', 0)
     if getattr(grp, 'kwindow', None) is None:
         grp.kwindow = getattr(grp, 'win', 'hanning')
 
@@ -729,7 +729,7 @@ def extract_athenagroup(dgroup, _larch=None):
     '''extract xas group from athena group'''
     g = dgroup
     g.datatype = 'xas'
-    g.filename = g.label
+    g.filename = getattr(g, 'label', 'unknown')
     g.xdat = 1.0*g.energy
     g.ydat = 1.0*g.mu
     g.yerr = 1.0

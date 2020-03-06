@@ -216,7 +216,7 @@ def f2norm(params, en=1, mu=1, f2=1, weights=1):
 
 
 def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
-               pre1=None, pre2=-50, norm1=100, norm2=None, nnorm=1, nvict=1,
+               pre1=None, pre2=None, norm1=None, norm2=None, nnorm=None, nvict=1,
                _larch=None):
     """
     simplified version of MBACK to Match mu(E) data for tabulated f''(E)

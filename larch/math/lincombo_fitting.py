@@ -90,19 +90,19 @@ def lincombo_fit(group, components, weights=None, minvals=None,
 
     Arguments
     ---------
-      group       Group to be fitted
-      components  List of groups to use as components (see Note 1)
-      weights     array of starting  weights (see Note 2)
-      minvals     array of min weights (or None to mean -inf)
-      maxvals     array of max weights (or None to mean +inf)
-      arrayname   string of array name to be fit (see Note 3) ['norm']
-      xmin        x-value for start of fit range [-inf]
-      xmax        x-value for end of fit range [+inf]
-      sum_to_one  bool, whether to force weights to sum to 1.0 [True]
+    group       Group to be fitted
+    components  List of groups to use as components (see Note 1)
+    weights     array of starting  weights (see Note 2)
+    minvals     array of min weights (or None to mean -inf)
+    maxvals     array of max weights (or None to mean +inf)
+    arrayname   string of array name to be fit (see Note 3) ['norm']
+    xmin        x-value for start of fit range [-inf]
+    xmax        x-value for end of fit range [+inf]
+    sum_to_one  bool, whether to force weights to sum to 1.0 [True]
 
     Returns
     -------
-      group with resulting weights and fit statistics
+    group with resulting weights and fit statistics
 
     Notes
     -----
@@ -191,10 +191,11 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
       xmax        x-value for end of fit range [+inf]
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
       max_ncomps  int or None: max number of components to use [None -> all]
+
     Returns
     -------
-     list of groups with resulting weights and fit statistics,
-     ordered by reduced chi-square (best first)
+     list of groups with resulting weights and fit statistics, ordered by
+         reduced chi-square (best first)
 
     Notes
     -----

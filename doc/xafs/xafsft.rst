@@ -4,8 +4,6 @@
 XAFS: Fourier Transforms for XAFS
 ==============================================
 
-.. module:: _xafs
-
 Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
@@ -506,7 +504,7 @@ would result in the following results:
 .. _fig-xafsft_winsb:
 
 .. figure::  ../_images/xft_example4.png
-    :target: ../_images/xft_example4.psng
+    :target: ../_images/xft_example4.png
     :width: 100%
 
 .. subfigend::

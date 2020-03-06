@@ -2,6 +2,6 @@
 fname = '../xafsdata/fe2o3_rt1.xmu'
 dat = read_ascii(fname, labels='energy mu i0')
 
-pre_edge(dat,nnorm=2, norm1=50, norm2=550)
+pre_edge(dat)
 
 plot_mu(dat, show_pre=True, show_post=True, show_e0=True)

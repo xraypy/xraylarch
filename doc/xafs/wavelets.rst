@@ -4,8 +4,6 @@
 XAFS: Wavelet Transforms for XAFS
 ==============================================
 
-.. module:: _xafs
-
 .. _Wavelet transforms: http://en.wikipedia.org/wiki/Wavelet_transform
 
 `Wavelet transforms`_ extend Fourier transforms, effectively separating
@@ -71,7 +69,7 @@ along the horizontal axis extending to 16 :math:`\rm\AA^{-1}`, and with
 :math:`\rm\AA` at the top.
 
 .. subfigstart::
-	    
+
 .. _fig-xafswt_1:
 
 .. figure::  ../_images/xwt_mag.png
@@ -87,7 +85,7 @@ along the horizontal axis extending to 16 :math:`\rm\AA^{-1}`, and with
 .. subfigend::
     :width: 0.45
     :label: fig-xafswt
-	    
+
     The Cauchy Wavelet transforms, with magnitude on the left hand panel
     and real part on the right hand panel.
 
@@ -95,7 +93,7 @@ along the horizontal axis extending to 16 :math:`\rm\AA^{-1}`, and with
 The projection of the wavelets to :math:`k` and :math:`R` space looks like:
 
 .. subfigstart::
-   
+
 .. _fig-xafswt_3:
 
 .. figure::  ../_images/xwt_ksp.png
@@ -111,7 +109,7 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
 .. subfigend::
     :width: 0.45
     :label: fig-xafswt3
-	    
+
     The Cauchy Wavelet transform projected to :math:`k` and :math:`R`
     space.  In the left hand panel, the original EXAFS :math:`k^2\chi(k)`
     is shown for comparison.

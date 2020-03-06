@@ -41,7 +41,6 @@ Larch functions to process, analyze, and plot data.
 Basic Larch GUI
 ==========================
 
-
 The simplest Graphical Interface to Larch provides a basic interactive
 Larch session, showing data and methods and commands using the Larch DSL
 entered into the session.

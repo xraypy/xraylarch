@@ -71,7 +71,7 @@ if HAS_WXPYTHON:
                           _hist, _update_trace, _saveplot, _saveimg,
                           _getDisplay, _closeDisplays, _getcursor,
                           last_cursor_pos, _imshow, _contour, _xrf_plot,
-                          _xrf_oplot, _fitplot)
+                          _xrf_oplot, _fitplot, _redraw_plot)
 
     from .xrfdisplay import  XRFDisplayFrame
 
@@ -79,24 +79,25 @@ if HAS_WXPYTHON:
     from .xafsplots import plotlabels
 
     _larch_builtins['_plotter'] = dict(plot=_plot, oplot=_oplot,
-                                    newplot=_newplot, plot_text=_plot_text,
-                                    plot_marker=_plot_marker,
-                                    plot_arrow=_plot_arrow,
-                                    plot_setlimits=_plot_setlimits,
-                                    plot_axvline=_plot_axvline,
-                                    plot_axhline=_plot_axhline,
-                                    scatterplot=_scatterplot, hist=_hist,
-                                    update_trace=_update_trace,
-                                    save_plot=_saveplot,
-                                    save_image=_saveimg,
-                                    get_display=_getDisplay,
-                                    close_all_displays=_closeDisplays,
-                                    get_cursor=_getcursor,
-                                    last_cursor_pos=last_cursor_pos,
-                                    imshow=_imshow, contour=_contour,
-                                    xrf_plot=_xrf_plot,
-                                    xrf_oplot=_xrf_oplot,
-                                    fit_plot=_fitplot)
+                                       newplot=_newplot, plot_text=_plot_text,
+                                       plot_marker=_plot_marker,
+                                       plot_arrow=_plot_arrow,
+                                       plot_setlimits=_plot_setlimits,
+                                       plot_axvline=_plot_axvline,
+                                       plot_axhline=_plot_axhline,
+                                       scatterplot=_scatterplot, hist=_hist,
+                                       update_trace=_update_trace,
+                                       save_plot=_saveplot,
+                                       save_image=_saveimg,
+                                       get_display=_getDisplay,
+                                       close_all_displays=_closeDisplays,
+                                       get_cursor=_getcursor,
+                                       last_cursor_pos=last_cursor_pos,
+                                       imshow=_imshow, contour=_contour,
+                                       xrf_plot=_xrf_plot,
+                                       xrf_oplot=_xrf_oplot,
+                                       fit_plot=_fitplot,
+                                       redraw_plot=_redraw_plot)
 
     _larch_builtins['_xafs'] = dict(redraw=xafsplots.redraw,
                                     plot_mu=xafsplots.plot_mu,

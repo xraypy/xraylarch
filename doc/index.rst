@@ -50,7 +50,7 @@ the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
     Graphical User Interface, CLI = Command Line Interface, and `beta` indicates a work in
     progress.  The `Dioptas`_ program is written and maintained by Clemens Prescher, and included
     with Larch.  The Feff6L and Feff8L codes are written by the `Feff Project`_, and included with
-    Larch by permission.make
+    Larch by permission.
 
   +---------------------------------------+------------+---------------------------------------------------------+
   | Application Name                      | GUI/CLI    | Description                                             |
@@ -70,13 +70,13 @@ the National Science Foundation - Advanced CyberInfrastructure (ACI-1450468).
   +---------------------------------------+------------+---------------------------------------------------------+
   | :ref:`feff8l <feff8l_app>`            | CLI        | Feff 8 EXAFS calculations (no XANES)                    |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`Dioptas <dioptas_app>`          | GUI        | Display XRD images, calibrate to XRD patterns.          |
+  | `Dioptas`_                            | GUI        | Display XRD images, calibrate to XRD patterns.          |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`1D XRD Viewer <xrd1d_app>`      | GUI `beta` | Display and work with 1-D XRD patterns                  |
+  | 1D XRD Viewer                         | GUI `beta` | Display and work with 1-D XRD patterns                  |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`2D XRD Viewer <xrd2d_app>`      | GUI `beta` | Display  XRD images                                     |
+  | 2D XRD Viewer                         | GUI `beta` | Display  XRD images                                     |
   +---------------------------------------+------------+---------------------------------------------------------+
-  | :ref:`qtrixs <qtrixs_app>`            | GUI `beta` | Display RIXS planes, take profiles                      |
+  | qtrixs                                | GUI `beta` | Display RIXS planes, take profiles                      |
   +---------------------------------------+------------+---------------------------------------------------------+
 
 .. _contents:

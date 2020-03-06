@@ -416,7 +416,6 @@ class MapPanel(GridPanel):
             lims = [wid.GetValue() for wid in self.lims]
             map = map[lims[2]:lims[3], lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
-
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det,
                                xoff=xoff, yoff=yoff, subtitles=subtitles,
                                xrmfile=self.cfile)
@@ -764,18 +763,12 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                action=self.onReport)
 
         self.xrd1d_plot  = Button(pane, 'Show 1D XRD', size=bsize,
-                                  action=partial(self.onXRD,show=True,xrd1d=True))
+                                  action=partial(self.onXRD, show=True, xrd1d=True))
 
         self.xrd2d_plot  = Button(pane, 'Show 2D XRD', size=bsize,
-                                  action=partial(self.onXRD,show=True,xrd2d=True))
+                                  action=partial(self.onXRD, show=True, xrd2d=True))
 
         legend = wx.StaticText(pane, -1, 'Values in Counts per second', size=(200, -1))
-
-        #  self.cor = Check(pane, label='Correct Deadtime?')
-        # self.xrd2d_save  = Button(pane, 'Save 2D XRD Data', size=bsize,
-        #                           action=partial(self.onXRD,save=True,xrd2d=True))
-        # self.xrd1d_save  = Button(pane, 'Save 1D XRD Data', size=bsize,
-        #                           action=partial(self.onXRD,save=True,xrd1d=True))
 
         def txt(s):
             return SimpleText(pane, s)
@@ -982,7 +975,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             xrmfile = self.owner.current_file
 
         xrmfile.reset_flags()
-        self.xrd2d_plot.Enable(xrmfile.has_xrd2d)
+        self.xrd2d_plot.Enable(xrmfile.has_xrd1d)
         self.xrd1d_plot.Enable(xrmfile.has_xrd1d)
 
     def clear_area_choices(self):
@@ -1233,7 +1226,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         kwargs = dict(filename=self.owner.current_file.filename,
                       npixels = len(area.value[np.where(area.value)]),
-                      energy  = 0.001*xrmfile.incident_energy,
+                      energy  = 0.001*xrmfile.get_incident_energy(),
                       calfile = ponifile, title = title, xrd2d=False)
 
         if xrd1d and xrmfile.has_xrd1d:
@@ -1252,6 +1245,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
                     filename = dlg.GetPath().replace('\\', '/')
+
                 dlg.Destroy()
 
                 print('\nSaving 1D XRD in file: %s' % (filename))
@@ -1261,36 +1255,32 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             xrd1d = False
 
 
-        if xrmfile.has_xrd2d and (xrd2d or xrd1d):
-            self.owner.current_file.get_xrd2d_area(aname, **kwargs)
-            if xrd2d:
-                if save:
-                    wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
-                    dlg = wx.FileDialog(self, 'Save file as...',
-                                       defaultDir=os.getcwd(),
-                                       defaultFile='%s.tiff' % stem,
-                                       wildcard=wildcards,
-                                       style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-                    if dlg.ShowModal() == wx.ID_OK:
-                        filename = dlg.GetPath().replace('\\', '/')
-                    dlg.Destroy()
-                    print('\nSaving 2D XRD in file: %s' % (filename))
-                    self._xrd.save_2D(file=filename,verbose=True)
+        if xrd2d:
+            print("Looking for 2D XRD Data")
+            try:
+                _xrd = xrmfile.get_xrd2d_area(aname, **kwargs)
+            except:
+                _xrd = None
+            print("Got XRD ", _xrd)
+            if _xrd is None:
+                print("no 2D XRD Data")
+                return
+            
+            label = '%s: %s' % (os.path.split(_xrd.filename)[-1], title)
+            self.owner.display_2Dxrd(_xrd.data2D, label=label, xrmfile=xrmfile)
+            wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
+            fname = xrm.filename + '_' + aname 
+            dlg = wx.FileDialog(self, 'Save file as...',
+                                defaultDir=os.getcwd(),
+                                defaultFile='%s.tiff' % fname,
+                                wildcard=wildcards,
+                                style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+            if dlg.ShowModal() == wx.ID_OK:
+                filename = os.path.abspath(dlg.GetPath().replace('\\', '/'))
+                _xrd.save_2D(file=filename, verbose=True)
+            dlg.Destroy()
 
-                if show:
-                    label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                    self.owner.display_2Dxrd(self._xrd.data2D, label=label, xrmfile=xrmfile,
-                                             flip=True)
-
-            if xrd1d and ponifile is not None:
-                self._xrd.calc_1D(save=save,verbose=True)
-                print("show 1D XRD from 2D XRD")
-                # if show:
-                    #  label = '%s: %s' % (os.path.split(self._xrd.filename)[-1], title)
-                    # self.owner.display_xrd1d(self._xrd.data1D,
-                    #                          self._xrd.energy,label=label)
-
-
+                
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
@@ -1584,8 +1574,11 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 tmd = self.tomo_displays.pop()
+                clevel = tmd.panel.conf.contrast_level
+                if clevel in (0, None):
+                    clevel = 0.5
                 tmd.display(tomo, title=title, subtitles=subtitles,
-                            contrast_level=0.5)
+                            contrast_level=clevel)
                 tmd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
@@ -1612,7 +1605,6 @@ class MapViewerFrame(wx.Frame):
     def display_map(self, map, title='', info='', x=None, y=None, xoff=0, yoff=0,
                     det=None, subtitles=None, xrmfile=None, with_savepos=True):
         """display a map in an available image display"""
-
         if xrmfile is None:
             hotcols = False
         else:
@@ -1639,6 +1631,8 @@ class MapViewerFrame(wx.Frame):
                     imd = self.im_displays[-1]
                     if imd.panel.conf.contrast_level in (0, None):
                         dopts['contrast_level'] = 0.5
+                    else:
+                        dopts['contrast_level'] = imd.panel.conf.contrast_level
                     imd.display(map, **dopts)
                     displayed = True
                 except IndexError:

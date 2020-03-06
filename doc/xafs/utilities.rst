@@ -2,12 +2,10 @@
 XAFS Functions: Overview and Naming Conventions
 =========================================================
 
-.. module:: _xafs
-
 As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
-out several output values, including both scalaras and arrays.  While
+out several output values, including both scalars and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.
 
@@ -20,7 +18,7 @@ set of XAFS data is held within a Group, then the Group members named
 `energy` and `k` and `chi` can be assumed to have the same standard meaning
 for all groups of XAFS Data.  To make this most common usage easy, all of
 the XAFS functions follow a couple conventions for working more easily with
-Groups tht can work on arbitrary arrays of data, but assume that they will
+Groups that can work on arbitrary arrays of data, but assume that they will
 write output values to a Group.  In addition, the XAFS functions can
 usually just be given a Group that follows the expected XAFS naming
 convention.  This is not rigidly enforced, and is not exclusive (that is,
@@ -100,52 +98,66 @@ The XAFS functions encourage following this convention, in that they are consist
 :math:`\chi(k)` to be represented by the two arrays ``GROUP.k`` and ``GROUP.chi``
 
 
+.. _Set XAFS Group:
+
 `group` argument and ``_sys.xafsGroup``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The XAFS functions need to write outputs to some group -- there are simply too many outputs to
-return and expect you to manage.   So, all functions take a **group** argument, which is used
-as the group into which results are written.  Again, this allows maximum flexibility, but gets
-tedious to provide this argument repeatedly when working with a particular data set.
+The XAFS functions need to write outputs to some group -- there are simply
+too many outputs to return and expect you to manage.  To better accomodate
+this, all functions take a `group` argument, which is used as the group
+into which results are written.  This gives a convenient way to manage the
+results of the different analysis steps, but gets tedious to provide this
+argument repeatedly when working with a particular data set.
 
-There is also a special group, ``_sys.xafsGroup`` that is used as the default group to write
-outputs to if no **group** argument is supplied.  When an an explicit **group** argument is given,
-``_sys.xafsGroup`` is set to this group.  This means that when working with a set of XAFS data all
-contained within a single group (which is expected to be the normal case), the **group** argument
-does not need to be typed repeatedly.
+For XAFS analysis, there is also a special group, ``_sys.xafsGroup`` that
+is used as the default group to write outputs to if no `group` argument is
+supplied.  In addition, when an explicit `group` argument is given,
+``_sys.xafsGroup`` is set to this group.  In short, the ``_sys.xafsGroup``
+will be used as the "current, default group".  This means that when working
+with a set of XAFS data all contained within a single group (which is
+expected to be the normal case), the `group` argument does not need to be
+typed repeatedly.
 
-.. index:: First Argument Group convention
+Because this uses a global group in the Larch interpreter, this convention
+works from with the Larch language, but does not work from plain Python
+unless an instance of a Larch session is passed into the `larch.xafs`
+function using the `_larch` argument.
 
-.. _first_argument_group:
+.. _First Argument Group:
 
 First Argument Group convention
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This convention gives a simple approach when working with data Groups
-follow the XAFS naming conventions.  It is built on the ``_sys.xafsGroup``
-convention above but is even easier to use.  That is, while the XAFS
-functions can take arrays of data as the first two arguments, they also
-allow the first argument to be a Group, as long as it has the expected
-named arrays.  This convention is called the **First
-Argument Group** convention, and is worth understanding and using because
-all the XAFS functions in Larch follow it.
+Since the XAFS functions need to write outputs to some group and will
+generally work with groups that contain data following :ref:`Table of
+Conventional Names for an XAFS Group <xafsnames_table>`, most of the XAFS
+functions follow what is called the **First Argument Group** convention.
+This convention gives a simple approach when working with groups of XAFS
+data and it is worth understanding and using this for most work with the
+XAFS work.  This convention is built on the ``_sys.xafsGroup`` convention
+discussed above but is even easier to use.
 
-As an example, the most general use of the :func:`autobk` function would
-mean giving an array of energy as the first argument, an array of mu as the
-second argument, and supplyng an output group for placing all the arrays
-and data calculated within the function.  That is, the most general use
-would look like::
+While the XAFS functions can take arrays of data as the first two arguments
+most work will have these arrays in a single group with array names that
+follows the conventions above.  As an example, the most general use of the
+:func:`autobk` function takes an array of energy as the first argument, an
+array of mu as the second argument, and supplying an output group for
+placing all the arrays and data calculated within the function.  That is,
+the most general use would look like::
 
      autobk(energy, mu, group=dat, rbkg=1, ....)
 
-but most usage will actually want to use `energy` and `mu` arrays from the
-same group, and use that group as the output group, so that all data stays
-contained within the same group.  Following the most general case, that
-would mean the call would look like::
+Of course, most usage will actually want to use `energy` and `mu` arrays
+from the same group, and use that group as the output group, so that all
+data stays contained within the same group.  That would make the call above
+look like::
 
      autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
 
-The First argument convention allows this to be abbreviated as::
+where the group name `dat` is repeated three times.
+
+The First Argument Group convention allows this to be written as::
 
      autobk(dat, rbkg=1, ....)
 
@@ -157,7 +169,6 @@ names (see :ref:`Table of Conventional Names for an XAFS Group
 <xafsnames_table>`).  This convention nearly makes the Larch XAFS routines
 into object-oriented, or in this case **Group oriented**, set of functions
 that interact in a coherent and predictable way on an XAFS dataset.
-
 
 
 Plotting Macros for XAFS
@@ -471,7 +482,7 @@ An example use would be to print out a table of energies and :math:`k` values::
     The method uses an XAFS Fourier transform, and many of arguments
     (**kmin**, **kmax**, etc) are identical to those of :func:`xftf`.
 
-    This function follows the First Argument Group convention with arrarys named `k` and `chi`.
+    This function follows the First Argument Group convention with arrays named `k` and `chi`.
     The following outputs are written to the supplied **group** (or `_sys.xafsGroup` if
     **group** is not supplied):
 

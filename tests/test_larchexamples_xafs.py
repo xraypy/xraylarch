@@ -177,12 +177,12 @@ class TestScripts(TestCase):
         self.isTrue('out.nfev < 50')
 
         self.isTrue('out.chi_square > 140')
-        self.isTrue('out.chi_square < 2000')
+        self.isTrue('out.chi_square < 10000')
 
         self.isTrue('out.aic < 1000')
         self.isNear("out.params['theta'].value", 233., places=0)
-        self.isNear("out.params['del_e0'].value",    5.37,    places=1)
-        self.isNear("out.params['amp'].value",    0.869,  places=1)
+        self.isNear("out.params['del_e0'].value", 5.3,  places=0)
+        self.isNear("out.params['amp'].value", 0.87,  places=0)
 
 
     def test17_feffit3extra(self):

@@ -14,10 +14,16 @@ data including corrections for over-absorption (sometimes confusingly
 called *self-absorption*) and for spectral convolution and de-convolution.
 
 
+The :func:`find_e0` function
+=================================
+
+.. autofunction:: larch.xafs.find_e0
+
+
 The :func:`pre_edge` function
 =================================
 
-..  function:: pre_edge(energy, mu, group=None, ...)
+..  function:: pre_edge(energy, mu, group=None, e0=None, step=None, pre1=None, pre2=None, norm1=None, norm2=None, nnorm=None, nvict=0)
 
     Pre-edge subtraction and normalization.  This performs a number of steps:
        1. determine :math:`E_0` (if not supplied) from max of deriv(mu)
@@ -25,26 +31,25 @@ The :func:`pre_edge` function
        3. fit a polynomial to the region above the edge
        4. extrapolate the two curves to :math:`E_0` to determine the edge jump
 
-
     :param energy:  1-d array of x-ray energies, in eV
     :param mu:      1-d array of :math:`\mu(E)`
     :param group:   output group
-    :param e0:      edge energy, :math:`E_0` in eV.  If None, it will be determined here.
-    :param step:    edge jump.  If None, it will be determined here.
-    :param pre1:    low E range (relative to E0) for pre-edge fit
-    :param pre2:    high E range (relative to E0) for pre-edge fit
-    :param nvict:   energy exponent to use for pre-edge fit.  See Note below.
-    :param norm1:   low E range (relative to E0) for post-edge fit
-    :param norm2:   high E range (relative to E0) for post-edge fit
+    :param e0:      edge energy, :math:`E_0` in eV.  If None, it will be found.
+    :param step:    edge jump.  If None, it will be found here.
+    :param pre1:    low E range (relative to E0) for pre-edge fit. See Notes.
+    :param pre2:    high E range (relative to E0) for pre-edge fit. See Notes.
+    :param norm1:   low E range (relative to E0) for post-edge fit. See Notes.
+    :param norm2:   high E range (relative to E0) for post-edge fit. See Notes.
     :param nnorm:   degree of polynomial (ie, norm+1 coefficients will be found) for
-                    post-edge normalization curve. Default=2 (quadratic).
+                    post-edge normalization curve. See Notes.
+    :param nvict:   energy exponent to use.  See Notes.
+    :param make_flat: boolean (Default True) to calculate flattened output.
 
     :returns:  None.
 
-
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The following data is put into the output
+    group:
 
        ==============   =======================================================
         attribute        meaning
@@ -52,6 +57,7 @@ The :func:`pre_edge` function
         e0               energy origin
         edge_step        edge step
         norm             normalized mu(E)   (array)
+        flat             flattened, normalized mu(E)   (array)
         pre_edge         pre-edge curve (array)
         post_edge        post-edge, normalization curve  (array)
         pre_slope        slope of pre-edge line
@@ -64,58 +70,60 @@ The :func:`pre_edge` function
         norm_c*          higher power coefficients of normalization polynomial
        ==============   =======================================================
 
-Notes:
+For the pre-edge portion of the spectrum, a line is fit to :math:`\mu(E)
+E^{\rm{nvict}}` in the region :math:`E={\rm{[e0+pre1, e0+pre2]}}`. `pre1`
+and `pre2` default to `None`, which will set:
 
-   -  nvict gives an exponent to the energy term for the pre-edge fit.
-      That is, a line :math:`(m E + b)` is fit to
-      :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1,
-      E0+pre2].
+  - `pre1` = `e0` - 2nd energy point
+  - `pre2` = roughly `pre1/3.0`, rounded to 5 eV steps
 
-   - nnorm is the degree of the post-edge normalization polynomial.  Use
-     `nnorm=0` to use constant, `nnorm=1` for a linear normalization curve,
-     `nnorm=2` for  a quadratic normalization curve, etc.
+For the post-edge, a polynomial of order `nnorm` is fit to :math:`\mu(E)
+E^{\rm{nvict}}` in the region :math:`E={\rm{[e0+norm1,
+e0+norm2]}}`. `norm1`, `norm2`, and `nnorm` default to `None`, which will
+set:
 
-..  function:: find_e0(energy, mu=None, group=None, ...)
+   - `norm2` = max energy - `e0`
+   - `norm1` = roughly `norm2/3.0`, rounded to 5 eV
 
-    Determine :math:`E_0`, the energy threshold of the absorption edge,
-    from the arrays energy and mu for :math:`\mu(E)`.
+The value for `nnorm` = 2 if `norm2-norm1>350`, 1 if `norm2-norm1>50`, or 0 if less.
 
-    This finds the point with maximum derivative with some
-    checks to avoid spurious glitches.
-
-
-    :param energy:  array of x-ray energies, in eV
-    :param   mu:    array of :math:`\mu(E)`
-    :param group:   output group
-
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The value
-    of ``e0`` will be written to the output group.
-
+The "flattened" :math:`\mu(E)` is found by fitting a quadratic curve (no
+matter the value of `nnorm`) to the post-edge normalized :math:`\mu(E)` and
+subtracts that curve from it.
 
 
 Pre-Edge Subtraction Example
 =================================
 
-A simple example of pre-edge subtraction::
+A simple example of pre-edge subtraction:
+
+.. code:: python
+
+    # Larch
+    fname = 'fe2o3_rt1.xmu'
+    dat = read_ascii(fname, labels='energy mu i0')
+
+    pre_edge(dat, group=dat)
+
+    plot_mu(dat, show_pre=True, show_post=True)
+
+or in plain Python:
+
+.. code:: python
+
+    from larch.io import read_ascii
+    from larch.xafs import pre_edge
+    from wxmplot.interactive import plot
 
     fname = 'fe2o3_rt1.xmu'
     dat = read_ascii(fname, labels='energy mu i0')
 
     pre_edge(dat, group=dat)
 
-    show(dat)
-
-    newplot(dat.energy, dat.mu, label=' $ \mu(E) $ ',
-            xlabel='Energy (eV)',
-            title='%s Pre-Edge ' % fname,
-            show_legend=True)
-
-    plot(dat.energy, dat.pre_edge, label='pre-edge line',
-         color='black', style='dashed' )
-
-    plot(dat.energy, dat.post_edge, label='normalization line',
-         color='black', style='dotted' )
+    plot(dat.energy, dat.mu, label='mu', xlabel='Energy (eV)',
+         title=fname,show_legend=True)
+    plot(dat.energy, dat.pre_edge, label='pre-edge line')
+    plot(dat.energy, dat.post_edge, label='post-edge curve')
 
 gives the following results:
 
@@ -170,8 +178,7 @@ adjusted by breaking the minimization function into two regions: the
 data points above the absorption edge.  :math:`n_1+n_2=N`, where N is
 the total number of data points.
 
-If this is used in publication, a citation should be given to
-Weng :cite:`Weng`.
+If this is used in publication, a citation should be given to Weng :cite:`Weng`.
 
 ..  function:: mback(energy, mu, group=None, ...)
 
@@ -187,16 +194,16 @@ Weng :cite:`Weng`.
     :param emax:      the maximum energy to include in the fit.  If None, use last energy point
     :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
     :param leexiang:  flag for using the use the Lee&Xiang extension [False]
-    :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['CL']
+    :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['Chantler']
     :param fit_erfc:  if True, fit the amplitude and width of the complementary error function [False]
     :param return_f1: if True, put f1 in the output group [False]
     :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
     :returns:  None.
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The following data is put into the output
+    group:
 
        ==============   ===========================================================
         attribute        meaning
@@ -228,11 +235,15 @@ result shown in :numref:`fig-mback-copper`.
 
 .. code:: python
 
-  data=read_ascii('../xafsdata/cu_10k.xmu')
-  mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
-  newplot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
-          legend_loc='lr', show_legend=True)
-  plot(data.energy, data.fpp, label='Copper foil')
+    from larch.io import read_ascii
+    from larch.xafs import mback
+    from wxmplot.interactive import plot
+
+    data = read_ascii('../xafsdata/cu_10k.xmu')
+    mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
+    plot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
+         legend_loc='lr', show_legend=True)
+    plot(data.energy, data.fpp, label='Copper foil')
 
 .. _fig-mback-copper:
 
@@ -270,9 +281,52 @@ large features near the edge.
     Using MBACK to match Si K edge data measured on talc.
 
 
+
+..  function:: mback_norm(energy, mu, group=None, ...)
+
+    A simplified version of :func:`mback` to normalize :math:`\mu(E)` data
+    to tabulated cross-section data for :math:`f''(E)`.
+
+
+    Returns:
+      group.norm_poly:     normalized mu(E) from pre_edge()
+      group.norm:          normalized mu(E) from this method
+      group.mback_mu:      tabulated f2 scaled and pre_edge added to match mu(E)
+      group.mback_params:  Group of parameters for the minimization
+
+    References:
+      * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
+      * Chantler: http://dx.doi.org/10.1063/1.555974
+
+
+    :param energy:   1-d array of x-ray energies, in eV
+    :param mu:       1-d array of :math:`\mu(E)`
+    :param group:    output group
+    :param z:        the Z number of the absorber
+    :param edge:     the absorption edge, usually 'K' or 'L3'
+    :param e0:       edge energy, :math:`E_0` in eV.  If None, the tabulated value is used.
+    :param pre1:     low E range (relative to E0) as for :func:`pre_edge`.
+    :param pre2:     high E range (relative to E0) as for :func:`pre_edge`.
+    :param norm1:    low E range (relative to E0) as for :func:`pre_edge`.
+    :param norm2:    high E range (relative to E0) as for :func:`pre_edge`.
+    :param nnorm:    degree of polynomial as for :func:`pre_edge`.
+
+    Follows the :ref:`First Argument Group`, using group members
+    named ``energy`` and ``mu``.  The following data is put into the output
+    group:
+
+       ==============   ===========================================================
+        attribute        meaning
+       ==============   ===========================================================
+        norm_poly        normalized :math:`\mu(E)` from :func:`pre_edge`.
+        norm             normalized :math:`\mu(E)` from this method/
+        mback_mu         tabulated :math:`f'(E)` scaler and pre-edge added
+	mback_params     params group for the MBACK minimization function
+       ==============   ===========================================================
+
+
 Pre-edge baseline subtraction
 ======================================
-
 
 A common application of XAFS is the analysis of "pre-edge peaks" of
 transition metal oxides to determine oxidation state and molecular
@@ -287,62 +341,10 @@ edge (or at least its low energy side) can be modeled reasonably well as a
 Lorentzian function for these purposes of describing the tail below the
 pre-edge peaks.
 
-.. function:: pre_edge_baseline(energy, norm, group=None, form='lorentzian', ...)
 
-    remove baseline from main edge over pre edge peak region
+.. autofunction:: larch.xafs.prepeaks_setup
 
-    This assumes that :func:`pre_edge` has been run successfully on the spectra
-    and that the spectra has decent pre-edge subtraction and normalization.
-
-    :param energy:    array of x-ray energies, in eV, or group (see note 1)
-    :param norm:      array of normalized :math:`\mu(E)`
-    :param group:     output group
-    :param elo:       low energy of pre-edge peak region to not fit baseline [e0-20]
-    :param ehi:       high energy of pre-edge peak region ot not fit baseline [e0-10]
-    :param emax:      max energy (eV) to use for baseline fit [e0-5]
-    :param emin:      min energy (eV) to use for baseline fit [e0-40]
-    :param form:      form used for baseline (see note 2)  ['lorentzian']
-    :param with_line: whether to include linear component in baseline [``True``]
-
-
-
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.
-
-    For output, a sub-group name ``prepeaks`` is created in the output
-    group (if the output group is ``None``, ``_sys.xafsGroup`` will be
-    used), with the following attributes:
-
-       ==============   ===========================================================
-        attribute        meaning
-       ==============   ===========================================================
-        energy           energy array for pre-edge peaks = energy[emin:emax]
-        baseline         fitted baseline array over pre-edge peak energies
-        mu               spectrum over pre-edge peak energies
-        peaks            baseline-subtraced spectrum over pre-edge peak energies
-        dmu              estimated uncertainty in peaks from fit
-        centroid         estimated centroid of pre-edge peaks (see note below)
-        peak_energies    list of predicted peak energies (see note belo)
-        fit_details      details of fit to extract pre-edge peaks.
-       ==============   ===========================================================
-
-
-Notes:
-
-     - A function will be fit to the input :math:`\mu(E)` data over the range between
-       [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the
-       region [elo:ehi].  The baseline function is specified with the `form`
-       keyword argument, which can be one of 'lorentzian', 'gaussian', or 'voigt',
-       with 'lorentzian' the default.  In addition, the `with_line` keyword
-       argument can be used to add a line to this baseline function.
-
-     - The value calculated for `prepeaks.centroid`  will be found as
-       `(prepeaks.energy*prepeaks.peaks).sum() / prepeaks.peaks.sum()`
-
-     - The values in the `peak_energies` list will be predicted energies
-       of the peaks in `prepeaks.peaks` as found by peakutils.
-
-
+.. autofunction:: larch.xafs.pre_edge_baseline
 
 
 Over-absorption Corrections
@@ -359,7 +361,7 @@ different effect from self-absorption in X-ray fluorescence analysis.  In
 fact, the effect is more like *extinction* in that the fluorescence
 probability approaches a constant, with no XAFS oscillations, as the total
 absorption coefficient is dominated by the element of interest.
-Over-absorption most stongly effects the XAFS oscillation amplitude, and so
+Over-absorption most strongly effects the XAFS oscillation amplitude, and so
 coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.
@@ -373,7 +375,7 @@ For XANES, a common correction method from the FLUO program by D. Haskel
 .. function:: fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45, angout=45, **pre_kws)
 
     calculate :math:`\mu(E)` corrected for over-absorption in fluorescence
-    XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
+    XAFS using the FLUO algorithm (suitable for XANES, but questionable for
     EXAFS).
 
     :param energy:    1-d array of x-ray energies, in eV
@@ -388,20 +390,19 @@ For XANES, a common correction method from the FLUO program by D. Haskel
 
     :returns:         None
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``mu``.  The value
-    of ``mu_corr`` and ``norm_corr`` will be written to the output group,
-    containing :math:`\mu(E)` and normalized :math:`\mu(E)` corrected for
-    over-absorption.
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will
+    be written to the output group, containing :math:`\mu(E)` and
+    normalized :math:`\mu(E)` corrected for over-absorption.
 
 
 Spectral deconvolution
 =================================
 
 In order to readily compare XAFS data from different sources, it is
-sometimes necessary to considert the energy resolution used to collect each
+sometimes necessary to consider the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
-contributions from the x-ray sourse, instrumental broadening from the x-ray
+contributions from the x-ray sources, instrumental broadening from the x-ray
 optics (especially the X-ray monochromator used in most measurements), and
 the intrinsic lifetime of the excited core electronic level.  For data
 measured in X-ray fluorescence or electron emission mode, the energy
@@ -426,20 +427,20 @@ of XAFS spectra.  For example, one may need to reduce the resolution to
 match data measured with degraded resolution.  This can be done with
 :func:`xas_convolve` which convolves an XAFS spectrum with either a
 Gaussian or Lorentzian function with a known energy width.  Note that
-convolving with a Gaussian is less dramatic than using a Lorenztian, and
+convolving with a Gaussian is less dramatic than using a Lorentzian, and
 usually better reflects the effect of an incident X-ray beam with degraded
 resolution due to source or monochromator.
 
 One may also want to try to improve the energy resolution of an XAFS
 spectrum, either to compare it to data taken with higher resolution or to
 better identify and enumerate peaks in a XANES spectrum.  This can be done
-with :func:`xas_deconvolve` function which deconvolves either a Gaussian or
+with :func:`xas_deconvolve` function which de-convolves either a Gaussian or
 Lorentzian function from an XAFS spectrum.  This usually requires fairly
 good data.  Whereas a Gaussian most closely reflects broadening from the
 X-ray source, broadening due to the natural energy width of the core levels
-is better described by a Lorenztian.   Therefore, to try to reduce the
+is better described by a Lorentzian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
-fluorescence data, deconvolving with a Lorenztian is often better.
+fluorescence data, de-convolving with a Lorentzian is often better.
 
 
 
@@ -465,9 +466,9 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param eshift:   energy shift (in eV) to apply to result. [0.0]
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.  The
-    following data is put into the output group:
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``norm``.  The following data is put into the output
+    group:
 
 
        ================= ===============================================================
@@ -504,8 +505,8 @@ fluorescence data, deconvolving with a Lorenztian is often better.
     :param sgorder:  order for the Savitzky-Golay function [3]
 
 
-    Follows the :ref:`First Argument Group<first_argument_group>`
-    convention, using group members named ``energy`` and ``norm``.
+    Follows the :ref:`First Argument Group`, using group members named
+    ``energy`` and ``norm``.
 
     Smoothing with :func:`savitzky_golay` requires a window and order.  By
     default, ``window = int(esigma / estep)`` where estep is step size for
@@ -544,7 +545,7 @@ resulting in deconvolved data:
 
 
 To de-convolve an XAFS spectrum using the energy width of the core level,
-we can use the :func:`_xray.core_width` functiion, as shown below for Cu metal.
+we can use the :func:`_xray.core_width` function, as shown below for Cu metal.
 We can also test that the deconvolution is correct by using
 :func:`xas_convolve` to re-convolve the result and comparing it to original
 data.  This can be done with:
@@ -571,10 +572,10 @@ with results shown below:
     :target: ../_images/xafs_deconv2b.png
     :width: 100%
     :align: center
-	    
+
     Comparison of original and re-convolved XAS spectrum for Cu metal.
     The difference shown in red is multiplied by 100.
-	    
+
 .. subfigend::
     :width: 0.45
     :label: fig_xafs_deconv
@@ -612,7 +613,7 @@ with results shown below:
 .. subfigend::
     :width: 0.45
     :label: fig_xafs_deconv3
-	    
+
     Example of simple usage of :func:`xas_deconvolve` and
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
     :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw

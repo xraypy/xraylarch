@@ -5,7 +5,6 @@
 :func:`minimize` and objective Functions
 ==============================================
 
-.. module:: _math
 
 As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the

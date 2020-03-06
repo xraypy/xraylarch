@@ -4,7 +4,8 @@ import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from scipy.stats import t
 from scipy.special import erf
-from lmfit import Parameter, Parameters, minimize
+from lmfit import Parameter, Parameters, minimize, fit_report
+
 import uncertainties
 
 from larch import (Group, Make_CallArgs, parse_group_args, isgroup)
@@ -36,18 +37,17 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     if nclamp == 0:
         return out
     # spline clamps:
-    scale = (1.0 + 10*(out*out).sum())/(len(out)*nclamp)
-    scaled_chik = scale * chi * kout**kweight
-    return np.concatenate((out,
-                           abs(clamp_lo)*scaled_chik[:nclamp],
-                           abs(clamp_hi)*scaled_chik[-nclamp:]))
+    scale = 1.0 + 100*(out*out).mean()
+    return  np.concatenate((out,
+                            abs(clamp_lo)*scale*chi[:nclamp],
+                            abs(clamp_hi)*scale*chi[-nclamp:]))
 
 
 @Make_CallArgs(["energy" ,"mu"])
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
-           pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
+           pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=1,
            calc_uncertainties=True, err_sigma=1, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
 
@@ -71,8 +71,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
       kstep:     k step size to use for FFT [0.05]
       k_std:     optional k array for standard chi(k).
       chi_std:   optional chi array for standard chi(k).
-      nclamp:    number of energy end-points for clamp [2]
-      clamp_lo:  weight of low-energy clamp [1]
+      nclamp:    number of energy end-points for clamp [3]
+      clamp_lo:  weight of low-energy clamp [0]
       clamp_hi:  weight of high-energy clamp [1]
       calc_uncertaintites:  Flag to calculate uncertainties in
                             mu_0(E) and chi(k) [True]
@@ -127,7 +127,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     ie0 = index_of(energy, e0)
     rgrid = np.pi/(kstep*nfft)
     if rbkg < 2*rgrid: rbkg = 2*rgrid
-    irbkg = int(1.01 + rbkg/rgrid)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
@@ -148,23 +147,32 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
                                      window=win, dx=dk, dx2=dk)
     # calc k-value and initial guess for y-values of spline params
     nspl = 1 + int(2*rbkg*(kmax-kmin)/np.pi)
+    irbkg = int(1 + (nspl-1)*np.pi/(2*rgrid*(kmax-kmin)))
     if nknots is not None:
         nspl = nknots
     nspl = max(5, min(128, nspl))
-
-    spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
+    spl_y, spl_k  = np.ones(nspl), np.zeros(nspl)
     for i in range(nspl):
         q  = kmin + i*(kmax-kmin)/(nspl - 1)
         ik = index_nearest(kraw, q)
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
-        spl_e[i] = energy[ik+ie0]
         spl_y[i] = (2*mu[ik+ie0] + mu[i1+ie0] + mu[i2+ie0] ) / 4.0
 
-    # get spline represention: knots, coefs, order=3
-    # coefs will be varied in fit.
-    knots, coefs, order = splrep(spl_k, spl_y)
+    order = 3
+    qmin, qmax  = spl_k[0], spl_k[nspl-1]
+    knots = [spl_k[0] - 1.e-4*(order-i) for i in range(order)]
+
+    for i in range(order, nspl):
+        knots.append((i-order)*(qmax - qmin)/(nspl-order+1))
+    qlast = knots[-1]
+    for i in range(order+1):
+        knots.append(qlast + 1.e-4*(i+1))
+
+    coefs = [mu[index_nearest(energy, e0 + q**2/ETOK)] for q in knots]
+    knots, coefs, order = splrep(spl_k, spl_y, k=order)
+    coefs[nspl:] = coefs[nspl-1]
 
     # set fit parameters from initial coefficients
     params = Parameters()
@@ -176,7 +184,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
     # do fit
     result = minimize(__resid, params, method='leastsq',
-                      gtol=1.e-5, ftol=1.e-5, xtol=1.e-5, epsfcn=1.e-5,
+                      gtol=1.e-6, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
                       kws = dict(ncoefs=len(coefs), chi_std=chi_std,
                                  knots=knots, order=order,
                                  kraw=kraw[:iemax-ie0+1],
@@ -201,18 +209,15 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
     group.e0   = e0
 
     # now fill in 'autobk_details' group
-    details = Group(params=result.params)
-
+    details = Group(kmin=kmin, kmax=kmax, irbkg=irbkg, nknots=len(spl_k),
+                    knots_k=knots, init_knots_y=spl_y, nspl=nspl,
+                    init_chi=initchi/edge_step, report=fit_report(result))
     details.init_bkg = np.copy(mu)
     details.init_bkg[ie0:ie0+len(bkg)] = initbkg
-    details.init_chi = initchi/edge_step
-    details.knots_e  = spl_e
     details.knots_y  = np.array([coefs[i] for i in range(nspl)])
-    details.init_knots_y = spl_y
-    details.nfev = result.nfev
-    details.kmin = kmin
-    details.kmax = kmax
     group.autobk_details = details
+    for attr in ('nfev', 'redchi', 'chisqr', 'aic', 'bic', 'params'):
+        setattr(details, attr, getattr(result, attr, None))
 
     # uncertainties in mu0 and chi: can be fairly slow.
     if calc_uncertainties:

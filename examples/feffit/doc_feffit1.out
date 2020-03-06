@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  4, 104
    n_independent      =  15.260
-   chi_square         =  38.0085308
-   reduced chi_square =  3.37545079
-   r-factor           =  0.00278506
-   Akaike info crit   =  21.9258790
-   Bayesian info crit =  24.8268932
+   chi_square         =  112.156230
+   reduced chi_square =  9.96033859
+   r-factor           =  0.00272181
+   Akaike info crit   =  38.4387592
+   Bayesian info crit =  41.3397735
  
 [[Data]]
    fit space          = 'r'
@@ -15,15 +15,15 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=0.00107586, std=0.00350376)
-   epsilon_r          = 0.03616059
+   epsilon_k          = Array(mean=6.1854e-04, std=0.00165467)
+   epsilon_r          = 0.02078957
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.92827967 +/- 0.03947665   (init=  1.00000000)
-   del_e0         =  4.35628013 +/- 0.51728627   (init=  0.00000000)
-   del_r          = -0.00601804 +/- 0.00264347   (init=  0.00000000)
-   sig2           =  0.00866806 +/- 3.1138e-04   (init=  0.00000000)
+   amp            =  0.92757192 +/- 0.03899544   (init=  1.00000000)
+   del_e0         =  4.35776679 +/- 0.51134927   (init=  0.00000000)
+   del_r          = -0.00601667 +/- 0.00261331   (init=  0.00000000)
+   sig2           =  0.00866969 +/- 3.0784e-04   (init=  0.00000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, sig2            =  0.928
@@ -38,10 +38,10 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.92827967 +/- 0.03947665  'amp'
-     e0     =  4.35628013 +/- 0.51728627  'del_e0'
-     r      =  2.54178196 +/- 0.00264347  'reff + del_r'
-     deltar = -0.00601804 +/- 0.00264347  'del_r'
-     sigma2 =  0.00866806 +/- 3.1138e-04  'sig2'
+     n*s02  =  0.92757192 +/- 0.03899544  'amp'
+     e0     =  4.35776679 +/- 0.51134927  'del_e0'
+     r      =  2.54178333 +/- 0.00261331  'reff + del_r'
+     deltar = -0.00601667 +/- 0.00261331  'del_r'
+     sigma2 =  0.00866969 +/- 3.0784e-04  'sig2'
 
 =======================================================

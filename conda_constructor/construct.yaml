@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.46
+version: 0.9.47
 
 channels:
     - https://repo.continuum.io/pkgs/main
@@ -9,8 +9,13 @@ channels:
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
 license_file: ../LICENSE
-attempt_hardlinks: True
 ignore_duplicate_files: True
+attempt_hardlinks: True
+
+osxpkg_readme: readme.rtf # [osx]
+osxpkg_image: LarchInstaller.png # [osx]
+osxpkg_userhome_only: True # [osx]
+signing_identity_name: Matthew Newville # [osx]
 
 post_install: post_install_linux.sh [linux]
 post_install: post_install_macosx.sh [osx]
@@ -56,8 +61,8 @@ specs:
     - pycifrw
     - peakutils
     - pyshortcuts
-    - pyepics
-    - lmfit
+    - pyepics>=3.4.1
+    - lmfit>=1.0
     - asteval
     - wxutils
     - wxmplot

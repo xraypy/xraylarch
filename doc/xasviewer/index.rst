@@ -19,7 +19,7 @@ special emphasis on helping users with XANES analysis.  Current features
    * XAFS pre-edge removal and normalization.
    * visualization of normalization steps.
    * data merging
-   * data deglitching, and energy recalibration
+   * data de-glitching, and energy recalibration
    * data smoothing, rebinning, and deconvolution.
    * over-absorption corrections (for XANES)
    * linear combination analysis of spectra.
@@ -28,16 +28,15 @@ special emphasis on helping users with XANES analysis.  Current features
    * saving of data to CSV files.
 
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
-and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the
-main window for the XAS Viewer program.  The left-hand portion contains a
-list of files (or data groups) that have been read into the program either
-from individual ASCII column files or Athena Project files.  Clicking on
-the file or group name makes that "the current data group", while checking
-the boxes next to each name will select multiple files or group.  Buttons
-at the top of the list of files can be used to "Select All" or "Select
-None".  In addition, right-clicking on the file list will pop up a menu
-that allows more detailed selecting of data sets.
-
+and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the main
+window for the XAS Viewer program.  The left-hand portion contains a list
+of files (or data groups) that have been read into the program either from
+individual ASCII column files or Athena Project files.  Clicking on the
+file or group name makes that "the current data group", while checking the
+boxes next to each name will select multiple files or group.  Buttons at
+the top of the list of files can be used to "Select All" or "Select None".
+Right-clicking on the file list will pop up a menu that allows more
+detailed selecting of data sets.
 
 .. _fig_xasviewer_1:
 
@@ -49,57 +48,71 @@ that allows more detailed selecting of data sets.
     XASViewer showing the File/Group list on the left-hand side and the
     the XAFS pre-edge subtraction and normalization panel on the right.
 
-
 The right-hand portion of the XAS Viewer window shows multiple forms for
 more specialized XAFS data processing tasks, each on a separate Notebook
-tab.  These will be covered in more detail in sections below. The main
-panel is for pre-edge subtraction and Normalization
+tab.  These will be covered in more detail in sections below. The default
+panel shown is for pre-edge subtraction and normalization
 (:ref:`xasviewer_preedge`), with other available tabs for fitting pre-edge
-peaks (:ref:`xasviewer_peakfit`), Linear Combinaton Analysis
-(:ref:`xasviewer_lincombo`), Principal Component Analysis
-(:ref:`xasviewer_pca`), and EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
+peaks (:ref:`xasviewer_peakfit`), Linear Combination Analysis
+(:ref:`xasviewer_lincombo`),
+Principal Component Analysis (:ref:`xasviewer_pca`),
+Advanced Linear Regression (:ref:`xasviewer_regression`),
+and EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
 :ref:`xasviewer_exafs_fft`).
 
-
 There are a few important general notes to mention about XAS Viewer before
-going into more detail about how to use it.  First, XAS Viewer is still
-very new and in active development.  If you find problems with it or
-unexpected or missing functionality, please let us know.  Second, XAS
-Viewer has many features and functionality in common with Athena and
-Sixpack.  This is partly intentional, as we expect that XAS Viewer may be a
-useful alternative to these that may be better supported and maintained,
-especially on macOS. That also means that if you find things that you think
-are missing or different from how Athena or Sixpack work, let us know.
+going into more detail about how to use it.  First, XAS Viewer is somewhat
+new, and in active development.  If you find problems with it or unexpected
+or missing functionality, please let us know.  Second, XAS Viewer has many
+features, functionality, and concepts in common with Athena and
+Sixpack. This is intentional, as we intend XAS Viewer to be a useful
+alternative to these applications, possibly with new or better features but
+also without requiring too much relearning of concepts or workflow.  As an
+important example of this compatibility, XAS Viewer can read in and import
+data from Athena Project files, and can save these project files as well,
+so that if you have lots of data organized with Athena Project Files, you
+can use XAS Viewer and Athena on the same datasets.  This aim for
+compatibility also means that if you find features to be missing or
+different from how Athena or Sixpack work, let us know.
 
 As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
-complex analysis, batch processing, and scripting of analysis.  To do this,
-essentially all the real processing work in XAS Viewer is done through the
-Larch Buffer (as shown in :ref:`larchgui-section`) which records the commands
-that it executes.  If, at any point you want to know exactly what XAS
-Viewer is "really doing", you can open the Larch Buffer and see.  You can
+complex analysis, batch processing, and scripting of analysis tasks.  To do
+this, essentially all the real processing work, including most of the
+plotting of data, in XAS Viewer is done through the Larch Buffer (as shown
+in :ref:`larchgui_app`) which records the commands that it executes.  If,
+at any point you want to know exactly what XAS Viewer is "really doing",
+you can open the Larch Buffer and see the commands being executed.  You can
 also copy the code from the Larch buffer to reproduce the analysis steps,
-or modify into procedures for batch processing.
+or modify into procedures for batch processing with the Larch scripting
+language or with Python.
 
 XAS Viewer will display many different datasets as 2-d line plots.  As with
 all such plots made with Larch (see :ref:`plotting-chapter`), these are
 highly interactive, customizable, and can produce publication-quality
-images.  Larch plots can be zoomed in an out, and configured to change the
-colors, linestyles, margins, text for labels, and more. From any plot
-window you can use Ctrl-C to copy the image to the clipboard, Ctrl-S to
-Save the image (as PNG) to a file, or Ctrl-P to print the image. Ctrl-K
-will bring up a window to configure the colors, text, and so on.  These and
-a few other common options are available from the File and Options menu.
+images.  The plots can be zoomed in and out, and can be configured to
+change the colors, linestyles, margins, text for labels, and more. From any
+plot window you can use Ctrl-C to copy the image to the clipboard, Ctrl-S
+to Save the image as PNG file, or Ctrl-P to print the image with your
+systems printer. Ctrl-K will bring up a window with forms to configure the
+colors, text, styles and so on. These common options are available from the
+File and Options menu of the plotting window.
 
-In particular for XAS Viewer, clicking on the legend for any labeled curve
-on a plot will toggle whether that curve is displayed.  This allows us to
-draw plot components as you can turn them on or off interactively.  Also,
-note that many of the entries for numbers on the form panels in XAS Viewer
-have a button with a 'pin' icon |pin|.  Clicking anywhere on the plot
-window will remember the energy value of the last point clicked, and show
-the value in the middle section of the status bar, just below the plot
-itself. Clicking on any of these 'pin' buttons will insert that "most
-recent energy" value into the corresponding field.
+In particular, clicking on the legend for any labeled curve on a plot will
+toggle whether that curve is displayed and partially lighten the label
+itself.  This feature of the plotting window means that XAS Viewer may draw
+several different traces on the same plot window and allow (or even expect)
+you to turn some of them on or off interactively to better view the
+different components being shown.  This can be especially useful for
+comparing XANES spectra or for inspecting the results of peak fitting.
+
+Also note that many of the entries for numbers on the form panels in XAS
+Viewer have a button with a 'pin' icon |pin|.  Clicking anywhere on the
+plot window will remember the X and Y values of the last point clicked, and
+show the value in the middle section of the status bar, just below the plot
+itself. Clicking on any of these 'pin' buttons will insert the appropriate
+value (usually the energy) from that "most recently clicked position" into
+the corresponding field.
 
 
 .. _xasviewer_io:
@@ -115,7 +128,7 @@ exported to Athena Project files, or to CSV files.
 
 
 .. subfigstart::
-   
+
 .. _fig_xasviewer_2a:
 
 .. figure:: ../_images/DataImporter.png
@@ -137,7 +150,7 @@ exported to Athena Project files, or to CSV files.
 .. subfigend::
     :width: 0.45
     :label: fig_xasviewer2
-    
+
 
 When reading in raw data, the data importer shown in
 :numref:`fig_xasviewer_2a` will help you build XAFS :math:`\mu(E)` from the
@@ -155,12 +168,12 @@ Common XAS Processing Dialogs
 There are several dialogs for interacting with data groups and for doing
 data corrections.  These include speciality dialogs for:
 
-  * copying, removing, and renaming data grouos.
+  * copying, removing, and renaming data groups.
   * merging of data groups -- summing spectra.
   * de-glitching spectra.
   * recalibrating spectra.
   * smoothing of noisy spectra.
-  * rebinning of spectra onto a "normal" XAFS energy grid.
+  * re-binning of spectra onto a "normal" XAFS energy grid.
   * de-convolving spectra.
   * correcting over-absorption in fluorescence XANES spectra.
 
@@ -184,7 +197,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Deglitching dialog
+    De-glitching dialog
 
 .. _fig_xasviewer_dialog_smooth:
 
@@ -202,7 +215,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Deconvolution   dialog.	    
+    Deconvolution dialog.
 
 .. _fig_xasviewer_dialog_rebin:
 
@@ -211,7 +224,7 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Energy rebinning dialog.
+    Energy re-binning dialog.
 
 .. _fig_xasviewer_dialog_overabs:
 
@@ -220,34 +233,63 @@ Screenshots of some of these dialogs are shown in the images below.
     :width: 100%
     :align: center
 
-    Over-absortion correction dialog
+    Over-absorption correction dialog
 
 .. subfigend::
     :width: 0.32
     :label: fig-xasviewer-dialogs
-	    
-    
+
+
 .. _xasviewer_preedge:
 
 Pre-edge subtraction and Normalization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As above, :numref:`fig_xasviewer_1` shows the main window for the XAS
-Viewer program with the right hand side showing the "XAS Normalization"
-Panel.  This panel helps you do pre-edge subtraction and normalization of
-XAFS data using the :func:`pre_edge` function.   This processing step is
-important for getting normalized XAFS spectra that is used for further
-analysis of both XANES and EXAFS.
+As shown above in :numref:`fig_xasviewer_1`, the main analysis panel for
+the XAS Viewer program is the "XAS Normalization" Panel.  This panel helps
+you do pre-edge subtraction and normalization of XAFS data using the
+:func:`find_e0`, :func:`pre_edge`, or :func:`mback_norm` functions.  This
+processing step is important for getting normalized XAFS spectra that is
+used for further analysis of both XANES and EXAFS.  In general, the idea is
+to get the main step of each XAS spectrum to go from 0 below the main edge
+to 1 above the edge, so that the normalized spectrum represents the average
+absorption of each absorbing element in the sample.
 
-From the form, you can plot the data for the current selected group in
-several ways: Raw :math:`\mu(E)`, normalized :math:`\mu(E)`, the derivative
-:math:`d\mu(E)/dE`, flattened :math:`\mu(E)`, or the raw :math:`\mu(E)`
-with the pre-edge line and post-edge normalization curve.  You can also set
-the parameters like :math:`E_0` and the edge step and ranges for the
-pre-edge line and normalization curve.  Consult with :func:`pre_edge`
-function for more details on these parameters.  You can also plot several
-selected groups together, and copy processing parameters from one group to
-another.
+The first step in the process is to identify :math:`E_0`, the absorption
+threshold energy.  This is typically (and by default) chosen as the energy
+point where the first derivative :math:`d\mu(E)/dE` has a maximum.  This
+may not necessarily reflect the onset of absorption or the Fermi level, but
+it is easy to identify reliably for any spectrum.  At this point, the value
+does not have to be highly accurate, so that predictability and
+reproducibility are favored.  You can set the value of :math:`E_0` or allow
+it to be determined automatically.
+
+
+The next step is to measure how large the jump in absorption is. This
+process can be somewhat trickier, so that there are some heuristics built
+in to XAS Viewer (and :func:`pre_edge`) to help make this more robust.
+You can explicitly set the the value of the edge step, or allow it to be
+calculated from the spectra in one of two ways.
+
+The classic way for determining the edge step is encapsulated in the
+:func:`pre_edge` function.  Default values for ranges for the fitted
+pre-edge line and post-edge normalization curve can be set, or you can rely
+on the default settings for these values.  In general, the default settings
+give pretty good results, but the value for the edge step or the fitting
+ranges and curve forms can be altered here.
+
+Consult with :func:`pre_edge` and :func:`mback_norm` function for more
+details on these parameters.  Note that you can copy processing parameters
+from one group to other groups with the set of "copy" buttons that will
+copy the corresponding parameters to all the selected groups.
+
+Finally, from the normalization panel, you can plot the data for the one
+currently selected group or for all selected groups in a few different
+ways: Raw :math:`\mu(E)`, normalized :math:`\mu(E)`, the derivative
+:math:`d\mu(E)/dE`, flattened :math:`\mu(E)`.  For the current group there
+are even mor options, including the raw :math:`\mu(E)` with the pre-edge
+line and post-edge normalization curve, or compare with the
+MBACK-calculation for normalization.
 
 
 .. _xasviewer_peakfit:
@@ -270,7 +312,6 @@ a reasonable enough approximation of the main absorption edge (say,
 :math:`4p`) so that its tail represents the background of the main edge
 underneath the pre-edge peaks.
 
-
 Fitting the baseline requires identifying energy ranges for both the main
 spectrum to be fitted and the pre-edge peaks -- the part of the spectrum
 which should be ignored when fitting the baseline.  This is illustrated in
@@ -289,7 +330,7 @@ transferred to any of the bounds energy using the corresponding pin icon
 |pin| on the form.
 
 .. subfigstart::
-	    
+
 .. _fig_xasviewer_3a:
 
 .. figure:: ../_images/XASViewer_prepeaks_baseline_form.png
@@ -309,18 +350,18 @@ transferred to any of the bounds energy using the corresponding pin icon
     :align: center
 
     Plot of pre-edge peaks with baseline.  The grey vertical lines show the
-    fit range and blue cicrles show the boundaries of the pre-edge peak
+    fit range and blue circles show the boundaries of the pre-edge peak
     range ignored in the baseline fit. The pink line shows the centroid of
     the pre-edge peaks after removal of the baseline.
 
 .. subfigend::
     :width: 0.45
     :label: fig-xasviewer3
-    
+
 
 We will allow the baseline to be refined when fitting the peaks, so it does
 not need to be modeled perfectly, but it is helpful to get a decent fit to
-the baseline.  Once this baseline is satisfactorally modeled, you can add
+the baseline.  Once this baseline is satisfactorily modeled, you can add
 functions to model the pre-edge peaks themselves.  Selecting one of the
 "Peak Models" (typically Gaussian, Lorentzian, or Voigt) will show a new
 tab in the "model components area" in the lower part of the form.  Since
@@ -359,7 +400,7 @@ don't try to exchange.
 
 
 .. subfigstart::
-	    
+
 .. _fig_xasviewer_4a:
 
 .. figure:: ../_images/XASViewer_prepeaks_1gaussian_form.png
@@ -401,7 +442,7 @@ In the lower portion of the form, you can read the values and uncertainties
 for the fitting parameters and for a number of *derived* parameters,
 including `fit_centroid` that is the (area-weighted) centroid of the
 functions that comprise the pre-edge peaks (not including the baseline) and
-the full-width-at-half-maximumn and height of each of the peaks (note that
+the full-width-at-half-maximum and height of each of the peaks (note that
 `amplitude` represents the area of the unit-normalized peak and `height`
 represents the maximum height for a peak).  You can click on the button
 labeled "Update Model with these Values" to put these best-fit values back
@@ -429,12 +470,12 @@ pre-edge peaks.
     :align: center
 
     Pre-edge Peak data and best-fit with 1 Gaussian and baseline.
-    
+
 .. subfigend::
     :width: 0.45
     :label: fig-xasviewer5
 
-    
+
 Though the plot of the fit in :numref:`fig_xasviewer_5b` does not look too
 bad, we can see the fit is not perfect. Checking the "Plot with residual?"
 box we get the plot in :numref:`fig_xasviewer_6` that shows the data and fit
@@ -550,7 +591,6 @@ AIC is -1957 and BIC is -1917.
 Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 Linear Combination Analysis is useful for modeling a XANES spectrum as a
 combination of other spectra.
 
@@ -562,14 +602,14 @@ Principal Component and Non-negative Factor Analysis
 Principal Component Analysis (PCA) is one of a family of numerical
 techniques to reduce the number of variable components in a set of data.
 There are many related techniques and procedures, and quite a bit of
-nomeclature and jargon around the methods.
+nomenclature and jargon around the methods.
 
 In essence, all these methods are aimed at taking a large set of similar
 data and trying to determine how many independent components make up that
 larger dataset.    That is, the only question PCA and related methods can
 ever really answer is::
 
-    how many indepedent spectra make up my collection of spectra?
+    how many independent spectra make up my collection of spectra?
 
 It is important to note that PCA cannot tell you what those independent
 spectra represent or even what they look like.  However, you can also use

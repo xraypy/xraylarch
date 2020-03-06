@@ -13,13 +13,12 @@ requests
 scikit-image
 scikit-learn
 asteval>=0.9.18
-lmfit>=0.9.15
-uncertainties>=3.0
+lmfit>=1.0
+uncertainties>=3.1
 pyshortcuts>=1.7
-pyepics>=3.4.0
 wxpython>=4.0.3
 wxutils>=0.2.3
-wxmplot>=0.9.38
+wxmplot>=0.9.40
 xraydb>=4.3
 pip
 pyyaml
@@ -27,7 +26,3 @@ psutil
 nose
 pytest
 termcolor
-silx>=0.11
-fabio
-pyfai
-pycifrw

@@ -1,0 +1,6 @@
+pyepics>=3.4.1
+silx>=0.11
+fabio
+pyfai
+pycifrw
+psycopg2

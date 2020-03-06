@@ -32,8 +32,7 @@ all kept in the :data:`_xafs` Group, which can be easily accessed, as this
 is in the default search path.
 
 
-.. module:: _xafs
-   :synopsis: Basic XAFS Functions
+:synopsis: Basic XAFS Functions
 
 
 .. toctree::
