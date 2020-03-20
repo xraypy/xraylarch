@@ -86,6 +86,6 @@ if __name__ == "__main__":
         aprj = AthenaProject(_larch=Interpreter())
         aprj.read(atpfile, do_bkg=False)  # there is currently a bug in do_bkg!
         adict = aprj.as_dict()
-    if 1:
+    if 0:
         athena_to_hdf5(atpfile, fileout=f"{fnroot}.h5", overwrite=True)
     pass
