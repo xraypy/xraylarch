@@ -10,5 +10,6 @@ sphinx
 numpydoc
 sphinxcontrib-bibtex
 sphinxcontrib-argdoc
+rstcheck  #: linter for .rst
 flake8  #: linter (wrapper on top of +pyflakes, +pycodestyle and +mccabe)
 black  #: formatter (preferred over: yapf and autopep8)
