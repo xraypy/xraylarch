@@ -7,7 +7,6 @@
 pyepics>=3.4.1
 PyQt5==5.14
 pyqtwebengine==5.14
-silx>=0.12
 fabio
 pyfai
 pycifrw
