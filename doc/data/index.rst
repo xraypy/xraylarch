@@ -263,8 +263,27 @@ As an example creating and saving an Athena Project file::
     larch> fe_project.add_group(fe2o3)
     larch> fe_project.save()
 
+Converting Athena Project Files to HDF5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Using HDF5 Files
+An Athena Project File (.prj) can be easily converted to HDF5 (.h5) with the :func:`athena_to_hdf5`.
+
+.. function:: athena_to_hdf5(filename, fileout=None, overwrite=False, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
+
+   convert read an Athena Project File to HDF5
+
+   :param filename:   name of Athena Project file
+   :param fileout:    name of the HDF5 file [None -> filename_root.h5]
+   :param overwrite:  bool, whether to overwrite existing outputfile
+   :param match:      string pattern used to limit the imported groups (see Note)
+   :param do_preedge: bool, whether to do pre-edge subtraction
+   :param do_bkg:     bool, whether to do XAFS background subtraction
+   :param do_fft:     bool, whether to do XAFS Fast Fourier transform
+   :param use_hashkey: bool, whether to use Athena's hash key as the group name, instead of the Athena label.
+   :return:  None
+
+
+Reading HDF5 Files
 ========================
 
 HDF5 is an increasingly popular data format for scientific data, as it can
@@ -309,7 +328,6 @@ data heirarchy of the HDF5 file, and pick out the needed data::
 This interface is general-purpose but somewhat low-level.  As HDF5 formats
 and schemas become standardized, better interfaces can easily be made on
 top of this approach.
-
 
 Reading NetCDF Files
 ============================

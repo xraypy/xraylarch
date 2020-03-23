@@ -1,5 +1,12 @@
+# List of larch extra dependencies to enable extra features.
+# Install with :
+#   pip install -r ./requirements-extra.txt
+#  or
+#   conda config --env --append channels conda-forge 
+#   conda install --file ./requirements-extra.txt
 pyepics>=3.4.1
-silx>=0.11
+PyQt5==5.14
+pyqtwebengine==5.14
 fabio
 pyfai
 pycifrw
