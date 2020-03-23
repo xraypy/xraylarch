@@ -9,17 +9,15 @@ import logging
 # import tempfile
 
 # set up default logging configureation
-_default_format = "[%(name)-s] %(levelname)-s : %(message)s"
-_default_format_file = "%(asctime)s [%(name)-s] %(levelname)-s : %(message)s"
-_default_datefmt = "%Y-%m-%d %H:%M"
-_levels = {
-    "DEBUG": logging.DEBUG,
-    "INFO": logging.INFO,
-    "WARNING": logging.WARNING,
-    "ERROR": logging.ERROR,
-    "FATAL": logging.FATAL,
-    "CRITICAL": logging.CRITICAL,
-}
+_default_format = '[%(name)-s] %(levelname)-s : %(message)s'
+_default_format_file = '%(asctime)s [%(name)-s] %(levelname)-s : %(message)s'
+_default_datefmt = '%Y-%m-%d %H:%M'
+_levels = {'DEBUG': logging.DEBUG,
+           'INFO': logging.INFO,
+           'WARNING': logging.WARNING,
+           'ERROR': logging.ERROR,
+           'FATAL': logging.FATAL,
+           'CRITICAL': logging.CRITICAL}
 
 # # needs colorlog, not enabled yet!
 # _default_colors = {'DEBUG': 'cyan',
@@ -32,14 +30,14 @@ _levels = {
 _log = False
 
 
-def logging_basicConfig(level="INFO"):
+def logging_basicConfig(level='INFO'):
     """logging basic configuration"""
     global _log
-    logging.basicConfig(
-        level=_levels[level], format=_default_format, datefmt=_default_datefmt
-    )
-    # filename='{0}.log'.format(tempfile.mktemp()),
-    # filemode='w')
+    logging.basicConfig(level=_levels[level],
+                        format=_default_format,
+                        datefmt=_default_datefmt)
+                        # filename='{0}.log'.format(tempfile.mktemp()),
+                        # filemode='w')
     _log = True
 
 
@@ -50,16 +48,15 @@ def getConsoleHandler():
     return console_handler
 
 
-def getFileHandler(filename, mode="a"):
+def getFileHandler(filename, mode='a'):
     """Default console handler"""
     file_handler = logging.FileHandler(filename, mode=mode)
-    file_handler.setFormatter(
-        logging.Formatter(fmt=_default_format_file, datefmt=_default_datefmt)
-    )
+    file_handler.setFormatter(logging.Formatter(fmt=_default_format_file,
+                                                datefmt=_default_datefmt))
     return file_handler
 
 
-def getLogger(name, level="INFO"):
+def getLogger(name, level='INFO'):
     """Utility function to get the logger with customization
 
     .. warning:: NOT WORKING AS EXPECTED -> FIXME!!!
@@ -76,7 +73,7 @@ def getLogger(name, level="INFO"):
     logger = logging.getLogger(name)
     logger.setLevel(_levels[level])
 
-    if logger.hasHandlers():
+    if (logger.hasHandlers()):
         logger.handlers.clear()
         logger.debug("custom logger setup > clear handlers")
     logger.addHandler(getConsoleHandler())
@@ -88,26 +85,26 @@ def getLogger(name, level="INFO"):
     return logger
 
 
-def test_logger(level="DEBUG"):
+def test_logger(level='DEBUG'):
     """Test custom logger"""
-    logger = getLogger("test", level=level)
-    logger.debug("a debug message")
-    logger.info("an info message")
-    logger.warning("a warning message")
-    logger.error("an error message")
-    logger.critical("a critical message")
+    logger = getLogger('test', level=level)
+    logger.debug('a debug message')
+    logger.info('an info message')
+    logger.warning('a warning message')
+    logger.error('an error message')
+    logger.critical('a critical message')
     import tempfile
-
-    flog = tempfile.mktemp(prefix="test_logger_", suffix=".log")
+    flog = tempfile.mktemp(prefix='test_logger_', suffix='.log')
     logger.addHandler(getFileHandler(flog))
-    logger.info(f"added file handler -> {flog}")
-    logger.info("testing again all log levels:")
-    logger.debug("a debug message")
-    logger.info("an info message")
-    logger.warning("a warning message")
-    logger.error("an error message")
-    logger.critical("a critical message")
+    logger.info(f'added file handler -> {flog}')
+    logger.info('testing again all log levels:')
+    logger.debug('a debug message')
+    logger.info('an info message')
+    logger.warning('a warning message')
+    logger.error('an error message')
+    logger.critical('a critical message')
 
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     test_logger()
