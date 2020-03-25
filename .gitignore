@@ -30,3 +30,6 @@ AMAP/
 .DS_Store
 Thumbs.db
 *.egg-info
+*.ipynb_checkpoints/
+.vscode/
+.empty/

@@ -3044,7 +3044,25 @@ class GSEXRM_MapFile(object):
             else:
                 roi_ext = '%s_' + ext if ext == 'raw' else '%s'
             roiaddr =  roi_ext % roi
-            out = self.xrmmap[detaddr][roiaddr][:]
+            try:
+                out = self.xrmmap[detaddr][roiaddr][:]
+            except (KeyError, OSError):
+                _roiname, _roic = roiaddr.split('/')
+                try:
+                    del self.xrmmap[detaddr][_roiname]
+                except:
+                    pass
+                rgrp = self.xrmmap[detaddr].create_group(_roiname)
+                for aname,dtype in (('raw', np.uint32),
+                                    ('cor', np.float32)):
+                    rgrp.create_dataset(aname, (1, ncol), dtype,
+                                        chunks=(1, ncol),
+                                        maxshape=(None, ncol), **self.compress_args)
+                lmtgrp = rgrp.create_dataset('limits', data=[0., 0.], **self.compress_args)
+                lmtgrp.attrs['type'] = 'energy'
+                lmtgrp.attrs['units'] = 'keV'
+                
+                out = np.zeros([1, ncol])
             if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
                 _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
                 detname = '%s%s' % (_detaddr, ext)

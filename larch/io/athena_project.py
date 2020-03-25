@@ -12,8 +12,7 @@ import platform
 from fnmatch import fnmatch
 from gzip import GzipFile
 from collections import OrderedDict
-from glob import glob
-
+from copy import deepcopy
 import numpy as np
 from numpy.random import randint
 
@@ -69,12 +68,14 @@ def parse_arglist(text):
     words.append(get_word(txt[i0:]))
     return words
 
+
 def asfloat(x):
     """try to convert value to float, or fail gracefully"""
     try:
         return float(x)
     except (ValueError, TypeError):
         return x
+
 
 ERR_MSG = "Error reading Athena Project File"
 
@@ -92,7 +93,6 @@ def _read_raw_athena(filename):
         errtype, errval, errtb = sys.exc_info()
         text = None
 
-
     if text is None:
         # try plain text file
         try:
@@ -104,8 +104,10 @@ def _read_raw_athena(filename):
 
     return text
 
+
 def _test_athena_text(text):
     return "Athena project file -- " in text[:500]
+
 
 def is_athena_project(filename):
     """tests whether file is a valid Athena Project file"""
@@ -226,6 +228,7 @@ def make_athena_args(group, hashkey=None, **kws):
     args.update(kws)
     return args
 
+
 def athena_array(group, arrname):
     """convert ndarray to athena representation"""
     arr = getattr(group, arrname, None)
@@ -233,6 +236,7 @@ def athena_array(group, arrname):
         return None
     return arr # json.dumps([repr(i) for i in arr])
     # return "(%s)" % ','.join(["'%s'" % i for i in arr])
+
 
 def format_dict(d):
     """ format dictionary for Athena Project file"""
@@ -267,14 +271,15 @@ def clean_bkg_params(grp):
 
     try:
         grp.clamp1 = float(grp.clamp1)
-    except:
+    except Exception:
         grp.clamp1 = 1
     try:
         grp.clamp2 = float(grp.clamp2)
-    except:
+    except Exception:
         grp.clamp2 = 1
 
     return grp
+
 
 def clean_fft_params(grp):
     grp.kmin = getattr(grp, 'kmin', 0)
@@ -308,7 +313,6 @@ def parse_perlathena(text, filename):
             major, minor, fix = vs.split('.')
         except:
             raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
-
 
     header = [vline]
     journal = ['']
@@ -382,6 +386,7 @@ def parse_perlathena(text, filename):
 
     return out
 
+
 def parse_jsonathena(text, filename):
     """parse a JSON-style athena file"""
     jsdict = json.loads(text)
@@ -449,6 +454,7 @@ class AthenaProject(object):
 
     By default, files are saved in Gzipped JSON format
     """
+
     def __init__(self, filename=None, _larch=None):
         self._larch = _larch
         self.groups = OrderedDict()
@@ -504,7 +510,6 @@ class AthenaProject(object):
         group.i0 = i0
         group.signal = signal
         self.groups[hashkey] = group
-
 
     def save(self, filename=None, use_gzip=True):
         if filename is not None:
@@ -589,14 +594,13 @@ class AthenaProject(object):
 
         from larch.xafs import pre_edge, autobk, xftf
 
-
         if not os.path.exists(filename):
             raise IOError("file '%s' not found" % filename)
 
         text = _read_raw_athena(filename)
         # failed to read:
         if text is None:
-            raise OSError(errval)
+            raise OSError("failed to read '%s'" % filename)
         if not _test_athena_text(text):
             raise ValueError("%s '%s': invalid Athena File" % (ERR_MSG, filename))
 
@@ -604,11 +608,11 @@ class AthenaProject(object):
         data = None
         try:
             data = parse_jsonathena(text, self.filename)
-        except:
+        except Exception:
             #  try as perl format
             try:
                 data = parse_perlathena(text, self.filename)
-            except:
+            except Exception:
                 print("Not perl-athena ", sys.exc_info())
 
         if data is None:
@@ -664,7 +668,7 @@ class AthenaProject(object):
             self.groups[oname] = this
 
     def as_group(self):
-        """convert AthenaProect to Larch group"""
+        """convert AthenaProject to Larch group"""
         out = Group()
         out.__doc__ = """XAFS Data from Athena Project File %s""" % (self.filename)
         out._athena_journal = self.journal
@@ -675,9 +679,40 @@ class AthenaProject(object):
             setattr(out, name, group)
         return out
 
+    def as_dict(self):
+        """convert AthenaProject to a nested dictionary"""
+        out = dict()
+        out["_doc"] = """XAFS Data from Athena Project File %s""" % (self.filename)
+        out["_journal"] = self.journal  # str
+        out["_header"] = self.header  # str
+        out["groups"] = dict()
 
-def read_athena(filename, match=None, do_preedge=True, do_bkg=True,
-                do_fft=True, use_hashkey=False, _larch=None):
+        for name, group in self.groups.items():
+            gdict = group.__dict__
+            _ = gdict.pop("__name__")
+            par_key = "_params"
+            gout = deepcopy(gdict)
+            gout[par_key] = dict()
+            for subname, subgroup in gdict.items():
+                if isinstance(subgroup, Group):
+                    subdict = gout.pop(subname).__dict__
+                    _ = subdict.pop("__name__")
+                    par_name = subname.split(par_key)[0]  # group all paramters in common dictionary
+                    gout[par_key][par_name] = subdict
+            out["groups"][name] = gout
+
+        return out
+
+
+def read_athena(
+    filename,
+    match=None,
+    do_preedge=True,
+    do_bkg=True,
+    do_fft=True,
+    use_hashkey=False,
+    _larch=None,
+):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
 
@@ -719,6 +754,7 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=True,
     aprj.read(filename, match=match, do_preedge=do_preedge, do_bkg=do_bkg,
               do_fft=do_fft, use_hashkey=use_hashkey)
     return aprj.as_group()
+
 
 def create_athena(filename=None, _larch=None):
     """create athena project file"""

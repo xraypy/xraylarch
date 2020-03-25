@@ -119,7 +119,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
     def onLoadXRFModel(self, evt=None):
         _larch = self.owner.larch
         symtab = _larch.symtable
-        FILE_WILDCARDS = "XRF Model Files(*.xrf_model)|*.xrf_model|All files (*.*)|*.*"
+        FILE_WILDCARDS = "XRF Model Files(*.xrfmodel)|*.xrfmodel|All files (*.*)|*.*"
 
         dlg = wx.FileDialog(self, message="Read XRF Model File",
                             defaultDir=os.getcwd(),
