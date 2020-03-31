@@ -134,7 +134,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
        which will set:
          nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
          norm2 = max energy - e0, rounded to 5 eV
-         norm1 = roughly norm2/3.0, rounded to 5 eV
+         norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
     """
     energy = remove_dups(energy)
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
@@ -162,7 +162,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         norm2 = max(energy) - e0 - norm2
     norm2 = min(norm2, (max(energy) - e0))
     if norm1 is None:
-        norm1 = 5.0*round(norm2/15.0)
+        norm1 = min(150, 5.0*round(norm2/15.0))
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
     if nnorm is None:
@@ -263,7 +263,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
          between energy=[e0+norm1, e0+norm2]. nnorm, norm1, norm2 default to None,
          which will set:
               norm2 = max energy - e0, rounded to 5 eV
-              norm1 = roughly norm2/3.0, rounded to 5 eV
+              norm1 = roughly min(150, norm2/3.0), rounded to 5 eV
               nnorm = 2 in norm2-norm1>350, 1 if norm2-norm1>50, or 0 if less.
       5. flattening fits a quadratic curve (no matter nnorm) to the post-edge
          normalized mu(E) and subtracts that curve from it.
