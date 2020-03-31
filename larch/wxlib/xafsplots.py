@@ -132,6 +132,8 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
     if (xmin is not None or xmax is not None or
         ymin is not None or ymax is not None):
         panel.set_xylims((xmin, xmax, ymin, ymax))
+    else:
+        panel.unzoom_all()
     if show_legend:  # note: draw_legend *will* redraw the canvas
         panel.conf.draw_legend()
     else:
