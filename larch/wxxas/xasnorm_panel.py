@@ -59,7 +59,7 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
                 norm_method='polynomial', edge='K', atsym='?',
-                nvict=0, nnorm=1, scale=1,
+                nvict=0, nnorm=None, scale=1,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
 
@@ -298,7 +298,7 @@ class XASNormPanel(TaskPanel):
 
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
-            for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+            for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
                 val = opts[attr]
                 if val is not None:
                     self.wids[attr].SetValue(val)
