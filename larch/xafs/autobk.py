@@ -108,7 +108,7 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         edge_step = group.edge_step
     if e0 is None and isgroup(group, 'e0'):
         e0 = group.e0
-    if e0 is not None and e0 < energy.min() or e0 > energy.max():
+    if e0 is not None and (e0 < energy.min() or e0 > energy.max()):
         e0 = None
     if e0 is None or edge_step is None:
         # need to run pre_edge:
