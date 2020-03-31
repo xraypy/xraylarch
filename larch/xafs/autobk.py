@@ -108,10 +108,12 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         edge_step = group.edge_step
     if e0 is None and isgroup(group, 'e0'):
         e0 = group.e0
+    if e0 is not None and e0 < energy.min() or e0 > energy.max():
+        e0 = None
     if e0 is None or edge_step is None:
         # need to run pre_edge:
-        pre_kws = dict(nnorm=3, nvict=0, pre1=None,
-                       pre2=-50., norm1=100., norm2=None)
+        pre_kws = dict(nnorm=None, nvict=0, pre1=None,
+                       pre2=None, norm1=None, norm2=None)
         if pre_edge_kws is not None:
             pre_kws.update(pre_edge_kws)
         pre_edge(energy, mu, group=group, _larch=_larch, **pre_kws)
