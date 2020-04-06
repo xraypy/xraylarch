@@ -618,3 +618,10 @@ with results shown below:
     :func:`xas_convolve` for :math:`L_{\rm III}` XAFS of Pt metal.
     :math:`L_{\rm III}` XAFS of Pt metal, normalized :math:`\mu(E)` for raw
     data and the spectrum deconvolved by the energy of its core level.
+
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+    :filter: cited and ({'xafs/preedge'} >= docnames)
+    :style: authorlist
