@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  4, 104
    n_independent      =  15.260
-   chi_square         =  112.156230
-   reduced chi_square =  9.96033859
+   chi_square         =  106.021467
+   reduced chi_square =  9.41552424
    r-factor           =  0.00272181
-   Akaike info crit   =  38.4387592
-   Bayesian info crit =  41.3397735
+   Akaike info crit   =  37.5803496
+   Bayesian info crit =  40.4813639
  
 [[Data]]
    fit space          = 'r'
@@ -15,14 +15,14 @@
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
-   epsilon_k          = Array(mean=6.1854e-04, std=0.00165467)
-   epsilon_r          = 0.02078957
+   epsilon_k          = Array(mean=6.1397e-04, std=0.00165584)
+   epsilon_r          = 0.02063609
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.92757192 +/- 0.03899544   (init=  1.00000000)
-   del_e0         =  4.35776679 +/- 0.51134927   (init=  0.00000000)
-   del_r          = -0.00601667 +/- 0.00261331   (init=  0.00000000)
+   amp            =  0.89518898 +/- 0.03763412   (init=  1.00000000)
+   del_e0         =  4.35776879 +/- 0.51134879   (init=  0.00000000)
+   del_r          = -0.00601666 +/- 0.00261331   (init=  0.00000000)
    sig2           =  0.00866969 +/- 3.0784e-04   (init=  0.00000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
@@ -38,10 +38,10 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.92757192 +/- 0.03899544  'amp'
-     e0     =  4.35776679 +/- 0.51134927  'del_e0'
-     r      =  2.54178333 +/- 0.00261331  'reff + del_r'
-     deltar = -0.00601667 +/- 0.00261331  'del_r'
+     n*s02  =  0.89518898 +/- 0.03763412  'amp'
+     e0     =  4.35776879 +/- 0.51134879  'del_e0'
+     r      =  2.54178334 +/- 0.00261331  'reff + del_r'
+     deltar = -0.00601666 +/- 0.00261331  'del_r'
      sigma2 =  0.00866969 +/- 3.0784e-04  'sig2'
 
 =======================================================
