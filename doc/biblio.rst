@@ -3,5 +3,5 @@ Bibliography
 ==============================================
 
 .. bibliography:: larch.bib
-   :cited:
+   :filter: cited
    :style: authorlist
