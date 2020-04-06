@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -77,9 +77,10 @@
 <li><a class="reference internal" href="#athena-project-files">9.2. Athena Project Files</a><ul>
 <li><a class="reference internal" href="#reading-athena-project-files">9.2.1. Reading Athena Project Files</a></li>
 <li><a class="reference internal" href="#creating-and-writing-to-athena-project-files">9.2.2. Creating and Writing to Athena Project Files</a></li>
+<li><a class="reference internal" href="#converting-athena-project-files-to-hdf5">9.2.3. Converting Athena Project Files to HDF5</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-hdf5-files">9.3. Using HDF5 Files</a></li>
+<li><a class="reference internal" href="#reading-hdf5-files">9.3. Reading HDF5 Files</a></li>
 <li><a class="reference internal" href="#reading-netcdf-files">9.4. Reading NetCDF Files</a></li>
 <li><a class="reference internal" href="#reading-tiff-images">9.5. Reading TIFF Images</a></li>
 <li><a class="reference internal" href="#working-with-epics-channel-access">9.6. Working with Epics Channel Access</a></li>
@@ -112,7 +113,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -396,9 +397,36 @@ Python list of groups for each group in the Athena Project.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="converting-athena-project-files-to-hdf5">
+<h3><span class="section-number">9.2.3. </span>Converting Athena Project Files to HDF5<a class="headerlink" href="#converting-athena-project-files-to-hdf5" title="Permalink to this headline">¶</a></h3>
+<p>An Athena Project File (.prj) can be easily converted to HDF5 (.h5) with the <a class="reference internal" href="#_io.athena_to_hdf5" title="_io.athena_to_hdf5"><code class="xref py py-func docutils literal notranslate"><span class="pre">athena_to_hdf5()</span></code></a>.</p>
+<dl class="function">
+<dt id="_io.athena_to_hdf5">
+<code class="sig-prename descclassname">_io.</code><code class="sig-name descname">athena_to_hdf5</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">fileout=None</em>, <em class="sig-param">overwrite=False</em>, <em class="sig-param">match=None</em>, <em class="sig-param">do_preedge=True</em>, <em class="sig-param">do_bkg=True</em>, <em class="sig-param">do_fft=True</em>, <em class="sig-param">use_hashkey=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_io.athena_to_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert read an Athena Project File to HDF5</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – name of Athena Project file</p></li>
+<li><p><strong>fileout</strong> – name of the HDF5 file [None -&gt; filename_root.h5]</p></li>
+<li><p><strong>overwrite</strong> – bool, whether to overwrite existing outputfile</p></li>
+<li><p><strong>match</strong> – string pattern used to limit the imported groups (see Note)</p></li>
+<li><p><strong>do_preedge</strong> – bool, whether to do pre-edge subtraction</p></li>
+<li><p><strong>do_bkg</strong> – bool, whether to do XAFS background subtraction</p></li>
+<li><p><strong>do_fft</strong> – bool, whether to do XAFS Fast Fourier transform</p></li>
+<li><p><strong>use_hashkey</strong> – bool, whether to use Athena’s hash key as the group name, instead of the Athena label.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
-<div class="section" id="using-hdf5-files">
-<h2><span class="section-number">9.3. </span>Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="reading-hdf5-files">
+<h2><span class="section-number">9.3. </span>Reading HDF5 Files<a class="headerlink" href="#reading-hdf5-files" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 “metadata” about the data, and can be explored with a variety of tools.
@@ -607,7 +635,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

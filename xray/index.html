@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -101,7 +101,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -125,15 +125,15 @@ cross-sections, elastic scattering terms, and anomalous scattering factors.
 The second category allows these elemental properties to be applied to
 common compounds by name or by chemical formula.</p>
 <p>Much of the X-ray spectroscopic data comes from the compilation of Elam <em>et
-al</em> <span class="bibtex" id="id1">[Elam_etal]</span>.  The core-hole widths for excited electronic levels
-comes from Keski-Rahkonen and Krause <span class="bibtex" id="id2">[Keski_Krause]</span> and Krause and
-Oliver <span class="bibtex" id="id3">[Krause_Oliver]</span>, while elastic X-ray scattering data,
+al</em> <a class="bibtex reference internal" href="#elam-etal" id="id1">[Elam, Ravel, and Sieber (2002)]</a>.  The core-hole widths for excited electronic levels
+comes from Keski-Rahkonen and Krause <a class="bibtex reference internal" href="#keski-krause" id="id2">[Keski-Rahkonen and Krause (1974)]</a> and Krause and
+Oliver <a class="bibtex reference internal" href="#krause-oliver" id="id3">[Krause and Oliver (1979)]</a>, while elastic X-ray scattering data,
 <span class="math notranslate nohighlight">\(f_0(q)\)</span>,is derived from Waasmaier and Kirfel
-<span class="bibtex" id="id4">[Waasmaier_Kirfel]</span>.  Anomalous cross-sections are available as based
-on the work of Cromer and Liberman <span class="bibtex" id="id5">[Cromer_Liberman]</span>, using the
-implementation of Brennan and Cowan <span class="bibtex" id="id6">[Brennan_Cowan]</span>.  In addition,
+<a class="bibtex reference internal" href="#waasmaier-kirfel" id="id4">[Waasmaier and Kirfel (1995)]</a>.  Anomalous cross-sections are available as based
+on the work of Cromer and Liberman <a class="bibtex reference internal" href="#cromer-liberman" id="id5">[Cromer and Liberman (1981)]</a>, using the
+implementation of Brennan and Cowan <a class="bibtex reference internal" href="#brennan-cowan" id="id6">[Brennan and Cowan (1992)]</a>.  In addition,
 values for absorption cross-sections and anomalous X-ray scattering factors
-from Chantler <span class="bibtex" id="id7">[Chantler]</span> (as from
+from Chantler <a class="bibtex reference internal" href="#chantler" id="id7">[Chanter (2000)]</a> (as from
 <a class="reference external" href="http://www.nist.gov/pml/data/ffast/index.cfm">http://www.nist.gov/pml/data/ffast/index.cfm</a>) are available.  Except for
 the anomalous cross-section data from Cromer and Liberman (which is
 implemented using the Fortran routine by Brennan and Cowan with slight
@@ -866,6 +866,31 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
 
 <div class="math notranslate nohighlight">
 \[n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}\]</div>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-xray/index-0"><dl class="citation">
+<dt class="bibtex label" id="elam-etal"><span class="brackets"><a class="fn-backref" href="#id1">Elam, Ravel, and Sieber (2002)</a></span></dt>
+<dd><p>W. T. Elam, B. D. Ravel, and J. R. Sieber. A new atomic database for x-ray spectroscopic calculations. <em>Radiation Physics and Chemistry</em>, 63(2):121–128, February 2002. <a class="reference external" href="https://doi.org/10.1016/S0969-806X(01)00227-4">doi:10.1016/S0969-806X(01)00227-4</a>.</p>
+</dd>
+<dt class="bibtex label" id="keski-krause"><span class="brackets"><a class="fn-backref" href="#id2">Keski-Rahkonen and Krause (1974)</a></span></dt>
+<dd><p>O. Keski-Rahkonen and M. O. Krause. Total and partial atomic-level widths. <em>Atomic Data and Nuclear Data Tables</em>, 14(2):139–146, 1974. <a class="reference external" href="https://doi.org/10.1016/S0092-640X(74)80020-3">doi:10.1016/S0092-640X(74)80020-3</a>.</p>
+</dd>
+<dt class="bibtex label" id="krause-oliver"><span class="brackets"><a class="fn-backref" href="#id3">Krause and Oliver (1979)</a></span></dt>
+<dd><p>M. O. Krause and J. H. Oliver. Natural widths of atomic k and l levels, ka x-ray lines and several kll auger lines. <em>Journal of Physical and Chemical Reference Data</em>, 8:329, 1979. <a class="reference external" href="https://doi.org/10.1063/1.555595">doi:10.1063/1.555595</a>.</p>
+</dd>
+<dt class="bibtex label" id="waasmaier-kirfel"><span class="brackets"><a class="fn-backref" href="#id4">Waasmaier and Kirfel (1995)</a></span></dt>
+<dd><p>D. Waasmaier and A. Kirfel. New analytical scattering factor functions for free atoms and ions. <em>Acta Crystallographica A</em>, 51:416–431, 1995. <a class="reference external" href="https://doi.org/10.1107/S0108767394013292">doi:10.1107/S0108767394013292</a>.</p>
+</dd>
+<dt class="bibtex label" id="cromer-liberman"><span class="brackets"><a class="fn-backref" href="#id5">Cromer and Liberman (1981)</a></span></dt>
+<dd><p>D. T. Cromer and D. A. Liberman. Anomalous dispersion calculations near to and on the long-wavelength side of an absorption-edge. <em>Acta Crystallographica A</em>, 37:267–268, 1981. <a class="reference external" href="https://doi.org/10.1107/S0567739481000600">doi:10.1107/S0567739481000600</a>.</p>
+</dd>
+<dt class="bibtex label" id="brennan-cowan"><span class="brackets"><a class="fn-backref" href="#id6">Brennan and Cowan (1992)</a></span></dt>
+<dd><p>S. Brennan and P. L. Cowan. A suite of programs for calculating x-ray absorption, reflection, and diffraction performance for a variety of materials at arbitrary wavelengths. <em>Review of Scientific Instruments</em>, 63(1):850–853, 1992. <a class="reference external" href="https://doi.org/10.1063/1.1142625">doi:10.1063/1.1142625</a>.</p>
+</dd>
+<dt class="bibtex label" id="chantler"><span class="brackets"><a class="fn-backref" href="#id7">Chanter (2000)</a></span></dt>
+<dd><p>C. T. Chanter. Detailed tabulation of atomic form factors, photoelectric absorption and scattering cross section, and mass attenuation coefficients in the vicinity of absorption edges in the soft X-ray (Z=30-36, Z=60-89, E=0.1 keV-10 keV), addressing convergence issues of earlier work. <em>Journal of Physical and Chemical Reference Data</em>, 29(4):597–1048, JUL-AUG 2000. <a class="reference external" href="https://doi.org/10.1063/1.1321055">doi:10.1063/1.1321055</a>.</p>
+</dd>
+</dl>
+</p>
 </div>
 </div>
 
@@ -898,7 +923,7 @@ factor <span class="math notranslate nohighlight">\(f_j\)</span>.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

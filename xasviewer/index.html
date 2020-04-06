@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -107,7 +107,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ special emphasis on helping users with XANES analysis.  Current features
 <li><p>XAFS pre-edge removal and normalization.</p></li>
 <li><p>visualization of normalization steps.</p></li>
 <li><p>data merging</p></li>
-<li><p>data deglitching, and energy recalibration</p></li>
+<li><p>data de-glitching, and energy recalibration</p></li>
 <li><p>data smoothing, rebinning, and deconvolution.</p></li>
 <li><p>over-absorption corrections (for XANES)</p></li>
 <li><p>linear combination analysis of spectra.</p></li>
@@ -157,7 +157,7 @@ more specialized XAFS data processing tasks, each on a separate Notebook
 tab.  These will be covered in more detail in sections below. The default
 panel shown is for pre-edge subtraction and normalization
 (<a class="reference internal" href="#xasviewer-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>), with other available tabs for fitting pre-edge
-peaks (<a class="reference internal" href="#xasviewer-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>), Linear Combinaton Analysis
+peaks (<a class="reference internal" href="#xasviewer-peakfit"><span class="std std-ref">Pre-edge peak fitting</span></a>), Linear Combination Analysis
 (<a class="reference internal" href="#xasviewer-lincombo"><span class="std std-ref">Linear Combination Analysis</span></a>),
 Principal Component Analysis (<a class="reference internal" href="#xasviewer-pca"><span class="std std-ref">Principal Component and Non-negative Factor Analysis</span></a>),
 Advanced Linear Regression (<span class="xref std std-ref">xasviewer_regression</span>),
@@ -204,7 +204,7 @@ itself.  This feature of the plotting window means that XAS Viewer may draw
 several different traces on the same plot window and allow (or even expect)
 you to turn some of them on or off interactively to better view the
 different components being shown.  This can be especially useful for
-comparing XANES spectra or for inspecting the results of peakfitting.</p>
+comparing XANES spectra or for inspecting the results of peak fitting.</p>
 <p>Also note that many of the entries for numbers on the form panels in XAS
 Viewer have a button with a ‘pin’ icon <a class="reference internal" href="../_images/pin_icon.png"><img alt="pin" src="../_images/pin_icon.png" style="width: 18pt; height: 18pt;" /></a>.  Clicking anywhere on the
 plot window will remember the X and Y values of the last point clicked, and
@@ -242,12 +242,12 @@ XAS Viewer, contact us and we will try to help.</p>
 data corrections.  These include speciality dialogs for:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>copying, removing, and renaming data grouos.</p></li>
+<li><p>copying, removing, and renaming data groups.</p></li>
 <li><p>merging of data groups – summing spectra.</p></li>
 <li><p>de-glitching spectra.</p></li>
 <li><p>recalibrating spectra.</p></li>
 <li><p>smoothing of noisy spectra.</p></li>
-<li><p>rebinning of spectra onto a “normal” XAFS energy grid.</p></li>
+<li><p>re-binning of spectra onto a “normal” XAFS energy grid.</p></li>
 <li><p>de-convolving spectra.</p></li>
 <li><p>correcting over-absorption in fluorescence XANES spectra.</p></li>
 </ul>
@@ -260,7 +260,7 @@ data corrections.  These include speciality dialogs for:</p>
 </div>
 <div style="width: 32%" class="subfigure align-center" id="id5">
 <span id="fig-xasviewer-dialog-deglitch"></span><a class="reference external image-reference" href="../_images/XASViewer_deglitch_dialog.png"><img alt="../_images/XASViewer_deglitch_dialog.png" src="../_images/XASViewer_deglitch_dialog.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 5.2.2 </span><span class="caption-text">Deglitching dialog</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 5.2.2 </span><span class="caption-text">De-glitching dialog</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 32%" class="subfigure align-center" id="id6">
 <span id="fig-xasviewer-dialog-smooth"></span><a class="reference external image-reference" href="../_images/XASViewer_smooth_dialog.png"><img alt="../_images/XASViewer_smooth_dialog.png" src="../_images/XASViewer_smooth_dialog.png" style="width: 100%;" /></a>
@@ -268,15 +268,15 @@ data corrections.  These include speciality dialogs for:</p>
 </div>
 <div style="width: 32%" class="subfigure align-center" id="id7">
 <span id="fig-xasviewer-dialog-deconv"></span><a class="reference external image-reference" href="../_images/XASViewer_deconvolve_dialog.png"><img alt="../_images/XASViewer_deconvolve_dialog.png" src="../_images/XASViewer_deconvolve_dialog.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 5.2.4 </span><span class="caption-text">Deconvolution   dialog.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 5.2.4 </span><span class="caption-text">Deconvolution dialog.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 32%" class="subfigure align-center" id="id8">
 <span id="fig-xasviewer-dialog-rebin"></span><a class="reference external image-reference" href="../_images/XASViewer_rebin_dialog.png"><img alt="../_images/XASViewer_rebin_dialog.png" src="../_images/XASViewer_rebin_dialog.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 5.2.5 </span><span class="caption-text">Energy rebinning dialog.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 5.2.5 </span><span class="caption-text">Energy re-binning dialog.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 32%" class="subfigure align-center" id="id9">
 <span id="fig-xasviewer-dialog-overabs"></span><a class="reference external image-reference" href="../_images/XASViewer_overabsorption_dialog.png"><img alt="../_images/XASViewer_overabsorption_dialog.png" src="../_images/XASViewer_overabsorption_dialog.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 5.2.6 </span><span class="caption-text">Over-absortion correction dialog</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 5.2.6 </span><span class="caption-text">Over-absorption correction dialog</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 </div></div>
 <div class="section" id="pre-edge-subtraction-and-normalization">
@@ -358,13 +358,13 @@ pre-edge peaks for fitting a baseline.</span><a class="headerlink" href="#id10" 
 <div style="width: 45%" class="subfigure align-center" id="id11">
 <span id="fig-xasviewer-3b"></span><a class="reference external image-reference" href="../_images/XASViewer_prepeaks_baseline_plot.png"><img alt="../_images/XASViewer_prepeaks_baseline_plot.png" src="../_images/XASViewer_prepeaks_baseline_plot.png" style="width: 60%;" /></a>
 <p class="caption"><span class="caption-number">Figure 5.4.2 </span><span class="caption-text">Plot of pre-edge peaks with baseline.  The grey vertical lines show the
-fit range and blue cicrles show the boundaries of the pre-edge peak
+fit range and blue circles show the boundaries of the pre-edge peak
 range ignored in the baseline fit. The pink line shows the centroid of
 the pre-edge peaks after removal of the baseline.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
 </div>
 </div><p id="fig-xasviewer3">We will allow the baseline to be refined when fitting the peaks, so it does
 not need to be modeled perfectly, but it is helpful to get a decent fit to
-the baseline.  Once this baseline is satisfactorally modeled, you can add
+the baseline.  Once this baseline is satisfactorily modeled, you can add
 functions to model the pre-edge peaks themselves.  Selecting one of the
 “Peak Models” (typically Gaussian, Lorentzian, or Voigt) will show a new
 tab in the “model components area” in the lower part of the form.  Since
@@ -423,7 +423,7 @@ options and a button for the plot of data and fit.</p>
 for the fitting parameters and for a number of <em>derived</em> parameters,
 including <cite>fit_centroid</cite> that is the (area-weighted) centroid of the
 functions that comprise the pre-edge peaks (not including the baseline) and
-the full-width-at-half-maximumn and height of each of the peaks (note that
+the full-width-at-half-maximum and height of each of the peaks (note that
 <cite>amplitude</cite> represents the area of the unit-normalized peak and <cite>height</cite>
 represents the maximum height for a peak).  You can click on the button
 labeled “Update Model with these Values” to put these best-fit values back
@@ -515,12 +515,12 @@ combination of other spectra.</p>
 <p>Principal Component Analysis (PCA) is one of a family of numerical
 techniques to reduce the number of variable components in a set of data.
 There are many related techniques and procedures, and quite a bit of
-nomeclature and jargon around the methods.</p>
+nomenclature and jargon around the methods.</p>
 <p>In essence, all these methods are aimed at taking a large set of similar
 data and trying to determine how many independent components make up that
 larger dataset.    That is, the only question PCA and related methods can
 ever really answer is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>how many indepedent spectra make up my collection of spectra?
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>how many independent spectra make up my collection of spectra?
 </pre></div>
 </div>
 <p>It is important to note that PCA cannot tell you what those independent
@@ -567,7 +567,7 @@ the results of PCA to ask:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

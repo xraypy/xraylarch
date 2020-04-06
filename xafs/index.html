@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -92,7 +92,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -104,13 +104,13 @@
   <div class="section" id="xafs-analysis">
 <span id="xafs-chapter"></span><h1><span class="section-number">12. </span>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit <span class="bibtex" id="id1">[ifeffit]</span>,
+was originally conceived to be version 2 of Ifeffit <a class="bibtex reference internal" href="#ifeffit" id="id1">[Newville (2001)b]</a>,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
 functionality of Ifeffit is available in Larch.  There may still be a few
 minor features of Ifeffit that are not yet available, and some
-functionality to port from Athena <span class="bibtex" id="id2">[athena]</span> back to the core
+functionality to port from Athena <a class="bibtex reference internal" href="#athena" id="id2">[Ravel and Newville (2005)]</a> back to the core
 library.  In addition, there are some minor differences in implementation
 details, so that slightly different numerical results may be obtained.
 Importantly, several features are available with Larch that were not
@@ -217,6 +217,16 @@ is in the default search path.</p>
 </li>
 </ul>
 </div>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-xafs/index-0"><dl class="citation">
+<dt class="bibtex label" id="ifeffit"><span class="brackets"><a class="fn-backref" href="#id1">Newville (2001)b</a></span></dt>
+<dd><p>M Newville. Ifeffit: interactive xafs analysis and feff fitting. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):322–324, MAR 2001. <a class="reference external" href="https://doi.org/10.1107/S0909049500016964">doi:10.1107/S0909049500016964</a>.</p>
+</dd>
+<dt class="bibtex label" id="athena"><span class="brackets"><a class="fn-backref" href="#id2">Ravel and Newville (2005)</a></span></dt>
+<dd><p>B Ravel and M Newville. ATHENA, ARTEMIS, HEPHAESTUS: data analysis for X-ray absorption spectroscopy using IFEFFIT. <em>Journal of Synchrotron Radiation</em>, 12(Part 4):537–541, 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049505012719">doi:10.1107/S0909049505012719</a>.</p>
+</dd>
+</dl>
+</p>
 </div>
 
 
@@ -248,7 +258,7 @@ is in the default search path.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

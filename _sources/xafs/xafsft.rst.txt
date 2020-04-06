@@ -504,7 +504,7 @@ would result in the following results:
 .. _fig-xafsft_winsb:
 
 .. figure::  ../_images/xft_example4.png
-    :target: ../_images/xft_example4.psng
+    :target: ../_images/xft_example4.png
     :width: 100%
 
 .. subfigend::

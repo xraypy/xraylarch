@@ -672,3 +672,9 @@ values in a fit of XAFS data to such a sum of paths.
    `Feff85exafs`.  These all refer to the same project and code, which is
    based on but distinct from the Feff 8 and 9 from the University of
    Washington group in that the free version can calculate only EXAFS.
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+    :filter: cited and ({'xafs/feffpath'} >= docnames)
+    :style: authorlist

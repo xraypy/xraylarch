@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -102,7 +102,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -118,12 +118,12 @@ contributions of a waveform into both time and frequency (or, for EXAFS,
 <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
 applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
-Munoz <em>et al</em> <span class="bibtex" id="id1">[munoz_wavelet]</span> being one early application.   The
+Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" id="id1">[Munoz, Argoul, and Farges (2003)]</a> being one early application.   The
 <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
 <h2><span class="section-number">12.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
-<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <span class="bibtex" id="id2">[munoz_wavelet]</span>
+<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" id="id2">[Munoz, Argoul, and Farges (2003)]</a>
 is implemented as the function <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
 <dl class="function">
 <dt id="cauchy_wavelet">
@@ -242,7 +242,14 @@ and real part on the right hand panel.</span></p>
 <p class="caption"><span class="caption-text">The Cauchy Wavelet transform projected to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
 space.  In the left hand panel, the original EXAFS <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span>
 is shown for comparison.</span></p>
-<span class="target" id="fig-xafswt3"></span></div></div>
+</div><p class="rubric" id="fig-xafswt3">References</p>
+<p id="bibtex-bibliography-xafs/wavelets-0"><dl class="citation">
+<dt class="bibtex label" id="munoz-wavelet"><span class="brackets">Munoz, Argoul, and Farges (2003)</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>)</span></dt>
+<dd><p>M. Munoz, P. Argoul, and F. Farges. Continuous Cauchy wavelet transform analyses of EXAFS spectra: A qualitative approach. <em>American Mineralogist</em>, 88(4):694–700, 2003.</p>
+</dd>
+</dl>
+</p>
+</div>
 </div>
 
 
@@ -275,7 +282,7 @@ is shown for comparison.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

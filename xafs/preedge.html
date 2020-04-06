@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -112,7 +112,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -324,8 +324,8 @@ subtracts that curve from it.</p>
 <div class="section" id="the-mback-algorithm">
 <h2><span class="section-number">12.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
-Weng <span class="bibtex" id="id1">[Weng]</span> with an option of using the modification proposed by
-Lee <em>et al</em> <span class="bibtex" id="id2">[lee-xiang]</span>.  In MBACK, the data are matched to the tabulated
+Weng <a class="bibtex reference internal" href="#weng" id="id1">[Weng, Waldo, and Penner-Hahn (2005)]</a> with an option of using the modification proposed by
+Lee <em>et al</em> <a class="bibtex reference internal" href="#lee-xiang" id="id2">[Lee et al. (2009)]</a>.  In MBACK, the data are matched to the tabulated
 values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, <span class="math notranslate nohighlight">\(f''(E)\)</span>.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
@@ -353,7 +353,7 @@ adjusted by breaking the minimization function into two regions: the
 <span class="math notranslate nohighlight">\(n_1\)</span> data points below the absorption edge and the <span class="math notranslate nohighlight">\(n_2\)</span>
 data points above the absorption edge.  <span class="math notranslate nohighlight">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
-<p>If this is used in publication, a citation should be given to Weng <span class="bibtex" id="id3">[Weng]</span>.</p>
+<p>If this is used in publication, a citation should be given to Weng <a class="bibtex reference internal" href="#weng" id="id3">[Weng, Waldo, and Penner-Hahn (2005)]</a>.</p>
 <dl class="function">
 <dt id="mback">
 <code class="sig-name descname">mback</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
@@ -371,7 +371,7 @@ the total number of data points.</p>
 <li><p><strong>emax</strong> – the maximum energy to include in the fit.  If None, use last energy point</p></li>
 <li><p><strong>whiteline</strong> – a margin around the edge to exclude from the fit.  If not None, must be a positive integer</p></li>
 <li><p><strong>leexiang</strong> – flag for using the use the Lee&amp;Xiang extension [False]</p></li>
-<li><p><strong>tables</strong> – ‘CL’ (Cromer-Liberman) or ‘Chantler’, [‘CL’]</p></li>
+<li><p><strong>tables</strong> – ‘CL’ (Cromer-Liberman) or ‘Chantler’, [‘Chantler’]</p></li>
 <li><p><strong>fit_erfc</strong> – if True, fit the amplitude and width of the complementary error function [False]</p></li>
 <li><p><strong>return_f1</strong> – if True, put f1 in the output group [False]</p></li>
 <li><p><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p></li>
@@ -521,7 +521,7 @@ group:</p>
 <td><p>normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> from this method/</p></td>
 </tr>
 <tr class="row-even"><td><p>mback_mu</p></td>
-<td><p>tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span> scalerd and pre-edge added</p></td>
+<td><p>tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span> scaler and pre-edge added</p></td>
 </tr>
 <tr class="row-odd"><td><p>mback_params</p></td>
 <td><p>params group for the MBACK minimization function</p></td>
@@ -535,7 +535,7 @@ group:</p>
 <div class="section" id="pre-edge-baseline-subtraction">
 <h2><span class="section-number">12.2.5. </span>Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this headline">¶</a></h2>
 <p>A common application of XAFS is the analysis of “pre-edge peaks” of
-matransition metal oxides to determine oxidation state and molecular
+transition metal oxides to determine oxidation state and molecular
 configuration. These peaks sit just below the main absorption edge
 (typically, due to metal <em>4p</em> electrons) of a main <em>K</em> edge, and are due to
 overlaps of the metal <em>d</em>-electrons and oxygen <em>p</em>-electrons, and are often
@@ -687,18 +687,18 @@ different effect from self-absorption in X-ray fluorescence analysis.  In
 fact, the effect is more like <em>extinction</em> in that the fluorescence
 probability approaches a constant, with no XAFS oscillations, as the total
 absorption coefficient is dominated by the element of interest.
-Over-absorption most stongly effects the XAFS oscillation amplitude, and so
+Over-absorption most strongly effects the XAFS oscillation amplitude, and so
 coordination number and mean-square displacement parameters in the EXAFS,
 and edge-position and pre-edge peak height for XANES.  Fortunately, the
 effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
-(<span class="bibtex" id="id4">[fluo]</span>) can be used.  The algorithm is contained in the
+(<a class="bibtex reference internal" href="#fluo" id="id4">[Haskel (1999)]</a>) can be used.  The algorithm is contained in the
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
 <dl class="function">
 <dt id="fluo_corr">
 <code class="sig-name descname">fluo_corr</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">formula</em>, <em class="sig-param">elem</em>, <em class="sig-param">group=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">anginp=45</em>, <em class="sig-param">angout=45</em>, <em class="sig-param">**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
-XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
+XAFS using the FLUO algorithm (suitable for XANES, but questionable for
 EXAFS).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -728,9 +728,9 @@ normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> correcte
 <div class="section" id="spectral-deconvolution">
 <h2><span class="section-number">12.2.7. </span>Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
 <p>In order to readily compare XAFS data from different sources, it is
-sometimes necessary to considert the energy resolution used to collect each
+sometimes necessary to consider the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
-contributions from the x-ray sourse, instrumental broadening from the x-ray
+contributions from the x-ray sources, instrumental broadening from the x-ray
 optics (especially the X-ray monochromator used in most measurements), and
 the intrinsic lifetime of the excited core electronic level.  For data
 measured in X-ray fluorescence or electron emission mode, the energy
@@ -753,19 +753,19 @@ of XAFS spectra.  For example, one may need to reduce the resolution to
 match data measured with degraded resolution.  This can be done with
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> which convolves an XAFS spectrum with either a
 Gaussian or Lorentzian function with a known energy width.  Note that
-convolving with a Gaussian is less dramatic than using a Lorenztian, and
+convolving with a Gaussian is less dramatic than using a Lorentzian, and
 usually better reflects the effect of an incident X-ray beam with degraded
 resolution due to source or monochromator.</p>
 <p>One may also want to try to improve the energy resolution of an XAFS
 spectrum, either to compare it to data taken with higher resolution or to
 better identify and enumerate peaks in a XANES spectrum.  This can be done
-with <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> function which deconvolves either a Gaussian or
+with <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> function which de-convolves either a Gaussian or
 Lorentzian function from an XAFS spectrum.  This usually requires fairly
 good data.  Whereas a Gaussian most closely reflects broadening from the
 X-ray source, broadening due to the natural energy width of the core levels
-is better described by a Lorenztian.   Therefore, to try to reduce the
+is better described by a Lorentzian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
-fluorescence data, deconvolving with a Lorenztian is often better.</p>
+fluorescence data, de-convolving with a Lorentzian is often better.</p>
 <div class="section" id="xas-convolve">
 <h3><span class="section-number">12.2.7.1. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
@@ -890,7 +890,7 @@ be:</p>
 <p class="caption"><span class="caption-number">Figure 12.2.7.1 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math notranslate nohighlight">\(\rm Fe_2O_3\)</span>.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>To de-convolve an XAFS spectrum using the energy width of the core level,
-we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xray.core_width()</span></code></a> functiion, as shown below for Cu metal.
+we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xray.core_width()</span></code></a> function, as shown below for Cu metal.
 We can also test that the deconvolution is correct by using
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
 data.  This can be done with:</p>
@@ -978,7 +978,20 @@ noticeable improvement in amplitude of the XAFS.</p>
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> for <span class="math notranslate nohighlight">\(L_{\rm III}\)</span> XAFS of Pt metal.
 <span class="math notranslate nohighlight">\(L_{\rm III}\)</span> XAFS of Pt metal, normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> for raw
 data and the spectrum deconvolved by the energy of its core level.</span></p>
-<span class="target" id="fig_xafs_deconv3"></span></div></div>
+</div><p class="rubric" id="fig_xafs_deconv3">References</p>
+<p id="bibtex-bibliography-xafs/preedge-0"><dl class="citation">
+<dt class="bibtex label" id="weng"><span class="brackets">Weng, Waldo, and Penner-Hahn (2005)</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id3">2</a>)</span></dt>
+<dd><p>Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. <em>Journal of Synchrotron Radiation</em>, 12(4):506–510, Jul 2005. <a class="reference external" href="https://doi.org/10.1107/S0909049504034193">doi:10.1107/S0909049504034193</a>.</p>
+</dd>
+<dt class="bibtex label" id="lee-xiang"><span class="brackets"><a class="fn-backref" href="#id2">Lee et al. (2009)</a></span></dt>
+<dd><p>Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. <em>The Astrophysical Journal</em>, 702(2):970, 2009. URL: <a class="reference external" href="http://stacks.iop.org/0004-637X/702/i=2/a=970">http://stacks.iop.org/0004-637X/702/i=2/a=970</a>, <a class="reference external" href="https://doi.org/0004-637X/702/i=2/a=970">doi:0004-637X/702/i=2/a=970</a>.</p>
+</dd>
+<dt class="bibtex label" id="fluo"><span class="brackets"><a class="fn-backref" href="#id4">Haskel (1999)</a></span></dt>
+<dd><p>D. Haskel. Fluo. 1999. URL: <a class="reference external" href="{http://www.aps.anl.gov/~haskel/fluo.html}">{http://www.aps.anl.gov/~haskel/fluo.html}</a>.</p>
+</dd>
+</dl>
+</p>
+</div>
 </div>
 </div>
 
@@ -1012,7 +1025,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

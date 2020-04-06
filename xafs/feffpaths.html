@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -114,7 +114,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -128,8 +128,8 @@
 <p>For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using Feff.  Being able to run Feff and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of Feff (<span class="bibtex" id="id1">[feff6_Rehr]</span>,
-<span class="bibtex" id="id2">[feff6_siz]</span>, <span class="bibtex" id="id3">[RehrAlbers_RMP]</span>) is beyond the scope of this
+spectra.  While a complete description of Feff (<a class="bibtex reference internal" href="../biblio.html#feff6-rehr" id="id1">[Rehr et al. (1991)]</a>,
+<a class="bibtex reference internal" href="../biblio.html#feff6-siz" id="id2">[Zabinsky et al. (1995)]</a>, <a class="bibtex reference internal" href="../biblio.html#rehralbers-rmp" id="id3">[Rehr and Albers (2000)]</a>) is beyond the scope of this
 documentation, here we describe how to read the results from Feff into
 Larch.</p>
 <p>The funcionality of Feff within Larch has been evolving to better
@@ -684,8 +684,8 @@ set of paths – that is, a histogram of paths.</p>
 <p>The value for <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff (see <span class="bibtex" id="id5">[feff6_Rehr]</span>,
-<span class="bibtex" id="id6">[Sevillano]</span> and <span class="bibtex" id="id7">[RehrAlbers_RMP]</span>) Larch provides two functions
+up a full EXAFS spectra.  Borrowing from Feff (see <a class="bibtex reference internal" href="../biblio.html#feff6-rehr" id="id5">[Rehr et al. (1991)]</a>,
+<a class="bibtex reference internal" href="../biblio.html#sevillano" id="id6">[Sevillano, Meuth, and Rehr (1979)]</a> and <a class="bibtex reference internal" href="../biblio.html#rehralbers-rmp" id="id7">[Rehr and Albers (2000)]</a>) Larch provides two functions
 that use simple models to calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> for a Path.  Both
 functions, <a class="reference internal" href="#sigma2_eins" title="sigma2_eins"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_eins()</span></code></a> and <a class="reference internal" href="#sigma2_debye" title="sigma2_debye"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_debye()</span></code></a> take arguments of
 sample temperature, a characteristic temperature, and a FeffPath, and
@@ -967,6 +967,8 @@ based on but distinct from the Feff 8 and 9 from the University of
 Washington group in that the free version can calculate only EXAFS.</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p id="bibtex-bibliography-xafs/feffpaths-0"></p>
 </div>
 </div>
 
@@ -1000,7 +1002,7 @@ Washington group in that the free version can calculate only EXAFS.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

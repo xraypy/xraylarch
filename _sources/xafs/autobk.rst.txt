@@ -407,3 +407,9 @@ As an example:
 
 
 .. literalinclude:: ../../examples/xafs/doc_autobk4.lar
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+    :filter: cited and ({'xafs/autobk'} >= docnames)
+    :style: authorlist

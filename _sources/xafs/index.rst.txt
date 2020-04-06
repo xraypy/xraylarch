@@ -34,7 +34,6 @@ is in the default search path.
 
 :synopsis: Basic XAFS Functions
 
-
 .. toctree::
    :maxdepth: 2
 
@@ -47,3 +46,9 @@ is in the default search path.
    feffpaths
    feffit
    diffkk
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+    :filter: cited and ({'xafs/index'} >= docnames)
+    :style: authorlist

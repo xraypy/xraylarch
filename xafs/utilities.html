@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -124,7 +124,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -138,7 +138,7 @@
 <p>As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
-out several output values, including both scalaras and arrays.  While
+out several output values, including both scalars and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.</p>
 <div class="section" id="naming-conventions-for-xafs-arrays">
@@ -149,7 +149,7 @@ set of XAFS data is held within a Group, then the Group members named
 <cite>energy</cite> and <cite>k</cite> and <cite>chi</cite> can be assumed to have the same standard meaning
 for all groups of XAFS Data.  To make this most common usage easy, all of
 the XAFS functions follow a couple conventions for working more easily with
-Groups tht can work on arbitrary arrays of data, but assume that they will
+Groups that can work on arbitrary arrays of data, but assume that they will
 write output values to a Group.  In addition, the XAFS functions can
 usually just be given a Group that follows the expected XAFS naming
 convention.  This is not rigidly enforced, and is not exclusive (that is,
@@ -343,7 +343,7 @@ discussed above but is even easier to use.</p>
 most work will have these arrays in a single group with array names that
 follows the conventions above.  As an example, the most general use of the
 <a class="reference internal" href="autobk.html#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function takes an array of energy as the first argument, an
-array of mu as the second argument, and supplyng an output group for
+array of mu as the second argument, and supplying an output group for
 placing all the arrays and data calculated within the function.  That is,
 the most general use would look like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autobk</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">....</span><span class="p">)</span>
@@ -738,7 +738,7 @@ wavenumber can be a single number or array of numbers.</p>
 </dl>
 <p>The method uses an XAFS Fourier transform, and many of arguments
 (<strong>kmin</strong>, <strong>kmax</strong>, etc) are identical to those of <a class="reference internal" href="xafsft.html#xftf" title="xftf"><code class="xref py py-func docutils literal notranslate"><span class="pre">xftf()</span></code></a>.</p>
-<p>This function follows the First Argument Group convention with arrarys named <cite>k</cite> and <cite>chi</cite>.
+<p>This function follows the First Argument Group convention with arrays named <cite>k</cite> and <cite>chi</cite>.
 The following outputs are written to the supplied <strong>group</strong> (or <cite>_sys.xafsGroup</cite> if
 <strong>group</strong> is not supplied):</p>
 <blockquote>
@@ -818,7 +818,7 @@ small, the estimate may not be that bad.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
     </div>
   </body>
 </html>

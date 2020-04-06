@@ -151,7 +151,7 @@ The fit gives a report (ignoring correlations) like this::
 and the plots of the resulting best-fit and components look like these:
 
 .. subfigstart::
-   
+
 .. _fig-fit2:
 
 .. figure:: ../_images/fit_example2a1.png
@@ -165,15 +165,15 @@ and the plots of the resulting best-fit and components look like these:
     :target: ../_images/fit_example2a2.png
     :width: 100%
     :align: right
-	    
+
     Fit and individual components.
 
 .. subfigend::
     :width: 0.45
     :label: fig-fit2combined
-	    
+
     Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
-    
+
 and we see the fit is pretty good.
 
 Looking more closely, however, there is a hint in the data and the residual
@@ -263,7 +263,7 @@ moved significantly, as can be seen in the plots for this fit:
 .. subfigend::
    :width: 0.45
    :label: fig-fit3comp
-    
+
     Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
     and an Error function.
 
@@ -309,7 +309,7 @@ improvement.  For completeness, the plots from this fit look like this:
 
 
 .. subfigstart::
-   
+
 .. _fig-fit4:
 
 .. figure::  ../_images/fit_example2c1.png
@@ -331,7 +331,7 @@ improvement.  For completeness, the plots from this fit look like this:
 .. subfigend::
     :width: 0.45
     :label: fig-fit4comp
-    
+
     Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
     and an Error function.
 
@@ -396,13 +396,13 @@ important component.
     :align: center
 
     Fit and residual with components *s1* and *s2*.
-    
+
 .. subfigend::
     :width: 0.45
     :label: fig-fit5comp
- 
+
     Linear Combination Fit of gold XANES in cyanobacteria, after
-    :cite:`Lengke2006`. 
+    :cite:`Lengke2006`.
 
 
 To quantitatively fit these spectra, we read in all the data, and then
@@ -517,7 +517,7 @@ The output of running this gives::
 and the output plots for the best model look like this:
 
 .. subfigstart::
-   
+
 .. _fig-fit6:
 
 .. figure::  ../_images/fit_example3c1.png
@@ -621,7 +621,7 @@ that are::
 The plots resulting from both sets of Parameters are shown:
 
 .. subfigstart::
-   
+
 .. _fig-fit7:
 
 .. figure::  ../_images/fit_example3d1.png
@@ -637,11 +637,11 @@ The plots resulting from both sets of Parameters are shown:
     :align: center
 
     Weighted contribution from individual components.
-	    
+
 .. subfigend::
     :width: 0.45
     :label: fig-fit7comp
-	    
+
     Linear Combination XANES Fit of gold components in cyanobacteria
     with species *s1*, *s2*, *s3*, and *s6*.
 
@@ -664,9 +664,9 @@ The plots resulting from both sets of Parameters are shown:
     :target: ../_images/fit_example3e2.png
     :width: 100%
     :align: center
-	    
+
     Weighted contribution from individual components.
-    
+
 .. subfigend::
     :width: 0.45
     :label: fig-fit8comp
@@ -687,3 +687,10 @@ looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
 components, with concentrations of the components very similar to the ones
 found here.
+
+
+.. rubric:: References
+
+.. bibliography:: ../larch.bib
+    :filter: cited and ({'fitting/examples'} >= docnames)
+    :style: authorlist
