@@ -56,6 +56,9 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
 
+Nnorm_choices = {None:'auto',  0:'constant', 1:'linear', 2:'quadratic', 3:'cubic'}
+Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
+
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
                 norm_method='polynomial', edge='K', atsym='?',
@@ -105,10 +108,10 @@ class XASNormPanel(TaskPanel):
         self.wids['nvict'] = Choice(panel, choices=('0', '1', '2', '3'),
                                     size=(100, -1), action=self.onNormMethod,
                                     default=0)
-        self.wids['nnorm'] = Choice(panel, choices=('constant', 'linear',
-                                                    'quadratic', 'cubic'),
+
+        self.wids['nnorm'] = Choice(panel, choices=list(Nnorm_choices.values()),
                                     size=(100, -1), action=self.onNormMethod,
-                                    default=1)
+                                    default=0)
 
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges}
@@ -173,7 +176,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('plotone_op'), dcol=1, style=RCEN)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
-        add_text('Non-XAS Data:  Scale:')
+        add_text('Non-XAS Data: Scale:')
         panel.Add(scale, dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -276,11 +279,9 @@ class XASNormPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
+
         self.skip_process = True
         if dgroup.datatype == 'xas':
-            # for k in self.wids.values():
-            #     k.Enable()
-
             self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
 
@@ -298,13 +299,14 @@ class XASNormPanel(TaskPanel):
 
             self.wids['step'].SetValue(edge_step)
             autoset_fs_increment(self.wids['step'], edge_step)
-            for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm'):
-                val = opts[attr]
+            for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
+                val = opts.get(attr, None)
                 if val is not None:
                     self.wids[attr].SetValue(val)
 
+            self.set_nnorm_widget(opts.get('nnorm'))
+
             self.wids['nvict'].SetSelection(opts['nvict'])
-            self.wids['nnorm'].SetSelection(opts['nnorm'])
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
             self.wids['auto_step'].SetValue(opts['auto_step'])
@@ -333,6 +335,17 @@ class XASNormPanel(TaskPanel):
         self._set_frozen(frozen)
         wx.CallAfter(self.unset_skip_process)
 
+    def set_nnorm_widget(self, nnorm=None):
+        if nnorm is None:
+            nnorm_str = 'auto'
+        else:
+            try:
+                nnorm = int(nnorm)
+            except ValueError:
+                nnorm = None
+            nnorm_str = Nnorm_choices.get(nnorm, 'auto')
+        self.wids['nnorm'].SetStringSelection(nnorm_str)
+
     def unset_skip_process(self):
         self.skip_process = False
 
@@ -346,7 +359,8 @@ class XASNormPanel(TaskPanel):
             if val == 0: val = None
             form_opts[attr] = val
 
-        form_opts['nnorm'] = int(self.wids['nnorm'].GetSelection())
+
+        form_opts['nnorm'] = Nnorm_names.get(self.wids['nnorm'].GetStringSelection(), None)
         form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
@@ -456,7 +470,7 @@ class XASNormPanel(TaskPanel):
         self.wids['norm1'].SetValue(0)
         self.wids['norm2'].SetValue(0)
         if nnorm is not None:
-            self.wids['nnorm'].SetSelection(nnorm)
+            self.set_nnorm_widget(nnorm)
         self.wids['norm_method'].SetSelection(0)
         self.onReprocess()
 
@@ -468,15 +482,15 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
-                try:
-                    norm2 = max(grp.energy) - grp.e0
-                    norm1 = 5.0*int(norm2/15.0)
-                    nnorm = 2
-                    if (norm2-norm1 < 350): nnorm = 1
-                    if (norm2-norm1 < 50): nnorm = 0
-                except:
-                    nnorm = 1
-                opts['nnorm'] = nnorm
+                # try:
+                #    norm2 = max(grp.energy) - grp.e0
+                #     norm1 = 5.0*int(norm2/15.0)
+                #    nnorm = 2
+                #    if (norm2-norm1 < 350): nnorm = 1
+                #    if (norm2-norm1 < 50): nnorm = 0
+                # except:
+                #    nnorm = 1
+                # opts['nnorm'] = nnorm
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
                 self.process(grp, noskip=True)
@@ -612,7 +626,7 @@ class XASNormPanel(TaskPanel):
         if dgroup is None:
             return
         self.skip_process = True
-        __conf = self.get_config(dgroup)
+        conf = self.get_config(dgroup)
         dgroup.custom_plotopts = {}
 
         form = self.read_form()
@@ -670,7 +684,10 @@ class XASNormPanel(TaskPanel):
             copts.append("z=%d" % atomic_number(form['atsym']))
             copts.append("edge='%s'" % form['edge'])
             for attr in ('pre1', 'pre2', 'nvict', 'nnorm', 'norm1', 'norm2'):
-                copts.append("%s=%.2f" % (attr, form[attr]))
+                if form[attr] is None:
+                    copts.append("%s=None" % attr)
+                else:
+                    copts.append("%s=%.2f" % (attr, form[attr]))
 
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
@@ -701,7 +718,7 @@ class XASNormPanel(TaskPanel):
         self.wids['atsym'].SetStringSelection(dgroup.atsym)
         self.wids['edge'].SetStringSelection(dgroup.edge)
 
-        conf = {'nnorm':  dgroup.pre_edge_details.nnorm}
+        self.set_nnorm_widget(dgroup.pre_edge_details.nnorm)
         for attr in ('e0', 'edge_step'):
             conf[attr] = getattr(dgroup, attr)
         for attr in ('pre1', 'pre2', 'norm1', 'norm2'):
@@ -785,7 +802,6 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('mback_mu', PLOTOPTS_2, r'tabulated $\mu(E)$')]
 
-
         elif pchoice == 'mback_poly':
             req_attrs.append('mback_norm')
             lab = plotlabels.norm
@@ -798,9 +814,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_yarrays = [('norm_area', PLOTOPTS_1, 'area'),
                                    ('norm_poly', PLOTOPTS_2, 'polynomial')]
 
-
         dgroup.plot_ylabel = lab
-
         needs_proc = False
         for attr in req_attrs:
             needs_proc = needs_proc or (not hasattr(dgroup, attr))
