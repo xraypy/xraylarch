@@ -51,16 +51,19 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
        default, window = int(esigma / estep) where estep is step size for
        the gridded data, approximately the finest energy step in the data.
     """
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'norm'),
                                          defaults=(norm,), group=group,
                                          fcn_name='xas_deconvolve')
     eshift = eshift + 0.5 * esigma
 
     en  = remove_dups(energy)
+    estep1 = int(0.1*en[0]) * 2.e-5
     en  = en - en[0]
-    estep = max(0.001, 0.001*int(min(en[1:]-en[:-1])*1000.0))
+    estep = max(estep1, 0.01*int(min(en[1:]-en[:-1])*100.0))
     npts = 1  + int(max(en) / estep)
+    if npts > 25000:
+        npts = 25001
+        estep = max(en)/25000.0
 
     x = np.arange(npts)*estep
     y = interp(en, mu, x, kind='cubic')
@@ -70,6 +73,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
         kernel = gaussian
 
     yext = np.concatenate((y, np.arange(len(y))*y[-1]))
+
     ret, err = deconvolve(yext, kernel(x, center=0, sigma=esigma))
     nret = min(len(x), len(ret))
 
