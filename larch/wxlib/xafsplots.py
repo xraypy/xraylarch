@@ -539,7 +539,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
     if show_imag:
         _plot(dataset.data.r, dataset.data.chir_im+offset, label='Im[data]', **opts)
         opts['new'] = False
-        _plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  *re*opts)
+        _plot(dataset.model.r, dataset.model.chir_im+offset, label='Im[fit]',  **opts)
     #endif
     if show_mag or show_real or show_imag:
         redraw(win=opts['win'], xmax=opts['xmax'], _larch=_larch)
