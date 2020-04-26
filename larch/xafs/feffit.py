@@ -568,6 +568,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     covar = getattr(result, 'covar', None)
     # print("COVAR " , covar)
+    _larch.symtable._sys.fiteval = result.params._asteval
+
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
         for name in result.var_names:
@@ -599,7 +601,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                               'deltar', 'sigma2', 'third', 'fourth'):
                     obj = p.params[PATHPAR_FMT % (pname, p.label)]
                     eval_stderr(obj, uvars,  result.var_names, result.params)
-
 
         # restore saved parameters again
         for vname in result.var_names:
