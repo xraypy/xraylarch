@@ -20,7 +20,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 from larch.wxlib.plotter import last_cursor_pos
 from larch.utils import group2dict
 
-LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+LCEN = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
 def autoset_fs_increment(wid, value):

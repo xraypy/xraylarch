@@ -61,7 +61,7 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi,
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
-LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+LCEN = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 

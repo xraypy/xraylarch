@@ -222,7 +222,7 @@ class PeriodicTablePanel(wx.Panel):
                 SetTip(tw, self.tooltip_msg)
             self.wids[tw.Id] = tw
             self.ctrls[name] = tw
-            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL, 0)
+            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
         self.title = wx.StaticText(self, -1, label=' Select Element ')
         self.tsym  = wx.StaticText(self, -1, label='__')
         self.tznum = wx.StaticText(self, -1, label='__')

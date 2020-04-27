@@ -383,7 +383,7 @@ class ParameterPanel(wx.Panel):
         self.wids.vary.SetSelection(vary_choice)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        CLEFT = LEFT|wx.ALL|wx.ALIGN_CENTER_VERTICAL
+        CLEFT = LEFT|wx.ALL
         if show_name:
             self.wids.name = wx.StaticText(self,
                                            label="%s: " %  param.name,

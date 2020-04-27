@@ -390,7 +390,7 @@ class XRFDisplayFrame(wx.Frame):
         yaxis  = Check(yscalepanel, ' Show Y Scale ', action=self.onYAxis,
                       default=False)
         self.wids['show_yaxis'] = yaxis
-        ysizer.Add(ytitle,  0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        ysizer.Add(ytitle,  0, wx.ALL, 0)
         ysizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
         ysizer.Add(yspace,  0, wx.EXPAND|wx.ALL, 0)
         ysizer.Add(yaxis,   0, wx.EXPAND|wx.ALL, 0)

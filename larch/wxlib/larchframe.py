@@ -215,12 +215,14 @@ class LarchPanel(wx.Panel):
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
         isizer = wx.BoxSizer(wx.HORIZONTAL)
         isizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
-        isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.ALIGN_CENTER|wx.EXPAND)
+
+        ## isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.ALIGN_CENTER|wx.EXPAND)
+        isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.EXPAND)
 
         ipanel.SetSizer(isizer)
         isizer.Fit(ipanel)
 
-        opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
+        opts = dict(flag=wx.ALL|wx.EXPAND, border=2)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(splitter,  1, **opts)
         sizer.Add(ipanel, 0, **opts)
@@ -283,8 +285,7 @@ class LarchFrame(wx.Frame):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer.Add(self.mainpanel, 1,
-                  wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND)
+        sizer.Add(self.mainpanel, 1, wx.ALL|wx.EXPAND)
 
         self.SetSizer(sizer)
 

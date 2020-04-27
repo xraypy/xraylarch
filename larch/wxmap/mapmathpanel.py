@@ -33,9 +33,9 @@ from ..utils.strutils import bytes2str, version_ge
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
-CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+CEN = wx.ALIGN_CENTER
+LEFT = wx.ALIGN_LEFT
+RIGHT = wx.ALIGN_RIGHT
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 

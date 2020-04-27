@@ -113,7 +113,7 @@ class DetectorSelectDialog(wx.Dialog):
         btnsizer.Realize()
 
         hline = wx.StaticLine(self, size=(225, 3), style=wx.LI_HORIZONTAL)
-        sty = LEFT|wx.ALIGN_CENTER_VERTICAL
+        sty = LEFT
         sizer = wx.GridBagSizer(5, 2)
         def txt(label):
             return SimpleText(self, label, size=(120, -1), style=LEFT)
@@ -391,8 +391,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         else:
             btnsizer = wx.GridBagSizer(int((nmca+NPERROW-2)/(1.0*NPERROW)), NPERROW)
 
-        style  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-        rstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+        style  = wx.ALIGN_LEFT
+        rstyle = wx.ALIGN_RIGHT
         bkg_choices = ['None']
 
         psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)

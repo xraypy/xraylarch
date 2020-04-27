@@ -38,7 +38,7 @@ from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
 
-LCEN = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+LCEN = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES

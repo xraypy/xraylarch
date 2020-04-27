@@ -45,9 +45,9 @@ from ..math.tomography import TOMOPY_ALG, TOMOPY_FILT
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
 
-CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+CEN = wx.ALIGN_CENTER
+LEFT = wx.ALIGN_LEFT
+RIGHT = wx.ALIGN_RIGHT
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
@@ -443,7 +443,7 @@ class TomographyPanel(GridPanel):
                                      center=center, omega=omega,
                                      sinogram_order=sino_order,
                                      hotcols=xrmfile.hotcols)
-        
+
         # sharpness estimates:
         if len(tomo.shape) == 3:
             t = tomo.sum(axis=2)/tomo.max()
@@ -455,15 +455,15 @@ class TomographyPanel(GridPanel):
         hist = hist.astype('float64')/t.size
         hist[np.where(hist<1.e-15)] = 1.e-15
         _negent = -np.dot(hist, np.log(hist))
-        # print("sharpness center=%f  mean=%g ent=%g" % (center, _mean, _negent))      
+        # print("sharpness center=%f  mean=%g ent=%g" % (center, _mean, _negent))
 
-        
+
         if refine_center:
             self.set_center(xrmfile.xrmmap['tomo/center'].value)
             self.refine_center.SetValue(False)
 
 
-            
+
         omeoff, xoff = 0, 0
         title = '%s, center=%0.1f' % (title, center)
 
