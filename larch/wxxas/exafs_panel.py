@@ -15,7 +15,7 @@ from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
                          plotlabels, Check, CEN, RIGHT, LEFT)
-R
+
 from larch.xafs.xafsutils import etok, ktoe
 
 
