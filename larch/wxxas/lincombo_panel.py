@@ -21,7 +21,7 @@ from larch.math import index_of
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button, HLine,
-                         Choice, Check, CEN, RCEN, LCEN, Font, FONTSIZE,
+                         Choice, Check, CEN, LEFT, Font, FONTSIZE,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox)
 
@@ -145,7 +145,7 @@ class ResultFrame(wx.Frame):
         self.wids = wids = {}
         title = SimpleText(panel, 'Linear Combination Results',
                            font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
@@ -159,7 +159,7 @@ class ResultFrame(wx.Frame):
         wids['plot_nchoice'].SetStringSelection('5')
 
         wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(FONTSIZE+2),
-                                        colour=self.colors.title, style=LCEN)
+                                        colour=self.colors.title, style=LEFT)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
         copts = dict(size=(125, 30), default=True, action=self.onPlotOne)
@@ -167,18 +167,18 @@ class ResultFrame(wx.Frame):
         wids['show_fitrange'] = Check(panel, label='show fit range?', **copts)
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['data_title'], (irow, 1), (1, 2), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 2), LEFT)
 
         irow += 1
-        sizer.Add(wids['nfits_title'],     (irow, 0), (1, 1), LCEN)
+        sizer.Add(wids['nfits_title'],     (irow, 0), (1, 1), LEFT)
 
 
         irow += 1
         self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',
                                               font=Font(FONTSIZE+2),
-                                              colour=self.colors.title, style=LCEN)
-        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 1), LCEN)
+                                              colour=self.colors.title, style=LEFT)
+        sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 1), LEFT)
 
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
@@ -196,16 +196,16 @@ class ResultFrame(wx.Frame):
 
 
         irow += 1
-        sizer.Add(self.wids['params'],       (irow,   0), (4, 1), LCEN)
-        sizer.Add(self.wids['plot_one'],     (irow,   1), (1, 2), LCEN)
-        sizer.Add(self.wids['plot_sel'],     (irow+1, 1), (1, 2), LCEN)
-        sizer.Add(self.wids['plot_ntitle'],  (irow+2, 1), (1, 1), LCEN)
-        sizer.Add(self.wids['plot_nchoice'], (irow+2, 2), (1, 1), LCEN)
-        # sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LCEN)
-        sizer.Add(self.wids['show_fitrange'],(irow+3, 1), (1, 2), LCEN)
+        sizer.Add(self.wids['params'],       (irow,   0), (4, 1), LEFT)
+        sizer.Add(self.wids['plot_one'],     (irow,   1), (1, 2), LEFT)
+        sizer.Add(self.wids['plot_sel'],     (irow+1, 1), (1, 2), LEFT)
+        sizer.Add(self.wids['plot_ntitle'],  (irow+2, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['plot_nchoice'], (irow+2, 2), (1, 1), LEFT)
+        # sizer.Add(self.wids['show_e0'],      (irow+3, 1), (1, 2), LEFT)
+        sizer.Add(self.wids['show_fitrange'],(irow+3, 1), (1, 2), LEFT)
 
         irow += 4
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
@@ -229,19 +229,19 @@ class ResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         irow += 1
-        sizer.Add(sview, (irow, 0), (1, 4), LCEN)
+        sizer.Add(sview, (irow, 0), (1, 4), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Weights]]', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 4), LEFT)
         self.wids['weightspanel'] = ppan = wx.Panel(panel)
 
         p1 = SimpleText(ppan, ' < Weights > ')
@@ -251,10 +251,10 @@ class ResultFrame(wx.Frame):
         ppan.SetMinSize((675, 175))
 
         irow += 1
-        sizer.Add(ppan, (irow, 0), (1, 4), LCEN)
+        sizer.Add(ppan, (irow, 0), (1, 4), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LCEN)
+        sizer.Add(HLine(panel, size=(675, 3)), (irow, 0), (1, 4), LEFT)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -689,8 +689,8 @@ class LinearComboPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(panel, 1, LCEN, 3)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
 

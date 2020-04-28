@@ -17,7 +17,7 @@ from larch.xafs.xafsutils import guess_energy_units
 
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         GridPanel, CEN, RCEN, LCEN, plotlabels)
+                         GridPanel, CEN, RIGHT, LEFT, plotlabels)
 
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
@@ -97,8 +97,8 @@ class XASNormPanel(TaskPanel):
         self.wids['showe0'] = Check(e0panel, default=True, label='show?',
                                     action=self.onSet_XASE0)
         sx = wx.BoxSizer(wx.HORIZONTAL)
-        sx.Add(self.wids['auto_e0'], 0, LCEN, 4)
-        sx.Add(self.wids['showe0'], 0, LCEN, 4)
+        sx.Add(self.wids['auto_e0'], 0, LEFT, 4)
+        sx.Add(self.wids['showe0'], 0, LEFT, 4)
         pack(e0panel, sx)
 
 
@@ -164,16 +164,16 @@ class XASNormPanel(TaskPanel):
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              **self.titleopts), dcol=4)
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RCEN, dcol=2)
+                  style=RIGHT, dcol=2)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
-        panel.Add(SimpleText(panel, 'Y Offset:'), style=RCEN)
-        panel.Add(plot_voff, style=RCEN)
+        panel.Add(SimpleText(panel, 'Y Offset:'), style=RIGHT)
+        panel.Add(plot_voff, style=RIGHT)
 
         panel.Add(plot_one, newrow=True)
         panel.Add(self.plotone_op, dcol=4)
-        panel.Add(CopyBtn('plotone_op'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('plotone_op'), dcol=1, style=RIGHT)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data: Scale:')
@@ -182,22 +182,22 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('XAS Data:')
         panel.Add(use_auto, dcol=4)
-        panel.Add(copy_auto, dcol=1, style=RCEN)
+        panel.Add(copy_auto, dcol=1, style=RIGHT)
 
         add_text('Element and Edge: ', newrow=True)
         panel.Add(self.wids['atsym'])
         panel.Add(self.wids['edge'], dcol=3)
-        panel.Add(CopyBtn('atsym'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
 
         add_text('E0 : ')
         panel.Add(xas_e0)
         panel.Add(e0panel, dcol=3)
-        panel.Add(CopyBtn('xas_e0'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('xas_e0'), dcol=1, style=RIGHT)
 
         add_text('Edge Step: ')
         panel.Add(xas_step)
         panel.Add(self.wids['auto_step'], dcol=3)
-        panel.Add(CopyBtn('xas_step'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('xas_step'), dcol=1, style=RIGHT)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -206,7 +206,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(xas_pre1)
         add_text(' : ', newrow=False)
         panel.Add(xas_pre2, dcol=2)
-        panel.Add(CopyBtn('xas_pre'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('xas_pre'), dcol=1, style=RIGHT)
 
         panel.Add(SimpleText(panel, 'Victoreen order:'), newrow=True)
         panel.Add(self.wids['nvict'], dcol=4)
@@ -216,7 +216,7 @@ class XASNormPanel(TaskPanel):
 
         add_text('Normalization method: ')
         panel.Add(self.wids['norm_method'], dcol=4)
-        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RCEN)
+        panel.Add(CopyBtn('xas_norm'), dcol=1, style=RIGHT)
 
         add_text('Normalization range: ')
         panel.Add(xas_norm1)
@@ -236,9 +236,9 @@ class XASNormPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((5, 5), 0, LCEN, 3)
-        sizer.Add(panel, 0, LCEN, 3)
-        sizer.Add((5, 5), 0, LCEN, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
+        sizer.Add(panel, 0, LEFT, 3)
+        sizer.Add((5, 5), 0, LEFT, 3)
 
         pack(self, sizer)
 

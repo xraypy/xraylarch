@@ -18,7 +18,7 @@ from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         NumericCombo, CEN, RCEN, LCEN, Font)
+                         NumericCombo, CEN, LEFT, Font)
 from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 
@@ -207,8 +207,8 @@ class RegressionPanel(TaskPanel):
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(panel, 1, LCEN, 3)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
 

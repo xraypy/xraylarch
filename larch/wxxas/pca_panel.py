@@ -18,8 +18,8 @@ from lmfit.printfuncs import gformat
 from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
-                         pack, Button, HLine, Choice, Check, CEN, RCEN,
-                         LCEN, Font)
+                         pack, Button, HLine, Choice, Check, CEN, RIGHT,
+                         LEFT, Font)
 
 from .taskpanel import TaskPanel, autoset_fs_increment, DataTableGrid
 from larch.math.lincombo_fitting import get_arrays
@@ -210,8 +210,8 @@ class PCAPanel(TaskPanel):
 #
         panel.pack()
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(panel, 1, LCEN, 3)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
 

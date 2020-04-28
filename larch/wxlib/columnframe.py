@@ -15,7 +15,7 @@ import wx.lib.agw.flatnotebook as fnb
 from wxmplot import PlotPanel
 
 from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
-                     pack, Popup, Check, MenuItem, CEN, RCEN, LCEN,
+                     pack, Popup, Check, MenuItem, CEN, RIGHT, LEFT,
                      FRAMESTYLE, HLine, Font)
 
 import larch
@@ -70,30 +70,30 @@ class AddColumnsFrame(wx.Frame):
                            action=self.onSelRegex)
 
 
-        sizer.Add(lab_aname,         (0, 0), (1, 2), LCEN, 3)
-        sizer.Add(wids['arrayname'], (0, 2), (1, 1), LCEN, 3)
+        sizer.Add(lab_aname,         (0, 0), (1, 2), LEFT, 3)
+        sizer.Add(wids['arrayname'], (0, 2), (1, 1), LEFT, 3)
 
-        sizer.Add(plotbtn,         (0, 3), (1, 1), LCEN, 3)
-        sizer.Add(savebtn,         (0, 4), (1, 1), LCEN, 3)
+        sizer.Add(plotbtn,         (0, 3), (1, 1), LEFT, 3)
+        sizer.Add(savebtn,         (0, 4), (1, 1), LEFT, 3)
 
-        sizer.Add(lab_range,       (1, 0), (1, 2), LCEN, 3)
-        sizer.Add(wids['tc_nums'], (1, 2), (1, 1), LCEN, 3)
-        sizer.Add(sel_nums,        (1, 3), (1, 2), LCEN, 3)
+        sizer.Add(lab_range,       (1, 0), (1, 2), LEFT, 3)
+        sizer.Add(wids['tc_nums'], (1, 2), (1, 1), LEFT, 3)
+        sizer.Add(sel_nums,        (1, 3), (1, 2), LEFT, 3)
 
-        sizer.Add(lab_regex,        (2, 0), (1, 2), LCEN, 3)
-        sizer.Add(wids['tc_regex'], (2, 2), (1, 1), LCEN, 3)
-        sizer.Add(sel_re,           (2, 3), (1, 2), LCEN, 3)
+        sizer.Add(lab_regex,        (2, 0), (1, 2), LEFT, 3)
+        sizer.Add(wids['tc_regex'], (2, 2), (1, 1), LEFT, 3)
+        sizer.Add(sel_re,           (2, 3), (1, 2), LEFT, 3)
 
-        sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LCEN, 3)
+        sizer.Add(HLine(panel, size=(550, 2)), (3, 0), (1, 5), LEFT, 3)
         ir = 4
 
         cind = SimpleText(panel, label=' Index ')
         csel = SimpleText(panel, label=' Select ')
         cname = SimpleText(panel, label=' Array Name ')
 
-        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-        sizer.Add(csel,  (ir, 1), (1, 1), LCEN, 3)
-        sizer.Add(cname, (ir, 2), (1, 3), LCEN, 3)
+        sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
 
         for i, name in enumerate(group.array_labels):
             ir += 1
@@ -103,9 +103,9 @@ class AddColumnsFrame(wx.Frame):
 
             self.wids["col_%d" % i] = csel
 
-            sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-            sizer.Add(csel,  (ir, 1), (1, 1), LCEN, 3)
-            sizer.Add(cname, (ir, 2), (1, 3), LCEN, 3)
+            sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
+            sizer.Add(csel,  (ir, 1), (1, 1), LEFT, 3)
+            sizer.Add(cname, (ir, 2), (1, 3), LEFT, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -210,17 +210,17 @@ class EditColumnFrame(wx.Frame) :
         panel = scrolled.ScrolledPanel(self)
 
         self.SetMinSize((675, 450))
-        
+
         self.wids = {}
         ir = 0
         sizer.Add(Button(panel, 'Apply Changes', size=(200, -1),
                          action=self.onOK),
-                  (0, 1), (1, 2), LCEN, 3)
+                  (0, 1), (1, 2), LEFT, 3)
         sizer.Add(Button(panel, 'Use Column Number', size=(200, -1),
                          action=self.onColNumber),
-                  (0, 3), (1, 2), LCEN, 3)
+                  (0, 3), (1, 2), LEFT, 3)
         sizer.Add(HLine(panel, size=(550, 2)),
-                  (1, 1), (1, 5), LCEN, 3)
+                  (1, 1), (1, 5), LEFT, 3)
 
         cind = SimpleText(panel, label='Column')
         cold = SimpleText(panel, label='Current Name')
@@ -230,12 +230,12 @@ class EditColumnFrame(wx.Frame) :
         cplot = SimpleText(panel, label='   Plot')
 
         ir = 2
-        sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-        sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
-        sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
-        sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
-        sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
-        sizer.Add(cplot, (ir, 5), (1, 1), LCEN, 3)
+        sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(cold,  (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(cnew,  (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(cret,  (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(cinfo, (ir, 4), (1, 1), LEFT, 3)
+        sizer.Add(cplot, (ir, 5), (1, 1), LEFT, 3)
 
         for i, name in enumerate(group.array_labels):
             ir += 1
@@ -257,12 +257,12 @@ class EditColumnFrame(wx.Frame) :
             self.wids["%d" % i] = cnew
             self.wids["ret_%d" % i] = cret
 
-            sizer.Add(cind,  (ir, 0), (1, 1), LCEN, 3)
-            sizer.Add(cold,  (ir, 1), (1, 1), LCEN, 3)
-            sizer.Add(cnew,  (ir, 2), (1, 1), LCEN, 3)
-            sizer.Add(cret,  (ir, 3), (1, 1), LCEN, 3)
-            sizer.Add(cinfo, (ir, 4), (1, 1), LCEN, 3)
-            sizer.Add(cplot, (ir, 5), (1, 1), LCEN, 3)
+            sizer.Add(cind,  (ir, 0), (1, 1), LEFT, 3)
+            sizer.Add(cold,  (ir, 1), (1, 1), LEFT, 3)
+            sizer.Add(cnew,  (ir, 2), (1, 1), LEFT, 3)
+            sizer.Add(cret,  (ir, 3), (1, 1), LEFT, 3)
+            sizer.Add(cinfo, (ir, 4), (1, 1), LEFT, 3)
+            sizer.Add(cplot, (ir, 5), (1, 1), LEFT, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -371,7 +371,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         # title row
         title = SimpleText(panel, message, font=Font(13),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         opts = dict(action=self.onUpdate, size=(120, -1))
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
@@ -410,7 +410,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.xsuf = SimpleText(panel, '')
         self.ysuf = SimpleText(panel, '')
         self.message = SimpleText(panel, '', font=Font(11),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         self.xpop.SetStringSelection(self.array_sel['xpop'])
         self.ypop.SetStringSelection(self.array_sel['ypop'])
@@ -444,33 +444,33 @@ class ColumnDataFileFrame(wx.Frame) :
         pack(bpanel, bsizer)
 
         sizer = wx.GridBagSizer(4, 8)
-        sizer.Add(title,     (0, 0), (1, 7), LCEN, 5)
+        sizer.Add(title,     (0, 0), (1, 7), LEFT, 5)
 
         ir = 1
-        sizer.Add(xlab,      (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(xlab,      (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.xpop, (ir, 1), (1, 1), CEN, 0)
         sizer.Add(self.xarr, (ir, 2), (1, 1), CEN, 0)
         sizer.Add(self.xsuf, (ir, 3), (1, 1), CEN, 0)
 
         ir += 1
-        sizer.Add(ylab,       (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), CEN, 0)
         sizer.Add(self.yarr1, (ir, 2), (1, 1), CEN, 0)
         sizer.Add(self.yop,   (ir, 3), (1, 1), CEN, 0)
         sizer.Add(self.yarr2, (ir, 4), (1, 1), CEN, 0)
         sizer.Add(self.ysuf,  (ir, 5), (1, 1), CEN, 0)
-        sizer.Add(self.use_deriv, (ir, 6), (1, 1), LCEN, 0)
+        sizer.Add(self.use_deriv, (ir, 6), (1, 1), LEFT, 0)
 
         ir += 1
-        sizer.Add(yerr_lab,      (ir, 0), (1, 1), LCEN, 0)
+        sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_op,  (ir, 1), (1, 1), CEN, 0)
         sizer.Add(self.yerr_arr, (ir, 2), (1, 1), CEN, 0)
         sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.datatype,                    (ir, 1), (1, 2), LCEN, 0)
+        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,                    (ir, 1), (1, 2), LEFT, 0)
 
         ir += 1
         self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
@@ -478,13 +478,13 @@ class ColumnDataFileFrame(wx.Frame) :
         if not edit_groupname:
             self.wid_groupname.Disable()
 
-        sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LCEN, 0)
-        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LCEN, 0)
-        sizer.Add(self.message,                     (ir, 3), (1, 4), LCEN, 0)
+        sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LEFT, 0)
+        sizer.Add(self.message,                     (ir, 3), (1, 4), LEFT, 0)
 
 
         ir += 1
-        sizer.Add(bpanel,     (ir, 0), (1, 5), LCEN, 3)
+        sizer.Add(bpanel,     (ir, 0), (1, 5), LEFT, 3)
 
         pack(panel, sizer)
 
@@ -503,7 +503,7 @@ class ColumnDataFileFrame(wx.Frame) :
         ftext.SetFont(Font(10))
 
         textsizer = wx.BoxSizer(wx.VERTICAL)
-        textsizer.Add(ftext, 1, LCEN|wx.GROW, 1)
+        textsizer.Add(ftext, 1, LEFT|wx.GROW, 1)
         pack(textpanel, textsizer)
 
         self.nb.AddPage(textpanel, ' Text of Data File ', True)
@@ -511,7 +511,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
-        mainsizer.Add(self.nb, 1, LCEN|wx.GROW,   2)
+        mainsizer.Add(self.nb, 1, LEFT|wx.GROW,   2)
         pack(self, mainsizer)
 
         self.statusbar = self.CreateStatusBar(2, 0)

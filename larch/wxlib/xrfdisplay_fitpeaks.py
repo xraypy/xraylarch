@@ -24,9 +24,9 @@ from lmfit.printfuncs import gformat
 
 from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      Button, Check, HLine, GridPanel, RowPanel, CEN, LEFT,
-                     RIGHT, FileSave, GUIColors, RCEN, LCEN, FRAMESTYLE,
-                     BitmapButton, SetTip, GridPanel, Popup,
-                     FloatSpinWithPin, get_icon, fix_filename)
+                     RIGHT, FileSave, GUIColors, FRAMESTYLE, BitmapButton,
+                     SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
+                     fix_filename)
 
 from . import FONTSIZE
 from xraydb import (material_mu, xray_edge, materials, add_material,
@@ -577,10 +577,10 @@ class FitSpectraFrame(wx.Frame):
         # title row
         wids = self.owids
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+1),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
-                                             colour=self.colors.title, style=LCEN)
+                                             colour=self.colors.title, style=LEFT)
 
         wids['fitlabel_lab'] = SimpleText(panel, ' Fit Label: ')
         wids['fitlabel_txt'] = wx.TextCtrl(panel, -1, ' ', size=(150, -1))
@@ -601,28 +601,28 @@ class FitSpectraFrame(wx.Frame):
         SetTip(self.export_fit, 'save arrays and results to text file')
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
 
         irow += 1
-        sizer.Add(self.save_result,   (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.export_fit,    (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.plot_choice,   (irow, 2), (1, 1), LCEN)
-        sizer.Add(wids['plot_comps'], (irow, 3), (1, 1), LCEN)
+        sizer.Add(self.save_result,   (irow, 0), (1, 1), LEFT)
+        sizer.Add(self.export_fit,    (irow, 1), (1, 1), LEFT)
+        sizer.Add(self.plot_choice,   (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_comps'], (irow, 3), (1, 1), LEFT)
 
         irow += 1
-        sizer.Add(wids['fitlabel_lab'], (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['fitlabel_txt'], (irow, 1), (1, 1), LCEN)
-        sizer.Add(wids['fitlabel_btn'], (irow, 2), (1, 2), LCEN)
+        sizer.Add(wids['fitlabel_lab'], (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['fitlabel_txt'], (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['fitlabel_btn'], (irow, 2), (1, 2), LEFT)
 
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+1),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
@@ -643,15 +643,15 @@ class FitSpectraFrame(wx.Frame):
         sview.SetMinSize((675, 150))
 
         irow += 1
-        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(sview, (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+1),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 1), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         pview = wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         wids['paramsdata'] = []
@@ -673,14 +673,14 @@ class FitSpectraFrame(wx.Frame):
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
-        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(pview, (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+1),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         wids['all_correl'] = Button(panel, 'Show All',
                                     size=(100, -1), action=self.onAllCorrel)
@@ -690,10 +690,10 @@ class FitSpectraFrame(wx.Frame):
                                        digits=3, increment=0.1)
 
         ctitle = SimpleText(panel, 'minimum correlation: ')
-        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
-        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
-        sizer.Add(wids['min_correl'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LCEN)
+        sizer.Add(title,  (irow, 0), (1, 1), LEFT)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['min_correl'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
         cview = wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
@@ -711,7 +711,7 @@ class FitSpectraFrame(wx.Frame):
         cview.SetMinSize((675, 125))
 
         irow += 1
-        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(cview, (irow, 0), (1, 5), LEFT)
         pack(panel, sizer)
         panel.SetMinSize((675, 725))
         panel.SetupScrolling()
@@ -722,9 +722,9 @@ class FitSpectraFrame(wx.Frame):
         panel = scrolled.ScrolledPanel(self)
         wids = self.owids
         title = SimpleText(panel, 'Composition Results', font=Font(FONTSIZE+1),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
         wids['data_title2'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+1),
-                                             colour=self.colors.title, style=LCEN)
+                                             colour=self.colors.title, style=LEFT)
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         cview.AppendTextColumn(' Z ', width=50)
@@ -759,28 +759,28 @@ class FitSpectraFrame(wx.Frame):
                                    size=(200, -1), action=self.onCompSave)
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title2'], (irow, 2), (1, 5), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 2), LEFT)
+        sizer.Add(wids['data_title2'], (irow, 2), (1, 5), LEFT)
         irow += 1
-        sizer.Add(SimpleText(panel, 'Fit Label:'),  (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['comp_fitlabel'],            (irow, 1), (1, 5), LCEN)
+        sizer.Add(SimpleText(panel, 'Fit Label:'),  (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['comp_fitlabel'],            (irow, 1), (1, 5), LEFT)
 
         irow += 1
-        sizer.Add(SimpleText(panel, 'Scale Element:'),   (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['comp_elemchoice'],         (irow, 1), (1, 1), LCEN)
-        sizer.Add(SimpleText(panel, ' to:'),       (irow, 2), (1, 1), LCEN)
-        sizer.Add(wids['comp_elemscale'],          (irow, 3), (1, 1), LCEN)
-        sizer.Add(wids['comp_units'],              (irow, 4), (1, 1), LCEN)
+        sizer.Add(SimpleText(panel, 'Scale Element:'),   (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['comp_elemchoice'],         (irow, 1), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, ' to:'),       (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['comp_elemscale'],          (irow, 3), (1, 1), LEFT)
+        sizer.Add(wids['comp_units'],              (irow, 4), (1, 1), LEFT)
 
         irow += 1
-        sizer.Add(SimpleText(panel, 'Scaling Factor:'), (irow, 0), (1, 1), LCEN)
-        sizer.Add(wids['comp_scale'],              (irow, 1), (1, 3), LCEN)
+        sizer.Add(SimpleText(panel, 'Scaling Factor:'), (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['comp_scale'],              (irow, 1), (1, 3), LEFT)
 
         irow += 1
-        sizer.Add(wids['composition'],   (irow, 0), (3, 6), LCEN)
+        sizer.Add(wids['composition'],   (irow, 0), (3, 6), LEFT)
 
         irow += 3
-        sizer.Add(wids['comp_save'],   (irow, 0), (1, 3), LCEN)
+        sizer.Add(wids['comp_save'],   (irow, 0), (1, 3), LEFT)
 
         pack(panel, sizer)
         panel.SetMinSize((675, 750))

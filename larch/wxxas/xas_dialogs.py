@@ -12,8 +12,8 @@ from larch.utils.strutils import file2groupname
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, get_icon, SimpleText, Choice,
-                         SetTip, Check, Button, HLine, OkCancel, LCEN,
-                         RCEN, plotlabels)
+                         SetTip, Check, Button, HLine, OkCancel, LEFT,
+                         plotlabels)
 
 from larch.xafs.xafsutils  import etok, ktoe
 
@@ -53,7 +53,7 @@ class OverAbsorptionDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Correct Over-absorption")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         self.wids = wids = {}
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
@@ -211,7 +211,7 @@ class EnergyCalibrateDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Calibrate / Align Energy")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
@@ -460,7 +460,7 @@ class RebinDataDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Rebin mu(E) Data")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
 
@@ -649,7 +649,7 @@ class SmoothDataDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Smooth mu(E) Data")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
 
@@ -827,7 +827,7 @@ class DeconvolutionDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Deconvolve mu(E) Data")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         self.wids = wids = {}
 
@@ -959,7 +959,7 @@ class DeglitchDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Select Points to Remove")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
         self.wids = wids = {}
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
@@ -1181,7 +1181,7 @@ class SpectraCalcDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
                            title="Spectra Calculations: Add, Subtract Spectra")
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -1300,7 +1300,7 @@ class EnergyUnitsDialog(wx.Dialog):
         title = "Select Energy Units to convert to 'eV'"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.en_units = Choice(panel, choices=self.unit_choices, size=(125, -1),
                                action=self.onUnits)
@@ -1361,7 +1361,7 @@ class MergeDialog(wx.Dialog):
         title = "Merge %i Selected Groups" % (len(groupnames))
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(250, -1))
         self.yarray_name  = Choice(panel, choices=self.ychoices, size=(250, -1))
@@ -1408,7 +1408,7 @@ class ExportCSVDialog(wx.Dialog):
         if len(groupnames) > 0:
             default_fname = "%s_%i.csv" % (groupnames[0], len(groupnames))
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
@@ -1443,7 +1443,7 @@ class QuitDialog(wx.Dialog):
         title = "Quit Larch XAS Viewer?"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(425, 150))
         self.needs_save = True
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.save = Check(panel, default=False,
                           label='Save Project before Quitting?')
@@ -1467,7 +1467,7 @@ class RenameDialog(wx.Dialog):
         title = "Rename Group %s" % (oldname)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.newname   = wx.TextCtrl(panel, -1, oldname,  size=(250, -1))
 
@@ -1495,7 +1495,7 @@ class RemoveDialog(wx.Dialog):
         self.grouplist = grouplist
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LCEN)
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         panel.Add(SimpleText(panel, 'Remove %i Selected Groups?' % (len(grouplist))),
                   newrow=True, dcol=2)

@@ -38,8 +38,8 @@ if HAS_WXPYTHON:
     from . import readlinetextctrl
 
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check, MenuItem,
-                         Popup, is_wxPhoenix, RIGHT, LEFT, CEN , LCEN, RCEN,
-                         CCEN, LTEXT, FRAMESTYLE, hms, DateTimeCtrl, Button,
+                         Popup, is_wxPhoenix, RIGHT, LEFT, CEN ,
+                         LTEXT, FRAMESTYLE, hms, DateTimeCtrl, Button,
                          ToggleButton, BitmapButton, Choice, YesNo, SimpleText,
                          TextCtrl, LabeledTextCtrl, HyperText, EditableListBox,
                          get_icon, GUIColors, OkCancel, FileOpen, FileSave,

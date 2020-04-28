@@ -33,8 +33,8 @@ from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          FileCheckList, FloatCtrl, SetTip, get_icon,
                          SimpleText, pack, Button, Popup, HLine, FileSave,
-                         Choice, Check, MenuItem, GUIColors, CEN, RCEN,
-                         LCEN, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
+                         Choice, Check, MenuItem, GUIColors, CEN,
+                         LEFT, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
 
 from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
@@ -61,7 +61,7 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi,
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
-LCEN = wx.ALIGN_LEFT
+LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
 
@@ -431,13 +431,13 @@ class XASFrame(wx.Frame):
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(sel_all, 1, LCEN|wx.GROW, 1)
-        tsizer.Add(sel_none, 1, LCEN|wx.GROW, 1)
+        tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
+        tsizer.Add(sel_none, 1, LEFT|wx.GROW, 1)
         pack(ltop, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(ltop, 0, LCEN|wx.GROW, 1)
-        sizer.Add(self.controller.filelist, 1, LCEN|wx.GROW|wx.ALL, 1)
+        sizer.Add(ltop, 0, LEFT|wx.GROW, 1)
+        sizer.Add(self.controller.filelist, 1, LEFT|wx.GROW|wx.ALL, 1)
 
         pack(leftpanel, sizer)
 
@@ -449,11 +449,11 @@ class XASFrame(wx.Frame):
         self.title.SetFont(Font(FONTSIZE+2))
 
         ir = 0
-        sizer.Add(self.title, 0, LCEN|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.title, 0, LEFT|wx.GROW|wx.ALL, 1)
         self.nb = flatnotebook(panel, NB_PANELS,
                                panelkws=dict(controller=self.controller),
                                on_change=self.onNBChanged)
-        sizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+        sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)
 
         splitter.SplitVertically(leftpanel, panel, 1)

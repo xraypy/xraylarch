@@ -31,15 +31,12 @@ from larch.io.export_modelresult import export_modelresult
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
-                         CEN, RCEN, LCEN, FRAMESTYLE, Font, FONTSIZE,
+                         CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          FileSave, FileOpen, flatnotebook)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
-
-LCEN = wx.ALIGN_LEFT
-CEN |=  wx.ALL
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -166,17 +163,17 @@ class FitResultFrame(wx.Frame):
         # title row
         self.wids = wids = {}
         title = SimpleText(panel, 'Fit Results', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
-                                             colour=self.colors.title, style=LCEN)
+                                             colour=self.colors.title, style=LEFT)
 
         wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
-                                       colour=self.colors.title, style=LCEN)
+                                       colour=self.colors.title, style=LEFT)
 
         wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
                                        font=Font(FONTSIZE+2), colour=self.colors.title,
-                                       style=LCEN)
+                                       style=LEFT)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
@@ -194,35 +191,35 @@ class FitResultFrame(wx.Frame):
         SetTip(self.export_fit, 'save arrays and results to text file')
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LCEN)
+        sizer.Add(title,              (irow, 0), (1, 2), LEFT)
+        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LEFT)
 
         irow += 1
-        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LCEN)
+        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LEFT)
+        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LEFT)
 
         irow += 1
         wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(700, 50), style=LCEN)
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LCEN)
+                                        size=(700, 50), style=LEFT)
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
         irow += 1
-        sizer.Add(self.save_result, (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LCEN)
+        sizer.Add(self.save_result, (irow, 0), (1, 1), LEFT)
+        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LEFT)
 
         irow += 1
-        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LCEN)
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LCEN)
-        sizer.Add(wids['plot_bline'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LCEN)
+        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LEFT)
+        sizer.Add(wids['plot_bline'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 4), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
@@ -245,20 +242,20 @@ class FitResultFrame(wx.Frame):
         sview.SetMinSize((700, 125))
 
         irow += 1
-        sizer.Add(sview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(sview, (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
-        sizer.Add(title, (irow, 0), (1, 1), LCEN)
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
                                           size=(250, -1), action=self.onCopyParams)
 
-        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LCEN)
+        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
 
         pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         self.wids['paramsdata'] = []
@@ -279,14 +276,14 @@ class FitResultFrame(wx.Frame):
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
-        sizer.Add(pview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(pview, (irow, 0), (1, 5), LEFT)
 
         irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
         title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LCEN)
+                           colour=self.colors.title, style=LEFT)
 
         self.wids['all_correl'] = Button(panel, 'Show All',
                                           size=(100, -1), action=self.onAllCorrel)
@@ -296,10 +293,10 @@ class FitResultFrame(wx.Frame):
                                             digits=3, increment=0.1)
 
         ctitle = SimpleText(panel, 'minimum correlation: ')
-        sizer.Add(title,  (irow, 0), (1, 1), LCEN)
-        sizer.Add(ctitle, (irow, 1), (1, 1), LCEN)
-        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LCEN)
-        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LCEN)
+        sizer.Add(title,  (irow, 0), (1, 1), LEFT)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
         irow += 1
 
@@ -319,9 +316,9 @@ class FitResultFrame(wx.Frame):
         cview.SetMinSize((475, 200))
 
         irow += 1
-        sizer.Add(cview, (irow, 0), (1, 5), LCEN)
+        sizer.Add(cview, (irow, 0), (1, 5), LEFT)
         irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LCEN)
+        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LEFT)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -544,7 +541,7 @@ class PrePeakPanel(TaskPanel):
 
     def build_display(self):
         self.mod_nb = flatnotebook(self, {})
-        pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LCEN)
+        pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = {}
 
@@ -651,12 +648,12 @@ class PrePeakPanel(TaskPanel):
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(pan, 0, LCEN, 3)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(HLine(self, size=(550, 2)), 0, LCEN, 3)
-        sizer.Add((10, 10), 0, LCEN, 3)
-        sizer.Add(self.mod_nb,  1, LCEN|wx.GROW, 10)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(pan, 0, LEFT, 3)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(HLine(self, size=(550, 2)), 0, LEFT, 3)
+        sizer.Add((10, 10), 0, LEFT, 3)
+        sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 10)
 
         pack(self, sizer)
 
@@ -858,7 +855,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
                   dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(usebox, dcol=2)
-        panel.Add(bkgbox, dcol=1, style=RCEN)
+        panel.Add(bkgbox, dcol=1, style=RIGHT)
 
         panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)

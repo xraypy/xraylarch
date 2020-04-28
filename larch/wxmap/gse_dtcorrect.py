@@ -29,7 +29,7 @@ from ..io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
-                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+                     CEN, LEFT, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.1*,*.dat,*.xdi)|*.0*;*.1*;*.dat;*.xdi|All files (*)|*"
@@ -150,22 +150,22 @@ class DTCorrectFrame(wx.Frame):
                                 action=self.onBrowse)
 
         ir = 0
-        sizer.Add(lab_roi,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.wid_roi, (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(lab_roi,       (ir, 0), (1, 1), LEFT, 2)
+        sizer.Add(self.wid_roi, (ir, 1), (1, 1), LEFT, 2)
         ir += 1
-        sizer.Add(lab_dir,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.wid_dir,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(lab_dir,       (ir, 0), (1, 1), LEFT, 2)
+        sizer.Add(self.wid_dir,  (ir, 1), (1, 1), LEFT, 2)
         ir += 1
-        sizer.Add(lab_ath,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.wid_ath,  (ir, 1), (1, 1), LCEN, 2)
-        sizer.Add(self.wid_autoname,  (ir, 2), (1, 1), LCEN, 2)
+        sizer.Add(lab_ath,       (ir, 0), (1, 1), LEFT, 2)
+        sizer.Add(self.wid_ath,  (ir, 1), (1, 1), LEFT, 2)
+        sizer.Add(self.wid_autoname,  (ir, 2), (1, 1), LEFT, 2)
 
         ir += 1
-        sizer.Add(lab_bad,            (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.wid_bad,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(lab_bad,            (ir, 0), (1, 1), LEFT, 2)
+        sizer.Add(self.wid_bad,  (ir, 1), (1, 1), LEFT, 2)
         ir += 1
-        sizer.Add(lab_sel,       (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(lab_sel,       (ir, 0), (1, 1), LEFT, 2)
+        sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LEFT, 2)
 
         pack(panel, sizer)
         wx.CallAfter(self.init_larch)

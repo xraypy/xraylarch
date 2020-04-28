@@ -14,13 +14,13 @@ from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
-                         GUIColors, CEN, RCEN, LCEN, FRAMESTYLE, Font,
-                         FileSave, FileOpen, FONTSIZE)
+                         GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
+                         FileOpen, FONTSIZE)
 
 from larch.wxlib.plotter import last_cursor_pos
 from larch.utils import group2dict
 
-LCEN = wx.ALIGN_LEFT
+LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
 def autoset_fs_increment(wid, value):
@@ -144,7 +144,7 @@ class TaskPanel(wx.Panel):
         self.SetFont(Font(FONTSIZE))
         self.titleopts = dict(font=Font(FONTSIZE+2), colour='#AA0000')
 
-        self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LCEN)
+        self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
         self.skip_process = True

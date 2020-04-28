@@ -15,7 +15,7 @@ from larch.io import fix_varname, read_athena
 from wxutils import (SimpleText, Button, Choice, GUIColors,
                      FileCheckList, FileDropTarget, pack,
                      Check, MenuItem, SetTip, Popup, CEN,
-                     RCEN, LCEN, FRAMESTYLE, Font)
+                     LEFT, FRAMESTYLE, Font)
 
 from wxmplot import PlotPanel
 
@@ -47,15 +47,15 @@ class AthenaImporter(wx.Frame) :
         self.grouplist = FileCheckList(leftpanel, select_action=self.onShowGroup)
 
         tsizer = wx.GridBagSizer(2, 2)
-        tsizer.Add(sel_all, (0, 0), (1, 1), LCEN, 0)
-        tsizer.Add(sel_none,  (0, 1), (1, 1), LCEN, 0)
-        tsizer.Add(sel_imp,  (1, 0), (1, 2), LCEN, 0)
+        tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
+        tsizer.Add(sel_none,  (0, 1), (1, 1), LEFT, 0)
+        tsizer.Add(sel_imp,  (1, 0), (1, 2), LEFT, 0)
 
         pack(ltop, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(ltop, 0, LCEN|wx.GROW, 1)
-        sizer.Add(self.grouplist, 1, LCEN|wx.GROW|wx.ALL, 1)
+        sizer.Add(ltop, 0, LEFT|wx.GROW, 1)
+        sizer.Add(self.grouplist, 1, LEFT|wx.GROW|wx.ALL, 1)
         pack(leftpanel, sizer)
 
         # right hand side
@@ -63,13 +63,13 @@ class AthenaImporter(wx.Frame) :
 
         self.SetTitle("Reading Athena Project '%s'" % self.filename)
         self.title = SimpleText(rightpanel, self.filename, font=Font(13),
-                                colour=self.colors.title, style=LCEN)
+                                colour=self.colors.title, style=LEFT)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.title, 0, LCEN, 2)
-        sizer.Add(self.plotpanel, 0, LCEN, 2)
+        sizer.Add(self.title, 0, LEFT, 2)
+        sizer.Add(self.plotpanel, 0, LEFT, 2)
         pack(rightpanel, sizer)
 
         splitter.SplitVertically(leftpanel, rightpanel, 1)
