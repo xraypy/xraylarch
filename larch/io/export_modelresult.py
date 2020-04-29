@@ -56,7 +56,7 @@ def export_modelresult(result, filename='fitresult.xdi',
 
     columns['best_fit'] = result.best_fit
     columns['init_fit'] = result.init_fit
-    delta_fit = 0.0*result_best_fit
+    delta_fit = 0.0*result.best_fit
     if not any([p.stderr is None for p in result.params.values()]):
         delta_fit = result.eval_uncertainty(result.params, **kwargs)
 
