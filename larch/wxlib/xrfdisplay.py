@@ -302,8 +302,8 @@ class XRFDisplayFrame(wx.Frame):
                                     fontsize=9)
         self.wids['ptable'] = ptable
 
-        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
-        ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
+        labstyle = wx.ALIGN_LEFT|wx.EXPAND
+        ctrlstyle = wx.ALIGN_LEFT
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
         Font9  = Font(9)
         Font10 = Font(10)
@@ -438,15 +438,15 @@ class XRFDisplayFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
-        sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
-        sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(yscalepanel,         0, wx.EXPAND|wx.ALL)
+        sizer.Add(zoompanel,           0, wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
-        sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
+        sizer.Add(ptable,              0, wx.EXPAND|wx.ALL, 4)
         sizer.Add(arrowpanel,          0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         if self.wids['xray_lines'] is not None:
-            sizer.Add(xlines,  0, wx.ALIGN_CENTER|wx.GROW|wx.ALL|wx.EXPAND)
+            sizer.Add(xlines,  0, wx.GROW|wx.ALL|wx.EXPAND)
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
