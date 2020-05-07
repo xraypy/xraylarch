@@ -915,7 +915,7 @@ class FitSpectraFrame(wx.Frame):
 
     def onElems_GuessPeaks(self, event=None):
         mca = self.mca
-        _indices = peak.indexes(mca.counts, min_dist=5, thres=0.025)
+        _indices = peak.indexes(mca.counts*1.0, min_dist=5, thres=0.025)
         peak_energies = mca.energy[_indices]
 
         elrange = range(10, 92)
@@ -1110,8 +1110,8 @@ class FitSpectraFrame(wx.Frame):
 
         script = [xrfmod_setup.format(**opts)]
 
-        for peak in ('Elastic', 'Compton1', 'Compton2'):
-            t = peak.lower()
+        for peakname in ('Elastic', 'Compton1', 'Compton2'):
+            t = peakname.lower()
             if opts['%s_use'% t]:
                 d = {'peakname': t}
                 d['_cen']  = opts['%s_cen'%t]
