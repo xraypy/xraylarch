@@ -49,7 +49,7 @@ from larch.io import nativepath
 from larch.site_config import icondir
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
-from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
+from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
 from ..epics import pv_fullname
 from ..wxlib.xrfdisplay import XRFDisplayFrame
 
@@ -621,19 +621,19 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         fines = {'X': '?', 'Y': '?'}
         i0vals = {'flux':'?', 'current':'?'}
-        in_energy_found = False
+
+        en = xrmfile.get_incident_energy()
+        enmsg = '%0.1f eV (%0.3f \u00c5)' % (en, lambda_from_E(en, E_units='eV'))
+        if abs(en - DEFAULT_XRAY_ENERGY) < 1.0:
+            enmsg = "%s : PROBABLY NOT CORRECT" % enmsg
+        self.wids['X-ray Energy'].SetLabel(enmsg)
+
 
         for name, addr, val in zip(env_names, env_addrs, env_vals):
             name = bytes2str(name).lower()
             val = h5str(val)
             if 'ring_current' in name or 'ring current' in name:
                 self.wids['Ring Current'].SetLabel('%s mA' % val)
-            elif (('mono.energy' in name or 'mono energy' in name) and
-                  not in_energy_found):
-                xrmfile.incident_energy = en = float(val)
-                msg = '%0.1f eV (%0.3f \u00c5)' % (en, lambda_from_E(en, E_units='eV'))
-                self.wids['X-ray Energy'].SetLabel(msg)
-                in_energy_found = True
             elif 'beamline.fluxestimate' in name or 'transmitted flux' in name:
                 i0vals['flux'] = val
             elif 'i0 current' in name:

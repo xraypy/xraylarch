@@ -30,6 +30,7 @@ from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
 
 from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
+DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
 NINIT = 32
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
@@ -2360,7 +2361,7 @@ class GSEXRM_MapFile(object):
             name = name.lower().replace('.', ' ')
             if name.startswith('mono energy'):
                 return float(val)
-        return None
+        return DEFAULT_XRAY_ENERGY
 
     def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None,
                         det=None, dtcorrect=None):
@@ -3061,7 +3062,7 @@ class GSEXRM_MapFile(object):
                 lmtgrp = rgrp.create_dataset('limits', data=[0., 0.], **self.compress_args)
                 lmtgrp.attrs['type'] = 'energy'
                 lmtgrp.attrs['units'] = 'keV'
-                
+
                 out = np.zeros([1, ncol])
             if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
                 _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')

@@ -1,7 +1,7 @@
 
 from .xrm_mapfile import (read_xrmmap, process_mapfolder,
                           process_mapfolders, h5str, ensure_subgroup,
-                          GSEXRM_MapFile)
+                          GSEXRM_MapFile, DEFAULT_XRAY_ENERGY)
 
 from .gsexrm_utils import GSEXRM_FileStatus
 
