@@ -5,7 +5,13 @@ Authors/Modifications:
 ----------------------
 * Margaret Koker, koker@cars.uchicago.edu
 '''
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import numpy as np
+from scipy.optimize import leastsq, minimize
 
 HAS_tomopy = False
 try:
@@ -69,6 +75,61 @@ def trim_sinogram(sino,x,omega,pixel_trim=None):
 
     return sino,x,omega
 
+def find_tomo_center(sino, omega, center=None, sinogram_order=True):
+
+    xmax = sino.shape[0]
+    if sinogram_order:
+        xmax = sino.shape[1]
+    if center is None:
+        center = xmax/2.0
+
+    # init center to scale recon
+    rec = tomopy.recon(sino, omega, center=center, sinogram_order=sinogram_order,
+                       algorithm='gridrec', filter_name='shepp')
+    rec = tomopy.circ_mask(rec, axis=0)
+
+    # tomopy score, tweaked slightly
+    rmin, rmax = rec.min(), rec.max()
+    rmin  -= 0.5*(rmax-rmin)
+    rmax  += 0.5*(rmax-rmin)
+
+    out = minimize(_center_resid_negent, center,
+                   args=(sino, omega, rmin, rmax, sinogram_order),
+                   method='Nelder-Mead', tol=1.0)
+
+    out = minimize(_center_resid_blur, out.x,
+                   args=(sino, omega, rmin, rmax, sinogram_order),
+                   method='Nelder-Mead', tol=0.25)
+
+    return out.x
+
+
+def _center_resid_negent(center, sino, omega, rmin, rmax, sinogram_order=True):
+    """
+    Cost function used for the ``find_center`` routine.
+    """
+    rec = tomopy.recon(sino, omega, center,
+                       sinogram_order=sinogram_order,
+                       algorithm='gridrec', filter_name='shepp')
+    rec = tomopy.circ_mask(rec, axis=0)
+    hist, e = np.histogram(rec, bins=64, range=[rmin, rmax])
+    hist = hist/rec.size
+    score = -np.dot(hist, np.log(1.e-12+hist))
+    logger.info("negent center = %.4f  %.4f" % (center, score))
+    return score
+
+def _center_resid_blur(center, sino, omega, rmin, rmax, sinogram_order=True):
+    """
+    Cost function used for the ``find_center`` routine.
+    """
+    rec = tomopy.recon(sino, omega, center,
+                       sinogram_order=sinogram_order,
+                       algorithm='gridrec', filter_name='shepp')
+    rec = tomopy.circ_mask(rec, axis=0)
+    score = -((rec - rec.mean())**2).sum()
+    logger.info("blur center = %.4f  %.4f" % (center, score))    
+    return score
+
 def tomo_reconstruction(sino, omega, algorithm='gridrec',
                         filter_name='shepp', num_iter=1, center=None,
                         refine_center=False, sinogram_order=True):
@@ -78,12 +139,15 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
     '''
     if center is None:
         center = sino.shape[1]/2.
-        refine_center = True
-
+    
     if refine_center:
-        center = tomopy.find_center(sino, np.radians(omega), init=center,
-                                    ind=0, tol=0.5, sinogram_order=sinogram_order)
-
+        print(">> Refine Center start>> ", center, sinogram_order)
+        # center = tomopy.find_center(sino, np.radians(omega), init=center,
+        #                            ind=0, tol=0.5, sinogram_order=sinogram_order)
+        
+        center = find_tomo_center(sino, np.radians(omega), center=center,
+                                  sinogram_order=sinogram_order)
+        print(">> Refine Center done>> ", center, sinogram_order)
     algorithm = algorithm.lower()
     recon_kws = {}
     if algorithm.startswith('gridr'):
