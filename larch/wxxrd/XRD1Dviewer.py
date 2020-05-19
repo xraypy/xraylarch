@@ -2805,7 +2805,7 @@ class PeakToolsPanel(wx.Panel):
         intthrsizer = wx.BoxSizer(wx.VERTICAL)
 
         ttl_intthr = wx.StaticText(self, label='Intensity threshold')
-        self.val_intthr = wx.TextCtrl(self,wx.TE_PROCESS_ENTER)
+        self.val_intthr = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.val_intthr.Bind(wx.EVT_TEXT_ENTER, partial(self.owner.find_peaks, filter=True))
         hbox1_pks.Add(ttl_intthr,  flag=wx.RIGHT, border=8)
         hbox1_pks.Add(self.val_intthr,  flag=wx.RIGHT, border=8)
