@@ -1904,52 +1904,15 @@ class MapViewerFrame(wx.Frame):
 
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
                            defaultPath=os.getcwd(),
-                           style=wx.FD_OPEN)
-        folder = None
-        if dlg.ShowModal() != wx.ID_OK:
-            return
+                           style=wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE)
 
-        folder = os.path.abspath(dlg.GetPath())
-        dlg.Destroy()
+        if dlg.ShowModal() == wx.ID_OK:
+            folder = os.path.abspath(dlg.GetPath())
+            dlg.Destroy()
 
-
-        myDlg = OpenMapFolder(folder=folder)
-
-        path, read = None, False
-        if myDlg.ShowModal() == wx.ID_OK:
-            read        = True
-
-            args = {'folder':   folder,
-                    'HAS_xrf':          myDlg.ChkBx[0].GetValue(),
-                    'HAS_xrd2D':        myDlg.ChkBx[1].GetValue(),
-                    'HAS_xrd1D':        myDlg.ChkBx[2].GetValue(),
-                    'facility':         myDlg.info[0].GetValue(),
-                    'beamline':         myDlg.info[1].GetValue(),
-                    'run':              myDlg.info[2].GetValue(),
-                    'proposal':         myDlg.info[3].GetValue(),
-                    'user':             myDlg.info[4].GetValue(),
-                    'compression':      myDlg.H5cmprInfo[0].GetStringSelection(),
-                    'compression_opts': myDlg.H5cmprInfo[1].GetSelection()}
-
-            if len(myDlg.XRDInfo[1].GetValue()) > 0:
-                flipchoice = False if myDlg.XRDInfo[0].GetSelection() == 1 else True
-                args.update({'xrdcal'     : myDlg.XRDInfo[1].GetValue(),
-                             'azwdgs'     : myDlg.XRDInfo[6].GetValue(),
-                             'qstps'      : myDlg.XRDInfo[4].GetValue(),
-                              'flip'      : flipchoice,
-                              'bkgdscale' : float(myDlg.XRDInfo[11].GetValue())})
-            if len(myDlg.XRDInfo[8].GetValue()) > 0:
-                bkgd = 2 if myDlg.XRDInfo[7].GetSelection() == 0 else 1
-                args.update({'xrd%idbkgd' % bkgd:myDlg.XRDInfo[8].GetValue()})
-            if len(myDlg.XRDInfo[13].GetValue()) > 0:
-                args.update({'xrd2dmask':myDlg.XRDInfo[13].GetValue()})
-
-        myDlg.Destroy()
-
-        if read:
-            args['scandb'] = self.scandb
-            xrmfile = GSEXRM_MapFile(**args)
+            xrmfile = GSEXRM_MapFile(folder=folder, scandb=self.scandb)
             self.add_xrmfile(xrmfile)
+            
 
     def add_xrmfile(self, xrmfile):
         parent, fname = os.path.split(xrmfile.filename)
