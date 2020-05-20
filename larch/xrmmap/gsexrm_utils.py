@@ -171,7 +171,8 @@ class GSEXRM_MapRow:
         self.nrows_expected = nrows_expected
 
         offslice = slice(None, None, None)
-        if ioffset is None: ioffset = 0
+        if ioffset is None:
+            ioffset = 0
         if ioffset > 0:
             offslice = slice(ioffset, None, None)
         elif ioffset < 0:

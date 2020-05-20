@@ -95,23 +95,31 @@ def find_tomo_center(sino, omega, center=None, sinogram_order=True):
 
     out = minimize(_center_resid_negent, center,
                    args=(sino, omega, rmin, rmax, sinogram_order),
-                   method='Nelder-Mead', tol=1.0)
+                   method='Nelder-Mead', tol=1.5)
 
-    out = minimize(_center_resid_blur, out.x,
-                   args=(sino, omega, rmin, rmax, sinogram_order),
-                   method='Nelder-Mead', tol=0.25)
-
-    return out.x
+    cen = out.x
+    if cen > 0  and cen < xmax:
+        out = minimize(_center_resid_blur, cen,
+                       args=(sino, omega, rmin, rmax, sinogram_order),
+                       method='Nelder-Mead', tol=0.5)
+        cen = out.x
+    return cen
 
 
 def _center_resid_negent(center, sino, omega, rmin, rmax, sinogram_order=True):
     """
     Cost function used for the ``find_center`` routine.
     """
-    rec = tomopy.recon(sino, omega, center,
-                       sinogram_order=sinogram_order,
-                       algorithm='gridrec', filter_name='shepp')
-    rec = tomopy.circ_mask(rec, axis=0)
+    _, nang, nx = sino.shape
+    if center < 1:
+        return 10*(1-center)
+    if center > nx-2:
+        return 10*(center-nx+2)
+    n1 = int(nx/4.0)
+    n2 = int(3*nx/4.0)
+    rec = tomopy.recon(sino, omega, center,algorithm='gridrec', 
+                       sinogram_order=sinogram_order)
+    rec = tomopy.circ_mask(rec, axis=0)[:, n1:n2, n1:n2]
     hist, e = np.histogram(rec, bins=64, range=[rmin, rmax])
     hist = hist/rec.size
     score = -np.dot(hist, np.log(1.e-12+hist))
