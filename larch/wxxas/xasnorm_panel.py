@@ -451,6 +451,7 @@ class XASNormPanel(TaskPanel):
         ppanel = self.controller.get_display(stacked=False).panel
         ppanel.conf.show_legend=True
         ppanel.conf.draw_legend()
+        ppanel.unzoom_all()
 
     def onAutoNorm(self, evt=None):
         dgroup = self.controller.get_group()
@@ -832,7 +833,6 @@ class XASNormPanel(TaskPanel):
     def plot(self, dgroup, title=None, plot_yarrays=None, yoff=0,
              delay_draw=False, multi=False, new=True, zoom_out=True,
              with_extras=True, **kws):
-
         if self.skip_plotting:
             return
         ppanel = self.controller.get_display(stacked=False).panel
@@ -916,7 +916,6 @@ class XASNormPanel(TaskPanel):
             if yaname == 'dnormde' and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                print(" -- need norm_mback ! " )
                 self.process(dgroup=dgroup, noskip=True, force_mback=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, **popts)
