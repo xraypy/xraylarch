@@ -962,8 +962,8 @@ class XASFrame(wx.Frame):
             self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
 
-    def onRead_OK(self, script, path, groupname=None, array_sel=None,
-                  overwrite=False):
+    def onRead_OK(self, script, path, groupname=None, filename=None,
+                  array_sel=None, overwrite=False):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
@@ -971,9 +971,11 @@ class XASFrame(wx.Frame):
         if groupname is None:
             return
         abort_read = False
-        filedir, filename = os.path.split(path)
+        filedir, real_filename = os.path.split(path)
+        if filename is None:
+            filename = real_filename
         if not overwrite and hasattr(self.larch.symtable, groupname):
-            groupname = file2groupname(filename, symtable=self.larch.symtable)
+            groupname = file2groupname(real_filename, symtable=self.larch.symtable)
 
         if abort_read:
             return
@@ -1010,12 +1012,12 @@ class XASFrame(wx.Frame):
 
         for path in self.paths2read:
             path = path.replace('\\', '/')
-            filedir, filename = os.path.split(path)
-            gname = file2groupname(filename, symtable=self.larch.symtable)
+            filedir, real_filename = os.path.split(path)
+            gname = file2groupname(real_filename, symtable=self.larch.symtable)
             self.larch.eval(script.format(group=gname, path=path))
-            self.install_group(gname, filename, overwrite=overwrite)
+            self.install_group(gname, real_filename, overwrite=overwrite)
 
-        self.write_message("read %s" % (filename))
+        self.write_message("read %s" % (real_filename))
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()

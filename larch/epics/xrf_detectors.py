@@ -93,7 +93,6 @@ class Epics_Xspress3(object):
     MIN_FRAMETIME = 0.25
     MAX_FRAMES    = 12000
     def __init__(self, prefix=None, nmca=4, version=2, use_sum=True, **kws):
-
         self.nmca = nmca
         self.prefix = prefix
         self.version = version
@@ -135,7 +134,7 @@ class Epics_Xspress3(object):
         Creator = Xspress3
         if self.version < 2:
             Creator = Xspress310
-        self._xsp3 = Creator(self.prefix)
+        self._xsp3 = Creator(self.prefix, nmca=self.nmca)
 
         counterpv = self._xsp3.PV('ArrayCounter_RBV')
         counterpv.clear_callbacks()

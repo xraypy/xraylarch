@@ -67,9 +67,9 @@ class DetectorSelectDialog(wx.Dialog):
     Can be either XIA xMAP  or Quantum XSPress3
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
-    det_types = ('ME-4', 'other')
-    ioc_types = ('Xspress3', 'Xspress3(old)', 'xmap')
-    def_prefix = '13QX4:'   # SDD1:'
+    det_types = ('SXD-7', 'ME-7', 'ME-4', 'other')
+    ioc_types = ('Xspress3.1', 'xMAP', 'Xspress3.0')
+    def_prefix = '13QX7:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
@@ -374,45 +374,72 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.SetIcon(wx.Icon(self.icon_file, wx.BITMAP_TYPE_ICO))
         except:
             pass
-
         self.set_roilist(mca=None)
 
-    def createEpicsPanel(self):
-        pane = wx.Panel(self, name='epics panel')
-        psizer = wx.GridBagSizer(4, 12) # wx.BoxSizer(wx.HORIZONTAL)
-
+    def create_detbuttons(self, pane):
         btnpanel = wx.Panel(pane, name='buttons')
-
-        nmca = self.nmca
-        NPERROW = 6
-        self.SetFont(Font(9))
-        if self.det_type.lower().startswith('me-4') and nmca<5:
-            btnsizer = wx.GridBagSizer(2, 2)
-        else:
-            btnsizer = wx.GridBagSizer(int((nmca+NPERROW-2)/(1.0*NPERROW)), NPERROW)
-
-        style  = wx.ALIGN_LEFT
-        rstyle = wx.ALIGN_RIGHT
-        bkg_choices = ['None']
-
-        psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)
-        for i in range(1, 1+nmca):
-            bkg_choices.append("%i" % i)
-            b =  Button(btnpanel, '%i' % i, size=(30, 30),
-                        action=partial(self.onSelectDet, index=i))
+        btnsizer = wx.GridBagSizer(1, 1)        
+        btns = {}
+        sx = 30
+        sy = int(sx/2)
+        for i in range(1, self.nmca+1):
+            b = Button(btnpanel, '%d' % i, size=(sx, sx),
+                       action=partial(self.onSelectDet, index=i))
             b.SetFont(Font(10))
             self.wids['det%i' % i] = b
-            loc = divmod(i-1, NPERROW)
-            if self.det_type.lower().startswith('me-4') and nmca<NPERROW-1:
-                loc = self.me4_layout[i-1]
-            btnsizer.Add(b,  loc, (1, 1), style, 1)
+            btns[i] = b
+        dtype = self.det_type.lower().replace('-', '').replace(' ', '').replace('_', '')
+           
+        if dtype.startswith('sxd7') and self.nmca == 7:
+            btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[4],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[5],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[3],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[7],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[6],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (0, 4), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[2],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[1],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (5, 4), (1, 2), wx.ALIGN_LEFT, 1)
+        elif dtype.startswith('me7') and self.nmca == 7:
+            btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[7],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[6],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)                        
+            btnsizer.Add(btns[2],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[1],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[5],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (0, 4), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[3],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[4],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add((sx, sy), (5, 4), (1, 2), wx.ALIGN_LEFT, 1)
+        elif dtype.startswith('me4') and self.nmca == 4:
+            btnsizer.Add(btns[1],  (0, 0), (1, 1), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[2],  (1, 0), (1, 1), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[3],  (1, 1), (1, 1), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[4],  (0, 1), (1, 1), wx.ALIGN_LEFT, 1)
+        else:
+            NPERROW = 4
+            icol, irow = 0, 0
+            for nmca  in range(1, self.nmca+1):
+                btnsizer.Add(btns[nmca],  (irow, icol), (1, 1), wx.ALIGN_LEFT, 1)            
+                icol += 1
+                if icol > NPERROW-1:
+                    icol = 0
+                    irow += 1
+
         pack(btnpanel, btnsizer)
-        nrows = 1 + loc[0]
+        return btnpanel
+        
+    def createEpicsPanel(self):
+        pane = wx.Panel(self, name='epics panel')
+        style  = wx.ALIGN_LEFT
+        rstyle = wx.ALIGN_RIGHT
+       
+        det_btnpanel = self.create_detbuttons(pane)
 
-        if self.det_type.lower().startswith('me-4') and nmca<5:
-            nrows = 2
-
-        psizer.Add(btnpanel, (0, 1), (nrows, 1), style, 1)
+        bkg_choices = ['None'] + ["%d" % (i+1) for i in range(self.nmca)]
 
         self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=style)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(120, -1), style=style)
@@ -443,7 +470,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
         dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
 
-
+        psizer = wx.GridBagSizer(5, 5)
+        psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), style, 1)
+        psizer.Add(det_btnpanel,           (0, 1), (2, 1), style, 1)
         psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
         psizer.Add(self.wids['bkg_det'],   (0, 3), (1, 1), style, 1)
         psizer.Add(sum_lab,                (1, 2), (1, 1), style, 1)

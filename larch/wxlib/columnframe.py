@@ -472,13 +472,18 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.datatype,                    (ir, 1), (1, 2), LEFT, 0)
 
-        ir += 1
+        self.wid_filename = wx.TextCtrl(panel, value=group.filename,
+                                         size=(300, -1))
         self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
-                                         size=(200, -1))
+                                         size=(150, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
-        sizer.Add(SimpleText(panel, 'Group Name:'), (ir, 0), (1, 1), LEFT, 0)
+        ir += 1
+        sizer.Add(SimpleText(panel, 'Displayed Name:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_filename,                (ir, 1), (1, 2), LEFT, 0)
+        ir += 1
+        sizer.Add(SimpleText(panel, 'Group/Code Name:'), (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LEFT, 0)
         sizer.Add(self.message,                     (ir, 3), (1, 4), LEFT, 0)
 
@@ -623,6 +628,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
     def onOK(self, event=None):
         """ build arrays according to selection """
+        user_filename = self.wid_filename.GetValue()
         if self.wid_groupname is not None:
             groupname = fix_varname(self.wid_groupname.GetValue())
 
@@ -672,6 +678,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, groupname=groupname,
+                            filename=user_filename,
                             array_sel=self.array_sel)
 
         for f in self.subframes.values():
