@@ -276,16 +276,30 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         title   = 'Fit Plot Window %i' % win
         symname = '%s.fitplot%i' % (_larch_name, win)
 
-    if win in display_dict:
-        display = display_dict[win]
-    else:
-        display = _larch.symtable.get_symbol(symname, create=True)
-        if display is None:
-            display = creator(window=win, wxparent=wxparent,
-                              size=size, _larch=_larch)
     if wintitle is not None:
         title = wintitle
-    display.SetTitle(title)
+
+    def _get_disp(syname, creator, win, ddict, wxparent, size, _larch):
+        if win in ddict:
+            display = ddict[win]
+        else:
+            display = _larch.symtable.get_symbol(symname, create=True)
+            if display is None:
+                display = creator(window=win, wxparent=wxparent,
+                                  size=size, _larch=_larch)
+            ddict[win] = display
+        return display
+
+    display = _get_disp(symname, creator, win, display_dict, wxparent,
+                        size, _larch)
+    try:
+        display.SetTitle(title)
+    except:
+        display_dict.pop(win)
+        display = _get_disp(symname, creator, win, display_dict, wxparent,
+                            size, _larch)
+        display.SetTitle(title)
+        
     _larch.symtable.set_symbol(symname, display)
     return display
 
