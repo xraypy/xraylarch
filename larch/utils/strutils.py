@@ -148,6 +148,19 @@ def fix_varname(s):
         t = t[:-1]
     return t
 
+def common_startstring(words):
+    """common starting substring for a list of words"""
+    out = words[0]
+    for tmp in words[1:]:
+        i = 0
+        for a, b in zip(out, tmp):
+            if a == b:
+                i += 1
+            else:
+                out = out[:i]
+    return out
+
+
 def unique_name(name, nlist, max=1000):
     """return name so that is is not in list,
     by appending _1, _2, ... as necessary up to a max suffix
