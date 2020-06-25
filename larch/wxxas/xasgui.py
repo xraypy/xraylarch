@@ -26,7 +26,8 @@ WX_DEBUG = True
 import larch
 from larch import Group
 from larch.math import index_of
-from larch.utils.strutils import file2groupname, unique_name
+from larch.utils.strutils import (file2groupname, unique_name,
+                                  common_startstring)
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
@@ -788,7 +789,9 @@ class XASFrame(wx.Frame):
         if len(groups) < 1:
             return
 
-        outgroup = unique_name('merge', self.controller.file_groups)
+        outgroup = common_startstring(list(groups.keys()))
+        outgroup = "%s (merge %d)" % (outgroup, len(groups))
+        outgroup = unique_name(outgroup, self.controller.file_groups)
         dlg = MergeDialog(self, list(groups.keys()), outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
