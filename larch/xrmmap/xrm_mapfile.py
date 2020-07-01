@@ -2401,7 +2401,7 @@ class GSEXRM_MapFile(object):
             counts = mapdat['counts'][sy, sx, :]
 
         if dtcorrect and 'dtfactor' in mapdat.keys():
-            counts *= mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
+            counts = counts*mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
         return counts
 
     def get_mca_area(self, areaname, det=None, dtcorrect=None):
