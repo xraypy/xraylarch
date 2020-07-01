@@ -283,7 +283,7 @@ class GSEXRM_MapRow:
                         print( 'Failed to read XRD data from %s' % self.xrdfile)
 
             except (IOError, IndexError):
-                time.sleep(0.010)
+                time.sleep(0.025)
 
         if atime < 0:
             print( 'Failed to read data.')
