@@ -42,6 +42,54 @@ class XSP3Data(object):
         self.inputCounts  = np.zeros((npix, ndet), dtype='f8')
         # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
+def get_counts_carefully(h5link):
+    """
+    get counts array with some error checking for corrupted files,
+    especially those that give
+       'OSError: Can't read data (inflate() failed)'
+    because one data point is bad.
+
+    This seems to be a common enough failure mode that this function looks
+    for such points and replaces offending points by the average of the
+    neighboring points
+    """
+    # will usually succeed, of course.
+    try:
+        return h5link[:]
+    except OSError:
+        pass
+
+    # find bad point
+    npts = h5link.shape[0]
+    ilo, ihi = 0, npts
+    imid = (ihi-ilo)//2
+    while (ihi-ilo) > 1:
+        try:
+            _tmp = h5link[ilo:imid]
+            ilo, imid = imid, ihi
+        except OSError:
+            ihi, imid = imid, (imid+ilo)//2
+
+    # retest to make sure there is one bad point
+    for i in range(ilo, ihi):
+        try:
+            _tmp = h5link[i]
+        except OSError:
+            ibad = i
+            break
+
+    counts = np.zeros(h5link.shape, dtype=h5link.dtype)
+    counts[:ibad] = h5link[:ibad]
+    counts[ibad+1:] = h5link[ibad+1:]
+    if ibad == 0:
+        counts[ibad] = counts[ibad+1]
+    elif ibad == npts - 1:
+        counts[ibad] = counts[ibad-1]
+    else:
+        counts[ibad] = ((counts[ibad-1]+counts[ibad+1])/2.0).astype(h5link.dtype)
+    return counts
+
+
 def read_xsp3_hdf5(fname, npixels=None, verbose=False,
                    estimate_dtc=False, _larch=None):
     # Reads a HDF5 file created with the DXP xMAP driver
@@ -52,8 +100,8 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     h5file = h5py.File(fname, 'r')
 
     root  = h5file['entry/instrument']
-    counts = root['detector/data']
-    #
+    counts = get_counts_carefully(root['detector/data'])
+
     # support bother newer and earlier location of NDAttributes
     ndattr = None
     try:
@@ -81,11 +129,12 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     out = XSP3Data(npixels, ndet, nchan)
     out.numPixels = npixels
     t1 = time.time()
+
     if ndpix < npix:
         out.counts = np.zeros((npix, ndet, nchan), dtype='f8')
-        out.counts[:ndpix, :, :]  = counts[:]
+        out.counts[:ndpix, :, :]  = counts
     else:
-        out.counts = counts[:]
+        out.counts = counts
 
     if estimate_dtc:
         dtc_taus = XSPRESS3_TAUS
