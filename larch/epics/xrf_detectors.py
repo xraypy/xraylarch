@@ -179,19 +179,23 @@ class Epics_Xspress3(object):
         if not use_sum:
             self.mca_array_name = 'MCA%i:ArrayData'
 
-    def set_dwelltime(self, dtime=1.0, **kws):
+    def set_dwelltime(self, dtime=1.0, nframes=None, **kws):
         self._xsp3.useInternalTrigger()
         self._xsp3.FileCaptureOff()
 
-        # count forever, or close to it
-        frametime = self.MIN_FRAMETIME
-        if dtime < self.MIN_FRAMETIME:
-            nframes = self.MAX_FRAMES
-        elif dtime > self.MAX_FRAMES*self.MIN_FRAMETIME:
-            nframes   = self.MAX_FRAMES
-            frametime = 1.0*dtime/nframes
+        if nframes is None:
+            # count forever, or close to it
+            frametime = self.MIN_FRAMETIME
+            if dtime < self.MIN_FRAMETIME:
+                nframes = self.MAX_FRAMES
+            elif dtime > self.MAX_FRAMES*self.MIN_FRAMETIME:
+                nframes   = self.MAX_FRAMES
+                frametime = 1.0*dtime/nframes
+            else:
+                nframes   = int((dtime+frametime*0.1)/frametime)
         else:
-            nframes   = int((dtime+frametime*0.1)/frametime)
+            frametime = dtime
+
         self._xsp3.NumImages   = self.nframes   = nframes
         self._xsp3.AcquireTime = self.frametime = frametime
 
