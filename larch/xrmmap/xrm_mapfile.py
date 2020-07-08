@@ -1851,11 +1851,12 @@ class GSEXRM_MapFile(object):
 
         areas = ensure_subgroup('areas', self.xrmmap, dtype='areas')
 
-        for aname in np.load(filename).files:
-            desc = '%s imported from %s' % (aname, fname)
-            name = aname
+        npzdat = np.load(filename)
+        for aname in npzdat.files:
+            desc = name = aname
             if name in areas and not overwrite:
                 name = '%s_%s' % (name, fname)
+                desc = '%s from %s' % (aname, fname)
             self.add_area(npzdat[aname], name=name, desc=desc)
 
     def get_area(self, name=None):
