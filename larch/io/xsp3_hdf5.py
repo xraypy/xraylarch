@@ -78,8 +78,8 @@ def get_counts_carefully(h5link):
             ibad = i
             break
 
+    # its not unusual to have two bad points in a row:
     p1bad = m1bad = False
-
     try:
         _tmp = h5link[i+1]
     except OSError:
@@ -93,16 +93,16 @@ def get_counts_carefully(h5link):
         ibad = ibad - 1
         p1bad = True
 
-
     counts = np.zeros(h5link.shape, dtype=h5link.dtype)
     counts[:ibad] = h5link[:ibad]
-    print("recovering bad point ", ibad, p1bad)
-    if p1bad:
-        counts[ibad+2:] = h5link[ibad+2:]
-        counts[ibad:] = h5link[ibad-1:]
-        counts[ibad+1:] = h5link[ibad+2:]
+    counts[ibad+2:] = h5link[ibad+2:]
+    if p1bad: # two in a row
+        print("fixing 2 bad points in h5 file")
+        counts[ibad]   = h5link[ibad-1]
+        counts[ibad+1] = h5link[ibad+2]
     else:
-        counts[ibad+1:] = h5link[ibad+1:]
+        print("fixing bad point in h5 file")
+        counts[ibad+1] = h5link[ibad+1]
         if ibad == 0:
             counts[ibad] = counts[ibad+1]
         elif ibad == npts - 1:
