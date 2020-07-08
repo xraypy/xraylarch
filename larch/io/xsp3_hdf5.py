@@ -78,15 +78,37 @@ def get_counts_carefully(h5link):
             ibad = i
             break
 
+    p1bad = m1bad = False
+
+    try:
+        _tmp = h5link[i+1]
+    except OSError:
+        p1bad = True
+    try:
+        _tmp = h5link[i-1]
+    except OSError:
+        m1bad = True
+
+    if  m1bad:
+        ibad = ibad - 1
+        p1bad = True
+
+
     counts = np.zeros(h5link.shape, dtype=h5link.dtype)
     counts[:ibad] = h5link[:ibad]
-    counts[ibad+1:] = h5link[ibad+1:]
-    if ibad == 0:
-        counts[ibad] = counts[ibad+1]
-    elif ibad == npts - 1:
-        counts[ibad] = counts[ibad-1]
+    print("recovering bad point ", ibad, p1bad)
+    if p1bad:
+        counts[ibad+2:] = h5link[ibad+2:]
+        counts[ibad:] = h5link[ibad-1:]
+        counts[ibad+1:] = h5link[ibad+2:]
     else:
-        counts[ibad] = ((counts[ibad-1]+counts[ibad+1])/2.0).astype(h5link.dtype)
+        counts[ibad+1:] = h5link[ibad+1:]
+        if ibad == 0:
+            counts[ibad] = counts[ibad+1]
+        elif ibad == npts - 1:
+            counts[ibad] = counts[ibad-1]
+        else:
+            counts[ibad] = ((counts[ibad-1]+counts[ibad+1])/2.0).astype(h5link.dtype)
     return counts
 
 
@@ -95,6 +117,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
     # Reads a HDF5 file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     npixels = None
+
     clockrate = 12.5e-3   # microseconds per clock tick: 80MHz clock
     t0 = time.time()
     h5file = h5py.File(fname, 'r')
