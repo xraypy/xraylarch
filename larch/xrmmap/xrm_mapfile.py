@@ -1242,13 +1242,15 @@ class GSEXRM_MapFile(object):
                                         maxshape=(None, npts), **self.compress_args)
 
                 dgrp = xrmmap['roimap'][imca]
-                for rname,rlimit in zip(roi_names,roi_limits[i]):
+                for rname, rlimit in zip(roi_names,roi_limits[i]):
                     rgrp = dgrp.create_group(rname)
                     for aname,dtype in (('raw', np.uint32),
                                         ('cor', np.float32)):
                         rgrp.create_dataset(aname, (1, npts), dtype,
                                             chunks=self.chunksize[:-1],
                                             maxshape=(None, npts), **self.compress_args)
+
+                    rlimit = [max(0, rlimit[0]), min(len(enarr[i])-1, rlimit[1])]
                     lmtgrp = rgrp.create_dataset('limits', data=enarr[i][rlimit])
                     lmtgrp.attrs['type'] = 'energy'
                     lmtgrp.attrs['units'] = 'keV'
@@ -1280,7 +1282,10 @@ class GSEXRM_MapFile(object):
                     rgrp.create_dataset(aname, (1, npts), dtype,
                                         chunks=self.chunksize[:-1],
                                         maxshape=(None, npts), **self.compress_args)
-                lmtgrp = rgrp.create_dataset('limits', data=enarr[0][rlimit], **self.compress_args)
+                rlimit = [max(0, rlimit[0]), min(len(enarr[0])-1, rlimit[1])]
+
+                lmtgrp = rgrp.create_dataset('limits', data=enarr[0][rlimit],
+                                             **self.compress_args)
                 lmtgrp.attrs['type'] = 'energy'
                 lmtgrp.attrs['units'] = 'keV'
 
