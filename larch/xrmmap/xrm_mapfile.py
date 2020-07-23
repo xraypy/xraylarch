@@ -909,9 +909,9 @@ class GSEXRM_MapFile(object):
 
         pform = 'Add row %4i, yval=%s' % (thisrow+1, row.yvalue)
         if self.has_xrf:
-            pform = '%s, xrffile=%s' % (pform,row.xrffile)
+            pform = '%s, xrffile=%s' % (pform, row.xrffile)
         if self.has_xrd2d or self.has_xrd1d:
-            pform = '%s, xrdfile=%s' % (pform,row.xrdfile)
+            pform = '%s, xrdfile=%s' % (pform, row.xrdfile)
         print(pform)
 
         dt.add(" ran callback, print, version  %s"  %self.version)
@@ -1103,11 +1103,12 @@ class GSEXRM_MapFile(object):
                 sum_cor[thisrow, :npts, :] = np.array(sumcor).transpose()
 
         if self.has_xrd1d and row.xrdq is not None:
-            if thisrow == 0:
+            if thisrow < 2:
                 if len(row.xrdq.shape) == 1:
                     self.xrmmap['xrd1d/q'][:] = row.xrdq
                 else:
                     self.xrmmap['xrd1d/q'][:] = row.xrdq[0]
+
             if self.bkgd_xrd1d is not None:
                 self.xrmmap['xrd1d/counts'][thisrow,] = row.xrd1d - self.bkgd_xrd1d
             else:
@@ -1512,7 +1513,6 @@ class GSEXRM_MapFile(object):
             try:
                 xrd1dgrp.attrs['type'] = 'xrd1d detector'
                 xrd1dgrp.attrs['desc'] = 'pyFAI calculation from xrd2d data'
-
                 xrd1dgrp.create_dataset('q',          (self.qstps,), np.float32)
                 xrd1dgrp.create_dataset('background', (self.qstps,), np.float32)
 
