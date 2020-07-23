@@ -361,9 +361,9 @@ class GSEXRM_MapRow:
                     # print(">>>READ XRDQ 1D ", xrd1d_file, self.xrdq.shape, self.xrd1d.shape)
                 if self.xrdq is None and self.xrd2d is not None: # integrate data if needed.
                     print("will try to integrate 2DXRD data ", self.xrd2d.shape)
-                    attrs['flip'] = True
-                    self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
-                    maxval = 2**32 - 2**14
+                    # attrs['flip'] = True
+                    # self.xrd2d = self.xrd2d[:, 1:-1, 3:-3]
+                    # maxval = 2**32 - 2**14
                     self.xrd2d[np.where(self.xrd2d>maxval)] = 0
                     self.xrdq, self.xrd1d = integrate_xrd_row(self.xrd2d, xrdcal,
                                                               **attrs)
