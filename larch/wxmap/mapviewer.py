@@ -1912,7 +1912,7 @@ class MapViewerFrame(wx.Frame):
 
             xrmfile = GSEXRM_MapFile(folder=folder, scandb=self.scandb)
             self.add_xrmfile(xrmfile)
-            
+
 
     def add_xrmfile(self, xrmfile):
         parent, fname = os.path.split(xrmfile.filename)
@@ -2333,20 +2333,25 @@ class ROIPopUp(wx.Dialog):
         except:
             return
 
-        limits, names = [], detgrp.keys()
+        limits = []
+        names = detgrp.keys()
         for name in names:
             limits += [list(detgrp[name]['limits'][:])]
-
-        self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
+        if len(limits) > 0:
+            self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
         self.roiSELECT()
 
-
-    def roiSELECT(self,event=None):
-
+    def roiSELECT(self, event=None):
         detname = self.rm_roi_ch[0].GetStringSelection()
         roiname = self.rm_roi_ch[1].GetStringSelection()
-
-        roi = self.cfile.xrmmap['roimap'][detname][roiname]
+        roimap = self.cfile.xrmmap['roimap']
+        roi = None
+        if detname in roimap:
+            detroi = roimap[detname]
+            if roiname in detroi:
+                roi = detroi[roiname]
+        if roi is None:
+            return
         limits = roi['limits'][:]
         units = bytes2str(roi['limits'].attrs.get('units',''))
 
