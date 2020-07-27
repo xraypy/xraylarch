@@ -2875,7 +2875,7 @@ class GSEXRM_MapFile(object):
         for det, grp in zip(self.xrmmap.keys(),self.xrmmap.values()):
             if bytes2str(grp.attrs.get('type', '')).startswith('mca det'):
                 det_list   += [det]
-                ds = ensure_subgroup(det, xroigroup)
+                ds = ensure_subgroup(det, roigroup)
                 ds.attrs['type'] = 'mca detector'
             if bytes2str(grp.attrs.get('type', '')).startswith('virtual mca'):
                 sumdet = det
