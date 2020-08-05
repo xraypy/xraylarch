@@ -18,7 +18,8 @@ class Group(object):
     Generic Group: a container for variables, modules, and subgroups.
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
-                 '__private', '_subgroups', '_members')
+                 '__private', '_subgroups', '_members', '_repr_html')
+
     def __init__(self, name=None, **kws):
         if name is None:
             name = hex(id(self))
@@ -67,7 +68,6 @@ class Group(object):
                     not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
 
-
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]
@@ -79,6 +79,17 @@ class Group(object):
             if key in self.__dict__:
                 r[key] = self.__dict__[key]
         return r
+
+    def _repr_html_(self):
+        """HTML representation for Jupyter notebook"""
+
+        html = ["<table>"]
+        html.append(f"<tr><td><b>{self.__name__}</b></td></tr>")
+        attrs = dir(self)
+        html.append(''.join([f"<tr><td>{col}</td></tr>" for col in attrs]))
+        html.append("</table>")
+        return ''.join(html)
+
 
 def isgroup(grp, *args):
     """tests if input is a Group
