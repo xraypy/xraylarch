@@ -1,6 +1,7 @@
 # List of all dependencies of larch
 # Recommended installation with conda:
 # conda config --env --append channels GSECARS
+# conda config --env --append channels conda-forge
 # conda install --file ./requirements.txt
 scipy>=1.2
 numpy>=1.12
