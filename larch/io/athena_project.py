@@ -441,6 +441,32 @@ def parse_jsonathena(text, filename):
     return out
 
 
+class AthenaGroup(Group):
+
+    def _repr_html_(self):
+        """HTML representation for Jupyter notebook"""
+
+        html = ["<table>"]
+        igrp = 0
+        for name, grp in self._athena_groups.items():
+            html.append("<tr>")
+            #attrs = dir(grp)
+            #cols = ''.join([f"<td><b>{col}</b></td>" for col in attrs])
+            if igrp == 0:
+                #+header
+                html.append("<td><b>Groups</b></td>")
+                #html.append(cols)
+                html.append("</tr>")
+                igrp += 1
+            html.append(f"<td>{name}</td>")
+            #cols = ''.join([f"<td>.</td>" for col in attrs])
+            #html.append(cols)
+            #end row
+            html.append("</tr>")
+        html.append("</table>")
+        return ''.join(html)
+
+
 class AthenaProject(object):
     """read and write Athena Project files, mapping to Larch group
     containing sub-groups for each spectra / record
@@ -669,7 +695,7 @@ class AthenaProject(object):
 
     def as_group(self):
         """convert AthenaProject to Larch group"""
-        out = Group()
+        out = AthenaGroup()
         out.__doc__ = """XAFS Data from Athena Project File %s""" % (self.filename)
         out._athena_journal = self.journal
         out._athena_header = self.header
