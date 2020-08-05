@@ -447,22 +447,13 @@ class AthenaGroup(Group):
         """HTML representation for Jupyter notebook"""
 
         html = ["<table>"]
-        igrp = 0
+        html.append("<tr><td><b>Group</b></td><td><b>Flag</b></td></tr>")
         for name, grp in self._athena_groups.items():
-            html.append("<tr>")
-            #attrs = dir(grp)
-            #cols = ''.join([f"<td><b>{col}</b></td>" for col in attrs])
-            if igrp == 0:
-                #+header
-                html.append("<td><b>Groups</b></td>")
-                #html.append(cols)
-                html.append("</tr>")
-                igrp += 1
-            html.append(f"<td>{name}</td>")
-            #cols = ''.join([f"<td>.</td>" for col in attrs])
-            #html.append(cols)
-            #end row
-            html.append("</tr>")
+            if grp.flag == 1:
+                flag = "\u2714"
+            else:
+                flag = ""
+            html.append(f"<tr><td>{name}</td><td>{flag}</td></tr>")
         html.append("</table>")
         return ''.join(html)
 
@@ -535,6 +526,10 @@ class AthenaProject(object):
         group.y = y
         group.i0 = i0
         group.signal = signal
+
+        # add a selection flag
+        group.flag = 1
+
         self.groups[hashkey] = group
 
     def save(self, filename=None, use_gzip=True):
@@ -691,6 +686,10 @@ class AthenaProject(object):
                 this.chi = this.mu*1.0
                 del this.energy
                 del this.mu
+
+            # add a selection flag
+            this.flag = 1
+
             self.groups[oname] = this
 
     def as_group(self):
