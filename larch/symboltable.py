@@ -18,7 +18,7 @@ class Group(object):
     Generic Group: a container for variables, modules, and subgroups.
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
-                 '__private', '_subgroups', '_members', '_repr_html')
+                 '__private', '_subgroups', '_members', '_repr_html_')
 
     def __init__(self, name=None, **kws):
         if name is None:
@@ -83,10 +83,12 @@ class Group(object):
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
 
-        html = ["<table>"]
-        html.append(f"<tr><td><b>{self.__name__}</b></td></tr>")
-        attrs = dir(self)
-        html.append(''.join([f"<tr><td>{col}</td></tr>" for col in attrs]))
+        html = [f"Group {self.__name__}"]
+        html.append("<table>")
+        html.append("<tr><td><b>Attribute</b></td><td><b>Type</b></td></tr>")
+        attrs = self.__dir__()
+        atypes = [type(getattr(self, attr)).__name__ for attr in attrs]
+        html.append(''.join([f"<tr><td>{attr}</td><td><i>{atp}</i></td></tr>" for attr, atp in zip(attrs, atypes)]))
         html.append("</table>")
         return ''.join(html)
 
