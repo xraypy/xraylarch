@@ -448,13 +448,13 @@ class AthenaGroup(Group):
         """HTML representation for Jupyter notebook"""
 
         html = ["<table>"]
-        html.append("<tr><td><b>Group</b></td><td><b>Flag</b></td></tr>")
+        html.append("<tr><td><b>Group</b></td><td><b>Sel</b></td></tr>")
         for name, grp in self._athena_groups.items():
-            if grp.flag == 1:
-                flag = "\u2714"
+            if grp.sel == 1:
+                sel = "\u2714"
             else:
-                flag = ""
-            html.append(f"<tr><td>{name}</td><td>{flag}</td></tr>")
+                sel = ""
+            html.append(f"<tr><td>{name}</td><td>{sel}</td></tr>")
         html.append("</table>")
         return ''.join(html)
 
@@ -537,7 +537,7 @@ class AthenaProject(object):
         group.signal = signal
 
         # add a selection flag
-        group.flag = 1
+        group.sel = 1
 
         self.groups[hashkey] = group
 
@@ -697,7 +697,7 @@ class AthenaProject(object):
                 del this.mu
 
             # add a selection flag
-            this.flag = 1
+            this.sel = 1
 
             self.groups[oname] = this
 
