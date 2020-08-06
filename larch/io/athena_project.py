@@ -442,6 +442,7 @@ def parse_jsonathena(text, filename):
 
 
 class AthenaGroup(Group):
+    """A special Group for handling datasets loaded from Athena project files"""
 
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
@@ -456,6 +457,14 @@ class AthenaGroup(Group):
             html.append(f"<tr><td>{name}</td><td>{flag}</td></tr>")
         html.append("</table>")
         return ''.join(html)
+
+    @property
+    def groups(self):
+        return self._athena_groups
+
+    @groups.setter
+    def groups(self, groups):
+        self._athena_groups = groups
 
 
 class AthenaProject(object):
