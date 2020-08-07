@@ -444,17 +444,41 @@ def parse_jsonathena(text, filename):
 class AthenaGroup(Group):
     """A special Group for handling datasets loaded from Athena project files"""
 
+    def __init__(self, show_sel=False):
+        """Constructor
+
+        Parameters
+        ----------
+
+        show_sel : boolean, False
+            if True, it shows the selection flag in HTML representation
+        """
+        super().__init__()
+        self.show_sel = show_sel
+
     def _repr_html_(self):
         """HTML representation for Jupyter notebook"""
 
+        _has_sel = any([hasattr(g, 'sel') for g in self.groups.values()])
         html = ["<table>"]
-        html.append("<tr><td><b>Group</b></td><td><b>Sel</b></td></tr>")
-        for name, grp in self._athena_groups.items():
-            if grp.sel == 1:
-                sel = "\u2714"
-            else:
+        html.append("<tr>")
+        html.append("<td><b>Group</b></td>")
+        if self.show_sel and _has_sel:
+            html.append("<td><b>Sel</b></td>")
+        html.append("</tr>")
+        for name, grp in self.groups.items():
+            try:
+                if grp.sel == 1:
+                    sel = "\u2714"
+                else:
+                    sel = ""
+            except AttributeError:
                 sel = ""
-            html.append(f"<tr><td>{name}</td><td>{sel}</td></tr>")
+            html.append("<tr>")
+            html.append(f"<td>{name}</td>")
+            if self.show_sel and _has_sel:
+                html.append(f"<td>{sel}</td>")
+            html.append("</tr>")
         html.append("</table>")
         return ''.join(html)
 
