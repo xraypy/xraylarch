@@ -218,6 +218,6 @@ if __name__=='__main__':
     #test
     # reload(readf1f2a)
     import time
-    a=time.clock()
+    a=time.monotonic()
     reflectivity()
-    print(time.clock()-a, 'seconds')
+    print(time.monotonic()-a, 'seconds')
