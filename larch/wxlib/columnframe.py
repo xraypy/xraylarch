@@ -500,6 +500,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
 
         self.plotpanel = PlotPanel(self, messenger=self.plot_messages)
+        self.plotpanel.SetMinSize((200, 200))
         textpanel = wx.Panel(self)
         ftext = wx.TextCtrl(textpanel, style=wx.TE_MULTILINE|wx.TE_READONLY,
                                size=(400, 250))
@@ -513,7 +514,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.nb.AddPage(textpanel, ' Text of Data File ', True)
         self.nb.AddPage(self.plotpanel, ' Plot of Selected Arrays ', True)
-
+        
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
         mainsizer.Add(self.nb, 1, LEFT|wx.GROW,   2)

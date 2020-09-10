@@ -1067,6 +1067,12 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
                         wids.maxval.SetValue(par.max)
                     val = result.init_values.get(pname, par.value)
                     wids.value.SetValue(val)
+                    varstr = 'vary' if par.vary else 'fix'
+                    if par.expr is not None:
+                        varstr = 'constrain'
+                    if wids.vary is not None:
+                        wids.vary.SetStringSelection(varstr)
+
         self.fill_form(result.user_options)
 
 
