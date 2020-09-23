@@ -57,7 +57,7 @@ def f1f2(z, energies, width=None, edge=None):
         emax = max(en) + e_extra
 
         npts = 1 + abs(emax-emin+estep*0.02)/abs(estep)
-        en   = np.linspace(emin, emax, npts)
+        en   = np.linspace(emin, emax, int(npts))
         nk   = int(e_extra / estep)
         sig  = width/2.0
         lor  = (1./(1 + ((np.arange(2*nk+1)-nk*1.0)/sig)**2))/(np.pi*sig)
