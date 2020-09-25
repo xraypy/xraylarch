@@ -18,7 +18,8 @@ class Group(object):
     Generic Group: a container for variables, modules, and subgroups.
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__doc__',
-                 '__private', '_subgroups', '_members')
+                 '__private', '_subgroups', '_members', '_repr_html_')
+
     def __init__(self, name=None, **kws):
         if name is None:
             name = hex(id(self))
@@ -67,7 +68,6 @@ class Group(object):
                     not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
 
-
     def _subgroups(self):
         "return list of names of members that are sub groups"
         return [k for k in self._members() if isgroup(self.__dict__[k])]
@@ -79,6 +79,19 @@ class Group(object):
             if key in self.__dict__:
                 r[key] = self.__dict__[key]
         return r
+
+    def _repr_html_(self):
+        """HTML representation for Jupyter notebook"""
+
+        html = [f"Group {self.__name__}"]
+        html.append("<table>")
+        html.append("<tr><td><b>Attribute</b></td><td><b>Type</b></td></tr>")
+        attrs = self.__dir__()
+        atypes = [type(getattr(self, attr)).__name__ for attr in attrs]
+        html.append(''.join([f"<tr><td>{attr}</td><td><i>{atp}</i></td></tr>" for attr, atp in zip(attrs, atypes)]))
+        html.append("</table>")
+        return ''.join(html)
+
 
 def isgroup(grp, *args):
     """tests if input is a Group

@@ -441,6 +441,56 @@ def parse_jsonathena(text, filename):
     return out
 
 
+class AthenaGroup(Group):
+    """A special Group for handling datasets loaded from Athena project files"""
+
+    def __init__(self, show_sel=False):
+        """Constructor
+
+        Parameters
+        ----------
+
+        show_sel : boolean, False
+            if True, it shows the selection flag in HTML representation
+        """
+        super().__init__()
+        self.show_sel = show_sel
+
+    def _repr_html_(self):
+        """HTML representation for Jupyter notebook"""
+
+        _has_sel = any([hasattr(g, 'sel') for g in self.groups.values()])
+        html = ["<table>"]
+        html.append("<tr>")
+        html.append("<td><b>Group</b></td>")
+        if self.show_sel and _has_sel:
+            html.append("<td><b>Sel</b></td>")
+        html.append("</tr>")
+        for name, grp in self.groups.items():
+            try:
+                if grp.sel == 1:
+                    sel = "\u2714"
+                else:
+                    sel = ""
+            except AttributeError:
+                sel = ""
+            html.append("<tr>")
+            html.append(f"<td>{name}</td>")
+            if self.show_sel and _has_sel:
+                html.append(f"<td>{sel}</td>")
+            html.append("</tr>")
+        html.append("</table>")
+        return ''.join(html)
+
+    @property
+    def groups(self):
+        return self._athena_groups
+
+    @groups.setter
+    def groups(self, groups):
+        self._athena_groups = groups
+
+
 class AthenaProject(object):
     """read and write Athena Project files, mapping to Larch group
     containing sub-groups for each spectra / record
@@ -509,6 +559,10 @@ class AthenaProject(object):
         group.y = y
         group.i0 = i0
         group.signal = signal
+
+        # add a selection flag
+        group.sel = 1
+
         self.groups[hashkey] = group
 
     def save(self, filename=None, use_gzip=True):
@@ -665,11 +719,15 @@ class AthenaProject(object):
                 this.chi = this.mu*1.0
                 del this.energy
                 del this.mu
+
+            # add a selection flag
+            this.sel = 1
+
             self.groups[oname] = this
 
     def as_group(self):
         """convert AthenaProject to Larch group"""
-        out = Group()
+        out = AthenaGroup()
         out.__doc__ = """XAFS Data from Athena Project File %s""" % (self.filename)
         out._athena_journal = self.journal
         out._athena_header = self.header
