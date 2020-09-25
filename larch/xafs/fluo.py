@@ -5,7 +5,7 @@ from larch import  parse_group_args
 from .xafsutils import set_xafsGroup
 from .pre_edge import preedge
 
-def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='K', anginp=45,
+def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='Ka', anginp=45,
               angout=45, _larch=None, **pre_kws):
     """correct over-absorption (self-absorption) for fluorescene XAFS
     using the FLUO alogrithm of D. Haskel.
@@ -18,7 +18,7 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='K', anginp=
       elem      atomic symbol or Z of absorbing element
       group     output group [default None]
       edge      name of edge ('K', 'L3', ...) [default 'K']
-      line      name of line ('K', 'Ka', 'La', 'La1', ...) [default 'K']
+      line      name of line ('K', 'Ka', 'La', ...) [default 'Ka']
       anginp    input angle in degrees  [default 45]
       angout    output angle in degrees  [default 45]
 
