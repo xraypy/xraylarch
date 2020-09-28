@@ -762,15 +762,8 @@ class AthenaProject(object):
         return out
 
 
-def read_athena(
-    filename,
-    match=None,
-    do_preedge=True,
-    do_bkg=True,
-    do_fft=True,
-    use_hashkey=False,
-    _larch=None,
-):
+def read_athena(filename, match=None, do_preedge=True, do_bkg=True, do_fft=True,
+                use_hashkey=False,  _larch=None):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
 
