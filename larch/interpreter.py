@@ -214,7 +214,7 @@ class Interpreter:
             msg = '%s' % msg
         err = LarchExceptionHolder(node=node, exc=exc, msg=msg, expr=expr,
                                    fname=fname, lineno=lineno, func=func)
-        self._interrupt = ast.Break()
+        self._interrupt = ast.Raise()
         self.error.append(err)
         self.symtable._sys.last_error = err
         #raise RuntimeError
@@ -250,6 +250,13 @@ class Interpreter:
         """executes parsed Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
         #    run(None) and expect a None in return.
+        out = None
+        if len(self.error) > 0:
+            return out
+        if self.retval is not None:
+            return self.retval
+        if isinstance(self._interrupt, (ast.Break, ast.Continue)):
+            return self._interrupt
         if node is None:
             return None
         if isinstance(node, str):
@@ -632,7 +639,7 @@ class Interpreter:
             if isinstance(node.slice, (ast.Index, ast.Constant, ast.Slice,
                                        ast.Ellipsis)):
                 return val.__getitem__(nslice)
-            elif isinstance(node.slice, ast.ExtSlice):
+            elif isinstance(node.slice, (ast.ExtSlice, ast.UnaryOp)):
                 return val[(nslice)]
         else:
             msg = "subscript with unknown context"
@@ -840,6 +847,10 @@ class Interpreter:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node, msg=msg)
+            if key.arg in keywords:
+                self.raise_exception(node,
+                                     msg="keyword argument repeated: %s" % key.arg,
+                                     exc=SyntaxError)
             if key.arg is None:   # Py3 **kwargs !
                 keywords.update(self.run(key.value))
             else:
