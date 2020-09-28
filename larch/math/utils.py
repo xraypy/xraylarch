@@ -4,7 +4,6 @@ Some common math utilities
 """
 import numpy as np
 
-from scipy import polyfit
 from scipy.stats import linregress
 from scipy.interpolate import UnivariateSpline
 from scipy.interpolate import interp1d as scipy_interp1d
@@ -137,10 +136,10 @@ def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
             ncoef = 3
         sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
         if kind.startswith('lin'):
-            coefs = polyfit(x[sel], y[sel], 1)
+            coefs = np.polyfit(x[sel], y[sel], 1)
             out[span] = coefs[1] + coefs[0]*xnew[span]
         elif kind.startswith('quad'):
-            coefs = polyfit(x[sel], y[sel], 2)
+            coefs = np.polyfit(x[sel], y[sel], 2)
             out[span] = coefs[2] + xnew[span]*(coefs[1] + coefs[0]*xnew[span])
         elif kind.startswith('cubic'):
             out[span] = UnivariateSpline(x[sel], y[sel], s=0)(xnew[span])

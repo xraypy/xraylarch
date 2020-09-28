@@ -4,7 +4,6 @@
 """
 
 import numpy as np
-from scipy import polyfit
 from scipy.signal import find_peaks_cwt
 from scipy.integrate import simps
 
@@ -179,7 +178,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
 
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
-    precoefs = polyfit(ex, mx, 1)
+    precoefs = np.polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
 
     # normalization
@@ -189,7 +188,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
         p2 = min(len(energy), p1 + 2)
 
     presub = (mu-pre_edge)[p1:p2]
-    coefs = polyfit(energy[p1:p2], presub, nnorm)
+    coefs = np.polyfit(energy[p1:p2], presub, nnorm)
     post_edge = 1.0*pre_edge
     norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):
