@@ -1,6 +1,7 @@
 __DOC__ = """Mathematical functions for Larch"""
 
-from .utils import (linregress, polyfit, realimag, as_ndarray,
+import numpy as np
+from .utils import (linregress, realimag, as_ndarray,
                     complex_phase, deriv, interp, interp1d,
                     remove_dups, remove_nans2, index_of,
                     index_nearest, savitzky_golay, smooth, boxcar)
@@ -24,7 +25,7 @@ from . import transformations as trans
 from .tomography import (tomo_reconstruction, reshape_sinogram,
                          trim_sinogram, TOMOPY_ALG, TOMOPY_FILT)
 
-_larch_builtins = {'_math': dict(linregress=linregress, polyfit=polyfit,
+_larch_builtins = {'_math': dict(linregress=linregress, polyfit=np.polyfit,
                                  realimag=realimag, as_ndarray=as_ndarray,
                                  complex_phase=complex_phase, deriv=deriv,
                                  interp=interp, interp1d=interp1d,
