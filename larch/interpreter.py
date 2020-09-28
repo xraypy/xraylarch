@@ -89,14 +89,15 @@ class Interpreter:
 
     supported_nodes = ('arg', 'assert', 'assign', 'attribute', 'augassign',
                        'binop', 'boolop', 'break', 'bytes', 'call',
-                       'compare', 'continue', 'delete', 'dict', 'ellipsis',
-                       'excepthandler', 'expr', 'expression', 'extslice',
-                       'for', 'functiondef', 'if', 'ifexp', 'import',
-                       'importfrom', 'index', 'interrupt', 'list',
-                       'listcomp', 'module', 'name', 'nameconstant', 'num',
-                       'pass', 'print', 'raise', 'repr', 'return', 'slice',
-                       'starred', 'str', 'subscript', 'try', 'tryexcept',
-                       'tryfinally', 'tuple', 'unaryop', 'while')
+                       'compare', 'constant', 'continue', 'delete', 'dict',
+                       'ellipsis', 'excepthandler', 'expr', 'expression',
+                       'extslice', 'for', 'functiondef', 'if', 'ifexp',
+                       'import', 'importfrom', 'index', 'interrupt',
+                       'list', 'listcomp', 'module', 'name',
+                       'nameconstant', 'num', 'pass', 'print', 'raise',
+                       'repr', 'return', 'slice', 'starred', 'str',
+                       'subscript', 'try', 'tryexcept', 'tryfinally',
+                       'tuple', 'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
                  with_plugins=True, historyfile=None, maxhistory=5000):
@@ -502,6 +503,10 @@ class Interpreter:
         run = self.run
         return dict([(run(k), run(v)) for k, v in nodevals])
 
+    def on_constant(self, node):   # ('value', 'kind')
+        """Return constant value."""
+        return node.value
+
     def on_num(self, node):
         'return number'
         return node.n  # ('n',)
@@ -560,7 +565,7 @@ class Interpreter:
         elif node.__class__ == ast.Subscript:
             sym    = self.run(node.value)
             xslice = self.run(node.slice)
-            if isinstance(node.slice, ast.Index):
+            if isinstance(node.slice, (ast.Index, ast.Constant)):
                 sym[xslice] = val
             elif isinstance(node.slice, ast.Slice):
                 i = xslice.start
@@ -624,7 +629,8 @@ class Interpreter:
         nslice = self.run(node.slice)
         ctx = node.ctx.__class__
         if ctx in ( ast.Load, ast.Store):
-            if isinstance(node.slice, (ast.Index, ast.Slice, ast.Ellipsis)):
+            if isinstance(node.slice, (ast.Index, ast.Constant, ast.Slice,
+                                       ast.Ellipsis)):
                 return val.__getitem__(nslice)
             elif isinstance(node.slice, ast.ExtSlice):
                 return val[(nslice)]
