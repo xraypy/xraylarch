@@ -276,12 +276,12 @@ class XRFDisplayFrame(wx.Frame):
 
     def createPlotPanel(self):
         """mca plot window"""
-        pan = PlotPanel(self, fontsize=7,
-                        axisbg='#FEFEFE',
-                        # axissize=[0.01, 0.11, 0.97, 0.87],
+        pan = PlotPanel(self, fontsize=7, axisbg='#FFFFFF',
                         with_data_process=False,
                         output_title='test.xrf',
                         messenger=self.write_message)
+        pan.SetSize((650, 350))
+        
         pan.conf.grid_color='#E5E5C0'
         pan.conf.show_grid = False
         pan.conf.canvas.figure.set_facecolor('#FCFCFE')
@@ -456,10 +456,9 @@ class XRFDisplayFrame(wx.Frame):
         plotpanel = self.panel = self.createPlotPanel()
         plotpanel.yformatter = self._formaty
 
-        tx, ty = self.wids['ptable'].GetBestSize()
-        cx, cy = ctrlpanel.GetBestSize()
-        px, py = plotpanel.GetBestSize()
-
+        tx, ty = self.wids['ptable'].GetBestVirtualSize()
+        cx, cy = ctrlpanel.GetBestVirtualSize()
+        px, py = plotpanel.GetBestVirtualSize() # (650, 350)
         self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
