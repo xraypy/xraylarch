@@ -359,6 +359,7 @@ command must be one of the following:
 
     if args.next:
         port = get_next_port(port=port)
+        print(port)
         sys.exit(0)
 
     server_state = test_server(port=port)
