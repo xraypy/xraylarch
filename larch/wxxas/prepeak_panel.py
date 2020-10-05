@@ -761,11 +761,10 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         dgroup = self.controller.get_group()
         ppeaks = dgroup.prepeaks
-        
-        deffile = dgroup.filename.replace('.', '_') + 'baseline.dat'
+
+        deffile = dgroup.filename.replace('.', '_') + '_baseline.dat'
         sfile = FileSave(self, 'Save Pre-edge Peak Baseline', default_file=deffile,
                          wildcard=DataWcards)
-        
         if sfile is None:
             return
         opts['savefile'] = sfile
@@ -774,18 +773,18 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         cmd = """# save baseline script:
 header = ['baseline data from "{filename:s}"',
-          'baseline form = {baseline_form:s}',
-          'baseline emin = {emin:.3f}',
-          'baseline emax = {emax:.3f}',
-          'baseline elo = {elo:.3f}',
-          'baseline ehi = {ehi:.3f}',
-          'centroid energy = {centroid:.3f} +/- {delta_centroid:.3f} eV']
+          'baseline form = "{baseline_form:s}"',
+          'baseline fit range emin = {emin:.3f}',
+          'baseline fit range emax = {emax:.3f}',
+          'baseline peak range elo = {elo:.3f}',
+          'baseline peak range ehi = {ehi:.3f}',
+          'prepeak centroid energy = {centroid:.3f} +/- {delta_centroid:.3f} eV']
 i0 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[0])
 i1 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[-1])
 {gname:s}.prepeaks.full_baseline = {gname:s}.norm*1.0
 {gname:s}.prepeaks.full_baseline[i0:i1+1] = {gname:s}.prepeaks.baseline
 write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks.full_baseline,
-             header=header, label='energy           norm        baseline')
+             header=header, label='energy           norm            baseline')
              """
         self.larch_eval(cmd.format(**opts))
 
