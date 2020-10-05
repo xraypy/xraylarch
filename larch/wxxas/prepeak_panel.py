@@ -88,6 +88,7 @@ PlotChoices = [PLOT_BASELINE, PLOT_FIT, PLOT_RESID]
 
 FitMethods = ("Levenberg-Marquardt", "Nelder-Mead", "Powell")
 ModelWcards = "Fit Models(*.modl)|*.modl|All files (*.*)|*.*"
+DataWcards = "Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
 PLOTOPTS_2 = dict(style='short dashed', linewidth=2, marker='None', markersize=4)
@@ -185,11 +186,9 @@ class FitResultFrame(wx.Frame):
         self.save_result = Button(panel, 'Save Selected Model',
                                   size=(175, -1), action=self.onSaveFitResult)
         SetTip(self.save_result, 'save model and result to be loaded later')
-
         self.export_fit  = Button(panel, 'Export Fit',
                                   size=(175, -1), action=self.onExportFitResult)
         SetTip(self.export_fit, 'save arrays and results to text file')
-
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 2), LEFT)
         sizer.Add(wids['data_title'], (irow, 2), (1, 2), LEFT)
@@ -554,12 +553,17 @@ class PrePeakPanel(TaskPanel):
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(125, -1))
+        self.savebline_btn  = Button(pan,'Save Baseline', action=self.onSaveBaseline,
+                                    size=(125, -1))
+        SetTip(self.savebline_btn, 'save data and initial baseline')
+
         self.plotmodel_btn = Button(pan, 'Plot Model',
                                    action=self.onPlotModel,  size=(125, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(125, -1))
         self.loadmodel_btn = Button(pan, 'Load Model',
                                     action=self.onLoadFitResult,  size=(125, -1))
+        self.savebline_btn.Disable()
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
@@ -607,15 +611,14 @@ class PrePeakPanel(TaskPanel):
         pan.Add(ppeak_e0)
         pan.Add((10, 10), dcol=2)
         pan.Add(self.show_e0)
-        pan.Add(self.plotmodel_btn)
-
+        pan.Add(self.savebline_btn)
 
         add_text('Fit Energy Range: ')
         pan.Add(ppeak_emin)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
-        pan.Add(self.fitmodel_btn)
+        pan.Add(self.plotmodel_btn)
 
         t = SimpleText(pan, 'Pre-edge Peak Range: ')
         SetTip(t, 'Range used as mask for background')
@@ -625,6 +628,7 @@ class PrePeakPanel(TaskPanel):
         add_text(' : ', newrow=False)
         pan.Add(ppeak_ehi)
         pan.Add(self.show_peakrange)
+        pan.Add(self.fitmodel_btn)
 
 
         # pan.Add(self.fitsel_btn)
@@ -750,6 +754,41 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         # self.plot_choice.SetStringSelection(PLOT_BASELINE)
         self.onPlot(baseline_only=True)
+        self.savebline_btn.Enable()
+
+    def onSaveBaseline(self, evt=None):
+        opts = self.read_form()
+
+        dgroup = self.controller.get_group()
+        ppeaks = dgroup.prepeaks
+        
+        deffile = dgroup.filename.replace('.', '_') + 'baseline.dat'
+        sfile = FileSave(self, 'Save Pre-edge Peak Baseline', default_file=deffile,
+                         wildcard=DataWcards)
+        
+        if sfile is None:
+            return
+        opts['savefile'] = sfile
+        opts['centroid'] = ppeaks.centroid
+        opts['delta_centroid'] = ppeaks.delta_centroid
+
+        cmd = """# save baseline script:
+header = ['baseline data from "{filename:s}"',
+          'baseline form = {baseline_form:s}',
+          'baseline emin = {emin:.3f}',
+          'baseline emax = {emax:.3f}',
+          'baseline elo = {elo:.3f}',
+          'baseline ehi = {ehi:.3f}',
+          'centroid energy = {centroid:.3f} +/- {delta_centroid:.3f} eV']
+i0 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[0])
+i1 = index_of({gname:s}.energy, {gname:s}.prepeaks.energy[-1])
+{gname:s}.prepeaks.full_baseline = {gname:s}.norm*1.0
+{gname:s}.prepeaks.full_baseline[i0:i1+1] = {gname:s}.prepeaks.baseline
+write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks.full_baseline,
+             header=header, label='energy           norm        baseline')
+             """
+        self.larch_eval(cmd.format(**opts))
+
 
     def fill_model_params(self, prefix, params):
         comp = self.fit_components[prefix]
@@ -777,7 +816,6 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
         opts = self.read_form()
         dgroup = self.controller.get_group()
-
         opts['group'] = opts['gname']
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
