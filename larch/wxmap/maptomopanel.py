@@ -123,6 +123,7 @@ class TomographyPanel(GridPanel):
         self.center_value = wx.SpinCtrlDouble(self, inc=0.25, size=(100, -1),
                                      style=wx.SP_VERTICAL|wx.SP_ARROW_KEYS|wx.SP_WRAP)
         self.center_value.SetIncrement(0.25)
+        self.center_value.SetDigits(2)
         self.refine_center = wx.CheckBox(self, label='Refine')
         self.refine_center.SetValue(False)
 
