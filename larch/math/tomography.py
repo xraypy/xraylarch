@@ -92,19 +92,16 @@ def find_tomo_center(sino, omega, center=None, sinogram_order=True):
     rmin, rmax = rec.min(), rec.max()
     rmin  -= 0.5*(rmax-rmin)
     rmax  += 0.5*(rmax-rmin)
-
     out = minimize(_center_resid_negent, center,
                    args=(sino, omega, rmin, rmax, sinogram_order),
-                   method='Nelder-Mead', tol=1.5)
-
+                   method='Nelder-Mead', tol=0.5)
     cen = out.x
-    if cen > 0  and cen < xmax:
-        out = minimize(_center_resid_blur, cen,
-                       args=(sino, omega, rmin, rmax, sinogram_order),
-                       method='Nelder-Mead', tol=0.5)
-        cen = out.x
+    # if cen > 0  and cen < xmax:
+    #    out = minimize(_center_resid_blur, cen,
+    #                   args=(sino, omega, rmin, rmax, sinogram_order),
+    #                   method='Nelder-Mead', tol=0.5)
+    #    cen = out.x
     return cen
-
 
 def _center_resid_negent(center, sino, omega, rmin, rmax, sinogram_order=True):
     """
@@ -117,7 +114,7 @@ def _center_resid_negent(center, sino, omega, rmin, rmax, sinogram_order=True):
         return 10*(center-nx+2)
     n1 = int(nx/4.0)
     n2 = int(3*nx/4.0)
-    rec = tomopy.recon(sino, omega, center,algorithm='gridrec', 
+    rec = tomopy.recon(sino, omega, center,algorithm='gridrec',
                        sinogram_order=sinogram_order)
     rec = tomopy.circ_mask(rec, axis=0)[:, n1:n2, n1:n2]
     hist, e = np.histogram(rec, bins=64, range=[rmin, rmax])
@@ -135,7 +132,7 @@ def _center_resid_blur(center, sino, omega, rmin, rmax, sinogram_order=True):
                        algorithm='gridrec', filter_name='shepp')
     rec = tomopy.circ_mask(rec, axis=0)
     score = -((rec - rec.mean())**2).sum()
-    logger.info("blur center = %.4f  %.4f" % (center, score))    
+    logger.info("blur center = %.4f  %.4f" % (center, score))
     return score
 
 def tomo_reconstruction(sino, omega, algorithm='gridrec',
@@ -147,12 +144,12 @@ def tomo_reconstruction(sino, omega, algorithm='gridrec',
     '''
     if center is None:
         center = sino.shape[1]/2.
-    
+
     if refine_center:
         print(">> Refine Center start>> ", center, sinogram_order)
         # center = tomopy.find_center(sino, np.radians(omega), init=center,
         #                            ind=0, tol=0.5, sinogram_order=sinogram_order)
-        
+
         center = find_tomo_center(sino, np.radians(omega), center=center,
                                   sinogram_order=sinogram_order)
         print(">> Refine Center done>> ", center, sinogram_order)
