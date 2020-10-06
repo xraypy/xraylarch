@@ -1,10 +1,11 @@
 name:  xraylarch
-version: 0.9.47
+version: 0.9.48
 
 channels:
     - https://repo.continuum.io/pkgs/main
     - https://repo.continuum.io/pkgs/msys2 [win]
     - https://conda.anaconda.org/gsecars/
+    - https://conda.anaconda.org/conda-forge/
 
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
@@ -22,7 +23,7 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python>=3.7
+    - python==3.7.7
     - conda
     - openssl
     - setuptools
@@ -63,13 +64,13 @@ specs:
     - pyshortcuts
     - pyepics>=3.4.1
     - lmfit>=1.0
-    - asteval
+    - asteval>=0.9.19
     - wxutils
-    - wxmplot
+    - wxmplot==0.9.43
     - tomopy    # [linux or osx]
     - silx>=0.11
     - pyFAI
     - fabio
     - dioptas
     - tifffile
-    - xraylarch
+    - xraylarch==0.9.48
