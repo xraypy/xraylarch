@@ -25,6 +25,7 @@ from larch.utils.strutils import fix_varname, b32hash
 from larch.fitting import group2params, isParameter, param_value
 
 from .xafsutils import ETOK, set_xafsGroup
+from .sigma2_models import add_sigma2funcs
 
 SMALL = 1.e-6
 
@@ -249,16 +250,19 @@ class FeffPathGroup(Group):
             return '<FeffPath Group %s>' % self.filename
         return '<FeffPath Group (empty)>'
 
-    def create_path_params(self):
+    def create_path_params(self, params=None):
         """
-        create Path Parameters within the current fiteval
+        create Path Parameters within the current lmfit.Parameters namespace
         """
-        self.params = Parameters(asteval=self._larch.symtable._sys.fiteval)
+        if params is not None:
+            self.params = params
+        if self.params is None:
+            self.params = Parameters()
+        if self.params._asteval.symtable.get('sigma2_debye', None) is None:
+            add_sigma2funcs(self.params)
         if self.label is None:
             self.label = self.__geom2label()
-
         self.store_feffdat()
-
         for pname in PATH_PARS:
             val =  getattr(self, pname)
             attr = 'value'
@@ -278,26 +282,23 @@ class FeffPathGroup(Group):
         self.spline_coefs['lam'] = UnivariateSpline(fdat.k, fdat.lam, s=0)
 
     def store_feffdat(self):
-        """stores data about this Feff path in the fiteval
+        """stores data about this Feff path in the Parameters
         symbol table for use as `reff` and in sigma2 calcs
         """
-        fiteval = self._larch.symtable._sys.fiteval
-        fdat = self._feffdat
-        fiteval.symtable['feffpath'] = fdat
-        fiteval.symtable['reff']  = fdat.reff
-        return fiteval
+        symtab = self.params._asteval.symtable
+        symtab['feffpath'] = self._feffdat
+        symtab['reff']  = self._feffdat.reff
 
     def __path_params(self, **kws):
         """evaluate path parameter value.  Returns
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)
         """
         # put 'reff' and '_feffdat' into the symboltable so that
-        # they can be used in constraint expressions, and get
-        # fiteval evaluator
+        # they can be used in constraint expressions
         self.store_feffdat()
 
-        if self.params is None:
-            self.create_path_params()
+
+        self.create_path_params()
         out = []
         for pname in PATH_PARS:
             val = kws.get(pname, None)
@@ -452,7 +453,7 @@ def path2chi(path, paramgroup=None, _larch=None, **kws):
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
-    path.create_path_params()
+    path.create_path_params(params=params)
     path._calc_chi(**kws)
 
 def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
@@ -481,7 +482,7 @@ def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
         if not isNamedClass(path, FeffPathGroup):
             msg('%s is not a valid Feff Path' % path)
             return
-        path.create_path_params()
+        path.create_path_params(params=params)
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
     k = pathlist[0].k[:]
     out = np.zeros_like(k)

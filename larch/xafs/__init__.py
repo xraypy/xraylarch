@@ -21,7 +21,6 @@ feffit           fit a set of Feff Paths to Feffit Datasets
 feffit_report    create a report from feffit() results
 '''
 
-from scipy import constants
 
 from .xafsutils import KTOE, ETOK, set_xafsGroup, etok, ktoe, guess_energy_units
 from .xafsft import xftf, xftr, xftf_fast, xftr_fast, ftwindow, xftf_prep
@@ -47,71 +46,12 @@ from .rebin_xafs import rebin_xafs, sort_xafs
 from .sigma2_models import sigma2_eins, sigma2_debye, sigma2_correldebye
 
 
-
-####################################################
-## sigma2_eins and sigma2_debye are set here as
-## Procedures within lmfit's asteval (held in _sys.fiteval)
-## for calculating XAFS sigma2 for a scattering path
-## these use `reff` or `feffpath.geom` which will be updated
-## for each path during an XAFS path calculation
-##
-_sigma2_funcs = """
-def sigma2_eins(t, theta):
-    EINS_FACTOR = 1.e20*const_hbar**2/(2*const_kboltz*const_amu)
-
-    if feffpath is None:
-         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
-    rmass = 0.
-    for sym, iz, ipot, amass, x, y, z in feffpath.geom:
-        rmass = rmass + 1.0/max(0.1, amass)
-    rmass = 1.0/max(1.e-12, rmass)
-    return EINS_FACTOR/(theta * rmass * tanh(theta/(2.0*t)))
-
-def sigma2_debye(t, theta):
-    if feffpath is None:
-         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
-    tempk  = float(t)
-    thetad = float(theta)
-
-    natoms = len(feffpath.geom)
-    rnorm  = feffpath.rnorman
-    atomx, atomy, atomz, atomm = [], [], [], []
-    for sym, iz, ipot, am, x, y, z in feffpath.geom:
-        atomx.append(x)
-        atomy.append(y)
-        atomz.append(z)
-        atomm.append(am)
-
-    return sigma2_correldebye(natoms, tempk, thetad, rnorm,
-                              atomx, atomy, atomz, atomm)
-"""
 def _larch_init(_larch):
     """initialize xafs"""
-    # _larch.symtable._xafs.plotlabels  = xafsplots.plotlabels
-
-    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
-    if fiteval_init is None:
-        fiteval_init = _larch.symtable._sys.fiteval_init = []
-
-    add = fiteval_init.append
-    add(('const_hbar', constants.hbar))
-    add(('const_kboltz', constants.k))
-    add(('const_amu', constants.atomic_mass))
-    add(('sigma2_correldebye', sigma2_correldebye))
-    add(_sigma2_funcs)
-
     # initialize _xafs._feff_executable
     feff6_exe = find_exe('feff6l')
     _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
-
+    
 
 _larch_groups = (diffKKGroup, FeffRunner, FeffDatFile, FeffPathGroup,
                  TransformGroup, FeffitDataSet)

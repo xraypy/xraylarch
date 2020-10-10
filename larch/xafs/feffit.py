@@ -258,9 +258,8 @@ class FeffitDataSet(Group):
                              transform=deepcopy(self.transform),
                              _larch=self._larch)
 
-    def prepare_fit(self):
+    def prepare_fit(self, params):
         """prepare for fit with this dataset"""
-
         trans = self.transform
         trans.make_karrays()
         ikmax = int(1.01 + max(self.data.k)/trans.kstep)
@@ -288,10 +287,10 @@ class FeffitDataSet(Group):
                 eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
                 self.set_epsilon_k(eps_k)
 
-        # for each path in the pathlist, setup the Path Parameters to
-        # use the current fiteval namespace
+        # for each path in the pathlist, setup the Path Parameters
+        # to use the current Parameters namespace
         for path in self.pathlist:
-            path.create_path_params()
+            path.create_path_params(params=params)
             if path.spline_coefs is None:
                 path.create_spline_coefs()
 
@@ -374,7 +373,7 @@ class FeffitDataSet(Group):
             return
         if not self.__prepared:
             self.prepare_fit()
-
+        
         ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
@@ -528,12 +527,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         datasets = [datasets]
 
     params = group2params(paramgroup, _larch=_larch)
-
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
             return
-        ds.prepare_fit()
+        ds.prepare_fit(params=params)
 
     fit = Minimizer(_resid, params,
                     fcn_kws=dict(datasets=datasets,
@@ -568,8 +566,6 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     covar = getattr(result, 'covar', None)
     # print("COVAR " , covar)
-    _larch.symtable._sys.fiteval = result.params._asteval
-
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
         for name in result.var_names:

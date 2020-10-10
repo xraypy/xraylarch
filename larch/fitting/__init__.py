@@ -50,10 +50,7 @@ class ParameterGroup(Group):
         if name is not None:
             self.__name__ = name
 
-        self._larch = _larch
-        self.__params__ = None
-        if _larch is not None:
-            self.__params__ = Parameters(asteval=_larch.symtable._sys.fiteval)
+        self.__params__ = Parameters()
         Group.__init__(self)
         self.__exprsave__ = {}
 
@@ -100,9 +97,9 @@ class ParameterGroup(Group):
             self.__dict__[name] = self.__params__[name]
 
 
-def param_group(_larch=None, **kws):
+def param_group(**kws):
     "create a parameter group"
-    return ParameterGroup(_larch=_larch, **kws)
+    return ParameterGroup(**kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
@@ -139,18 +136,12 @@ def is_param(obj):
 
 def group2params(paramgroup, _larch=None):
     """take a Group of Parameter objects (and maybe other things)
-    and put them into Larch's current fiteval namespace
-
-    returns a lmfit Parameters set, ready for use in fitting
+    and put them into a lmfit.Parameters, ready for use in fitting
     """
-    if _larch is None:
-        return None
-
     if isinstance(paramgroup, ParameterGroup):
         return paramgroup.__params__
 
-    fiteval  = _larch.symtable._sys.fiteval
-    params = Parameters(asteval=fiteval)
+    params = Parameters()
     if paramgroup is not None:
         for name in dir(paramgroup):
             par = getattr(paramgroup, name)
@@ -160,7 +151,7 @@ def group2params(paramgroup, _larch=None):
                            brute_step=par.brute_step)
 
             else:
-                fiteval.symtable[name] = par
+                params._asteval.symtable[name] = par
 
         # now set any expression (that is, after all symbols are defined)
         for name in dir(paramgroup):
@@ -193,11 +184,10 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     """
     wrapper around lmfit minimizer for Larch
     """
-    fiteval = _larch.symtable._sys.fiteval
     if isinstance(paramgroup, ParameterGroup):
         params = paramgroup.__params__
     elif isgroup(paramgroup):
-        params = group2params(paramgroup, _larch=_larch)
+        params = group2params(paramgroup)
     elif isinstance(Parameters):
         params = paramgroup
     else:
@@ -276,7 +266,7 @@ def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
                                     min_correl=min_correl, sort_pars=sort_pars)
         else:
             try:
-                result = group2params(fit_result, _larch=_larch)
+                result = group2params(fit_result)
                 return lmfit.fit_report(result, modelpars=modelpars,
                                         show_correl=show_correl,
                                         min_correl=min_correl, sort_pars=sort_pars)
@@ -339,8 +329,6 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, **kws):
                            nx=nx, ny=ny, **kws)
 
 def _Parameters(*arg, _larch=None, **kws):
-    if _larch is not None and 'asteval' not in kws:
-        kws['asteval'] =_larch.symtable._sys.fiteval
     return Parameters(*arg, **kws)
 
 
