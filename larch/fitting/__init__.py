@@ -83,6 +83,8 @@ class ParameterGroup(Group):
             self.__params__.add(name, value=val.value, vary=val.vary, min=val.min,
                               max=val.max, expr=val.expr, brute_step=val.brute_step)
             val = self.__params__[name]
+        elif hasattr(self, '__params__') and not name.startswith('__'):
+            self.__params__._asteval.symtable[name] = val
         self.__dict__[name] = val
 
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
