@@ -526,7 +526,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
 
-    params = group2params(paramgroup, _larch=_larch)
+    params = group2params(paramgroup)
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
@@ -625,7 +625,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     return out
 
 
-def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
+def feffit_report(result, min_correl=0.1, with_paths=True):
     """return a printable report of fit for feffit
 
     Parameters:

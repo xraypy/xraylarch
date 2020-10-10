@@ -31,8 +31,7 @@ SMALL = 1.e-6
 
 
 class FeffDatFile(Group):
-    def __init__(self, filename=None, _larch=None, **kws):
-        self._larch = _larch
+    def __init__(self, filename=None,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -45,10 +44,10 @@ class FeffDatFile(Group):
         return '<Feff.dat File Group (empty)>'
 
     def __copy__(self):
-        return FeffDatFile(filename=self.filename, _larch=self._larch)
+        return FeffDatFile(filename=self.filename)
 
     def __deepcopy__(self, memo):
-        return FeffDatFile(filename=self.filename, _larch=self._larch)
+        return FeffDatFile(filename=self.filename)
 
     @property
     def reff(self): return self.__reff__
@@ -163,15 +162,13 @@ PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
 PATHPAR_FMT = "%s__%s"
 
 class FeffPathGroup(Group):
-    def __init__(self, filename=None, _larch=None,
-                 label=None, s02=None, degen=None, e0=None,
-                 ei=None, deltar=None, sigma2=None,
-                 third=None, fourth=None,  **kws):
+    def __init__(self, filename=None, label=None, s02=None, degen=None,
+                 e0=None, ei=None, deltar=None, sigma2=None, third=None,
+                 fourth=None, _larch=None, **kws):
 
         kwargs = dict(name='FeffPath: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self, **kwargs)
-        self._larch = _larch
         self.filename = filename
         self.params = None
         self.label = label
@@ -180,7 +177,7 @@ class FeffPathGroup(Group):
 
         self._feffdat = None
         if filename is not None:
-            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
+            self._feffdat = FeffDatFile(filename=filename)
             self.geom  = self._feffdat.geom
             def_degen  = self._feffdat.degen
             if self.label is None:
@@ -216,13 +213,13 @@ class FeffPathGroup(Group):
         return "p%s" % (b32hash(s)[:8].lower())
 
     def __copy__(self):
-        return FeffPathGroup(filename=self.filename, _larch=self._larch,
+        return FeffPathGroup(filename=self.filename,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
                              third=self.third, fourth=self.fourth)
 
     def __deepcopy__(self, memo):
-        return FeffPathGroup(filename=self.filename, _larch=self._larch,
+        return FeffPathGroup(filename=self.filename,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
                              third=self.third, fourth=self.fourth)
@@ -368,7 +365,7 @@ class FeffPathGroup(Group):
         """calculate chi(k) with the provided parameters"""
         fdat = self._feffdat
         if fdat.reff < 0.05:
-            self._larch.writer.write('reff is too small to calculate chi(k)')
+            print('reff is too small to calculate chi(k)')
             return
         # make sure we have a k array
         if k is None:
@@ -431,7 +428,7 @@ class FeffPathGroup(Group):
         self.chi = cchi.imag
         self.chi_imag = -cchi.real
 
-def path2chi(path, paramgroup=None, _larch=None, **kws):
+def path2chi(path, paramgroup=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
     output chi array will be written to path group
@@ -448,7 +445,7 @@ def path2chi(path, paramgroup=None, _larch=None, **kws):
       None - outputs are written to path group
 
     """
-    params = group2params(paramgroup, _larch=_larch)
+    params = group2params(paramgroup)
 
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
@@ -456,8 +453,8 @@ def path2chi(path, paramgroup=None, _larch=None, **kws):
     path.create_path_params(params=params)
     path._calc_chi(**kws)
 
-def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
-            k=None, kmax=None, kstep=0.05, **kws):
+def ff2chi(pathlist, group=None, paramgroup=None, 
+            k=None, kmax=None, kstep=0.05, _larch=None, **kws):
     """sum chi(k) for a list of FeffPath Groups.
 
     Parameters:
@@ -475,12 +472,11 @@ def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     pathlist and writes the resulting arrays to group.k and group.chi.
 
     """
-    params = group2params(paramgroup, _larch=_larch)
+    params = group2params(paramgroup)
 
-    msg = _larch.writer.write
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
-            msg('%s is not a valid Feff Path' % path)
+            print('%s is not a valid Feff Path' % path)
             return
         path.create_path_params(params=params)
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
@@ -497,9 +493,9 @@ def ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     group.chi = out
     return group
 
-def feffpath(filename=None, _larch=None, label=None, s02=None,
-             degen=None, e0=None,ei=None, deltar=None, sigma2=None,
-             third=None, fourth=None, **kws):
+def feffpath(filename=None, label=None, s02=None, degen=None,
+             e0=None,ei=None, deltar=None, sigma2=None, third=None,
+             fourth=None, _larch=None, **kws):
     """create a Feff Path Group from a *feffNNNN.dat* file.
 
     Parameters:
@@ -525,5 +521,4 @@ def feffpath(filename=None, _larch=None, label=None, s02=None,
     """
     return FeffPathGroup(filename=filename, label=label, s02=s02,
                          degen=degen, e0=e0, ei=ei, deltar=deltar,
-                         sigma2=sigma2, third=third, fourth=fourth,
-                         _larch=_larch)
+                         sigma2=sigma2, third=third, fourth=fourth)

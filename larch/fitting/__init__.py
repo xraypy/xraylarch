@@ -46,10 +46,11 @@ class ParameterGroup(Group):
     """
     Group for Fitting Parameters
     """
-    def __init__(self, name=None, _larch=None, **kws):
+    def __init__(self, name=None, **kws):
         if name is not None:
             self.__name__ = name
-
+        if '_larch' in kws:
+            kws.pop('_larch')
         self.__params__ = Parameters()
         Group.__init__(self)
         self.__exprsave__ = {}
@@ -134,7 +135,7 @@ def is_param(obj):
     """return whether an object is a Parameter"""
     return isParameter(obj)
 
-def group2params(paramgroup, _larch=None):
+def group2params(paramgroup):
     """take a Group of Parameter objects (and maybe other things)
     and put them into a lmfit.Parameters, ready for use in fitting
     """
@@ -180,7 +181,7 @@ def params2group(params, paramgroup):
 
 def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
              scale_covar=True, iter_cb=None, reduce_fcn=None, nan_polcy='omit',
-             _larch=None, **fit_kws):
+             **fit_kws):
     """
     wrapper around lmfit minimizer for Larch
     """
@@ -218,7 +219,7 @@ def minimize(fcn, paramgroup, method='leastsq', args=None, kws=None,
     return out
 
 def fit_report(fit_result, modelpars=None, show_correl=True, min_correl=0.1,
-               sort_pars=True, _larch=None, **kws):
+               sort_pars=True, **kws):
     """generate a report of fitting results
     wrapper around lmfit.fit_report
 
@@ -328,7 +329,7 @@ def chi2_map(fit_result, xname, yname, nx=11, ny=11, sigma=3, **kws):
                            prob_func=scaled_chisqr,
                            nx=nx, ny=ny, **kws)
 
-def _Parameters(*arg, _larch=None, **kws):
+def _Parameters(*arg, **kws):
     return Parameters(*arg, **kws)
 
 
