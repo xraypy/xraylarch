@@ -6,6 +6,7 @@ import numpy as np
 from larch.larchlib import get_dll
 
 import scipy.constants as consts
+
 # EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]
 #    amu     = 931.494061e6  # [eV / (c*c)]
@@ -14,19 +15,17 @@ EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
 
-def sigma2_eins(t, theta, path=None, _larch=None):
+
+def sigma2_eins(t, theta, path):
     """calculate sigma2 for a Feff Path wih the einstein model
 
-    sigma2 = sigma2_eins(t, theta, path=None)
+    sigma2 = sigma2_eins(t, theta, path)
 
     Parameters:
     -----------
       t        sample temperature (in K)
       theta    Einstein temperature (in K)
-      path     FeffPath to cacluate sigma2 for [None]
-
-    if path is None, the 'current path'
-    (_sys.fiteval.symtable._feffdat) is used.
+      path     FeffPath to calculate sigma2 for
 
     Notes:
        sigma2 = FACTOR*coth(2*t/theta)/(theta * mass_red)
@@ -34,53 +33,33 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     mass_red = reduced mass of Path (in amu)
     FACTOR  = hbarc*hbarc/(2*k_boltz*amu) ~= 24.25 Ang^2 * K * amu
     """
-    feffpath = None
-    if path is not None:
-        feffpath = path._feffdat
-    elif _larch is not None:
-        feffpath = _larch.symtable._sys.fiteval.symtable.get('feffpath', None)
-
+    feffpath = path._feffdat
     if feffpath is None:
         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
+    theta = max(float(theta), 1.e-5)
+    t     = max(float(t), 1.e-5)
     rmass = 0.
     for sym, iz, ipot, amass, x, y, z in feffpath.geom:
         rmass = rmass + 1.0/max(0.1, amass)
     rmass = 1.0/max(1.e-12, rmass)
     return EINS_FACTOR/(theta * rmass * np.tanh(theta/(2.0*t)))
 
-def sigma2_debye(t, theta, path=None, _larch=None):
+def sigma2_debye(t, theta, path):
     """calculate sigma2 for a Feff Path wih the correlated Debye model
 
-    sigma2 = sigma2_debye(t, theta, path=None)
+    sigma2 = sigma2_debye(t, theta, path)
 
     Parameters:
     -----------
       t        sample temperature (in K)
       theta    Debye temperature (in K)
-      path     FeffPath to cacluate sigma2 for [None]
-
-    if path is None, the 'current path'
-    (_sys.fiteval.symtable._feffdat) is used.
+      path     FeffPath to calculate sigma2 for 
     """
-    feffpath = None
-    if path is not None:
-        feffpath = path._feffdat
-    elif _larch is not None:
-        feffpath = _larch.symtable._sys.fiteval.symtable.get('feffpath', None)
-
+    feffpath = path._feffdat
     if feffpath is None:
         return 0.
-
-    if theta < 1.e-5: theta = 1.e-5
-    if t < 1.e-5:     t = 1.e-5
-
-    tempk  = float(t)
-    thetad = float(theta)
-
+    thetad = max(float(theta), 1.e-5)
+    tempk  = max(float(t), 1.e-5)
     natoms = len(feffpath.geom)
     rnorm  = feffpath.rnorman
     atomx, atomy, atomz, atomm = [], [], [], []
@@ -314,3 +293,48 @@ def debint(rx, tx):
         bn = bnp1
         bo = result
     return result
+
+
+####################################################
+## sigma2_eins and sigma2_debye are defined here to
+## be injected as Procedures within lmfit's asteval
+## for calculating XAFS sigma2 for a scattering path
+## these use `reff` or `feffpath.geom` which will be updated
+## for each path during an XAFS path calculation
+##
+_sigma2_funcs = """
+def sigma2_eins(t, theta):
+    if feffpath is None:
+         return 0.
+    theta = max(float(theta), 1.e-5)
+    t     = max(float(t), 1.e-5)
+    rmass = 0.
+    for sym, iz, ipot, amass, x, y, z in feffpath.geom:
+        rmass = rmass + 1.0/max(0.1, amass)
+    rmass = 1.0/max(1.e-12, rmass)
+    return EINS_FACTOR/(theta * rmass * tanh(theta/(2.0*t)))
+
+def sigma2_debye(t, theta):
+    if feffpath is None:
+         return 0.
+    thetad = max(float(theta), 1.e-5)
+    tempk  = max(float(t), 1.e-5)
+    natoms = len(feffpath.geom)
+    rnorm  = feffpath.rnorman
+    atomx, atomy, atomz, atomm = [], [], [], []
+    for sym, iz, ipot, am, x, y, z in feffpath.geom:
+        atomx.append(x)
+        atomy.append(y)
+        atomz.append(z)
+        atomm.append(am)
+
+    return sigma2_correldebye(natoms, tempk, thetad, rnorm,
+                              atomx, atomy, atomz, atomm)
+"""
+def add_sigma2funcs(params):
+    """set sigma2funcs into Parameters' asteval"""
+    f_eval = params._asteval
+    f_eval.symtable['EINS_FACTOR'] = EINS_FACTOR
+    f_eval.symtable['sigma2_correldebye'] = sigma2_correldebye
+    f_eval.symtable['feffpath'] = None
+    f_eval(_sigma2_funcs)

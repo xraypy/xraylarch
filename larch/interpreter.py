@@ -182,9 +182,6 @@ class Interpreter:
                         builtins.add_plugin(pdir, _larch=self)
                         loaded_plugins.append(pname)
 
-        reset_fiteval = getattr(mathgroup, 'reset_fiteval', None)
-        if callable(reset_fiteval):
-            reset_fiteval(_larch=self)
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""

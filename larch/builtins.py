@@ -515,23 +515,6 @@ def show_history(max_lines=10000, _larch=None):
     for hline in _larch.history.buffer[-nhist:]:
         _larch.writer.write("%s\n" % hline)
 
-def reset_fiteval(_larch=None):
-    """initiailze fiteval for fitting with lmfit"""
-    fiteval = _larch.symtable._sys.fiteval = asteval.Interpreter()
-    # remove 'print' from asteval symtable, as it is not picklable
-    try:
-        fiteval.symtable.pop('print')
-    except KeyError:
-        pass
-    fiteval_init = getattr(_larch.symtable._sys, 'fiteval_init', None)
-    if fiteval_init is not None:
-        for init_item in fiteval_init:
-            if isinstance(init_item, (tuple, list)) and len(init_item) == 2:
-                key, val = init_item
-                fiteval.symtable[key] = val
-            else:
-                fiteval(init_item)
-
 def init_display_group(_larch):
     symtab = _larch.symtable
     if not symtab.has_group('_sys.display'):
@@ -561,18 +544,15 @@ _main_builtins.update(show_builtins)
 
 
 # names to fill in the larch namespace at startup
-init_builtins = dict(_builtin=_main_builtins,
-                     _math={'reset_fiteval': reset_fiteval})
+init_builtins = dict(_builtin=_main_builtins)
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
-init_funcs = [init_display_group, reset_fiteval]
+init_funcs = [init_display_group] 
 
 # group/classes to register for save-restore
 init_groups = []
 init_moddocs = {}
 
-# _math_builtins.update(math._larch_builtins_)
-# _math_builtins.update(fitting._larch_builtins_)
 
 for mod in __core_modules:
     if mod is None:
