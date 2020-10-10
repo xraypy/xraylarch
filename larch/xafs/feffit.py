@@ -373,7 +373,7 @@ class FeffitDataSet(Group):
             return
         if not self.__prepared:
             self.prepare_fit()
-        
+
         ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
@@ -625,7 +625,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     return out
 
 
-def feffit_report(result, min_correl=0.1, with_paths=True):
+def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     """return a printable report of fit for feffit
 
     Parameters:
