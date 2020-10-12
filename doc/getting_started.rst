@@ -8,7 +8,7 @@ least aims to include) all the functionality needed for visualizing,
 processing, and analyzing X-ray Absorption and Flourescence spectroscopy
 data.  Most users will start Larch has a few GUI applications, especially
 ``XAS Viewer``, ``GSE XRM MapViewer``, and ``XRF Display`` for these.  In
-addition, Larch includes an embedded Python-like scripting language for
+addition, Larch includes an embedded Python-like macro language for
 interacting with data that can be used either from a basic command-line
 interface or as a callable service from a different programming language
 (so that Athena and Artemis can use Larch instead of the older Ifeffit
@@ -72,3 +72,4 @@ can build and remember more complex analyses.  The combination of the high
 level commands of Larch and the interactive command-line GUI for
 exploratory data analysis are a great way to get started in writing your
 own scripts and building up more sophisticated programs.
+

@@ -11,6 +11,7 @@ Downloading and Installation
 .. _Anaconda Downloads:            https://www.continuum.io/downloads
 .. _Miniconda Downloads:           https://docs.conda.io/en/latest/miniconda.html
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
+.. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47.tar.gz
@@ -27,7 +28,7 @@ Downloading and Installation
 The latest release version of Larch is |release|.
 
 Larch is in active and continuing development. The goal is to release a new
-version every few months, but without specific timelines.  Larch's tools
+version every six months or so, but without specific timelines.  Larch's tools
 for XAFS data analysis and working with XRF data and XRF maps from X-ray
 microprobes are working and ready for general use.  There may be bugs and
 unintended features, and some missing or incomplete desired features as we
@@ -158,10 +159,10 @@ above, installing Anaconda Python does not require extra permissions to install,
 components.  Anaconda includes a robust package manager called *conda* that makes it easy to update
 the packages it manages, including Larch.
 
-Start by installing the latest version of Anaconda Python from the `Anaconda
-Downloads`_ site.  Python 3.7 is recommended.  Larch should work with Python
-3.6, may work with Python 3.5, but will no longer work with Python 2.7.  You
-can also download and install Miniconda from `Miniconda Downloads` as a
+Start by installing the latest version of Anaconda Python from the
+`Anaconda Downloads`_ site.  Python 3.7 or Python 3.8 is recommended.
+Larch should work with Python 3.6, but will no longer work with Python 2.7.
+You can also download and install Miniconda from `Miniconda Downloads` as a
 starting distribution.
 
 Once Anaconda or Miniconda Python is installed, you can open a Terminal (on
@@ -205,9 +206,8 @@ path, and so you would need to open a Command or Powershell window and type::
    C:\Users\<YourName>\xraylarch\Scripts\conda.exe update --all
 
 .. note::
-   `conda update --all` *will not* work to upgrade from 0.9.42 to 0.9.47,
-   but it *will* work to upgrade from 0.9.43 or higher to 0.9.47.
-
+   `conda update --all` *will not* work to upgrade from 0.9.42 or earlier,
+   but it *will* work to upgrade from 0.9.43 or higher.
 
 
 Using `pip`
@@ -252,8 +252,7 @@ automatically (and are listed in the `requirements.txt` file in the source
 tree), there are a few packages that are useful for some functionality but
 somewhat less easy to have as a hard dependency (usually because they are
 not readily available on PyPI for all platforms).  These optional packages
-are listed in the table below.
-Note that most of these will be
+are listed in the table below.  Note that most of these will be
 installed with Larch whether you install from a binary installer,
 with `conda install xraylarch`, with `pip install xraylarch`, or with
 `python setup.py install`
@@ -368,14 +367,13 @@ conversations, and suggestions for making Ifeffit better, including on the
 ifeffit mailing list.  Many of these contributions have found their way
 into Larch.
 
-Larch includes calculations for anomalous cross-sections based on the work
-of Cromer and Libermann, as implemented by Sean Brennan and Paul L. Cowen.
-Their code is included in Larch with only minor changes.  Code to store and
-read the X-ray Scattering data from the Elam Tables was modified from code
-originally written by Darren S. Dale.  Refined values for anomalous
-scattering factors have been provided directly by Christopher T. Chantler.
-Further details of the origin of much of the tabularized X-ray data is
-given in :ref:`xraydb-chapter`.
+Larch uses X-ray scattering factors and cross-sections fro the `xraydb`_
+library.  This uses code to store and read the X-ray Scattering data from
+the Elam Tables was modified from code originally written by
+Darren S. Dale.  Refined values for anomalous scattering factors there have
+been provided directly by Christopher T. Chantler.  Further details of the
+origin of much of the tabularized X-ray data is given in
+:ref:`xraydb-chapter`.
 
 As Larch depends on the fantastic scientific librarie written and
 maintained in python, especially the numpy, scipy, and matplotlib, the
@@ -393,7 +391,6 @@ License
 Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:
-
 
 .. literalinclude:: ../LICENSE
 
