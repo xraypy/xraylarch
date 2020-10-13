@@ -117,6 +117,7 @@ class Interpreter:
         builtingroup    = self.symtable._builtin
         mathgroup       = self.symtable._math
         setattr(mathgroup, 'j', 1j)
+        setattr(mathgroup, 'np', numpy)
 
         # system-specific settings
         enable_plugins()
@@ -942,7 +943,8 @@ class Interpreter:
             thismod = st_sys.modules[name]
         elif name in sys.modules:
             thismod = sys.modules[name]
-
+        if name == 'larch':
+            thismod.environ = 'larch'
         if thismod is None or do_reload:
             # first look for "name.lar"
             islarch = False
