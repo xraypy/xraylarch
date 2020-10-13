@@ -4,7 +4,6 @@
 Downloading and Installation
 ====================================
 
-
 .. _Larch Repository (github.com): https://github.com/xraypy/xraylarch
 .. _Anaconda Python:               https://www.continuum.io/
 .. _Python.org:                    https://python.org/
@@ -344,13 +343,13 @@ importantly, Larch would simply not exist without the long and fruitful
 collaboration we've enjoyed.  Margaret Koker wrote most of the X-ray
 diffraction analysis code, and much of the advanced functionality of the
 GSECARS XRF Map Viewer.  Mauro Rovezzi has provided the spec-data reading
-interface.  Tom Trainor had a very strong influence on the original design
-of Larch, and helped with the initial version of the python implementation.
-Yong Choi wrote the code for X-ray standing wave and reflectivity analysis
-and graciously allowed it to be included and modified for Larch.  Tony
-Lanzirotti and Steve Sutton have provided wonderful and patient feedback on
-many parts of Larch, especially for XANES processing and testing of the XAS
-Viewer GUI.
+interface and the RIXS viewer.  Tom Trainor had a very strong influence on
+the original design of Larch, and helped with the initial version of the
+python implementation.  Yong Choi wrote the code for X-ray standing wave
+and reflectivity analysis and graciously allowed it to be included and
+modified for Larch.  Tony Lanzirotti and Steve Sutton have provided
+wonderful and patient feedback on many parts of Larch, especially for XANES
+processing and testing of the XAS Viewer GUI.
 
 Because Larch began as a rewrite of the Ifeffit XAFS Analysis Package, it
 also references and builds on quite a bit of code developed for XAFS over

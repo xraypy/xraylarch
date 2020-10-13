@@ -8,29 +8,28 @@ This chapter describes the use of the `larch` module from Python.  All the
 functionality described elsewhere in this documentation is available from
 the `larch` Python module and is available from::
 
-    import larch
+    >>> import larch
 
 
 A simple session might look like this::
 
-    from larch.xafs import autobk
-    from larch.io import read_xdi
-    from wxmplot.interactive import plot
+    >>> from larch.xafs import autobk
+    >>> from larch.io import read_xdi
+    >>> from wxmplot.interactive import plot
 
-    dat = read_xdi('examples/xafsdata/fe3c_rt.xdi')
-    dat.mu = dat.mutrans
-    autobk(dat, rbkg=1.0, kweight=2)
-    plot(dat.k, dat.k*dat.chi, xlabel='k 1/A', ylabel='chi*k')
+    >>> dat = read_xdi('examples/xafsdata/fe3c_rt.xdi')
+    >>> dat.mu = dat.mutrans
+    >>> autobk(dat, rbkg=1.0, kweight=2)
+    >>> plot(dat.k, dat.k*dat.chi, xlabel='k 1/A', ylabel='chi*k')
 
-    from larch.xray import xray_line
-    print(xray_line('Cu', 'Ka1'))
-    (8046.3, 0.577108, u'K', u'L3')
-
+    >>> from larch.xray import xray_line
+    >>> print(xray_line('Cu', 'Ka1'))
+    >>> (8046.3, 0.577108, u'K', u'L3')
 
 More elaborate examples are given throughout this documentation.
 
-creeating and using a larch interpreter in Python
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+creating and using a larch interpreter in Python
+==========================================================
 
 The example above shows the larch functionality being accessed directly from
 Python.  In addition, from Python you can create an instance of a `larch`
@@ -60,43 +59,114 @@ you could do::
     >>> print(dat.filename, dat.e0, len(dat.energy), len(dat.chi))
     fe3c_rt.xdi 7122.5 348 299
 
-As described elsewhere, that `dat` value, and many of the container objects
-created and used in Larch will be larch Groups. From Python, these are very
-similar to empty classes or namespace objects: containers of data accessed using
-Python's `thing.attribute` syntax.  As you might imagine, you can create Groups
-from Python and set them into the namespace of a larch session and then access
-that data from the session::
 
-     >>> from larch import Group
-     >>> import numpy as np
-     >>> mygroup = Group(a = 1, message='hello', x=np.linspace(-10, 10, 201))
-     >>> session.symtable.frompy  = mygroup
-     >>> session("print(frompy.message, len(frompy.x))")
-     hello 201
+The Larch `Group`
+==========================================================
+
+
+As described throughout the rest of the documentation, Larch organizes data using
+`Group` objects.  For example, the `dat` value extracted from the larch session
+in the example above will be a `Group`.  Many of the container objects created
+and used in Larch will be larch Groups.
+
+For the Python user, these Groups are very similar to instances of an empty
+class or `argparse.Namespace` objects::
+
+    class GroupLite(object):
+        pass
+
+That is, it is a containrer object with data accessed using Python's
+`thing.attribute` syntax.  A larch Group has no public attributes or methods, but
+does have a few private ones.  The most important of these is `__name__`, which
+you can assign at initialization with the `name` argument and will be shown in
+the "representation" string::
+
+    >>> from larch import Group
+    >>> g = Group(name='my group', x=1, y=2)
+    >>> g
+    <Group my group>
+    >>> g.x, g.y
+    (1, 2)
+    >>> g.name
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: 'Group' object has no attribute 'name'
+    >>> g.__name__
+    'foo'
+    >>> g.name = 'Bob'
+    >>> g.x, g.y, g.name
+    (1, 2, 'Bob')
+    
+
+As you can see, you can create and use Groups from Python and set them into the
+namespace of a larch session and then access that data from the session::
+
+    >>> from larch import Group
+    >>> import numpy as np
+    >>> mygroup = Group(a = 1, message='hello', x=np.linspace(-10, 10, 201))
+    >>> session.symtable.frompy  = mygroup
+    >>> session("print(frompy.message, len(frompy.x))")
+    hello 201
 
 This can make it very easy to embed a larch session (or more than one) into a
 Python program and use it as a calculation engine.
 
      
-the optional `_larch` argument
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The optional `_larch` argument
+==========================================================
 
 
 In earlier versions of larch, many functions in the Python interface required or
 strongly recommended making a larch interpreter and passing this around as a
 "session instance" to many of the larch functions.  That is, you might see::
 
-    from larch import Interreter
-    from larch.io import read_xdi
+    >>> from larch import Interreter
+    >>> from larch.io import read_xdi
 
-    _larch = Interpreter()
-    dat = read_xdi('examples/xafsdata/fe3c_rt.xdi', _larch=_larch)  # not needed!
+    >>> _larch = Interpreter()
+    >>> dat = read_xdi('examples/xafsdata/fe3c_rt.xdi', _larch=_larch)  # not needed!
 
-With version 0.9.49, this is no longer needed, and will generally not be used.
-For backward compatibility, and in some existing code, you may still see that
-many functions have an optional `_larch` argument.  At this point, this is no
-longer needed or recommended.
+With version 0.9.49, this is no longer needed.  For backward compatibility, many
+functions still have an optional `_larch` argument.  You may see this usage in
+some existing code, but at this point, this is no longer needed or recommended.
     
+     
+Converting "Larch code" into Python
+==========================================================
+
+As discussed in more detail in the next section, the Larch macro language is
+essentially a dialect of Python so that converting code from the macro language
+into Python is nearly trivial.  The main differences between Python and the larch
+macro language are described here.  Briefly, the differences are:
+
+  1. `Larch language` is missing several constructs: `class`, `lambda`,
+     generators, any asynchronous programming constructs.
+     
+  2. `Larch language` doe not use indentation.  Leading whitespace is ignored and
+     blocks must be terminated with a matching `#endif`, `#endfor`, `#enddef`,
+     `#endwhile`, or `#endtry`.
+
+  3. `import` statements are not required for all of the built-in larch
+     functionality, including large parts of `numpy` and `scipy`.  As is
+     appropropriate for a domain-specific language, many functions are readily
+     available, though they are organized in a namespace with look-up rules.
+     From a Larch session, you can import and use Python modules.
+
+
+Other than these changes, code in the `Larch language` *is* Python code (it is
+parsed and evaluated using Python's language tools) and all Larch objects are
+really Python objects. That means that converting Larch code into Python code
+can be very easy, with the main steps being
+
+   a. check indentation and `#end*` block terminators.
+   b. make sure the import statements are correctly provided.
+
+
+Note that if the code is properly indented and also uses `#end*` block
+terminators that code can be both valid Python and Larch.  The examples in
+the current document use this convention and have import statements
+commented out at the top so that they can be easily run in Python or from
+the Larch interpreter.
   
 
 Larch submodules
@@ -108,13 +178,16 @@ Larch submodules
 .. _wxmplot:   https://newville.github.io/wxmplot/
 
 
-The `larch` module is broken up into a number of submodules. The ones that are most likely to be
-useful for Python programmers are described briefly in the table below.
+The `larch` module is broken up into a number of submodules, as described
+in the table and sections below.  To be clear, this list is incomplete and
+subject to change.  The rest of this document should be used for details of
+the functionality of the various modules and functions.
 
 .. _pymodules_table:
 
-**Table of the Larch Python Modules**  This is an incomplete list of all the Python modules
-available from `larch`, but should cover those that are most useful to Python programmers.
+**Table of the Larch Python Modules** This is an incomplete list of all the
+Python modules available from `larch`, but should cover those that are most
+useful to Python programmers.
 
    
   +--------------------------------+-----------------------------------------------------------+
@@ -155,4 +228,99 @@ functionality in `wxlib`) are fairly thin wrappers around other python libraries
 that are generally well-documented and do not need to be used only from with
 larch.  If you find yourself using these submodules, it might be easier to just
 use the more general-purpose library.
+
+
+Top-level `larch`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The top-level `larch` module contains several modules and a few important
+classes and methods.  An incomplete list, but the most important objects in
+the top-level module are:
+
+.. class:: Interpreter
+
+   class to build a Larch Interpreter	 
+
+.. class:: Group
+	   
+   class to build a Larch Group
+
+.. attribute:: site_config
+	       
+   a container (module) of site configuration information.
+   
+
+.. attribute:: is_from_python
+	       
+   a boolean value indicating whether this larch module has been imported
+   into Python (True) or into a Larch Interpreter (False)
+   
+
+`larch.io`                     
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `io` module contains functions for reading and writing data with known
+formats.
+
+
+`larch.xafs`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `xafs` module contains functions for XAFS analysis.
+
+
+`larch.xray`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `xray` module contains functions for X-ray properties, as imported from `xraydb`_.
+
+
+`larch.xrf`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The `xrf` module contains functions for X-ray fluorescence data.
+
+
+
+`larch.xrd`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.xrmmap`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.fitting`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `fitting` module contains functions for fitting data, including to
+known lineshapes.  Much of this is taken directly from `lmfit`_ or modified
+slightly for Larch.  If you're writing programs for fitting data, we do
+recommend using `lmfit`_ directly.
+
+
+`larch.math`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.utils`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.epics`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.xmlrpc_server`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.shell`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+`larch.wxlib`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
