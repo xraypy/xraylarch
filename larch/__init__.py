@@ -61,4 +61,4 @@ from . import shell
 
 enable_plugins()
 
-environ = 'python'
+is_from_python = True
