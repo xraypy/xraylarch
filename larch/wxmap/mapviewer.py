@@ -1617,21 +1617,20 @@ class MapViewerFrame(wx.Frame):
             elif hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
 
-
         dopts = dict(title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                      det=det, subtitles=subtitles,
                      xrmfile=xrmfile, with_savepos=with_savepos)
         displayed = False
         while not displayed:
+            if 'contrast_level' not in dopts:
+                dopts['contrast_level'] = 0.5
             if len(self.im_displays) == 0:
                 imd = self.add_imdisplay(title=title, det=det)
-                imd.display(map, contrast_level=0.5, **dopts)
+                imd.display(map, **dopts)
             else:
                 try:
                     imd = self.im_displays[-1]
-                    if imd.panel.conf.contrast_level in (0, None):
-                        dopts['contrast_level'] = 0.5
-                    else:
+                    if imd.panel.conf.contrast_level not in (0, None):
                         dopts['contrast_level'] = imd.panel.conf.contrast_level
                     imd.display(map, **dopts)
                     displayed = True
