@@ -3004,7 +3004,7 @@ class GSEXRM_MapFile(object):
 
 
     def get_roimap(self, roiname, det=None, hotcols=None, zigzag=None,
-                   dtcorrect=None):
+                   dtcorrect=None, minval=None, maxval=None):
         '''extract roi map for a pre-defined roi by name
         Parameters
         ---------
@@ -3012,6 +3012,8 @@ class GSEXRM_MapFile(object):
         det        :  str                     detector name
         dtcorrect  :  optional, bool [None]   dead-time correct data
         hotcols    :  optional, bool [None]   suppress hot columns
+        minval:     float, trim to minimum value
+        maxval:     float, trim to maximum value
 
         Returns
         -------
@@ -3089,6 +3091,10 @@ class GSEXRM_MapFile(object):
             out = remove_zigzag(out, zigzag)
         elif hotcols:
             out = out[:, 1:-1]
+        if minval is not None:
+            out[np.where(out<minval)] = minval
+        if maxval is not None:
+            out[np.where(out>maxval)] = maxval
         return out
 
 
