@@ -60,3 +60,5 @@ from . import shell
 #                    run_larch_server, run_larch)
 
 enable_plugins()
+
+is_from_python = True
