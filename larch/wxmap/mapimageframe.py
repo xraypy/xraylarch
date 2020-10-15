@@ -75,6 +75,8 @@ class MapImageFrame(ImageFrame):
         self.title = ''
         if 'title' in kws:
             self.title = kws['title']
+        if 'contrast_level' not in kws:
+            kws['contrast_level'] = 0.5
         ImageFrame.display(self, map, **kws)
         # self.set_contrast_levels()
 
