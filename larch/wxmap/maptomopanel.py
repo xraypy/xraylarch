@@ -31,7 +31,6 @@ try:
 except ImportError:
     pass
 
-
 import numpy as np
 import scipy.stats as stats
 
@@ -55,6 +54,10 @@ ALL_RIGHT =  wx.ALL|RIGHT
 
 PLOT_TYPES = ('Single ROI Map', 'Three ROI Map', 'Correlation Plot')
 PLOT_OPERS = ('/', '*', '-', '+')
+CONTRAST_CHOICES = ('None',
+                    '0.01', '0.02', '0.05',
+                    '0.1', '0.2', '0.5',
+                    '1', '2', '5')
 
 CWID = 150
 WWID = 100 + CWID*4
@@ -83,6 +86,20 @@ class TomographyPanel(GridPanel):
                            Choice(self, size=(CWID, -1)),
                            Choice(self, size=(CWID, -1))]
 
+        fopts = dict(minval=0, precision=2, size=(110, -1))
+        self.iminvals = [FloatCtrl(self, value=0, **fopts),
+                         FloatCtrl(self, value=0, **fopts),
+                         FloatCtrl(self, value=0, **fopts)]
+        self.imaxvals = [FloatCtrl(self, value=0, **fopts),
+                         FloatCtrl(self, value=0, **fopts),
+                         FloatCtrl(self, value=0, **fopts)]
+        self.icontrast = [Choice(self, choices=CONTRAST_CHOICES, default=4, size=(CWID, -1)),
+                          Choice(self, choices=CONTRAST_CHOICES, default=4, size=(CWID, -1)),
+                          Choice(self, choices=CONTRAST_CHOICES, default=4, size=(CWID, -1))]
+
+        for i, d in enumerate(self.icontrast):
+            d.Bind(wx.EVT_CHOICE, partial(self.roiContrast, i))
+
         for i,det_chc in enumerate(self.det_choice):
             det_chc.Bind(wx.EVT_CHOICE, partial(self.detSELECT,i))
 
@@ -98,7 +115,6 @@ class TomographyPanel(GridPanel):
                           SimpleText(self,''),
                           SimpleText(self,'')]
 
-
         self.use_dtcorr  = Check(self, default=True,
                                  label='Correct for Detector Deadtime',
                                  action=self.onDTCorrect)
@@ -106,7 +122,7 @@ class TomographyPanel(GridPanel):
                                  label='Remove First and Last columns',
                                  action=self.onHotCols)
         self.i1trans = Check(self, default=True,
-                             label='Column labeled "i1" is transmission data')
+                             label='Scalar "i1" is transmission data')
 
         self.tomo_show = [Button(self, 'Show New Map',     size=(CWID, -1),
                                action=partial(self.onShowTomograph, new=True)),
@@ -138,6 +154,11 @@ class TomographyPanel(GridPanel):
                  style=LEFT, newrow=True)
 
         self.Add(self.plot_choice, dcol=1, style=LEFT)
+        self.Add(self.i1trans,     dcol=2, style=LEFT)
+        self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
+        self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
+        self.Add(self.use_hotcols,              dcol=2, style=LEFT)
+
         self.AddMany((SimpleText(self,''), self.det_label[0],
                         self.det_label[1], self.det_label[2], self.det_label[3]),
                      style=LEFT,  newrow=True)
@@ -151,41 +172,41 @@ class TomographyPanel(GridPanel):
                      style=LEFT,  newrow=True)
 
         self.AddMany((SimpleText(self,''), self.roi_label[0],
-                        self.roi_label[1], self.roi_label[2], self.roi_label[3]),
-                     style=LEFT,  newrow=True)
+                      self.roi_label[1], self.roi_label[2],
+                      self.roi_label[3]), style=LEFT, newrow=True)
 
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.AddMany((SimpleText(self,'I Min:'), self.iminvals[0],
+                      self.iminvals[1], self.iminvals[2]), style=LEFT,
+                     newrow=True)
+
+        self.AddMany((SimpleText(self,'I Max:'), self.imaxvals[0],
+                      self.imaxvals[1], self.imaxvals[2]), style=LEFT,
+                     newrow=True)
+
+        self.AddMany((SimpleText(self,'I contrast %:'), self.icontrast[0],
+                      self.icontrast[1], self.icontrast[2]), style=LEFT,
+                     newrow=True)
+
+
+        self.Add((5, 5),                        dcol=1, style=LEFT, newrow=True)
         self.Add((5, 5),                        dcol=1, style=LEFT, newrow=True)
         self.Add(self.tomo_show[0],             dcol=1, style=LEFT)
         self.Add(self.tomo_show[1],             dcol=1, style=LEFT)
 
         self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Options:'),   dcol=1, style=LEFT, newrow=True)
-        self.Add(self.use_dtcorr,               dcol=2, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.use_hotcols,              dcol=2, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-        self.Add(self.i1trans,                  dcol=2, style=LEFT)
-        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
-
-        self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT,  newrow=True)
 
         self.Add(SimpleText(self,'Reconstruction '), dcol=2, style=LEFT,  newrow=True)
 
-        self.Add((5, 5),                            dcol=1, style=LEFT,  newrow=True)
-        self.Add(SimpleText(self,'Algorithm:'),     dcol=1, style=LEFT)
+        self.Add(SimpleText(self,'Algorithm:'),     dcol=1, style=LEFT, newrow=True)
         self.Add(self.tomo_algo,                    dcol=1, style=LEFT)
-        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Filter: '),       dcol=1, style=LEFT)
         self.Add(self.tomo_filt,                    dcol=1, style=LEFT)
-        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
-        self.Add(SimpleText(self,'# Iterations'),   dcol=1, style=LEFT)
+
+        self.Add(SimpleText(self,'# Iterations'),   dcol=1, style=LEFT, newrow=True)
         self.Add(self.tomo_niter,                   dcol=1, style=LEFT)
-        self.Add((5, 5),                            dcol=1, style=LEFT, newrow=True)
         self.Add(SimpleText(self,'Center Pixel:'),      dcol=1, style=LEFT)
         self.Add(self.center_value, dcol=1, style=LEFT)
         self.Add(self.refine_center, dcol=1, style=LEFT)
-
 
         self.Add(HLine(self, size=(WWID, 5)),     dcol=8, style=LEFT,  newrow=True)
 
@@ -244,14 +265,40 @@ class TomographyPanel(GridPanel):
         self.tomo_niter.Enable(enable_niter)
         self.tomo_filt.Enable(enable_filter)
 
-
-    def detSELECT(self,idet,event=None):
+    def detSELECT(self, idet, event=None):
         self.set_roi_choices(idet=idet)
 
-    def roiSELECT(self,iroi,event=None):
+    def roiContrast(self, iroi, event=None):
+        if iroi > 2:
+            return
+        try:
+            detname = self.det_choice[iroi].GetStringSelection()
+            roiname = self.roi_choice[iroi].GetStringSelection()
+            contrast = self.icontrast[iroi].GetStringSelection()
+        except:
+            return
+        if contrast in ('None', None):
+            contrast = 0.0
+        contrast = float(contrast)
+        try:
+            map = self.cfile.get_roimap(roiname, det=detname)
+            imin, imax = np.percentile(map, (contrast, 100.0-contrast))
+            self.iminvals[iroi].SetValue(imin)
+            self.imaxvals[iroi].SetValue(imax)
+        except:
+            pass
 
+    def roiSELECT(self, iroi, event=None):
         detname = self.det_choice[iroi].GetStringSelection()
         roiname = self.roi_choice[iroi].GetStringSelection()
+        try:
+            contrast = self.icontrast[iroi].GetStringSelection()
+        except:
+            contrast = 0.0
+        if contrast in ('None', None):
+            contrast = 0.0
+        contrast = float(contrast)
+
 
         if version_ge(self.cfile.version, '2.0.0'):
             try:
@@ -264,6 +311,13 @@ class TomographyPanel(GridPanel):
                     roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
             except:
                 roistr = ''
+            try:
+                map = self.cfile.get_roimap(roiname, det=detname)
+                imin, imax = np.percentile(map, (contrast, 100.0-contrast))
+                self.iminvals[iroi].SetValue(imin)
+                self.imaxvals[iroi].SetValue(imax)
+            except:
+                pass
         else:
             try:
                 roi = self.cfile.xrmmap[detname]
@@ -317,14 +371,21 @@ class TomographyPanel(GridPanel):
         subtitles = None
         plt3 = 'three' in self.plot_choice.GetStringSelection().lower()
 
-        det_name, roi_name, plt_name = [], [], []
-        for det, roi in zip(self.det_choice,self.roi_choice):
-            det_name += [det.GetStringSelection()]
-            roi_name += [roi.GetStringSelection()]
-            if det_name[-1] == 'scalars':
-                plt_name += ['%s' % roi_name[-1]]
+        det_name = ['mcasum']*4
+        roi_name = ['']*4
+        plt_name = ['']*4
+        minvals  = [0]*4
+        maxvals = [np.inf]*4
+        for i in range(4):
+            det_name[i] = self.det_choice[i].GetStringSelection()
+            roi_name[i] = self.roi_choice[i].GetStringSelection()
+            if det_name[i] == 'scalars':
+                plt_name[i] = '%s' % roi_name[i]
             else:
-                plt_name += ['%s(%s)' % (roi_name[-1],det_name[-1])]
+                plt_name[i] = '%s(%s)' % (roi_name[i],det_name[i])
+            if i < 3:
+                minvals[i] = self.iminvals[i].GetValue()
+                maxvals[i] = self.imaxvals[i].GetValue()
 
         if plt3:
             flagxrd = False
@@ -366,16 +427,22 @@ class TomographyPanel(GridPanel):
 
         normmap = 1.
         if roi_name[-1] != '1':
-            normmap, sino_order = xrmfile.get_sinogram(roi_name[-1],det=det_name[-1], **args)
+            normmap, sino_order = xrmfile.get_sinogram(roi_name[-1],
+                                                       det=det_name[-1], **args)
             normmap[np.where(normmap==0)] = 1.
 
-        r_map, sino_order = xrmfile.get_sinogram(roi_name[0], det=det_name[0], **args)
+        r_map, sino_order = xrmfile.get_sinogram(roi_name[0],
+                                                 det=det_name[0],
+                                                 minval=minvals[0],
+                                                 maxval=maxvals[0], **args)
         r_map, r_lab = normalize_map(r_map, normmap, roi_name[0])
-
-
         if plt3:
-            g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1], **args)
-            b_map, sino_order = xrmfile.get_sinogram(roi_name[2], det=det_name[2], **args)
+            g_map, sino_order = xrmfile.get_sinogram(roi_name[1], det=det_name[1],
+                                                     minval=minvals[1],
+                                                     maxval=maxvals[1], **args)
+            b_map, sino_order = xrmfile.get_sinogram(roi_name[2], det=det_name[2],
+                                                     minval=minvals[2],
+                                                     maxval=maxvals[2], **args)
             g_map, g_lab = normalize_map(g_map, normmap, roi_name[1])
             b_map, b_lab = normalize_map(b_map, normmap, roi_name[2])
 
