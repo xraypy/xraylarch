@@ -176,7 +176,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(CopyBtn('plotone_op'), dcol=1, style=RIGHT)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
-        add_text('Non-XAS Data: Scale:')
+        add_text('Non-XAS Data Scale:')
         panel.Add(scale, dcol=2)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -636,8 +636,9 @@ class XASNormPanel(TaskPanel):
         if dgroup.datatype != 'xas':
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
-            # print(" Set Scale: ",  "{group:s}.scale = {scale:.8f}".format(**form))
-            self.larch_eval("{group:s}.scale = {scale:.8f}".format(**form))
+            opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
+            self.larch_eval("{group:s}.scale = {scale:.8f}".format(**opts))
+            self.larch_eval("{group:s}.norm = {scale:.8f}*{group:s}.ydat".format(**opts))
             return
 
         en_units = getattr(dgroup, 'energy_units', None)
@@ -750,7 +751,7 @@ class XASNormPanel(TaskPanel):
             dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
             if not hasattr(dgroup, 'scale'):
                 dgroup.scale = 1.0
-            # print("Scale ", dgroup.filename, dgroup.scale)
+
             dgroup.norm = dgroup.ydat*dgroup.scale
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
