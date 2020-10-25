@@ -21,6 +21,7 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
 import larch
 from larch import Group
 from larch.utils.strutils import fix_varname, file2groupname
+from larch.io import look_for_nans
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -514,7 +515,7 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.nb.AddPage(textpanel, ' Text of Data File ', True)
         self.nb.AddPage(self.plotpanel, ' Plot of Selected Arrays ', True)
-        
+
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
         mainsizer.Add(self.nb, 1, LEFT|wx.GROW,   2)
@@ -540,12 +541,19 @@ class ColumnDataFileFrame(wx.Frame) :
         line1 = lines[0].lower()
 
         reader = 'read_ascii'
-        if 'epics stepscan file' in line1:
-            reader = 'read_gsexdi'
-        elif 'xdi' in line1:
-            reader = 'read_xdi'
-        elif 'epics scan' in line1:
+        if 'epics scan' in line1:
             reader = 'read_gsescan'
+        # if 'epics stepscan file' in line1:
+        #     reader = 'read_gsexdi'
+        # elif 'xdi' in line1:
+        #     reader = 'read_xdi'
+        # reader = 'read_ascii'
+        if reader in ('read_xdi', 'read_gsexdi'):
+            # first check for Nans and Infs
+            nan_result = look_for_nans(path)
+            if ('has nans' in nan_result.message or
+                'has infs' in nan_result.message):
+                reader = 'read_ascii'
 
         tmpname = '_tmp_file_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
