@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import string
+from collections import namedtuple
 import numpy as np
 from dateutil.parser import parse as dateparse
 from math import log10
@@ -15,10 +16,68 @@ from .fileutils import fix_varname
 
 from .xafs_beamlines import guess_beamline
 
+nanresult = namedtuple('NanResult', ('file_ok', 'message', 'nan_rows',
+                                     'nan_cols', 'inf_rows', 'inf_cols'))
+
+
 MODNAME = '_io'
 TINY = 1.e-7
 MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
 COMMENTCHARS = '#;%*!$'
+
+
+def look_for_nans(path):
+    """
+    look for Nans and Infs in an ascii data file
+
+    Returns
+    -------
+    NanResult with 'file_ok', 'message', 'nan_rows', 'nan_cols',
+    'inf_rows', and 'inf_cols':
+
+    'file_ok' : True if data is read and contains no Nans or Infs
+    'file_ok' : False if path cannot be read or data contaings Nans / Infs
+    'message' : exception message if file cannot be read at all or
+                'has nans', 'has infs' or 'has nans and infs'
+    nan_rows, etc:  list of rows, columns containing Nans or Infs
+    """
+
+    nan_rows, nan_cols, inf_rows, inf_cols = [], [], [], []
+    try:
+        dat = read_ascii(path)
+    except:
+        etype, emsg, etb = sys.exc_info()
+        return nanresult(False, emsg, nan_rows, nan_cols, inf_rows, inf_cols)
+
+    if np.all(np.isfinite(dat.data)):
+        return nanresult(True, 'file ok', nan_rows, nan_cols, inf_rows, inf_cols)
+
+    msg = 'unknown'
+    nanvals = np.where(np.isnan(dat.data))
+    if len(nanvals[0]) > 0:
+        msg = 'has nans'
+        for icol in nanvals[0]:
+            if icol not in nan_cols:
+                nan_cols.append(icol)
+        for irow in nanvals[1]:
+            if irow not in nan_rows:
+                nan_rows.append(irow)
+
+    infvals = np.where(np.isinf(dat.data))
+    if len(infvals[0]) > 0:
+        if len(msg) == 0:
+            msg = 'has infs'
+        else:
+            msg = 'has nans and infs'
+        for icol in infvals[0]:
+            if icol not in inf_cols:
+                inf_cols.append(icol)
+        for irow in infvals[1]:
+            if irow not in inf_rows:
+                inf_rows.append(irow)
+
+    return nanresult(False, msg, nan_rows, nan_cols, inf_rows, inf_cols)
+
 
 def getfloats(txt, allow_times=True):
     """convert a line of numbers into a list of floats,

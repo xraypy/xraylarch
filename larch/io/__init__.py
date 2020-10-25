@@ -11,7 +11,7 @@ from .fileutils import (increment_filename, new_filename, new_dirname,
                         asciikeys)
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
-                         guess_filereader)
+                         guess_filereader, look_for_nans)
 from .xdi import read_xdi, XDIFile, XDIFileException
 from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
@@ -59,6 +59,7 @@ __exports__ = dict(increment_filename=increment_filename,
                    get_timestamp=get_timestamp,
                    asciikeys=asciikeys,
                    read_ascii=read_ascii,
+                   look_for_nans=look_for_nans,
                    set_array_labels=set_array_labels,
                    guess_filereader=guess_filereader,
                    write_ascii=write_ascii,
