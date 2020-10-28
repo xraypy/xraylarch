@@ -1192,6 +1192,10 @@ class GSEXRM_MapFile(object):
         if 'quad' in conf['mca_calib']:
             quad   = conf['mca_calib/quad'].value
 
+        if len(offset) != nmca:
+            raise GSEXRM_Exception("incorrect XRF calibration data: need %d MCAs, not %d" % (nmca, len(offset)))
+        
+            
         _ex = np.arange(nchan, dtype=np.float64)
         enarr = []
         for i in range(len(offset)):
