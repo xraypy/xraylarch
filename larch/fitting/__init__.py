@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from copy import copy, deepcopy
-
+import random
 import numpy as np
 from scipy.stats import f
 
 import lmfit
-from lmfit import (Parameter, Parameters, Minimizer, conf_interval,
+from lmfit import Parameter as lmfitParameter
+from lmfit import (Parameters, Minimizer, conf_interval,
                    ci_report, conf_interval2d)
 
 from lmfit.minimizer import eval_stderr, MinimizerResult
@@ -23,7 +24,7 @@ def isParameter(x):
 
 def param_value(val):
     "get param value -- useful for 3rd party code"
-    while isinstance(val, Parameter):
+    while isinstance(val, lmfitParameter):
         val = val.value
     return val
 
@@ -54,7 +55,6 @@ class ParameterGroup(Group):
         self.__params__ = Parameters()
         Group.__init__(self)
         self.__exprsave__ = {}
-
         for key, val in kws.items():
             expr = getattr(val, 'expr', None)
             if expr is not None:
@@ -70,7 +70,7 @@ class ParameterGroup(Group):
         return '<Param Group {:s}>'.format(self.__name__)
 
     def __setattr__(self, name, val):
-        if isinstance(val, Parameter):
+        if isinstance(val, lmfitParameter):
             if val.name != name:
                 # allow 'a=Parameter(2, ..)' to mean Parameter(name='a', value=2, ...)
                 nval = None
@@ -104,6 +104,37 @@ def param_group(**kws):
     "create a parameter group"
     return ParameterGroup(**kws)
 
+def randstr(n):
+    return ''.join([chr(random.randint(97, 122)) for i in range(n)])
+
+class Parameter(lmfitParameter):
+    """A Parameter that can be nameless"""
+    def __init__(self, name=None, value=None, vary=True, min=-np.inf, max=np.inf,
+                 expr=None, brute_step=None, user_data=None):
+        if name is None:
+            name = randstr(8)
+        self.name = name
+        self.user_data = user_data
+        self.init_value = value
+        self.min = min
+        self.max = max
+        self.brute_step = brute_step
+        self.vary = vary
+        self._expr = expr
+        self._expr_ast = None
+        self._expr_eval = None
+        self._expr_deps = []
+        self._delay_asteval = False
+        self.stderr = None
+        self.correl = None
+        self.from_internal = lambda val: val
+        self._val = value
+        self._init_bounds()
+        lmfitParameter.__init__(self, name, value=value, vary=vary,
+                                min=min, max=max, expr=expr,
+                                brute_step=brute_step,
+                                user_data=user_data)
+
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
     if len(args) > 0:
@@ -119,8 +150,6 @@ def param(*args, **kws):
         kws.pop('_larch')
     if 'vary' not in kws:
         kws['vary'] = False
-    if 'name' not in kws:
-        kws['name'] = '_tmp_param_'
 
     return Parameter(*args, **kws)
 
