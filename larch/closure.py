@@ -55,8 +55,8 @@ class Closure(object):
 
     @property
     def __file__(self):
-        fname = getattr(self.func, '__filename__', None)
-        if fname is None:
+        fname = getattr(self.func, '__filename__', 'unknown')
+        if fname in ('unknown', None) and hasattr(self.func, '__code__'):
             fname = self.func.__code__.co_filename
         return fname
 
