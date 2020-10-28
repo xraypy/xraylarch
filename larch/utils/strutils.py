@@ -10,24 +10,17 @@ import hashlib
 import random
 from distutils.version import StrictVersion
 
-if sys.version[0] == '3':
-    maketrans = str.maketrans
-    def bytes2str(s):
-        if isinstance(s, str):
-            return s
-        elif isinstance(s, bytes):
-            return s.decode(sys.stdout.encoding)
-        return str(s, sys.stdout.encoding)
-    def str2bytes(s):
-        'string to byte conversion'
-        if isinstance(s, bytes):
-            return s
-        return bytes(s, sys.stdout.encoding)
-
-else:
-    from string import maketrans
-    bytes2str = str2bytes = str
-
+def bytes2str(s):
+    if isinstance(s, str):
+        return s
+    elif isinstance(s, bytes):
+        return s.decode(sys.stdout.encoding)
+    return str(s, sys.stdout.encoding)
+def str2bytes(s):
+    'string to byte conversion'
+    if isinstance(s, bytes):
+        return s
+    return bytes(s, sys.stdout.encoding)
 
 
 RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
@@ -49,8 +42,8 @@ GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 BAD_VARSCHARS = BAD_FILECHARS + '=+-.'
 GOOD_VARSCHARS = '_'*len(BAD_VARSCHARS)
 
-TRANS_FILE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
-TRANS_VARS = maketrans(BAD_VARSCHARS, GOOD_VARSCHARS)
+TRANS_FILE = str.maketrans(BAD_FILECHARS, GOOD_FILECHARS)
+TRANS_VARS = str.maketrans(BAD_VARSCHARS, GOOD_VARSCHARS)
 
 
 def PrintExceptErr(err_str, print_trace=True):
