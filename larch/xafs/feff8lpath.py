@@ -213,7 +213,7 @@ class Feff8L_XAFSPath(object):
         rat_atomic = self.rat/BOHR
         args.rat = (rat_atomic).ctypes.data_as(POINTER(rat_atomic.size*c_double))
 
-        onepath = F8LIB.onepath_
+        onepath = F8LIB.calc_onepath
         # print(" Calc with onepath ", onepath, rat_atomic)
         # print(" args rat = ", args.rat.contents[:])
         x = onepath(args.phase_file, args.index, args.nleg, args.degen,
