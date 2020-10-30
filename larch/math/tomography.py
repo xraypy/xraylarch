@@ -5,7 +5,7 @@ Authors/Modifications:
 ----------------------
 * Margaret Koker, koker@cars.uchicago.edu
 '''
-import os
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,6 @@ import numpy as np
 from scipy.optimize import leastsq, minimize
 
 HAS_tomopy = False
-numexpr_maxthreads = os.environ.get('NUMEXPR_MAX_THREADS', None)
-if numexpr_maxthreads is None:
-    os.environ['NUMEXPR_MAX_THREADS'] = '%d' % min(8, os.cpu_count())
 try:
     import tomopy
     HAS_tomopy = True
