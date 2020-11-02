@@ -155,8 +155,22 @@ setup(name = 'xraylarch',
 
 # create desktop icons
 if INSTALL or DEVELOP:
-    subprocess.check_call((pjoin(sys.exec_prefix, sys.executable),
-                           pjoin(sys.exec_prefix, bindir, larchbin), '-m'))
+    py_exe = pjoin(sys.exec_prefix, sys.executable)
+    larch_exe = pjoin(sys.exec_prefix, bindir, larchbin)
+    if not pexists(larch_exe):
+        user = os.path.expanduser('~')
+
+        for base in (sys.prefix, sys.exec_prefix,
+                     pjoin(user, 'anaconda3'),
+                     pjoin(user, 'local'),
+                     '/opt/local', '/anaconda3/', '/opt/anaconda3'):
+            if pexists(pjoin(base, larchbin)):
+                larch_exe = pexists(pjoin(base, larchbin))
+            elif pexists(pjoin(base, 'bin', larchbin)):
+                larch_exe = pexists(pjoin(base, larchbin))
+
+    if pexists(larch_exe):
+        subprocess.check_call((py_exe,  larch_exe, '-m'))
 
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
