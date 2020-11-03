@@ -30,6 +30,6 @@ nose
 pytest
 termcolor
 silx>=0.12
-yaml
 pyyaml
+
 
