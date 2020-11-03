@@ -4,6 +4,10 @@
 #  or
 #   conda config --env --append channels conda-forge 
 #   conda install --file ./requirements-extra.txt
+psutil
+wxpython>=4.0.4
+wxutils>=0.2.3
+wxmplot>=0.9.43
 pyepics>=3.4.1
 PyQt5==5.14
 pyqtwebengine==5.14
@@ -11,3 +15,6 @@ fabio
 pyfai
 pycifrw
 psycopg2
+pyqt
+pyqtgraph
+qtpy

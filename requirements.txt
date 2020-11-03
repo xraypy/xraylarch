@@ -17,13 +17,9 @@ asteval>=0.9.19
 lmfit>=1.0
 uncertainties>=3.1
 pyshortcuts>=1.7
-wxpython>=4.0.4
-wxutils>=0.2.3
-wxmplot>=0.9.43
 xraydb>=4.4
 pip
 pyyaml
-psutil
 pytest
 termcolor
 silx>=0.12
