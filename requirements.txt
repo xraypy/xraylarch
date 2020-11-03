@@ -11,7 +11,6 @@ h5py>=2.8
 pillow
 peakutils
 requests
-fontconfig
 scikit-image
 scikit-learn
 asteval>=0.9.19
@@ -23,10 +22,8 @@ wxutils>=0.2.3
 wxmplot>=0.9.43
 xraydb>=4.4
 pip
-setuptools
 pyyaml
 psutil
-nose
 pytest
 termcolor
 silx>=0.12
