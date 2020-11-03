@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.48
+version: 0.9.49
 
 channels:
     - https://repo.continuum.io/pkgs/main
@@ -73,4 +73,4 @@ specs:
     - fabio
     - dioptas
     - tifffile
-    - xraylarch==0.9.48
+    - xraylarch==0.9.49
