@@ -1,18 +1,23 @@
 ## smoothing with by convolving with
 ## lorentzian, gaussian, or voigt lineshape
 
+#py:
+#import numpy as np
+#from larch.math import smooth
+#from wxmplot.interactive import plot, newplot
+
 npts  = 201
 
-x0  = linspace(0, 10., npts)
-y0  = ones(npts)
-y0[:45] = zeros(45)
-y0[44] = 0.5
+x0  = np.linspace(0, 10., npts)
+y0  = np.ones(npts)
+y0[:85] = np.zeros(85)
+y0[84] = 0.5
 
 s_loren = smooth(x0, y0, 1.0)
 s_gauss = smooth(x0, y0, 1.0, form='gaussian')
 s_voigt = smooth(x0, y0, 1.0, form='voigt')
 
 newplot(x0, y0, label='no smoothing', show_labels=True)
-   plot(x0, s_loren, label='loren, sigma=1')
-   plot(x0, s_gauss, label='gauss, sigma=1')
-   plot(x0, s_voigt, label='voigt, sigma=1')
+plot(x0, s_loren, label='loren, sigma=1')
+plot(x0, s_gauss, label='gauss, sigma=1')
+plot(x0, s_voigt, label='voigt, sigma=1')

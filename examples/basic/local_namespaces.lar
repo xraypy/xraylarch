@@ -32,18 +32,21 @@ symbol, so that the module-level value of 'y is different
 after running f1().
 """)
 
+#py:
+#import numpy as np
+
 x = 1000.0
-y = sqrt(x)
+y = np.sqrt(x)
 
 def f1(a, b, c=1):
     print( ' inside f1 a,b,c = ', a, b,c)
     if c < 0:  c = -c
-    x = sqrt(a*b*c)
+    x = np.sqrt(a*b*c)
     print(' inside f1 x = ', x)
     print(' inside f1 y = ', y)
-    print(' inside f1 _main.x = ', _main.x)
+    print(' inside f1 _main.x = ', _main.x)  # larch only
     return x
-enddef
+#enddef
 
 print(' before f1 x, y = ', x, y)
 print('  == call f1 ==')

@@ -13,6 +13,11 @@
 ##  extrapolation being generally better than another. 
 ##
 
+#py:
+#import numpy as np
+#from wxmplot.interactive import newplot, plot
+#from larch.math import interp
+
 offset = 0.127890
 
 # tau   = 28.00
@@ -21,21 +26,21 @@ tau   =  2.00
 # tau   =  0.75
 # tau   =  0.333
 
-x = linspace(40., 50., 21)
+x = np.linspace(40., 44., 9)
 
 
-y = offset + sin(x/tau)
+y = offset + np.sin(x/tau)
 
-newplot(x, y, linewidth=1, marker='o', color='blue', 
+newplot(x, y, linewidth=0.5, marker='o', color='blue', 
 	label='orig', show_legend=True)
 
 # extends below data range:
-xnew  = linspace(38.0, 42.5, 23) + 0.3333
+xnew  = np.linspace(38.0, 42.5, 47) + 0.3333
 
 # extends above data range:
 # xnew  = linspace(48.0, 52.5, 23) + 0.3333
 
-y0  = offset + sin(xnew/tau)    # predicted
+y0  = offset + np.sin(xnew/tau)    # predicted
 
 y1 = interp(x, y, xnew, kind='linear')
 y2 = interp(x, y, xnew, kind='quadratic')
@@ -43,7 +48,7 @@ y3 = interp(x, y, xnew, kind='cubic')
 
 
 plot(xnew, y0, style='solid',  color='goldenrod', marker='square', 
-           markersize=2, linewidth=2, label='predicted')
+           markersize=2, linewidth=2, label='true sinewave')
 
 plot(xnew, y1, style='short dashed', color='red',   marker='+', label='linear')
 plot(xnew, y2, style='solid',        color='dark green',        label='quadratic')

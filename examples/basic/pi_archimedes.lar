@@ -1,20 +1,23 @@
 
 print(" == Using Archimedes Method to calculate PI")
 
+#py:
+#import numpy as np
+
 # max error allowed
-eps = 1e-16
+eps = 5e-14
 
 # initialize w/ square
 x = 4
-y = 2*sqrt(2)
+y = 2*np.sqrt(2)
 n = 0
-while x-y > eps:
+while abs(x-y) > eps:
     xnew = 2*x*y/(x+y)
-    y    = sqrt(xnew*y)
+    y    = np.sqrt(xnew*y)
     x    = xnew
     est  = (x+y)/2.0
     n    = n + 1
 #endwhile
 result = (x+y)/2
-pi1 = 4*arctan(1)
+pi1 = 4*np.arctan(1)
 print("PI = %.18f, error=%.3g in %i steps" % (result, result-pi1, n))
