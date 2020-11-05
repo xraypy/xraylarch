@@ -17,7 +17,6 @@ import sys
 import wx
 
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
-from wxmplot.interactive import get_wxapp
 
 import larch
 from ..xrf import isLarchMCAGroup
@@ -283,8 +282,6 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         title = wintitle
 
     def _get_disp(syname, creator, win, ddict, wxparent, size, _larch):
-        if _larch is None:
-            get_wxapp()
         if win in ddict:
             display = ddict[win]
         else:
