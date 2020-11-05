@@ -17,6 +17,8 @@ import sys
 import wx
 
 from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
+from wxmplot.interactive import get_wxapp
+
 import larch
 from ..xrf import isLarchMCAGroup
 from ..larchlib import ensuremod
@@ -252,9 +254,10 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 wintitle=None, xrf=False, image=False, stacked=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
-    if (getattr(_larch.symtable._sys.wx, 'wxapp', None) is None or
-        getattr(_larch.symtable._plotter, 'no_plotting', False)):
-        return None
+    if  hasattr(_larch, 'symtable'):
+        if (getattr(_larch.symtable._sys.wx, 'wxapp', None) is None or
+            getattr(_larch.symtable._plotter, 'no_plotting', False)):
+            return None
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (_larch_name, win)
@@ -280,10 +283,14 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         title = wintitle
 
     def _get_disp(syname, creator, win, ddict, wxparent, size, _larch):
+        if _larch is None:
+            get_wxapp()
         if win in ddict:
             display = ddict[win]
         else:
-            display = _larch.symtable.get_symbol(symname, create=True)
+            display = None
+            if  hasattr(_larch, 'symtable'):
+                display = _larch.symtable.get_symbol(symname, create=True)
             if display is None:
                 display = creator(window=win, wxparent=wxparent,
                                   size=size, _larch=_larch)
@@ -298,9 +305,9 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display_dict.pop(win)
         display = _get_disp(symname, creator, win, display_dict, wxparent,
                             size, _larch)
-        display.SetTitle(title)
-        
-    _larch.symtable.set_symbol(symname, display)
+        display.SetTitle(title) 
+    if  hasattr(_larch, 'symtable'):
+        _larch.symtable.set_symbol(symname, display)
     return display
 
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
@@ -334,7 +341,6 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     plotter.Raise()
     if x is None:
         return
-
 
     if isLarchMCAGroup(x):
         mca = x
@@ -456,7 +462,8 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     wx_update(_larch=_larch)
 
 def wx_update(_larch=None, **kws):
-    _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
+    if  hasattr(_larch, 'symtable'):
+        _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
     try:
         _larch.symtable.get_symbol('_sys.wx.ping')(timeout=0.002)
     except:
@@ -693,7 +700,10 @@ def last_cursor_pos(win=None, _larch=None):
     -------
     x, y coordinates of most recent cursor click, in user units
     """
-    plotter = _larch.symtable._plotter
+    if  hasattr(_larch, 'symtable'):
+        plotter = _larch.symtable._plotter
+    else:
+        return None, None
     histories = []
     for attr in dir(plotter):
         if attr.endswith('_cursor_hist'):
