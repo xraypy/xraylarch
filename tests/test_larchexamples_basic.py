@@ -15,16 +15,16 @@ class TestScripts(TestCase):
     def test_basic_interp(self):
         self.runscript('interp.lar', dirname='../examples/basic/')
         assert(len(self.session.get_errors()) == 0)
-        self.isNear("y0[1]", 0.535, places=2)
-        self.isNear("y1[1]", 0.829, places=2)
-        self.isNear("y2[1]", 0.477, places=2)
+        self.isNear("y0[1]", 0.48578, places=3)
+        self.isNear("y1[1]", 0.81310, places=3)
+        self.isNear("y2[1]", 0.41532, places=3)
 
     def test_basic_smooth(self):
         self.runscript('smoothing.lar', dirname='../examples/basic/')
         assert(len(self.session.get_errors()) == 0)
-        self.isNear("s_loren[5]", 0.207, places=2)
-        self.isNear("s_gauss[5]", 0.027, places=2)
-        self.isNear("s_voigt[5]", 0.256, places=2)
+        self.isNear("s_loren[5]", 0.087, places=2)
+        self.isNear("s_gauss[5]", 3.958e-05, places=2)
+        self.isNear("s_voigt[5]", 0.0957, places=2)
 
     def test_basic_localnames(self):
         self.runscript('local_namespaces.lar', dirname='../examples/basic/')
