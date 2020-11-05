@@ -1,10 +1,10 @@
 ## examples/feffit/doc_feffit2.lar
 
 # import needed for python:
-from larch.io import read_ascii
-from larch.fitting import param, guess, param_group
-from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report
-from larch.wxlib.xafsplots import plot_chifit
+# from larch.io import read_ascii
+# from larch.fitting import param, guess, param_group
+# from larch.xafs import autobk, feffpath, feffit_transform, feffit_dataset, feffit, feffit_report
+# from larch.wxlib.xafsplots import plot_chifit
 
 
 def write_report(filename, out):
