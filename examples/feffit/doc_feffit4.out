@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  7, 144
    n_independent      =  17.106
-   chi_square         =  19.6758528
-   reduced chi_square =  1.94685512
-   r-factor           =  0.00894956
-   Akaike info crit   =  16.3937916
-   Bayesian info crit =  22.2699931
+   chi_square         =  62.8594408
+   reduced chi_square =  6.21971639
+   r-factor           =  0.01751179
+   Akaike info crit   =  36.2631224
+   Bayesian info crit =  42.1393238
  
 [[Data]]
    fit space          = 'r'
@@ -15,57 +15,74 @@
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 3
-   epsilon_k          = Array(mean=9.6187e-04, std=0.00270406)
-   epsilon_r          = 0.20730736
+   epsilon_k          = Array(mean=7.6751e-04, std=0.00186633)
+   epsilon_r          = 0.16541873
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.18661541 +/- 0.80863161   (init=  0.10000000)
-   delr_1         = -0.02827909 +/- 0.00752222   (init=  0.00000000)
-   delr_2         =  0.04990917 +/- 0.00597237   (init=  0.00000000)
-   n1             =  4.55083278 +/- 0.73870576   (init=  6.00000000)
-   n2             =  10.9861554 +/- 1.04335962   (init=  12.0000000)
-   sig2_1         =  0.01040495 +/- 0.00182494   (init=  0.00200000)
-   sig2_2         =  0.01247205 +/- 8.2847e-04   (init=  0.00200000)
+   de0            = -1.47416477 +/- 1.13418451   (init=  0.10000000)
+   delr_1         = -0.02936638 +/- 0.01075846   (init=  0.00000000)
+   delr_2         =  0.04782343 +/- 0.00838729   (init=  0.00000000)
+   n1             =  5.41282687 +/- 1.22417828   (init=  6.00000000)
+   n2             =  11.1724782 +/- 1.50176301   (init=  12.0000000)
+   sig2_1         =  0.01202039 +/- 0.00270684   (init=  0.00200000)
+   sig2_2         =  0.01253566 +/- 0.00117367   (init=  0.00200000)
+   degen__p2ndoyi6v =  1.00000000 (fixed)
+   s02__p2ndoyi6v =  3.78897881 +/- 0.85692479  = 's02*n1'
+   e0__p2ndoyi6v  = -1.47416477 +/- 1.13418451  = 'de0'
+   ei__p2ndoyi6v  =  0.00000000 (fixed)
+   deltar__p2ndoyi6v = -0.02936638 +/- 0.01075846  = 'delr_1'
+   sigma2__p2ndoyi6v =  0.01202039 +/- 0.00270684  = 'sig2_1'
+   third__p2ndoyi6v =  0.00000000 (fixed)
+   fourth__p2ndoyi6v =  0.00000000 (fixed)
+   degen__pkh7kqqg6 =  1.00000000 (fixed)
+   s02__pkh7kqqg6 =  7.82073475 +/- 1.05123410  = 's02*n2'
+   e0__pkh7kqqg6  = -1.47416477 +/- 1.13418451  = 'de0'
+   ei__pkh7kqqg6  =  0.00000000 (fixed)
+   deltar__pkh7kqqg6 =  0.04782343 +/- 0.00838729  = 'delr_2'
+   sigma2__pkh7kqqg6 =  0.01253566 +/- 0.00117367  = 'sig2_2'
+   third__pkh7kqqg6 =  0.00000000 (fixed)
+   fourth__pkh7kqqg6 =  0.00000000 (fixed)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    n2, sig2_2           =  0.939
-   de0, delr_2          =  0.920
-   n1, sig2_1           =  0.892
-   de0, delr_1          =  0.566
-   delr_1, delr_2       =  0.524
-   delr_1, sig2_1       =  0.219
-   delr_1, n1           =  0.193
-   delr_2, sig2_2       =  0.181
-   de0, n1              = -0.158
-   delr_2, n2           =  0.156
-   delr_2, n1           = -0.139
-   de0, sig2_1          = -0.110
-   n1, n2               =  0.100
+   de0, delr_2          =  0.919
+   n1, sig2_1           =  0.897
+   de0, delr_1          =  0.582
+   delr_1, delr_2       =  0.539
+   delr_1, sig2_1       =  0.220
+   delr_1, n1           =  0.190
+   delr_2, sig2_2       =  0.184
+   de0, n1              = -0.178
+   delr_2, n2           =  0.159
+   delr_2, n1           = -0.156
+   de0, sig2_1          = -0.125
+   delr_2, sig2_1       = -0.107
+   n1, n2               =  0.106
  
 [[Paths]]
-   Path prqdqp2pm, Feff.dat file = feff_feo01.dat
+   Path p2ndoyi6v, Feff.dat file = feff_feo01.dat
      atom      x        y        z       ipot
       Fe       0.0000,  0.0000,  0.0000  0 (absorber)
        O       0.0000,  2.1387,  0.0000  1
      reff   =  2.13870000
      degen  =  1.00000000
-     n*s02  =  3.18558295 +/- 0.51709403  's02*n1'
-     e0     = -1.18661541 +/- 0.80863161  'de0'
-     r      =  2.11042091 +/- 0.00752222  'reff + delr_1'
-     deltar = -0.02827909 +/- 0.00752222  'delr_1'
-     sigma2 =  0.01040495 +/- 0.00182494  'sig2_1'
+     n*s02  =  3.78897881  's02*n1'
+     e0     = -1.47416477  'de0'
+     r      =  2.10933362  'reff + delr_1'
+     deltar = -0.02936638  'delr_1'
+     sigma2 =  0.01202039  'sig2_1'
 
-   Path pbhrkq5es, Feff.dat file = feff_feo02.dat
+   Path pkh7kqqg6, Feff.dat file = feff_feo02.dat
      atom      x        y        z       ipot
       Fe       0.0000,  0.0000,  0.0000  0 (absorber)
       Fe       2.1387,  0.0000, -2.1387  2
      reff   =  3.02460000
      degen  =  1.00000000
-     n*s02  =  7.69030875 +/- 0.73035173  's02*n2'
-     e0     = -1.18661541 +/- 0.80863161  'de0'
-     r      =  3.07450917 +/- 0.00597237  'reff + delr_2'
-     deltar =  0.04990917 +/- 0.00597237  'delr_2'
-     sigma2 =  0.01247205 +/- 8.2847e-04  'sig2_2'
+     n*s02  =  7.82073475  's02*n2'
+     e0     = -1.47416477  'de0'
+     r      =  3.07242343  'reff + delr_2'
+     deltar =  0.04782343  'delr_2'
+     sigma2 =  0.01253566  'sig2_2'
 
 =======================================================

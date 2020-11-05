@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  7, 230
    n_independent      =  17.106
-   chi_square         =  49.3012933
-   reduced chi_square =  4.87818629
-   r-factor           =  0.00731803
-   Akaike info crit   =  32.1070889
-   Bayesian info crit =  37.9832904
+   chi_square         =  151.234100
+   reduced chi_square =  14.9640722
+   r-factor           =  0.01377419
+   Akaike info crit   =  51.2813775
+   Bayesian info crit =  57.1575789
  
 [[Data]]
    fit space          = 'q'
@@ -15,23 +15,39 @@
    k window, dk       = 'kaiser', 3.000
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 3
-   epsilon_k          = Array(mean=9.6187e-04, std=0.00270406)
-   epsilon_r          = 0.20730736
+   epsilon_k          = Array(mean=7.6751e-04, std=0.00186633)
+   epsilon_r          = 0.16541873
    n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.16272953 +/- 0.73341342   (init= -1.18661541)
-   delr_1         = -0.02814064 +/- 0.00682447   (init= -0.02827909)
-   delr_2         =  0.05013400 +/- 0.00542556   (init=  0.04990917)
-   n1             =  4.62790092 +/- 0.68528487   (init=  4.55083278)
-   n2             =  11.0269746 +/- 0.95096695   (init=  10.9861554)
-   sig2_1         =  0.01059242 +/- 0.00167416   (init=  0.01040495)
-   sig2_2         =  0.01250781 +/- 7.5322e-04   (init=  0.01247205)
+   de0            = -1.44177738 +/- 1.00760144   (init= -1.47416477)
+   delr_1         = -0.02917118 +/- 0.00958845   (init= -0.02936638)
+   delr_2         =  0.04811111 +/- 0.00746557   (init=  0.04782343)
+   n1             =  5.58156465 +/- 1.13202532   (init=  5.41282687)
+   n2             =  11.2247051 +/- 1.34240733   (init=  11.1724782)
+   sig2_1         =  0.01238692 +/- 0.00245421   (init=  0.01202039)
+   sig2_2         =  0.01258038 +/- 0.00104580   (init=  0.01253566)
+   degen__p2ndoyi6v =  1.00000000 (fixed)
+   s02__p2ndoyi6v =  3.90709525 +/- 0.79241772  = 's02*n1'
+   e0__p2ndoyi6v  = -1.44177738 +/- 1.00760144  = 'de0'
+   ei__p2ndoyi6v  =  0.00000000 (fixed)
+   deltar__p2ndoyi6v = -0.02917118 +/- 0.00958845  = 'delr_1'
+   sigma2__p2ndoyi6v =  0.01238692 +/- 0.00245421  = 'sig2_1'
+   third__p2ndoyi6v =  0.00000000 (fixed)
+   fourth__p2ndoyi6v =  0.00000000 (fixed)
+   degen__pkh7kqqg6 =  1.00000000 (fixed)
+   s02__pkh7kqqg6 =  7.85729358 +/- 0.93968513  = 's02*n2'
+   e0__pkh7kqqg6  = -1.44177738 +/- 1.00760144  = 'de0'
+   ei__pkh7kqqg6  =  0.00000000 (fixed)
+   deltar__pkh7kqqg6 =  0.04811111 +/- 0.00746557  = 'delr_2'
+   sigma2__pkh7kqqg6 =  0.01258038 +/- 0.00104580  = 'sig2_2'
+   third__pkh7kqqg6 =  0.00000000 (fixed)
+   fourth__pkh7kqqg6 =  0.00000000 (fixed)
  
 [[Correlations]]    (unreported correlations are <  0.500)
-   n2, sig2_2           =  0.939
-   de0, delr_2          =  0.920
-   n1, sig2_1           =  0.894
-   de0, delr_1          =  0.569
-   delr_1, delr_2       =  0.527
+   n2, sig2_2           =  0.940
+   de0, delr_2          =  0.919
+   n1, sig2_1           =  0.900
+   de0, delr_1          =  0.585
+   delr_1, delr_2       =  0.542
 =======================================================

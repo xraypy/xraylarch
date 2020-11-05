@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  4, 104
    n_independent      =  15.260
-   chi_square         =  106.021467
-   reduced chi_square =  9.41552424
+   chi_square         =  106.021483
+   reduced chi_square =  9.41552569
    r-factor           =  0.00272181
-   Akaike info crit   =  37.5803496
-   Bayesian info crit =  40.4813639
+   Akaike info crit   =  37.5803520
+   Bayesian info crit =  40.4813662
  
 [[Data]]
    fit space          = 'r'
@@ -20,15 +20,15 @@
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.89518898 +/- 0.03763412   (init=  1.00000000)
-   del_e0         =  4.35776879 +/- 0.51134879   (init=  0.00000000)
-   del_r          = -0.00601666 +/- 0.00261331   (init=  0.00000000)
+   amp            =  0.89518900 +/- 0.03763413   (init=  1.00000000)
+   del_e0         =  4.35776838 +/- 0.51134953   (init=  0.00000000)
    sig2           =  0.00866969 +/- 3.0784e-04   (init=  0.00000000)
+   del_r          = -0.00601665 +/- 0.00261332   (init=  0.00000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, sig2            =  0.928
    del_e0, del_r        =  0.920
-   del_r, sig2          =  0.159
+   sig2, del_r          =  0.159
    amp, del_r           =  0.137
  
 [[Paths]]
@@ -38,10 +38,10 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.89518898 +/- 0.03763412  'amp'
-     e0     =  4.35776879 +/- 0.51134879  'del_e0'
-     r      =  2.54178334 +/- 0.00261331  'reff + del_r'
-     deltar = -0.00601666 +/- 0.00261331  'del_r'
+     n*s02  =  0.89518900 +/- 0.03763413  'amp'
+     e0     =  4.35776838 +/- 0.51134953  'del_e0'
+     r      =  2.54178335 +/- 0.00261332  'reff + del_r'
+     deltar = -0.00601665 +/- 0.00261332  'del_r'
      sigma2 =  0.00866969 +/- 3.0784e-04  'sig2'
 
 =======================================================

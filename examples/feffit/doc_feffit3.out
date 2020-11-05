@@ -2,11 +2,11 @@
 [[Statistics]]
    nvarys, npts       =  5, 390
    n_independent      =  56.476
-   chi_square         =  2945.33207
-   reduced chi_square =  57.2175109
+   chi_square         =  2945.33216
+   reduced chi_square =  57.2175126
    r-factor           =  0.01637735
-   Akaike info crit   =  233.315381
-   Bayesian info crit =  243.484465
+   Akaike info crit   =  233.315383
+   Bayesian info crit =  243.484467
  
 [[Datasets (3)]]
  dataset 1:
@@ -41,11 +41,19 @@
    n_independent      = 18.825
  
 [[Variables]]
-   alpha          =  5.2722e-06 +/- 6.6662e-06   (init=  0.00000000)
-   amp            =  0.87653489 +/- 0.03032466   (init=  1.00000000)
-   del_e0         =  5.37307322 +/- 0.61379913   (init=  2.00000000)
-   dr_off         = -3.0659e-04 +/- 0.00271944   (init=  0.00000000)
-   theta          =  233.089277 +/- 8.08399851   (init=  250.000000)
+   alpha          =  5.2723e-06 +/- 6.6661e-06   (init=  0.00000000)
+   amp            =  0.87653481 +/- 0.03032465   (init=  1.00000000)
+   del_e0         =  5.37306979 +/- 0.61379709   (init=  2.00000000)
+   dr_off         = -3.0660e-04 +/- 0.00271941   (init=  0.00000000)
+   theta          =  233.089243 +/- 8.08399645   (init=  250.000000)
+   degen__pfh2ced6i =  12.0000000 (fixed)
+   s02__pfh2ced6i =  0.87653481 +/- 0.03032465  = 'amp'
+   e0__pfh2ced6i  =  5.37306979 +/- 0.61379709  = 'del_e0'
+   ei__pfh2ced6i  =  0.00000000 (fixed)
+   deltar__pfh2ced6i =  0.00170830 +/- 0.00293661  = 'dr_off + 150*alpha*reff'
+   sigma2__pfh2ced6i =  0.00503100 +/- 2.9449e-04  = 'sigma2_eins(150, theta)'
+   third__pfh2ced6i =  0.00000000 (fixed)
+   fourth__pfh2ced6i =  0.00000000 (fixed)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, theta           = -0.854
@@ -61,11 +69,11 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653489 +/- 0.03032466  'amp'
-     e0     =  5.37307322 +/- 0.61379913  'del_e0'
-     r      =  2.54762774 +/- 0.00265958  'reff + dr_off + 10*alpha*reff'
-     deltar = -1.7226e-04 +/- 0.00265958  'dr_off + 10*alpha*reff'
-     sigma2 =  0.00327499 +/- 1.1358e-04  'sigma2_eins(10, theta)'
+     n*s02  =  0.87653481  'amp'
+     e0     =  5.37306979  'del_e0'
+     r      =  2.54762772  'reff + dr_off + 10*alpha*reff'
+     deltar = -1.7228e-04  'dr_off + 10*alpha*reff'
+     sigma2 =  0.00327499  'sigma2_eins(10, theta)'
 
  dataset 2:
    Path pfh2ced6i, Feff.dat file = feff0001.dat
@@ -74,11 +82,11 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653489 +/- 0.03032466  'amp'
-     e0     =  5.37307322 +/- 0.61379913  'del_e0'
-     r      =  2.54816504 +/- 0.00252240  'reff + dr_off + 50*alpha*reff'
-     deltar =  3.6504e-04 +/- 0.00252240  'dr_off + 50*alpha*reff'
-     sigma2 =  0.00333747 +/- 1.2595e-04  'sigma2_eins(50, theta)'
+     n*s02  =  0.87653481  'amp'
+     e0     =  5.37306979  'del_e0'
+     r      =  2.54816503  'reff + dr_off + 50*alpha*reff'
+     deltar =  3.6503e-04  'dr_off + 50*alpha*reff'
+     sigma2 =  0.00333747  'sigma2_eins(50, theta)'
 
  dataset 3:
    Path pfh2ced6i, Feff.dat file = feff0001.dat
@@ -87,10 +95,10 @@
       Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653489 +/- 0.03032466  'amp'
-     e0     =  5.37307322 +/- 0.61379913  'del_e0'
-     r      =  2.54950830 +/- 0.00293661  'reff + dr_off + 150*alpha*reff'
-     deltar =  0.00170830 +/- 0.00293661  'dr_off + 150*alpha*reff'
-     sigma2 =  0.00503100 +/- 2.9449e-04  'sigma2_eins(150, theta)'
+     n*s02  =  0.87653481  'amp'
+     e0     =  5.37306979  'del_e0'
+     r      =  2.54950830  'reff + dr_off + 150*alpha*reff'
+     deltar =  0.00170830  'dr_off + 150*alpha*reff'
+     sigma2 =  0.00503100  'sigma2_eins(150, theta)'
 
 =======================================================
