@@ -23,6 +23,3 @@ pyyaml
 pytest
 termcolor
 silx>=0.12
-pyyaml
-
-
