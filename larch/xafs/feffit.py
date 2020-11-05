@@ -11,7 +11,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from lmfit import Parameters, Parameter, Minimizer, fit_report
-from lmfit.printfuncs import gformat
+from lmfit.printfuncs import gformat as gformat
 
 from larch import Group, isNamedClass
 
@@ -650,6 +650,9 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         print( 'must pass output of feffit()!')
         return
 
+    path_labels = []
+    for ds in datasets:
+        path_labels.extend([p.label for p in ds.pathlist])
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
     varformat  = '   %12s = %s +/-%s   (init= %s)'
@@ -710,13 +713,12 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         #
     out.append(' ')
     out.append(header % 'Variables')
-
-    # exprs = []
     for name, par in params.items():
-        # var = getattr(params, name)
-        # print(name, par, dir(par))
+        if any([name.endswith('__%s' % p_lab) for p_lab in path_labels]):
+            continue
         if len(name) < 14:
             name = (name + ' '*14)[:14]
+
         if isParameter(par):
             if par.vary:
                 stderr = 'unknown'
@@ -733,9 +735,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                                          stderr, par.expr))
             else:
                 out.append(fixformat % (name, gformat(par.value)))
-    # if len(exprs) > 0:
-    #     out.append(header % 'Constraint Expressions')
-    #     out.extend(exprs)
 
     covar_vars = result.var_names
     if len(covar_vars) > 0:
@@ -768,6 +767,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
             if len(datasets) > 1:
                 out.append(' dataset %i:' % (ids+1))
             for p in ds.pathlist:
-                out.append('%s\n' % p.report())
+                out.append('%s\n' % p.report(params))
     out.append('='*len(topline))
     return '\n'.join(out)

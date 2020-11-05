@@ -310,9 +310,17 @@ class FeffPathGroup(Group):
         return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
                     sigma2=ss2, third=c3, fourth=c4)
 
-    def report(self):
+    def report(self, params):
         "return  text report of parameters"
-        (deg, s02, e0, ei, delr, ss2, c3, c4) = self.__path_params()
+        self.params = params
+        pathpars = {}
+        if params is not None:
+            for pname in ('degen', 's02', 'e0', 'deltar',
+                          'sigma2', 'third', 'fourth', 'ei'):
+                parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+                if parname in self.params:
+                    pathpars[pname] = (params[parname].value, params[parname].stderr)
+
         geomlabel  = '     atom      x        y        z       ipot'
         geomformat = '    %4s      % .4f, % .4f, % .4f  %i'
         out = ['   Path %s, Feff.dat file = %s' % (self.label, self.filename)]
@@ -339,15 +347,20 @@ class FeffPathGroup(Group):
                 strval = 'reff + ' + getattr(self, 'deltar', 0)
                 std = par.stderr
             else:
-                par = self.params.get(parname, None)
-                if par is not None:
-                    val = par.value
-                    std = par.stderr
+                if pname in pathpars:
+                    val, std = pathpars[pname]
+                else:
+                    par = self.params.get(parname, None)
+                    if par is not None:
+                        val = par.value
+                        std = par.stderr
+
             if std is None  or std <= 0:
                 svalue = gformat(val)
             else:
                 svalue = "{:s} +/-{:s}".format(gformat(val), gformat(std))
-            if pname == 's02': pname = 'n*s02'
+            if pname == 's02':
+                pname = 'n*s02'
 
             svalue = "     {:7s}= {:s}".format(pname, svalue)
             if isinstance(strval, str):
