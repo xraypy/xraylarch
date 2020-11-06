@@ -33,20 +33,11 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
 
 ## Dependencies: required and recommended modules
 ## do not use `install_requires` for conda environments
-
-install_reqs = ['numpy', 'scipy>=1.2', 'matplotlib>=3.0',
-                'sqlalchemy>=0.9', 'h5py>=2.8',
-                # 'pillow',
-                # 'requests',
-                # 'peakutils',
-                # 'scikit-image', 'scikit-learn',
-                'asteval>=0.9.19',
-                'lmfit>=1.0',
-                'uncertainties>=3.1',
-                'pyshortcuts>=1.7',
-                #'xraydb>=4.4', 'pyyaml', 'termcolor',
-                # 'silx>=0.12',
-                ]
+install_reqs = []
+with open('requirements.txt', 'r') as f:
+    for line in f.read().splitlines():
+        if not line.startswith('#'):
+            install_reqs.append(line.strip())
 
 recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('tomopy', 'tomopy', 'Tomographic reconstructions'),
@@ -58,6 +49,7 @@ recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
                ('pyepics', 'epics', 'Epics Channel Access'))
 
 missing = []
+print(install_reqs)
 
 try:
     import matplotlib
@@ -151,7 +143,7 @@ setup(name = 'xraylarch',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       python_requires='>=3.5.1',
-      install_requires=install_reqs,
+      # install_requires=install_reqs,
       packages = packages,
       package_data={'larch': package_data},
       zip_safe=False,
