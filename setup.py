@@ -46,7 +46,7 @@ modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
            (True, 'scikit-image', 'skimage', '0.17', 'scientific python'),
            (True, 'scikit-learn', 'sklearn', '0.23', 'scientific python'),
            (True, 'lmit', 'lmfit', '1.0', 'scientific python'),
-           (True, 'asteval', 'asteval', '0.9.19', 'scientific python'),
+           (True, 'asteval', 'asteval', '0.9.17', 'scientific python'),
            (True, 'uncertainties', 'uncertainties', '3.0', 'scientific python'),
            (True, 'xraydb', 'xraydb', '4.4.5', 'scientific python'),
            (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
@@ -91,11 +91,9 @@ for required, modname, impname, minver, desc in modules:
     if not (import_ok and version_ok):
         if minver is None: minver = ''
         pref = '***' if required else ''
-        missing.append(' {:3.3s} {:25.25s} {:7.7s} {:s}'.format(pref, modname,
-                                                                minver, desc))
+        missing.append(' {:3.3s} {:18.18s} {:8.8s}  {:s}'.format(pref, modname,
+                                                                 minver, desc))
 
-print(missing)
-sys.exit()
 
 ## For Travis-CI, need to write a local site config file
 ##
@@ -209,17 +207,22 @@ if INSTALL or DEVELOP:
 if len(missing) > 0:
     dl = "#%s#" % ("="*75)
     msg = """%s
- Note: Some optional Python Packages were not found.
- Some functionality will not be available without these packages:
+ Some Python Packages were not found.  Those marked with '***' are
+ required for larch to work, while other packages listed will mean
+ that some functionality will not be available:
 
-     Package Name              Needed for
-     ----------------          ----------------------------------
+     Package Name      Version    Needed for
+     ----------------             ----------------------------------
 %s
-     ----------------          ----------------------------------
+     ----------------             ----------------------------------
 
  If you need these capabilities, you may be able to install them with
     pip install <Package Name>
- or
-    conda install -c gsecars <Package Name>
+t
+
+or, for anaconda python
+   conda config --add channels gsecars
+   conda config --add channels conda-forge
+   conda install <Package Name>
 %s"""
     print(msg % (dl, '\n'.join(missing), dl))
