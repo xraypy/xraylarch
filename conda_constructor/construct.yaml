@@ -23,7 +23,7 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.7.7
+    - python>=3.8
     - conda
     - openssl
     - setuptools
