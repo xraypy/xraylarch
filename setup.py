@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import importlib
 from setuptools import setup, find_packages
+from packaging import version
 
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
@@ -32,24 +33,34 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
             __version__ = vers.replace("'",  "").replace('"',  "").strip()
 
 ## Dependencies: required and recommended modules
-## do not use `install_requires` for conda environments
-install_reqs = []
-with open('requirements.txt', 'r') as f:
-    for line in f.read().splitlines():
-        if not line.startswith('#'):
-            install_reqs.append(line.strip())
 
-recommended = (('dioptas', 'dioptas', 'XRD Display and Integraton'),
-               ('tomopy', 'tomopy', 'Tomographic reconstructions'),
-               ('silx', 'silx', 'Spec File reading, XRD'),
-               ('fabio', 'fabio', 'XRD File reading'),
-               ('pyfai', 'pyFAI', 'XRD intgration'),
-               ('pycifrw', 'CifFile', 'Crystallographic Information files'),
-               ('psycopg2', 'psycopg2', 'Postgres databases'),
-               ('pyepics', 'epics', 'Epics Channel Access'))
-
-missing = []
-print(install_reqs)
+#          required,  module name, import name, min version, description
+modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
+           (True, 'scipy', 'scipy', '1.2', 'basic scientific python'),
+           (True, 'matplotlib', 'matplotlib', '3.0', 'basic scientific python'),
+           (True, 'h5py', 'h5py', '2.8', 'basic scientific python'),
+           (True, 'pillow', 'PIL', '7.0', 'basic scientific python'),
+           (True, 'sqlalchemy', 'sqlalchemy', '0.9', 'basic python'),
+           (True, 'pyyaml', 'yaml', '5.0', 'basic python'),
+           (True, 'requests', 'requests', '0.2', 'basic python'),
+           (True, 'scikit-image', 'skimage', '0.17', 'scientific python'),
+           (True, 'scikit-learn', 'sklearn', '0.23', 'scientific python'),
+           (True, 'lmit', 'lmfit', '1.0', 'scientific python'),
+           (True, 'asteval', 'asteval', '0.9.19', 'scientific python'),
+           (True, 'uncertainties', 'uncertainties', '3.0', 'scientific python'),
+           (True, 'xraydb', 'xraydb', '4.4.5', 'scientific python'),
+           (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
+           (False, 'tomopy', 'tomopy', '1.4', 'Tomographic reconstructions'),
+           (False, 'silx', 'silx', '0.12', 'Spec File reading, XRD'),
+           (False, 'fabio', 'fabio', '0.10.0', 'XRD File reading'),
+           (False, 'pyfai', 'pyFAI', '0.17', 'XRD intgration'),
+           (False, 'pycifrw', 'CifFile', None, 'Crystallographic Information files'),
+           (False, 'psycopg2', 'psycopg2', '2.8.5', 'Postgres databases'),
+           (False, 'pyepics', 'epics', '3.4.0', 'Epics Channel Access'),
+           (False, 'wxpython', 'wx', '4.0.4', 'Graphical User interface'),
+           (False, 'wxmplot', 'wxmplot', '0.9.43', 'Graphical User interface'),
+           (False, 'wxutils', 'wxutils', '0.2.3', 'Graphical User interface'),
+           )
 
 try:
     import matplotlib
@@ -57,19 +68,40 @@ try:
 except:
     pass
 
-for modname, impname, desc in recommended:
+missing = []
+
+
+for required, modname, impname, minver, desc in modules:
     try:
         x = importlib.import_module(impname)
-        import_ok = True
+        import_ok, version_ok = True, False
+        ver = getattr(x, '__version__', None)
+        if ver is None:
+            ver = getattr(x, 'version', None)
+        if ver is not None and ' ' in ver:
+            ver = ver.split(' ', 1)[0]
+        if callable(ver): ver = ver()
+        if ver is None:
+            version_ok = True
+        else:
+            version_ok = version.parse(minver) <= version.parse(ver)
+
     except ImportError:
-        import_ok = False
-    if not import_ok:
-        missing.append('     {:25.25s} {:s}'.format(modname, desc))
+        import_ok, version_ok = False, True
+    if not (import_ok and version_ok):
+        if minver is None: minver = ''
+        pref = '***' if required else ''
+        missing.append(' {:3.3s} {:25.25s} {:7.7s} {:s}'.format(pref, modname,
+                                                                minver, desc))
+
+print(missing)
+sys.exit()
 
 ## For Travis-CI, need to write a local site config file
 ##
 if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
+
 
 
 pjoin = os.path.join
@@ -142,8 +174,7 @@ setup(name = 'xraylarch',
       download_url = 'http://xraypy.github.io/xraylarch/',
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
-      python_requires='>=3.5.1',
-      # install_requires=install_reqs,
+      python_requires='>=3.6',
       packages = packages,
       package_data={'larch': package_data},
       zip_safe=False,
