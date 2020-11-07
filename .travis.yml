@@ -19,7 +19,7 @@ before_install:
 install:
     - conda create -q -n xlarch python=3.8
     - source activate xlarch
-    - conda numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn wxpython pyyaml requests pyfai patchelf pango pcre pandas wxmplot wxutils
+    - conda install numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn wxpython pyyaml requests pyfai patchelf pango pcre pandas wxmplot wxutils
     - pip install dill nose pytest peakutils pillow psutil psycopg2 pyepics silx sphinx termcolor xraydb lmfit asteval pycifrw pint pyshortcuts
     - python setup.py install
     - conda list
