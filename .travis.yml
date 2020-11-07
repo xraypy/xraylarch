@@ -12,15 +12,15 @@ before_install:
     - export PATH="$HOME/xraylarch/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
-    - conda config --add channels gsecars
     - conda config --add channels conda-forge
+    - conda config --add channels gsecars
     - conda info -a
 
 install:
-    - conda create -q -n xlarch python=3.8 numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn h5py wxpython pyyaml requests
+    - conda create -q -n xlarch python=3.8
     - source activate xlarch
-    - pip install dill nose peakutils pillow psutil psycopg2 pyepics pytest silx sphinx termcolor xraydb lmfit asteval pycifrw pint
-    - conda install -c gsecars dioptas pyfai tomopy uncertainties wxutils wxmplot patchelf pango pcre pyshortcuts pandas
+    - conda numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn wxpython pyyaml requests pyfai patchelf pango pcre pandas wxmplot wxutils
+    - pip install dill nose pytest peakutils pillow psutil psycopg2 pyepics silx sphinx termcolor xraydb lmfit asteval pycifrw pint pyshortcuts
     - python setup.py install
     - conda list
 
