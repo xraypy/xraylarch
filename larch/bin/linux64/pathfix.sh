@@ -1,6 +1,8 @@
-patchelf --set-rpath '$ORIGIN' feff6l feff8l_*
 patchelf --set-rpath '$ORIGIN' libfeff6.so libcldata.so libxdifile.so
-patchelf --set-rpath '$ORIGIN' libfeff8lpath.so libfeff8lpotph.so
-patchelf --set-rpath '$ORIGIN' libgfortran.so.3 libquadmath.so.0
 
+for F in libfeff6.so libcldata.so libxdifile.so ; do
+  patchelf --replace-needed libgcc_s.so.1 libgcc_s_f8.so $F
+  patchelf --replace-needed libquadmath.so.0 libquadmath_f8.so $F
+  patchelf --replace-needed libgfortran.so.3 libgfortran_f8.so $F
+done
 # libgcc_s.so.1
