@@ -66,22 +66,23 @@ class LarchApp:
     wrapper for Larch Application
     """
     def __init__(self, name, script, icon='larch', terminal=False):
-        from pyshortcuts import ico_ext
         self.name = name
         self.script = script
         self.terminal = terminal
-        self.icon = "%s.%s" % (icon, 'ico')
-        if isinstance(ico_ext, (list, tuple)):
-            for ext in ico_ext:
-                ticon = "{:s}.{:s}".format(icon, ext)
-                if os.path.exists(ticon):
-                    self.icon = ticon
+        self.icon = icon
         bindir = 'Scripts' if uname == 'win' else 'bin'
         self.bindir = os.path.join(sys.prefix, bindir)
 
     def create_shortcut(self):
         script = os.path.join(self.bindir, self.script)
         icon = os.path.join(icondir, self.icon)
+        from pyshortcuts import ico_ext
+        if isinstance(ico_ext, (list, tuple)):
+            for ext in ico_ext:
+                ticon = "{:s}.{:s}".format(icon, ext)
+                if os.path.exists(ticon):
+                    icon = ticon
+
         if HAS_CONDA and uname == 'win':
             baserunner = os.path.join(self.bindir, 'baserunner.bat')
             script = "%s %s" % (baserunner, self.script)

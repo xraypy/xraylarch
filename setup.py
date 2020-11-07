@@ -218,7 +218,6 @@ if len(missing) > 0:
 
  If you need these capabilities, you may be able to install them with
     pip install <Package Name>
-t
 
 or, for anaconda python
    conda config --add channels gsecars
