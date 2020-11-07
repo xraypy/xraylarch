@@ -1,22 +1,24 @@
 # Auto detect text files and perform LF normalization
 * text=auto eol=lf
 
-exes/* -text
-exes/*/* -text
-dlls/*/* -text
+larch/bin/*/feff8l_* -text
+larch/bin/*/feff6l -text
+*.exe -text
+*.dll -text
+*.so -text
+*.dylib -text
+*.so.* -text
+*.a -text
+*.mod -text
 *.nib -text
 *.jpg -text
 *.png -text
-*.dll -text
-*.so -text
-*.so.* -text
-*.dylib -text
 *.ico -text
 *.prj -text
-*.a -text
+*.h5 -text
+*.tiff -text
 *.icns -text
 *.db -text
-*.exe -text
 *.pdf -text
 *.gz -text
 
