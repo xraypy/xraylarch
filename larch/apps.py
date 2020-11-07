@@ -70,13 +70,12 @@ class LarchApp:
         self.name = name
         self.script = script
         self.terminal = terminal
+        self.icon = "%s.%s" % (icon, 'ico')
         if isinstance(ico_ext, (list, tuple)):
-            ext = ico_ext[0]
-        self.icon = "%s.%s" % (icon, ext)
-        for ext in ico_ext:
-            ticon = "{:s}.{:s}".format(icon, ext)
-            if os.path.exists(ticon):
-                self.icon = ticon
+            for ext in ico_ext:
+                ticon = "{:s}.{:s}".format(icon, ext)
+                if os.path.exists(ticon):
+                    self.icon = ticon
         bindir = 'Scripts' if uname == 'win' else 'bin'
         self.bindir = os.path.join(sys.prefix, bindir)
 
