@@ -767,6 +767,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
             if len(datasets) > 1:
                 out.append(' dataset %i:' % (ids+1))
             for p in ds.pathlist:
-                out.append('%s\n' % p.report(params))
+                out.append('%s\n' % p.report())
     out.append('='*len(topline))
     return '\n'.join(out)

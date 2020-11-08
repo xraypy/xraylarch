@@ -293,9 +293,8 @@ class FeffPathGroup(Group):
         # put 'reff' and '_feffdat' into the symboltable so that
         # they can be used in constraint expressions
         self.store_feffdat()
-
-
-        self.create_path_params()
+        if self.params is None:
+            self.create_path_params()
         out = []
         for pname in PATH_PARS:
             val = kws.get(pname, None)
@@ -310,16 +309,15 @@ class FeffPathGroup(Group):
         return dict(degen=deg, s02=s02, e0=e0, ei=ei, deltar=delr,
                     sigma2=ss2, third=c3, fourth=c4)
 
-    def report(self, params):
+    def report(self):
         "return  text report of parameters"
-        self.params = params
+        tmpvals = self.__path_params()
         pathpars = {}
-        if params is not None:
-            for pname in ('degen', 's02', 'e0', 'deltar',
-                          'sigma2', 'third', 'fourth', 'ei'):
-                parname = fix_varname(PATHPAR_FMT % (pname, self.label))
-                if parname in self.params:
-                    pathpars[pname] = (params[parname].value, params[parname].stderr)
+        for pname in ('degen', 's02', 'e0', 'deltar',
+                      'sigma2', 'third', 'fourth', 'ei'):
+            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            if parname in self.params:
+                pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
 
         geomlabel  = '     atom      x        y        z       ipot'
         geomformat = '    %4s      % .4f, % .4f, % .4f  %i'
