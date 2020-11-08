@@ -5,8 +5,9 @@ if [ xx$PREFIX == 'xx' ]; then
     PREFIX=$(echo "$2/__NAME_LOWER__" | sed -e 's,//,/,g')
 fi
 
-# force install of packages that are noarch or have install problems
-# $PREFIX/bin/conda install -f qtpy dask pytz pyparsing networkx bokeh conda=4.5.13
+# use pip to install some known-safe-for-pip packages
+$PREFIX/bin/pip install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils xraylarch
+
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m

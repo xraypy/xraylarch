@@ -4,14 +4,12 @@ version: 0.9.49
 channels:
     - https://repo.continuum.io/pkgs/main
     - https://repo.continuum.io/pkgs/msys2 [win]
-    - https://conda.anaconda.org/gsecars/
     - https://conda.anaconda.org/conda-forge/
 
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
 license_file: ../LICENSE
 ignore_duplicate_files: True
-attempt_hardlinks: True
 
 osxpkg_readme: readme.rtf # [osx]
 osxpkg_image: LarchInstaller.png # [osx]
@@ -28,21 +26,34 @@ specs:
     - openssl
     - setuptools
     - pip
+    - requests
+    - numpy>=1.12
+    - scipy>=1.2
+    - matplotlib>=3.0
+    - h5py
+    - sqlalchemy>=0.9
+    - scikit-image
+    - scikit-learn
+    - cython
+    - pillow
+    - psutil
+    - pandas
     - nose
     - pytest
-    - requests
-    - psutil
-    - termcolor>=1.1.0
-    - yaml
     - pyyaml
-    - scipy>=1.2
-    - numpy>=1.12
-    - matplotlib>=3.0
-    - sqlalchemy>=0.9
-    - h5py
-    - pillow
-    - cython
+    - patchelf
+    - pango
     - pcre
+    - sphinx
+    - dill
+    - pint
+    - psycopg2
+    - pyfai
+    - pycifrw
+    - silx
+    - tifffile
+    - tomopy
+    - wxpython
     - patchelf         # [linux]
     - pango            # [linux]
     - fontconfig       # [linux or osx]
@@ -51,26 +62,3 @@ specs:
     - pywin32          # [win64]
     - console_shortcut # [win64]
     - powershell_shortcut # [win64]
-    - psycopg2
-    - scikit-image
-    - scikit-learn
-    - pandas
-    - pyqtgraph
-    - qtpy
-    - pyparsing
-    - wxpython
-    - pycifrw
-    - peakutils
-    - pyshortcuts
-    - pyepics>=3.4.1
-    - lmfit>=1.0
-    - asteval>=0.9.19
-    - wxutils
-    - wxmplot==0.9.43
-    - tomopy    # [linux or osx]
-    - silx>=0.11
-    - pyFAI
-    - fabio
-    - dioptas
-    - tifffile
-    - xraylarch==0.9.49
