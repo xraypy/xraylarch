@@ -27,11 +27,8 @@ xrf_peak = namedtuple('xrf_peak', ('name', 'amplitude', 'center', 'step',
 
 predict_methods = {'lstsq': lstsq, 'nnls': nnls}
 
-####
 # Note on units:  energies are in keV, lengths in cm
-#
-####
-HAS_PINT = False
+
 
 # note on Fano Factors
 # efano = (energy to create e-h pair)  * FanoFactor
@@ -40,8 +37,6 @@ HAS_PINT = False
 #    Ge              3.0               0.130      0.000 3900
 FanoFactors = {'Si':  0.4209e-3, 'Ge': 0.3900e-3}
 
-def is_pint_quantity(val):
-    return HAS_PINT and isinstance(val, pint.quantity._Quantity)
 
 class XRF_Material:
     def __init__(self, material='Si', thickness=0.050, density=None,
@@ -50,10 +45,6 @@ class XRF_Material:
         self.density = density
         self.thickness_units = thickness_units
         self.thickness = thickness
-        if HAS_PINT:
-            self.thickness_units = getattr(pint.UnitRegistry(), thickness_units)
-            self.thickness = thickness * self.thickness_units
-
         self.mu_total = self.mu_photo = None
 
     def calc_mu(self, energy):
@@ -72,7 +63,7 @@ class XRF_Material:
         Arguments
         ----------
         energy      float or ndarray  energy (keV) of X-ray
-        thicknesss  float or pint.Quantity   material thickness (cm)
+        thicknesss  float   material thickness (cm)
 
         Returns
         -------
@@ -85,10 +76,8 @@ class XRF_Material:
         mu = self.mu_total
         if kind == 'photo':
             mu = self.mu_photo
-        if is_pint_quantity(thickness):
-            t = thickness.to('cm').magnitude
-        else:
-            t = 0.1*thickness
+
+        t = 0.1*thickness
         return (1.0 - np.exp(-t*mu))
 
     def transmission(self, energy, thickness=None, kind='total'):
@@ -97,7 +86,7 @@ class XRF_Material:
         Arguments
         ---------
         energy      float or ndarray energy (keV) of X-ray
-        thicknesss  float or pint.Quantity   material thickness (cm)
+        thicknesss  float   material thickness (cm)
 
         Returns
         -------
@@ -111,10 +100,8 @@ class XRF_Material:
         mu = self.mu_total
         if kind == 'photo':
             mu = self.mu_photo
-        if is_pint_quantity(thickness):
-            t = thickness.to('cm').magnitude
-        else:
-            t = 0.1*thickness
+
+        t = 0.1*thickness
         return np.exp(-t*mu)
 
 
