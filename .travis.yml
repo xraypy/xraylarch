@@ -13,16 +13,14 @@ before_install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda config --add channels conda-forge
-    - conda config --add channels gsecars
     - conda info -a
 
 install:
     - conda create -q -n xlarch python=3.8
     - source activate xlarch
-    - conda install numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn wxpython pyyaml requests pyfai patchelf pango pcre pandas wxmplot wxutils
-    - pip install dill nose pytest peakutils pillow psutil psycopg2 pyepics silx sphinx termcolor xraydb lmfit asteval pycifrw pint pyshortcuts
+    - conda install numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn cython pillow psutil pandas nose pytest pyyaml patchelf pango pcre sphinx dill pint psycopg2 pyfai pycifrw silx tomopy wxpython
+    - pip install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils
     - python setup.py install
-    - conda list
 
 script:
     - cd tests
