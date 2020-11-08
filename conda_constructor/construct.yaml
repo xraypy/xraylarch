@@ -41,8 +41,6 @@ specs:
     - nose
     - pytest
     - pyyaml
-    - patchelf
-    - pango
     - pcre
     - sphinx
     - dill
