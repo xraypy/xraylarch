@@ -62,15 +62,7 @@ modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
            (False, 'wxutils', 'wxutils', '0.2.3', 'Graphical User interface'),
            )
 
-try:
-    import matplotlib
-    matplotlib.use('WXAgg')
-except:
-    pass
-
 missing = []
-
-
 for required, modname, impname, minver, desc in modules:
     try:
         x = importlib.import_module(impname)
@@ -85,7 +77,6 @@ for required, modname, impname, minver, desc in modules:
             version_ok = True
         else:
             version_ok = version.parse(minver) <= version.parse(ver)
-
     except ImportError:
         import_ok, version_ok = False, True
     if not (import_ok and version_ok):
@@ -219,9 +210,7 @@ if len(missing) > 0:
  If you need these capabilities, you may be able to install them with
     pip install <Package Name>
 
-or, for anaconda python
-   conda config --add channels gsecars
-   conda config --add channels conda-forge
-   conda install <Package Name>
+or, for anaconda python, you may use
+   conda install -c conda-forge <Package Name>
 %s"""
     print(msg % (dl, '\n'.join(missing), dl))
