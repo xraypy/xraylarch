@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12. XAFS Analysis &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13. XAFS Analysis &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
-    <link rel="prev" title="11.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" />
+    <link rel="next" title="13.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
+    <link rel="prev" title="12.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="utilities.html" title="12.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="13.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../fitting/confidence.html" title="11.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="../fitting/confidence.html" title="12.8. Advanced Confidence Intervals and Chi-square maps"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -64,7 +65,8 @@
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13. </span>XAFS Analysis</a></li> 
       </ul>
     </div>
 
@@ -72,10 +74,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../fitting/confidence.html"
-                        title="previous chapter"><span class="section-number">11.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
+                        title="previous chapter"><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="utilities.html"
-                        title="next chapter"><span class="section-number">12.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
+                        title="next chapter"><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -102,9 +104,9 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-analysis">
-<span id="xafs-chapter"></span><h1><span class="section-number">12. </span>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-chapter"></span><h1><span class="section-number">13. </span>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit <a class="bibtex reference internal" href="#ifeffit" id="id1">[Newville (2001)b]</a>,
+was originally conceived to be version 2 of Ifeffit <a class="bibtex reference internal" href="#ifeffit" id="id1">[Newville (2001)]</a>,
 replacing and expanding all the XAFS analysis capabilities of that package.
 XAFS Analysis can generally be broken into a few separate steps:
 This replacement is essentially complete insofar as all the main
@@ -138,88 +140,88 @@ is in the default search path.</p>
 </dl>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">12.1. XAFS Functions: Overview and Naming Conventions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#naming-conventions-for-xafs-arrays">12.1.1. Naming conventions for XAFS arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#plotting-macros-for-xafs">12.1.2. Plotting Macros for XAFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#utility-functions-for-xafs">12.1.3. Utility Functions for XAFS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">13.1. XAFS Functions: Overview and Naming Conventions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#naming-conventions-for-xafs-arrays">13.1.1. Naming conventions for XAFS arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#plotting-macros-for-xafs">13.1.2. Plotting Macros for XAFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#utility-functions-for-xafs">13.1.3. Utility Functions for XAFS</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="preedge.html">12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-find-e0-function">12.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">12.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-subtraction-example">12.2.3. Pre-Edge Subtraction Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-mback-algorithm">12.2.4. The MBACK algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-baseline-subtraction">12.2.5. Pre-edge baseline subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#over-absorption-corrections">12.2.6. Over-absorption Corrections</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#spectral-deconvolution">12.2.7. Spectral deconvolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preedge.html">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-find-e0-function">13.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-pre-edge-function">13.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-subtraction-example">13.2.3. Pre-Edge Subtraction Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#the-mback-algorithm">13.2.4. The MBACK algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#pre-edge-baseline-subtraction">13.2.5. Pre-edge baseline subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#over-absorption-corrections">13.2.6. Over-absorption Corrections</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#spectral-deconvolution">13.2.7. Spectral deconvolution</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xanes.html">12.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xanes.html#pre-edge-peak-fitting">12.3.1. Pre-edge Peak fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xanes.html#linear-combination-analysis">12.3.2. Linear Combination Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xanes.html#principal-component-analysis">12.3.3. Principal Component Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xanes.html#pca-example">12.3.4. PCA example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xanes.html">13.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xanes.html#pre-edge-peak-fitting">13.3.1. Pre-edge Peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xanes.html#linear-combination-analysis">13.3.2. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xanes.html#principal-component-analysis">13.3.3. Principal Component Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xanes.html#pca-example">13.3.4. PCA example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="autobk.html">12.4. XAFS: Post-edge Background Subtraction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">12.4.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-algorithm">12.4.2. The AUTOBK Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#examples">12.4.3. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autobk.html">13.4. XAFS: Post-edge Background Subtraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">13.4.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-algorithm">13.4.2. The AUTOBK Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#examples">13.4.3. Examples</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xafsft.html">12.5. XAFS: Fourier Transforms for XAFS</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">12.5.1. Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms-k-rightarrow-r">12.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms-r-rightarrow-q">12.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">12.5.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">12.5.5. Catalog of Fourier transform window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">12.5.6. Examples: Forward XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">12.5.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xafsft.html">13.5. XAFS: Fourier Transforms for XAFS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">13.5.1. Overview of XAFS Fourier transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms-k-rightarrow-r">13.5.2. Forward XAFS Fourier transforms (<span class="math notranslate nohighlight">\(k{\rightarrow}R\)</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms-r-rightarrow-q">13.5.3. Reverse XAFS Fourier transforms (<span class="math notranslate nohighlight">\(R{\rightarrow}q\)</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">13.5.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">13.5.5. Catalog of Fourier transform window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">13.5.6. Examples: Forward XAFS Fourier transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">13.5.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="wavelets.html">12.6. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wavelets.html#cauchy-wavelet">12.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="wavelets.html#wavelet-example">12.6.2. Wavelet Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wavelets.html">13.6. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wavelets.html#cauchy-wavelet">13.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wavelets.html#wavelet-example">13.6.2. Wavelet Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="feffpaths.html">12.7. XAFS: Reading and using Feff Paths</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#running-feff">12.7.1. Running Feff</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">12.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">12.7.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">12.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">12.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating-sigma-2">12.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">12.7.7. Example:  Reading a Feff file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">12.7.8. Example:  Adding Feff files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">12.7.9. Example: Using Path Parameters when adding Feff files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feffpaths.html">13.7. XAFS: Reading and using Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#running-feff">13.7.1. Running Feff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">13.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">13.7.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">13.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">13.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating-sigma-2">13.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">13.7.7. Example:  Reading a Feff file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">13.7.8. Example:  Adding Feff files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">13.7.9. Example: Using Path Parameters when adding Feff files</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="feffit.html">12.8. XAFS: Fitting XAFS to Feff Paths</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-strategy-for-modeling-exafs-data">12.8.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">12.8.2. Fit statistics and goodness-of-fit meassures for <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-functions-in-larch">12.8.3. The Feffit functions in Larch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform-and-the-feffit-transform-group">12.8.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset">12.8.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit">12.8.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report">12.8.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_report()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">12.8.8. Example 1: Simple fit with 1 Path</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-2-fit-1-dataset-with-3-paths">12.8.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">12.8.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">12.8.11. Example 4: Measuring Coordination number</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">12.8.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to-z">12.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
+<li class="toctree-l1"><a class="reference internal" href="feffit.html">13.8. XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-strategy-for-modeling-exafs-data">13.8.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">13.8.2. Fit statistics and goodness-of-fit meassures for <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-functions-in-larch">13.8.3. The Feffit functions in Larch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform-and-the-feffit-transform-group">13.8.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_transform()</span></code> and the Feffit Transform Group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset">13.8.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_dataset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit">13.8.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report">13.8.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit_report()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">13.8.8. Example 1: Simple fit with 1 Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-2-fit-1-dataset-with-3-paths">13.8.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">13.8.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">13.8.11. Example 4: Measuring Coordination number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">13.8.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to-z">13.8.13. Example 6: Testing EXAFS sensitivity to <span class="math notranslate nohighlight">\(Z\)</span></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="diffkk.html">12.9. XAFS: Computing anomalous scattering factors from XAFS data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="diffkk.html#overview-of-the-diffkk-implementation">12.9.1. Overview of the diffKK implementation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="diffkk.html#diffkk-on-l-edge-data">12.9.2. diffKK on L edge data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="diffkk.html">13.9. XAFS: Computing anomalous scattering factors from XAFS data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="diffkk.html#overview-of-the-diffkk-implementation">13.9.1. Overview of the diffKK implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diffkk.html#diffkk-on-l-edge-data">13.9.2. diffKK on L edge data</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p class="rubric">References</p>
 <p id="bibtex-bibliography-xafs/index-0"><dl class="citation">
-<dt class="bibtex label" id="ifeffit"><span class="brackets"><a class="fn-backref" href="#id1">Newville (2001)b</a></span></dt>
+<dt class="bibtex label" id="ifeffit"><span class="brackets"><a class="fn-backref" href="#id1">Newville (2001)</a></span></dt>
 <dd><p>M Newville. Ifeffit: interactive xafs analysis and feff fitting. <em>Journal of Synchrotron Radiation</em>, 8(Part 2):322–324, MAR 2001. <a class="reference external" href="https://doi.org/10.1107/S0909049500016964">doi:10.1107/S0909049500016964</a>.</p>
 </dd>
 <dt class="bibtex label" id="athena"><span class="brackets"><a class="fn-backref" href="#id2">Ravel and Newville (2005)</a></span></dt>
@@ -230,6 +232,7 @@ is in the default search path.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -242,10 +245,10 @@ is in the default search path.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="utilities.html" title="12.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="13.1. XAFS Functions: Overview and Naming Conventions"
              >next</a> |</li>
         <li class="right" >
-          <a href="../fitting/confidence.html" title="11.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="../fitting/confidence.html" title="12.8. Advanced Confidence Intervals and Chi-square maps"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -253,12 +256,13 @@ is in the default search path.</p>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13. </span>XAFS Analysis</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

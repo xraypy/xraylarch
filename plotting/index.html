@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>10. Plotting and Displaying Data &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>11. Plotting and Displaying Data &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="11. Fitting and Modeling Data" href="../fitting/index.html" />
-    <link rel="prev" title="9. Reading and Writing Data" href="../data/index.html" />
+    <link rel="next" title="12. Fitting and Modeling Data" href="../fitting/index.html" />
+    <link rel="prev" title="10. Reading and Writing Data" href="../data/index.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../fitting/index.html" title="11. Fitting and Modeling Data"
+          <a href="../fitting/index.html" title="12. Fitting and Modeling Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../data/index.html" title="9. Reading and Writing Data"
+          <a href="../data/index.html" title="10. Reading and Writing Data"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -64,7 +65,8 @@
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">11. </span>Plotting and Displaying Data</a></li> 
       </ul>
     </div>
 
@@ -72,26 +74,26 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">10. Plotting and Displaying Data</a><ul>
-<li><a class="reference internal" href="#line-plots">10.1. Line Plots</a><ul>
-<li><a class="reference internal" href="#plot-newplot-and-oplot">10.1.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
-<li><a class="reference internal" href="#plot-examples">10.1.2. Plot Examples</a></li>
-<li><a class="reference internal" href="#interactive-use-of-the-plot-windows">10.1.3. Interactive Use of the Plot Windows</a></li>
-<li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">10.1.4. Using TeX-like commands for labels and titles</a></li>
+<li><a class="reference internal" href="#">11. Plotting and Displaying Data</a><ul>
+<li><a class="reference internal" href="#line-plots">11.1. Line Plots</a><ul>
+<li><a class="reference internal" href="#plot-newplot-and-oplot">11.1.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code></a></li>
+<li><a class="reference internal" href="#plot-examples">11.1.2. Plot Examples</a></li>
+<li><a class="reference internal" href="#interactive-use-of-the-plot-windows">11.1.3. Interactive Use of the Plot Windows</a></li>
+<li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">11.1.4. Using TeX-like commands for labels and titles</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#image-display-and-contour">10.2. Image Display and Contour</a></li>
-<li><a class="reference internal" href="#advanced-plotting-using-matplotlib">10.3. Advanced Plotting: using matplotlib</a></li>
+<li><a class="reference internal" href="#image-display-and-contour">11.2. Image Display and Contour</a></li>
+<li><a class="reference internal" href="#advanced-plotting-using-matplotlib">11.3. Advanced Plotting: using matplotlib</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../data/index.html"
-                        title="previous chapter"><span class="section-number">9. </span>Reading and Writing Data</a></p>
+                        title="previous chapter"><span class="section-number">10. </span>Reading and Writing Data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../fitting/index.html"
-                        title="next chapter"><span class="section-number">11. </span>Fitting and Modeling Data</a></p>
+                        title="next chapter"><span class="section-number">12. </span>Fitting and Modeling Data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -118,7 +120,7 @@
           <div class="body" role="main">
             
   <div class="section" id="plotting-and-displaying-data">
-<span id="plotting-chapter"></span><h1><span class="section-number">10. </span>Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
+<span id="plotting-chapter"></span><h1><span class="section-number">11. </span>Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
 <p>Plotting and Visualizing data are vital to any scientific analysis package,
 and Larch provides several methods for data visualization.  These are
 largely built on two types of data display.  The first is the line plot
@@ -135,9 +137,9 @@ Finally, copying and saving images of the graphics is easy and can be done
 either with keyboard commands such as Ctrl-C or from dropdown menus on the
 graphic elements.</p>
 <span class="target" id="module-_plotter"></span><div class="section" id="line-plots">
-<h2><span class="section-number">10.1. </span>Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">11.1. </span>Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides a few functions for making line plots, with the principle
-function being called <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>.  The <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> function takes two
+function being called <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>.  The <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> function takes two
 arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
 accepts a very large number of optional arguments for setting properties
 like color, line style, labels, and so on.  Most of these properties can
@@ -152,16 +154,16 @@ give even more options, including Copy-to-clipboard and printing.</p>
 window, and you can control which one is drawn to with a plot window index
 <code class="docutils literal notranslate"><span class="pre">win</span></code>.</p>
 <div class="section" id="plot-newplot-and-oplot">
-<h3><span class="section-number">10.1.1. </span><a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code><a class="headerlink" href="#plot-newplot-and-oplot" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">11.1.1. </span><a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and <code class="xref py py-func docutils literal notranslate"><span class="pre">oplot()</span></code><a class="headerlink" href="#plot-newplot-and-oplot" title="Permalink to this headline">¶</a></h3>
 <p>These functions all create a Line Plot from array of <cite>x</cite> and <cite>y</cite> data that
 are taken to be ordered, and so can be drawn as connected by lines from one
 point to the next.  These functions share many options to set labels,
 colors, and so on to modify the resulting plot.  All options are specified
 by the keyword/value arguments described in the <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot
 Arguments</span></a> below.</p>
-<dl class="method">
-<dt id="_plotter.plot">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.plot">
+<span id="_plotter.plot"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -175,9 +177,9 @@ Arguments</span></a> below.</p>
 same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.newplot">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">newplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.newplot">
+<span id="_plotter.newplot"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">newplot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.newplot" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -187,13 +189,13 @@ same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
 </ul>
 </dd>
 </dl>
-<p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
+<p>This is essentially the same a <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=True</cite>.
 The rest of the arguments are as</p>
 </dd></dl>
 
-<dl class="method">
-<dt>
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span></dt>
+<dl class="py method">
+<dt id="id0">
+<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -203,12 +205,12 @@ The rest of the arguments are as</p>
 </ul>
 </dd>
 </dl>
-<p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=False</cite>.</p>
+<p>This is essentially the same a <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, but with the option  <cite>new=False</cite>.</p>
 </dd></dl>
 
-<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and
-<a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> and
-<a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>.  In addition, the <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> method uses many of the same arguments for the
+<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, <a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>, and
+<a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> and
+<a class="reference internal" href="#plotter.newplot" title="_plotter.newplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">newplot()</span></code></a>.  In addition, the <a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a> method uses many of the same arguments for the
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
 <div><blockquote>
@@ -304,7 +306,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td><p>use_dates</p></td>
 <td><p>bool</p></td>
 <td><p>False</p></td>
-<td><p>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</p></td>
+<td><p>to show dates in xlabel (<a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a> only)</p></td>
 <td><p>no</p></td>
 </tr>
 <tr class="row-odd"><td><p>linewidth</p></td>
@@ -416,7 +418,7 @@ same meaning, as indicated by the right-most column.</p>
 <td><p>no</p></td>
 </tr>
 <tr class="row-odd"><td></td>
-<td colspan="3"><p><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></p></td>
+<td colspan="3"><p><strong>arguments that apply only for</strong> <a class="reference internal" href="#plotter.scatterplot" title="_plotter.scatterplot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scatterplot()</span></code></a></p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p>size</p></td>
@@ -443,7 +445,7 @@ same meaning, as indicated by the right-most column.</p>
 displays, etc) and the properties of each trace (color, linewidth, …)
 are preserved for the duration of that window.   A few specific notes:</p>
 <blockquote>
-<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> default to <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> default to <code class="docutils literal notranslate"><span class="pre">None</span></code>,
 which means to use the previously used value.</p>
 <p>2. The <em>use_dates</em> option is not very rich, and simply turns x-values that
 are Unix timestamps into x labels showing the dates.</p>
@@ -467,18 +469,18 @@ transition to a new value as a sudden step, you want ‘steps-post’.</p>
 </div></blockquote>
 <p>Again, most of these values can be configured interactively from the Plot configuration window.</p>
 </div></blockquote>
-<dl class="method">
-<dt id="_plotter.scatterplot">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">scatterplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.scatterplot">
+<span id="_plotter.scatterplot"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">scatterplot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
 are not assumed to be in any particular order, and so are not connected
-with a line.  Arguments are very similar to those for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, and
+with a line.  Arguments are very similar to those for <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a>, and
 are listed in  <a class="reference internal" href="#plotopt-table"><span class="std std-ref">Table of Plot Arguments</span></a>.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.update_trace">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">update_trace</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">trace=1</em>, <em class="sig-param">win=1</em>, <em class="sig-param">side='left'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.update_trace">
+<span id="_plotter.update_trace"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">update_trace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">trace</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">side</span><span class="o">=</span><span class="default_value">'left'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.update_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates an existing trace of a plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -492,7 +494,7 @@ are listed in  <a class="reference internal" href="#plotopt-table"><span class="
 </dd>
 </dl>
 <p>This function is particularly useful for data to be plotted is changing
-and you wish to update traces from a previous <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> with new
+and you wish to update traces from a previous <a class="reference internal" href="#id0" title="_plotter.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> with new
 data without completely redrawing the entire plot.  Using this method
 is substantially faster than replotting, and should be used for dynamic
 plots, such as plottting the progress of some function during a fit.
@@ -502,9 +504,9 @@ properties of the trace and of the plot as a whole remain unchanged, it
 just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.plot_text">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_text</code><span class="sig-paren">(</span><em class="sig-param">text</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">win=1</em>, <em class="sig-param">side='left'</em>, <em class="sig-param">rotation=None</em>, <em class="sig-param">ha='left'</em>, <em class="sig-param">va='center'</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_text" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.plot_text">
+<span id="_plotter.plot_text"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">side</span><span class="o">=</span><span class="default_value">'left'</span></em>, <em class="sig-param"><span class="n">rotation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ha</span><span class="o">=</span><span class="default_value">'left'</span></em>, <em class="sig-param"><span class="n">va</span><span class="o">=</span><span class="default_value">'center'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>add text at x, y coordinates of the plot window</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -522,9 +524,9 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.plot_arrow">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_arrow</code><span class="sig-paren">(</span><em class="sig-param">x1</em>, <em class="sig-param">y1</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.plot_arrow">
+<span id="_plotter.plot_arrow"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_arrow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x1</span></em>, <em class="sig-param"><span class="n">y1</span></em>, <em class="sig-param"><span class="n">x2</span></em>, <em class="sig-param"><span class="n">y2</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_arrow" title="Permalink to this definition">¶</a></dt>
 <dd><p>draw arrow from x1, y1 to x2, y2.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -546,9 +548,9 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.plot_marker">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_marker</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">marker='o'</em>, <em class="sig-param">size=4</em>, <em class="sig-param">color='black'</em>, <em class="sig-param">label='_nolegend_'</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.plot_marker" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.plot_marker">
+<span id="_plotter.plot_marker"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">plot_marker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">marker</span><span class="o">=</span><span class="default_value">'o'</span></em>, <em class="sig-param"><span class="n">size</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">color</span><span class="o">=</span><span class="default_value">'black'</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">'_nolegend_'</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.plot_marker" title="Permalink to this definition">¶</a></dt>
 <dd><p>draw a single marker at x, y</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -565,7 +567,7 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
 <code class="sig-name descname">plot_axhline(y, xmin=0, xmax=1, win=1, size=None, **kws):</code></dt>
 <dd><p>plot a horizontal line spanning the plot axes</p>
@@ -582,7 +584,7 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
 <code class="sig-name descname">plot_axvline(x, ymin=0, ymax=1, win=1, size=None, **kws):</code></dt>
 <dd><p>plot a horizontal line spanning the plot axes</p>
@@ -599,9 +601,9 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.save_plot">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_plot</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">dpi=600</em>, <em class="sig-param">format=None</em>, <em class="sig-param">win=1</em>, <em class="sig-param">facecolor='w'</em>, <em class="sig-param">edgecolor='w'</em>, <em class="sig-param">transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_plot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.save_plot">
+<span id="_plotter.save_plot"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="o">=</span><span class="default_value">600</span></em>, <em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">facecolor</span><span class="o">=</span><span class="default_value">'w'</span></em>, <em class="sig-param"><span class="n">edgecolor</span><span class="o">=</span><span class="default_value">'w'</span></em>, <em class="sig-param"><span class="n">transparent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.save_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>save the current plot to a PNG or other output formats.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -618,10 +620,10 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.save_image">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_image</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">dpi=600</em>, <em class="sig-param">format=None</em>, <em class="sig-param">win=1</em>, <em class="sig-param">facecolor='w'</em>, <em class="sig-param">edgecolor='w'</em>, <em class="sig-param">transparent=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.save_image" title="Permalink to this definition">¶</a></dt>
-<dd><p>save the current 2D image from <a class="reference internal" href="#_plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
+<dl class="py method">
+<dt id="plotter.save_image">
+<span id="_plotter.save_image"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">save_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">dpi</span><span class="o">=</span><span class="default_value">600</span></em>, <em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">facecolor</span><span class="o">=</span><span class="default_value">'w'</span></em>, <em class="sig-param"><span class="n">edgecolor</span><span class="o">=</span><span class="default_value">'w'</span></em>, <em class="sig-param"><span class="n">transparent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.save_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>save the current 2D image from <a class="reference internal" href="#plotter.imshow" title="_plotter.imshow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">imshow()</span></code></a> to a PNG or other output formats.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -637,9 +639,9 @@ just happens that the data for the trace has been replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.get_display">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">get_display</code><span class="sig-paren">(</span><em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.get_display" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.get_display">
+<span id="_plotter.get_display"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">get_display</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.get_display" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the underlying Display object. For advanced usage, this allows
 access to the PlotDisplay object, which is the wxPython frame for the
 plot window.  The plot itself is contained in the <code class="docutils literal notranslate"><span class="pre">panel</span></code> attribute,
@@ -649,7 +651,7 @@ more details, see <a class="reference internal" href="#plot-mpl-sec"><span class
 
 </div>
 <div class="section" id="plot-examples">
-<h3><span class="section-number">10.1.2. </span>Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">11.1.2. </span>Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
 <p>Here are a few example line plots, to whet your appetite:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">y1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -660,7 +662,7 @@ more details, see <a class="reference internal" href="#plot-mpl-sec"><span class
 <p>will make this plot:</p>
 <div class="figure align-default" id="id1">
 <span id="plotting-fig1"></span><a class="reference external image-reference" href="../_images/plot_basic1.png"><img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.1.2.1 </span><span class="caption-text">A basic line plot.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.1.2.1 </span><span class="caption-text">A basic line plot.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Adding a second curve, and setting some labels:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Example Plot&#39;</span><span class="p">)</span>
@@ -669,11 +671,11 @@ more details, see <a class="reference internal" href="#plot-mpl-sec"><span class
 <p>will make this plot:</p>
 <div class="figure align-default" id="id2">
 <span id="plotting-fig2"></span><a class="reference external image-reference" href="../_images/plot_basic2.png"><img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.1.2.2 </span><span class="caption-text">A line plot with two curves.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.1.2.2 </span><span class="caption-text">A line plot with two curves.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="interactive-use-of-the-plot-windows">
-<h3><span class="section-number">10.1.3. </span>Interactive Use of the Plot Windows<a class="headerlink" href="#interactive-use-of-the-plot-windows" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">11.1.3. </span>Interactive Use of the Plot Windows<a class="headerlink" href="#interactive-use-of-the-plot-windows" title="Permalink to this headline">¶</a></h3>
 <p>From the main plot window, you can perform several tasks interactively:</p>
 <p><strong>Getting Cursor Position</strong>:</p>
 <p>From the plot window you can click the left button of your mouse, and see
@@ -716,13 +718,13 @@ select Configure) will bring up the plot configuration window, which looks
 like this:</p>
 <div class="figure align-default" id="id3">
 <span id="plotting-fig3"></span><a class="reference external image-reference" href="../_images/plot_config.png"><img alt="../_images/plot_config.png" src="../_images/plot_config.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.1.3.1 </span><span class="caption-text">Screenshot of the Configuration window for Plots.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.1.3.1 </span><span class="caption-text">Screenshot of the Configuration window for Plots.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <p>From here you can set the titles, axis labels, and styles, colors, symbols,
 labels, and so on for each of the line traces drawn.</p>
 </div>
 <div class="section" id="using-tex-like-commands-for-labels-and-titles">
-<h3><span class="section-number">10.1.4. </span>Using TeX-like commands for labels and titles<a class="headerlink" href="#using-tex-like-commands-for-labels-and-titles" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">11.1.4. </span>Using TeX-like commands for labels and titles<a class="headerlink" href="#using-tex-like-commands-for-labels-and-titles" title="Permalink to this headline">¶</a></h3>
 <p>The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be:</p>
@@ -736,7 +738,7 @@ these renderings below may be only approximate):</p>
 <div><p><span class="math notranslate nohighlight">\(k \rm(\AA^{-1})\)</span></p>
 <p><span class="math notranslate nohighlight">\(\chi(k)\)</span></p>
 </div></blockquote>
-<p>An important point here is the use of the backslash character, ‘', which
+<p>An important point here is the use of the backslash character, ‘\’, which
 you may recall from the tutorial is also used as an escape sequence.  Thus
 some TeX sequences, such as ‘\theta’ may require an additional backslash,
 so that the ‘\t’ part isn’t rendered as a tab character. More generally,
@@ -754,10 +756,10 @@ normal white color) if there is an error in rendering your TeX string.</p>
 </div>
 </div>
 <div class="section" id="image-display-and-contour">
-<h2><span class="section-number">10.2. </span>Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
-<dl class="method">
-<dt id="_plotter.imshow">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">imshow</code><span class="sig-paren">(</span><em class="sig-param">dat</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">colormap=None</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
+<h2><span class="section-number">11.2. </span>Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
+<dl class="py method">
+<dt id="plotter.imshow">
+<span id="_plotter.imshow"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">imshow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dat</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colormap</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.imshow" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -771,9 +773,9 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <p>display a grey-scale or false-color image from a 2-d array of intensities.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="_plotter.contour">
-<code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">contour</code><span class="sig-paren">(</span><em class="sig-param">dat</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em>, <em class="sig-param">colormap=None</em>, <em class="sig-param">nlevels=None</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="plotter.contour">
+<span id="_plotter.contour"></span><code class="sig-prename descclassname">_plotter.</code><code class="sig-name descname">contour</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dat</span></em>, <em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colormap</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nlevels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plotter.contour" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -826,16 +828,16 @@ image, generated with</p>
 <p>is shown below:</p>
 <div class="figure align-default" id="id4">
 <span id="plotting-fig4"></span><a class="reference external image-reference" href="../_images/plot_image1.png"><img alt="../_images/plot_image1.png" src="../_images/plot_image1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.2.1 </span><span class="caption-text">A false-color display of 2 dimensional image data.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.2.1 </span><span class="caption-text">A false-color display of 2 dimensional image data.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>and as a contour plot, with a different color table:</p>
 <div class="figure align-default" id="id5">
 <span id="plotting-fig5"></span><a class="reference external image-reference" href="../_images/plot_contour1.png"><img alt="../_images/plot_contour1.png" src="../_images/plot_contour1.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.2.2 </span><span class="caption-text">A contour plot of 2 dimensional image data.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.2.2 </span><span class="caption-text">A contour plot of 2 dimensional image data.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="advanced-plotting-using-matplotlib">
-<span id="plot-mpl-sec"></span><h2><span class="section-number">10.3. </span>Advanced Plotting: using matplotlib<a class="headerlink" href="#advanced-plotting-using-matplotlib" title="Permalink to this headline">¶</a></h2>
+<span id="plot-mpl-sec"></span><h2><span class="section-number">11.3. </span>Advanced Plotting: using matplotlib<a class="headerlink" href="#advanced-plotting-using-matplotlib" title="Permalink to this headline">¶</a></h2>
 <p>So far, this chapter has shown how to make simple plots and images.
 One of the main goals of Larch is to not only make the simple tasks very
 simple, but to keep the more difficult tasks possible and accessible.  To
@@ -845,7 +847,7 @@ plots and images to do plotting tasks not covered above.</p>
 functionality, as well as some support for 3-dimensioanl plotting.  Larch
 gives you access to the maplotlib API by giving you access to the
 matplotlib Axes and Canvas for any displayed plot.   To get this, you would
-use <a class="reference internal" href="#_plotter.get_display" title="_plotter.get_display"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
+use <a class="reference internal" href="#plotter.get_display" title="_plotter.get_display"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_display()</span></code></a> to get the current display window, then access the
 <code class="docutils literal notranslate"><span class="pre">panel.axes</span></code> member:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -901,12 +903,13 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
 <p>which generates a plot that looks like</p>
 <div class="figure align-default" id="id6">
 <span id="plotting-fig6"></span><a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
-<p class="caption"><span class="caption-number">Figure 10.3.1 </span><span class="caption-text">A histogram plot made using matplotlib’s <code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code> function.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 11.3.1 </span><span class="caption-text">A histogram plot made using matplotlib’s <code class="xref py py-func docutils literal notranslate"><span class="pre">hist()</span></code> function.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -919,10 +922,10 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../fitting/index.html" title="11. Fitting and Modeling Data"
+          <a href="../fitting/index.html" title="12. Fitting and Modeling Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="../data/index.html" title="9. Reading and Writing Data"
+          <a href="../data/index.html" title="10. Reading and Writing Data"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -930,12 +933,13 @@ matplotlib’s <code class="xref py py-func docutils literal notranslate"><span 
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">11. </span>Plotting and Displaying Data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

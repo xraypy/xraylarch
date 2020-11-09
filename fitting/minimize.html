@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>11.3. minimize() and objective Functions &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>12.3. minimize() and objective Functions &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="11.4. Fit Results and Outputs" href="results.html" />
-    <link rel="prev" title="11.2. Parameters" href="parameters.html" />
+    <link rel="next" title="12.4. Fit Results and Outputs" href="results.html" />
+    <link rel="prev" title="12.2. Parameters" href="parameters.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="results.html" title="11.4. Fit Results and Outputs"
+          <a href="results.html" title="12.4. Fit Results and Outputs"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="11.2. Parameters"
+          <a href="parameters.html" title="12.2. Parameters"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li> 
       </ul>
     </div>
 
@@ -73,10 +75,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="parameters.html"
-                        title="previous chapter"><span class="section-number">11.2. </span>Parameters</a></p>
+                        title="previous chapter"><span class="section-number">12.2. </span>Parameters</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="results.html"
-                        title="next chapter"><span class="section-number">11.4. </span>Fit Results and Outputs</a></p>
+                        title="next chapter"><span class="section-number">12.4. </span>Fit Results and Outputs</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -103,7 +105,7 @@
           <div class="body" role="main">
             
   <div class="section" id="minimize-and-objective-functions">
-<span id="fitting-minimize-sec"></span><h1><span class="section-number">11.3. </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> and objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
+<span id="fitting-minimize-sec"></span><h1><span class="section-number">12.3. </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> and objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the
 least-squares sense in the fitting process.  For most fits, the objective
@@ -149,9 +151,9 @@ procedure decides it has found the best solution that it can.</p>
 <div class="versionchanged">
 <p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> returns a result group containing fit statistics.</p>
 </div>
-<dl class="function">
+<dl class="py function">
 <dt id="minimize">
-<code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param">fcn</em>, <em class="sig-param">paramgroup</em>, <em class="sig-param">args=None</em>, <em class="sig-param">kws=None</em>, <em class="sig-param">method='leastsq'</em>, <em class="sig-param">**extra_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">minimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fcn</span></em>, <em class="sig-param"><span class="n">paramgroup</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kws</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'leastsq'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">extra_kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the best-fit values for the Parameters in <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> such that the
 output array from the objective function <code class="xref py py-func docutils literal notranslate"><span class="pre">fcn()</span></code> has minimal sum-of-squares.</p>
 <dl class="field-list simple">
@@ -288,6 +290,7 @@ used.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -300,10 +303,10 @@ used.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="results.html" title="11.4. Fit Results and Outputs"
+          <a href="results.html" title="12.4. Fit Results and Outputs"
              >next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="11.2. Parameters"
+          <a href="parameters.html" title="12.2. Parameters"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -312,12 +315,13 @@ used.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.4. XAFS: Post-edge Background Subtraction" href="autobk.html" />
-    <link rel="prev" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
+    <link rel="next" title="13.4. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="prev" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="12.4. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="13.4. XAFS: Post-edge Background Subtraction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="preedge.html" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></li> 
       </ul>
     </div>
 
@@ -73,21 +75,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a><ul>
-<li><a class="reference internal" href="#pre-edge-peak-fitting">12.3.1. Pre-edge Peak fitting</a></li>
-<li><a class="reference internal" href="#linear-combination-analysis">12.3.2. Linear Combination Analysis</a></li>
-<li><a class="reference internal" href="#principal-component-analysis">12.3.3. Principal Component Analysis</a></li>
-<li><a class="reference internal" href="#pca-example">12.3.4. PCA example</a></li>
+<li><a class="reference internal" href="#">13.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a><ul>
+<li><a class="reference internal" href="#pre-edge-peak-fitting">13.3.1. Pre-edge Peak fitting</a></li>
+<li><a class="reference internal" href="#linear-combination-analysis">13.3.2. Linear Combination Analysis</a></li>
+<li><a class="reference internal" href="#principal-component-analysis">13.3.3. Principal Component Analysis</a></li>
+<li><a class="reference internal" href="#pca-example">13.3.4. PCA example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="previous chapter"><span class="section-number">12.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
+                        title="previous chapter"><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="next chapter"><span class="section-number">12.4. </span>XAFS: Post-edge Background Subtraction</a></p>
+                        title="next chapter"><span class="section-number">13.4. </span>XAFS: Post-edge Background Subtraction</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -114,7 +116,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting">
-<h1><span class="section-number">12.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting<a class="headerlink" href="#xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting<a class="headerlink" href="#xanes-analysis-linear-combination-analysis-principal-component-analysis-pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h1>
 <p>XANES is highly sensitive to oxidation state and coordination environment
 of the absorbing atom, and spectral features such as the energy and
 intensity of observed peaks can often be used to qualitatively identify
@@ -181,7 +183,7 @@ are not properly normalized or when artifacts that suppress the spectral
 features have occured.  It is up to the experimentalist and analyst to make
 these decisions.</p>
 <div class="section" id="pre-edge-peak-fitting">
-<h2><span class="section-number">12.3.1. </span>Pre-edge Peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.3.1. </span>Pre-edge Peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h2>
 <p>Pre-edge peaks can often be modeled as a simple sum of mathematical
 functions such as <a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><code class="xref py py-func docutils literal notranslate"><span class="pre">gaussian()</span></code></a>, <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><code class="xref py py-func docutils literal notranslate"><span class="pre">lorentzian()</span></code></a>, or <a class="reference internal" href="../fitting/lineshapes.html#voigt" title="voigt"><code class="xref py py-func docutils literal notranslate"><span class="pre">voigt()</span></code></a>.
 Typically, no more than 4 functions are needed to model most pre-edge
@@ -200,15 +202,15 @@ coincident.</p></li>
 recommended that you start with this GUI.  See <a class="reference internal" href="../xasviewer/index.html#xasviewer-preedge"><span class="std std-ref">Pre-edge subtraction and Normalization</span></a>.</p>
 </div>
 <div class="section" id="linear-combination-analysis">
-<h2><span class="section-number">12.3.2. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.3.2. </span>Linear Combination Analysis<a class="headerlink" href="#linear-combination-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Many XANES spectra are made on messy, heterogeneous systems or in
 engineered samples in which a predictable if not completely understood
 reaction is occuring.  In these cases and many related problems, using
 linear combinations of spectra from known compounds to understand the
 makeup of the unknown sample is an important analysis method.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="lincombo_fit">
-<code class="sig-name descname">lincombo_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lincombo_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">components</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fitting for a group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -239,9 +241,9 @@ group to be fitted.</p></li>
 </div></blockquote>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="lincombo_fitall">
-<code class="sig-name descname">lincombo_fitall</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">components</em>, <em class="sig-param">weights=None</em>, <em class="sig-param">minvals=None</em>, <em class="sig-param">maxvals=None</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fitall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lincombo_fitall</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">components</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fitall" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fittings for a group with all combinations
 of 2 or more of the components given</p>
 <dl class="field-list simple">
@@ -268,14 +270,14 @@ ordered by reduced chi-square (best first)</p>
 
 </div>
 <div class="section" id="principal-component-analysis">
-<h2><span class="section-number">12.3.3. </span>Principal Component Analysis<a class="headerlink" href="#principal-component-analysis" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.3.3. </span>Principal Component Analysis<a class="headerlink" href="#principal-component-analysis" title="Permalink to this headline">¶</a></h2>
 <p>To use Principal Component Analysis, you must first use a collection of
 spectra to build or “train” the model.  With a trained model, you can ask
 how many independent components are needed to describe the variation in the
 collection.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="pca_train">
-<code class="sig-name descname">pca_train</code><span class="sig-paren">(</span><em class="sig-param">groups</em>, <em class="sig-param">arrayname='norm'</em>, <em class="sig-param">xmin=-np.inf</em>, <em class="sig-param">xmax=np.inf</em>, <em class="sig-param">sum_to_one=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pca_train" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pca_train</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">groups</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_train" title="Permalink to this definition">¶</a></dt>
 <dd><p>use a list of data groups to train a Principal Component Analysis model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -344,9 +346,9 @@ in data content and array names.</p></li>
 </tbody>
 </table>
 </div></blockquote>
-<dl class="function">
+<dl class="py function">
 <dt id="pca_fit">
-<code class="sig-name descname">pca_fit</code><span class="sig-paren">(</span><em class="sig-param">group</em>, <em class="sig-param">pca_model</em>, <em class="sig-param">ncomps=None</em>, <em class="sig-param">_larch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pca_fit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pca_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">pca_model</span></em>, <em class="sig-param"><span class="n">ncomps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_larch</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit a spectrum from a group to a pca training model from pca_train()</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -399,7 +401,7 @@ created with the following members:</p>
 
 </div>
 <div class="section" id="pca-example">
-<h2><span class="section-number">12.3.4. </span>PCA example<a class="headerlink" href="#pca-example" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.3.4. </span>PCA example<a class="headerlink" href="#pca-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of using these PCA functions is given below, building on
 the dataset from Lengke, et al shown in section <a class="reference internal" href="../fitting/examples.html#fit-example3-sec"><span class="std std-ref">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</span></a>.  Here,
 we’ll first read in six “standards” and one unknown spectra from an Athena
@@ -461,19 +463,19 @@ To be clear, the PCA process first calculates and removes the mean of all
 the components and then focuses on the variations in the spectra.  This is
 especially helpful for XANES spectra as the mean normalized <span class="math notranslate nohighlight">\(mu(E)\)</span>
 is almost always larger than the variations.  We can then plot the mean and
-the principal components themselves (in <a class="reference internal" href="#fig-xanes-pca1a"><span class="std std-numref">Figure 12.3.4.1</span></a>), and the
-weight of each component (in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 12.3.4.2</span></a>) to explain the
+the principal components themselves (in <a class="reference internal" href="#fig-xanes-pca1a"><span class="std std-numref">Figure 13.3.4.1</span></a>), and the
+weight of each component (in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 13.3.4.2</span></a>) to explain the
 variations in the training set (note that this does not include the mean,
 and is on a log scale).</p>
 <div class="figure compound align-center" id="fig-xanes-pca">
 <div style="width: 45%" class="subfigure align-center" id="id1">
 <span id="fig-xanes-pca1a"></span><a class="reference external image-reference" href="../_images/PCA_model_components.png"><img alt="../_images/PCA_model_components.png" src="../_images/PCA_model_components.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.3.4.1 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
+<p class="caption"><span class="caption-number">Figure 13.3.4.1 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
 Mean and 4 most important components.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 45%" class="subfigure align-center" id="id2">
 <span id="fig-xanes-pca1b"></span><a class="reference external image-reference" href="../_images/PCA_model_weights.png"><img alt="../_images/PCA_model_weights.png" src="../_images/PCA_model_weights.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.3.4.2 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
+<p class="caption"><span class="caption-number">Figure 13.3.4.2 </span><span class="caption-text">Results for the PCA training set of  6 Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectra.
 Fractional weights or variances for the 4 most important components of
 the Au XANES spectra – not including the mean spectrum.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
@@ -487,19 +489,19 @@ the Au XANES spectra – not including the mean spectrum.</span><a class="header
    <span class="mi">6</span>    <span class="o">|</span>  <span class="mf">0.00000</span>  <span class="o">|</span>  <span class="mf">1.00000</span>
 </pre></div>
 </div>
-<p>which shows the values for the weights plotted in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 12.3.4.2</span></a>
+<p>which shows the values for the weights plotted in <a class="reference internal" href="#fig-xanes-pca1b"><span class="std std-numref">Figure 13.3.4.2</span></a>
 for the principal components.  This shows that the first 2 components
 explain 95% of the variation, and that using 4 components will explain
 99.9% of the variation in the data.</p>
 <p>Finally, we finish the example script by seeing if the unknown spectrum can
 be explained by the 4 principal components from the training set.  This is
-shown in <a class="reference internal" href="#fig-xanes-pcafit"><span class="std std-numref">Figure 12.3.4.3</span></a> and gives good confidence that the data
+shown in <a class="reference internal" href="#fig-xanes-pcafit"><span class="std std-numref">Figure 13.3.4.3</span></a> and gives good confidence that the data
 should be able to be explained by 4 components.  This is consistent with
 the findings using linear combination analysis in section <a class="reference internal" href="../fitting/examples.html#fit-example3-sec"><span class="std std-ref">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</span></a>,
 but gives a slightly firmer foundation for using that number of components.</p>
 <div class="figure align-center" id="id3">
 <span id="fig-xanes-pcafit"></span><a class="reference external image-reference" href="../_images/PCA_model_fit.png"><img alt="../_images/PCA_model_fit.png" src="../_images/PCA_model_fit.png" style="width: 50%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.3.4.3 </span><span class="caption-text">Fit to unknown Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectrum to a linear combination
+<p class="caption"><span class="caption-number">Figure 13.3.4.3 </span><span class="caption-text">Fit to unknown Au <span class="math notranslate nohighlight">\(L_{III}\)</span> XANES spectrum to a linear combination
 of the mean and 4 principle components of the training set.  The fit
 looks good enough to conclude that this spectrum probably is explained
 by the variances seen in the main 4 components from the training set.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
@@ -508,6 +510,7 @@ by the variances seen in the main 4 components from the training set.</span><a c
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -520,10 +523,10 @@ by the variances seen in the main 4 components from the training set.</span><a c
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="12.4. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="13.4. XAFS: Post-edge Background Subtraction"
              >next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="preedge.html" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -532,12 +535,13 @@ by the variances seen in the main 4 components from the training set.</span><a c
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

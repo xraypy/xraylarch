@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting" href="xanes.html" />
-    <link rel="prev" title="12.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
+    <link rel="next" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting" href="xanes.html" />
+    <link rel="prev" title="13.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xanes.html" title="12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
+          <a href="xanes.html" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="12.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="13.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></li> 
       </ul>
     </div>
 
@@ -73,17 +75,17 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
-<li><a class="reference internal" href="#the-find-e0-function">12.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
-<li><a class="reference internal" href="#the-pre-edge-function">12.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
-<li><a class="reference internal" href="#pre-edge-subtraction-example">12.2.3. Pre-Edge Subtraction Example</a></li>
-<li><a class="reference internal" href="#the-mback-algorithm">12.2.4. The MBACK algorithm</a></li>
-<li><a class="reference internal" href="#pre-edge-baseline-subtraction">12.2.5. Pre-edge baseline subtraction</a></li>
-<li><a class="reference internal" href="#over-absorption-corrections">12.2.6. Over-absorption Corrections</a></li>
-<li><a class="reference internal" href="#spectral-deconvolution">12.2.7. Spectral deconvolution</a><ul>
-<li><a class="reference internal" href="#xas-convolve">12.2.7.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
-<li><a class="reference internal" href="#xas-deconvolve">12.2.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
-<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">12.2.7.3. Examples using <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
+<li><a class="reference internal" href="#the-find-e0-function">13.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-pre-edge-function">13.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
+<li><a class="reference internal" href="#pre-edge-subtraction-example">13.2.3. Pre-Edge Subtraction Example</a></li>
+<li><a class="reference internal" href="#the-mback-algorithm">13.2.4. The MBACK algorithm</a></li>
+<li><a class="reference internal" href="#pre-edge-baseline-subtraction">13.2.5. Pre-edge baseline subtraction</a></li>
+<li><a class="reference internal" href="#over-absorption-corrections">13.2.6. Over-absorption Corrections</a></li>
+<li><a class="reference internal" href="#spectral-deconvolution">13.2.7. Spectral deconvolution</a><ul>
+<li><a class="reference internal" href="#xas-convolve">13.2.7.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
+<li><a class="reference internal" href="#xas-deconvolve">13.2.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a></li>
+<li><a class="reference internal" href="#examples-using-xas-deconvolve-and-xas-convolve">13.2.7.3. Examples using <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -92,10 +94,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="utilities.html"
-                        title="previous chapter"><span class="section-number">12.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
+                        title="previous chapter"><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xanes.html"
-                        title="next chapter"><span class="section-number">12.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
+                        title="next chapter"><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -122,7 +124,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-pre-edge-subtraction-normalization-and-data-treatment">
-<h1><span class="section-number">12.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment<a class="headerlink" href="#xafs-pre-edge-subtraction-normalization-and-data-treatment" title="Permalink to this headline">¶</a></h1>
 <p>After reading in data and constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span>, the principle
 pre-processing steps for XAFS analysis are pre-edge subtraction and
 normalization.  Reading data and constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span> are handled by
@@ -133,10 +135,10 @@ XAFS-specific function for pre-edge subtraction and normalization is
 data including corrections for over-absorption (sometimes confusingly
 called <em>self-absorption</em>) and for spectral convolution and de-convolution.</p>
 <div class="section" id="the-find-e0-function">
-<h2><span class="section-number">12.2.1. </span>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function<a class="headerlink" href="#the-find-e0-function" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<h2><span class="section-number">13.2.1. </span>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function<a class="headerlink" href="#the-find-e0-function" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
 <dt id="larch.xafs.find_e0">
-<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">find_e0</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">_larch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.find_e0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">find_e0</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_larch</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(E_0\)</span>, the energy threshold of absorption, or
 ‘edge energy’, given <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
 <p><span class="math notranslate nohighlight">\(E_0\)</span> is found as the point with maximum derivative with
@@ -145,16 +147,16 @@ some checks to avoid spurious glitches.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group</p></li>
-<li><p><strong>mu</strong> (<em>ndaarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – array of mu(E) values</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>mu</strong> (<em>ndaarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – array of mu(E) values</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – output group</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – current larch session.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Value of e0. If a group is provided, group.e0 will also be set.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -166,10 +168,10 @@ some checks to avoid spurious glitches.</p>
 
 </div>
 <div class="section" id="the-pre-edge-function">
-<h2><span class="section-number">12.2.2. </span>The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<h2><span class="section-number">13.2.2. </span>The <a class="reference internal" href="#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> function<a class="headerlink" href="#the-pre-edge-function" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
 <dt id="pre_edge">
-<code class="sig-name descname">pre_edge</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">group=None</em>, <em class="sig-param">e0=None</em>, <em class="sig-param">step=None</em>, <em class="sig-param">pre1=None</em>, <em class="sig-param">pre2=None</em>, <em class="sig-param">norm1=None</em>, <em class="sig-param">norm2=None</em>, <em class="sig-param">nnorm=None</em>, <em class="sig-param">nvict=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pre_edge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">e0</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pre1</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pre2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm1</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm2</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nnorm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nvict</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt><dd><ol class="arabic simple">
 <li><p>determine <span class="math notranslate nohighlight">\(E_0\)</span> (if not supplied) from max of deriv(mu)</p></li>
@@ -288,7 +290,7 @@ matter the value of <cite>nnorm</cite>) to the post-edge normalized <span class=
 subtracts that curve from it.</p>
 </div>
 <div class="section" id="pre-edge-subtraction-example">
-<h2><span class="section-number">12.2.3. </span>Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.3. </span>Pre-Edge Subtraction Example<a class="headerlink" href="#pre-edge-subtraction-example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Larch</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;fe2o3_rt1.xmu&#39;</span>
@@ -318,11 +320,11 @@ subtracts that curve from it.</p>
 <p>gives the following results:</p>
 <div class="figure align-center" id="id5">
 <span id="xafs-fig1"></span><a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.3.1 </span><span class="caption-text">XAFS Pre-edge subtraction.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.2.3.1 </span><span class="caption-text">XAFS Pre-edge subtraction.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="the-mback-algorithm">
-<h2><span class="section-number">12.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.4. </span>The MBACK algorithm<a class="headerlink" href="#the-mback-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides an implementation of the MBACK algorithm of
 Weng <a class="bibtex reference internal" href="#weng" id="id1">[Weng, Waldo, and Penner-Hahn (2005)]</a> with an option of using the modification proposed by
 Lee <em>et al</em> <a class="bibtex reference internal" href="#lee-xiang" id="id2">[Lee et al. (2009)]</a>.  In MBACK, the data are matched to the tabulated
@@ -354,7 +356,7 @@ adjusted by breaking the minimization function into two regions: the
 data points above the absorption edge.  <span class="math notranslate nohighlight">\(n_1+n_2=N\)</span>, where N is
 the total number of data points.</p>
 <p>If this is used in publication, a citation should be given to Weng <a class="bibtex reference internal" href="#weng" id="id3">[Weng, Waldo, and Penner-Hahn (2005)]</a>.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="mback">
 <code class="sig-name descname">mback</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> data to tabulated cross-section data.</p>
@@ -431,7 +433,7 @@ and 6.</p></li>
 </div></blockquote>
 <p>Here is an example of processing XANES data measured over an extended
 data range.  This example is the K edge of copper foil, with the
-result shown in <a class="reference internal" href="#fig-mback-copper"><span class="std std-numref">Figure 12.2.4.1</span></a>.</p>
+result shown in <a class="reference internal" href="#fig-mback-copper"><span class="std std-numref">Figure 13.2.4.1</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_ascii</span>
 <span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">mback</span>
 <span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
@@ -445,13 +447,13 @@ result shown in <a class="reference internal" href="#fig-mback-copper"><span cla
 </div>
 <div class="figure align-center" id="id6">
 <span id="fig-mback-copper"></span><a class="reference external image-reference" href="../_images/mback_copper.png"><img alt="../_images/mback_copper.png" src="../_images/mback_copper.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.4.1 </span><span class="caption-text">Using MBACK to match Cu K edge data measured on a copper foil.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.2.4.1 </span><span class="caption-text">Using MBACK to match Cu K edge data measured on a copper foil.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>Here is an example of processing XANES data measured over a rather
 short data range.  This example is the magnesium silicate mineral
 talc, Mg<sub>3</sub>Si<sub>4</sub>O<sub>10</sub>(OH)<sub>2</sub>,
 measured at the Si K edge, with the result shown in
-<a class="reference internal" href="#fig-mback-talc"><span class="std std-numref">Figure 12.2.4.2</span></a>.  Note that the order of the Legendre polynomial
+<a class="reference internal" href="#fig-mback-talc"><span class="std std-numref">Figure 13.2.4.2</span></a>.  Note that the order of the Legendre polynomial
 is set to 2 and that the <code class="docutils literal notranslate"><span class="pre">whiteline</span></code> parameter is set to avoid the
 large features near the edge.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;Talc.xmu&#39;</span><span class="p">)</span>
@@ -463,9 +465,9 @@ large features near the edge.</p>
 </div>
 <div class="figure align-center" id="id7">
 <span id="fig-mback-talc"></span><a class="reference external image-reference" href="../_images/mback_talc.png"><img alt="../_images/mback_talc.png" src="../_images/mback_talc.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.4.2 </span><span class="caption-text">Using MBACK to match Si K edge data measured on talc.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.2.4.2 </span><span class="caption-text">Using MBACK to match Si K edge data measured on talc.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="function">
+<dl class="py function">
 <dt id="mback_norm">
 <code class="sig-name descname">mback_norm</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">group=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#mback_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>A simplified version of <a class="reference internal" href="#mback" title="mback"><code class="xref py py-func docutils literal notranslate"><span class="pre">mback()</span></code></a> to normalize <span class="math notranslate nohighlight">\(\mu(E)\)</span> data
@@ -533,7 +535,7 @@ group:</p>
 
 </div>
 <div class="section" id="pre-edge-baseline-subtraction">
-<h2><span class="section-number">12.2.5. </span>Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.5. </span>Pre-edge baseline subtraction<a class="headerlink" href="#pre-edge-baseline-subtraction" title="Permalink to this headline">¶</a></h2>
 <p>A common application of XAFS is the analysis of “pre-edge peaks” of
 transition metal oxides to determine oxidation state and molecular
 configuration. These peaks sit just below the main absorption edge
@@ -545,9 +547,9 @@ is necessary to try to remove the contribution of the main edge.  The main
 edge (or at least its low energy side) can be modeled reasonably well as a
 Lorentzian function for these purposes of describing the tail below the
 pre-edge peaks.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="larch.xafs.prepeaks_setup">
-<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">prepeaks_setup</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.prepeaks_setup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">prepeaks_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.prepeaks_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>set up pre edge peak group.</p>
 <p>This assumes that pre_edge() has been run successfully on the spectra
 and that the spectra has decent pre-edge subtraction and normalization.</p>
@@ -555,13 +557,13 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
-<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – array of normalized mu(E)</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – array of normalized mu(E)</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – output group</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>elo</strong> – (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
 <li><p><strong>ehi</strong> – (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – current larch session.</p></li>
 </ul>
 </dd>
 </dl>
@@ -594,9 +596,9 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 </ol>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="larch.xafs.pre_edge_baseline">
-<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">pre_edge_baseline</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.pre_edge_baseline" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">larch.xafs.</code><code class="sig-name descname">pre_edge_baseline</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#larch.xafs.pre_edge_baseline" title="Permalink to this definition">¶</a></dt>
 <dd><p>remove baseline from main edge over pre edge peak region</p>
 <p>This assumes that pre_edge() has been run successfully on the spectra
 and that the spectra has decent pre-edge subtraction and normalization.</p>
@@ -605,14 +607,14 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of normalized mu(E)</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
-<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – output group</p></li>
+<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
+<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>form</strong> (<em>string</em>) – form used for baseline (see note 2)  [‘lorentzian’]</p></li>
-<li><p><strong>with_line</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to include linear component in baseline [‘True’]</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>with_line</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – whether to include linear component in baseline [‘True’]</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a>) – current larch session.</p></li>
 </ul>
 </dd>
 </dl>
@@ -675,7 +677,7 @@ of the peaks in <cite>prepeaks.peaks</cite> as found by peakutils.</p></li>
 
 </div>
 <div class="section" id="over-absorption-corrections">
-<h2><span class="section-number">12.2.6. </span>Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.6. </span>Over-absorption Corrections<a class="headerlink" href="#over-absorption-corrections" title="Permalink to this headline">¶</a></h2>
 <p>For XAFS data measured in fluorescence, a common problem of
 <em>over-absorption</em> in which too much of the total X-ray absorption
 coefficient is from the absorbing element.  In such cases, the implicit
@@ -694,9 +696,9 @@ effect can be corrected for small over-absorption.</p>
 <p>For XANES, a common correction method from the FLUO program by D. Haskel
 (<a class="bibtex reference internal" href="#fluo" id="id4">[Haskel (1999)]</a>) can be used.  The algorithm is contained in the
 <a class="reference internal" href="#fluo_corr" title="fluo_corr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fluo_corr()</span></code></a> function.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="fluo_corr">
-<code class="sig-name descname">fluo_corr</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu</em>, <em class="sig-param">formula</em>, <em class="sig-param">elem</em>, <em class="sig-param">group=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">anginp=45</em>, <em class="sig-param">angout=45</em>, <em class="sig-param">**pre_kws</em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fluo_corr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">mu</span></em>, <em class="sig-param"><span class="n">formula</span></em>, <em class="sig-param"><span class="n">elem</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge</span><span class="o">=</span><span class="default_value">'K'</span></em>, <em class="sig-param"><span class="n">anginp</span><span class="o">=</span><span class="default_value">45</span></em>, <em class="sig-param"><span class="n">angout</span><span class="o">=</span><span class="default_value">45</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">pre_kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#fluo_corr" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\mu(E)\)</span> corrected for over-absorption in fluorescence
 XAFS using the FLUO algorithm (suitable for XANES, but questionable for
 EXAFS).</p>
@@ -726,7 +728,7 @@ normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> correcte
 
 </div>
 <div class="section" id="spectral-deconvolution">
-<h2><span class="section-number">12.2.7. </span>Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.2.7. </span>Spectral deconvolution<a class="headerlink" href="#spectral-deconvolution" title="Permalink to this headline">¶</a></h2>
 <p>In order to readily compare XAFS data from different sources, it is
 sometimes necessary to consider the energy resolution used to collect each
 spectum.  To be clear, the resolution of an EXAFS spectrum includes
@@ -767,8 +769,8 @@ is better described by a Lorentzian.   Therefore, to try to reduce the
 influence of the core level in order better mimic high-resolution
 fluorescence data, de-convolving with a Lorentzian is often better.</p>
 <div class="section" id="xas-convolve">
-<h3><span class="section-number">12.2.7.1. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.2.7.1. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#xas-convolve" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt>
 <code class="sig-name descname">xas_convolve(energy, norm=None, group=None, form='lorentzian', esigma=1.0, eshift=0.0):</code></dt>
 <dd><p>convolve a normalized mu(E) spectra with a Lorentzian or Gaussian peak
@@ -814,10 +816,10 @@ group:</p>
 
 </div>
 <div class="section" id="xas-deconvolve">
-<h3><span class="section-number">12.2.7.2. </span><a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.2.7.2. </span><a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a><a class="headerlink" href="#xas-deconvolve" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="xas_deconvolve">
-<code class="sig-name descname">xas_deconvolve</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">form='lorentzian'</em>, <em class="sig-param">esigma=1.0</em>, <em class="sig-param">eshift=0.0</em>, <em class="sig-param">smooth=True</em>, <em class="sig-param">sgwindow=None</em>, <em class="sig-param">sgorder=3</em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">xas_deconvolve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">form</span><span class="o">=</span><span class="default_value">'lorentzian'</span></em>, <em class="sig-param"><span class="n">esigma</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eshift</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">smooth</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sgwindow</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sgorder</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xas_deconvolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>XAS spectral deconvolution</p>
 <p>de-convolve a normalized mu(E) spectra with a peak shape, enhancing the
 intensity and separation of peaks of a XANES spectrum.</p>
@@ -869,7 +871,7 @@ the gridded data, approximately the finest energy step in the data.</p>
 
 </div>
 <div class="section" id="examples-using-xas-deconvolve-and-xas-convolve">
-<h3><span class="section-number">12.2.7.3. </span>Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.2.7.3. </span>Examples using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code><a class="headerlink" href="#examples-using-xas-deconvolve-and-xas-convolve" title="Permalink to this headline">¶</a></h3>
 <p>An example using <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> to deconvolve a XAFS spectrum would
 be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_deconv1.lar</span>
@@ -887,10 +889,10 @@ be:</p>
 <p>resulting in deconvolved data:</p>
 <div class="figure align-center" id="id8">
 <span id="fig-deconv-fe"></span><a class="reference external image-reference" href="../_images/xafs_deconv1.png"><img alt="../_images/xafs_deconv1.png" src="../_images/xafs_deconv1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.7.1 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math notranslate nohighlight">\(\rm Fe_2O_3\)</span>.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.2.7.1 </span><span class="caption-text">Deconvolved XAFS spectrum for <span class="math notranslate nohighlight">\(\rm Fe_2O_3\)</span>.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>To de-convolve an XAFS spectrum using the energy width of the core level,
-we can use the <a class="reference internal" href="../xray/index.html#_xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xray.core_width()</span></code></a> function, as shown below for Cu metal.
+we can use the <a class="reference internal" href="../xray/index.html#xray.core_width" title="_xray.core_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">_xray.core_width()</span></code></a> function, as shown below for Cu metal.
 We can also test that the deconvolution is correct by using
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xas_convolve()</span></code> to re-convolve the result and comparing it to original
 data.  This can be done with:</p>
@@ -921,12 +923,12 @@ data.  This can be done with:</p>
 <div class="figure compound align-center" id="fig_xafs_deconv">
 <div style="width: 45%" class="subfigure align-center" id="id9">
 <span id="fig-xafs-deconv2a"></span><a class="reference external image-reference" href="../_images/xafs_deconv2a.png"><img alt="../_images/xafs_deconv2a.png" src="../_images/xafs_deconv2a.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.7.2 </span><span class="caption-text">XAS for Cu metal normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> and spectrum
+<p class="caption"><span class="caption-number">Figure 13.2.7.2 </span><span class="caption-text">XAS for Cu metal normalized <span class="math notranslate nohighlight">\(\mu(E)\)</span> and spectrum
 deconvolved by the energy of its core level.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 45%" class="subfigure align-center" id="id10">
 <span id="fig-xafs-deconv2b"></span><a class="reference external image-reference" href="../_images/xafs_deconv2b.png"><img alt="../_images/xafs_deconv2b.png" src="../_images/xafs_deconv2b.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.2.7.3 </span><span class="caption-text">Comparison of original and re-convolved XAS spectrum for Cu metal.
+<p class="caption"><span class="caption-number">Figure 13.2.7.3 </span><span class="caption-text">Comparison of original and re-convolved XAS spectrum for Cu metal.
 The difference shown in red is multiplied by 100.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
 <p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#xas_deconvolve" title="xas_deconvolve"><code class="xref py py-func docutils literal notranslate"><span class="pre">xas_deconvolve()</span></code></a> and
@@ -996,6 +998,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -1008,10 +1011,10 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xanes.html" title="12.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
+          <a href="xanes.html" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
              >next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="12.1. XAFS Functions: Overview and Naming Conventions"
+          <a href="utilities.html" title="13.1. XAFS Functions: Overview and Naming Conventions"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -1020,12 +1023,13 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

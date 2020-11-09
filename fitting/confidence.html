@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>11.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>12.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12. XAFS Analysis" href="../xafs/index.html" />
-    <link rel="prev" title="11.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
+    <link rel="next" title="13. XAFS Analysis" href="../xafs/index.html" />
+    <link rel="prev" title="12.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xafs/index.html" title="12. XAFS Analysis"
+          <a href="../xafs/index.html" title="13. XAFS Analysis"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="fitpeaks.html" title="11.7. Simplified Peak Fitting with fit_peak()"
+          <a href="fitpeaks.html" title="12.7. Simplified Peak Fitting with fit_peak()"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 
       </ul>
     </div>
 
@@ -73,20 +75,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">11.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
-<li><a class="reference internal" href="#confidence-interval-example-1">11.8.1. Confidence interval, Example 1</a></li>
-<li><a class="reference internal" href="#confidence-interval-example-2">11.8.2. Confidence interval, Example 2</a></li>
-<li><a class="reference internal" href="#chi-square-maps">11.8.3. Chi-square Maps</a></li>
+<li><a class="reference internal" href="#">12.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li><a class="reference internal" href="#confidence-interval-example-1">12.8.1. Confidence interval, Example 1</a></li>
+<li><a class="reference internal" href="#confidence-interval-example-2">12.8.2. Confidence interval, Example 2</a></li>
+<li><a class="reference internal" href="#chi-square-maps">12.8.3. Chi-square Maps</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="fitpeaks.html"
-                        title="previous chapter"><span class="section-number">11.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></p>
+                        title="previous chapter"><span class="section-number">12.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../xafs/index.html"
-                        title="next chapter"><span class="section-number">12. </span>XAFS Analysis</a></p>
+                        title="next chapter"><span class="section-number">13. </span>XAFS Analysis</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -113,7 +115,7 @@
           <div class="body" role="main">
             
   <div class="section" id="advanced-confidence-intervals-and-chi-square-maps">
-<h1><span class="section-number">11.8. </span>Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Permalink to this headline">¶</a></h1>
 <p>Having good estimates for uncertainties in fitted parameters is important
 for any scientific analysis.  One of principle attractions to using the
 Levenberg-Marquardt algorithm that is the default fitting mechanism with
@@ -130,9 +132,9 @@ provides two main functions to help explore such cases.  To be sure, they
 are much slower than the automatic estimation of the uncertainties.  For
 many (perhaps most) cases, they do not provide much better insight than the
 automatic method.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="confidence_intervals">
-<code class="sig-name descname">confidence_intervals</code><span class="sig-paren">(</span><em class="sig-param">minimizer</em>, <em class="sig-param">sigmas=(1</em>, <em class="sig-param">2</em>, <em class="sig-param">3)</em>, <em class="sig-param">prob_func=None</em>, <em class="sig-param">maxiter=200</em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">confidence_intervals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minimizer</span></em>, <em class="sig-param"><span class="n">sigmas</span><span class="o">=</span><span class="default_value">1, 2, 3</span></em>, <em class="sig-param"><span class="n">prob_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">200</span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate confidence intervals for the parameters from a given fit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -154,9 +156,9 @@ a list of (sigma, value) pairs.</p>
 <p>This function will adjust the value for each parameter, re-optimizing the
 other parameters until it finds the parameter values that increase sigma by
 the levels indicated.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="confidence_report">
-<code class="sig-name descname">confidence_report</code><span class="sig-paren">(</span><em class="sig-param">conf_values</em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">confidence_report</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conf_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a> into a printable report.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -168,15 +170,15 @@ the levels indicated.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="f_test">
-<code class="sig-name descname">f_test</code><span class="sig-paren">(</span><em class="sig-param">ndata</em>, <em class="sig-param">nparams</em>, <em class="sig-param">chisquare</em>, <em class="sig-param">chisquare0</em>, <em class="sig-param">nfix=1</em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">f_test</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ndata</span></em>, <em class="sig-param"><span class="n">nparams</span></em>, <em class="sig-param"><span class="n">chisquare</span></em>, <em class="sig-param"><span class="n">chisquare0</span></em>, <em class="sig-param"><span class="n">nfix</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the standard F-test value for the probability that one fit is
 better than another.</p>
 </dd></dl>
 
 <div class="section" id="confidence-interval-example-1">
-<h2><span class="section-number">11.8.1. </span>Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.8.1. </span>Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
 <p>Let’s begin with a shortened version of the first example from the previous
 section.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
@@ -291,7 +293,7 @@ uncertainties is fairly linear with <span class="math notranslate nohighlight">\
 values are approximately 3 times the 1-<span class="math notranslate nohighlight">\(\sigma\)</span> values.</p>
 </div>
 <div class="section" id="confidence-interval-example-2">
-<h2><span class="section-number">11.8.2. </span>Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.8.2. </span>Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
 <p>Of course, there are more challenging cases than the one above.  A double
 exponential function is one such example, so we start with a fit to mock
 data</p>
@@ -352,7 +354,7 @@ data</p>
 above 90%.  The resulting plot of the best-fit looks fairly reasonable:</p>
 <div class="figure align-center" id="id1">
 <span id="fit-conf1"></span><a class="reference external image-reference" href="../_images/fit_example_conf2.png"><img alt="../_images/fit_example_conf2.png" src="../_images/fit_example_conf2.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 11.8.2.1 </span><span class="caption-text">Fit to double exponential function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 12.8.2.1 </span><span class="caption-text">Fit to double exponential function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>But if we we ask for the more thorough investigation of the confidence
 intervals in these parameters with:</p>
@@ -423,16 +425,16 @@ cannot reflect asymmetric uncertainties.  But, like the reported
 correlations, the full report above hints at a less than ideal case.</p>
 </div>
 <div class="section" id="chi-square-maps">
-<h2><span class="section-number">11.8.3. </span>Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.8.3. </span>Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
 <p>We can further explore the correlation between pairs of variables by making
 and visualizing a map of the chi-square (<span class="math notranslate nohighlight">\(\chi^2\)</span>) statistic.  This
 can be helpful to determine if the automatically calculated uncertainties
 and correlation are reasonable, and to look for pathological cases.  The
 <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">chi2_map()</span></code></a> function will calculate a map of <span class="math notranslate nohighlight">\(\chi^2\)</span> for a pair
 of variable parameters by brute force.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="chi2_map">
-<code class="sig-name descname">chi2_map</code><span class="sig-paren">(</span><em class="sig-param">minimizer</em>, <em class="sig-param">xname</em>, <em class="sig-param">yname</em>, <em class="sig-param">nx=11</em>, <em class="sig-param">ny=11</em>, <em class="sig-param">sigmas=5</em>, <em class="sig-param">xrange=None</em>, <em class="sig-param">yrange=None</em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">chi2_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minimizer</span></em>, <em class="sig-param"><span class="n">xname</span></em>, <em class="sig-param"><span class="n">yname</span></em>, <em class="sig-param"><span class="n">nx</span><span class="o">=</span><span class="default_value">11</span></em>, <em class="sig-param"><span class="n">ny</span><span class="o">=</span><span class="default_value">11</span></em>, <em class="sig-param"><span class="n">sigmas</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">xrange</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">yrange</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a chi-square map for two parameters in a fit</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -505,6 +507,7 @@ correlation, or when nearing a final analysis.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -517,10 +520,10 @@ correlation, or when nearing a final analysis.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xafs/index.html" title="12. XAFS Analysis"
+          <a href="../xafs/index.html" title="13. XAFS Analysis"
              >next</a> |</li>
         <li class="right" >
-          <a href="fitpeaks.html" title="11.7. Simplified Peak Fitting with fit_peak()"
+          <a href="fitpeaks.html" title="12.7. Simplified Peak Fitting with fit_peak()"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -529,12 +532,13 @@ correlation, or when nearing a final analysis.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="13. X-ray Databases" href="../xray/index.html" />
-    <link rel="prev" title="12.8. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
+    <link rel="next" title="14. X-ray Databases" href="../xray/index.html" />
+    <link rel="prev" title="13.8. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="13. X-ray Databases"
+          <a href="../xray/index.html" title="14. X-ray Databases"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="feffit.html" title="12.8. XAFS: Fitting XAFS to Feff Paths"
+          <a href="feffit.html" title="13.8. XAFS: Fitting XAFS to Feff Paths"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></li> 
       </ul>
     </div>
 
@@ -73,19 +75,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.9. XAFS: Computing anomalous scattering factors from XAFS data</a><ul>
-<li><a class="reference internal" href="#overview-of-the-diffkk-implementation">12.9.1. Overview of the diffKK implementation</a></li>
-<li><a class="reference internal" href="#diffkk-on-l-edge-data">12.9.2. diffKK on L edge data</a></li>
+<li><a class="reference internal" href="#">13.9. XAFS: Computing anomalous scattering factors from XAFS data</a><ul>
+<li><a class="reference internal" href="#overview-of-the-diffkk-implementation">13.9.1. Overview of the diffKK implementation</a></li>
+<li><a class="reference internal" href="#diffkk-on-l-edge-data">13.9.2. diffKK on L edge data</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="feffit.html"
-                        title="previous chapter"><span class="section-number">12.8. </span>XAFS: Fitting XAFS to Feff Paths</a></p>
+                        title="previous chapter"><span class="section-number">13.8. </span>XAFS: Fitting XAFS to Feff Paths</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../xray/index.html"
-                        title="next chapter"><span class="section-number">13. </span>X-ray Databases</a></p>
+                        title="next chapter"><span class="section-number">14. </span>X-ray Databases</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -112,7 +114,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-computing-anomalous-scattering-factors-from-xafs-data">
-<h1><span class="section-number">12.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#xafs-computing-anomalous-scattering-factors-from-xafs-data" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data<a class="headerlink" href="#xafs-computing-anomalous-scattering-factors-from-xafs-data" title="Permalink to this headline">¶</a></h1>
 <dl class="field-list simple">
 <dt class="field-odd">synopsis</dt>
 <dd class="field-odd"><p>Differential Kramers-Kronig transforms</p>
@@ -133,7 +135,7 @@ fixed-q absorption experiments, such diffraction anomalous
 fine-structure (DAFS) or reflectively-EXAFS (sometimes known as
 ReflEXAFS).</p>
 <div class="section" id="overview-of-the-diffkk-implementation">
-<h2><span class="section-number">12.9.1. </span>Overview of the diffKK implementation<a class="headerlink" href="#overview-of-the-diffkk-implementation" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.9.1. </span>Overview of the diffKK implementation<a class="headerlink" href="#overview-of-the-diffkk-implementation" title="Permalink to this headline">¶</a></h2>
 <p>This performs the same algorithm as the venerable DIFFKK program
 described in :cite::<cite>diffkk</cite>.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
@@ -149,20 +151,20 @@ option of using the modification proposed by :cite::<cite>lee-xiang</cite>.
 This scales the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
-<a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 12.9.1.1</span></a>.</p>
+<a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 13.9.1.1</span></a>.</p>
 <p>The difference between the scaled <span class="math notranslate nohighlight">\(\mu(E)\)</span> and the tabulated
 <span class="math notranslate nohighlight">\(f''(E)\)</span> is then subjected to the KK transform.  The result is
 added to the tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span> spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
-shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 12.9.1.1</span></a>.</p>
+shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 13.9.1.1</span></a>.</p>
 <div class="figure align-center" id="id1">
 <span id="fig-cu-diffkk"></span><a class="reference external image-reference" href="../_images/diffkk_cu.png"><img alt="../_images/diffkk_cu.png" src="../_images/diffkk_cu.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.9.1.1 </span><span class="caption-text">The anomalous scattering factors determined for copper metal from
+<p class="caption"><span class="caption-number">Figure 13.9.1.1 </span><span class="caption-text">The anomalous scattering factors determined for copper metal from
 a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
-<dl class="function">
+<dl class="py function">
 <dt id="diffkk">
-<code class="sig-name descname">diffkk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">diffkk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge</span><span class="o">=</span><span class="default_value">'K'</span></em>, <em class="sig-param"><span class="n">mback_kws</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a diffKK Group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -180,9 +182,9 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="diffkk.kk">
-<code class="sig-prename descclassname">diffkk.</code><code class="sig-name descname">kk</code><span class="sig-paren">(</span><em class="sig-param">energy=None</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">z=None</em>, <em class="sig-param">edge='K'</em>, <em class="sig-param">mback_kws=None</em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">diffkk.</code><code class="sig-name descname">kk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge</span><span class="o">=</span><span class="default_value">'K'</span></em>, <em class="sig-param"><span class="n">mback_kws</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the KK transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -246,14 +248,14 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 </div>
 </div>
 <div class="section" id="diffkk-on-l-edge-data">
-<h2><span class="section-number">12.9.2. </span>diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.9.2. </span>diffKK on L edge data<a class="headerlink" href="#diffkk-on-l-edge-data" title="Permalink to this headline">¶</a></h2>
 <p>The diffKK method is fairly straightforward for K edge data.  The
 algorithm for matching the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the tabulated
 <span class="math notranslate nohighlight">\(f''(E)\)</span> works quite well over the entire data range, resulting
 in a relatively unambiguous determination of <span class="math notranslate nohighlight">\(f'(E)\)</span>.  The
 situation for L edge data is a bit more complicated.</p>
 <p>Consider the CeO<sub>2</sub>L edge data shown on the right on
-<a class="reference internal" href="#fig-ceo2-diffkk"><span class="std std-numref">Figure 12.9.2.3</span></a>.  For these data, the matching algorithm is
+<a class="reference internal" href="#fig-ceo2-diffkk"><span class="std std-numref">Figure 13.9.2.3</span></a>.  For these data, the matching algorithm is
 quite a bit more challenging, in part due to the very large spectral
 weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
@@ -261,17 +263,17 @@ tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span>.</p>
 <div class="figure compound align-center" id="fig-ceo2-diffkkcomp">
 <div style="width: 32%" class="subfigure align-default" id="id2">
 <span id="fig-ceo2-xafs"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_xafs.png"><img alt="../_images/diffkk_ceo2_xafs.png" src="../_images/diffkk_ceo2_xafs.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 32%" class="subfigure align-default" id="id3">
 <span id="fig-ceo2-notok"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_notok.png"><img alt="../_images/diffkk_ceo2_notok.png" src="../_images/diffkk_ceo2_notok.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 <div style="width: 32%" class="subfigure align-default" id="id4">
 <span id="fig-ceo2-diffkk"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_ok.png"><img alt="../_images/diffkk_ceo2_ok.png" src="../_images/diffkk_ceo2_ok.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
-</div><p id="fig-ceo2-diffkkcomp">These larch command created the plot in <a class="reference internal" href="#fig-ceo2-notok"><span class="std std-numref">Figure 12.9.2.2</span></a>.</p>
+</div><p id="fig-ceo2-diffkkcomp">These larch command created the plot in <a class="reference internal" href="#fig-ceo2-notok"><span class="std std-numref">Figure 13.9.2.2</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
 <span class="n">dkk</span><span class="o">=</span><span class="n">diffkk</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;L3&#39;</span><span class="p">,</span> <span class="n">mback_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;e0&#39;</span><span class="p">:</span><span class="mi">5723</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">})</span>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
@@ -288,7 +290,7 @@ the normalization.</p>
 <span class="n">dkk</span><span class="o">.</span><span class="n">kk</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The result is shown in <a class="reference internal" href="#fig-ceo2-xafs"><span class="std std-numref">Figure 12.9.2.1</span></a>.  A margin is placed around
+<p>The result is shown in <a class="reference internal" href="#fig-ceo2-xafs"><span class="std std-numref">Figure 13.9.2.1</span></a>.  A margin is placed around
 the L<sub>3</sub>and L<sub>2</sub>white lines.  The data from the white
 line energies to 20 eV above are excluded when determining the matching
 parameters.  This does a somewhat nicer job of forcing the flat parts of
@@ -307,6 +309,7 @@ algorithm would be more appropriate for L edge data.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -319,10 +322,10 @@ algorithm would be more appropriate for L edge data.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="13. X-ray Databases"
+          <a href="../xray/index.html" title="14. X-ray Databases"
              >next</a> |</li>
         <li class="right" >
-          <a href="feffit.html" title="12.8. XAFS: Fitting XAFS to Feff Paths"
+          <a href="feffit.html" title="13.8. XAFS: Fitting XAFS to Feff Paths"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -331,12 +334,13 @@ algorithm would be more appropriate for L edge data.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.9. </span>XAFS: Computing anomalous scattering factors from XAFS data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

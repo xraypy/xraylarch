@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plugins &#8212; xraylarch 0.9.49 documentation</title>
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="../index.html">
+	 <img src="../_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="../index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Plugins</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plugins</a><ul>
+<li><a class="reference internal" href="#locations-of-plugins">Locations of Plugins</a></li>
+<li><a class="reference internal" href="#customizing-plugins-and-folders-of-plugins">Customizing Plugins and  Folders of Plugins</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/python/plugins.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="plugins">
+<span id="plugins-section"></span><h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
+<p>A Larch plugin is a Python module that adds functionality to Larch at
+run-time.  Plugins are a powerful part of Larch that allow it to be
+extended without the requiring detailed knowledge of all of Larch’s
+internals.  Generally speaking, plugins will define new functions or data
+to become part of the Larch framework.  Functions defined in plugins can
+access the Larch interpreter session, including creating or manipulating
+Groups in Larch’s symbol table.  Essentially all the scientific
+functionality of Larch is implemented as plugins.</p>
+<p>There are a few points to consider for writing plugins.  First, in order
+for a plugin function to interact with the running Larch interpreter, it
+needs a <code class="docutils literal notranslate"><span class="pre">_larch</span></code> keyword argument.  To be clear, the function does not
+require a <code class="docutils literal notranslate"><span class="pre">_larch</span></code> keyword argument, but if the function does have a
+<code class="docutils literal notranslate"><span class="pre">_larch</span></code> keyword argument, it will be used to pass in the current larch
+interpreter.  Normally, you will only really need the <code class="docutils literal notranslate"><span class="pre">symtable</span></code>
+attribute of the <code class="docutils literal notranslate"><span class="pre">_larch</span></code> variable which holds the symbol table used, but
+you can interact with any part of the interpreter if you need to.</p>
+<p>Second, all functions (or data resources) that are to be added to Larch
+need to be <em>registered</em>.  This is done by defining a function called
+<code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code> that returns a tuple containing the name of the
+group containing the added functions, and a dictionary with keys used for
+the names to be put into the Larch symbol table, and values of the functions
+or data to be used. of Larch symbol. A simple plugin module would
+look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Note: larch instance passed in to &#39;_larch&#39;</span>
+    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;created by myfunc&#39;</span><span class="p">)</span>
+
+    <span class="n">group</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">return</span> <span class="n">group</span>
+
+<span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span> <span class="c1"># must have a function with this name!</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;func&#39;</span><span class="p">:</span> <span class="n">myfunc</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>This would create a top-level Larch group <code class="docutils literal notranslate"><span class="pre">mymod</span></code> (if it didn’t already
+exist), and create a function <code class="docutils literal notranslate"><span class="pre">func</span></code> in this group that held the python
+function <code class="docutils literal notranslate"><span class="pre">myfunc</span></code>.  To use this function from the Larch interpreter, you
+would use something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">out</span> <span class="o">=</span> <span class="n">mymod</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;a string&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">z</span>
+<span class="mi">12</span>  <span class="s1">&#39;a string&#39;</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>This plugin simply puts data into a Group, but of course you can do much
+more complicated work inside the function.</p>
+<dl class="py function">
+<dt>
+<code class="sig-name descname">registerLarchPlugin():</code></dt>
+<dd><p>register a set of functions or data resources defined in the module into
+the current Larch interpreter.   This function should return a tuple of
+(GroupName, Symbols_Dictionary), where the Group name is the
+top-level Group to place the data in, and the Symbols dictionary maps
+the values (functions or data in the Python module) to names in the
+Larch Group.</p>
+</dd></dl>
+
+<div class="section" id="locations-of-plugins">
+<h2>Locations of Plugins<a class="headerlink" href="#locations-of-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins are meant to be long-lived and reused, and so are not expected to
+be placed in the current working directory.  Plugins are located in the the
+installed Larch Plugin folder ( $HOME/.larch/plugins/ on Unix or Mac OS X
+or C:\Users\USERNAME\larch\plugins on Windows).</p>
+<p>Plugins in the user’s Larch Plugin folder can be added into the current
+Larch session with the <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> function.</p>
+<dl class="py function">
+<dt id="builtin.add_plugin">
+<span id="_builtin.add_plugin"></span><code class="sig-prename descclassname">_builtin.</code><code class="sig-name descname">add_plugin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">python_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#builtin.add_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a plugin from the given plugin python file.  In contrast to the
+<code class="docutils literal notranslate"><span class="pre">import</span></code> statement, <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> will install the resources
+defined by <code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code> every time it is run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>python_file</strong> – name of Python file containing plugin code.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> on success, <code class="docutils literal notranslate"><span class="pre">False</span></code> on error</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>If the above plugin file is saved in a file named <cite>myplugin.py</cite> in the
+user’s Larch Plugin folder, then doing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s1">&#39;myplugin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will add a top-level group <code class="docutils literal notranslate"><span class="pre">mymod</span></code> with the <code class="docutils literal notranslate"><span class="pre">func</span></code> function, as described
+above.  For commonly used plugins, the <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> call can be added
+to your startup script (<cite>init.lar</cite> in the User’s Larch folder).  Since
+<code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code> is re-applied every time <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> is
+run, this provides a convenient way to develop and debug plugins.</p>
+<p>Many plugins are installed into the Larch system folder.  These are
+organized into sub-folders, and generally each plugin folder contains
+multiple files (modules) providing Larch functionality.</p>
+</div>
+<div class="section" id="customizing-plugins-and-folders-of-plugins">
+<h2>Customizing Plugins and  Folders of Plugins<a class="headerlink" href="#customizing-plugins-and-folders-of-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins are meant to be organized in folders.  The standard system plugins
+have several folders, each with several functions.  Generally every file
+(module) in the folder is treated as a plugin module, and if it has a
+function <code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code>, that will be run to place functions
+in the Larch interpreter.</p>
+<p>There are a few ways to control the plugins beyond the
+<code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code> function.  First, each module file can have a
+<a class="reference internal" href="#initializeLarchPlugin" title="initializeLarchPlugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">initializeLarchPlugin()</span></code></a> function that will be run immediately after
+the plugin is registered to initialize plugin functionality.</p>
+<dl class="py function">
+<dt id="initializeLarchPlugin">
+<code class="sig-name descname">initializeLarchPlugin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_larch</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#initializeLarchPlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>initializes a Larch plugin.  If defined for a plugin, this function is
+run immediately after installing all the symbols.</p>
+</dd></dl>
+
+<p id="index-0">Secondly, you may want to tell larch to look only at certain files within
+the plugin folder for plugins.  To do this, simply include a file named
+<cite>plugins.txt</cite> in the plugin folder that lists the files (one per line) to
+use for plugins.</p>
+<p id="index-1">Finally, a Larch plugin may depend on third party Python modules that may
+not be installed or available on all systems.  This should be considered
+acceptable – certain plugins may not work on all systems, but that
+shouldn’t cause problems for the other functionality.  To specify which
+Python modules (and which versions of the modules), a particular plugin
+depends on, you can include a file <cite>requirements.txt</cite> in the plugin folder
+which contains the module name and version strings, one per line.  A
+typical <cite>requirements.txt</cite> file might look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
+<span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">0.13</span>
+</pre></div>
+</div>
+<p>to specify which modules and minimal versions for the plugin files in that
+folder to work.  If these requirements are not satisfied, the modules will
+not be installed.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+   <li>[<a href="../index.html"> Larch</a>|</li>
+   <li><a href="../getting_started.html"> Getting Started</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">X-ray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href="">Plugins</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>

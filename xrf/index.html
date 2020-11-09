@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>14. X-ray Fluorescence Analysis &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>15. X-ray Fluorescence Analysis &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="14.1. XRF Data: MCA and ROI objects" href="mca.html" />
-    <link rel="prev" title="13. X-ray Databases" href="../xray/index.html" />
+    <link rel="next" title="15.1. XRF Data: MCA and ROI objects" href="mca.html" />
+    <link rel="prev" title="14. X-ray Databases" href="../xray/index.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="mca.html" title="14.1. XRF Data: MCA and ROI objects"
+          <a href="mca.html" title="15.1. XRF Data: MCA and ROI objects"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xray/index.html" title="13. X-ray Databases"
+          <a href="../xray/index.html" title="14. X-ray Databases"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -64,7 +65,8 @@
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="#">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></li> 
       </ul>
     </div>
 
@@ -72,10 +74,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../xray/index.html"
-                        title="previous chapter"><span class="section-number">13. </span>X-ray Databases</a></p>
+                        title="previous chapter"><span class="section-number">14. </span>X-ray Databases</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="mca.html"
-                        title="next chapter"><span class="section-number">14.1. </span>XRF Data: MCA and ROI objects</a></p>
+                        title="next chapter"><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -102,7 +104,7 @@
           <div class="body" role="main">
             
   <div class="section" id="x-ray-fluorescence-analysis">
-<h1><span class="section-number">14. </span>X-ray Fluorescence Analysis<a class="headerlink" href="#x-ray-fluorescence-analysis" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">15. </span>X-ray Fluorescence Analysis<a class="headerlink" href="#x-ray-fluorescence-analysis" title="Permalink to this headline">¶</a></h1>
 <p>X-ray Fluorescence (XRF) Data can be manipulated, viewed, and analyzed with
 Larch.  In this chapter, we’ll discuss how to transform data into Larch
 Groups of XRF data and how to use the Graphical visualization tool <cite>XRF
@@ -124,7 +126,7 @@ that holds energy at each point (or “channel”) in the array and a <cite>coun
 array that holds the counts in each channel.</p>
 <div class="figure align-center" id="id1">
 <span id="xrf-fig1"></span><a class="reference external image-reference" href="../_images/xrf_display1.png"><img alt="../_images/xrf_display1.png" src="../_images/xrf_display1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 14.1 </span><span class="caption-text">Typical X-ray fluorescence spectrum.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 15.1 </span><span class="caption-text">Typical X-ray fluorescence spectrum.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>The peaks in this specra correpsond to characteristic X-ray emission lines
 from the elements.  The presence of a particular peak in the spectrum
@@ -168,17 +170,18 @@ integrated intensities of selected peaks can be a good relative measure of
 elemental abundance.</p>
 <span class="target" id="module-_xrf"></span><div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="mca.html">14.1. XRF Data: MCA and ROI objects</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mca.html#creating-mca-objects">14.1.1. Creating MCA objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mca.html">15.1. XRF Data: MCA and ROI objects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mca.html#creating-mca-objects">15.1.1. Creating MCA objects</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xrfviewer.html">14.2. The XRF Viewer Application</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xrf_modelling.html">14.3. Modelling XRF Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrfviewer.html">15.2. The XRF Viewer Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf_modelling.html">15.3. Modelling XRF Data</a></li>
 </ul>
 </div>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -191,10 +194,10 @@ elemental abundance.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="mca.html" title="14.1. XRF Data: MCA and ROI objects"
+          <a href="mca.html" title="15.1. XRF Data: MCA and ROI objects"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xray/index.html" title="13. X-ray Databases"
+          <a href="../xray/index.html" title="14. X-ray Databases"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -202,12 +205,13 @@ elemental abundance.</p>
    <li><a href="../xray/index.html">X-ray Databases</a>|</li>
    <li><a href="#">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
- 
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.1. XAFS Functions: Overview and Naming Conventions &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.1. XAFS Functions: Overview and Naming Conventions &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
-    <link rel="prev" title="12. XAFS Analysis" href="index.html" />
+    <link rel="next" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment" href="preedge.html" />
+    <link rel="prev" title="13. XAFS Analysis" href="index.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="preedge.html" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="12. XAFS Analysis"
+          <a href="index.html" title="13. XAFS Analysis"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></li> 
       </ul>
     </div>
 
@@ -73,29 +75,29 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.1. XAFS Functions: Overview and Naming Conventions</a><ul>
-<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">12.1.1. Naming conventions for XAFS arrays</a><ul>
-<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">12.1.1.1. <cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code></a></li>
-<li><a class="reference internal" href="#first-argument-group-convention">12.1.1.2. First Argument Group convention</a></li>
+<li><a class="reference internal" href="#">13.1. XAFS Functions: Overview and Naming Conventions</a><ul>
+<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">13.1.1. Naming conventions for XAFS arrays</a><ul>
+<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">13.1.1.1. <cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code></a></li>
+<li><a class="reference internal" href="#first-argument-group-convention">13.1.1.2. First Argument Group convention</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#plotting-macros-for-xafs">12.1.2. Plotting Macros for XAFS</a><ul>
-<li><a class="reference internal" href="#plot-mu">12.1.2.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
-<li><a class="reference internal" href="#plot-bkg">12.1.2.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chik">12.1.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chir">12.1.2.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
-<li><a class="reference internal" href="#plot-chifit">12.1.2.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
-<li><a class="reference internal" href="#plot-path-k">12.1.2.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
-<li><a class="reference internal" href="#plot-path-r">12.1.2.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
-<li><a class="reference internal" href="#plot-paths-k">12.1.2.8. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
-<li><a class="reference internal" href="#plot-paths-r">12.1.2.9. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-baseline">12.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
-<li><a class="reference internal" href="#plot-prepeaks-fit">12.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
+<li><a class="reference internal" href="#plotting-macros-for-xafs">13.1.2. Plotting Macros for XAFS</a><ul>
+<li><a class="reference internal" href="#plot-mu">13.1.2.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a></li>
+<li><a class="reference internal" href="#plot-bkg">13.1.2.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chik">13.1.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chir">13.1.2.4. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a></li>
+<li><a class="reference internal" href="#plot-chifit">13.1.2.5. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-k">13.1.2.6. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-path-r">13.1.2.7. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-k">13.1.2.8. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code></a></li>
+<li><a class="reference internal" href="#plot-paths-r">13.1.2.9. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-baseline">13.1.2.10. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code></a></li>
+<li><a class="reference internal" href="#plot-prepeaks-fit">13.1.2.11. <code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#utility-functions-for-xafs">12.1.3. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#ktoe-and-etok">12.1.3.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
-<li><a class="reference internal" href="#estimate-noise">12.1.3.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
+<li><a class="reference internal" href="#utility-functions-for-xafs">13.1.3. Utility Functions for XAFS</a><ul>
+<li><a class="reference internal" href="#ktoe-and-etok">13.1.3.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a></li>
+<li><a class="reference internal" href="#estimate-noise">13.1.3.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -104,10 +106,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter"><span class="section-number">12. </span>XAFS Analysis</a></p>
+                        title="previous chapter"><span class="section-number">13. </span>XAFS Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="next chapter"><span class="section-number">12.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
+                        title="next chapter"><span class="section-number">13.2. </span>XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -134,7 +136,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-functions-overview-and-naming-conventions">
-<h1><span class="section-number">12.1. </span>XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#xafs-functions-overview-and-naming-conventions" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#xafs-functions-overview-and-naming-conventions" title="Permalink to this headline">¶</a></h1>
 <p>As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
@@ -142,7 +144,7 @@ out several output values, including both scalars and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.</p>
 <div class="section" id="naming-conventions-for-xafs-arrays">
-<h2><span class="section-number">12.1.1. </span>Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.1.1. </span>Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
 <p>In Larch, it is most natural to put related data into a Group.  This is
 often natural as data read in from a file is already held in a Group.  If a
 set of XAFS data is held within a Group, then the Group members named
@@ -309,7 +311,7 @@ the physical quantity described, and the name of function that will generate thi
 <p>The XAFS functions encourage following this convention, in that they are consistent in wanting
 <span class="math notranslate nohighlight">\(\chi(k)\)</span> to be represented by the two arrays <code class="docutils literal notranslate"><span class="pre">GROUP.k</span></code> and <code class="docutils literal notranslate"><span class="pre">GROUP.chi</span></code></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
-<span id="set-xafs-group"></span><h3><span class="section-number">12.1.1.1. </span><cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
+<span id="set-xafs-group"></span><h3><span class="section-number">13.1.1.1. </span><cite>group</cite> argument and <code class="docutils literal notranslate"><span class="pre">_sys.xafsGroup</span></code><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
 <p>The XAFS functions need to write outputs to some group – there are simply
 too many outputs to return and expect you to manage.  To better accomodate
 this, all functions take a <cite>group</cite> argument, which is used as the group
@@ -330,7 +332,7 @@ unless an instance of a Larch session is passed into the <cite>larch.xafs</cite>
 function using the <cite>_larch</cite> argument.</p>
 </div>
 <div class="section" id="first-argument-group-convention">
-<span id="first-argument-group"></span><h3><span class="section-number">12.1.1.2. </span>First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
+<span id="first-argument-group"></span><h3><span class="section-number">13.1.1.2. </span>First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
 <p>Since the XAFS functions need to write outputs to some group and will
 generally work with groups that contain data following <a class="reference internal" href="#xafsnames-table"><span class="std std-ref">Table of
 Conventional Names for an XAFS Group</span></a>, most of the XAFS
@@ -371,7 +373,7 @@ that interact in a coherent and predictable way on an XAFS dataset.</p>
 </div>
 </div>
 <div class="section" id="plotting-macros-for-xafs">
-<h2><span class="section-number">12.1.2. </span>Plotting Macros for XAFS<a class="headerlink" href="#plotting-macros-for-xafs" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.1.2. </span>Plotting Macros for XAFS<a class="headerlink" href="#plotting-macros-for-xafs" title="Permalink to this headline">¶</a></h2>
 <p>XAFS analysis often uses several different standard views of the data arrays
 for <span class="math notranslate nohighlight">\(\mu(E)\)</span>, <span class="math notranslate nohighlight">\(\chi(k)\)</span>, and <span class="math notranslate nohighlight">\(\chi(R)\)</span>.  Larch’s plotting
 capabilities provide wide flexibility in how plots can be done.  While that
@@ -385,10 +387,10 @@ assign consistent labels to the different curves shown.  The results are also
 easily extended, so that you can add curves, annotations, etc.  Many of the
 examples in the following sections in this chapter make use of these macros.</p>
 <div class="section" id="plot-mu">
-<h3><span class="section-number">12.1.2.1. </span><a class="reference internal" href="#plot_mu" title="plot_mu"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a><a class="headerlink" href="#plot-mu" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.1. </span><a class="reference internal" href="#plot_mu" title="plot_mu"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_mu()</span></code></a><a class="headerlink" href="#plot-mu" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_mu">
-<code class="sig-name descname">plot_mu</code><span class="sig-paren">(</span><em class="sig-param">dgroup</em>, <em class="sig-param">norm=False</em>, <em class="sig-param">deriv=False</em>, <em class="sig-param">show_pre=False</em>, <em class="sig-param">show_post=False</em>, <em class="sig-param">show_e0=False</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">label=None</em>, <em class="sig-param">new=True</em>, <em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mu" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_mu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dgroup</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_pre</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_post</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_e0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">emin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">emax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mu" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Plot <span class="math notranslate nohighlight">\(\mu(E)\)</span> for an XAFS data group in various forms</p>
 </div></blockquote>
@@ -416,10 +418,10 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-bkg">
-<h3><span class="section-number">12.1.2.2. </span><a class="reference internal" href="#plot_bkg" title="plot_bkg"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a><a class="headerlink" href="#plot-bkg" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.2. </span><a class="reference internal" href="#plot_bkg" title="plot_bkg"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_bkg()</span></code></a><a class="headerlink" href="#plot-bkg" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_bkg">
-<code class="sig-name descname">plot_bkg</code><span class="sig-paren">(</span><em class="sig-param">dgroup</em>, <em class="sig-param">norm=True</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">show_e0=False</em>, <em class="sig-param">label=None</em>, <em class="sig-param">new=True</em>, <em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_bkg" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_bkg</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dgroup</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">emin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">emax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_e0</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_bkg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> for XAFS data group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -441,10 +443,10 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-chik">
-<h3><span class="section-number">12.1.2.3. </span><a class="reference internal" href="#plot_chik" title="plot_chik"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a><a class="headerlink" href="#plot-chik" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.3. </span><a class="reference internal" href="#plot_chik" title="plot_chik"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chik()</span></code></a><a class="headerlink" href="#plot-chik" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_chik">
-<code class="sig-name descname">plot_chik</code><span class="sig-paren">(</span><em class="sig-param">dgroup</em>, <em class="sig-param">kweight=None</em>, <em class="sig-param">kmax=None</em>, <em class="sig-param">show_window=True</em>, <em class="sig-param">label=None</em>, <em class="sig-param">new=True</em>, <em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chik" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_chik</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dgroup</span></em>, <em class="sig-param"><span class="n">kweight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_window</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chik" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> for XAFS data group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -465,10 +467,10 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-chir">
-<h3><span class="section-number">12.1.2.4. </span><a class="reference internal" href="#plot_chir" title="plot_chir"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a><a class="headerlink" href="#plot-chir" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.4. </span><a class="reference internal" href="#plot_chir" title="plot_chir"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chir()</span></code></a><a class="headerlink" href="#plot-chir" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_chir">
-<code class="sig-name descname">plot_chir</code><span class="sig-paren">(</span><em class="sig-param">dgroup</em>, <em class="sig-param">show_mag=True</em>, <em class="sig-param">show_real=False</em>, <em class="sig-param">show_imag=False</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">label=True</em>, <em class="sig-param">new=True</em>, <em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chir" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_chir</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dgroup</span></em>, <em class="sig-param"><span class="n">show_mag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_real</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_imag</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">rmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for XAFS data group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -490,15 +492,15 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-chifit">
-<h3><span class="section-number">12.1.2.5. </span><a class="reference internal" href="#plot_chifit" title="plot_chifit"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a><a class="headerlink" href="#plot-chifit" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.5. </span><a class="reference internal" href="#plot_chifit" title="plot_chifit"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_chifit()</span></code></a><a class="headerlink" href="#plot-chifit" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_chifit">
-<code class="sig-name descname">plot_chifit</code><span class="sig-paren">(</span><em class="sig-param">dataset</em>, <em class="sig-param">kmin=0</em>, <em class="sig-param">kmax=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">show_mag=True</em>, <em class="sig-param">show_real=False</em>, <em class="sig-param">show_imag=False</em>, <em class="sig-param">new=True</em>, <em class="sig-param">win=1</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chifit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_chifit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em>, <em class="sig-param"><span class="n">kmin</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_mag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_real</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_imag</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_chifit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\chi(R)\)</span> for fit to feffit dataset</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> – feffit dataset, after running <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code>.</p></li>
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>.</p></li>
 <li><p><strong>kmin</strong> – min k to show [0]</p></li>
 <li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
 <li><p><strong>rmax</strong> – max R to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
@@ -514,15 +516,15 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-path-k">
-<h3><span class="section-number">12.1.2.6. </span><a class="reference internal" href="#plot_path_k" title="plot_path_k"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a><a class="headerlink" href="#plot-path-k" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.6. </span><a class="reference internal" href="#plot_path_k" title="plot_path_k"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_k()</span></code></a><a class="headerlink" href="#plot-path-k" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_path_k">
-<code class="sig-name descname">plot_path_k</code><span class="sig-paren">(</span><em class="sig-param">dataset</em>, <em class="sig-param">ipath</em>, <em class="sig-param">kmin=0</em>, <em class="sig-param">kmax=None</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">label=None</em>, <em class="sig-param">new=False</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_path_k" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_path_k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em>, <em class="sig-param"><span class="n">ipath</span></em>, <em class="sig-param"><span class="n">kmin</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_path_k" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot k-weighted <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a single Path of a feffit dataset</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> – feffit dataset, after running <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></p></li>
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
 <li><p><strong>ipath</strong> – index of path, starting count at 0 [0]</p></li>
 <li><p><strong>kmin</strong> – min k to show [0]</p></li>
 <li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
@@ -538,15 +540,15 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-path-r">
-<h3><span class="section-number">12.1.2.7. </span><a class="reference internal" href="#plot_path_r" title="plot_path_r"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a><a class="headerlink" href="#plot-path-r" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.7. </span><a class="reference internal" href="#plot_path_r" title="plot_path_r"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_path_r()</span></code></a><a class="headerlink" href="#plot-path-r" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="plot_path_r">
-<code class="sig-name descname">plot_path_r</code><span class="sig-paren">(</span><em class="sig-param">dataset</em>, <em class="sig-param">ipath</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">label=None</em>, <em class="sig-param">show_mag=True</em>, <em class="sig-param">show_real=False</em>, <em class="sig-param">show_imag=True</em>, <em class="sig-param">new=False</em>, <em class="sig-param">win=1</em>, <em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_path_r" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_path_r</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em>, <em class="sig-param"><span class="n">ipath</span></em>, <em class="sig-param"><span class="n">rmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">show_mag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">show_real</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_imag</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">new</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">win</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#plot_path_r" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for a single Path of a feffit dataset</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> – feffit dataset, after running <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></p></li>
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
 <li><p><strong>ipath</strong> – index of path, starting count at 0 [0]</p></li>
 <li><p><strong>kmax</strong> – max k to show [None, end of data]</p></li>
 <li><p><strong>offset</strong> – vertical offset to use for plot [0]</p></li>
@@ -564,15 +566,15 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-paths-k">
-<h3><span class="section-number">12.1.2.8. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code><a class="headerlink" href="#plot-paths-k" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.8. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_k()</span></code><a class="headerlink" href="#plot-paths-k" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt>
 <code class="sig-name descname">plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, new=True, win=1, **kws):</code></dt>
 <dd><p>Plot k-weighted <cite>chi(k)</cite> for model and all paths of a feffit dataset</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> – feffit dataset, after running <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></p></li>
+<li><p><strong>dataset</strong> – feffit dataset, after running <a class="reference internal" href="feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a></p></li>
 <li><p><strong>kmin</strong> – min k to show [0]</p></li>
 <li><p><strong>kmax</strong> – max k to show [<code class="docutils literal notranslate"><span class="pre">None</span></code>, end of data]</p></li>
 <li><p><strong>offset</strong> – vertical offset to use for paths for plot [-1]</p></li>
@@ -586,8 +588,8 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-paths-r">
-<h3><span class="section-number">12.1.2.9. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code><a class="headerlink" href="#plot-paths-r" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.9. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_paths_r()</span></code><a class="headerlink" href="#plot-paths-r" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt>
 <code class="sig-name descname">plot_paths_r(dataset, offset=-0.5, rmax=None, show_mag=True, show_real=False, show_imag=False, new=True, win=1, **kws):</code></dt>
 <dd><p>Plot <span class="math notranslate nohighlight">\(\chi(R)\)</span> for model and all paths of a feffit dataset</p>
@@ -610,8 +612,8 @@ examples in the following sections in this chapter make use of these macros.</p>
 
 </div>
 <div class="section" id="plot-prepeaks-baseline">
-<h3><span class="section-number">12.1.2.10. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code><a class="headerlink" href="#plot-prepeaks-baseline" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.10. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_baseline()</span></code><a class="headerlink" href="#plot-prepeaks-baseline" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt>
 <code class="sig-name descname">plot_prepeaks_baseline(dgroup, subtract_baseline=False, show_fitrange=True, show_peakrange=True, win=1, **kws):</code></dt>
 <dd><p>Plot pre-edge peaks and baseline fit, as from <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge_baseline()</span></code>
@@ -633,8 +635,8 @@ or XAS Viewer GUI</p>
 
 </div>
 <div class="section" id="plot-prepeaks-fit">
-<h3><span class="section-number">12.1.2.11. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code><a class="headerlink" href="#plot-prepeaks-fit" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.2.11. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prepeaks_fit()</span></code><a class="headerlink" href="#plot-prepeaks-fit" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt>
 <code class="sig-name descname">plot_prepeaks_fit(dgroup, show_init=False, subtract_baseline=False, show_residual=False, win=1, **kws):</code></dt>
 <dd><p>Plot pre-edge peaks and fit, as XAS Viewer GUI</p>
@@ -658,20 +660,20 @@ scripts written (and possibly altered) by it.</p>
 </div>
 </div>
 <div class="section" id="utility-functions-for-xafs">
-<h2><span class="section-number">12.1.3. </span>Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.1.3. </span>Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
 <p>Listed here are some general purpose functions for XAFS.</p>
 <div class="section" id="ktoe-and-etok">
-<h3><span class="section-number">12.1.3.1. </span><a class="reference internal" href="#ktoe" title="ktoe"><code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code></a> and <a class="reference internal" href="#etok" title="etok"><code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a><a class="headerlink" href="#ktoe-and-etok" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.3.1. </span><a class="reference internal" href="#ktoe" title="ktoe"><code class="xref py py-func docutils literal notranslate"><span class="pre">ktoe()</span></code></a> and <a class="reference internal" href="#etok" title="etok"><code class="xref py py-func docutils literal notranslate"><span class="pre">etok()</span></code></a><a class="headerlink" href="#ktoe-and-etok" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="etok">
-<code class="sig-name descname">etok</code><span class="sig-paren">(</span><em class="sig-param">energies</em><span class="sig-paren">)</span><a class="headerlink" href="#etok" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">etok</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energies</span></em><span class="sig-paren">)</span><a class="headerlink" href="#etok" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert photo-electron energy in eV to wavenumber in <span class="math notranslate nohighlight">\(\AA^{-1}\)</span>.
 energies can be a single number or array of numbers.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="ktoe">
-<code class="sig-name descname">ktoe</code><span class="sig-paren">(</span><em class="sig-param">wavenumbers</em><span class="sig-paren">)</span><a class="headerlink" href="#ktoe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">ktoe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wavenumbers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ktoe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert photo-electron wavenumber in <span class="math notranslate nohighlight">\(\AA^{-1}\)</span> ot energy in eV.
 wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
@@ -712,8 +714,8 @@ wavenumber can be a single number or array of numbers.</p>
 </div>
 </div>
 <div class="section" id="estimate-noise">
-<h3><span class="section-number">12.1.3.2. </span><a class="reference internal" href="#estimate_noise" title="estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a><a class="headerlink" href="#estimate-noise" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<h3><span class="section-number">13.1.3.2. </span><a class="reference internal" href="#estimate_noise" title="estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a><a class="headerlink" href="#estimate-noise" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="estimate_noise">
 <code class="sig-name descname">estimate_noise</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">rmin=15</em>, <em class="sig-param">rmax=30</em>, <em class="sig-param">....</em><span class="sig-paren">)</span><a class="headerlink" href="#estimate_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically estimate the noise level in a <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum.</p>
@@ -789,6 +791,7 @@ small, the estimate may not be that bad.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -801,10 +804,10 @@ small, the estimate may not be that bad.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="12.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
+          <a href="preedge.html" title="13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="12. XAFS Analysis"
+          <a href="index.html" title="13. XAFS Analysis"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -813,12 +816,13 @@ small, the estimate may not be that bad.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

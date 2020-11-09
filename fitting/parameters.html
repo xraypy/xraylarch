@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>11.2. Parameters &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>12.2. Parameters &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="11.3. minimize() and objective Functions" href="minimize.html" />
-    <link rel="prev" title="11.1. Fitting Overview" href="overview.html" />
+    <link rel="next" title="12.3. minimize() and objective Functions" href="minimize.html" />
+    <link rel="prev" title="12.1. Fitting Overview" href="overview.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="minimize.html" title="11.3. minimize() and objective Functions"
+          <a href="minimize.html" title="12.3. minimize() and objective Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="overview.html" title="11.1. Fitting Overview"
+          <a href="overview.html" title="12.1. Fitting Overview"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.2. </span>Parameters</a></li> 
       </ul>
     </div>
 
@@ -73,22 +75,22 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">11.2. Parameters</a><ul>
-<li><a class="reference internal" href="#setting-bounds">11.2.1. setting bounds</a></li>
-<li><a class="reference internal" href="#using-algebraic-constraints">11.2.2. using algebraic constraints</a></li>
-<li><a class="reference internal" href="#param-group-creating-a-parameter-group-for-fitting-constraints">11.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
-<li><a class="reference internal" href="#fiteval-and-details-about-algebraic-constraints">11.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
-<li><a class="reference internal" href="#working-with-uncertainties">11.2.5. working with uncertainties</a></li>
+<li><a class="reference internal" href="#">12.2. Parameters</a><ul>
+<li><a class="reference internal" href="#setting-bounds">12.2.1. setting bounds</a></li>
+<li><a class="reference internal" href="#using-algebraic-constraints">12.2.2. using algebraic constraints</a></li>
+<li><a class="reference internal" href="#param-group-creating-a-parameter-group-for-fitting-constraints">12.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
+<li><a class="reference internal" href="#fiteval-and-details-about-algebraic-constraints">12.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
+<li><a class="reference internal" href="#working-with-uncertainties">12.2.5. working with uncertainties</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="overview.html"
-                        title="previous chapter"><span class="section-number">11.1. </span>Fitting Overview</a></p>
+                        title="previous chapter"><span class="section-number">12.1. </span>Fitting Overview</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="next chapter"><span class="section-number">11.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></p>
+                        title="next chapter"><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -115,7 +117,7 @@
           <div class="body" role="main">
             
   <div class="section" id="parameters">
-<span id="fitting-parameters-sec"></span><h1><span class="section-number">11.2. </span>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
+<span id="fitting-parameters-sec"></span><h1><span class="section-number">12.2. </span>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <p>The parameters used in the fitting model are all meant to be continuous
 variables – floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to
@@ -144,9 +146,9 @@ as its first argument, and a few optional keyword arguments to control
 whether the value is to be varied in a fit or kept fixed, to set optional
 upper and lower bounds for the Parameter value, or to set an algebraic
 expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="param">
-<code class="sig-name descname">param</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">vary=False</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">vary</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">expr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a Parameter, setting some of it principle attributes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -230,9 +232,9 @@ or give additional information about its value:</p>
 </tbody>
 </table>
 </div></blockquote>
-<dl class="function">
+<dl class="py function">
 <dt id="guess">
-<code class="sig-name descname">guess</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">min=None</em>, <em class="sig-param">max=None</em>, <em class="sig-param">expr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">expr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a variable Parameter, setting some of it principle attributes.
 The arguments here are identical to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a>, except that
 <code class="docutils literal notranslate"><span class="pre">vary=True</span></code> is set.</p>
@@ -257,7 +259,7 @@ The arguments here are identical to <a class="reference internal" href="#param" 
 </pre></div>
 </div>
 <div class="section" id="setting-bounds">
-<h2><span class="section-number">11.2.1. </span>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.2.1. </span>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
 <p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
 <em>max</em> arguments to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> or by setting the <em>min</em> and <em>max</em>
 attribute of an existing Parameter.  To remove a bound, set the
@@ -270,7 +272,7 @@ that a best-fit value at a boundary will prevent a reasonable estimate of
 the uncertainty in any of the other Parameters in the fit.</p>
 </div>
 <div class="section" id="using-algebraic-constraints">
-<span id="param-constraints-label"></span><h2><span class="section-number">11.2.2. </span>using algebraic constraints<a class="headerlink" href="#using-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<span id="param-constraints-label"></span><h2><span class="section-number">12.2.2. </span>using algebraic constraints<a class="headerlink" href="#using-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to be able to build a fitting model in which Parameters
 in the model are related to one another.  As a simple example, it might be
 useful to fit a spectrum with a sum of two lineshapes that have different
@@ -317,7 +319,7 @@ and array methods. Some additional details are discussed below
 </div>
 </div>
 <div class="section" id="param-group-creating-a-parameter-group-for-fitting-constraints">
-<span id="param-param-group-label"></span><h2><span class="section-number">11.2.3. </span><a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a>: creating a Parameter Group for fitting constraints<a class="headerlink" href="#param-group-creating-a-parameter-group-for-fitting-constraints" title="Permalink to this headline">¶</a></h2>
+<span id="param-param-group-label"></span><h2><span class="section-number">12.2.3. </span><a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a>: creating a Parameter Group for fitting constraints<a class="headerlink" href="#param-group-creating-a-parameter-group-for-fitting-constraints" title="Permalink to this headline">¶</a></h2>
 <p>While the examples of constraint expressions above will work during a fit,
 the constraint values will not be updated immediately in the main Larch
 interpreter.  That is, doing:</p>
@@ -345,9 +347,9 @@ parameters:</p>
 larch&gt; print(params.amp1, params.amp2)
 (&lt;Parameter ‘amp1’, 0.2, bounds=[0:1]&gt;, &lt;Parameter ‘amp2’, 0.8, bounds=[-inf:inf], expr=’1-amp1’&gt;)</p>
 </div></blockquote>
-<dl class="function">
+<dl class="py function">
 <dt id="param_group">
-<code class="sig-name descname">param_group</code><span class="sig-paren">(</span><em class="sig-param">**kws</em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">param_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return a <em>Parameter Group</em> that uses <cite>_sys.fiteval</cite> for
 constraint expression.</p>
 <dl class="field-list simple">
@@ -366,7 +368,7 @@ parameters will work with fitting, but a <a class="reference internal" href="#pa
 for many cases.</p>
 </div>
 <div class="section" id="fiteval-and-details-about-algebraic-constraints">
-<span id="fitting-fiteval-sec"></span><h2><span class="section-number">11.2.4. </span><cite>fiteval</cite> and details about algebraic constraints<a class="headerlink" href="#fiteval-and-details-about-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<span id="fitting-fiteval-sec"></span><h2><span class="section-number">12.2.4. </span><cite>fiteval</cite> and details about algebraic constraints<a class="headerlink" href="#fiteval-and-details-about-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
 <p>Beginning with version 0.9.34, Larch uses the <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> python library to do
 all the fitting.  This project is related to and very similar to Larch
 itself, but is maintained and developed separately.  Lmfit supports
@@ -401,10 +403,10 @@ is, following the above example, one can see the current values for
 </pre></div>
 </div>
 <p>Because <cite>_sys.fiteval</cite> is used for all fits with <a class="reference internal" href="minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> (and for
-XAFS, with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code>), you may find yourself wanting to clear or reset
+XAFS, with <a class="reference internal" href="../xafs/feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>), you may find yourself wanting to clear or reset
 the fitting symbol table for a new fit.  This should not be necessary, but
 it is available with the function <a class="reference internal" href="#reset_fiteval" title="reset_fiteval"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_fiteval()</span></code></a>:</p>
-<dl class="function">
+<dl class="py function">
 <dt id="reset_fiteval">
 <code class="sig-name descname">reset_fiteval</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reset_fiteval" title="Permalink to this definition">¶</a></dt>
 <dd><p>clear and reset <cite>_sys.fiteval</cite> for a new fit.   This function takes no
@@ -413,7 +415,7 @@ arguments.</p>
 
 </div>
 <div class="section" id="working-with-uncertainties">
-<span id="fitting-uncertainties-sec"></span><h2><span class="section-number">11.2.5. </span>working with uncertainties<a class="headerlink" href="#working-with-uncertainties" title="Permalink to this headline">¶</a></h2>
+<span id="fitting-uncertainties-sec"></span><h2><span class="section-number">12.2.5. </span>working with uncertainties<a class="headerlink" href="#working-with-uncertainties" title="Permalink to this headline">¶</a></h2>
 <p>After a fit, each Parameter that was actually varied in the fit should be
 assigned information about the uncertainty in the fitted value as well as
 its best fit value.  On rare occasions (such as when a best-fit value is
@@ -439,6 +441,7 @@ to the result (ignoring correlations).</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -451,10 +454,10 @@ to the result (ignoring correlations).</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="minimize.html" title="11.3. minimize() and objective Functions"
+          <a href="minimize.html" title="12.3. minimize() and objective Functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="overview.html" title="11.1. Fitting Overview"
+          <a href="overview.html" title="12.1. Fitting Overview"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -463,12 +466,13 @@ to the result (ignoring correlations).</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.2. </span>Parameters</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.7. XAFS: Reading and using Feff Paths &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.7. XAFS: Reading and using Feff Paths &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.8. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
-    <link rel="prev" title="12.6. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
+    <link rel="next" title="13.8. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
+    <link rel="prev" title="13.6. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="feffit.html" title="12.8. XAFS: Fitting XAFS to Feff Paths"
+          <a href="feffit.html" title="13.8. XAFS: Fitting XAFS to Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="wavelets.html" title="12.6. XAFS: Wavelet Transforms for XAFS"
+          <a href="wavelets.html" title="13.6. XAFS: Wavelet Transforms for XAFS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.7. </span>XAFS: Reading and using Feff Paths</a></li> 
       </ul>
     </div>
 
@@ -73,31 +75,31 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.7. XAFS: Reading and using Feff Paths</a><ul>
-<li><a class="reference internal" href="#running-feff">12.7.1. Running Feff</a><ul>
-<li><a class="reference internal" href="#running-feff6l-with-feff6l">12.7.1.1. Running Feff6l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a></li>
-<li><a class="reference internal" href="#running-feff8l-with-feff8l">12.7.1.2. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a></li>
-<li><a class="reference internal" href="#running-feff8l-with-feffrunner">12.7.1.3. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffrunner()</span></code></a></li>
+<li><a class="reference internal" href="#">13.7. XAFS: Reading and using Feff Paths</a><ul>
+<li><a class="reference internal" href="#running-feff">13.7.1. Running Feff</a><ul>
+<li><a class="reference internal" href="#running-feff6l-with-feff6l">13.7.1.1. Running Feff6l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a></li>
+<li><a class="reference internal" href="#running-feff8l-with-feff8l">13.7.1.2. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a></li>
+<li><a class="reference internal" href="#running-feff8l-with-feffrunner">13.7.1.3. Running Feff8l with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffrunner()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#feffpath-and-feffpath-groups">12.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">12.7.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
-<li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">12.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
-<li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">12.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li><a class="reference internal" href="#models-for-calculating-sigma-2">12.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
-<li><a class="reference internal" href="#example-reading-a-feff-file">12.7.7. Example:  Reading a Feff file</a></li>
-<li><a class="reference internal" href="#example-adding-feff-files">12.7.8. Example:  Adding Feff files</a></li>
-<li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">12.7.9. Example: Using Path Parameters when adding Feff files</a></li>
+<li><a class="reference internal" href="#feffpath-and-feffpath-groups">13.7.2. <code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code> and FeffPath Groups</a></li>
+<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">13.7.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath</a></li>
+<li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">13.7.4. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
+<li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">13.7.5. The EXAFS Equation using Feff and FeffPath Groups</a></li>
+<li><a class="reference internal" href="#models-for-calculating-sigma-2">13.7.6. Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span></a></li>
+<li><a class="reference internal" href="#example-reading-a-feff-file">13.7.7. Example:  Reading a Feff file</a></li>
+<li><a class="reference internal" href="#example-adding-feff-files">13.7.8. Example:  Adding Feff files</a></li>
+<li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">13.7.9. Example: Using Path Parameters when adding Feff files</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="wavelets.html"
-                        title="previous chapter"><span class="section-number">12.6. </span>XAFS: Wavelet Transforms for XAFS</a></p>
+                        title="previous chapter"><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="feffit.html"
-                        title="next chapter"><span class="section-number">12.8. </span>XAFS: Fitting XAFS to Feff Paths</a></p>
+                        title="next chapter"><span class="section-number">13.8. </span>XAFS: Fitting XAFS to Feff Paths</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -124,12 +126,12 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-reading-and-using-feff-paths">
-<span id="xafs-feffpaths-sec"></span><h1><span class="section-number">12.7. </span>XAFS: Reading and using Feff Paths<a class="headerlink" href="#xafs-reading-and-using-feff-paths" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-feffpaths-sec"></span><h1><span class="section-number">13.7. </span>XAFS: Reading and using Feff Paths<a class="headerlink" href="#xafs-reading-and-using-feff-paths" title="Permalink to this headline">¶</a></h1>
 <p>For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using Feff.  Being able to run Feff and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of Feff (<a class="bibtex reference internal" href="../biblio.html#feff6-rehr" id="id1">[Rehr et al. (1991)]</a>,
-<a class="bibtex reference internal" href="../biblio.html#feff6-siz" id="id2">[Zabinsky et al. (1995)]</a>, <a class="bibtex reference internal" href="../biblio.html#rehralbers-rmp" id="id3">[Rehr and Albers (2000)]</a>) is beyond the scope of this
+spectra.  While a complete description of Feff (<span class="bibtex" id="id1">[feff6_Rehr]</span>,
+<span class="bibtex" id="id2">[feff6_siz]</span>, <span class="bibtex" id="id3">[RehrAlbers_RMP]</span>) is beyond the scope of this
 documentation, here we describe how to read the results from Feff into
 Larch.</p>
 <p>The funcionality of Feff within Larch has been evolving to better
@@ -146,17 +148,17 @@ you’re interested in exploring or helping with this, contact us!</p>
 <p>The main interface for this is the <a class="reference internal" href="#feffpath" title="feffpath"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code></a> function that
 reads <em>feffNNNN.dat</em> file and creates a FeffPath Group.</p>
 <div class="section" id="running-feff">
-<h2><span class="section-number">12.7.1. </span>Running Feff<a class="headerlink" href="#running-feff" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.7.1. </span>Running Feff<a class="headerlink" href="#running-feff" title="Permalink to this headline">¶</a></h2>
 <p>Larch comes with external programs for Feff6l and Feff8l, and provides two
 simple functions for running the external Feff6l andFeff8l programs from
 within Larch: <a class="reference internal" href="#feff6l" title="feff6l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a> and <a class="reference internal" href="#feff8l" title="feff8l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a>.  Note that the input files
 for these two programs are similar but have important differences in syntax
 such that the input for one cannot be used for running the other.</p>
 <div class="section" id="running-feff6l-with-feff6l">
-<span id="feff6l-app"></span><h3><span class="section-number">12.7.1.1. </span>Running Feff6l with <a class="reference internal" href="#feff6l" title="feff6l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a><a class="headerlink" href="#running-feff6l-with-feff6l" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<span id="feff6l-app"></span><h3><span class="section-number">13.7.1.1. </span>Running Feff6l with <a class="reference internal" href="#feff6l" title="feff6l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff6l()</span></code></a><a class="headerlink" href="#running-feff6l-with-feff6l" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="feff6l">
-<code class="sig-name descname">feff6l</code><span class="sig-paren">(</span><em class="sig-param">folder='.'</em>, <em class="sig-param">feffinp='feff.inp'</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#feff6l" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">feff6l</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folder</span><span class="o">=</span><span class="default_value">'.'</span></em>, <em class="sig-param"><span class="n">feffinp</span><span class="o">=</span><span class="default_value">'feff.inp'</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feff6l" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff6 in the supplied folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -176,10 +178,10 @@ such that the input for one cannot be used for running the other.</p>
 containing the data for each scattering path.</p>
 </div>
 <div class="section" id="running-feff8l-with-feff8l">
-<span id="feff8l-app"></span><h3><span class="section-number">12.7.1.2. </span>Running Feff8l with <a class="reference internal" href="#feff8l" title="feff8l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a><a class="headerlink" href="#running-feff8l-with-feff8l" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<span id="feff8l-app"></span><h3><span class="section-number">13.7.1.2. </span>Running Feff8l with <a class="reference internal" href="#feff8l" title="feff8l"><code class="xref py py-func docutils literal notranslate"><span class="pre">feff8l()</span></code></a><a class="headerlink" href="#running-feff8l-with-feff8l" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
 <dt id="feff8l">
-<code class="sig-name descname">feff8l</code><span class="sig-paren">(</span><em class="sig-param">folder='.'</em>, <em class="sig-param">feffinp='feff.inp'</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#feff8l" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">feff8l</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">folder</span><span class="o">=</span><span class="default_value">'.'</span></em>, <em class="sig-param"><span class="n">feffinp</span><span class="o">=</span><span class="default_value">'feff.inp'</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feff8l" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff8L in the supplied folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -199,15 +201,15 @@ containing the data for each scattering path.</p>
 containing the data for each scattering path.</p>
 </div>
 <div class="section" id="running-feff8l-with-feffrunner">
-<h3><span class="section-number">12.7.1.3. </span>Running Feff8l with <a class="reference internal" href="#feffrunner" title="feffrunner"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffrunner()</span></code></a><a class="headerlink" href="#running-feff8l-with-feffrunner" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">13.7.1.3. </span>Running Feff8l with <a class="reference internal" href="#feffrunner" title="feffrunner"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffrunner()</span></code></a><a class="headerlink" href="#running-feff8l-with-feffrunner" title="Permalink to this headline">¶</a></h3>
 <p>The incorporation of Feff8l in Larch is still in development, but is
 ntended to make the executables from the <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a> package easy to use
 and a seamless drop-in replacement for Feff6l. The FeffRunner tool is quite
 flexible and can be used to run specific modules from <a class="reference external" href="https://github.com/xraypy/feff85exafs">feff85exafs</a> or
 other versions of Feff that you might have on your computer.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="feffrunner">
-<code class="sig-name descname">feffrunner</code><span class="sig-paren">(</span><em class="sig-param">feffinp=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">repo=None</em><span class="sig-paren">)</span><a class="headerlink" href="#feffrunner" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">feffrunner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feffinp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">repo</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feffrunner" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a FeffRunner Group from a <em>feff.inp</em> file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -223,9 +225,9 @@ other versions of Feff that you might have on your computer.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="feffrunner.run">
-<code class="sig-prename descclassname">feffrunner.</code><code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">exe</em><span class="sig-paren">)</span><a class="headerlink" href="#feffrunner.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">feffrunner.</code><code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exe</span></em><span class="sig-paren">)</span><a class="headerlink" href="#feffrunner.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>run Feff for FeffRunner Group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -302,7 +304,7 @@ logic for executable resolution described above worked as intended.</p>
 </div>
 </div>
 <div class="section" id="feffpath-and-feffpath-groups">
-<h2><span class="section-number">12.7.2. </span><a class="reference internal" href="#feffpath" title="feffpath"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code></a> and FeffPath Groups<a class="headerlink" href="#feffpath-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.7.2. </span><a class="reference internal" href="#feffpath" title="feffpath"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffpath()</span></code></a> and FeffPath Groups<a class="headerlink" href="#feffpath-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
 <p>The outputs from Feff for each path are complicated enough to need a
 structured organization of data.  This is accomplished by providing a
 special kind of a Larch Group – a FeffPath Group which holds all the
@@ -426,7 +428,7 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 </tbody>
 </table>
 </div></blockquote>
-<dl class="function">
+<dl class="py function">
 <dt id="feffpath">
 <code class="sig-name descname">feffpath</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">label=None</em>, <em class="sig-param">s02=None</em>, <em class="sig-param">degen=None</em>, <em class="sig-param">e0=None</em>, <em class="sig-param">deltar=None</em>, <em class="sig-param">sigma2=None</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#feffpath" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a FeffPath Group from a <em>feffNNNN.dat</em> file.</p>
@@ -455,10 +457,10 @@ section, <a class="reference internal" href="#xafs-feffdat-sec"><span class="std
 numerical value or a Parameter (as created by <code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code>) can be given.</p>
 </div>
 <div class="section" id="path2chi-and-ff2chi-generating-chi-k-for-a-feffpath">
-<h2><span class="section-number">12.7.3. </span><a class="reference internal" href="#path2chi" title="path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#ff2chi" title="ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<h2><span class="section-number">13.7.3. </span><a class="reference internal" href="#path2chi" title="path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> and <a class="reference internal" href="#ff2chi" title="ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>: Generating <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-chi-k-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
 <dt id="path2chi">
-<code class="sig-name descname">path2chi</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">paramgroup=None</em>, <em class="sig-param">kmax=None</em>, <em class="sig-param">kstep=0.05</em>, <em class="sig-param">k=None</em><span class="sig-paren">)</span><a class="headerlink" href="#path2chi" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">path2chi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">paramgroup</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kstep</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#path2chi" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a single Feff Path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -489,9 +491,9 @@ detailed definitions of the quantities.</p>
 used for evaluating parameter expressions (ie, constraints using named
 variables).  This is similar to the use for <code class="xref py py-func docutils literal notranslate"><span class="pre">_math.minimize()</span></code> as discussed
 in <a class="reference internal" href="../fitting/parameters.html#fitting-parameters-sec"><span class="std std-ref">Parameters</span></a>.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="ff2chi">
-<code class="sig-name descname">ff2chi</code><span class="sig-paren">(</span><em class="sig-param">pathlist</em>, <em class="sig-param">paramgroup=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">k=None</em>, <em class="sig-param">kmax=None</em>, <em class="sig-param">kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#ff2chi" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">ff2chi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pathlist</span></em>, <em class="sig-param"><span class="n">paramgroup</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kstep</span><span class="o">=</span><span class="default_value">0.05</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ff2chi" title="Permalink to this definition">¶</a></dt>
 <dd><p>sum the <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a list of FeffPath Groups.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -515,7 +517,7 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-parame
 sum of <span class="math notranslate nohighlight">\(\chi\)</span> for all the paths) to <code class="docutils literal notranslate"><span class="pre">group.k</span></code> and <code class="docutils literal notranslate"><span class="pre">group.chi</span></code>.</p>
 </div>
 <div class="section" id="the-feffdat-group-full-details-of-the-feff-dat-file">
-<span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2><span class="section-number">12.7.4. </span>The _feffdat Group: Full Details of the Feff.Dat File<a class="headerlink" href="#the-feffdat-group-full-details-of-the-feff-dat-file" title="Permalink to this headline">¶</a></h2>
+<span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2><span class="section-number">13.7.4. </span>The _feffdat Group: Full Details of the Feff.Dat File<a class="headerlink" href="#the-feffdat-group-full-details-of-the-feff-dat-file" title="Permalink to this headline">¶</a></h2>
 <p>Each FeffPath Group will have a <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> sub-group which contains the
 data from the underlying <em>feffNNNN.dat</em> file for the results of the Feff
 calculation.  Many of the components of this group are used for the
@@ -619,7 +621,7 @@ Thus <code class="docutils literal notranslate"><span class="pre">amp</span></co
 and the sum is used as <span class="math notranslate nohighlight">\(\delta(k)\)</span>.</p>
 </div>
 <div class="section" id="the-exafs-equation-using-feff-and-feffpath-groups">
-<span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2><span class="section-number">12.7.5. </span>The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
+<span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2><span class="section-number">13.7.5. </span>The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
 <p>Now we are ready to write down the full EXAFS equation used for a Feff Path
 using the terms defined above in the
 <a class="reference internal" href="#xafs-pathparams-table"><span class="std std-ref">Table of Feff Path Parameters</span></a>
@@ -680,12 +682,12 @@ disordered system can be modeled by applying a more complex weighting to a
 set of paths – that is, a histogram of paths.</p>
 <span class="target" id="index-3"></span></div>
 <div class="section" id="models-for-calculating-sigma-2">
-<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2><span class="section-number">12.7.6. </span>Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating-sigma-2" title="Permalink to this headline">¶</a></h2>
+<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2><span class="section-number">13.7.6. </span>Models for Calculating <span class="math notranslate nohighlight">\(\sigma^2\)</span><a class="headerlink" href="#models-for-calculating-sigma-2" title="Permalink to this headline">¶</a></h2>
 <p>The value for <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff (see <a class="bibtex reference internal" href="../biblio.html#feff6-rehr" id="id5">[Rehr et al. (1991)]</a>,
-<a class="bibtex reference internal" href="../biblio.html#sevillano" id="id6">[Sevillano, Meuth, and Rehr (1979)]</a> and <a class="bibtex reference internal" href="../biblio.html#rehralbers-rmp" id="id7">[Rehr and Albers (2000)]</a>) Larch provides two functions
+up a full EXAFS spectra.  Borrowing from Feff (see <span class="bibtex" id="id5">[feff6_Rehr]</span>,
+<span class="bibtex" id="id6">[Sevillano]</span> and <span class="bibtex" id="id7">[RehrAlbers_RMP]</span>) Larch provides two functions
 that use simple models to calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> for a Path.  Both
 functions, <a class="reference internal" href="#sigma2_eins" title="sigma2_eins"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_eins()</span></code></a> and <a class="reference internal" href="#sigma2_debye" title="sigma2_debye"><code class="xref py py-func docutils literal notranslate"><span class="pre">sigma2_debye()</span></code></a> take arguments of
 sample temperature, a characteristic temperature, and a FeffPath, and
@@ -697,9 +699,9 @@ organic ligands.</p>
 <dt>..versionchanged:: 0.9.34</dt><dd><p>removed <cite>_sys.paramGroup</cite>, now using <cite>fiteval</cite></p>
 </dd>
 </dl>
-<dl class="function">
+<dl class="py function">
 <dt id="sigma2_eins">
-<code class="sig-name descname">sigma2_eins</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="headerlink" href="#sigma2_eins" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sigma2_eins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">theta</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sigma2_eins" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Einstein model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -714,11 +716,11 @@ organic ligands.</p>
 
 <p>The <cite>path</cite> argument can be left <code class="docutils literal notranslate"><span class="pre">None</span></code>.  This will try to use the
 ‘’current FeffData group”, (<cite>_sys.fiteval.symtable._feffdat</cite>), which is
-updated during fits with <code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code> and when summing paths with
+updated during fits with <a class="reference internal" href="feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a> and when summing paths with
 <a class="reference internal" href="#ff2chi" title="ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a>.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="sigma2_debye">
-<code class="sig-name descname">sigma2_debye</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">theta</em>, <em class="sig-param">path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#sigma2_debye" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sigma2_debye</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em>, <em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#sigma2_debye" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate <span class="math notranslate nohighlight">\(\sigma^2\)</span> in the Debye model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -735,7 +737,7 @@ updated during fits with <code class="xref py py-func docutils literal notransla
 ‘’current FeffData group”, (<cite>_sys.fiteval.symtable._feffdat</cite>), will be used.</p>
 </div>
 <div class="section" id="example-reading-a-feff-file">
-<h2><span class="section-number">12.7.7. </span>Example:  Reading a Feff file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.7.7. </span>Example:  Reading a Feff file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
 <p>Here we simply read a <em>feffNNNN.dat</em> file and display its components, and
 calculate <span class="math notranslate nohighlight">\(\chi\)</span> for this path with two different values of
 <span class="math notranslate nohighlight">\(\sigma^2\)</span>.</p>
@@ -786,7 +788,7 @@ calculate <span class="math notranslate nohighlight">\(\chi\)</span> for this pa
 <a class="reference internal" href="#path2chi" title="path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> is called.</p>
 <div class="figure align-center" id="id8">
 <span id="xafs-fig12"></span><a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.7.7.1 </span><span class="caption-text">Calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a Feff Path.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.7.7.1 </span><span class="caption-text">Calculations of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a Feff Path.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 <p>We can also use the data from the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -812,14 +814,14 @@ like this:</p>
 <p>which will produce a plot like this:</p>
 <div class="figure align-center" id="id9">
 <span id="xafs-fig13"></span><a class="reference external image-reference" href="../_images/feffdat_example2.png"><img alt="../_images/feffdat_example2.png" src="../_images/feffdat_example2.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.7.7.2 </span><span class="caption-text">Components of <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for a Feff Path.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.7.7.2 </span><span class="caption-text">Components of <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group for a Feff Path.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
 </div>
 <p>You can see here that the arrays in the <code class="docutils literal notranslate"><span class="pre">_feffdat</span></code> group are sampled at
 varying <span class="math notranslate nohighlight">\(k\)</span> spacing, and that this spacing becomes fairly large at
 high <span class="math notranslate nohighlight">\(k\)</span>.</p>
 </div>
 <div class="section" id="example-adding-feff-files">
-<h2><span class="section-number">12.7.8. </span>Example:  Adding Feff files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.7.8. </span>Example:  Adding Feff files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
 <p>Now, we add some Feff files together, applying some path parameters.  The
 example is actually very similar to the one above except that we use
 <a class="reference internal" href="#ff2chi" title="ff2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">ff2chi()</span></code></a> to create a <span class="math notranslate nohighlight">\(\chi(k)\)</span> from a list of paths, and put
@@ -870,11 +872,11 @@ for each path to be summed, so that the <code class="docutils literal notranslat
 group is up to date.</p>
 <div class="figure align-center" id="id10">
 <span id="xafs-fig14"></span><a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.7.8.1 </span><span class="caption-text">Results for sum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for list of paths.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.7.8.1 </span><span class="caption-text">Results for sum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for list of paths.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="example-using-path-parameters-when-adding-feff-files">
-<h2><span class="section-number">12.7.9. </span>Example: Using Path Parameters when adding Feff files<a class="headerlink" href="#example-using-path-parameters-when-adding-feff-files" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.7.9. </span>Example: Using Path Parameters when adding Feff files<a class="headerlink" href="#example-using-path-parameters-when-adding-feff-files" title="Permalink to this headline">¶</a></h2>
 <p>Using <a class="reference internal" href="../fitting/parameters.html#fitting-parameters-sec"><span class="std std-ref">Parameters</span></a> for modelling data is a
 key feature of Larch, and if you are modelling XAFS data with Feff, you
 will want to parameterize Path Parameters, apply them to a set of Paths,
@@ -948,7 +950,7 @@ on the paths for which we want to recalculate <span class="math notranslate nohi
 specify the <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> to <a class="reference internal" href="#path2chi" title="path2chi"><code class="xref py py-func docutils literal notranslate"><span class="pre">path2chi()</span></code></a> here.</p>
 <div class="figure align-center" id="id11">
 <span id="xafs-fig15"></span><a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 12.7.9.1 </span><span class="caption-text">Results for making 2 different sums of paths using parameterized Path
+<p class="caption"><span class="caption-number">Figure 13.7.9.1 </span><span class="caption-text">Results for making 2 different sums of paths using parameterized Path
 Parameters</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
 </div>
 <p>The resulting plot shows the effect of changing <span class="math notranslate nohighlight">\(E_0\)</span> and
@@ -973,6 +975,7 @@ Washington group in that the free version can calculate only EXAFS.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -985,10 +988,10 @@ Washington group in that the free version can calculate only EXAFS.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="feffit.html" title="12.8. XAFS: Fitting XAFS to Feff Paths"
+          <a href="feffit.html" title="13.8. XAFS: Fitting XAFS to Feff Paths"
              >next</a> |</li>
         <li class="right" >
-          <a href="wavelets.html" title="12.6. XAFS: Wavelet Transforms for XAFS"
+          <a href="wavelets.html" title="13.6. XAFS: Wavelet Transforms for XAFS"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -997,12 +1000,13 @@ Washington group in that the free version can calculate only EXAFS.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.7. </span>XAFS: Reading and using Feff Paths</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>12.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>13.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="12.7. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
-    <link rel="prev" title="12.5. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="next" title="13.7. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="prev" title="13.5. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="12.7. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="13.7. XAFS: Reading and using Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="xafsft.html" title="12.5. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="13.5. XAFS: Fourier Transforms for XAFS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS</a></li> 
       </ul>
     </div>
 
@@ -73,19 +75,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">12.6. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#cauchy-wavelet">12.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
-<li><a class="reference internal" href="#wavelet-example">12.6.2. Wavelet Example</a></li>
+<li><a class="reference internal" href="#">13.6. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#cauchy-wavelet">13.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
+<li><a class="reference internal" href="#wavelet-example">13.6.2. Wavelet Example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="xafsft.html"
-                        title="previous chapter"><span class="section-number">12.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
+                        title="previous chapter"><span class="section-number">13.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="feffpaths.html"
-                        title="next chapter"><span class="section-number">12.7. </span>XAFS: Reading and using Feff Paths</a></p>
+                        title="next chapter"><span class="section-number">13.7. </span>XAFS: Reading and using Feff Paths</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -112,7 +114,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xafs-wavelet-transforms-for-xafs">
-<span id="xafs-wavelet-sec"></span><h1><span class="section-number">12.6. </span>XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#xafs-wavelet-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-wavelet-sec"></span><h1><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#xafs-wavelet-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
 <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
@@ -122,12 +124,12 @@ Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" 
 <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
-<h2><span class="section-number">12.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
 <p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" id="id2">[Munoz, Argoul, and Farges (2003)]</a>
 is implemented as the function <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
-<dl class="function">
+<dl class="py function">
 <dt id="cauchy_wavelet">
-<code class="sig-name descname">cauchy_wavelet</code><span class="sig-paren">(</span><em class="sig-param">k</em>, <em class="sig-param">chi</em>, <em class="sig-param">group=None</em>, <em class="sig-param">kweight=0</em>, <em class="sig-param">rmax_out=10</em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cauchy_wavelet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">chi</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kweight</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">rmax_out</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -182,7 +184,7 @@ values with spacing <code class="docutils literal notranslate"><span class="pre"
 
 </div>
 <div class="section" id="wavelet-example">
-<h2><span class="section-number">12.6.2. </span>Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">13.6.2. </span>Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
 <p>Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
 straightforward:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># wavelet transform in larch</span>
@@ -253,6 +255,7 @@ is shown for comparison.</span></p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -265,10 +268,10 @@ is shown for comparison.</span></p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="12.7. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="13.7. XAFS: Reading and using Feff Paths"
              >next</a> |</li>
         <li class="right" >
-          <a href="xafsft.html" title="12.5. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="13.5. XAFS: Fourier Transforms for XAFS"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -277,12 +280,13 @@ is shown for comparison.</span></p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>XAFS Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

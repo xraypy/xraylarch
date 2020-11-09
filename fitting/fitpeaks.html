@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>11.7. Simplified Peak Fitting with fit_peak() &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>12.7. Simplified Peak Fitting with fit_peak() &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="11.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
-    <link rel="prev" title="11.6. Fit Examples" href="examples.html" />
+    <link rel="next" title="12.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
+    <link rel="prev" title="12.6. Fit Examples" href="examples.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="confidence.html" title="11.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="confidence.html" title="12.8. Advanced Confidence Intervals and Chi-square maps"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="11.6. Fit Examples"
+          <a href="examples.html" title="12.6. Fit Examples"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li> 
       </ul>
     </div>
 
@@ -73,20 +75,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">11.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><ul>
-<li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">11.7.1. Example: Fitting a Gaussian + background with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
-<li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">11.7.2. Example: Fitting a Rectangular function with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
-<li><a class="reference internal" href="#using-lmfit-model">11.7.3. Using lmfit.Model</a></li>
+<li><a class="reference internal" href="#">12.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><ul>
+<li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">12.7.1. Example: Fitting a Gaussian + background with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">12.7.2. Example: Fitting a Rectangular function with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li><a class="reference internal" href="#using-lmfit-model">12.7.3. Using lmfit.Model</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="examples.html"
-                        title="previous chapter"><span class="section-number">11.6. </span>Fit Examples</a></p>
+                        title="previous chapter"><span class="section-number">12.6. </span>Fit Examples</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="confidence.html"
-                        title="next chapter"><span class="section-number">11.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
+                        title="next chapter"><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -113,17 +115,17 @@
           <div class="body" role="main">
             
   <div class="section" id="module-_math">
-<span id="simplified-peak-fitting-with-fit-peak"></span><h1><span class="section-number">11.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<span id="simplified-peak-fitting-with-fit-peak"></span><h1><span class="section-number">12.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>As shown in the previous sections, it is pretty simple to use Larch’s
 fitting mechanism to set up and perform fits to data.  In fact, it is
 pretty commom to need to fit data to simple line-shapes, as when setting up
 an experiment.  In an effort to make life easier, in addition to providing
 a fairly easy general-purpose fitting function, Larch provides a
-<a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function to fit one dimensional data to one of several
+<a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function to fit one dimensional data to one of several
 lineshapes.</p>
-<dl class="function">
-<dt id="_math.fit_peak">
-<code class="sig-prename descclassname">_math.</code><code class="sig-name descname">fit_peak</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">model</em>, <em class="sig-param">dy=None</em>, <em class="sig-param">background=None</em>, <em class="sig-param">step=None</em>, <em class="sig-param">negative=False</em>, <em class="sig-param">use_gamma=False</em><span class="sig-paren">)</span><a class="headerlink" href="#_math.fit_peak" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt id="math.fit_peak">
+<span id="_math.fit_peak"></span><code class="sig-prename descclassname">_math.</code><code class="sig-name descname">fit_peak</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">dy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">background</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">negative</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_gamma</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#math.fit_peak" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit the data y at points x with a function described by model,
 optionally including uncertainties in y, a background polynomial, and a
 choice of step functions.</p>
@@ -155,10 +157,10 @@ background functions, as detailed in
 </dd></dl>
 
 <blockquote id="fit-peak-models-table">
-<div><p>Table of <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> models.</p>
+<div><p>Table of <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> models.</p>
 <blockquote>
 <div><p>The following functional models are supported for fitting with
-<a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a>.</p>
+<a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a>.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 16%" />
@@ -213,7 +215,7 @@ background functions, as detailed in
 be included, which (depending on the form chosen) will add parameters named
 <em>bkg_offset</em>, <em>bkg_slope</em>, and <em>bkg_quad</em>.</p>
 <blockquote id="fit-peak-output-table">
-<div><p>Table of members of group returned by <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a>.</p>
+<div><p>Table of members of group returned by <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a>.</p>
 <blockquote>
 <div><table class="docutils align-default">
 <colgroup>
@@ -261,7 +263,7 @@ be included, which (depending on the form chosen) will add parameters named
 </div></blockquote>
 </div></blockquote>
 <div class="section" id="example-fitting-a-gaussian-background-with-fit-peak">
-<h2><span class="section-number">11.7.1. </span>Example: Fitting a Gaussian + background with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><a class="headerlink" href="#example-fitting-a-gaussian-background-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.7.1. </span>Example: Fitting a Gaussian + background with <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><a class="headerlink" href="#example-fitting-a-gaussian-background-with-fit-peak" title="Permalink to this headline">¶</a></h2>
 <p>As in the <a class="reference internal" href="examples.html#fit-example1-sec"><span class="std std-ref">Example in the previous section</span></a>, we
 make a simple mock data set and fit a Gaussian function to it. Here we also
 add a linear background, and do the whole fit with a single function,
@@ -319,8 +321,8 @@ not strictly correct.</p>
 <p>And the plot of data and fit will look like this:</p>
 <div class="figure align-default" id="id1">
 <span id="fig-fitpeak1"></span><a class="reference external image-reference" href="../_images/fit_peakfit1.png"><img alt="../_images/fit_peakfit1.png" src="../_images/fit_peakfit1.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 11.7.1.1 </span><span class="caption-text">Simple fit to mock data using a Gaussian model and a linear background
-with the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 12.7.1.1 </span><span class="caption-text">Simple fit to mock data using a Gaussian model and a linear background
+with the <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Although the fit is quite good, the model is probably imperfect, and using
 a Voigt function to fit to this data would give better results.  The main
@@ -328,7 +330,7 @@ point here is not just that the fit is good, but that it was accomplished
 with a single line of code.</p>
 </div>
 <div class="section" id="example-fitting-a-rectangular-function-with-fit-peak">
-<h2><span class="section-number">11.7.2. </span>Example: Fitting a Rectangular function with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">12.7.2. </span>Example: Fitting a Rectangular function with <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
 <p>Here, we simulate data that might represent a line-up scan at a beamline.
 The fit is to a function that takes a step up and a step down.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_fitpeak2.lar</span>
@@ -394,8 +396,8 @@ will look like this:</p>
 </div>
 <div class="figure align-default" id="id2">
 <span id="fig-fitpeak2"></span><a class="reference external image-reference" href="../_images/fit_peakfit2.png"><img alt="../_images/fit_peakfit2.png" src="../_images/fit_peakfit2.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 11.7.2.1 </span><span class="caption-text">Simple fit to mock data to a rectangular function and a linear
-background using the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 12.7.2.1 </span><span class="caption-text">Simple fit to mock data to a rectangular function and a linear
+background using the <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Again, the principle point here is not how well the rectangular model
 matches the actual data here, but how simply one can model data to a
@@ -405,8 +407,8 @@ treating the results of such an automated approach as a final and best
 analysis of any data.</p>
 </div>
 <div class="section" id="using-lmfit-model">
-<h2><span class="section-number">11.7.3. </span>Using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a><a class="headerlink" href="#using-lmfit-model" title="Permalink to this headline">¶</a></h2>
-<p>Note that the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function gives a simple wrapping of
+<h2><span class="section-number">12.7.3. </span>Using <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a><a class="headerlink" href="#using-lmfit-model" title="Permalink to this headline">¶</a></h2>
+<p>Note that the <a class="reference internal" href="#math.fit_peak" title="_math.fit_peak"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a> function gives a simple wrapping of
 <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a>.  For a wider selection of builtin
 Models and more sophisticated model building including adding bounds and
 constraints between parameters one can import and use <a class="reference external" href="https://lmfit.github.io/lmfit-py/model.html">lmfit.Model</a> directly with larch.  As an example, the above fit can be
@@ -431,6 +433,7 @@ parameters, and allows building more complex models.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -443,10 +446,10 @@ parameters, and allows building more complex models.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="confidence.html" title="11.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="confidence.html" title="12.8. Advanced Confidence Intervals and Chi-square maps"
              >next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="11.6. Fit Examples"
+          <a href="examples.html" title="12.6. Fit Examples"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -455,12 +458,13 @@ parameters, and allows building more complex models.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">11. </span>Fitting and Modeling Data</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>

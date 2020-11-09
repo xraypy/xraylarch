@@ -2,10 +2,11 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>14.1. XRF Data: MCA and ROI objects &#8212; xraylarch 0.9.47 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>15.1. XRF Data: MCA and ROI objects &#8212; xraylarch 0.9.49 documentation</title>
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
@@ -14,12 +15,12 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="14.2. The XRF Viewer Application" href="xrfviewer.html" />
-    <link rel="prev" title="14. X-ray Fluorescence Analysis" href="index.html" />
+    <link rel="next" title="15.2. The XRF Viewer Application" href="xrfviewer.html" />
+    <link rel="prev" title="15. X-ray Fluorescence Analysis" href="index.html" />
 
 <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
@@ -53,10 +54,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xrfviewer.html" title="14.2. The XRF Viewer Application"
+          <a href="xrfviewer.html" title="15.2. The XRF Viewer Application"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="14. X-ray Fluorescence Analysis"
+          <a href="index.html" title="15. X-ray Fluorescence Analysis"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -65,7 +66,8 @@
    <li><a href="index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">14. </span>X-ray Fluorescence Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">15. </span>X-ray Fluorescence Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects</a></li> 
       </ul>
     </div>
 
@@ -73,18 +75,18 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">14.1. XRF Data: MCA and ROI objects</a><ul>
-<li><a class="reference internal" href="#creating-mca-objects">14.1.1. Creating MCA objects</a></li>
+<li><a class="reference internal" href="#">15.1. XRF Data: MCA and ROI objects</a><ul>
+<li><a class="reference internal" href="#creating-mca-objects">15.1.1. Creating MCA objects</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter"><span class="section-number">14. </span>X-ray Fluorescence Analysis</a></p>
+                        title="previous chapter"><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xrfviewer.html"
-                        title="next chapter"><span class="section-number">14.2. </span>The XRF Viewer Application</a></p>
+                        title="next chapter"><span class="section-number">15.2. </span>The XRF Viewer Application</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -111,7 +113,7 @@
           <div class="body" role="main">
             
   <div class="section" id="xrf-data-mca-and-roi-objects">
-<h1><span class="section-number">14.1. </span>XRF Data: MCA and ROI objects<a class="headerlink" href="#xrf-data-mca-and-roi-objects" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects<a class="headerlink" href="#xrf-data-mca-and-roi-objects" title="Permalink to this headline">¶</a></h1>
 <p>XRF spectra are typically measured with MCAs (Multi Channel Analyzers)
 which holds an array of intensities.  Because of the long history of using
 MCAs to store XRF spectra, the two concepts are often mixed, and one often
@@ -139,13 +141,13 @@ for <code class="docutils literal notranslate"><span class="pre">energy</span></
 ROIs.  Each ROI has a <code class="docutils literal notranslate"><span class="pre">left</span></code> and <code class="docutils literal notranslate"><span class="pre">right</span></code> channel index, and a
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">roi.get_counts()</span></code> method.</p>
 <div class="section" id="creating-mca-objects">
-<h2><span class="section-number">14.1.1. </span>Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">15.1.1. </span>Creating MCA objects<a class="headerlink" href="#creating-mca-objects" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to create an MCA object is to read one from a disk file.  For
 data collected at GSECARS, this can be done with the <a class="reference internal" href="#read_gsemca" title="read_gsemca"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_gsemca()</span></code></a>
 function.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="read_gsemca">
-<code class="sig-name descname">read_gsemca</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_gsemca</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a GSECARS MCA spectra file, returning a Group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -212,9 +214,9 @@ function.</p>
 </div></blockquote>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="xrf_plot">
-<code class="sig-name descname">xrf_plot</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">counts</em>, <em class="sig-param">mca=None</em><span class="sig-paren">)</span><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">xrf_plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">counts</span></em>, <em class="sig-param"><span class="n">mca</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>create an interactive window for displaying an X-ray Fluorescence spectra</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -231,13 +233,14 @@ ROI definitions, calibration values, and related data.</p></li>
 <p>An example plot is shown below</p>
 <div class="figure align-default" id="id1">
 <span id="xrf-mca1"></span><a class="reference external image-reference" href="../_images/xrf_display1.png"><img alt="../_images/xrf_display1.png" src="../_images/xrf_display1.png" style="width: 75%;" /></a>
-<p class="caption"><span class="caption-number">Figure 14.1.1.1 </span><span class="caption-text">Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
+<p class="caption"><span class="caption-number">Figure 15.1.1.1 </span><span class="caption-text">Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
 (in red), and Periodic Table for showing predicted emission lines.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -250,10 +253,10 @@ ROI definitions, calibration values, and related data.</p></li>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xrfviewer.html" title="14.2. The XRF Viewer Application"
+          <a href="xrfviewer.html" title="15.2. The XRF Viewer Application"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="14. X-ray Fluorescence Analysis"
+          <a href="index.html" title="15. X-ray Fluorescence Analysis"
              >previous</a> |</li>
    <li>[<a href="../index.html"> Larch</a>|</li>
    <li><a href="../getting_started.html"> Getting Started</a>|</li>
@@ -262,12 +265,13 @@ ROI definitions, calibration values, and related data.</p></li>
    <li><a href="index.html">XRF Analysis</a>|</li>
    <li><a href="../fitting/index.html">Curve Fitting</a>|</li>
 
-          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">14. </span>X-ray Fluorescence Analysis</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">15. </span>X-ray Fluorescence Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>
