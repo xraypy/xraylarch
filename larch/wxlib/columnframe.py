@@ -543,18 +543,18 @@ class ColumnDataFileFrame(wx.Frame) :
         reader = 'read_ascii'
         if 'epics scan' in line1:
             reader = 'read_gsescan'
-        # if 'epics stepscan file' in line1:
-        #     reader = 'read_gsexdi'
-        # elif 'xdi' in line1:
-        #     reader = 'read_xdi'
-        # reader = 'read_ascii'
+        if 'epics stepscan file' in line1:
+            reader = 'read_gsexdi'
+        elif 'xdi' in line1:
+            reader = 'read_xdi'
+
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs
             nan_result = look_for_nans(path)
             if ('has nans' in nan_result.message or
                 'has infs' in nan_result.message):
                 reader = 'read_ascii'
-
+        
         tmpname = '_tmp_file_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
