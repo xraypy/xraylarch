@@ -9,7 +9,11 @@ import shutil
 import subprocess
 import importlib
 from setuptools import setup, find_packages
-from packaging import version
+try:
+    from packaging.version import parse as version_parse
+    HAS_PACKAGING = True
+except ImportError:
+    HAS_PACKAGING = True
 
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
@@ -73,10 +77,9 @@ for required, modname, impname, minver, desc in modules:
         if ver is not None and ' ' in ver:
             ver = ver.split(' ', 1)[0]
         if callable(ver): ver = ver()
-        if ver is None:
-            version_ok = True
-        else:
-            version_ok = version.parse(minver) <= version.parse(ver)
+        version_ok = True
+        if HAS_PACKAGING and minver is not None and ver is not None:
+            version_ok = version_parse(minver) <= version_parse(ver)
     except ImportError:
         import_ok, version_ok = False, True
     if not (import_ok and version_ok):
