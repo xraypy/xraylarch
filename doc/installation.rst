@@ -13,12 +13,11 @@ Downloading and Installation
 .. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47.tar.gz
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.47_docs-examples.zip
-
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49.tar.gz
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
