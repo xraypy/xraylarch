@@ -27,22 +27,6 @@
    n2             =  11.2247051 +/- 1.34240733   (init=  11.1724782)
    sig2_1         =  0.01238692 +/- 0.00245421   (init=  0.01202039)
    sig2_2         =  0.01258038 +/- 0.00104580   (init=  0.01253566)
-   degen__p2ndoyi6v =  1.00000000 (fixed)
-   s02__p2ndoyi6v =  3.90709525 +/- 0.79241772  = 's02*n1'
-   e0__p2ndoyi6v  = -1.44177738 +/- 1.00760144  = 'de0'
-   ei__p2ndoyi6v  =  0.00000000 (fixed)
-   deltar__p2ndoyi6v = -0.02917118 +/- 0.00958845  = 'delr_1'
-   sigma2__p2ndoyi6v =  0.01238692 +/- 0.00245421  = 'sig2_1'
-   third__p2ndoyi6v =  0.00000000 (fixed)
-   fourth__p2ndoyi6v =  0.00000000 (fixed)
-   degen__pkh7kqqg6 =  1.00000000 (fixed)
-   s02__pkh7kqqg6 =  7.85729358 +/- 0.93968513  = 's02*n2'
-   e0__pkh7kqqg6  = -1.44177738 +/- 1.00760144  = 'de0'
-   ei__pkh7kqqg6  =  0.00000000 (fixed)
-   deltar__pkh7kqqg6 =  0.04811111 +/- 0.00746557  = 'delr_2'
-   sigma2__pkh7kqqg6 =  0.01258038 +/- 0.00104580  = 'sig2_2'
-   third__pkh7kqqg6 =  0.00000000 (fixed)
-   fourth__pkh7kqqg6 =  0.00000000 (fixed)
  
 [[Correlations]]    (unreported correlations are <  0.500)
    n2, sig2_2           =  0.940
