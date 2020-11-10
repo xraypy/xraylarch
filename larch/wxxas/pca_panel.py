@@ -143,8 +143,8 @@ class PCAPanel(TaskPanel):
         rfont = self.GetFont()
         rfont.SetPointSize(rfont.GetPointSize()+1)
 
-        wids['fit_chi2'] = SimpleText(panel, '0.000', font=rfont)
-        wids['fit_dscale'] = SimpleText(panel, '1.000', font=rfont)
+        wids['fit_chi2'] = SimpleText(panel,   ' N/A ', size=(150,-1))
+        wids['fit_dscale'] = SimpleText(panel, ' N/A ', size=(150,-1))
 
         panel.Add(SimpleText(panel, ' Principal Component Analysis',
                              **self.titleopts), dcol=4)
@@ -185,9 +185,9 @@ class PCAPanel(TaskPanel):
         panel.Add(wids['fit_group'], dcol=3, newrow=True)
 
         add_text('chi-square: ')
-        panel.Add(wids['fit_chi2'])
+        panel.Add(wids['fit_chi2'], dcol=3)
         add_text('scale factor: ')
-        panel.Add(wids['fit_dscale'])
+        panel.Add(wids['fit_dscale'], dcol=3)
 
 #
 #         ## add weights report: slightly tricky layout
