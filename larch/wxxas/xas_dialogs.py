@@ -123,7 +123,7 @@ class OverAbsorptionDialog(wx.Dialog):
         self.Destroy()
 
     def set_default_elem_edge(self, dgroup):
-        elem, edge = guess_edge(dgroup.e0, _larch=self.controller.larch)
+        elem, edge = guess_edge(dgroup.e0)
         self.wids['elem'].SetStringSelection(elem)
         self.wids['edge'].SetStringSelection(edge)
 
