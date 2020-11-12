@@ -37,6 +37,9 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
             __version__ = vers.replace("'",  "").replace('"',  "").strip()
 
 ## Dependencies: required and recommended modules
+install_reqs = []
+with open('requirements.txt', 'r') as f:
+    install_reqs = f.read().splitlines()            
 
 #          required,  module name, import name, min version, description
 modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
@@ -168,6 +171,7 @@ setup(name = 'xraylarch',
       description = 'Synchrotron X-ray data analysis in python',
       python_requires='>=3.6',
       packages = packages,
+      install_requires=install_reqs, 
       package_data={'larch': package_data},
       zip_safe=False,
       entry_points = {'console_scripts' : larch_apps},
