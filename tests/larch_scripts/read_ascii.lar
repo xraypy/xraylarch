@@ -10,16 +10,14 @@ files = ls(xafsdir)
 results = {}
 
 for path in ('incomplete_label.dat','cu2s_xafs.dat'):
-    grp = read_ascii(path)
-    ncol, nrow = grp.data.shape
-    results[path] = (ncol, nrow, grp.array_labels[:10])
+   grp = read_ascii(path)
+   ncol, nrow = grp.data.shape
+   results[path] = (ncol, nrow, grp.array_labels[:10])
 #endfor
 
-print( "expected = (")
 for key, val in results.items():
-   print("     ('%s', %i, %i, %s)," % (key, val[0], val[1], repr(val[2])))
+   print(" Expected ('%s', %i, %i, %s)," % (key, val[0], val[1], repr(val[2])))
 #endfor
-print(")")
 
 expected = (
    ('cu2s_xafs.dat', 4, 454, ['energy', 'log_i0_it', 'log_it_ir', 'i0']),
