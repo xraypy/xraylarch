@@ -5,7 +5,6 @@ objects to and from representations that can be serialized with JSON.
 """
 from __future__ import print_function
 import unittest
-import nose
 import numpy as np
 from numpy.testing import assert_allclose
 
