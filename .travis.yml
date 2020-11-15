@@ -16,10 +16,10 @@ before_install:
     - conda info -a
 
 install:
-    - conda create -q -n xlarch python=3.8
+    - conda create -q -n xlarch python=3.8 numpy scipy matplotlib h5py scikit-learn sckit-image cython pillow pandas
     - source activate xlarch
-    - conda install numpy scipy matplotlib h5py sqlalchemy scikit-image scikit-learn cython pillow psutil pandas nose pytest pyyaml patchelf sphinx dill psycopg2 pyfai pycifrw silx tomopy wxpython
-    - pip install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils
+    - conda install sqlalchemy psutil pytest pyyaml psycopg2 pyfai silx numdifftools emcee tomopy wxpython
+    - pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils
     - python setup.py install
 
 script:
