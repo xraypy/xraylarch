@@ -6,7 +6,6 @@ Safe(ish) evaluator of python expressions, using ast module.
 The emphasis here is on mathematical expressions, and so
 numpy functions are imported if available and used.
 """
-from __future__ import division, print_function
 import os
 import sys
 import types
@@ -94,10 +93,10 @@ class Interpreter:
                        'extslice', 'for', 'functiondef', 'if', 'ifexp',
                        'import', 'importfrom', 'index', 'interrupt',
                        'list', 'listcomp', 'module', 'name',
-                       'nameconstant', 'num', 'pass', 'print', 'raise',
-                       'repr', 'return', 'slice', 'starred', 'str',
-                       'subscript', 'try', 'tryexcept', 'tryfinally',
-                       'tuple', 'unaryop', 'while')
+                       'nameconstant', 'num', 'pass', 'raise', 'repr',
+                       'return', 'slice', 'starred', 'str', 'subscript',
+                       'try', 'tryexcept', 'tryfinally', 'tuple',
+                       'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
                  with_plugins=True, historyfile=None, maxhistory=5000):
@@ -491,7 +490,8 @@ class Interpreter:
         "assert statement"
         testval = self.run(node.test)
         if not testval:
-            self.raise_exception(node, exc=AssertionError, msg=node.msg)
+            msg = node.msg.s if node.msg else ""
+            self.raise_exception(node, exc=AssertionError, msg=msg)
         return True
 
     def on_list(self, node):    # ('elt', 'ctx')
@@ -570,13 +570,11 @@ class Interpreter:
         elif node.__class__ == ast.Subscript:
             sym    = self.run(node.value)
             xslice = self.run(node.slice)
-            if isinstance(node.slice, (ast.Index, ast.Constant)):
-                sym[xslice] = val
-            elif isinstance(node.slice, ast.Slice):
+            if isinstance(node.slice, ast.Slice):
                 i = xslice.start
                 sym[slice(xslice.start, xslice.stop)] = val
-            elif isinstance(node.slice, ast.ExtSlice):
-                sym[(xslice)] = val
+            else:
+                sym[xslice] = val
         elif node.__class__ in (ast.Tuple, ast.List):
             if len(val) == len(node.elts):
                 for telem, tval in zip(node.elts, val):
@@ -634,11 +632,10 @@ class Interpreter:
         nslice = self.run(node.slice)
         ctx = node.ctx.__class__
         if ctx in ( ast.Load, ast.Store):
-            if isinstance(node.slice, (ast.Index, ast.Constant, ast.Slice,
-                                       ast.Ellipsis)):
-                return val.__getitem__(nslice)
-            elif isinstance(node.slice, (ast.ExtSlice, ast.UnaryOp)):
-                return val[(nslice)]
+            try:
+                return val[nslice]
+            except:
+                return val.__getitem__(nslice)                
         else:
             msg = "subscript with unknown context"
             self.raise_exception(node, msg=msg)
@@ -694,7 +691,7 @@ class Interpreter:
                 break
         return out
 
-    def on_print(self, node):    # ('dest', 'values', 'nl')
+    def on_printOLD(self, node):    # ('dest', 'values', 'nl')
         """ note: implements Python2 style print statement, not
         print() function.  Probably, the 'larch2py' translation
         should look for and translate print -> print_() to become
@@ -849,7 +846,7 @@ class Interpreter:
                 self.raise_exception(node,
                                      msg="keyword argument repeated: %s" % key.arg,
                                      exc=SyntaxError)
-            if key.arg is None:   # Py3 **kwargs !
+            if key.arg is None:
                 keywords.update(self.run(key.value))
             else:
                 keywords[key.arg] = self.run(key.value)
@@ -861,7 +858,10 @@ class Interpreter:
         try:
             return func(*args, **keywords)
         except:
-            self.raise_exception(node, msg="Error running %s" % (func))
+            func_name = getattr(func, '__name__', str(func))
+            self.raise_exception(
+                node, msg="Error running function call '%s' with args %s and "
+                "kwargs %s: %s" % (func_name, args, keywords, ex))
 
     def on_functiondef(self, node):
         "define procedures"
