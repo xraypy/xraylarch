@@ -631,11 +631,8 @@ class Interpreter:
         val    = self.run(node.value)
         nslice = self.run(node.slice)
         ctx = node.ctx.__class__
-        if ctx in ( ast.Load, ast.Store):
-            try:
-                return val[nslice]
-            except:
-                return val.__getitem__(nslice)                
+        if ctx in (ast.Load, ast.Store):
+            return val[nslice]
         else:
             msg = "subscript with unknown context"
             self.raise_exception(node, msg=msg)
