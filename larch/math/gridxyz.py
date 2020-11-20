@@ -9,6 +9,12 @@ from __future__ import division, print_function
 import warnings
 import numpy as np
 
+# suppress warnings
+try:
+    import numexpr
+except ImportError:
+    pass
+
 from larch.utils.logging import getLogger
 _logger = getLogger('gridxyz')
 
