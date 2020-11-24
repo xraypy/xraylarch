@@ -24,8 +24,7 @@ DEVELOP = len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
 uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
-if uname.startswith('linux'):
-    uname = 'linux'
+
 
 _version__ = None
 with open(os.path.join('larch', 'version.py'), 'r') as version_file:
@@ -39,7 +38,10 @@ with open(os.path.join('larch', 'version.py'), 'r') as version_file:
 ## Dependencies: required and recommended modules
 install_reqs = []
 with open('requirements.txt', 'r') as f:
-    install_reqs = f.read().splitlines()            
+    for line in f.read().splitlines():
+        if not line.startswith('#'):
+            install_reqs.append(line)
+            
 
 #          required,  module name, import name, min version, description
 modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
@@ -96,8 +98,6 @@ for required, modname, impname, minver, desc in modules:
 ##
 if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
-
-
 
 pjoin = os.path.join
 pexists = os.path.exists
