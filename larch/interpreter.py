@@ -820,13 +820,7 @@ class Interpreter:
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
 
-        args = []
-        for narg in node.args:
-            aadd = args.append
-            if isinstance(narg, ast.Starred):
-                aadd = args.extend
-            aadd(self.run(narg))
-
+        args = [self.run(targ) for targ in node.args]
         starargs = getattr(node, 'starargs', None)
         if starargs is not None:
             args = args + self.run(starargs)
@@ -834,17 +828,16 @@ class Interpreter:
         keywords = {}
         if func == print:
             keywords['file'] = self.writer
-
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node, msg=msg)
-            if key.arg in keywords:
+            if key.arg is None:
+                keywords.update(self.run(key.value))
+            elif key.arg in keywords:
                 self.raise_exception(node,
                                      msg="keyword argument repeated: %s" % key.arg,
                                      exc=SyntaxError)
-            if key.arg is None:
-                keywords.update(self.run(key.value))
             else:
                 keywords[key.arg] = self.run(key.value)
 
