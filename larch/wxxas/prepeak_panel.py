@@ -1038,8 +1038,11 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             guesses = mod.guess(y, x=x)
         except:
             return
-
         for name, param in guesses.items():
+            if 'amplitude' in name:
+                param.value *= 1.5
+            elif 'sigma' in name:
+                param.value *= 0.75
             if name in parwids:
                 parwids[name].value.SetValue(param.value)
 
