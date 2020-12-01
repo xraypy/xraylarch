@@ -296,15 +296,18 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
          **opts)
+    disp = _getDisplay(win=win, _larch=_larch)    
+    xylims = disp.panel.get_viewlimits()
+    ymin, ymax = xylims[2], xylims[3]
     _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
+
     if show_e0:
         _plot_axvline(dgroup.e0, zorder=2, size=3, label='E0',
                       color=plotlabels.e0color, win=win, _larch=_larch)
-        disp = _getDisplay(win=win, _larch=_larch)
         if disp is not None:
             disp.panel.conf.draw_legend()
     #endif
-    redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+    redraw(win=win, xmin=emin, xmax=emax, ymin=ymin, ymax=ymax, _larch=_larch)
 #enddef
 
 def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
