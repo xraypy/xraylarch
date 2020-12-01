@@ -290,15 +290,14 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
         label = "%s (norm)" % label
     #endif
     title = _get_title(dgroup, title=title)
-
     opts = dict(win=win, show_legend=True, linewidth=3,
                 delay_draw=True, _larch=_larch)
     _plot(dgroup.energy, mu+offset, xlabel=plotlabels.energy, ylabel=ylabel,
          title=title, label=label, zorder=20, new=new, xmin=emin, xmax=emax,
          **opts)
     ymin, ymax = None, None
-    disp = _getDisplay(win=win, _larch=_larch)    
-    if disp is None:
+    disp = _getDisplay(win=win, _larch=_larch)
+    if disp is not  None:
         xylims = disp.panel.get_viewlimits()
         ymin, ymax = xylims[2], xylims[3]
     _plot(dgroup.energy, bkg+offset, zorder=18, label='bkg', **opts)
