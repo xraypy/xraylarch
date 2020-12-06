@@ -299,7 +299,7 @@ class XRFDisplayFrame(wx.Frame):
 
         ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines',
-                                    fontsize=9)
+                                    fontsize=10)
         self.wids['ptable'] = ptable
 
         labstyle = wx.ALIGN_LEFT|wx.EXPAND

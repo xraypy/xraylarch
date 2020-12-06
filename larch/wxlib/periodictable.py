@@ -207,16 +207,16 @@ class PeriodicTablePanel(wx.Panel):
         self.Refresh()
 
     def BuildPanel(self):
-        sizer = wx.GridBagSizer(9, 20)
-        sizer.SetHGap(2)
-        sizer.SetVGap(2)
+        sizer = wx.GridBagSizer()
+        sizer.SetHGap(0)
+        sizer.SetVGap(1)
 
         for name, coords in self.elems.items():
             tw = wx.StaticText(self, -1, label=name)
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.fgcol)
             tw.SetBackgroundColour(self.bgcol)
-            #tw.SetMinSize((18, 18))
+            tw.SetMinSize((20, 18))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 SetTip(tw, self.tooltip_msg)
