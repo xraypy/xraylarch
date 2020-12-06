@@ -190,7 +190,7 @@ class FitSpectraFrame(wx.Frame):
         wids = self.wids
         p = GridPanel(self)
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=12,
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=10,
                                          tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
 
@@ -539,7 +539,8 @@ class FitSpectraFrame(wx.Frame):
         mview.DeleteAllItems()
         self.materials_data = {}
         for name, data in materials._read_materials_db().items():
-            formula, density = data
+            # print("DATA " , name, data)
+            formula, density = data.formula, data.density
             self.materials_data[name] = (formula, density)
             mview.AppendItem((name, formula, "%9.6f"%density,
                               name in Filter_Materials))
