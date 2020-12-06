@@ -42,6 +42,12 @@ with open('requirements.txt', 'r') as f:
         if not line.startswith('#'):
             install_reqs.append(line)
             
+try:
+    import wx
+    install_reqs.extend(['wxutils>=0.2.3', 'wxmplot>=0.9.43'])
+except (ImportError, AttributeError):
+    pass
+
 
 #          required,  module name, import name, min version, description
 modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
