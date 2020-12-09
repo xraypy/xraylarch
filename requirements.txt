@@ -16,7 +16,7 @@ scikit-learn
 asteval>=0.9.19
 lmfit>=1.0
 uncertainties>=3.1
-pyshortcuts>=1.7
+pyshortcuts>=1.7.2
 xraydb>=4.4
 pip
 pyyaml

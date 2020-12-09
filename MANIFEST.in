@@ -6,7 +6,7 @@ recursive-include examples *
 recursive-exclude larch *.pyc
 recursive-exclude larch __pycache__
 recursive-exclude tests __pycache__
-recursive-include examples __pycache__
+recursive-exclude examples __pycache__
 recursive-exclude sandbox *
 recursive-exclude doc *
 recursive-exclude doc/_build *

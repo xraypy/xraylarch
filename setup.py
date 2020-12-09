@@ -25,7 +25,6 @@ uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
 
-
 _version__ = None
 with open(os.path.join('larch', 'version.py'), 'r') as version_file:
     lines = version_file.readlines()
@@ -41,7 +40,7 @@ with open('requirements.txt', 'r') as f:
     for line in f.read().splitlines():
         if not line.startswith('#'):
             install_reqs.append(line)
-            
+
 try:
     import wx
     install_reqs.extend(['wxutils>=0.2.3', 'wxmplot>=0.9.43'])
@@ -177,7 +176,7 @@ setup(name = 'xraylarch',
       description = 'Synchrotron X-ray data analysis in python',
       python_requires='>=3.6',
       packages = packages,
-      install_requires=install_reqs, 
+      install_requires=install_reqs,
       package_data={'larch': package_data},
       zip_safe=False,
       entry_points = {'console_scripts' : larch_apps},
