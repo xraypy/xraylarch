@@ -26,6 +26,7 @@ from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates
 
 from larch.math.utils import savitzky_golay
+from larch import Group
 
 # to grid X,Y,Z columnar data
 HAS_GRIDXYZ = False
@@ -1556,3 +1557,20 @@ def str2rng_larch(rngstr, keeporder=True, _larch=None):
         raise Warning("larch broken?")
     return _str2rng(rngstr, keeporder=keeporder)
 str2rng_larch.__doc__ = _str2rng.__doc__
+
+def read_specfile(filename, scan=None):
+    """simple mapping of a Spec file to a larch group"""
+    df = DataSourceSpecH5(filename)
+    lg = Group()
+    lg.__name__ = f"Spec file: {filename}"
+    lg.path = filename
+    path, fname = os.path.split(filename)
+    lg.filename = fname
+    if scan is None:
+        df.set_scan(1)
+    else:
+        df.set_scan(scan)
+    cnts = df.get_counters()
+    for cnt in cnts:
+        setattr(lg, cnt, df.get_array(cnt))
+    return lg
