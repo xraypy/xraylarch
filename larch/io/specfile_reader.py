@@ -1486,16 +1486,23 @@ str2rng_larch.__doc__ = _str2rng.__doc__
 def read_specfile(filename, scan=None):
     """simple mapping of a Spec file to a larch group"""
     df = DataSourceSpecH5(filename)
+    data = []
     lg = Group()
     lg.__name__ = f"Spec file: {filename}"
-    lg.path = filename
-    path, fname = os.path.split(filename)
-    lg.filename = fname
     if scan is None:
-        df.set_scan(1)
+        df.set_scan(df.get_scans()[0][0])
     else:
         df.set_scan(scan)
     cnts = df.get_counters()
     for cnt in cnts:
-        setattr(lg, cnt, df.get_array(cnt))
+        cnt_arr = df.get_array(cnt)
+        setattr(lg, cnt, cnt_arr)
+        data.append(cnt_arr)
+    data = np.array(data)
+    path, fname = os.path.split(filename)
+    lg.path = filename
+    lg.filename = fname
+    lg.datatype = 'raw'
+    lg.array_labels = cnts
+    lg.data = data
     return lg
