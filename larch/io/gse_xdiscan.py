@@ -121,9 +121,11 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
             'dtfactor' not in aname and
             'clock' not in aname):
             sumname, imca = sumname.split('_mca')
-            imca = int(imca) - 1
+            if bad is not None and int(imca) in bad:
+                sumname = sumname + '_bad'
             datraw = dat*1.0
             rawname = sumname + '_nodtc'
+            imca = int(imca) - 1
             dat   = dat * icrs[imca]/ ocrs[imca]
             if any(np.isnan(dat)):
                 nan_pts = np.where(np.isnan(dat))[0]
