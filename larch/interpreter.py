@@ -847,7 +847,7 @@ class Interpreter:
 
         try:
             return func(*args, **keywords)
-        except:
+        except Exception as ex:
             func_name = getattr(func, '__name__', str(func))
             self.raise_exception(
                 node, msg="Error running function call '%s' with args %s and "
