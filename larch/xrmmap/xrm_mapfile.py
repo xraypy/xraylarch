@@ -2759,7 +2759,7 @@ class GSEXRM_MapFile(object):
             if not self.has_xrd2d:
                 return
 
-            roigroup,detname = self.build_xrd_roimap(xrd='2d')
+            roigroup, detname = self.build_xrd_roimap(xrd='2d')
             xrmdet = self.xrmmap[detname]
 
             if roiname in roigroup[detname]:
@@ -2886,7 +2886,7 @@ class GSEXRM_MapFile(object):
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'virtual mca detector'
 
-        return roigroup,det_list,sumdet
+        return roigroup, det_list, sumdet
 
     def add_xrfroi(self, Erange, roiname, unit='keV'):
 
@@ -2895,8 +2895,9 @@ class GSEXRM_MapFile(object):
 
         if unit == 'eV': Erange[:] = [x/1000. for x in Erange] ## eV to keV
 
-        roigroup,det_list,sumdet  = self.build_mca_roimap()
-
+        roigroup, det_list, sumdet  = self.build_mca_roimap()
+        if sumdet is None: sumdet = 'mcasum'
+        
         if 'sum_name' in roigroup and roiname in roigroup['sum_name']:
             raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
         for det in det_list+[sumdet]:
@@ -2931,7 +2932,7 @@ class GSEXRM_MapFile(object):
             self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy',unit)
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
-        self.get_roi_list(detname, force=True)
+        self.get_roi_list('mcasum', force=True)
 
 
     def check_roi(self, roiname, det=None, version=None):
