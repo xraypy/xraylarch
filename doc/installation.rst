@@ -26,12 +26,11 @@ Downloading and Installation
 The latest release version of Larch is |release|.
 
 Larch is in active and continuing development. The goal is to release a new
-version every six months or so, but without specific timelines.  Larch's tools
-for XAFS data analysis and working with XRF data and XRF maps from X-ray
-microprobes are working and ready for general use.  There may be bugs and
-unintended features, and some missing or incomplete desired features as we
-add new functionality.  Your feedback, bug reports, and patience are greatly
-appreciated.
+version every six months or so, but without specific timelines.  The
+packaging and installation process also changes rather frequently.  We try
+to keep the instruction here up-to-date.  Your feedback, bug reports, and
+patience are greatly appreciated.
+
 
 
 Single-File Installers and Source Installation Files
@@ -124,7 +123,7 @@ Linux Notes
 For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
 move to the download folder (typically `$HOME/Downloads`) and run::
 
-    ~> bash ./xraylarch-0.9.47-Linux-x86_64.sh
+    ~> bash ./xraylarch-0.9.50-Linux-x86_64.sh
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
@@ -186,7 +185,7 @@ from Linux or MacOSX or::
 
 from Windows.
 
-Updating with `conda`
+Updating  `conda`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Anaconda Python makes updates very easy for us to provide and for you to
@@ -215,7 +214,7 @@ Starting with Larch version 0.9.46, Larch can be used with Python versions
 from `Python.org`_.  That is, you can install one of the installers there,
 and install (most of) Larch simply with::
 
-    pip install xraylarch
+    pip install --upgrade xraylarch
 
 This will install Larch and all of the required packages. Some of the
 "recommended" packages listed below may not be installed and you may have
