@@ -32,8 +32,7 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     group.filename = suffix
     group.npts = xdi.npts
     group.bad_channels = bad
-
-    for family in ('scan', 'mono', 'facility'):
+    for family in ('scan', 'beamline', 'mono', 'facility'):
         for key, val in xdi.attrs.get(family, {}).items():
             if '||' in val:
                 val, addr = val.split('||')
@@ -42,6 +41,21 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
             except:
                 pass
             setattr(group, "%s_%s" % (family, key), val)
+
+    scanparams = xdi.attrs.get('scanparameters', None)
+    if scanparams is not None:
+        scan_e0 = scanparams.get('e0', None)
+        if scan_e0 is not None:
+            group.scan_e0 = float(scan_e0)
+        scan_elem = scanparams.get('element', None)
+        if scan_elem is not None:
+            group.element = scan_elem
+        scan_edge = scanparams.get('edge', None)
+        if scan_edge is not None:
+            group.edge = scan_edge
+        scan_type = scanparams.get('scantype', None)
+        if scan_type is not None:
+            group.scan_type = scan_type
 
     ocrs, icrs = [], []
     ctime = None
