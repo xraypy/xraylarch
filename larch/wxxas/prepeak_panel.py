@@ -15,7 +15,7 @@ import wx.dataview as dv
 from lmfit import Parameter
 from lmfit.model import (save_modelresult, load_modelresult,
                              save_model, load_model)
-xs
+
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
