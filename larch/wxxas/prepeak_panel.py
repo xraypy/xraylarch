@@ -173,13 +173,16 @@ class FitResultFrame(wx.Frame):
                            colour=self.colors.title, style=LEFT)
 
         wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
-                                             colour=self.colors.title, style=LEFT)
+                                        minsize=(350, -1),
+                                        colour=self.colors.title, style=LEFT)
 
         wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
+                                       minsize=(200, -1),
                                        colour=self.colors.title, style=LEFT)
 
-        wids['hist_hint'] = SimpleText(panel, '  (Fit #01 is most recent)',
-                                       font=Font(FONTSIZE+2), colour=self.colors.title,
+        wids['hist_hint'] = SimpleText(panel, ' (Fit #01 is most recent)  ',
+                                       font=Font(FONTSIZE+2), minsize=(200, -1),
+                                       colour=self.colors.title,
                                        style=LEFT)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
@@ -229,11 +232,11 @@ class FitResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn(' Fit #',  width=50)
-        sview.AppendTextColumn(' N_data', width=50)
-        sview.AppendTextColumn(' N_vary', width=50)
-        sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=110)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(' N_data', width=70)
+        sview.AppendTextColumn(' N_vary', width=70)
+        sview.AppendTextColumn(' N_eval', width=65)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=105)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=105)
         sview.AppendTextColumn(' Akaike Info', width=110)
         sview.AppendTextColumn(' Bayesian Info', width=110)
 
@@ -244,7 +247,7 @@ class FitResultFrame(wx.Frame):
                 align = wx.ALIGN_CENTER
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((700, 125))
+        sview.SetMinSize((725, 125))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -267,7 +270,7 @@ class FitResultFrame(wx.Frame):
         pview.AppendTextColumn('Parameter',         width=150)
         pview.AppendTextColumn('Best-Fit Value',    width=125)
         pview.AppendTextColumn('Standard Error',    width=125)
-        pview.AppendTextColumn('Info ',             width=275)
+        pview.AppendTextColumn('Info ',             width=300)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -277,7 +280,7 @@ class FitResultFrame(wx.Frame):
             this.Sortable = False
             this.Alignment = this.Renderer.Alignment = align
 
-        pview.SetMinSize((700, 200))
+        pview.SetMinSize((725, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -554,25 +557,19 @@ class PrePeakPanel(TaskPanel):
 
         fsopts = dict(digits=2, increment=0.1, with_pin=True)
         # ppeak_e0   = self.add_floatspin('ppeak_e0', value=0, **fsopts)
-        ppeak_elo  = self.add_floatspin('ppeak_elo', value=-15, **fsopts)
-        ppeak_ehi  = self.add_floatspin('ppeak_ehi', value=-5, **fsopts)
-        ppeak_emin = self.add_floatspin('ppeak_emin', value=-30, **fsopts)
+        ppeak_elo  = self.add_floatspin('ppeak_elo',  value=-13, **fsopts)
+        ppeak_ehi  = self.add_floatspin('ppeak_ehi',  value=-3, **fsopts)
+        ppeak_emin = self.add_floatspin('ppeak_emin', value=-20, **fsopts)
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(125, -1))
-        #        self.savebline_btn  = Button(pan,'Save Baseline', action=self.onSaveBaseline,
-        #                                    size=(125, -1))
-        #        SetTip(self.savebline_btn, 'save data and initial baseline')
 
         self.plotmodel_btn = Button(pan,
                                     'Plot Model',
                                     action=self.onPlotModel,  size=(125, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(125, -1))
-#        self.loadmodel_btn = Button(pan, 'Load Model',
-#                                    action=self.onLoadFitResult,  size=(125, -1))
-#        self.savebline_btn.Disable()
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
@@ -601,10 +598,10 @@ class PrePeakPanel(TaskPanel):
         # self.msg_centroid = SimpleText(pan, '----')
 
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
-        # self.show_centroid  = Check(pan, label='show?', **opts)
         self.show_peakrange = Check(pan, label='show?', **opts)
         self.show_fitrange  = Check(pan, label='show?', **opts)
         # self.show_e0        = Check(pan, label='show?', **opts)
+        # self.show_centroid  = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
