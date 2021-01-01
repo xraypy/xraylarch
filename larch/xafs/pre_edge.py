@@ -8,8 +8,8 @@ from scipy.signal import find_peaks_cwt
 from scipy.integrate import simps
 
 from lmfit import Parameters, Minimizer
-from lmfit.models import (LorentzianModel, GaussianModel,
-                          VoigtModel, LinearModel)
+from lmfit.models import (LorentzianModel, GaussianModel, VoigtModel,
+                          ConstantModel, LinearModel, QuadraticModel)
 
 try:
     import peakutils
@@ -450,9 +450,8 @@ def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
     return
 
 @Make_CallArgs(["energy", "norm"])
-def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
-                      emin=None, emax=None, elo=None, ehi=None,
-                      with_line=True, _larch=None):
+def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
+                      emin=None, emax=None, elo=None, ehi=None, _larch=None):
     """remove baseline from main edge over pre edge peak region
 
     This assumes that pre_edge() has been run successfully on the spectra
@@ -466,24 +465,22 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
        ehi (float or None):       high energy of pre-edge peak region ot not fit baseline [e0-10]
        emax (float or None):      max energy (eV) to use for baesline fit [e0-5]
        emin (float or None):      min energy (eV) to use for baesline fit [e0-40]
-       form (string):             form used for baseline (see note 2)  ['lorentzian']
-       with_line (bool):          whether to include linear component in baseline ['True']
+       form (string):             form used for baseline (see description)  ['linear+lorentzian']
        _larch (larch instance or None):  current larch session.
 
 
     A function will be fit to the input mu(E) data over the range between
     [emin:elo] and [ehi:emax], ignorng the pre-edge peaks in the region
     [elo:ehi].  The baseline function is specified with the `form` keyword
-    argument, which can be one of 'lorentzian', 'gaussian', or 'voigt',
-    with 'lorentzian' the default.  In addition, the `with_line` keyword
-    argument can be used to add a line to this baseline function.
+    argument, which can be one or a combination of 'lorentzian', 'gaussian', or 'voigt',
+    plus one of 'constant', 'linear', 'quadratic', for example, 'linear+lorentzian',
+    'constant+voigt', 'quadratic', 'gaussian'. 
 
     A group named 'prepeaks' will be used or created in the output group, containing
 
         ==============   ===========================================================
          attribute        meaning
         ==============   ===========================================================
-         energy           energy array for pre-edge peaks = energy[emin:emax]
          energy           energy array for pre-edge peaks = energy[emin:emax]
          baseline         fitted baseline array over pre-edge peak energies
          norm             spectrum over pre-edge peak energies
@@ -525,45 +522,66 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
     xdat = np.concatenate((energy[imin:ilo+1], energy[ihi:imax+1]))
     ydat = np.concatenate((norm[imin:ilo+1], norm[ihi:imax+1]))
 
-
-    # build fitting model: note that we always include
-    # a LinearModel but may fix slope and intercept
-    form = form.lower()
-    if form.startswith('voig'):
-        model = VoigtModel()
-    elif form.startswith('gaus'):
-        model = GaussianModel()
-    else:
-        model = LorentzianModel()
-
-    model += LinearModel()
-    params = model.make_params(amplitude=1.0, sigma=2.0,
-                               center=emax,
-                               intercept=0, slope=0)
-    params['amplitude'].min =  0.0
-    params['sigma'].min     =  0.25
-    params['sigma'].max     = 50.0
-    params['center'].max    = emax + 25.0
-    params['center'].min    = emax - 25.0
-
-    if not with_line:
-        params['slope'].vary = False
-        params['intercept'].vary = False
-
-    result = model.fit(ydat, params, x=xdat)
-
+    edat = energy[imin: imax+1]
     cen = dcen = 0.
     peak_energies = []
 
     # energy including pre-edge peaks, for output
-    edat = energy[imin: imax+1]
     norm = norm[imin:imax+1]
-    bline = peaks = dpeaks = norm*0.0
+    baseline = peaks = dpeaks = norm*0.0
+
+    # build fitting model:
+    modelcomps = []
+    parvals = {}
+
+    MODELDAT = {'gauss': (GaussianModel, dict(amplitude=1, center=emax, sigma=2)),
+                'loren': (LorentzianModel, dict(amplitude=1, center=emax, sigma=2)),
+                'voigt': (VoigtModel, dict(amplitude=1, center=emax, sigma=2)),
+                'line': (LinearModel, dict(slope=0, intercept=0)),
+                'quad': (QuadraticModel, dict(a=0, b=0, c=0)),
+                'const': (ConstantModel, dict(c=0))}
+
+    if '+' in form:
+        forms = [f.lower() for f in form.split('+')]
+    else:
+        forms = [form.lower(), '']
+
+    for form in forms[:2]:
+        for key, dat in MODELDAT.items():
+            if form.startswith(key):
+                modelcomps.append(dat[0]())
+                parvals.update(dat[1])
+
+    if len(modelcomps) == 0:
+        group.prepeaks = Group(energy=edat, norm=norm, baseline=0.0*edat,
+                               peaks=0.0*edat, delta_peaks=0.0*edat,
+                               centroid=0, delta_centroid=0,
+                               peak_energies=[],
+                               fit_details=None,
+                               emin=emin, emax=emax, elo=elo, ehi=ehi,
+                               form=form)
+        return
+
+    model = modelcomps.pop()
+    if len(modelcomps) > 0:
+        model += modelcomps.pop()
+
+    params = model.make_params(**parvals)
+    if 'amplitude' in params:
+        params['amplitude'].min =  0.0
+    if 'sigma' in params:
+        params['sigma'].min = 0.05
+        params['sigma'].max = 500.0
+    if 'center' in params:
+        params['center'].max = emax + 25.0
+        params['center'].min = emin - 25.0
+
+    result = model.fit(ydat, params, x=xdat)
 
     # get baseline and resulting norm over edat range
     if result is not None:
-        bline = result.eval(result.params, x=edat)
-        peaks = norm-bline
+        baseline = result.eval(result.params, x=edat)
+        peaks = norm-baseline
 
         # estimate centroid
         cen = (edat*peaks).sum() / peaks.sum()
@@ -585,11 +603,11 @@ def pre_edge_baseline(energy, norm=None, group=None, form='lorentzian',
             peak_energies = [edat[pid] for pid in peak_ids]
 
     group = set_xafsGroup(group, _larch=_larch)
-    group.prepeaks = Group(energy=edat, norm=norm, baseline=bline,
+    group.prepeaks = Group(energy=edat, norm=norm, baseline=baseline,
                            peaks=peaks, delta_peaks=dpeaks,
                            centroid=cen, delta_centroid=dcen,
                            peak_energies=peak_energies,
                            fit_details=result,
                            emin=emin, emax=emax, elo=elo, ehi=ehi,
-                           form=form, with_line=with_line)
+                           form=form)
     return
