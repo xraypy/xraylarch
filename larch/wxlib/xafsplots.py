@@ -871,7 +871,6 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
     fx0, fx1, fy0, fy1 = extend_plotrange(xdat, yfit,
                                           xmin=opts['emin'], xmax=opts['emax'])
 
-
     ncolor = 0
     popts = {'win': win, '_larch': _larch}
     plotopts.update(popts)
@@ -901,13 +900,13 @@ def plot_prepeaks_fit(dgroup, nfit=0, show_init=False, subtract_baseline=False,
                    style='short dashed', marker='None', markersize=5,
                    color=LineColors[ncolor], **popts)
 
-    if opts['show_fitrange']:
+    if opts.get('show_fitrange', False):
         for attr in ('emin', 'emax'):
             _plot_axvline(opts[attr], ymin=0, ymax=1,
                           delay_draw=False, color='#DDDDCC',
                           label='_nolegend_', **popts)
 
-    if opts['show_centroid']:
+    if opts.get('show_centroid', False):
         pcen = getattr(dgroup.prepeaks, 'centroid', None)
         if hasattr(result, 'params'):
             pcen = result.params.get('fit_centroid', None)
