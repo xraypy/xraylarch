@@ -13,13 +13,9 @@ import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
 from lmfit import Parameter
-try:
-    from lmfit.model import (save_modelresult, load_modelresult,
+from lmfit.model import (save_modelresult, load_modelresult,
                              save_model, load_model)
-    HAS_MODELSAVE = True
-except ImportError:
-    HAS_MODELSAVE = False
-
+xs
 import lmfit.models as lm_models
 from lmfit.printfuncs import gformat, CORREL_HEAD
 
@@ -53,7 +49,7 @@ ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
 # map of lmfit function name to Model Class
 ModelFuncs = {'constant': 'ConstantModel',
               'linear': 'LinearModel',
-              'parabolic': 'QuadraticModel',
+              'quadratic': 'QuadraticModel',
               'polynomial': 'PolynomialModel',
               'gaussian': 'GaussianModel',
               'lorentzian': 'LorentzianModel',
@@ -73,6 +69,16 @@ ModelFuncs = {'constant': 'ConstantModel',
               'exponential': 'ExponentialModel',
               'step': 'StepModel',
               'rectangle': 'RectangleModel'}
+
+BaselineFuncs = ['No Baseline',
+                 'Constant+Lorentzian',
+                 'Linear+Lorentzian',
+                 'Constant+Gaussian',
+                 'Linear+Gaussian',
+                 'Constant+Voigt',
+                 'Linear+Voigt',
+                 'Quadratic', 'Linear']
+
 
 Array_Choices = {'Raw \u03BC(E)': 'mu',
                  'Normalized \u03BC(E)': 'norm',
@@ -513,6 +519,8 @@ class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='prepeaks_config',
+
+                           
                            config=defaults, **kws)
 
         self.fit_components = OrderedDict()
@@ -545,7 +553,7 @@ class PrePeakPanel(TaskPanel):
         self.wids = {}
 
         fsopts = dict(digits=2, increment=0.1, with_pin=True)
-        ppeak_e0   = self.add_floatspin('ppeak_e0', value=0, **fsopts)
+        # ppeak_e0   = self.add_floatspin('ppeak_e0', value=0, **fsopts)
         ppeak_elo  = self.add_floatspin('ppeak_elo', value=-15, **fsopts)
         ppeak_ehi  = self.add_floatspin('ppeak_ehi', value=-5, **fsopts)
         ppeak_emin = self.add_floatspin('ppeak_emin', value=-30, **fsopts)
@@ -553,23 +561,28 @@ class PrePeakPanel(TaskPanel):
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
                                     size=(125, -1))
-        self.savebline_btn  = Button(pan,'Save Baseline', action=self.onSaveBaseline,
-                                    size=(125, -1))
-        SetTip(self.savebline_btn, 'save data and initial baseline')
+        #        self.savebline_btn  = Button(pan,'Save Baseline', action=self.onSaveBaseline,
+        #                                    size=(125, -1))
+        #        SetTip(self.savebline_btn, 'save data and initial baseline')
 
-        self.plotmodel_btn = Button(pan, 'Plot Model',
-                                   action=self.onPlotModel,  size=(125, -1))
+        self.plotmodel_btn = Button(pan,
+                                    'Plot Model',
+                                    action=self.onPlotModel,  size=(125, -1))
         self.fitmodel_btn = Button(pan, 'Fit Model',
                                    action=self.onFitModel,  size=(125, -1))
-        self.loadmodel_btn = Button(pan, 'Load Model',
-                                    action=self.onLoadFitResult,  size=(125, -1))
-        self.savebline_btn.Disable()
+#        self.loadmodel_btn = Button(pan, 'Load Model',
+#                                    action=self.onLoadFitResult,  size=(125, -1))
+#        self.savebline_btn.Disable()
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
                                    choices=list(Array_Choices.keys()))
         self.array_choice.SetSelection(1)
 
+        self.bline_choice = Choice(pan, size=(175, -1),
+                                   choices=BaselineFuncs)
+        self.bline_choice.SetSelection(2)
+        
         models_peaks = Choice(pan, size=(150, -1),
                               choices=ModelChoices['peaks'],
                               action=self.addModel)
@@ -585,58 +598,54 @@ class PrePeakPanel(TaskPanel):
         self.message = SimpleText(pan,
                                  'first fit baseline, then add peaks to fit model.')
 
-        self.msg_centroid = SimpleText(pan, '----')
+        # self.msg_centroid = SimpleText(pan, '----')
 
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
-        self.show_centroid  = Check(pan, label='show?', **opts)
+        # self.show_centroid  = Check(pan, label='show?', **opts)
         self.show_peakrange = Check(pan, label='show?', **opts)
         self.show_fitrange  = Check(pan, label='show?', **opts)
-        self.show_e0        = Check(pan, label='show?', **opts)
+        # self.show_e0        = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
-        pan.Add(SimpleText(pan, ' Pre-edge Peak Fitting',
+        pan.Add(SimpleText(pan, 'Pre-edge Peak Fitting',
                            **self.titleopts), dcol=5)
-        add_text(' Run Fit:', newrow=False)
 
         add_text('Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
-        pan.Add((10, 10))
-        pan.Add(self.fitbline_btn)
-
-        add_text('E0: ')
-        pan.Add(ppeak_e0)
-        pan.Add((10, 10), dcol=2)
-        pan.Add(self.show_e0)
-        pan.Add(self.savebline_btn)
-
+    
+        # add_text('E0: ', newrow=False)
+        # pan.Add(ppeak_e0)
+        # pan.Add(self.show_e0)
+        
         add_text('Fit Energy Range: ')
         pan.Add(ppeak_emin)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
-        pan.Add(self.plotmodel_btn)
 
-        t = SimpleText(pan, 'Pre-edge Peak Range: ')
-        SetTip(t, 'Range used as mask for background')
+        pan.Add(HLine(pan, size=(575, 2)), dcol=6, newrow=True)
+        add_text( 'Baseline Form: ')
+        t = SimpleText(pan, 'Baseline Skip Range: ')
+        SetTip(t, 'Range skipped over for baseline fit')
+        pan.Add(self.bline_choice, dcol=3)
+        pan.Add((10, 10))
+        pan.Add(self.fitbline_btn)      
 
         pan.Add(t, newrow=True)
         pan.Add(ppeak_elo)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_ehi)
+
         pan.Add(self.show_peakrange)
+        pan.Add(HLine(pan, size=(575, 2)), dcol=6, newrow=True)
+
+
+        add_text('Main Model Components', newrow=True, dcol=5)
         pan.Add(self.fitmodel_btn)
-
-
-        # pan.Add(self.fitsel_btn)
-
-        add_text( 'Peak Centroid: ')
-        pan.Add(self.msg_centroid, dcol=3)
-        pan.Add(self.show_centroid, dcol=1)
-        pan.Add(self.loadmodel_btn)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -644,20 +653,23 @@ class PrePeakPanel(TaskPanel):
         ts.Add(models_other)
 
         pan.Add(SimpleText(pan, 'Add Component: '), newrow=True)
-        pan.Add(ts, dcol=7)
+        pan.Add(ts, dcol=4)
+        pan.Add(self.plotmodel_btn)
 
+        # pan.Add(SimpleText(pan, 'Run Fit: '), dcol=5, newrow=True)
+        
         pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
-        pan.Add(self.message, dcol=7)
+        pan.Add(self.message, dcol=6)
+        pan.Add((10, 10), newrow=True)
 
+        pan.Add(HLine(self, size=(550, 2)), dcol=6, newrow=True)
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(pan, 0, LEFT, 3)
         sizer.Add((10, 10), 0, LEFT, 3)
-        sizer.Add(HLine(self, size=(550, 2)), 0, LEFT, 3)
-        sizer.Add((10, 10), 0, LEFT, 3)
-        sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 10)
+        sizer.Add(self.mod_nb,  1, LEFT|wx.GROW, 5)
 
         pack(self, sizer)
 
@@ -679,22 +691,23 @@ class PrePeakPanel(TaskPanel):
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
-            self.wids['ppeak_e0'].SetValue(dat.e0)
+            # self.wids['ppeak_e0'].SetValue(dat.e0)
             if hasattr(dat, 'prepeaks'):
                 self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
                 self.wids['ppeak_emax'].SetValue(dat.prepeaks.emax)
                 self.wids['ppeak_elo'].SetValue(dat.prepeaks.elo)
                 self.wids['ppeak_ehi'].SetValue(dat.prepeaks.ehi)
         elif isinstance(dat, dict):
-            self.wids['ppeak_e0'].SetValue(dat['e0'])
+            # self.wids['ppeak_e0'].SetValue(dat['e0'])
             self.wids['ppeak_emin'].SetValue(dat['emin'])
             self.wids['ppeak_emax'].SetValue(dat['emax'])
             self.wids['ppeak_elo'].SetValue(dat['elo'])
             self.wids['ppeak_ehi'].SetValue(dat['ehi'])
 
             self.array_choice.SetStringSelection(dat['array_desc'])
-            self.show_e0.Enable(dat['show_e0'])
-            self.show_centroid.Enable(dat['show_centroid'])
+            self.bline_choice.SetStringSelection(dat['baseline_form'])
+            # self.show_e0.Enable(dat['show_e0'])
+            # self.show_centroid.Enable(dat['show_centroid'])
             self.show_fitrange.Enable(dat['show_fitrange'])
             self.show_peakrange.Enable(dat['show_peakrange'])
 
@@ -702,30 +715,34 @@ class PrePeakPanel(TaskPanel):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
         array_desc = self.array_choice.GetStringSelection()
+        bline_form = self.bline_choice.GetStringSelection()
         form_opts = {'gname': dgroup.groupname,
                      'filename': dgroup.filename,
                      'array_desc': array_desc.lower(),
                      'array_name': Array_Choices[array_desc],
-                     'baseline_form': 'lorentzian',
+                     'baseline_form': bline_form.lower(),
                      'bkg_components': []}
 
-        form_opts['e0'] = self.wids['ppeak_e0'].GetValue()
+        # form_opts['e0'] = self.wids['ppeak_e0'].GetValue()
         form_opts['emin'] = self.wids['ppeak_emin'].GetValue()
         form_opts['emax'] = self.wids['ppeak_emax'].GetValue()
         form_opts['elo'] = self.wids['ppeak_elo'].GetValue()
         form_opts['ehi'] = self.wids['ppeak_ehi'].GetValue()
         form_opts['plot_sub_bline'] = False # self.plot_sub_bline.IsChecked()
-        form_opts['show_centroid'] = self.show_centroid.IsChecked()
+        # form_opts['show_centroid'] = self.show_centroid.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
-        form_opts['show_e0'] = self.show_e0.IsChecked()
+        # form_opts['show_e0'] = self.show_e0.IsChecked()
         return form_opts
 
     def onFitBaseline(self, evt=None):
         opts = self.read_form()
+        bline_form  = opts.get('baseline_form', 'no baseline')
+        if bline_form.startswith('no base'):
+            return
         cmd = """{gname:s}.ydat = 1.0*{gname:s}.{array_name:s}
 pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s}, form='{baseline_form:s}',
-                  with_line=True, elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
+elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         self.larch_eval(cmd.format(**opts))
 
         dgroup = self.controller.get_group()
@@ -733,14 +750,33 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
         dgroup.centroid_msg = "%.4f +/- %.4f eV" % (ppeaks.centroid,
                                                     ppeaks.delta_centroid)
 
-        self.msg_centroid.SetLabel(dgroup.centroid_msg)
+        self.message.SetLabel("Centroid= %s" % dgroup.centroid_msg)
 
-        if 'bpeak_' not in self.fit_components:
-            self.addModel(model='Lorentzian', prefix='bpeak_', isbkg=True)
-        if 'bline_' not in self.fit_components:
-            self.addModel(model='Linear', prefix='bline_', isbkg=True)
+        if '+' in bline_form:
+            bforms = [f.lower() for f in bline_form.split('+')]
+        else:
+            bforms = [bline_form.lower(), '']
 
-        for prefix in ('bpeak_', 'bline_'):
+        poly_model = peak_model = None
+        for bform in bforms:
+            if bform.startswith('line'):  poly_model = 'Linear'
+            if bform.startswith('const'): poly_model = 'Constant'
+            if bform.startswith('quad'):  poly_model = 'Quadratic'
+            if bform.startswith('loren'): peak_model = 'Lorentzian'
+            if bform.startswith('guass'): peak_model = 'Gaussian'
+            if bform.startswith('voigt'): peak_model = 'Voigt'
+
+        if peak_model is not None:
+            if 'bpeak_' in self.fit_components:
+                self.onDeleteComponent(prefix='bpeak_')
+            self.addModel(model=peak_model, prefix='bpeak_', isbkg=True)
+
+        if poly_model is not None:
+            if 'bpoly_' in self.fit_components:
+                self.onDeleteComponent(prefix='bpoly_')
+            self.addModel(model=poly_model, prefix='bpoly_', isbkg=True)
+
+        for prefix in ('bpeak_', 'bpoly_'):
             cmp = self.fit_components[prefix]
             # cmp.bkgbox.SetValue(1)
             self.fill_model_params(prefix, dgroup.prepeaks.fit_details.params)
@@ -754,7 +790,7 @@ pre_edge_baseline(energy={gname:s}.energy, norm={gname:s}.ydat, group={gname:s},
 
         # self.plot_choice.SetStringSelection(PLOT_BASELINE)
         self.onPlot(baseline_only=True)
-        self.savebline_btn.Enable()
+        # self.savebline_btn.Enable()
 
     def onSaveBaseline(self, evt=None):
         opts = self.read_form()
@@ -1052,7 +1088,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         plotframe.oplot(dgroup.xdat, dgroup._tmp)
         self.pick2erase_panel = plotframe.panel
 
-        self.pick2erase_timer.Start(5000)
+        self.pick2erase_timer.Start(60000)
 
 
     def onPick2Points(self, evt=None, prefix=None):
@@ -1071,11 +1107,11 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             fgroup.pick2_msg.SetLabel("0/2")
 
         self.pick2_t0 = time.time()
-        self.pick2_timer.Start(250)
+        self.pick2_timer.Start(1000)
 
 
     def onLoadFitResult(self, event=None):
-        dlg = wx.FileDialog(self, message="Load Saved File Model",
+        dlg = wx.FileDialog(self, message="Load Saved Pre-edge Model",
                             wildcard=ModelWcards, style=wx.FD_OPEN)
         rfile = None
         if dlg.ShowModal() == wx.ID_OK:
@@ -1089,7 +1125,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
         result = load_modelresult(str(rfile))
         for prefix in list(self.fit_components.keys()):
-            self.onDeleteComponent(self, prefix=prefix)
+            self.onDeleteComponent(prefix=prefix)
 
         for comp in result.model.components:
             isbkg = comp.prefix in result.user_options['bkg_components']
@@ -1274,9 +1310,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             except OSError:
                 print("Warning: cannot create XAS_Viewer user folder")
                 return
-        if not HAS_MODELSAVE:
-            print("Warning: cannot save model results: upgrade lmfit")
-            return
         if fname is None:
             fname = 'autosave.fitmodel'
         save_modelresult(result, os.path.join(confdir, fname))
