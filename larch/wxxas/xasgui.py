@@ -461,6 +461,13 @@ class XASFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def onNBChanged(self, event=None):
+
+        thispage = self.nb.GetCurrentPage()
+        is_prepeak = 'prepeak' in thispage.__class__.__name__.lower()
+        for imenu, menudat in enumerate(self.menubar.GetMenus()):
+            if 'pre-edge' in menudat[1].lower():
+                self.menubar.EnableTop(imenu, is_prepeak)
+                    
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
@@ -535,7 +542,7 @@ class XASFrame(wx.Frame):
         fmenu = wx.Menu()
         group_menu = wx.Menu()
         data_menu = wx.Menu()
-        # ppeak_menu = wx.Menu()
+        ppeak_menu = wx.Menu()
         m = {}
 
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
@@ -614,9 +621,14 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Add and Subtract Sepctra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
+        MenuItem(self, ppeak_menu, "Load Pre-edge Peak Model",
+                 "Load saved model for Pre-edge Peak Fitting",
+                 self.onPrePeakLoad)
+
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(data_menu, "Data")
+        self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
 
         # self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
@@ -828,6 +840,11 @@ class XASFrame(wx.Frame):
     def onDeconvolveData(self, event=None):
         DeconvolutionDialog(self, self.controller).Show()
 
+    def onPrePeakLoad(self, event=None):
+        thispage = self.nb.GetCurrentPage()
+        if 'prepeak' in thispage.__class__.__name__.lower():
+            thispage.onLoadFitResult()
+        
     def onConfigDataFitting(self, event=None):
         pass
 
