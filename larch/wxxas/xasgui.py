@@ -103,8 +103,7 @@ def assign_gsescan_groups(group):
 
 class XASController():
     """
-    class hollding the Larch session and doing the
-    processing work for Larch XAS GUI
+    class holding the Larch session and doing the processing work for XAS GUI
     """
     config_file = 'xas_viewer.conf'
     def __init__(self, wxparent=None, _larch=None):
@@ -452,7 +451,8 @@ class XASFrame(wx.Frame):
         ir = 0
         sizer.Add(self.title, 0, LEFT|wx.GROW|wx.ALL, 1)
         self.nb = flatnotebook(panel, NB_PANELS,
-                               panelkws=dict(controller=self.controller),
+                               panelkws=dict(xasmain=self,
+                                             controller=self.controller),
                                on_change=self.onNBChanged)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)
@@ -460,10 +460,15 @@ class XASFrame(wx.Frame):
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
 
+    def get_nbpage(self, name):
+        "get nb page by name"
+        name = name.lower()
+        for page in self.nb.pagelist:
+            if name in page.__class__.__name__.lower():
+                return page
+        
     def onNBChanged(self, event=None):
-
-        thispage = self.nb.GetCurrentPage()
-        is_prepeak = 'prepeak' in thispage.__class__.__name__.lower()
+        is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')
         for imenu, menudat in enumerate(self.menubar.GetMenus()):
             if 'pre-edge' in menudat[1].lower():
                 self.menubar.EnableTop(imenu, is_prepeak)
@@ -804,6 +809,7 @@ class XASFrame(wx.Frame):
         outgroup = common_startstring(list(groups.keys()))
         outgroup = "%s (merge %d)" % (outgroup, len(groups))
         outgroup = unique_name(outgroup, self.controller.file_groups)
+        print(" CREATE Merge Dialog ", self)
         dlg = MergeDialog(self, list(groups.keys()), outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
