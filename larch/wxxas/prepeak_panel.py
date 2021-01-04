@@ -522,8 +522,7 @@ class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='prepeaks_config',
-
-                           
+                           title='Pre-edge Peak Analysis',                           
                            config=defaults, **kws)
 
         self.fit_components = OrderedDict()
@@ -541,11 +540,17 @@ class PrePeakPanel(TaskPanel):
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
+        # print("PREPEAK: nb_panels = ", self.xasmain)
+        # for page in self.xasmain.nb.pagelist:
+        #     print(page, page.__class__.__name__, page.title)
+            
         try:
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             self.fill_form(dgroup)
+
+
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -563,13 +568,17 @@ class PrePeakPanel(TaskPanel):
         ppeak_emax = self.add_floatspin('ppeak_emax', value=0, **fsopts)
 
         self.fitbline_btn  = Button(pan,'Fit Baseline', action=self.onFitBaseline,
-                                    size=(125, -1))
+                                    size=(150, -1))
 
         self.plotmodel_btn = Button(pan,
-                                    'Plot Model',
-                                    action=self.onPlotModel,  size=(125, -1))
-        self.fitmodel_btn = Button(pan, 'Fit Model',
-                                   action=self.onFitModel,  size=(125, -1))
+                                    'Plot Current Model',
+                                    action=self.onPlotModel,  size=(150, -1))
+        self.fitmodel_btn = Button(pan, 'Fit Current Group',
+                                   action=self.onFitModel,  size=(150, -1))
+        self.fitmodel_btn.Disable()
+        self.fitselected_btn = Button(pan, 'Fit Selected Groups',
+                                   action=self.onFitSelected,  size=(150, -1))
+        self.fitselected_btn.Disable()
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
@@ -609,7 +618,7 @@ class PrePeakPanel(TaskPanel):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
         pan.Add(SimpleText(pan, 'Pre-edge Peak Fitting',
-                           **self.titleopts), dcol=5)
+                           size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
 
         add_text('Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
@@ -641,8 +650,7 @@ class PrePeakPanel(TaskPanel):
         pan.Add(HLine(pan, size=(575, 2)), dcol=6, newrow=True)
 
 
-        add_text('Main Model Components', newrow=True, dcol=5)
-        pan.Add(self.fitmodel_btn)
+        add_text('Model Components: ', newrow=True, dcol=5)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -653,10 +661,13 @@ class PrePeakPanel(TaskPanel):
         pan.Add(ts, dcol=4)
         pan.Add(self.plotmodel_btn)
 
-        # pan.Add(SimpleText(pan, 'Run Fit: '), dcol=5, newrow=True)
-        
+
+        pan.Add(SimpleText(pan, 'Fit Model to Current Group : '), dcol=5, newrow=True)
+        pan.Add(self.fitmodel_btn)
+               
         pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
-        pan.Add(self.message, dcol=6)
+        pan.Add(self.message, dcol=4)
+        pan.Add(self.fitselected_btn)
         pan.Add((10, 10), newrow=True)
 
         pan.Add(HLine(self, size=(550, 2)), dcol=6, newrow=True)
@@ -780,7 +791,7 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
 
         self.fill_form(dgroup)
         self.fitmodel_btn.Enable()
-        # self.fitallmodel_btn.Enable()
+        self.fitselected_btn.Enable()
 
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
@@ -842,7 +853,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
-        g = self.build_fitmodel(dgroup)
+        g = self.build_fitmodel(dgroup.groupname)
         self.onPlot(show_init=True)
 
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
@@ -999,6 +1010,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
         self.fitmodel_btn.Enable()
+        self.fitselected_btn.Enable()
 
 
     def onDeleteComponent(self, evt=None, prefix=None):
@@ -1016,6 +1028,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.fit_components.pop(prefix)
         if len(self.fit_components) < 1:
             self.fitmodel_btn.Disable()
+            self.fitselected_btn.Enable()            
 
         # sx,sy = self.GetSize()
         # self.SetSize((sx, sy+1))
@@ -1176,7 +1189,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         i2 = index_of(x, opts['emax'] + en_eps) + 1
         return i1, i2
 
-    def build_fitmodel(self, dgroup):
+    def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         # self.summary = {'components': [], 'options': {}}
         peaks = []
@@ -1184,9 +1197,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         modcmds = ["## define pre-edge peak model"]
         modop = " ="
         opts = self.read_form()
+        if groupname is None:
+            groupname = opts['gname']
 
-
-        opts['group'] = opts['gname']
+        opts['group'] = groupname
+        dgroup = self.controller.get_group(groupname)        
+        print("Build FitModel for ", groupname, dgroup, dgroup.filename)
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
 
@@ -1230,13 +1246,69 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
     def onFitSelected(self, event=None):
         dgroup = self.controller.get_group()
-        self.build_fitmodel(dgroup)
+        if dgroup is None:
+            return
+
+        opts = self.read_form()
+        selected_groups = self.controller.filelist.GetCheckedStrings()
+        print("MultiFit --> " , selected_groups)
+        groups = [self.controller.file_groups[cn] for cn in selected_groups]
+        for gname in groups:
+            dgroup = self.controller.get_group(gname)
+            if not hasattr(dgroup, 'norm'):
+                self.xasmain.get_nbpage('xasnorm').process(dgroup)
+            print("MultiFit --> " , gname, dgroup)
+            self.build_fitmodel(gname)            
+            opts['group'] = opts['gname']
+            self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+
+            ppeaks = dgroup.prepeaks
+
+            # add bkg_component to saved user options
+            bkg_comps = []
+            for label, comp in self.fit_components.items():
+                if comp.bkgbox.IsChecked():
+                    bkg_comps.append(label)
+            opts['bkg_components'] = bkg_comps
+            imin, imax = self.get_xranges(dgroup.xdat)
+            cmds = ["## do peak fit for group %s / %s " % (gname, dgroup.filename) ]
+
+            yerr_type = 'set_yerr_const'
+            yerr = getattr(dgroup, 'yerr', None)
+            if yerr is None:
+                if hasattr(dgroup, 'norm_std'):
+                    cmds.append("{group}.yerr = {group}.norm_std")
+                    yerr_type = 'set_yerr_array'
+                elif hasattr(dgroup, 'mu_std'):
+                    cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
+                    yerr_type = 'set_yerr_array'
+                else:
+                    cmds.append("{group}.yerr = 1")
+            elif isinstance(dgroup.yerr, np.ndarray):
+                    yerr_type = 'set_yerr_array'
+
+
+            cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
+            cmd = '\n'.join(cmds)
+            self.larch_eval(cmd.format(group=dgroup.groupname,
+                                       imin=imin, imax=imax,
+                                       user_opts=repr(opts)))
+
+            self.autosave_modelresult(self.larch_get("peakresult"))
+
+            # self.onPlot()
+        print("MultiFit done, should show all results!")
+        self.show_subframe('prepeak_result_frame', FitResultFrame,
+                                  datagroup=dgroup, peakframe=self)
+        self.subframes['prepeak_result_frame'].show_results()
+
+
 
     def onFitModel(self, event=None):
         dgroup = self.controller.get_group()
         if dgroup is None:
             return
-        self.build_fitmodel(dgroup)
+        self.build_fitmodel(dgroup.groupname)
         opts = self.read_form()
 
         dgroup = self.controller.get_group()
@@ -1244,7 +1316,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
         ppeaks = dgroup.prepeaks
-
 
         # add bkg_component to saved user options
         bkg_comps = []
