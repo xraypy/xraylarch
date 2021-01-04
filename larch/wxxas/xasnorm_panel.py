@@ -71,6 +71,7 @@ class XASNormPanel(TaskPanel):
     def __init__(self, parent, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='xasnorm_config',
+                           title='XAS Normalization',
                            config=defaults, **kws)
 
     def build_display(self):
@@ -162,7 +163,8 @@ class XASNormPanel(TaskPanel):
         add_text = self.add_text
         HLINEWID = 575
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
-                             **self.titleopts), dcol=4)
+                             size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
+        
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
                   style=RIGHT, dcol=2)
 

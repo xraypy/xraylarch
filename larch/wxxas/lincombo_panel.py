@@ -597,6 +597,7 @@ class LinearComboPanel(TaskPanel):
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='lincombo_config',
+                           title='Linear Combination Analysis',
                            config=defaults, **kws)
 
     def process(self, dgroup, **kws):
@@ -643,8 +644,8 @@ class LinearComboPanel(TaskPanel):
                                         min_val=0, max_val=20, size=(60, -1),
                                         with_pin=False)
 
-        panel.Add(SimpleText(panel, ' Linear Combination Analysis',
-                             **self.titleopts), dcol=4)
+        panel.Add(SimpleText(panel, 'Linear Combination Analysis',
+                             size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
 
         add_text('Array to Fit: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=3)

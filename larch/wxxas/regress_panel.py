@@ -150,7 +150,8 @@ class RegressionPanel(TaskPanel):
                                       size=(150, -1),  action=self.onFillTable)
 
         panel.Add(SimpleText(panel, 'Feature Regression, Model Selection',
-                             **self.titleopts), dcol=4)
+                             size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
+
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=4)
 

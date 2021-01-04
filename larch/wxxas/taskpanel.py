@@ -129,10 +129,11 @@ class TaskPanel(wx.Panel):
     """generic panel for main tasks.
     meant to be subclassed
     """
-    def __init__(self, parent, controller, title='Generic Panel',
+    def __init__(self, parent, controller, xasmain=None, title='Generic Panel',
                  configname='task_config', config=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
+        self.xasmain = xasmain or parent
         self.controller = controller
         self.larch = controller.larch
         self.title = title
@@ -142,7 +143,8 @@ class TaskPanel(wx.Panel):
         self.wids = {}
         self.subframes = {}
         self.SetFont(Font(FONTSIZE))
-        self.titleopts = dict(font=Font(FONTSIZE+2), colour='#AA0000')
+        self.titleopts = dict(font=Font(FONTSIZE+2),
+                              colour='#AA0000', style=LEFT)
 
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         self.panel.sizer.SetVGap(5)

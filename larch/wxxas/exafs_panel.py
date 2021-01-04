@@ -70,6 +70,7 @@ class EXAFSPanel(TaskPanel):
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='exafs_config',
+                           title='EXAFS Background Subtraction and Fourier Transforms',
                            config=defaults, **kws)
         self.skip_process = False
         self.last_plot = 'one'
@@ -156,7 +157,8 @@ class EXAFSPanel(TaskPanel):
                           action=partial(self.onCopyParam, name))
 
 
-        panel.Add(SimpleText(panel, ' EXAFS Processing', **self.titleopts), dcol=5)
+        panel.Add(SimpleText(panel, 'EXAFS Data Reduction and Fourier Transforms',
+                             size=(350, -1),  **self.titleopts), style=LEFT, dcol=6)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.wids['plotsel_op'], dcol=2)
@@ -178,7 +180,7 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        panel.Add(SimpleText(panel, ' Background subtraction', size=(180, -1),
+        panel.Add(SimpleText(panel, ' Background subtraction', size=(200, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
@@ -215,7 +217,7 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        panel.Add(SimpleText(panel, ' Fourier transform    ', size=(180, -1),
+        panel.Add(SimpleText(panel, ' Fourier transform    ', size=(200, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
