@@ -146,8 +146,8 @@ class PCAPanel(TaskPanel):
         wids['fit_chi2'] = SimpleText(panel,   ' N/A ', size=(150,-1))
         wids['fit_dscale'] = SimpleText(panel, ' N/A ', size=(150,-1))
 
-        panel.Add(SimpleText(panel, ' Principal Component Analysis',
-                             **self.titleopts), dcol=4)
+        panel.Add(SimpleText(panel, 'Principal Component Analysis',
+                             size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
 
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=2)
@@ -330,7 +330,7 @@ class PCAPanel(TaskPanel):
         for gname in groups:
             grp = self.controller.get_group(gname)
             if not hasattr(grp, 'norm'):
-                self.parent.nb_panels[0].process(grp)
+                self.parent.nb.pagelist[0].process(grp)
 
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
@@ -369,7 +369,7 @@ class PCAPanel(TaskPanel):
 
     def onSavePCAModel(self, event=None):
         form = self.read_form()
-        print("SAVE model: form: ", form)
+        # print("SAVE model: form: ", form)
 
     def onLoadPCAModel(self, event=None):
         form = self.read_form()
