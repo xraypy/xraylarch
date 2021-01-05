@@ -28,7 +28,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         FileSave, FileOpen, flatnotebook)
+                         FileSave, FileOpen, flatnotebook,
+                         EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
@@ -139,32 +140,60 @@ peakresult.user_options = {user_opts:s}
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
-
 def get_xlims(x, xmin, xmax):
     xeps = min(np.diff(x))/ 5.
     i1 = index_of(x, xmin + xeps)
     i2 = index_of(x, xmax + xeps) + 1
     return i1, i2
 
-class FitResultFrame(wx.Frame):
+class PrePeakFitResultFrame(wx.Frame):
     config_sect = 'prepeak'
     def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
-
-        wx.Frame.__init__(self, None, -1, title='Fit Results',
-                          style=FRAMESTYLE, size=(625, 750), **kws)
+        wx.Frame.__init__(self, None, -1, title='Pre-edge Peak Fit Results',
+                          style=FRAMESTYLE, size=(900, 700), **kws)
         self.peakframe = peakframe
         self.datagroup = datagroup
         self.peakfit_history = getattr(datagroup.prepeaks, 'fit_history', [])
+        self.parent = parent
+        self.datasets = {}
+        self.form = {}
+        self.larch_eval = None
         self.nfit = 0
+        self.createMenus()
         self.build()
 
-    def build(self):
-        sizer = wx.GridBagSizer(10, 5)
-        sizer.SetVGap(5)
-        sizer.SetHGap(5)
+    def createMenus(self):
+        self.menubar = wx.MenuBar()
+        fmenu = wx.Menu()
+        m = {}
+        MenuItem(self, fmenu, "Save Model for Current Group",
+                 "Save Model and Result to be loaded later",
+                 self.onSaveFitResult)
 
-        panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((700, 450))
+        MenuItem(self, fmenu, "Save Fit and Components for Current Fit",
+                 "Save Arrays and Results to Text File",
+                 self.onExportFitResult)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Save Parameters and Statistics for All Fitted Groups",
+                 "Save CSV File of Parameters and Statistics for All Fitted Groups",
+                 self.onSaveAllStats)
+        self.menubar.Append(fmenu, "&File")
+        self.SetMenuBar(self.menubar)
+
+    def build(self):
+        sizer = wx.GridBagSizer(3, 3)
+        sizer.SetVGap(3)
+        sizer.SetHGap(3)
+
+        splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(200)
+
+        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+                                           size=(250, -1))
+        panel = scrolled.ScrolledPanel(splitter)
+
+        panel.SetMinSize((775, 575))
         self.colors = GUIColors()
 
         # title row
@@ -176,49 +205,25 @@ class FitResultFrame(wx.Frame):
                                         minsize=(350, -1),
                                         colour=self.colors.title, style=LEFT)
 
-        wids['hist_info'] = SimpleText(panel, ' ___ ', font=Font(FONTSIZE+2),
-                                       minsize=(200, -1),
-                                       colour=self.colors.title, style=LEFT)
-
-        wids['hist_hint'] = SimpleText(panel, ' (Fit #01 is most recent)  ',
-                                       font=Font(FONTSIZE+2), minsize=(200, -1),
-                                       colour=self.colors.title,
-                                       style=LEFT)
-
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
         wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
-        self.plot_choice = Button(panel, 'Plot Selected Fit',
-                                  size=(175, -1), action=self.onPlot)
+        self.plot_choice = Button(panel, 'Plot This Fit',
+                                  size=(125, -1), action=self.onPlot)
 
-
-        self.save_result = Button(panel, 'Save Selected Model',
-                                  size=(175, -1), action=self.onSaveFitResult)
-        SetTip(self.save_result, 'save model and result to be loaded later')
-        self.export_fit  = Button(panel, 'Export Fit',
-                                  size=(175, -1), action=self.onExportFitResult)
-        SetTip(self.export_fit, 'save arrays and results to text file')
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 2), LEFT)
-        sizer.Add(wids['data_title'], (irow, 2), (1, 2), LEFT)
-
-        irow += 1
-        sizer.Add(wids['hist_info'],  (irow, 0), (1, 2), LEFT)
-        sizer.Add(wids['hist_hint'],  (irow, 2), (1, 2), LEFT)
+        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
 
         irow += 1
         wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(700, 50), style=LEFT)
+                                        size=(750, 50), style=LEFT)
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
         irow += 1
-        sizer.Add(self.save_result, (irow, 0), (1, 1), LEFT)
-        sizer.Add(self.export_fit,  (irow, 1), (1, 2), LEFT)
-
-        irow += 1
         # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 2), LEFT)
-        sizer.Add(wids['plot_bline'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plot_bline'], (irow, 1), (1, 2), LEFT)
         sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
 
         irow += 1
@@ -227,27 +232,29 @@ class FitResultFrame(wx.Frame):
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LEFT)
-        sizer.Add(title, (irow, 0), (1, 4), LEFT)
+        subtitle = SimpleText(panel, '  (Fit #01 is most recent)',
+                              font=Font(FONTSIZE+1),  style=LEFT)
+
+        sizer.Add(title, (irow, 0), (1, 1), LEFT)
+        sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit #',  width=50)
-        sview.AppendTextColumn(' N_data', width=70)
-        sview.AppendTextColumn(' N_vary', width=70)
-        sview.AppendTextColumn(' N_eval', width=65)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=105)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=105)
-        sview.AppendTextColumn(' Akaike Info', width=110)
-        sview.AppendTextColumn(' Bayesian Info', width=110)
+        sview.AppendTextColumn(' Fit#',  width=75)
+        sview.AppendTextColumn(' N_data', width=75)
+        sview.AppendTextColumn(' N_vary', width=75)
+        sview.AppendTextColumn('\u03c7\u00B2', width=110)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
+        sview.AppendTextColumn('Akaike Info', width=110)
+        sview.AppendTextColumn('Bayesian Info', width=110)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
-            isort, align = True, wx.ALIGN_RIGHT
-            if col == 0:
-                align = wx.ALIGN_CENTER
-            this.Sortable = isort
-            this.Alignment = this.Renderer.Alignment = align
-        sview.SetMinSize((725, 125))
+            this.Sortable = True
+            this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
+            this.Renderer.Alignment = this.Alignment
+
+        sview.SetMinSize((700, 125))
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
@@ -274,13 +281,11 @@ class FitResultFrame(wx.Frame):
 
         for col in range(4):
             this = pview.Columns[col]
-            align = wx.ALIGN_LEFT
-            if col in (1, 2):
-                align = wx.ALIGN_RIGHT
             this.Sortable = False
-            this.Alignment = this.Renderer.Alignment = align
+            this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
+            this.Renderer.Alignment = this.Alignment
 
-        pview.SetMinSize((725, 200))
+        pview.SetMinSize((700, 200))
         pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
 
         irow += 1
@@ -306,8 +311,6 @@ class FitResultFrame(wx.Frame):
         sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LEFT)
         sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
-        irow += 1
-
         cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
 
         cview.AppendTextColumn('Parameter 1',    width=150)
@@ -325,18 +328,73 @@ class FitResultFrame(wx.Frame):
 
         irow += 1
         sizer.Add(cview, (irow, 0), (1, 5), LEFT)
-        irow += 1
-        sizer.Add(HLine(panel, size=(400, 3)), (irow, 0), (1, 5), LEFT)
 
         pack(panel, sizer)
         panel.SetupScrolling()
 
+        splitter.SplitVertically(self.datalistbox, panel, 1)
+
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
 
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+
+    def onSaveAllStats(self, evt=None):
+        "Save Parameters and Statistics to CSV"
+        # get first dataset to extract fit parameter names
+        fnames = self.datalistbox.GetItems()
+        if len(fnames) == 0:
+            return
+
+        deffile = "PrePeaksResults.csv"
+        wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
+        path = FileSave(self, 'Save Parameter and Statistics for Pre-edge Peak Fits',
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+
+        ppeaks_tmpl = self.datasets[fnames[0]].prepeaks
+        param_names = list(reversed(ppeaks_tmpl.fit_history[0].params.keys()))
+        user_opts = ppeaks_tmpl.user_options
+
+        out = ['# Pre-edge Peak Fit Report %s' % time.ctime(),
+               '# Fitted Array name: %s' %  user_opts['array_name'],
+               '# Baseline form: %s' % user_opts['baseline_form'],
+               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
+               '#--------------------']
+
+        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
+                 'n_varys', 'chi-square', 'reduced_chi-square',
+                 'akaike_info', 'bayesian_info']
+
+        for pname in param_names:
+            labels.append(pname)
+            labels.append(pname+'_stderr')
+        out.append('# %s' % (', '.join(labels)))
+        for name, dgroup in self.datasets.items():
+            result = dgroup.prepeaks.fit_history[0]
+            label = dgroup.filename
+            if len(label) < 25:
+                label = (label + ' '*25)[:25]
+            dat = [label, dgroup.groupname,
+                   '%d' % result.ndata, '%d' % result.nvarys]
+            for attr in ('chisqr', 'redchi', 'aic', 'bic'):
+                dat.append(gformat(getattr(result, attr), 11))
+            for pname in param_names:
+                val = stderr = 0
+                if pname in result.params:
+                    par = result.params[pname]
+                    dat.append(gformat(par.value, 11))
+                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
+                    dat.append(stderr)
+            out.append(', '.join(dat))
+        out.append('')
+
+        with open(path, 'w') as fh:
+            fh.write('\n'.join(out))
 
 
     def onSaveFitResult(self, event=None):
@@ -447,18 +505,40 @@ class FitResultFrame(wx.Frame):
         result = self.get_fitresult()
         self.peakframe.update_start_values(result.params)
 
-    def show_results(self):
+    def ShowDataSet(self, evt=None):
+        dataset = evt.GetString()
+        group = self.datasets.get(evt.GetString(), None)
+        if group is not None:
+            self.show_results(datagroup=group)
+
+    def add_results(self, dgroup, form=None, larch_eval=None, show=True):
+        name = dgroup.filename
+        if name not in self.datalistbox.GetItems():
+            self.datalistbox.Append(name)
+        self.datasets[name] = dgroup
+        if show:
+            self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
+
+    def show_results(self, datagroup=None, form=None, larch_eval=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+        if larch_eval is not None:
+            self.larch_eval = larch_eval
+
+        datagroup = self.datagroup
+        self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
+
         cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.peakfit_history):
             args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
+            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
                 val = getattr(res.result, attr)
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
-                    val = gformat(val, 11)
+                    val = gformat(val, 10)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
@@ -471,47 +551,40 @@ class FitResultFrame(wx.Frame):
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['hist_info'].SetLabel("Fit #%2.2d of %d" % (nfit+1, len(self.peakfit_history)))
 
-        parts = []
         model_repr = result.model._reprstring(long=True)
-        for word in model_repr.split('Model('):
-            if ',' in word:
-                pref, suff = word.split(', ', 1)
-                parts.append( ("%sModel(%s" % (pref.title(), suff) ))
+        for word in ('Model(', ',', '(', ')', '+'):
+            model_repr = model_repr.replace(word, ' ')
+        words = []
+        mname, imodel = '', 0
+        for word in model_repr.split():
+            if word.startswith('prefix'):
+                words.append("%sModel(%s)" % (mname.title(), word))
             else:
-                parts.append(word)
-        desc = ''.join(parts)
-        parts = []
-        tlen = 90
-        while len(desc) >= tlen:
-            i = desc[tlen-1:].find('+')
-            if i < 0:
-                break
-            parts.append(desc[:tlen+i])
-            desc = desc[tlen+i:]
-        parts.append(desc)
-        wids['model_desc'].SetLabel('\n'.join(parts))
-
+                mname = word
+                if imodel > 0:
+                    delim = '+' if imodel % 2 == 1 else '+\n'
+                    words.append(delim)
+                imodel += 1
+        wids['model_desc'].SetLabel(''.join(words))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for param in reversed(result.params.values()):
             pname = param.name
             try:
-                val = gformat(param.value)
+                val = gformat(param.value, 10)
             except (TypeError, ValueError):
                 val = ' ??? '
-
             serr = ' N/A '
             if param.stderr is not None:
                 serr = gformat(param.stderr, 10)
             extra = ' '
             if param.expr is not None:
-                extra = ' = %s ' % param.expr
+                extra = '= %s ' % param.expr
             elif not param.vary:
-                extra = ' (fixed)'
+                extra = '(fixed)'
             elif param.init_value is not None:
-                extra = ' (init=%s)' % gformat(param.init_value, 11)
+                extra = '(init=%s)' % gformat(param.init_value, 10)
 
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
@@ -522,7 +595,7 @@ class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='prepeaks_config',
-                           title='Pre-edge Peak Analysis',                           
+                           title='Pre-edge Peak Analysis',
                            config=defaults, **kws)
 
         self.fit_components = OrderedDict()
@@ -540,17 +613,11 @@ class PrePeakPanel(TaskPanel):
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
-        # print("PREPEAK: nb_panels = ", self.xasmain)
-        # for page in self.xasmain.nb.pagelist:
-        #     print(page, page.__class__.__name__, page.title)
-            
         try:
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
             self.fill_form(dgroup)
-
-
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
 
@@ -588,7 +655,7 @@ class PrePeakPanel(TaskPanel):
         self.bline_choice = Choice(pan, size=(175, -1),
                                    choices=BaselineFuncs)
         self.bline_choice.SetSelection(2)
-        
+
         models_peaks = Choice(pan, size=(150, -1),
                               choices=ModelChoices['peaks'],
                               action=self.addModel)
@@ -604,13 +671,9 @@ class PrePeakPanel(TaskPanel):
         self.message = SimpleText(pan,
                                  'first fit baseline, then add peaks to fit model.')
 
-        # self.msg_centroid = SimpleText(pan, '----')
-
         opts = dict(default=True, size=(75, -1), action=self.onPlot)
         self.show_peakrange = Check(pan, label='show?', **opts)
         self.show_fitrange  = Check(pan, label='show?', **opts)
-        # self.show_e0        = Check(pan, label='show?', **opts)
-        # self.show_centroid  = Check(pan, label='show?', **opts)
 
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
 
@@ -622,24 +685,24 @@ class PrePeakPanel(TaskPanel):
 
         add_text('Array to fit: ')
         pan.Add(self.array_choice, dcol=3)
-    
+
         # add_text('E0: ', newrow=False)
         # pan.Add(ppeak_e0)
         # pan.Add(self.show_e0)
-        
+
         add_text('Fit Energy Range: ')
         pan.Add(ppeak_emin)
         add_text(' : ', newrow=False)
         pan.Add(ppeak_emax)
         pan.Add(self.show_fitrange)
 
-        pan.Add(HLine(pan, size=(575, 2)), dcol=6, newrow=True)
+        pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
         add_text( 'Baseline Form: ')
         t = SimpleText(pan, 'Baseline Skip Range: ')
         SetTip(t, 'Range skipped over for baseline fit')
         pan.Add(self.bline_choice, dcol=3)
         pan.Add((10, 10))
-        pan.Add(self.fitbline_btn)      
+        pan.Add(self.fitbline_btn)
 
         pan.Add(t, newrow=True)
         pan.Add(ppeak_elo)
@@ -647,10 +710,7 @@ class PrePeakPanel(TaskPanel):
         pan.Add(ppeak_ehi)
 
         pan.Add(self.show_peakrange)
-        pan.Add(HLine(pan, size=(575, 2)), dcol=6, newrow=True)
-
-
-        add_text('Model Components: ', newrow=True, dcol=5)
+        pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
         #  add model
         ts = wx.BoxSizer(wx.HORIZONTAL)
@@ -664,13 +724,12 @@ class PrePeakPanel(TaskPanel):
 
         pan.Add(SimpleText(pan, 'Fit Model to Current Group : '), dcol=5, newrow=True)
         pan.Add(self.fitmodel_btn)
-               
+
         pan.Add(SimpleText(pan, 'Messages: '), newrow=True)
         pan.Add(self.message, dcol=4)
         pan.Add(self.fitselected_btn)
-        pan.Add((10, 10), newrow=True)
 
-        pan.Add(HLine(self, size=(550, 2)), dcol=6, newrow=True)
+        pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -714,8 +773,7 @@ class PrePeakPanel(TaskPanel):
 
             self.array_choice.SetStringSelection(dat['array_desc'])
             self.bline_choice.SetStringSelection(dat['baseline_form'])
-            # self.show_e0.Enable(dat['show_e0'])
-            # self.show_centroid.Enable(dat['show_centroid'])
+
             self.show_fitrange.Enable(dat['show_fitrange'])
             self.show_peakrange.Enable(dat['show_peakrange'])
 
@@ -740,7 +798,6 @@ class PrePeakPanel(TaskPanel):
         # form_opts['show_centroid'] = self.show_centroid.IsChecked()
         form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
         form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
-        # form_opts['show_e0'] = self.show_e0.IsChecked()
         return form_opts
 
     def onFitBaseline(self, evt=None):
@@ -924,7 +981,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                         action=partial(self.onDeleteComponent, prefix=prefix))
 
         pick2msg = SimpleText(panel, "    ", size=(125, -1))
-        pick2btn = Button(panel, 'Pick Values from Plotted Data', size=(200, -1),
+        pick2btn = Button(panel, 'Pick Values from Plot', size=(200, -1),
                           action=partial(self.onPick2Points, prefix=prefix))
 
         # SetTip(mname,  'Label for the model component')
@@ -941,8 +998,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
         panel.Add(delbtn, dcol=2, style=wx.ALIGN_RIGHT)
-
-        # panel.Add(HLine(panel, size=(150,  3)), dcol=4, style=wx.ALIGN_CENTER)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
@@ -1028,7 +1083,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.fit_components.pop(prefix)
         if len(self.fit_components) < 1:
             self.fitmodel_btn.Disable()
-            self.fitselected_btn.Enable()            
+            self.fitselected_btn.Enable()
 
         # sx,sy = self.GetSize()
         # self.SetSize((sx, sy+1))
@@ -1201,10 +1256,8 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             groupname = opts['gname']
 
         opts['group'] = groupname
-        dgroup = self.controller.get_group(groupname)        
-        print("Build FitModel for ", groupname, dgroup, dgroup.filename)
+        dgroup = self.controller.get_group(groupname)
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-
 
         for comp in self.fit_components.values():
             _cen, _amp = None, None
@@ -1250,18 +1303,20 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             return
 
         opts = self.read_form()
+
+        self.show_subframe('prepeak_result', PrePeakFitResultFrame,
+                           datagroup=dgroup, peakframe=self)
+
         selected_groups = self.controller.filelist.GetCheckedStrings()
-        print("MultiFit --> " , selected_groups)
         groups = [self.controller.file_groups[cn] for cn in selected_groups]
-        for gname in groups:
+        ngroups = len(groups)
+        for igroup, gname in enumerate(groups):
             dgroup = self.controller.get_group(gname)
             if not hasattr(dgroup, 'norm'):
                 self.xasmain.get_nbpage('xasnorm').process(dgroup)
-            print("MultiFit --> " , gname, dgroup)
-            self.build_fitmodel(gname)            
+            self.build_fitmodel(gname)
             opts['group'] = opts['gname']
             self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-
             ppeaks = dgroup.prepeaks
 
             # add bkg_component to saved user options
@@ -1287,7 +1342,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             elif isinstance(dgroup.yerr, np.ndarray):
                     yerr_type = 'set_yerr_array'
 
-
             cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
             cmd = '\n'.join(cmds)
             self.larch_eval(cmd.format(group=dgroup.groupname,
@@ -1295,13 +1349,9 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                        user_opts=repr(opts)))
 
             self.autosave_modelresult(self.larch_get("peakresult"))
-
-            # self.onPlot()
-        print("MultiFit done, should show all results!")
-        self.show_subframe('prepeak_result_frame', FitResultFrame,
-                                  datagroup=dgroup, peakframe=self)
-        self.subframes['prepeak_result_frame'].show_results()
-
+            self.subframes['prepeak_result'].add_results(dgroup, form=opts,
+                                                         larch_eval=self.larch_eval,
+                                                         show=igroup==ngroups-1)
 
 
     def onFitModel(self, event=None):
@@ -1353,9 +1403,10 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         self.autosave_modelresult(self.larch_get("peakresult"))
 
         self.onPlot()
-        self.show_subframe('prepeak_result_frame', FitResultFrame,
+        self.show_subframe('prepeak_result', PrePeakFitResultFrame,
                                   datagroup=dgroup, peakframe=self)
-        self.subframes['prepeak_result_frame'].show_results()
+        self.subframes['prepeak_result'].add_results(dgroup, form=opts,
+                                                     larch_eval=self.larch_eval)
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
