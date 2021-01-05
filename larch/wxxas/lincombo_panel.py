@@ -90,7 +90,7 @@ def make_lcfplot(dgroup, form, nfit=0):
     script = "\n".join(cmds)
     return script.format(**form)
 
-class ResultFrame(wx.Frame):
+class LinComboResultFrame(wx.Frame):
     def __init__(self, parent=None,  **kws):
 
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
@@ -141,12 +141,8 @@ class ResultFrame(wx.Frame):
         self.SetMinSize((650, 600))
         self.colors = GUIColors()
 
-        # title row
+        # 
         self.wids = wids = {}
-        title = SimpleText(panel, 'Linear Combination Results',
-                           font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
-
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
         wids['plot_sel'] = Button(panel, 'Plot N Best Fits', size=(125, -1),
@@ -158,7 +154,9 @@ class ResultFrame(wx.Frame):
                                       choices=['%d' % i for i in range(1, 21)])
         wids['plot_nchoice'].SetStringSelection('5')
 
-        wids['data_title'] = SimpleText(panel, '<--> ',  font=Font(FONTSIZE+2),
+        wids['data_title'] = SimpleText(panel, 'Linear Combination Result: <> ',
+                                        font=Font(FONTSIZE+2),
+                                        size=(400, -1), 
                                         colour=self.colors.title, style=LEFT)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
@@ -167,8 +165,7 @@ class ResultFrame(wx.Frame):
         wids['show_fitrange'] = Check(panel, label='show fit range?', **copts)
 
         irow = 0
-        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['data_title'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(wids['data_title'], (irow, 0), (1, 3), LEFT)
 
         irow += 1
         sizer.Add(wids['nfits_title'],     (irow, 0), (1, 1), LEFT)
@@ -296,8 +293,7 @@ class ResultFrame(wx.Frame):
         lcf_history = getattr(self.datagroup, 'lcf_history', [])
 
         wids = self.wids
-        wids['data_title'].SetLabel(self.datagroup.filename)
-        # wids['show_e0'].SetValue(form['show_e0'])
+        wids['data_title'].SetLabel('Linear Combination Result: %s ' %  self.datagroup.filename)
         wids['show_fitrange'].SetValue(form['show_fitrange'])
 
         wids['stats'].DeleteAllItems()
@@ -858,7 +854,7 @@ result = {func:s}({gname:s}, [{comps:s}],
         self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
-        self.show_subframe('lcf_result',  ResultFrame)
+        self.show_subframe('lcf_result',  LinComboResultFrame)
 
         self.subframes['lcf_result'].add_results(dgroup, form=form,
                                                  larch_eval=self.larch_eval)
