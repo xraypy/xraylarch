@@ -1194,8 +1194,8 @@ class GSEXRM_MapFile(object):
 
         if len(offset) != nmca:
             raise GSEXRM_Exception("incorrect XRF calibration data: need %d MCAs, not %d" % (nmca, len(offset)))
-        
-            
+
+
         _ex = np.arange(nchan, dtype=np.float64)
         enarr = []
         for i in range(len(offset)):
@@ -2897,7 +2897,7 @@ class GSEXRM_MapFile(object):
 
         roigroup, det_list, sumdet  = self.build_mca_roimap()
         if sumdet is None: sumdet = 'mcasum'
-        
+
         if 'sum_name' in roigroup and roiname in roigroup['sum_name']:
             raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
         for det in det_list+[sumdet]:
@@ -2927,12 +2927,12 @@ class GSEXRM_MapFile(object):
 
         sumraw = detraw.sum(axis=2)
         sumcor = detcor.sum(axis=2)
-
         for i,det in enumerate(det_list):
             self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy',unit)
         if sumdet is not None:
             self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
         self.get_roi_list('mcasum', force=True)
+
 
 
     def check_roi(self, roiname, det=None, version=None):
@@ -3195,15 +3195,14 @@ class GSEXRM_MapFile(object):
             else:
                 print("An ROI named '%s' exists, use overwrite=True to overwrite" % name)
                 return
-        #
 
     def del_roi(self, name):
         ''' delete an ROI'''
         roi_names = [i.lower().strip() for i in self.xrmmap['config/rois/name']]
-        if name.lower().strip() not in roi_name:
+        if name.lower().strip() not in roi_names:
             print("No ROI named '%s' found to delete" % name)
             return
-        iroi = roi_name.index(name.lower().strip())
+        iroi = roi_names.index(name.lower().strip())
         roi_names = [i in self.xrmmap['config/rois/name']]
         roi_names.pop(iroi)
 
