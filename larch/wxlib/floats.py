@@ -3,6 +3,7 @@ import wx
 from wx.lib.agw import floatspin as fspin
 
 is_wxPhoenix = 'phoenix' in wx.PlatformInfo
+is_gtk3  = 'gtk3' in wx.PlatformInfo
 
 from wxutils.icons import get_icon
 
@@ -11,8 +12,13 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
     """FloatSpin with action and tooltip"""
     if value is None:
         value = 0
-    fs = fspin.FloatSpin(parent, -1, size=size, value=value,
-                         digits=digits, increment=increment, **kws)
+    if is_gtk3:
+        fs = wx.SpinCtrlDouble(parent, -1, size=size, value=value,
+                               digits=digits, increment=increment, **kws)
+    else:
+        fs = fspin.FloatSpin(parent, -1, size=size, value=value,
+                             digits=digits, increment=increment, **kws)
+
     if action is not None:
         fs.Bind(fspin.EVT_FLOATSPIN, action)
     if tooltip is not None:
