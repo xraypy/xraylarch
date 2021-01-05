@@ -92,7 +92,6 @@ def make_lcfplot(dgroup, form, nfit=0):
 
 class LinComboResultFrame(wx.Frame):
     def __init__(self, parent=None,  **kws):
-
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
                           style=FRAMESTYLE, size=(825, 675), **kws)
         self.parent = parent
@@ -126,9 +125,9 @@ class LinComboResultFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
 
     def build(self):
-        sizer = wx.GridBagSizer(5, 5)
-        sizer.SetVGap(5)
-        sizer.SetHGap(5)
+        sizer = wx.GridBagSizer(3, 3)
+        sizer.SetVGap(3)
+        sizer.SetHGap(3)
 
         splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(200)
@@ -141,7 +140,7 @@ class LinComboResultFrame(wx.Frame):
         self.SetMinSize((650, 600))
         self.colors = GUIColors()
 
-        # 
+        #
         self.wids = wids = {}
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
@@ -156,7 +155,7 @@ class LinComboResultFrame(wx.Frame):
 
         wids['data_title'] = SimpleText(panel, 'Linear Combination Result: <> ',
                                         font=Font(FONTSIZE+2),
-                                        size=(400, -1), 
+                                        size=(400, -1),
                                         colour=self.colors.title, style=LEFT)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
 
