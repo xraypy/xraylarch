@@ -8,9 +8,11 @@ def fix_darwin_dylibs(debug=True):
     """
     itool = '/usr/bin/install_name_tool'
     orig_gfortran_dir = '/usr/local/gfortran/lib'
-
+    orig_gfortran_dir = '/usr/local/opt/gcc/lib/gcc/10/'
+    
     gfortran_libs = ('libgcc_s.1.dylib','libquadmath.0.dylib',
-                     'libgfortran.3.dylib')
+                     # 'libgfortran.3.dylib',
+                     'libgfortran.5.dylib')                     
 
     feff_libs = ('libfeff6.dylib', 'libcldata.dylib',
                  'libfeff8lpath.dylib', 'libfeff8lpotph.dylib')
