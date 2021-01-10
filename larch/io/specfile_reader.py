@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""SpecfileData object to read data in SPEC_ format
+"""Read data in SPEC_ format via `silx.io.open`
 ===================================================
 
 .. _SPEC: http://www.certif.com/content/spec
@@ -10,26 +10,29 @@ Requirements
 ------------
 - silx (http://www.silx.org/doc/silx/dev/modules/io/specfilewrapper.html)
 
-TODO
-----
-- _pymca_average() : use faster scipy.interpolate.interp1d
-- implement a 2D normalization in get_map
-- implement the case of dichroic measurements (two consecutive scans
-  with flipped helicity)
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "0.2.2"
+__version__ = "2020.12.1_larch"
 
 import os, sys
+import copy
+import datetime
 import numpy as np
+import h5py
+from silx.io.utils import open as silx_open
+from silx.io.convert import write_to_h5, _is_commonh5_group
 from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates
+
+from larch.math.utils import savitzky_golay
+from larch import Group
 
 # to grid X,Y,Z columnar data
 HAS_GRIDXYZ = False
 try:
     from larch.math.gridxyz import gridxyz
+
     HAS_GRIDXYZ = True
 except:
     pass
@@ -37,6 +40,7 @@ except:
 HAS_SPECFILE = False
 try:
     from silx.io import specfilewrapper as specfile
+
     HAS_SPECFILE = True
 except ImportError:
     pass
@@ -44,23 +48,26 @@ except ImportError:
 # SimpleMath from PyMca5
 HAS_SIMPLEMATH = False
 try:
-   from PyMca5.PyMcaMath import SimpleMath
-   HAS_SIMPLEMATH = True
+    from PyMca5.PyMcaMath import SimpleMath
+
+    HAS_SIMPLEMATH = True
 except ImportError:
-   pass
+    pass
 
 # SG module from PyMca5
 HAS_SGMODULE = False
 try:
-   from PyMca5.PyMcaMath import SGModule
-   HAS_SGMODULE = True
+    from PyMca5.PyMcaMath import SGModule
+
+    HAS_SGMODULE = True
 except ImportError:
-   pass
+    pass
 
 # specfile_writer
 HAS_SFDW = False
 try:
     from .specfile_writer import SpecfileDataWriter
+
     HAS_SFDW = True
 except (ValueError, ImportError):
     pass
@@ -84,29 +91,29 @@ def _str2rng(rngstr, keeporder=True, rebin=None):
 
     """
     _rng = []
-    for _r in rngstr.split(', '): #the space is important!
-        if (len(_r.split(',')) > 1):
+    for _r in rngstr.split(", "):  # the space is important!
+        if len(_r.split(",")) > 1:
             raise NameError("Space after comma(s) is missing in '{0}'".format(_r))
-        _rsplit2 = _r.split(':')
-        if (len(_rsplit2) == 1):
+        _rsplit2 = _r.split(":")
+        if len(_rsplit2) == 1:
             _rng.append(_r)
-        elif (len(_rsplit2) == 2 or len(_rsplit2) == 3):
-            if len(_rsplit2) == 2 :
-                _rsplit2.append('1')
-            if (_rsplit2[0] == _rsplit2[1]):
+        elif len(_rsplit2) == 2 or len(_rsplit2) == 3:
+            if len(_rsplit2) == 2:
+                _rsplit2.append("1")
+            if _rsplit2[0] == _rsplit2[1]:
                 raise NameError("Wrong range '{0}' in string '{1}'".format(_r, rngstr))
-            if (int(_rsplit2[0]) > int(_rsplit2[1])):
+            if int(_rsplit2[0]) > int(_rsplit2[1]):
                 raise NameError("Wrong range '{0}' in string '{1}'".format(_r, rngstr))
-            _rng.extend(range(int(_rsplit2[0]), int(_rsplit2[1])+1, int(_rsplit2[2])))
+            _rng.extend(range(int(_rsplit2[0]), int(_rsplit2[1]) + 1, int(_rsplit2[2])))
         else:
             raise NameError("Too many colon in {0}".format(_r))
 
-    #create the list and return it (removing the duplicates)
+    # create the list and return it (removing the duplicates)
     _rngout = [int(x) for x in _rng]
 
     if rebin is not None:
         try:
-            _rngout = _rngout[::int(rebin)]
+            _rngout = _rngout[:: int(rebin)]
         except:
             raise NameError("Wrong rebin={0}".format(int(rebin)))
 
@@ -120,6 +127,7 @@ def _str2rng(rngstr, keeporder=True, rebin=None):
     else:
         return list(set(_rngout))
 
+
 def _mot2array(motor, acopy):
     """simple utility to generate a copy of an array containing a
     constant value (e.g. motor position)
@@ -127,6 +135,7 @@ def _mot2array(motor, acopy):
     """
     a = np.ones_like(acopy)
     return np.multiply(a, motor)
+
 
 def _make_dlist(dall, rep=1):
     """make a list of strings representing the scans to average
@@ -141,27 +150,31 @@ def _make_dlist(dall, rep=1):
     dlist : list of lists of int
 
     """
-    dlist = [[] for d in xrange(rep)]
+    dlist = [[] for d in range(rep)]
     for idx in range(rep):
         dlist[idx] = dall[idx::rep]
     return dlist
+
 
 def _checkZeroDiv(num, dnum):
     """compatibility layer"""
     print("DEPRECATED: use '_check_zero_div' instead")
     return _check_zero_div(num, dnum)
 
+
 def _check_zero_div(num, dnum):
     """simple division check to avoid ZeroDivisionError"""
     try:
-        return num/dnum
+        return num / dnum
     except ZeroDivisionError:
         print("ERROR: found a division by zero")
+
 
 def _checkScans(scans):
     """compatibility layer"""
     print("DEPRECATED: use '_check_scans' instead")
     return _check_scans(scans)
+
 
 def _check_scans(scans):
     """simple checker for scans input"""
@@ -171,12 +184,15 @@ def _check_scans(scans):
         try:
             nscans = _str2rng(scans)
         except:
-            raise NameError("scans string '{0}' not understood by str2rng".format(scans))
+            raise NameError(
+                "scans string '{0}' not understood by str2rng".format(scans)
+            )
     elif type(scans) is list:
         nscans = scans
     else:
         raise NameError("Provide a string or list of scans to load")
     return nscans
+
 
 def _numpy_sum_list(xdats, zdats):
     """sum list of arrays
@@ -190,17 +206,18 @@ def _numpy_sum_list(xdats, zdats):
     xdats[0], sum(zdats)
     """
     try:
-        #sum element-by-element
+        # sum element-by-element
         arr_zdats = np.array(zdats)
         return xdats[0], np.sum(arr_zdats, 0)
     except:
-        #sum by interpolation
+        # sum by interpolation
         xref = xdats[0]
         zsum = np.zeros_like(xref)
         for xdat, zdat in zip(xdats, zdats):
             fdat = interp1d(xdat, zdat)
             zsum += fdat(xref)
         return xref, zsum
+
 
 def _pymca_average(xdats, zdats):
     """call to SimpleMath.average() method from PyMca/SimpleMath.py
@@ -219,7 +236,10 @@ def _pymca_average(xdats, zdats):
         print("Merging data...")
         return sm.average(xdats, zdats)
     else:
-        raise NameError("SimpleMath is not available -- this operation cannot be performed!")
+        raise NameError(
+            "SimpleMath is not available -- this operation cannot be performed!"
+        )
+
 
 def _pymca_SG(ydat, npoints=3, degree=1, order=0):
     """call to symmetric Savitzky-Golay filter in PyMca
@@ -242,97 +262,530 @@ def _pymca_SG(ydat, npoints=3, degree=1, order=0):
 
     """
     if HAS_SGMODULE:
-        return SGModule.getSavitzkyGolay(ydat, npoints=npoints, degree=degree, order=order)
+        return SGModule.getSavitzkyGolay(
+            ydat, npoints=npoints, degree=degree, order=order
+        )
     else:
-        raise NameError("SGModule is not available -- this operation cannot be performed!")
+        raise NameError(
+            "SGModule is not available -- this operation cannot be performed!"
+        )
 
-def savitzky_golay(y, window_size, order, deriv=0):
-    # code from from scipy cookbook
-    """Smooth (and optionally differentiate) data with a Savitzky-Golay
-    filter.  The Savitzky-Golay filter removes high frequency noise
-    from data.  It has the advantage of preserving the original shape
-    and features of the signal better than other types of filtering
-    approaches, such as moving averages techhniques.
-
-    Parameters
-    ----------
-    y : array_like, shape (N,)
-        the values of the time history of the signal.
-    window_size : int
-                  the length of the window. Must be an odd integer
-                  number.
-    order : int
-            the order of the polynomial used in the filtering. Must be
-            less then `window_size` - 1.
-    deriv: int
-           the order of the derivative to compute (default = 0 means
-           only smoothing)
-
-    Returns
-    -------
-    ys : ndarray, shape (N)
-         the smoothed signal (or it's n-th derivative).
-
-    Notes
-    -----
-    The Savitzky-Golay is a type of low-pass filter, particularly
-    suited for smoothing noisy data. The main idea behind this
-    approach is to make for each point a least-square fit with a
-    polynomial of high order over a odd-sized window centered at the
-    point.
-
-    Examples
-    --------
-    t = np.linspace(-4, 4, 500)
-    y = np.exp( -t**2 ) + np.random.normal(0, 0.05, t.shape)
-    ysg = savitzky_golay(y, window_size=31, order=4)
-    import matplotlib.pyplot as plt
-    plt.plot(t, y, label='Noisy signal')
-    plt.plot(t, np.exp(-t**2), 'k', lw=1.5, label='Original signal')
-    plt.plot(t, ysg, 'r', label='Filtered signal')
-    plt.legend()
-    plt.show()
-
-    References
-    ----------
-    .. [1] A. Savitzky, M. J. E. Golay, Smoothing and Differentiation
-           of Data by Simplified Least Squares Procedures. Analytical
-           Chemistry, 1964, 36 (8), pp 1627-1639.
-
-    .. [2] Numerical Recipes 3rd Edition: The Art of Scientific
-           Computing W.H. Press, S.A. Teukolsky, W.T. Vetterling,
-           B.P. Flannery Cambridge University Press ISBN-13:
-           9780521880688
-    """
-    try:
-        window_size = abs(int(window_size))
-        order = abs(int(order))
-    except ValueError(msg):
-        raise ValueError("window_size and order have to be of type int")
-    if window_size % 2 != 1 or window_size < 1:
-        raise TypeError("window_size size must be a positive odd number")
-    if window_size < order + 2:
-        raise TypeError("window_size is too small for the polynomials order")
-    order_range = range(order+1)
-    half_window = (window_size -1) // 2
-    # precompute coefficients
-    b = np.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
-    m = np.linalg.pinv(b).A[deriv]
-    # pad the signal at the extremes with
-    # values taken from the signal itself
-    firstvals = y[0] - np.abs( y[1:half_window+1][::-1] - y[0] )
-    lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
-    y = np.concatenate((firstvals, y, lastvals))
-    return np.convolve(m, y, mode='valid')
 
 ### ==================================================================
-### MAIN CLASS
+### CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
+### ==================================================================
+class DataSourceSpecH5(object):
+    """Data source utility wrapper for a Spec file read as HDF5 object
+    via silx.io.open"""
+
+    def __init__(self, fname=None, logger=None, urls_fmt="silx"):
+        """init with file name and default attributes
+
+        Parameters
+        ----------
+        fname : str
+            path string of a file that can be read by silx.io.open() [None]
+        logger : logging.getLogger() instance
+            [None -> sloth.utils.logging.getLogger()]
+        urls_fmt : str
+            how the data are organized in the HDF5 container
+            'silx' : default
+            'spec2nexus' : as converted by spec2nexus
+        """
+        if logger is None:
+            from larch.utils.logging import getLogger
+
+            _logger_name = "larch.io.specfile_reader.DataSourceSpecH5"
+            self._logger = getLogger(_logger_name, level="INFO")
+        else:
+            self._logger = logger
+
+        self.fname = fname
+        self._sf = None
+        if self.fname is not None:
+            self._init_source_file()
+        self._scan_n = None
+        self._scan_str = None
+        self._scan_kws = {  # to get data from scan
+            "ax_name": None,
+            "to_energy": None,
+            "sig_name": None,
+            "mon": None,
+            "deglitch": None,
+            "norm": None,
+        }
+        self._sg = None  # ScanGroup
+        if urls_fmt == "silx":
+            self._set_urls_silx()
+        elif urls_fmt == "spec2nexus":
+            self._set_urls_spec2nexus()
+        else:
+            self._urls_fmt = None
+            self._logger.error("'urls_fmt' not understood")
+        self.set_group()
+
+    def _init_source_file(self):
+        """init source file object"""
+        #: source file object (h5py-like)
+        try:
+            self._sf = silx_open(self.fname)
+        except OSError:
+            self._logger.error(f"cannot open {self.fname}")
+            self._sf = None
+
+    def open(self, mode="r"):
+        """Open the source file object with h5py in given mode"""
+        try:
+            self._sf = h5py.File(self.fname, mode)
+        except OSError:
+            self._logger.error(f"cannot open {self.fname}")
+            pass
+
+    def close(self):
+        """Close source file silx.io.spech5.SpecH5"""
+        self._sf.close()
+        self._sf = None
+
+    def _set_urls_silx(self):
+        """Set default SpecH5 urls"""
+        self._mots_url = "instrument/positioners"
+        self._cnts_url = "measurement"
+        self._title_url = "title"
+        self._time_url = "start_time"
+        self._urls_fmt = "silx"
+
+    def _set_urls_spec2nexus(self):
+        """Set default spec2nexus urls"""
+        self._mots_url = "positioners"
+        self._cnts_url = "data"
+        self._title_url = "title"
+        self._urls_fmt = "spec2nexus"
+
+    def _get_sg(self):
+        """Safe get self._sg"""
+        if self._sg is None:
+            raise AttributeError(
+                "Group/Scan not selected -> use 'self.set_scan()' first"
+            )
+        else:
+            return self._sg
+
+    def set_group(self, group_url=None):
+        """Select group url
+
+        Parameters
+        ----------
+        group_url : str (optional)
+            hdf5 url with respect to / where scans are stored [None -> /scans]
+
+        Returns
+        -------
+        none: sets attribute self._group_url
+        """
+        self._group_url = group_url
+        if self._group_url is not None:
+            self._logger.info(f"Selected group {self._group_url}")
+
+    def set_scan(self, scan_n, scan_idx=1, group_url=None, scan_kws=None):
+        """Select a given scan number
+
+        Parameters
+        ----------
+        scan_n : int
+            scan number
+        scan_idx : int (optional)
+            scan repetition index [1]
+        group_url : str
+            hdf5 url with respect to / where scans are stored [None -> /scans]
+        scan_kws : None or dict
+            additional keyword arguments used to get data from scan
+
+        Returns
+        -------
+        none: set attributes
+            self._scan_n, self._scan_str, self._scan_url, self._sg
+        """
+        # check if scan_n is given already as "scan_n.scan_idx"
+        if isinstance(scan_n, str):
+            scan_split = scan_n.split(".")
+            scan_n = scan_split[0]
+            try:
+                scan_idx = scan_split[1]
+            except IndexError:
+                self._logger.warning("'scan_idx' kept at 1")
+                pass
+            try:
+                scan_n = int(scan_n)
+                scan_idx = int(scan_idx)
+            except ValueError:
+                self._logger.error("scan not selected, wrong 'scan_n'!")
+                return
+        assert isinstance(scan_n, int), "'scan_n' must be an integer"
+        assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
+        self._scan_n = scan_n
+        if scan_kws is not None:
+            from sloth.utils.dicts import update_nested
+
+            self._scan_kws = update_nested(self._scan_kws, scan_kws)
+        if self._urls_fmt == "silx":
+            self._scan_str = f"{scan_n}.{scan_idx}"
+        elif self._urls_fmt == "spec2nexus":
+            self._scan_str = f"S{scan_n}"
+        else:
+            self._logger.error("wrong 'urls_fmt'")
+            return
+        if group_url is not None:
+            self.set_group(group_url)
+        if self._group_url is not None:
+            self._scan_url = f"{self._group_url}/{self._scan_str}"
+        else:
+            self._scan_url = f"{self._scan_str}"
+        try:
+            self._sg = self._sf[self._scan_url]
+            self._scan_title = self.get_title()
+            self._scan_start = self.get_time()
+            self._logger.info(
+                f"selected scan {self._scan_url}: '{self._scan_title}' ({self._scan_start})"
+            )
+        except KeyError:
+            self._sg = None
+            self._scan_title = None
+            self._logger.error(f"'{self._scan_url}' is not valid")
+
+    def _list_from_url(self, url_str):
+        """Utility method to get a list from a scan url
+
+        .. warning:: the list is **not ordered**
+
+        """
+        try:
+            return [i for i in self._get_sg()[url_str].keys()]
+        except Exception:
+            self._logger.error(f"'{url_str}' not found -> use 'set_scan' method first")
+
+    # ================== #
+    #: READ DATA METHODS
+    # ================== #
+
+    def _repr_html_(self):
+        """HTML representation for Jupyter notebook"""
+
+        scns = self.get_scans()
+        html = ["<table>"]
+        html.append("<tr>")
+        html.append("<td><b>Scan</b></td>")
+        html.append("<td><b>Title</b></td>")
+        html.append("<td><b>Start_time</b></td>")
+        html.append("</tr>")
+        for scn, tlt, sct in scns:
+            html.append("<tr>")
+            html.append(f"<td>{scn}</td>")
+            html.append(f"<td>{tlt}</td>")
+            html.append(f"<td>{sct}</td>")
+            html.append("</tr>")
+        html.append("</table>")
+        return "".join(html)
+
+    def get_scans(self):
+        """Get list of scans
+
+        Returns
+        -------
+        list of strings: [['scan.n', 'title', 'start_time'], ... ]
+        """
+        allscans = []
+        for sn, sg in self._sf.items():
+            allscans.append([sn, sg[self._title_url][()], sg[self._time_url][()]])
+        return allscans
+
+    def get_motors(self):
+        """Get list of motors names"""
+        return self._list_from_url(self._mots_url)
+
+    def get_counters(self):
+        """Get list of motors names"""
+        return self._list_from_url(self._cnts_url)
+
+    def get_title(self):
+        """Get title str for the current scan
+
+        Returns
+        -------
+        title (str): scan title self._sg[self._title_url][()]
+        """
+        sg = self._get_sg()
+        return sg[self._title_url][()]
+
+    def get_time(self):
+        """Get start time str for the current scan
+
+        Returns
+        -------
+        start_time (str): scan start time self._sg[self._time_url][()]
+        """
+        sg = self._get_sg()
+        return sg[self._time_url][()]
+
+    def get_timestamp(self):
+        """ Get integer timestamp from the start time str"""
+        d, t = self.get_time().split("T")
+        dd = d.split("-")
+        tt = t.split(":")
+        ddd = [int(_dd) for _dd in dd]
+        ttt = [int(_tt) for _tt in tt]
+        dt = ddd + ttt
+        return int(datetime.datetime(*dt).timestamp())
+
+    def get_scan_info_from_title(self):
+        """Parser to get scan information from title
+
+        Known types of scans
+        --------------------
+        'ascan'
+        'Escan'
+        'Emiscan'
+
+        Returns
+        -------
+        iscn : dict of str
+            {
+             scan_type : "type of scan",
+             scan_axis : "scanned axis",
+             scan_start : "",
+             scan_end : "",
+             scan_pts : "",
+             scan_ct : "",
+            }
+        """
+        iscn = dict(
+            scan_type=None,
+            scan_axis=None,
+            scan_start=None,
+            scan_end=None,
+            scan_pts=None,
+            scan_ct=None,
+        )
+        _title = self.get_title()
+        if isinstance(_title, np.ndarray):
+            _title = np.char.decode(_title)[0]
+        _title_splitted = _title.split(" ")
+        _iax = 0
+        _scntype = _title_splitted[_iax]
+        if _scntype == "ascan":
+            iscn.update(
+                dict(
+                    scan_type=_scntype,
+                    scan_axis=_title_splitted[2],
+                    scan_start=_title_splitted[3],
+                    scan_end=_title_splitted[4],
+                    scan_pts=_title_splitted[6],
+                    scan_ct=_title_splitted[7],
+                )
+            )
+        if _scntype == "Escan":
+            iscn.update(
+                dict(
+                    scan_type=_scntype,
+                    scan_axis="Energy",
+                    scan_start=_title_splitted[1],
+                    scan_end=_title_splitted[2],
+                    scan_pts=_title_splitted[3],
+                    scan_ct=_title_splitted[4],
+                )
+            )
+        if _scntype == "Emiscan":
+            iscn.update(
+                dict(
+                    scan_type=_scntype,
+                    scan_axis="Emi_Energy",
+                    scan_start=_title_splitted[1],
+                    scan_end=_title_splitted[2],
+                    scan_pts=_title_splitted[3],
+                    scan_ct=_title_splitted[4],
+                )
+            )
+        return iscn
+
+    def get_scan_axis(self):
+        """Get the name of the scanned axis from scan title"""
+        iscn = self.get_scan_info_from_title()
+        _axisout = iscn["scan_axis"]
+        _mots, _cnts = self.get_motors(), self.get_counters()
+        if not (_axisout in _mots):
+            self._logger.info(f"'{_axisout}' not in (real) motors")
+        if not (_axisout in _cnts):
+            self._logger.warning(f"'{_axisout}' not in counters")
+            _axisout = _cnts[0]
+            self._logger.warning(f"using the first counter: '{_axisout}'")
+        return _axisout
+
+    def get_array(self, cnt):
+        """Get array of a given counter
+
+        Parameters
+        ----------
+        cnt : str or int
+            counter name or index in the list of counters
+
+        Returns
+        -------
+        array
+        """
+        sg = self._get_sg()
+        cnts = self.get_counters()
+        if type(cnt) is int:
+            cnt = cnts[cnt]
+            self._logger.info("Selected counter %s", cnt)
+        if cnt in cnts:
+            sel_cnt = f"{self._cnts_url}/{cnt}"
+            return copy.deepcopy(sg[sel_cnt][()])
+        else:
+            self._logger.error(f"'{cnt}' not found in available counters: {cnts}")
+            sel_cnt = f"{self._cnts_url}/{cnts[0]}"
+            return np.zeros_like(sg[sel_cnt][()])
+
+    def get_value(self, mot):
+        """Get motor position
+
+        Parameters
+        ----------
+        mot : str or int
+            motor name or index in the list of motors
+
+        Returns
+        -------
+        value
+        """
+        sg = self._get_sg()
+        mots = self.get_motors()
+        if type(mot) is int:
+            mot = mots[mot]
+            self._logger.info(f"Selected motor '{mot}'")
+        if mot in mots:
+            sel_mot = f"{self._mots_url}/{mot}"
+            return copy.deepcopy(sg[sel_mot][()])
+        else:
+            self._logger.error(f"'{mot}' not found in available motors: {mots}")
+            return None
+
+    # =================== #
+    #: WRITE DATA METHODS
+    # =================== #
+
+    def write_scans_to_h5(
+        self,
+        scans,
+        fname_out,
+        scans_groups=None,
+        h5path=None,
+        overwrite=False,
+        conf_dict=None,
+    ):
+        """Export a selected list of scans to HDF5 file
+
+        .. note:: This is a simple wrapper to
+            :func:`silx.io.convert.write_to_h5`
+
+        Parameters
+        ----------
+        scans : str, list of ints or list of lists (str/ints)
+            scan numbers to export (parsed by _str2rng)
+            if a list of lists, scans_groups is required
+        fname_out : str
+            output file name
+        scans_groups : list of strings
+            groups of scans
+        h5path : str (optional)
+            path inside HDF5 [None -> '/']
+        overwrite : boolean (optional)
+            force overwrite if the file exists [False]
+        conf_dict : None or dict (optional)
+            configuration dictionary saved as '{hdfpath}/.config'
+        """
+        self._fname_out = fname_out
+        self._logger.info(f"output file: {self._fname_out}")
+        if os.path.isfile(self._fname_out) and os.access(self._fname_out, os.R_OK):
+            self._logger.info(f"output file exists (overwrite is {overwrite})")
+            _fileExists = True
+        else:
+            _fileExists = False
+
+        #: out hdf5 file
+        if overwrite and _fileExists:
+            os.remove(self._fname_out)
+        h5out = h5py.File(self._fname_out, mode="a", track_order=True)
+
+        #: h5path
+        if h5path is None:
+            h5path = "/"
+        else:
+            h5path += "/"
+
+        #: write group configuration dictionary, if given
+        if conf_dict is not None:
+            from silx.io.dictdump import dicttoh5
+
+            _h5path = f"{h5path}.config/"
+            dicttoh5(
+                conf_dict,
+                h5out,
+                h5path=_h5path,
+                create_dataset_args=dict(track_order=True),
+            )
+            self._logger.info(f"written dictionary: {_h5path}")
+
+        #: write scans
+        def _loop_scans(scns, group=None):
+            for scn in scns:
+                self.set_scan(scn)
+                _sg = self._sg
+                if _sg is None:
+                    continue
+                if not _is_commonh5_group(_sg):
+                    self._logger.error("scan '%s' is not commonh5 group", scn)
+                if group is not None:
+                    _h5path = f"{h5path}{group}/{self._scan_str}/"
+                else:
+                    _h5path = f"{h5path}{self._scan_str}/"
+                write_to_h5(
+                    _sg,
+                    h5out,
+                    h5path=_h5path,
+                    create_dataset_args=dict(track_order=True),
+                )
+                self._logger.info(f"written scan: {_h5path}")
+
+        if type(scans) is list:
+            assert type(scans_groups) is list, "'scans_groups' should be a list"
+            assert len(scans) == len(
+                scans_groups
+            ), "'scans_groups' not matching 'scans'"
+            for scns, group in zip(scans, scans_groups):
+                _loop_scans(_str2rng(scns), group=group)
+        else:
+            _loop_scans(_str2rng(scans))
+
+        #: close output file
+        h5out.close()
+
+
+### ==================================================================
+### CLASS BASED ON SPECILE (OLD/DEPRECATED)
 ### ==================================================================
 class SpecfileData(object):
     """SpecfileData object"""
 
-    def __init__(self, fname=None, cntx=1, cnty=None, csig=None,
-                 cmon=None, csec=None, norm=None, verbosity=0):
+    def __init__(
+        self,
+        fname=None,
+        cntx=1,
+        cnty=None,
+        csig=None,
+        cmon=None,
+        csec=None,
+        norm=None,
+        verbosity=0,
+    ):
         """reads the given specfile
 
         Parameters
@@ -363,25 +816,27 @@ class SpecfileData(object):
 
         """
         self.verbosity = verbosity
-        if (fname == 'DUMMY!'):
+        if fname == "DUMMY!":
             return
-        if (HAS_SPECFILE is False):
-            if self.verbosity > 1: print("WARNING 'specfile' is missing -> check requirements!")
+        if HAS_SPECFILE is False:
+            if self.verbosity > 1:
+                print("WARNING 'specfile' is missing -> check requirements!")
             return
-        if (fname is None):
+        if fname is None:
             raise NameError("Provide a SPEC data file to load with full path")
         elif not os.path.isfile(fname):
             raise OSError("File not found: '%s'" % fname)
         else:
-            if hasattr(self, 'sf') and hasattr(self, 'fname'):
+            if hasattr(self, "sf") and hasattr(self, "fname"):
                 if self.fname == fname:
                     pass
             else:
-                self.sf = specfile.Specfile(fname) #sf = specfile file
+                self.sf = specfile.Specfile(fname)  # sf = specfile file
                 self.fname = fname
-                if self.verbosity > 0: print("Loaded: {0} ({1} scans)".format(fname, self.sf.scanno()))
-        #if HAS_SIMPLEMATH: self.sm = SimpleMath.SimpleMath()
-        #set common attributes
+                if self.verbosity > 0:
+                    print("Loaded: {0} ({1} scans)".format(fname, self.sf.scanno()))
+        # if HAS_SIMPLEMATH: self.sm = SimpleMath.SimpleMath()
+        # set common attributes
         self.cntx = cntx
         self.cnty = cnty
         self.csig = csig
@@ -419,16 +874,20 @@ class SpecfileData(object):
         if HAS_SPECFILE is False:
             raise NameError("Specfile not available!")
 
-        #get keywords arguments
-        cntx = kws.get('cntx', self.cntx)
-        cnty = kws.get('cnty', self.cnty)
-        csig = kws.get('csig', self.csig)
-        cmon = kws.get('cmon', self.cmon)
-        csec = kws.get('csec', self.csec)
-        norm = kws.get('norm', self.norm)
-        #input checks
+        # get keywords arguments
+        cntx = kws.get("cntx", self.cntx)
+        cnty = kws.get("cnty", self.cnty)
+        csig = kws.get("csig", self.csig)
+        cmon = kws.get("cmon", self.cmon)
+        csec = kws.get("csec", self.csec)
+        norm = kws.get("norm", self.norm)
+        # input checks
         if scan is None:
-            raise NameError("Give a scan number [integer]: between 1 and {0}".format(self.sf.scanno()))
+            raise NameError(
+                "Give a scan number [integer]: between 1 and {0}".format(
+                    self.sf.scanno()
+                )
+            )
         if cntx is None:
             raise NameError("Give the counter for x, the abscissa [string]")
         if cnty is not None and not (cnty in self.sf.allmotors()):
@@ -436,18 +895,18 @@ class SpecfileData(object):
         if csig is None:
             raise NameError("Give the counter for signal [string]")
 
-        #select the given scan number
-        #NOTE: here impossible to catch an exception, if the next
-        #fails, specfile will directly call sys.exit! the try: except
-        #did not work!
+        # select the given scan number
+        # NOTE: here impossible to catch an exception, if the next
+        # fails, specfile will directly call sys.exit! the try: except
+        # did not work!
         _scanstr = str(scan)
-        if ('.' in _scanstr):
+        if "." in _scanstr:
             _scansel = _scanstr
         else:
-            _scansel = '{0}.1'.format(_scanstr)
-        self.sd = self.sf.select(_scansel) #sd = specfile data
+            _scansel = "{0}.1".format(_scanstr)
+        self.sd = self.sf.select(_scansel)  # sd = specfile data
 
-        #the case cntx is not given, the first counter is taken by default
+        # the case cntx is not given, the first counter is taken by default
         if cntx == 1:
             _cntx = self.sd.alllabels()[0]
         else:
@@ -455,15 +914,15 @@ class SpecfileData(object):
 
         ## x-axis
         scan_datx = self.sd.data_column_by_name(_cntx)
-        _xlabel = 'x'
+        _xlabel = "x"
         _xscale = 1.0
         if scnt is None:
             # try to guess the scan type if it is not given
             # this condition should work in case of an energy scan
-            if ('ene' in _cntx.lower()):
+            if "ene" in _cntx.lower():
                 # this condition should detect if the energy scale is keV
                 if (scan_datx.max() - scan_datx.min()) < 3.0:
-                    scan_datx = scan_datx*1000
+                    scan_datx = scan_datx * 1000
                     _xscale = 1000.0
                     _xlabel = "energy, eV"
                 else:
@@ -480,19 +939,21 @@ class SpecfileData(object):
         if cmon is None:
             datamon = np.ones_like(datasig)
             labmon = "1"
-        elif (('int' in str(type(cmon))) or ('float' in str(type(cmon))) ):
-               # the case we want to divide by a constant value
-               datamon = _mot2array(cmon, datasig)
-               labmon = str(cmon)
+        elif ("int" in str(type(cmon))) or ("float" in str(type(cmon))):
+            # the case we want to divide by a constant value
+            datamon = _mot2array(cmon, datasig)
+            labmon = str(cmon)
         else:
             datamon = self.sd.data_column_by_name(cmon)
             labmon = str(cmon)
         # data cps
         if csec is not None:
-            scan_datz = ( ( datasig / datamon ) * np.mean(datamon) ) / self.sd.data_column_by_name(csec)
+            scan_datz = (
+                (datasig / datamon) * np.mean(datamon)
+            ) / self.sd.data_column_by_name(csec)
             _zlabel = "((signal/{0})*mean({0}))/seconds".format(labmon)
         else:
-            scan_datz = (datasig / datamon)
+            scan_datz = datasig / datamon
             _zlabel = "signal/{0}".format(labmon)
 
         ### z-axis normalization, if required
@@ -501,11 +962,17 @@ class SpecfileData(object):
             if norm == "max":
                 scan_datz = _check_zero_div(scan_datz, np.max(scan_datz))
             elif norm == "max-min":
-                scan_datz = _check_zero_div(scan_datz-np.min(scan_datz), np.max(scan_datz)-np.min(scan_datz))
+                scan_datz = _check_zero_div(
+                    scan_datz - np.min(scan_datz), np.max(scan_datz) - np.min(scan_datz)
+                )
             elif norm == "area":
-                scan_datz = _check_zero_div(scan_datz-np.min(scan_datz), np.trapz(scan_datz, x=scan_datx))
+                scan_datz = _check_zero_div(
+                    scan_datz - np.min(scan_datz), np.trapz(scan_datz, x=scan_datx)
+                )
             elif norm == "sum":
-                scan_datz = _check_zero_div(scan_datz-np.min(scan_datz), np.sum(scan_datz))
+                scan_datz = _check_zero_div(
+                    scan_datz - np.min(scan_datz), np.sum(scan_datz)
+                )
             else:
                 raise NameError("Provide a correct normalization type string")
 
@@ -516,7 +983,8 @@ class SpecfileData(object):
         try:
             scan_mots = dict(zip(self.sf.allmotors(), self.sd.allmotorpos()))
         except:
-            if self.verbosity > 0: print("INFO: NO MOTORS IN {0}".format(self.fname))
+            if self.verbosity > 0:
+                print("INFO: NO MOTORS IN {0}".format(self.fname))
             scan_mots = {}
 
         ## y-axis
@@ -526,13 +994,15 @@ class SpecfileData(object):
             _ylabel = _zlabel
 
         ## collect information on the scan
-        scan_info = {'xlabel' : _xlabel,
-                     'xscale' : _xscale,
-                     'ylabel' : _ylabel,
-                     'zlabel' : _zlabel}
+        scan_info = {
+            "xlabel": _xlabel,
+            "xscale": _xscale,
+            "ylabel": _ylabel,
+            "zlabel": _zlabel,
+        }
 
         if cnty is not None:
-            return scan_datx, scan_datz, scan_mots[cnty]*_xscale
+            return scan_datx, scan_datz, scan_mots[cnty] * _xscale
         else:
             return scan_datx, scan_datz, scan_mots, scan_info
 
@@ -551,26 +1021,33 @@ class SpecfileData(object):
         xcol, ycol, zcol : 1D arrays representing the map
 
         """
-        #get keywords arguments
-        cntx = kws.get('cntx', self.cntx)
-        cnty = kws.get('cnty', self.cnty)
-        csig = kws.get('csig', self.csig)
-        cmon = kws.get('cmon', self.cmon)
-        csec = kws.get('csec', self.csec)
-        norm = kws.get('norm', self.norm)
-        #check inputs - some already checked in get_scan()
+        # get keywords arguments
+        cntx = kws.get("cntx", self.cntx)
+        cnty = kws.get("cnty", self.cnty)
+        csig = kws.get("csig", self.csig)
+        cmon = kws.get("cmon", self.cmon)
+        csec = kws.get("csec", self.csec)
+        norm = kws.get("norm", self.norm)
+        # check inputs - some already checked in get_scan()
         nscans = _check_scans(scans)
         if cnty is None:
             raise NameError("Provide the name of an existing motor")
         #
         _counter = 0
         for scan in nscans:
-            x, z, moty = self.get_scan(scan=scan, cntx=cntx,\
-                                       cnty=cnty, csig=csig,\
-                                       cmon=cmon, csec=csec,\
-                                       scnt=None, norm=norm)
+            x, z, moty = self.get_scan(
+                scan=scan,
+                cntx=cntx,
+                cnty=cnty,
+                csig=csig,
+                cmon=cmon,
+                csec=csec,
+                scnt=None,
+                norm=norm,
+            )
             y = _mot2array(moty, x)
-            if self.verbosity > 0: print("INFO loading scan {0} into the map...".format(scan))
+            if self.verbosity > 0:
+                print("INFO loading scan {0} into the map...".format(scan))
             if _counter == 0:
                 xcol = x
                 ycol = y
@@ -583,7 +1060,7 @@ class SpecfileData(object):
 
         return xcol, ycol, zcol
 
-    def grid_map(self, xcol, ycol, zcol, xystep=None, lib='scipy', method='cubic'):
+    def grid_map(self, xcol, ycol, zcol, xystep=None, lib="scipy", method="cubic"):
         if HAS_GRIDXYZ is True:
             return gridxyz(xcol, ycol, zcol, xystep=xystep, lib=lib, method=method)
         else:
@@ -606,12 +1083,12 @@ class SpecfileData(object):
         if motinfo: return also mdats, idats dictionaries
 
         """
-        #get keywords arguments
-        cntx = kws.get('cntx', self.cntx)
-        csig = kws.get('csig', self.csig)
-        cmon = kws.get('cmon', self.cmon)
-        csec = kws.get('csec', self.csec)
-        norm = kws.get('norm', self.norm)
+        # get keywords arguments
+        cntx = kws.get("cntx", self.cntx)
+        csig = kws.get("csig", self.csig)
+        cmon = kws.get("cmon", self.cmon)
+        csec = kws.get("csec", self.csec)
+        norm = kws.get("norm", self.norm)
         #
         nscans = _check_scans(scans)
         #
@@ -620,12 +1097,19 @@ class SpecfileData(object):
         zdats = []
         mdats = []
         idats = []
-        if self.verbosity > 0: print("INFO loading {0} scans from SPEC ...".format(len(nscans)))
+        if self.verbosity > 0:
+            print("INFO loading {0} scans from SPEC ...".format(len(nscans)))
         for scan in nscans:
-            _x, _z, _m, _i = self.get_scan(scan=scan, cntx=cntx,\
-                                           cnty=None, csig=csig,\
-                                           cmon=cmon, csec=csec,\
-                                           scnt=None, norm=norm)
+            _x, _z, _m, _i = self.get_scan(
+                scan=scan,
+                cntx=cntx,
+                cnty=None,
+                csig=csig,
+                cmon=cmon,
+                csec=csec,
+                scnt=None,
+                norm=norm,
+            )
             xdats.append(_x)
             zdats.append(_z)
             if motinfo:
@@ -638,8 +1122,7 @@ class SpecfileData(object):
         else:
             return xdats, zdats
 
-
-    def get_mrg(self, scans=None, action='average', **kws):
+    def get_mrg(self, scans=None, action="average", **kws):
         """get a merged scan from a list of scans
 
         Parameters
@@ -658,10 +1141,10 @@ class SpecfileData(object):
         xmrg, zmrg : 1D arrays
 
         """
-        #check inputs - some already checked in get_scan()/get_scans()
+        # check inputs - some already checked in get_scan()/get_scans()
         nscans = _check_scans(scans)
 
-        actions = ['single', 'average', 'sum', 'join']
+        actions = ["single", "average", "sum", "join"]
         if not action in actions:
             raise NameError("'action={0}' not in known actions {1}".format(actions))
 
@@ -670,19 +1153,21 @@ class SpecfileData(object):
 
         # override 'action' keyword if it is only one scan
         if len(nscans) == 1:
-            action = 'single'
-            if self.verbosity > 1: print("WARNING(get_mrg): len(scans)==1 -> 'action=single'")
-        if action == 'average':
-            if self.verbosity > 0: print("INFO: merging data...")
+            action = "single"
+            if self.verbosity > 1:
+                print("WARNING(get_mrg): len(scans)==1 -> 'action=single'")
+        if action == "average":
+            if self.verbosity > 0:
+                print("INFO: merging data...")
             return _pymca_average(xdats, zdats)
-        elif action == 'sum':
+        elif action == "sum":
             return _numpy_sum_list(xdats, zdats)
-        elif action == 'join':
+        elif action == "join":
             return np.concatenate(xdats, axis=0), np.concatenate(zdats, axis=0)
-        elif action == 'single':
+        elif action == "single":
             return xdats[0], zdats[0]
 
-    def get_mrgs_by(self, scans='all', nbin=1, **kws):
+    def get_mrgs_by(self, scans="all", nbin=1, **kws):
         """get merge by groups of scans
 
         Parameters
@@ -696,38 +1181,48 @@ class SpecfileData(object):
         xmrgs, zmrgs : lists of merged arrays
 
         """
-        #get keywords arguments
-        cntx = kws.get('cntx', self.cntx)
-        csig = kws.get('csig', self.csig)
-        cmon = kws.get('cmon', self.cmon)
-        csec = kws.get('csec', self.csec)
-        norm = kws.get('norm', self.norm)
-        action = kws.get('action', 'average')
+        # get keywords arguments
+        cntx = kws.get("cntx", self.cntx)
+        csig = kws.get("csig", self.csig)
+        cmon = kws.get("cmon", self.cmon)
+        csec = kws.get("csec", self.csec)
+        norm = kws.get("norm", self.norm)
+        action = kws.get("action", "average")
         #
         xmrgs = []
         zmrgs = []
-        if scans == 'all':
-            scans = '{0}:{1}'.format(1, self.sf.scanno())
+        if scans == "all":
+            scans = "{0}:{1}".format(1, self.sf.scanno())
         try:
             nScans = _str2rng(scans)
             nAvg = nScans[::nbin]
         except:
             raise NameError("wrong 'scans'/'nbin' parameters!")
-        nScansLast = len(nScans)%nbin
+        nScansLast = len(nScans) % nbin
         for iAvg, Avg in enumerate(nAvg):
-            iStart = iAvg*nbin
+            iStart = iAvg * nbin
             if Avg == nAvg[-1] and not nScansLast == 0:
-                if self.verbosity > 1: print("WARNING avg {0} is of {1} scans only".format(iAvg, nScansLast))
+                if self.verbosity > 1:
+                    print(
+                        "WARNING avg {0} is of {1} scans only".format(iAvg, nScansLast)
+                    )
                 nAdd = nScansLast
             else:
                 nAdd = nbin
-            mscans = nScans[iStart:iStart+nAdd]
-            if self.verbosity > 0: print("INFO avg {0}: scans='{1}'".format(iAvg, str(mscans)))
-            _xmrg, _zmrg = self.get_mrg(scans=mscans, action=action,\
-                                        cntx=cntx, cnty=None,\
-                                        csig=csig, cmon=cmon,\
-                                        csec=csec, scnt=None,\
-                                        norm=norm)
+            mscans = nScans[iStart : iStart + nAdd]
+            if self.verbosity > 0:
+                print("INFO avg {0}: scans='{1}'".format(iAvg, str(mscans)))
+            _xmrg, _zmrg = self.get_mrg(
+                scans=mscans,
+                action=action,
+                cntx=cntx,
+                cnty=None,
+                csig=csig,
+                cmon=cmon,
+                csec=csec,
+                scnt=None,
+                norm=norm,
+            )
             xmrgs.append(_xmrg)
             zmrgs.append(_zmrg)
         return xmrgs, zmrgs
@@ -773,9 +1268,9 @@ class SpecfileData(object):
                 print("det_dtc ERROR")
                 return zcts
         try:
-            #import pdb
-            #pdb.set_trace()
-            #print(zcps)
+            # import pdb
+            # pdb.set_trace()
+            # print(zcps)
             zcts_corr = zcts / (1 - zcts * tau)
         except:
             print("det_dtc ERROR step 2")
@@ -785,7 +1280,7 @@ class SpecfileData(object):
         else:
             return zcts_corr
 
-    def get_filter(self, ydats, method='scipySG', **kws):
+    def get_filter(self, ydats, method="scipySG", **kws):
         """get filtered data using a list of ydats and given method
 
         Parameters
@@ -802,27 +1297,27 @@ class SpecfileData(object):
         ysdats : list of 1D smoothed arrays
 
         """
-        if method == 'pymcaSG':
-            npoints = kws.get('npoints', 9)
-            degree = kws.get('degree', 4)
-            order = kws.get('order', 0)
+        if method == "pymcaSG":
+            npoints = kws.get("npoints", 9)
+            degree = kws.get("degree", 4)
+            order = kws.get("order", 0)
             ysdats = []
-            if self.verbosity > 0: print("INFO smoothing data with Savitzky-Golay filter (pymca)...")
+            if self.verbosity > 0:
+                print("INFO smoothing data with Savitzky-Golay filter (pymca)...")
             for y in ydats:
-                ysdats.append(_pymca_SG(y, npoints=npoints,
-                                        degree=degree, order=order))
+                ysdats.append(_pymca_SG(y, npoints=npoints, degree=degree, order=order))
             return ysdats
-        elif method == 'scipySG':
-            window_size = kws.get('window_size', 9)
-            order = kws.get('order', 4)
-            deriv = kws.get('deriv', 0)
+        elif method == "scipySG":
+            window_size = kws.get("window_size", 9)
+            order = kws.get("order", 4)
+            deriv = kws.get("deriv", 0)
             ysdats = []
-            if self.verbosity > 0: print("INFO smoothing data with Savitzky-Golay filter (scipy)...")
+            if self.verbosity > 0:
+                print("INFO smoothing data with Savitzky-Golay filter (scipy)...")
             for y in ydats:
-                ysdats.append(savitzky_golay(y,
-                                             window_size=window_size,
-                                             order=order,
-                                             deriv=deriv))
+                ysdats.append(
+                    savitzky_golay(y, window_size=window_size, order=order, deriv=deriv)
+                )
             return ysdats
         else:
             raise NameError("method not known!")
@@ -831,96 +1326,183 @@ class SpecfileData(object):
         """export single scans to separate ascii files"""
         if not HAS_SFDW:
             raise ImportError("specfiledatawriter required for this method!!!")
-        #get keywords arguments
-        cntx = kws.get('cntx', self.cntx)
-        csig = kws.get('csig', self.csig)
-        cmon = kws.get('cmon', self.cmon)
-        csec = kws.get('csec', self.csec)
-        norm = kws.get('norm', self.norm)
+        # get keywords arguments
+        cntx = kws.get("cntx", self.cntx)
+        csig = kws.get("csig", self.csig)
+        cmon = kws.get("cmon", self.cmon)
+        csec = kws.get("csec", self.csec)
+        norm = kws.get("norm", self.norm)
 
         nscans = _check_scans(scans)
         for scn in nscans:
-            x, y, m, i = self.get_scan(scan=scn, scnt=None, cntx=cntx,
-                                       cnty=None, csig=csig,
-                                       cmon=cmon, csec=csec,
-                                       norm=norm)
-            fout = SpecfileDataWriter('{0}_S{1}'.format(self.fname,
-                                                        str(scn).rjust(3, '0')))
-            fout.wHeader(epoch=self.sf.epoch(), date=self.sf.date(),
-                         title='spec2spec',
-                         motnames=self.sf.allmotors())
-            fout.wScan(['Energy', '{0}'.format(i['zlabel'])], [x, y],
-                       title='{0}'.format(self.sd.command()),
-                       motpos=self.sd.allmotorpos())
+            x, y, m, i = self.get_scan(
+                scan=scn,
+                scnt=None,
+                cntx=cntx,
+                cnty=None,
+                csig=csig,
+                cmon=cmon,
+                csec=csec,
+                norm=norm,
+            )
+            fout = SpecfileDataWriter(
+                "{0}_S{1}".format(self.fname, str(scn).rjust(3, "0"))
+            )
+            fout.wHeader(
+                epoch=self.sf.epoch(),
+                date=self.sf.date(),
+                title="spec2spec",
+                motnames=self.sf.allmotors(),
+            )
+            fout.wScan(
+                ["Energy", "{0}".format(i["zlabel"])],
+                [x, y],
+                title="{0}".format(self.sd.command()),
+                motpos=self.sd.allmotorpos(),
+            )
 
 
 ### LARCH ###
 def _specfiledata_getdoc(method):
     """to get the docstring of method inside a class"""
-    s = SpecfileData('DUMMY!')
+    s = SpecfileData("DUMMY!")
     head = "\n Docstring from {0}:\n -------------------\n".format(method)
-    return head + getattr(getattr(s, method), '__doc__')
+    return head + getattr(getattr(s, method), "__doc__")
 
-def spec_getscan2group(fname, scan=None, cntx=None, csig=None,
-                       cmon=None, csec=None, scnt=None, norm=None,
-                       _larch=None):
+
+def spec_getscan2group(
+    fname,
+    scan=None,
+    cntx=None,
+    csig=None,
+    cmon=None,
+    csec=None,
+    scnt=None,
+    norm=None,
+    _larch=None,
+):
     """*** simple mapping of SpecfileData.get_scan() to Larch group ***"""
     if _larch is None:
         raise Warning("larch broken?")
 
     s = SpecfileData(fname)
     group = _larch.symtable.create_group()
-    group.__name__ = 'SPEC data file %s' % fname
-    x, y, motors, infos = s.get_scan(scan=scan, cntx=cntx, csig=csig,
-                                     cmon=cmon, csec=csec, scnt=scnt,
-                                     norm=norm)
-    setattr(group, 'x', x)
-    setattr(group, 'y', y)
-    setattr(group, 'motors', motors)
-    setattr(group, 'infos', infos)
+    group.__name__ = "SPEC data file %s" % fname
+    x, y, motors, infos = s.get_scan(
+        scan=scan, cntx=cntx, csig=csig, cmon=cmon, csec=csec, scnt=scnt, norm=norm
+    )
+    setattr(group, "x", x)
+    setattr(group, "y", y)
+    setattr(group, "motors", motors)
+    setattr(group, "infos", infos)
 
     return group
-spec_getscan2group.__doc__ += _specfiledata_getdoc('get_scan')
 
-def spec_getmap2group(fname, scans=None, cntx=None, cnty=None, csig=None, cmon=None, csec=None,
-                      xystep=None, norm=None, _larch=None):
+
+spec_getscan2group.__doc__ += _specfiledata_getdoc("get_scan")
+
+
+def spec_getmap2group(
+    fname,
+    scans=None,
+    cntx=None,
+    cnty=None,
+    csig=None,
+    cmon=None,
+    csec=None,
+    xystep=None,
+    norm=None,
+    _larch=None,
+):
     """ *** simple mapping of SpecfileData.get_map() + grid_map () to Larch group *** """
     if _larch is None:
         raise Warning("larch broken?")
 
     s = SpecfileData(fname)
     group = _larch.symtable.create_group()
-    group.__name__ = 'SPEC data file %s' % fname
-    xcol, ycol, zcol = s.get_map(scans=scans, cntx=cntx, cnty=cnty, csig=csig, cmon=cmon, csec=csec, norm=norm)
+    group.__name__ = "SPEC data file %s" % fname
+    xcol, ycol, zcol = s.get_map(
+        scans=scans, cntx=cntx, cnty=cnty, csig=csig, cmon=cmon, csec=csec, norm=norm
+    )
     x, y, zz = s.grid_map(xcol, ycol, zcol, xystep=xystep)
-    setattr(group, 'x', x)
-    setattr(group, 'y', y)
-    setattr(group, 'zz', zz)
+    setattr(group, "x", x)
+    setattr(group, "y", y)
+    setattr(group, "zz", zz)
 
     return group
-spec_getmap2group.__doc__ += _specfiledata_getdoc('get_map')
 
-def spec_getmrg2group(fname, scans=None, cntx=None, csig=None,
-                      cmon=None, csec=None, norm=None,
-                      action='average', _larch=None):
+
+spec_getmap2group.__doc__ += _specfiledata_getdoc("get_map")
+
+
+def spec_getmrg2group(
+    fname,
+    scans=None,
+    cntx=None,
+    csig=None,
+    cmon=None,
+    csec=None,
+    norm=None,
+    action="average",
+    _larch=None,
+):
     """*** simple mapping of SpecfileData.get_mrg() to Larch group ***"""
     if _larch is None:
         raise Warning("larch broken?")
 
     s = SpecfileData(fname)
     group = _larch.symtable.create_group()
-    group.__name__ = 'SPEC data file {0}; scans {1}; action {2}'.format(fname, scans, action)
-    x, y = s.get_mrg(scans=scans, cntx=cntx, csig=csig, cmon=cmon,
-                     csec=csec, norm=norm, action=action)
-    setattr(group, 'x', x)
-    setattr(group, 'y', y)
+    group.__name__ = "SPEC data file {0}; scans {1}; action {2}".format(
+        fname, scans, action
+    )
+    x, y = s.get_mrg(
+        scans=scans,
+        cntx=cntx,
+        csig=csig,
+        cmon=cmon,
+        csec=csec,
+        norm=norm,
+        action=action,
+    )
+    setattr(group, "x", x)
+    setattr(group, "y", y)
 
     return group
-spec_getmrg2group.__doc__ += _specfiledata_getdoc('get_mrg')
+
+
+spec_getmrg2group.__doc__ += _specfiledata_getdoc("get_mrg")
+
 
 def str2rng_larch(rngstr, keeporder=True, _larch=None):
     """ larch equivalent of _str2rng() """
     if _larch is None:
         raise Warning("larch broken?")
     return _str2rng(rngstr, keeporder=keeporder)
+
+
 str2rng_larch.__doc__ = _str2rng.__doc__
+
+
+def read_specfile(filename, scan=None):
+    """simple mapping of a Spec file to a larch group"""
+    df = DataSourceSpecH5(filename)
+    data = []
+    lg = Group()
+    lg.__name__ = f"Spec file: {filename}"
+    if scan is None:
+        df.set_scan(df.get_scans()[0][0])
+    else:
+        df.set_scan(scan)
+    cnts = df.get_counters()
+    for cnt in cnts:
+        cnt_arr = df.get_array(cnt)
+        setattr(lg, cnt, cnt_arr)
+        data.append(cnt_arr)
+    data = np.array(data)
+    path, fname = os.path.split(filename)
+    lg.path = filename
+    lg.filename = fname
+    lg.datatype = 'raw'
+    lg.array_labels = cnts
+    lg.data = data
+    return lg

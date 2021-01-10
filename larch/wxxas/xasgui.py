@@ -64,7 +64,7 @@ from larch.xafs import pre_edge, pre_edge_baseline
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.xdi;*.prj|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.DAT;*.xdi;*.prj|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (950, 750)
