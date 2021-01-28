@@ -1052,7 +1052,10 @@ class XASFrame(wx.Frame):
                       process=True, rebin=False, plot=True):
         """add groupname / filename to list of available data groups"""
 
-        thisgroup = getattr(self.larch.symtable, groupname)
+        try:
+            thisgroup = getattr(self.larch.symtable, groupname)
+        except AttributeError:
+            thisgroup = self.larch.symtable.new_group(groupname)
 
         datatype = getattr(thisgroup, 'datatype', 'raw')
         # file /group may already exist in list
