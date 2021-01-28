@@ -1483,7 +1483,7 @@ def str2rng_larch(rngstr, keeporder=True, _larch=None):
 str2rng_larch.__doc__ = _str2rng.__doc__
 
 
-def read_specfile(filename, scan=None):
+def read_specfile(filename, scan=None, labels=None, _larch=None):
     """simple mapping of a Spec file to a larch group"""
     df = DataSourceSpecH5(filename)
     data = []
@@ -1502,7 +1502,7 @@ def read_specfile(filename, scan=None):
     path, fname = os.path.split(filename)
     lg.path = filename
     lg.filename = fname
-    lg.datatype = 'raw'
+    lg.datatype = None
     lg.array_labels = cnts
     lg.data = data
     return lg
