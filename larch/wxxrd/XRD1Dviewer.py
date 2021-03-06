@@ -29,14 +29,14 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath
-from larch.wxlib import PeriodicTablePanel
+from larch.wxlib import PeriodicTablePanel, Choice
 
 from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
                        match_database, d_from_q,twth_from_q,q_from_twth,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
                        E_from_lambda,calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d,peakfinder_methods,SPACEGROUPS, create_cif,
+                       xrd1d, peakfinder_methods,SPACEGROUPS, create_cif,
                        save1D)
 
 ###################################
@@ -80,7 +80,7 @@ def calcFrameSize(x,y):
 
     return x, y
 
-def loadXYfile(event=None,parent=None,xrdviewer=None):
+def loadXYfile(event=None, parent=None, xrdviewer=None):
 
     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
@@ -94,7 +94,6 @@ def loadXYfile(event=None,parent=None,xrdviewer=None):
         read = True
         paths = [p.replace('\\', '/') for p in dlg.GetPaths()]
     dlg.Destroy()
-
     if read:
         for path in paths:
             data1dxrd = xrd1d(file=path)
@@ -221,7 +220,7 @@ class XRD1DViewerFrame(wx.Frame):
         diFFitMenu.AppendSeparator()
         MenuItem(self, diFFitMenu, '&Quit', 'Quit program', self.onExit)
 
-        menubar.Append(diFFitMenu, '&diFFit1D')
+        menubar.Append(diFFitMenu, '&File')
 
         ###########################
         ## Analyze
@@ -549,9 +548,9 @@ class SelectFittingData(wx.Dialog):
         self.panel.SetSizer(mainsizer)
         self.slct_1Ddata.SetSelection(0)
 
-    def load_file(self,event=None):
-
-        loadXYfile(parent=self,xrdviewer=self.parent.xrd1Dviewer)
+    def load_file(self, event=None):
+        print("Load File ", event)
+        loadXYfile(parent=self, xrdviewer=self.parent.xrd1Dviewer)
 
         if self.parent.xrd1Dviewer.data_name[-1] not in self.parent.list:
             self.parent.list.append(self.parent.xrd1Dviewer.data_name[-1])
@@ -1714,38 +1713,51 @@ class Viewer1DXRD(wx.Panel):
         self.cif_scale    = []
         self.icif         = []
 
-        leftbox = wx.BoxSizer(wx.VERTICAL)
+        # leftbox = wx.BoxSizer(wx.VERTICAL)
 
-        plttools = self.Toolbox(self)
-
-        add_btns = wx.BoxSizer(wx.HORIZONTAL)
-        add_btns.Add(Button(self, label=' Add Data Set ',
-                            action=self.load_file),
-                     wx.ALL, border=3)
-        add_btns.Add(Button(self, label=' Add CIF Structure ',
-                            action=self.select_CIF),
-                     wx.ALL, border=3)
+        # add_btns = wx.BoxSizer(wx.HORIZONTAL)
+        # add_btns.Add(Button(self, label=' Add Data Set ',
+        #                     action=self.load_file),
+        #              wx.ALL, border=3)
+        # add_btns.Add(Button(self, label=' Add CIF Structure ',
+        #                     action=self.select_CIF),
+        #             wx.ALL, border=3)
 
         dattools = self.DataBox(self)
-        ciftools = self.CIFBox(self)
+        # ciftools = self.CIFBox(self)
 
-        leftbox.Add(plttools, flag=wx.ALL,border=10)
-        leftbox.Add(add_btns, flag=wx.ALL,border=10)
-        leftbox.Add(dattools, flag=wx.ALL,border=10)
-        leftbox.Add(ciftools, flag=wx.ALL,border=10)
+        # leftbox.Add(plttools, flag=wx.ALL, border=2)
+        # leftbox.Add(add_btns, flag=wx.ALL,border=10)
+        # leftbox.Add(dattools, flag=wx.ALL,border=2)
+        # leftbox.Add(ciftools, flag=wx.ALL,border=10)
 
+        # tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
+        xybox = wx.BoxSizer(wx.HORIZONTAL)
+
+        xunits = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+        yscales = ['linear','log']
+
+        self.ch_xaxis = Choice(self, choices=xunits, action=self.check1Daxis)
+        self.ch_yaxis = Choice(self, choices=yscales, action=self.onLogLinear)
         self.ch_xaxis.SetSelection(0)
         self.ch_yaxis.SetSelection(0)
 
-        rightbox = wx.BoxSizer(wx.VERTICAL)
-        self.plot1D = PlotPanel(self,size=(800, 400),
+        xybox.Add(wx.StaticText(self, label='X scale:'), wx.ALL, border=4)
+        xybox.Add(self.ch_xaxis,  wx.ALL, border=4)
+        xybox.Add(wx.StaticText(self, label='Y scale:'), wx.ALL, border=4)
+        xybox.Add(self.ch_yaxis,  wx.ALL, border=4)
+
+
+        # rightbox = wx.BoxSizer(wx.VERTICAL)
+        self.plot1D = PlotPanel(self,size=(700, 450),
                                 messenger=self.owner.write_message)
         self.plot1D.cursor_mode = 'zoom'
-        rightbox.Add(self.plot1D, proportion=1, flag=wx.ALL|wx.EXPAND, border=10)
+        # rightbox.Add(self.plot1D, proportion=1, flag=wx.ALL|wx.EXPAND, border=10)
 
-        panel = wx.BoxSizer(wx.HORIZONTAL)
-        panel.Add(leftbox, flag=wx.ALL, border=10)
-        panel.Add(rightbox, proportion=1, flag=wx.ALL,border=10)
+        panel = wx.GridBagSizer(3)
+        panel.Add(dattools,    (0, 0), (1, 1), wx.ALL, border=5)
+        panel.Add(self.plot1D, (0, 1), (1, 1), wx.ALL|wx.EXPAND, border=5)
+        panel.Add(xybox,       (1, 1), (1, 1), wx.ALL, border=5)
 
         self.SetSizer(panel)
 
@@ -1763,13 +1775,13 @@ class Viewer1DXRD(wx.Panel):
         self.plot1D.axes.set_yscale(self.ch_yaxis.GetString(self.ch_yaxis.GetSelection()))
         self.rescale1Daxis(xaxis=False, yaxis=True)
 
-    def Toolbox(self,panel):
+    def OToolbox(self, panel):
         '''
         Frame for visual toolbox
         '''
 
         tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
-        vbox = wx.StaticBoxSizer(tlbx,wx.VERTICAL)
+        vbox = wx.StaticBoxSizer(tlbx, wx.VERTICAL)
 
         ###########################
         ## X-Scale
@@ -1799,8 +1811,27 @@ class Viewer1DXRD(wx.Panel):
 
         self.ch_xaxis.Disable()
         self.ch_yaxis.Disable()
-
         return vbox
+
+    def XYChoices(self, panel):
+        '''Frame for x/y scale'''
+        pass
+        # tlbx = wx.StaticBox(self,label='PLOT TOOLBOX')
+        box = wx.BoxSizer(wx.HORIZONTAL)
+
+        xunits = [u'q (\u212B\u207B\u00B9)',u'2\u03B8 (\u00B0)',u'd (\u212B)']
+        yscales = ['linear','log']
+
+        self.ch_xaxis = Choice(self, choices=xunits, action=self.check1Daxis)
+        self.ch_yaxis = Choice(self, choices=yscales, action=self.onLogLinear)
+
+        box.Add(wx.StaticText(self, label='X scale:'), wx.ALL, border=4)
+        box.Add(self.ch_xaxis,  wx.ALL, border=4)
+        box.Add(wx.StaticText(self, label='Y scale:'), wx.ALL, border=4)
+        box.Add(self.ch_yaxis,  wx.ALL, border=4)
+        # self.ch_xaxis.Disable()
+        # self.ch_yaxis.Disable()
+        return box
 
     def DataBox(self,panel):
         '''
