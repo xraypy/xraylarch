@@ -75,20 +75,19 @@ class xrd1d(larch.Group):
         self.filename = file
         self.label    = label
 
-        self.energy     = energy
-        self.wavelength = wavelength
-
         if energy is None and wavelength is None:
             self.energy = 19.0
             self.wavelength = lambda_from_E(self.energy)
-        else:
-            if self.energy is None:     self.energy = E_from_lambda(self.wavelength)
-            if self.wavelength is None: self.wavelength = lambda_from_E(self.energy)
+        elif energy is None:
+            self.wavelength = wavelength
+            self.energy = E_from_lambda(wavelength)
+        elif wavelength is None:
+            self.energy     = energy
+            self.wavelength = lambda_from_E(energy)
 
         if file is not None:
             self.xrd_from_file(file)
         else:
-
             ## Default values
             self.distance      = None
             self.poni          = None
@@ -131,8 +130,8 @@ class xrd1d(larch.Group):
     def xrd_from_file(self, filename, verbose=True):
 
         try:
-            from ..xrmmap import read1DXRDFile
-            head,dat = read1DXRDFile(filename)
+            from ..xrmmap.asciifiles import read1DXRDFile
+            head, dat = read1DXRDFile(filename)
             if verbose:
                 print('Opening xrd data file: %s' % os.path.split(filename)[-1])
             if len(head) < 4:
@@ -253,10 +252,9 @@ class xrd1d(larch.Group):
                 self.bkgd]
 
     def fit_background(self,**kwargs):
-
-        x,y = self.q[self.imin:self.imax],self.I[self.imin:self.imax]
-        self.bkgd = xrd_background(x,y,**kwargs)
-
+        x = self.q[self.imin:self.imax],
+        y = self.I[self.imin:self.imax]
+        self.bkgd = xrd_background(x, y, **kwargs)
         while len(self.bkgd) < len(y):
             self.bkgd = np.append(self.bkgd,self.bkgd[-1])
 
