@@ -1162,9 +1162,9 @@ class XRD2DViewerFrame(wx.Frame):
         self.btn_ct1.Bind(wx.EVT_BUTTON,partial(self.setContrast,auto_contrast=True) )
 
         ttl_to = wx.StaticText(self.panel, label='to')
-        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
-        hbox_ct2.Add(ttl_to, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
-        hbox_ct2.Add(self.entr_max, flag=wx.RIGHT|wx.ALIGN_RIGHT, border=6)
+        hbox_ct2.Add(self.entr_min, flag=wx.RIGHT, border=6)
+        hbox_ct2.Add(ttl_to, flag=wx.RIGHT, border=6)
+        hbox_ct2.Add(self.entr_max, flag=wx.RIGHT, border=6)
         hbox_ct2.Add(self.btn_ct1, flag=wx.RIGHT,              border=6)
 
         vbox_ct.Add(self.sldr_cntrst, flag=wx.EXPAND|wx.RIGHT,    border=6)
@@ -1221,7 +1221,7 @@ class XRD2DViewerFrame(wx.Frame):
         self.btn_bkgd.Bind(wx.EVT_BUTTON,self.openBkgd)
 
         hbox_bkgd1.Add(self.btn_bkgd,  flag=wx.RIGHT|wx.TOP,                 border=6)
-        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.EXPAND|wx.ALIGN_RIGHT|wx.TOP, border=6)
+        hbox_bkgd1.Add(self.sldr_bkgd, flag=wx.EXPAND|wx.TOP, border=6)
         vbox.Add(hbox_bkgd1,           flag=wx.TOP|wx.BOTTOM,                border=4)
 
         self.sldr_bkgd.SetValue(self.bkgd_scale*SLIDER_SCALE)
@@ -1270,7 +1270,7 @@ class XRD2DViewerFrame(wx.Frame):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.xrd2Dviewer,proportion=1,flag=wx.ALL|wx.EXPAND,border = 10)
-        vbox.Add(btnbox,flag=wx.ALL|wx.ALIGN_RIGHT,border = 10)
+        vbox.Add(btnbox,flag=wx.ALL, border = 10)
         return vbox
 
     def QuickButtons(self,panel):
