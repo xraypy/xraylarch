@@ -74,16 +74,15 @@ class xrd1d(larch.Group):
 
         self.filename = file
         self.label    = label
-
+        self.wavelength = wavelength
+        self.energy = energy
         if energy is None and wavelength is None:
             self.energy = 19.0
             self.wavelength = lambda_from_E(self.energy)
-        elif energy is None:
-            self.wavelength = wavelength
-            self.energy = E_from_lambda(wavelength)
-        elif wavelength is None:
-            self.energy     = energy
-            self.wavelength = lambda_from_E(energy)
+        if self.energy is None:
+            self.energy = E_from_lambda(self.wavelength)
+        if self.wavelength is None:
+            self.wavelength = lambda_from_E(self.energy)
 
         if file is not None:
             self.xrd_from_file(file)
