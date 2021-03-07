@@ -238,7 +238,7 @@ def lasso_predict(group, model):
     """
     valid = (isgroup(model) and hasattr(model, 'model') and
              hasattr(model, 'x') and hasattr(model, 'arrayname') and
-             model.model.__repr__().startswith('PLS'))
+             model.model.__repr__().startswith('Lasso'))
     if not valid:
         raise ValueError("lasso_predict needs a Lasso training model")
     return _predict(group, mod)
