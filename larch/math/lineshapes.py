@@ -16,7 +16,7 @@ from scipy.special import gammaln as sp_gammaln
 from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
                               pearson7, breit_wigner, damped_oscillator,
                               dho, logistic, lognormal, students_t,
-                              donaich, skewed_gaussian, expgaussian,
+                              doniach, skewed_gaussian, expgaussian,
                               skewed_voigt, step, rectangle, exponential,
                               powerlaw, linear, parabolic)
 

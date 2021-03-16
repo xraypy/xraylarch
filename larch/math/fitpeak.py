@@ -39,7 +39,7 @@ from lmfit.models import (update_param_vals, LinearModel, ConstantModel,
                           DampedOscillatorModel,
                           DampedHarmonicOscillatorModel,
                           ExponentialGaussianModel, SkewedGaussianModel,
-                          DonaichModel, PowerLawModel, ExponentialModel,
+                          DoniachModel, PowerLawModel, ExponentialModel,
                           StepModel, RectangleModel, ExpressionModel,
                           update_param_vals)
 
