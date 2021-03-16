@@ -1348,7 +1348,6 @@ class EnergyUnitsDialog(wx.Dialog):
                 dspace = float(self.mono_dspace.GetValue())
                 if units == 'steps':
                     self.energy /= self.steps2deg.GetValue()
-                print("DEG TO EN ", dspace, DEG2RAD, PLANCK_HC)
                 en = PLANCK_HC/(2*dspace*np.sin(self.energy * DEG2RAD))
             ok = True
         return response(ok, units, en, dspace)

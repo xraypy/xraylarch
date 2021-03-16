@@ -809,7 +809,6 @@ class XASFrame(wx.Frame):
         outgroup = common_startstring(list(groups.keys()))
         outgroup = "%s (merge %d)" % (outgroup, len(groups))
         outgroup = unique_name(outgroup, self.controller.file_groups)
-        print(" CREATE Merge Dialog ", self)
         dlg = MergeDialog(self, list(groups.keys()), outgroup=outgroup)
         res = dlg.GetResponse()
         dlg.Destroy()
