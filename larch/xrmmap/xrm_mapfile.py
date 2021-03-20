@@ -31,7 +31,7 @@ from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
 from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
-NINIT = 32
+NINIT = 64
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
@@ -241,7 +241,7 @@ class GSEXRM_MapFile(object):
                  bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E', run='', proposal='',
-                 user='', scandb=None, save_each_mca=True, **kws):
+                 user='', scandb=None, all_mcas=True, **kws):
 
         self.filename      = filename
         self.folder        = folder
@@ -268,7 +268,7 @@ class GSEXRM_MapFile(object):
         self._pixeltime    = None
         self.masterfile    = None
         self.force_no_dtc  = False
-        self.save_each_mca = save_each_mca
+        self.all_mcas      = all_mcas
         self.detector_list = None
 
         self.compress_args = {'compression': compression}
@@ -705,14 +705,13 @@ class GSEXRM_MapFile(object):
             return
 
         self.last_row = -1
-        # print(" Initialize XRMMAP -> Add Map Config ", self.mapconf)
         self.add_map_config(self.mapconf)
 
-        self.process_row(0, flush=True, callback=callback)
+        self.process_row(0, flush=True, callback=callback, nrows_expected=len(self.rowdata))
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process_row(self, irow, flush=False, offset=None, callback=None):
+    def process_row(self, irow, flush=False, offset=None, callback=None, nrows_expected=None):
         row = self.read_rowdata(irow, offset=offset)
         if irow == 0:
             nmca, nchan = 0, 2048
@@ -721,17 +720,16 @@ class GSEXRM_MapFile(object):
             xrd2d_shape = None
             if row.xrd2d is not None:
                 xrd2d_shape = rows.xrd2d.shape
-
             self.build_schema(row.npts, nmca=nmca, nchan=nchan,
                               scaler_names=row.scaler_names,
                               scaler_addrs=row.scaler_addrs,
-                              xrd2d_shape=xrd2d_shape, verbose=True)
-
+                              xrd2d_shape=xrd2d_shape, verbose=True,
+                              nrows_expected=nrows_expected)
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
 
         if flush:
-            self.resize_arrays(self.last_row+1)
+            self.resize_arrays(self.last_row+1, force_shrink=True)
             self.h5root.flush()
             if self._pixeltime is None:
                 self.calc_pixeltime()
@@ -740,12 +738,12 @@ class GSEXRM_MapFile(object):
                 callback(filename=self.filename, status='complete')
 
     def process(self, maxrow=None, force=False, callback=None, offset=None,
-                force_no_dtc=False, save_each_mca=None):
+                force_no_dtc=False, all_mcas=None):
         "look for more data from raw folder, process if needed"
         self.force_no_dtc = force_no_dtc
-        if save_each_mca is not None:
-            self.save_each_mca = save_each_mca
-        # nt("process ", maxrow, self.save_each_mca)
+        if all_mcas is not None:
+            self.all_mcas = all_mcas
+
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
@@ -930,7 +928,7 @@ class GSEXRM_MapFile(object):
 
             dt.add(" got %d map items" % len(map_items))
             if thisrow >= nrows:
-                self.resize_arrays(NINIT*(1+nrows/NINIT))
+                self.resize_arrays(NINIT*(1+nrows/NINIT), force_shrink=False)
 
             dt.add(" resized ")
             sclrgrp = self.xrmmap['scalars']
@@ -954,22 +952,44 @@ class GSEXRM_MapFile(object):
                         mca_dets.append(gname)
                         nrows, npts, nchan =  g['counts'].shape
                 dt.add(" map xrf 2")
-                _nr, npts, nchan = self.xrmmap[mca_dets[0]]['counts'].shape
+                _nr, npts, nchan = self.xrmmap['mcasum']['counts'].shape
                 npts = min(npts, xnpts, self.npts)
                 dt.add(" map xrf 3")
-                # print("ADD ROW ", self.save_each_mca, mca_dets)
-                for idet, gname in enumerate(mca_dets):
-                    grp = self.xrmmap[gname]
-                    if self.save_each_mca:
+                # print("ADD ROW ", self.all_mcas, mca_dets, self.nmca)
+                if self.all_mcas:
+                    for idet, gname in enumerate(mca_dets):
+                        grp = self.xrmmap[gname]
                         grp['counts'][thisrow, :npts, :] = row.counts[idet, :npts, :]
-                    #else:
-                    #    grp['counts'][thisrow, :npts, :] = 0.0*row.counts[idet, :npts, :]
-                    grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
-                    grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
-                    grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
-                    grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
-                    grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
-                self.xrmmap['mcasum']['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
+                        grp['dtfactor'][thisrow,  :npts] = row.dtfactor[idet, :npts]
+                        grp['realtime'][thisrow,  :npts] = row.realtime[idet, :npts]
+                        grp['livetime'][thisrow,  :npts] = row.livetime[idet, :npts]
+                        grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
+                        grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
+
+                livetime = np.zeros(npts, dtype='f8')
+                realtime = np.zeros(npts, dtype='f8')
+                dtfactor = np.zeros(npts, dtype='f8')
+                inpcounts = np.zeros(npts, dtype='f8')
+                outcounts = np.zeros(npts, dtype='f8')
+                # print("ADD ", inpcounts.dtype, row.inpcounts.dtype)
+                for idet in range(self.nmca):      
+                    realtime += row.realtime[idet, :npts]
+                    livetime += row.livetime[idet, :npts]
+                    dtfactor += row.dtfactor[idet, :npts]                    
+                    inpcounts += row.inpcounts[idet, :npts]                    
+                    outcounts += row.outcounts[idet, :npts]                    
+                livetime /= (1.0*self.nmca)
+                realtime /= (1.0*self.nmca)
+                dtfactor /= (1.0*self.nmca)
+
+                sumgrp = self.xrmmap['mcasum']
+                sumgrp['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
+                # print("add realtime ", sumgrp['realtime'].shape, self.xrmmap['roimap/det_raw'].shape, thisrow)
+                sumgrp['realtime'][thisrow,  :npts] = realtime
+                sumgrp['livetime'][thisrow,  :npts] = livetime
+                sumgrp['dtfactor'][thisrow,  :npts] = dtfactor
+                sumgrp['inpcounts'][thisrow,  :npts] = inpcounts
+                sumgrp['outcounts'][thisrow,  :npts] = outcounts
 
                 if version_ge(self.version, '2.1.0'): # version 2.1
                     det_raw = self.xrmmap['roimap/det_raw']
@@ -978,7 +998,6 @@ class GSEXRM_MapFile(object):
                     sum_cor = self.xrmmap['roimap/sum_cor']
 
                     detraw = list(row.sisdata[:npts].transpose())
-
                     detcor = detraw[:]
                     sumraw = detraw[:]
                     sumcor = detraw[:]
@@ -1002,7 +1021,7 @@ class GSEXRM_MapFile(object):
                         detcor.extend(icor)
                         sumraw.append(np.array(iraw).sum(axis=0))
                         sumcor.append(np.array(icor).sum(axis=0))
-
+                    
                     det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
                     det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
                     sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
@@ -1042,7 +1061,7 @@ class GSEXRM_MapFile(object):
                         nrows, npts, nchan =  g['counts'].shape
 
                 if thisrow >= nrows:
-                    self.resize_arrays(NINIT*(1+nrows/NINIT))
+                    self.resize_arrays(NINIT*(1+nrows/NINIT), force_shrink=False)
 
                 _nr, npts, nchan = xrm_dets[0]['counts'].shape
                 npts = min(npts, xnpts, self.npts)
@@ -1142,7 +1161,8 @@ class GSEXRM_MapFile(object):
 
 
     def build_schema(self, npts, nmca=1, nchan=2048, scaler_names=None,
-                     scaler_addrs=None, xrd2d_shape=None, verbose=False):
+                     scaler_addrs=None, xrd2d_shape=None, nrows_expected=None,
+                     verbose=False):
         '''build schema for detector and scan data'''
 
         if not self.check_hostid():
@@ -1169,6 +1189,10 @@ class GSEXRM_MapFile(object):
         if self.chunksize is None:
             self.chunksize = (1, min(2048, npts), nchan)
 
+        NSTART = NINIT
+        if nrows_expected is not None:
+            NSTART = max(NINIT, nrows_expected)
+        print(" in  build schema ", NSTART)
         # positions
         pos = xrmmap['positions']
         for pname in ('mca realtime', 'mca livetime'):
@@ -1177,7 +1201,7 @@ class GSEXRM_MapFile(object):
         npos = len(self.pos_desc)
         self.add_data(pos, 'name',    strlist(self.pos_desc))
         self.add_data(pos, 'address', strlist(self.pos_addr))
-        pos.create_dataset('pos', (NINIT, npts, npos), np.float32,
+        pos.create_dataset('pos', (NSTART, npts, npos), np.float32,
                            maxshape=(None, npts, npos), **self.compress_args)
 
         ##
@@ -1205,7 +1229,7 @@ class GSEXRM_MapFile(object):
             sismap = xrmmap['scalars']
             sismap.attrs['type'] = 'scalar detector'
             for aname in scaler_names:
-                sismap.create_dataset(aname, (NINIT, npts), np.float32,
+                sismap.create_dataset(aname, (NSTART, npts), np.float32,
                                       chunks=self.chunksize[:-1],
                                       maxshape=(None, npts), **self.compress_args)
 
@@ -1218,47 +1242,48 @@ class GSEXRM_MapFile(object):
                 roi_limits = np.array([[[0, 2]]])
 
             if verbose:
-                msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i)'
-                print(msg % (npts, nmca, nchan))
+                msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i) %r'
+                print(msg % (npts, nmca, nchan, self.all_mcas))
 
             ## mca1 to mcaN
-            for i in range(nmca):
-                imca = "mca%d" % (i+1)
-                for grp in (xrmmap, xrmmap['roimap']):
-                    dgrp = grp.create_group(imca)
-                    dgrp.attrs['type'] = 'mca detector'
-                    dgrp.attrs['desc'] = imca
+            if self.all_mcas:
+                for i in range(nmca):
+                    imca = "mca%d" % (i+1)
+                    for grp in (xrmmap, xrmmap['roimap']):
+                        dgrp = grp.create_group(imca)
+                        dgrp.attrs['type'] = 'mca detector'
+                        dgrp.attrs['desc'] = imca
 
-                dgrp = xrmmap[imca]
-                self.add_data(dgrp, 'energy', enarr[i],
-                              attrs={'cal_offset':offset[i],
-                                     'cal_slope': slope[i],
-                                     'cal_quad': quad[i]})
-                dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
-                                    chunks=self.chunksize,
-                                    maxshape=(None, npts, nchan), **self.compress_args)
+                    dgrp = xrmmap[imca]
+                    self.add_data(dgrp, 'energy', enarr[i],
+                                  attrs={'cal_offset':offset[i],
+                                         'cal_slope': slope[i],
+                                         'cal_quad': quad[i]})
+                    dgrp.create_dataset('counts', (NSTART, npts, nchan), np.uint32,
+                                        chunks=self.chunksize,
+                                        maxshape=(None, npts, nchan), **self.compress_args)
 
-                for name, dtype in (('realtime',  np.int64),
-                                    ('livetime',  np.int64),
-                                    ('dtfactor',  np.float32),
-                                    ('inpcounts', np.float32),
-                                    ('outcounts', np.float32)):
-                    dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                        maxshape=(None, npts), **self.compress_args)
-
-                dgrp = xrmmap['roimap'][imca]
-                for rname, rlimit in zip(roi_names,roi_limits[i]):
-                    rgrp = dgrp.create_group(rname)
-                    for aname,dtype in (('raw', np.uint32),
-                                        ('cor', np.float32)):
-                        rgrp.create_dataset(aname, (1, npts), dtype,
-                                            chunks=self.chunksize[:-1],
+                    for name, dtype in (('realtime',  np.int64),
+                                        ('livetime',  np.int64),
+                                        ('dtfactor',  np.float32),
+                                        ('inpcounts', np.float32),
+                                        ('outcounts', np.float32)):
+                        dgrp.create_dataset(name, (NSTART, npts), dtype,
                                             maxshape=(None, npts), **self.compress_args)
 
-                    rlimit = [max(0, rlimit[0]), min(len(enarr[i])-1, rlimit[1])]
-                    lmtgrp = rgrp.create_dataset('limits', data=enarr[i][rlimit])
-                    lmtgrp.attrs['type'] = 'energy'
-                    lmtgrp.attrs['units'] = 'keV'
+                    dgrp = xrmmap['roimap'][imca]
+                    for rname, rlimit in zip(roi_names,roi_limits[i]):
+                        rgrp = dgrp.create_group(rname)
+                        for aname,dtype in (('raw', np.uint32),
+                                            ('cor', np.float32)):
+                            rgrp.create_dataset(aname, (1, npts), dtype,
+                                                chunks=self.chunksize[:-1],
+                                                maxshape=(None, npts), **self.compress_args)
+
+                        rlimit = [max(0, rlimit[0]), min(len(enarr[i])-1, rlimit[1])]
+                        lmtgrp = rgrp.create_dataset('limits', data=enarr[i][rlimit])
+                        lmtgrp.attrs['type'] = 'energy'
+                        lmtgrp.attrs['units'] = 'keV'
 
             ## mcasum
             for grp in (xrmmap, xrmmap['roimap']):
@@ -1275,9 +1300,18 @@ class GSEXRM_MapFile(object):
                           attrs={'cal_offset':offset[0],
                                  'cal_slope': slope[0],
                                  'cal_quad': quad[0]})
-            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.float64,
+            dgrp.create_dataset('counts', (NSTART, npts, nchan), np.float64,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan), **self.compress_args)
+
+            for name, dtype in (('realtime',  np.int64),
+                                ('livetime',  np.int64),
+                                ('dtfactor',  np.float32),
+                                ('inpcounts', np.float32),
+                                ('outcounts', np.float32)):
+                dgrp.create_dataset(name, (NSTART, npts), dtype,
+                                    maxshape=(None, npts), **self.compress_args)
+
 
             dgrp = xrmmap['roimap']['mcasum']
             for rname, rlimit in zip(roi_names, roi_limits[0]):
@@ -1337,7 +1371,7 @@ class GSEXRM_MapFile(object):
                                         ('sum_raw', nsum, np.uint32),
                                         ('sum_cor', nsum, np.float32)
                                         ):
-                    rdat.create_dataset(name, (NINIT, npts, nx), dtype,
+                    rdat.create_dataset(name, (NSTART, npts, nx), dtype,
                                         chunks=(2, npts, nx),
                                        maxshape=(None, npts, nx), **self.compress_args)
 
@@ -1362,7 +1396,7 @@ class GSEXRM_MapFile(object):
                 self.add_data(dgrp, 'roi_address', strlist([s % (imca+1) for s in roi_addrs]))
                 self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
 
-                dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+                dgrp.create_dataset('counts', (NSTART, npts, nchan), np.uint32,
                                     chunks=self.chunksize,
                                     maxshape=(None, npts, nchan), **self.compress_args)
                 for name, dtype in (('realtime', np.int64),
@@ -1370,7 +1404,7 @@ class GSEXRM_MapFile(object):
                                     ('dtfactor', np.float32),
                                     ('inpcounts', np.float32),
                                     ('outcounts', np.float32)):
-                    dgrp.create_dataset(name, (NINIT, npts), dtype,
+                    dgrp.create_dataset(name, (NSTART, npts), dtype,
                                         maxshape=(None, npts), **self.compress_args)
 
             # add 'virtual detector' for corrected sum:
@@ -1384,7 +1418,7 @@ class GSEXRM_MapFile(object):
             self.add_data(dgrp, 'roi_name',    strlist(roi_names))
             self.add_data(dgrp, 'roi_address', strlist((s % 1) for s in roi_addrs))
             self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
-            dgrp.create_dataset('counts', (NINIT, npts, nchan), np.uint32,
+            dgrp.create_dataset('counts', (NSTART, npts, nchan), np.uint32,
                                 chunks=self.chunksize,
                                 maxshape=(None, npts, nchan), **self.compress_args)
             # roi map data
@@ -1432,7 +1466,7 @@ class GSEXRM_MapFile(object):
                                     ('det_cor', nsca, np.float32),
                                     ('sum_raw', nsum, np.uint32),
                                     ('sum_cor', nsum, np.float32)):
-                scan.create_dataset(name, (NINIT, npts, nx), dtype,
+                scan.create_dataset(name, (NSTART, npts, nx), dtype,
                                     chunks=(2, npts, nx),
                                     maxshape=(None, npts, nx), **self.compress_args)
 
@@ -1453,7 +1487,7 @@ class GSEXRM_MapFile(object):
                 xrdgrp.create_dataset('background', (xpixx, xpixy), np.uint16, **self.compress_args)
 
                 chunksize_2DXRD = (1, npts, xpixx, xpixy)
-                xrdgrp.create_dataset('counts', (NINIT, npts, xpixx, xpixy), np.uint32,
+                xrdgrp.create_dataset('counts', (NSTART, npts, xpixx, xpixy), np.uint32,
                                       chunks = chunksize_2DXRD,
                                       maxshape=(None, npts, xpixx, xpixy), **self.compress_args)
 
@@ -1467,7 +1501,7 @@ class GSEXRM_MapFile(object):
 
                 chunksize_xrd1d  = (1, npts, self.qstps)
                 xrdgrp.create_dataset('counts',
-                                      (NINIT, npts, self.qstps),
+                                      (NSTART, npts, self.qstps),
                                       np.float32,
                                       chunks = chunksize_xrd1d,
                                       maxshape=(None, npts, self.qstps), **self.compress_args)
@@ -1480,7 +1514,7 @@ class GSEXRM_MapFile(object):
                         wdggrp.create_dataset('q', (self.qstps,), np.float32, **self.compress_args)
 
                         wdggrp.create_dataset('counts',
-                                              (NINIT, npts, self.qstps),
+                                              (NSTART, npts, self.qstps),
                                               np.float32,
                                               chunks = chunksize_xrd1d,
                                               maxshape=(None, npts, self.qstps), **self.compress_args)
@@ -1679,16 +1713,16 @@ class GSEXRM_MapFile(object):
                                                         self.has_xrd1d,
                                                         self.has_xrd2d))
 
-    def resize_arrays(self, nrow):
+    def resize_arrays(self, nrow, force_shrink=True):
         "resize all arrays for new nrow size"
-
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
-
         if version_ge(self.version, '2.0.0'):
 
             g = self.xrmmap['positions/pos']
             old, npts, nx = g.shape
+            if nrow < old and not force_shrink:
+                return
             g.resize((nrow, npts, nx))
 
             for g in self.xrmmap.values():
@@ -1707,6 +1741,11 @@ class GSEXRM_MapFile(object):
                     elif type_attr.startswith('virtual mca'):
                         oldnrow, npts, nchan = g['counts'].shape
                         g['counts'].resize((nrow, npts, nchan))
+                        for aname in ('livetime', 'realtime',
+                                      'inpcounts', 'outcounts', 'dtfactor'):
+                            if aname in g:
+                                g[aname].resize((nrow, npts))
+                        
                     elif type_attr.startswith('xrd2d'):
                         oldnrow, npts, xpixx, xpixy = g['counts'].shape
                         g['counts'].resize((nrow, npts, xpixx, xpixy))
@@ -2508,28 +2547,21 @@ class GSEXRM_MapFile(object):
 
         '''
         # need real size, not just slice values, for np.zeros()2
-        shape = self._det_group(1)['livetime'].shape
+        shape = self._det_group(det)['livetime'].shape
         if ymax < 0: ymax += shape[0]
         if xmax < 0: xmax += shape[1]
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        if det is None or 'sum' in str(det):
-            livetime = np.zeros((ny, nx))
-            realtime = np.zeros((ny, nx))
-            for d in range(1, self.nmca+1):
-                dmap = self._det_group(d)
-                livetime += dmap['livetime'][sy, sx]
-                realtime += dmap['realtime'][sy, sx]
-            livetime /= (1.0*self.nmca)
-            realtime /= (1.0*self.nmca)
+        dmap = self._det_group(det)
+        
+        if 'livetime' in dmap:
+            livetime = 1.e-6*dmap['livetime'][sy, sx]
+            realtime = 1.e-6*dmap['realtime'][sy, sx]
         else:
-            dmap = self._det_group(det)
-            livetime = dmap['livetime'][sy, sx]
-            realtime = dmap['realtime'][sy, sx]
+            livetime = self.pixeltime * np.ones((ny, nx))
+            realtime = self.pixeltime * np.ones((ny, nx))
 
-        livetime = 1.e-6*livetime
-        realtime = 1.e-6*realtime
         return livetime, realtime
 
     def _getmca(self, dgroup, counts, name, npixels=None, **kws):
@@ -3212,7 +3244,8 @@ def read_xrmmap(filename, root=None, **kws):
     key = 'filename'
     if os.path.isdir(filename):
         key = 'folder'
-    kws = {key: filename, 'root': root}
+    kws.update({key: filename, 'root': root})
+    
     return GSEXRM_MapFile(**kws)
 
 def process_mapfolder(path, take_ownership=False, **kws):
