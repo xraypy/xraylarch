@@ -31,7 +31,7 @@ from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
 from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
-NINIT = 64
+NINIT = 32
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
@@ -728,6 +728,7 @@ class GSEXRM_MapFile(object):
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
 
+
         if flush:
             self.resize_arrays(self.last_row+1, force_shrink=True)
             self.h5root.flush()
@@ -761,9 +762,10 @@ class GSEXRM_MapFile(object):
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                self.process_row(irow, flush=(nrows-irow<=1), offset=offset,
-                                 callback=callback)
+                flush = nrows-irow<=1  or (irow % 50 == 0)
+                self.process_row(irow, flush=flush, offset=offset, callback=callback)
                 irow  = irow + 1
+
 
     def set_roidata(self, row_start=0, row_end=None):
         if row_end is None:
@@ -895,7 +897,7 @@ class GSEXRM_MapFile(object):
                              has_xrd1d=self.has_xrd1d)
 
 
-    def add_rowdata(self, row, callback=None):
+    def add_rowdata(self, row, callback=None, flush=True):
         '''adds a row worth of real data'''
         dt = debugtime()
         if not self.check_hostid():
@@ -971,6 +973,7 @@ class GSEXRM_MapFile(object):
                 dtfactor = np.zeros(npts, dtype='f8')
                 inpcounts = np.zeros(npts, dtype='f8')
                 outcounts = np.zeros(npts, dtype='f8')
+                dt.add(" map xrf 4a: alloc ")                
                 # print("ADD ", inpcounts.dtype, row.inpcounts.dtype)
                 for idet in range(self.nmca):      
                     realtime += row.realtime[idet, :npts]
@@ -981,16 +984,19 @@ class GSEXRM_MapFile(object):
                 livetime /= (1.0*self.nmca)
                 realtime /= (1.0*self.nmca)
                 dtfactor /= (1.0*self.nmca)
+                dt.add(" map xrf 4b: time sums ")                                
 
                 sumgrp = self.xrmmap['mcasum']
                 sumgrp['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
+                dt.add(" map xrf 4b: set counts")                                                
                 # print("add realtime ", sumgrp['realtime'].shape, self.xrmmap['roimap/det_raw'].shape, thisrow)
                 sumgrp['realtime'][thisrow,  :npts] = realtime
                 sumgrp['livetime'][thisrow,  :npts] = livetime
                 sumgrp['dtfactor'][thisrow,  :npts] = dtfactor
                 sumgrp['inpcounts'][thisrow,  :npts] = inpcounts
                 sumgrp['outcounts'][thisrow,  :npts] = outcounts
-
+                dt.add(" map xrf 4c: set time data ")
+                
                 if version_ge(self.version, '2.1.0'): # version 2.1
                     det_raw = self.xrmmap['roimap/det_raw']
                     det_cor = self.xrmmap['roimap/det_cor']
@@ -1021,7 +1027,7 @@ class GSEXRM_MapFile(object):
                         detcor.extend(icor)
                         sumraw.append(np.array(iraw).sum(axis=0))
                         sumcor.append(np.array(icor).sum(axis=0))
-                    
+                    dt.add(" map xrf 5a: got simple  ROIS")                    
                     det_raw[thisrow, :npts, :] = np.array(detraw).transpose()
                     det_cor[thisrow, :npts, :] = np.array(detcor).transpose()
                     sum_raw[thisrow, :npts, :] = np.array(sumraw).transpose()
@@ -1155,7 +1161,7 @@ class GSEXRM_MapFile(object):
         dt.add("xrd done")
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
-        self.h5root.flush()
+        #self.h5root.flush()
         dt.add("flushed h5 file")
         # dt.show()
 
@@ -1189,10 +1195,10 @@ class GSEXRM_MapFile(object):
         if self.chunksize is None:
             self.chunksize = (1, min(2048, npts), nchan)
 
-        NSTART = NINIT
         if nrows_expected is not None:
             NSTART = max(NINIT, nrows_expected)
-        print(" in  build schema ", NSTART)
+        NSTART = NINIT*2
+        
         # positions
         pos = xrmmap['positions']
         for pname in ('mca realtime', 'mca livetime'):
@@ -1242,8 +1248,9 @@ class GSEXRM_MapFile(object):
                 roi_limits = np.array([[[0, 2]]])
 
             if verbose:
-                msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i) %r'
-                print(msg % (npts, nmca, nchan, self.all_mcas))
+                allmcas = 'with all mcas' if self.all_mcas else 'with only mca sum'
+                msg = '--- Build XRF Schema: %i ---- MCA: (%i, %i) %s'
+                print(msg % (npts, nmca, nchan, allmcas))
 
             ## mca1 to mcaN
             if self.all_mcas:
