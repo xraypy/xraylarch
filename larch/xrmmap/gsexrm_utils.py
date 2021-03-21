@@ -312,8 +312,8 @@ class GSEXRM_MapRow:
             dt_denom = self.outcounts*self.livetime
             dt_denom[np.where(dt_denom < 1)] = 1.0
             self.dtfactor  = self.inpcounts*self.realtime/dt_denom
-            self.dtfactor[np.where(self.dtfactor < 0.5)] = 0.5
             self.dtfactor[np.where(np.isnan(self.dtfactor))] = 1.0
+            self.dtfactor[np.where(self.dtfactor < 0.95)] = 0.95
             if force_no_dtc: # in case deadtime info is unreliable (some v old data)
                 self.outcounts = self.inpcounts*1.0
                 self.livetime  = self.realtime*1.0
@@ -472,5 +472,15 @@ class GSEXRM_MapRow:
             self.realtime = self.realtime.swapaxes(0, 1)
             self.counts   = self.counts.swapaxes(0, 1)
             iy, ix = self.dtfactor.shape
-            self.total = (self.counts * self.dtfactor.reshape(iy, ix, 1)).sum(axis=0)
+
+            self.total = self.counts.sum(axis=0)
+            # dtfactor for total
+            total_dtc = (self.counts * self.dtfactor.reshape(iy, ix, 1)).sum(axis=0).sum(axis=1)
+            dt_denom = self.total.sum(axis=1)
+            dt_denom[np.where(dt_denom < 1)] = 1.0
+            dtfact  = total_dtc / dt_denom
+            dtfact[np.where(np.isnan(dtfact))] = 1.0
+            dtfact[np.where(dtfact < 0.95)] = 0.95
+            dtfact[np.where(dtfact > 50.0)] = 50.0
+            self.total_dtfactor = dtfact
         self.read_ok = True
