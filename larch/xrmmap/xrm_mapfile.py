@@ -241,7 +241,7 @@ class GSEXRM_MapFile(object):
                  bkgdscale=1., has_xrf=True, has_xrd1d=False, has_xrd2d=False,
                  compression=COMPRESSION, compression_opts=COMPRESSION_OPTS,
                  facility='APS', beamline='13-ID-E', run='', proposal='',
-                 user='', scandb=None, all_mcas=True, **kws):
+                 user='', scandb=None, all_mcas=False, **kws):
 
         self.filename      = filename
         self.folder        = folder
@@ -968,23 +968,21 @@ class GSEXRM_MapFile(object):
                         grp['inpcounts'][thisrow, :npts] = row.inpcounts[idet, :npts]
                         grp['outcounts'][thisrow, :npts] = row.outcounts[idet, :npts]
 
-                livetime = np.zeros(npts, dtype='f8')
-                realtime = np.zeros(npts, dtype='f8')
-                dtfactor = np.zeros(npts, dtype='f8')
-                inpcounts = np.zeros(npts, dtype='f8')
-                outcounts = np.zeros(npts, dtype='f8')
+                livetime = np.zeros(npts, dtype=np.float64)
+                realtime = np.zeros(npts, dtype=np.float64)
+                dtfactor = np.zeros(npts, dtype=np.float32)
+                inpcounts = np.zeros(npts, dtype=np.float32)
+                outcounts = np.zeros(npts, dtype=np.float32)
                 dt.add(" map xrf 4a: alloc ")                
                 # print("ADD ", inpcounts.dtype, row.inpcounts.dtype)
                 for idet in range(self.nmca):      
                     realtime += row.realtime[idet, :npts]
                     livetime += row.livetime[idet, :npts]
-                    dtfactor += row.dtfactor[idet, :npts]                    
                     inpcounts += row.inpcounts[idet, :npts]                    
                     outcounts += row.outcounts[idet, :npts]                    
                 livetime /= (1.0*self.nmca)
                 realtime /= (1.0*self.nmca)
-                dtfactor /= (1.0*self.nmca)
-                dt.add(" map xrf 4b: time sums ")                                
+                dt.add(" map xrf 4b: time sums")
 
                 sumgrp = self.xrmmap['mcasum']
                 sumgrp['counts'][thisrow, :npts, :nchan] = row.total[:npts, :nchan]
@@ -992,7 +990,7 @@ class GSEXRM_MapFile(object):
                 # print("add realtime ", sumgrp['realtime'].shape, self.xrmmap['roimap/det_raw'].shape, thisrow)
                 sumgrp['realtime'][thisrow,  :npts] = realtime
                 sumgrp['livetime'][thisrow,  :npts] = livetime
-                sumgrp['dtfactor'][thisrow,  :npts] = dtfactor
+                sumgrp['dtfactor'][thisrow,  :npts] = row.total_dtfactor[:npts]
                 sumgrp['inpcounts'][thisrow,  :npts] = inpcounts
                 sumgrp['outcounts'][thisrow,  :npts] = outcounts
                 dt.add(" map xrf 4c: set time data ")
@@ -1162,7 +1160,7 @@ class GSEXRM_MapFile(object):
         self.last_row = thisrow
         self.xrmmap.attrs['Last_Row'] = thisrow
         #self.h5root.flush()
-        dt.add("flushed h5 file")
+        # dt.add("flushed h5 file")
         # dt.show()
 
 
@@ -1170,7 +1168,7 @@ class GSEXRM_MapFile(object):
                      scaler_addrs=None, xrd2d_shape=None, nrows_expected=None,
                      verbose=False):
         '''build schema for detector and scan data'''
-
+        self.t0 = time.time()
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
 
@@ -1613,7 +1611,7 @@ class GSEXRM_MapFile(object):
         """
         get a list of rois from detector
         """
-        detname = self._det_name(det_name)
+        detname = self.get_detname(det_name)
         if not force and (detname not in EXTRA_DETGROUPS):
             roilist = self.roi_names.get(detname, None)
             if roilist is not None:
@@ -1995,7 +1993,7 @@ class GSEXRM_MapFile(object):
             x = self.get_pos(0, mean=True)
 
         if hotcols and x is not None:
-           if len(x) == self.xrmmap[self._det_name()]['counts'].shape[1]:
+           if len(x) == self.xrmmap[self.get_detname()]['counts'].shape[1]:
                x = x[1:-1]
 
         return x
@@ -2015,7 +2013,7 @@ class GSEXRM_MapFile(object):
             omega = None
 
         if hotcols and omega is not None:
-           if len(omega) == self.xrmmap[self._det_name()]['counts'].shape[1]:
+           if len(omega) == self.xrmmap[self.get_detname()]['counts'].shape[1]:
                omega = omega[1:-1]
         return omega
 
@@ -2355,34 +2353,32 @@ class GSEXRM_MapFile(object):
 
         return len(rows)
 
-    def _det_name(self, det=None):
-        "return  XRMMAP group for a detector"
+    def get_detname(self, det=None):
+        "return XRMMAP group for a detector"
 
         mcastr = 'mca' if version_ge(self.version, '2.0.0') else 'det'
-        dgroup = '%ssum' % mcastr
+        detname =  '%ssum' % mcastr
 
         if isinstance(det, str):
             for d in self.get_detector_list():
                 if det.lower() == d.lower():
-                    dgroup = d
+                    detname = d
         elif isinstance(det, int):
             if det in range(1, self.nmca+1):
-                dgroup = '%s%i' % (mcastr, det)
+                detname = '%s%i' % (mcastr, det)
 
-        return dgroup
+        return detname
 
-    def _det_group(self, det=None):
+    def get_detgroup(self, det=None):
         "return  XRMMAP group for a detector"
-
-        dgroup = self._det_name(det)
-        return self.xrmmap[dgroup]
+        return self.xrmmap[self.get_detname(det)]
 
     def get_energy(self, det=None):
         '''return energy array for a detector'''
         try:
             group = self.xrmmap[det]
         except:
-            group = self._det_group(det)
+            group = self.get_detgroup(det)
         return group['energy'].value
 
     def get_shape(self):
@@ -2445,7 +2441,7 @@ class GSEXRM_MapFile(object):
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
         if mapdat is None:
-            mapdat = self._det_group(det)
+            mapdat = self.get_detgroup(det)
 
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
@@ -2455,8 +2451,12 @@ class GSEXRM_MapFile(object):
             counts = mapdat['counts'][sy, sx, :, :]
         else:
             counts = mapdat['counts'][sy, sx, :]
+        # print("get_counts_rect: ", det, dtcorrect, mapdat, 'dtfactor' in mapdat,
+        #   mapdat['counts'].shape, counts.shape, counts.dtype)
 
-        if dtcorrect and 'dtfactor' in mapdat.keys():
+        if dtcorrect and 'dtfactor' in mapdat:
+            b = counts.sum()
+            c = mapdat['dtfactor'][sy, sx].mean()
             counts = counts*mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
         return counts
 
@@ -2484,16 +2484,14 @@ class GSEXRM_MapFile(object):
         if npixels < 1:
             return None
 
-        dgroup = self._det_name(det)
+        dgroup = self.get_detname(det)
 
         # first get data for bounding rectangle
         _ay, _ax = np.where(area)
         ymin, ymax, xmin, xmax = _ay.min(), _ay.max()+1, _ax.min(), _ax.max()+1
-
-        counts = self.get_counts_rect(ymin, ymax, xmin, xmax, det=det,
-                                      dtcorrect=dtcorrect)
-        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
-                                              dtcorrect=dtcorrect)
+        opts = {'dtcorrect': dtcorrect, 'det': det}
+        counts = self.get_counts_rect(ymin, ymax, xmin, xmax, **opts)
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, **opts)
         ltime = ltime[area[ymin:ymax, xmin:xmax]].sum()
         rtime = rtime[area[ymin:ymax, xmin:xmax]].sum()
         counts = counts[area[ymin:ymax, xmin:xmax]]
@@ -2521,8 +2519,8 @@ class GSEXRM_MapFile(object):
         '''
         if dtcorrect is None:
             dtcorrect = self.dtcorrect
-        dgroup = self._det_name(det)
-        mapdat = self._det_group(det)
+        dgroup = self.get_detname(det)
+        mapdat = self.get_detgroup(det)
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(y=[%i:%i], x==[%i:%i])' % (ymin, ymax, xmin, xmax)
@@ -2550,17 +2548,15 @@ class GSEXRM_MapFile(object):
         -------
         realtime, livetime in seconds
 
-        Does *not* check for errors!
-
         '''
-        # need real size, not just slice values, for np.zeros()2
-        shape = self._det_group(det)['livetime'].shape
-        if ymax < 0: ymax += shape[0]
-        if xmax < 0: xmax += shape[1]
+        tshape = self.get_shape()
+        dmap = self.get_detgroup(det)
+
+        if ymax < 0: ymax += tshape[0]
+        if xmax < 0: xmax += tshape[1]
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        dmap = self._det_group(det)
         
         if 'livetime' in dmap:
             livetime = 1.e-6*dmap['livetime'][sy, sx]
@@ -3073,7 +3069,7 @@ class GSEXRM_MapFile(object):
         nrow, ncol, npos = self.xrmmap['positions']['pos'].shape
         out = np.zeros((nrow, ncol))
 
-        det = self._det_name(det)
+        det = self.get_detname(det)
         dtcorrect = dtcorrect and ('mca' in det or 'det' in det)
 
         if roiname == '1' or roiname == 1:
@@ -3088,7 +3084,7 @@ class GSEXRM_MapFile(object):
             ext = 'raw'
         if dtcorrect:
             ext = 'cor'
-
+            
         # print("GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
         # print("detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
@@ -3097,6 +3093,7 @@ class GSEXRM_MapFile(object):
             else:
                 roi_ext = '%s_' + ext if ext == 'raw' else '%s'
             roiaddr =  roi_ext % roi
+            # print("looking for detattr, roiaddr ", detaddr, roiaddr)
             try:
                 out = self.xrmmap[detaddr][roiaddr][:]
             except (KeyError, OSError):
@@ -3116,6 +3113,7 @@ class GSEXRM_MapFile(object):
                 lmtgrp.attrs['units'] = 'keV'
 
                 out = np.zeros([1, ncol])
+            # print("found roi data ", out.shape, nrow, ncol)
             if version_ge(self.version, '2.1.0') and out.shape != (nrow, ncol):
                 _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
                 detname = '%s%s' % (_detaddr, ext)
