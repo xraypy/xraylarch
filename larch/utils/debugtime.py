@@ -41,6 +41,7 @@ class debugtime(object):
                 m = m + ' '*(32-len(m))
             add("  %32s    %.3f    %.3f" % (m,tt, dt))
             tlast = t
+        add('')
         return "\n".join(out)
 
     def show(self):
