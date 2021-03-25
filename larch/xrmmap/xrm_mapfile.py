@@ -369,7 +369,8 @@ class GSEXRM_MapFile(object):
                 cfile.Read(os.path.join(self.folder, self.ScanFile))
                 cfile.config['scan']['filename'] = self.filename
                 # cfile.Save(os.path.join(self.folder, self.ScanFile))
-            self.h5root = h5py.File(self.filename)
+            print("Create HDF5 File  ")
+            self.h5root = h5py.File(self.filename, 'w')
 
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 if nmaster < 1:
@@ -394,7 +395,8 @@ class GSEXRM_MapFile(object):
                               xrd1dbkgdfile=xrd1dbkgd)
         elif (self.filename is not None and
               self.status == GSEXRM_FileStatus.err_notfound and create_empty):
-            self.h5root = h5py.File(self.filename)
+            print("Create HDF5 File")
+            self.h5root = h5py.File(self.filename, 'w')
             create_xrmmap(self.h5root, root=None, dimension=2, start_time=self.start_time)
             self.notes['h5_create_time'] = isotime()
             self.xrmmap = self.h5root[DEFAULT_ROOTNAME]
