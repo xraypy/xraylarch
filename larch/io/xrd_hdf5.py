@@ -20,7 +20,7 @@ def read_xrd_hdf5(fname, verbose=False, _larch=None):
         if section in h5file:
             addr = section
             break
-    xrd_data = h5file[addr].value
+    xrd_data = h5file[addr][()]
 
     ## Forces data into 3D shape
     shape = xrd_data.shape ## (no_images,pixels_x,pixels_y)
