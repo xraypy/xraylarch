@@ -18,8 +18,11 @@ def flatnotebook(parent, paneldict, panelkws={},
     nb.SetPadding(wx.Size(4, -1))
     nb.DeleteAllPages()
     nb.pagelist = []
+    grandparent = parent.GetParent()
+    if grandparent is None:
+        grandparent = parent
     for name, creator in paneldict.items():
-        _page = creator(parent=parent.GetParent(), **panelkws)
+        _page = creator(parent=grandparent, **panelkws)
         nb.AddPage(_page," %s " % name, True)
         nb.pagelist.append(_page)
 
