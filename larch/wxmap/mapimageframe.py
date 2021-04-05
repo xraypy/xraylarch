@@ -38,7 +38,7 @@ class MapImageFrame(ImageFrame):
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=(650, 650), mode='intensity',
+    def __init__(self, parent=None, size=(900, 750), mode='intensity',
                  lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  with_savepos=True,output_title='Image', **kws):
@@ -56,9 +56,8 @@ class MapImageFrame(ImageFrame):
 
         w0, h0 = self.GetSize()
         w1, h1 = self.GetBestSize()
-        self.SetSize((max(w0, w1)+5, max(h0, h1)+5))
+        self.SetSize((max(w0, w1)+25, max(h0, h1)+50))
         self.SetMinSize((500, 500))
-
         self.prof_plotter = None
         self.zoom_ini =  None
         self.lastpoint = [None, None]
