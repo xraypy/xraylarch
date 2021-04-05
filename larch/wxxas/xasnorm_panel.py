@@ -66,6 +66,9 @@ defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 plotone_op='Normalized \u03BC(E)',
                 plotsel_op='Normalized \u03BC(E)')
 
+def is_xasgroup(dgroup):
+    return getattr(dgroup, 'datatype', 'raw').startswith('xa')
+
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
@@ -277,13 +280,13 @@ class XASNormPanel(TaskPanel):
 
         setattr(dgroup, self.configname, conf)
         return conf
-
+    
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
 
         self.skip_process = True
-        if dgroup.datatype == 'xas':
+        if is_xasgroup(dgroup):
             self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
             self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
 
@@ -423,7 +426,7 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
 
         plot_choices = PlotSel_Choices
-        if dgroup.datatype != 'xas':
+        if is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
         ytitle = self.plotsel_op.GetStringSelection()
@@ -635,7 +638,7 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
         form['group'] = dgroup.groupname
 
-        if dgroup.datatype != 'xas':
+        if not is_xasgroup(dgroup):
             self.skip_process = False
             dgroup.mu = dgroup.ydat * 1.0
             opts = {'group': dgroup.groupname, 'scale': conf.get('scale', 1.0)}
@@ -745,7 +748,7 @@ class XASNormPanel(TaskPanel):
         dgroup.plot_xlabel = plotlabels.energy
         dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab)]
 
-        if dgroup.datatype != 'xas':
+        if not is_xasgroup(dgroup):
             pchoice = PlotOne_Choices_nonxas[self.plotone_op.GetStringSelection()]
             dgroup.plot_xlabel = 'x'
             dgroup.plot_ylabel = 'y'
@@ -886,13 +889,13 @@ class XASNormPanel(TaskPanel):
             popts['y2label'] = dgroup.plot_y2label
 
         plot_choices = PlotSel_Choices
-        if dgroup.datatype != 'xas':
+        if not is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
         if multi:
             ylabel = self.plotsel_op.GetStringSelection()
             yarray_name = plot_choices[ylabel]
-            if dgroup.datatype == 'xas':
+            if is_xasgroup(dgroup):
                 ylabel = getattr(plotlabels, yarray_name, ylabel)
             popts['ylabel'] = ylabel
 
