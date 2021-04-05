@@ -8,7 +8,7 @@ from epics import Device, caget, caput, poll
 from epics.devices.mca import MCA, ROI, OrderedDict
 from epics.devices.ad_mca import ADMCA, ADMCAROI
 
-MAX_ROIS = 32
+MAX_ROIS = 48
 
 class ADFileMixin(object):
     """mixin class for Xspress3"""

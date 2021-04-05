@@ -281,17 +281,28 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     if wintitle is not None:
         title = wintitle
 
-    def _get_disp(syname, creator, win, ddict, wxparent, size, _larch):
+    def _get_disp(symname, creator, win, ddict, wxparent, size, _larch):
+        display = None
         if win in ddict:
             display = ddict[win]
-        else:
-            display = None
-            if  hasattr(_larch, 'symtable'):
-                display = _larch.symtable.get_symbol(symname, create=True)
-            if display is None:
-                display = creator(window=win, wxparent=wxparent,
-                                  size=size, _larch=_larch)
-            ddict[win] = display
+            try:
+                s = display.GetSize()
+            except RuntimeError:  # window has been deleted
+                ddict.pop(win)
+                display = None
+
+        if display is None and hasattr(_larch, 'symtable'):
+            display = _larch.symtable.get_symbol(symname, create=True)
+            if display is not None:
+                try:
+                    s = display.GetSize()
+                except RuntimeError:  # window has been deleted
+                    display = None
+            
+        if display is None:
+            display = creator(window=win, wxparent=wxparent,
+                              size=size, _larch=_larch)
+        ddict[win] = display
         return display
 
     display = _get_disp(symname, creator, win, display_dict, wxparent,
