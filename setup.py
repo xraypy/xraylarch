@@ -90,7 +90,7 @@ for required, modname, impname, minver, desc in modules:
         version_ok = True
         if HAS_PACKAGING and minver is not None and ver is not None:
             version_ok = version_parse(minver) <= version_parse(ver)
-    except ImportError:
+    except: #  ImportError:
         import_ok, version_ok = False, True
     if not (import_ok and version_ok):
         if minver is None: minver = ''
