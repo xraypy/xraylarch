@@ -176,6 +176,7 @@ class EscanData:
     def _getarray(self, name=None, correct=True):
         i = None
         arr = None
+        name = name.lower()
         for ip, pname in enumerate(self.pos_desc):
             if name.lower() == pname.lower():
                 return self.pos[ip]
@@ -222,14 +223,14 @@ class EscanData:
 
         self.ShowProgress(1.0)
         #  self.ShowMessage("opening file %s  ... " % fname)
-        try:
+        if True: # try:
             f = open(fname,'r')
             lines = f.readlines()
             lines.reverse()
             f.close()
-        except:
-            self.ShowMessage("ERROR: general error reading file %s " % fname)
-            return None
+        # except:
+        #     self.ShowMessage("ERROR: general error reading file %s " % fname)
+        #     return None
 
         line1    = lines.pop()
         if 'Epics Scan' not in line1:
@@ -276,7 +277,7 @@ class EscanData:
             except:
                 break
             label,pvname = [i.strip() for i in detail.split('-->')]
-            label = label[1:-1]
+            label = label[1:-1].lower()
             if key.startswith('P'):
                 self.pos_desc.append(label)
                 self.pos_addr.append(pvname)
