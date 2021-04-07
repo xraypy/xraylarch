@@ -556,7 +556,7 @@ class ColumnDataFileFrame(wx.Frame) :
             if ('has nans' in nan_result.message or
                 'has infs' in nan_result.message):
                 reader = 'read_ascii'
-        
+
         tmpname = '_tmp_file_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
@@ -577,15 +577,23 @@ class ColumnDataFileFrame(wx.Frame) :
             title = "Cannot read %s" % path
             r = Popup(self.parent, "\n".join(msg), title)
             return None
-
         group = _larch.symtable.get_symbol(tmpname)
-        _larch.symtable.del_symbol(tmpname)
+        # _larch.symtable.del_symbol(tmpname)
 
         group.text = text
         group.path = path
         group.filename = filename
         group.groupname = file2groupname(filename,
                                          symtable=self._larch.symtable)
+        if reader == 'read_gsescan':
+            group.data = []
+            narray, npts = group.pos.shape
+            for i in range(narray):
+                group.data.append(group.pos[i, :])
+            narray, npts = group.sums.shape
+            for i in range(narray):
+                group.data.append(group.sums[i, :])
+            group.data = np.array(group.data)
         return group
 
     def show_subframe(self, name, frameclass, **opts):
