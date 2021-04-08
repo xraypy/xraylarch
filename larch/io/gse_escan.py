@@ -84,7 +84,6 @@ class EscanData:
         self.y = numpy.array(0)
         if self.bad_channels is None:
             self.bad_channels = []
-        gc.collect()
 
 
     def message_printer(self,s,val):
@@ -170,7 +169,6 @@ class EscanData:
             if retval is not None:
                 msg = "problem reading file %s" % fname
                 self.ShowMessage(msg)
-            gc.collect()
         return retval
 
     def _getarray(self, name=None, correct=True):
@@ -363,7 +361,7 @@ class EscanData:
             nx = len(self.x)
             self.y = []
 
-        self.data = numpy.vstack((self.pos, self.det))
+        self.data = numpy.vstack((self.pos, self.sums))
         tnsums = [len(i) for i in self.sums_list]
         tnsums.sort()
         nsums = tnsums[-1]
