@@ -585,15 +585,6 @@ class ColumnDataFileFrame(wx.Frame) :
         group.filename = filename
         group.groupname = file2groupname(filename,
                                          symtable=self._larch.symtable)
-        if reader == 'read_gsescan':
-            group.data = []
-            narray, npts = group.pos.shape
-            for i in range(narray):
-                group.data.append(group.pos[i, :])
-            narray, npts = group.sums.shape
-            for i in range(narray):
-                group.data.append(group.sums[i, :])
-            group.data = np.array(group.data)
         return group
 
     def show_subframe(self, name, frameclass, **opts):
