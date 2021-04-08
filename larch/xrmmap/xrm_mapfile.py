@@ -730,15 +730,14 @@ class GSEXRM_MapFile(object):
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
 
-        print("process row ", self.last_row, nrows_expected, flush, callback)
+        # print("process row ", self.last_row, flush, callable(callback), callback)
         if flush:
             self.resize_arrays(self.last_row+1, force_shrink=True)
             self.h5root.flush()
             if self._pixeltime is None:
                 self.calc_pixeltime()
-
-        if hasattr(callback, '__call__'):
-            callback(filename=self.filename, status='complete')
+            if callable(callback):
+                callback(filename=self.filename, status='complete')
 
     def process(self, maxrow=None, force=False, callback=None, offset=None,
                 force_no_dtc=False, all_mcas=None):

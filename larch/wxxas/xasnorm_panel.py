@@ -426,7 +426,7 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group(groupname)
 
         plot_choices = PlotSel_Choices
-        if is_xasgroup(dgroup):
+        if not is_xasgroup(dgroup):
             plot_choices = PlotSel_Choices_nonxas
 
         ytitle = self.plotsel_op.GetStringSelection()

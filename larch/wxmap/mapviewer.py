@@ -469,6 +469,8 @@ class MapPanel(GridPanel):
 
     def onProcessMap(self, event=None, max_new_rows=None):
         xrmfile = self.owner.current_file
+        if xrmfile is None:
+            return
         pref, fname = os.path.split(xrmfile.filename)
         if max_new_rows is None:
             max_new_rows = self.mapproc_nrows.GetStringSelection().lower()
@@ -2110,7 +2112,8 @@ class MapViewerFrame(wx.Frame):
 
     def onTimer(self, event=None):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        # self.message('MapViewer processing %s:  row %i of %i' % (fname, irow, nrow))
+        # self.message('processing %s:  row %i of %i' % (fname, irow, nrow))
+        # print("process timer ", self.h5convert_done, irow)
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
