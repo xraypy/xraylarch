@@ -94,7 +94,7 @@ def make_user_larchdirs():
     subdirs = {'matplotlib': 'matplotlib may put files here',
                'dlls':       'put dlls here',
                'modules':    'put custom larch or python modules here',
-               'plugins':    'put custom larch plugins here'}
+               'plugins':    'put custom larch plugins here (deprecated!!)'}
 
     def make_dir(dname):
         if not exists(dname):
@@ -133,7 +133,7 @@ def show_site_config():
   users history_file:   %s
   users startup files:  %s
   modules search path:  %s
-  plugins search path:  %s
+  plugins search path:  %s (deprecated!!)
 ========================
 """ % (larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
