@@ -62,7 +62,7 @@ fi
 
 ## download miniconda installer if needed
 if [ ! -f $condafile ] ; then
-    echo '##Downloading Miniconda installer for $uname'
+    echo "##Downloading Miniconda installer for $uname"
     /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O
 fi
 
