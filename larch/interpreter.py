@@ -99,7 +99,7 @@ class Interpreter:
                        'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
-                 with_plugins=True, historyfile=None, maxhistory=5000):
+                 with_plugins=False, historyfile=None, maxhistory=5000):
         self.symtable   = symtable or SymbolTable(larch=self)
 
         self.input      = input or InputText(_larch=self,
@@ -173,6 +173,7 @@ class Interpreter:
                                    for node in self.supported_nodes))
 
         if with_plugins: # add all plugins in standard plugins folder
+            print("WARNING: Plugins are deprecated and will be removed in 2022")
             plugins_dir = os.path.join(site_config.usr_larchdir, 'plugins')
             loaded_plugins = []
             for pname in sorted(os.listdir(plugins_dir)):
