@@ -63,7 +63,7 @@ modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
            (True, 'asteval', 'asteval', '0.9.17', 'scientific python'),
            (True, 'uncertainties', 'uncertainties', '3.0', 'scientific python'),
            (True, 'xraydb', 'xraydb', '4.4.5', 'scientific python'),
-           (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
+           # (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
            (False, 'tomopy', 'tomopy', '1.4', 'Tomographic reconstructions'),
            (False, 'silx', 'silx', '0.12', 'Spec File reading, XRD'),
            (False, 'fabio', 'fabio', '0.10.0', 'XRD File reading'),
@@ -118,8 +118,9 @@ if uname == 'win':
 
 # list of top level scripts to add to Python's bin/
 scripts = ['larch', 'larch_server', 'feff6l', 'feff8l', 'xas_viewer',
-           'gse_mapviewer', 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
-           'dioptas_larch', 'xrfdisplay', 'xrfdisplay_epics']
+           'gse_mapviewer',
+           # 'gse_dtcorrect', 'xrd1d_viewer','xrd2d_viewer',
+           'xrfdisplay', 'xrfdisplay_epics']
 
 larch_apps = ['{0:s} = larch.apps:run_{0:s}'.format(n) for n in scripts]
 
