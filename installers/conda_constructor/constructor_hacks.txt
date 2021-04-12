@@ -1,0 +1,48 @@
+The following changes are needed to conda constructor to enable the
+osxpkg_readme, osxpkg_image, and osxpkg_userhome_only directives.
+
+A) Changes to constructor/constructor.py:  add the following lines to the long list of KEYS
+
+    ('osxpkg_image',          False, str, '''
+PNG image used as the background of the MacOS package installer.  Should be ~1200x600
+pixels, and will be scaled. By default, an image is automatically generated.
+'''),
+    ('osxpkg_readme',          False, str, '''
+Path to RTF File to use as Readme for the MacOS package installer.
+By default, an Readme from Anaconda Python listing the Python pacakges will be used.
+'''),
+
+    ('osxpkg_userhome_only',          False, bool, '''
+Whether to allow installing only to the users home folder -- MacOS only.
+ '''),
+]
+
+
+B) Changes to constructor/osxpkg.py:
+
+Around line 60, change
+    background = ET.Element('background',
+                            file=join(OSX_DIR, 'MacInstaller.png'),
+
+to
+     bkg_image = os.path.abspath(info.get('osxpkg_image', join(OSX_DIR, 'MacInstaller.png')))
+     background = ET.Element('background', file=bkg_image,
+
+Around line 70 change:
+     readme_path = join(PACKAGES_DIR, "readme.rtf")
+     write_readme(readme_path, info)
+     readme = ET.Element('readme', file=readme_path,
+to
+
+    readme_path = info.get('osxpkg_readme', None)
+    if readme_path is None:
+        readme_path = join(PACKAGES_DIR, "readme.rtf")
+         write_readme(readme_path, info)
+    readme = ET.Element('readme', file=os.path.abspath(readme_path),
+
+Around line 100, add:
+
+    if info.get('osxpkg_userhome_only'):
+        enable_anywhere = enable_localSystem = 'false'
+
+after the other setting of enable_anywhere/enable_localSystem, before  creating `domains`
