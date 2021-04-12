@@ -3,23 +3,24 @@
 # conda config --env --append channels GSECARS
 # conda config --env --append channels conda-forge
 # conda install --file ./requirements.txt
-scipy>=1.2
-numpy>=1.12
+packaging
+pip
+pyyaml
+pytest
+termcolor
+scipy>=1.5
+numpy>=1.16
 matplotlib>=3.0
-sqlalchemy>=0.9
+sqlalchemy>=1.0
 h5py>=2.8
 pillow
 peakutils
 requests
 scikit-image
 scikit-learn
-asteval>=0.9.19
-lmfit>=1.0
+asteval>=0.9.22
+lmfit>=1.0.2
 uncertainties>=3.1
 pyshortcuts>=1.7.2
-xraydb>=4.4
-pip
-pyyaml
-pytest
-termcolor
+xraydb>=4.5
 silx>=0.12
