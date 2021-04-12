@@ -22,8 +22,6 @@ try:
 except:
     PyDeadObjectError = Exception
 
-
-import h5py
 import numpy as np
 
 from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,

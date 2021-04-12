@@ -68,7 +68,7 @@ def h5group(fname, mode='r+', _larch=None):
             try:
                 if dat.dtype.type == numpy.string_:
                     if len(dat) == 1:
-                        dat = dat.value
+                        dat = dat[()]
                     else:
                         dat = list(dat)
             except (ValueError, TypeError):

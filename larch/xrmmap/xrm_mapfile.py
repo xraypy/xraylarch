@@ -480,7 +480,7 @@ class GSEXRM_MapFile(object):
         env_addrs = [h5str(s) for s in self.xrmmap['config/environ/address']]
         env_vals  = [h5str(s) for s in self.xrmmap['config/environ/value']]
         for addr, pname in self.xrmmap['config/positioners'].items():
-            name = h5str(pname.value)
+            name = h5str(pname[()])
             addr = h5str(addr)
             val = ''
             if not addr.endswith('.VAL'):
@@ -514,7 +514,7 @@ class GSEXRM_MapFile(object):
         self.last_row = int(self.xrmmap.attrs.get('Last_Row',0))
 
         try:
-            self.dimension = self.xrmmap['config/scan/dimension'].value
+            self.dimension = self.xrmmap['config/scan/dimension'][()]
         except:
             pass
 
@@ -777,7 +777,7 @@ class GSEXRM_MapFile(object):
         roigrp = self.xrmmap['roimap']
         conf = self.xrmmap['config']
         roi_names = [h5str(s) for s in conf['rois/name']]
-        roi_limits = conf['rois/limits'].value
+        roi_limits = conf['rois/limits'][()]
         # print("roi names ", roi_names, roi_limits)
 
         for roiname, lims in zip(roi_names, roi_limits):
@@ -808,10 +808,10 @@ class GSEXRM_MapFile(object):
 
     def calc_pixeltime(self):
         scanconf = self.xrmmap['config/scan']
-        rowtime = float(scanconf['time1'].value)
-        start = float(scanconf['start1'].value)
-        stop = float(scanconf['stop1'].value)
-        step = float(scanconf['step1'].value)
+        rowtime = float(scanconf['time1'][()])
+        start = float(scanconf['start1'][()])
+        stop = float(scanconf['stop1'][()])
+        step = float(scanconf['step1'][()])
         npts = int((abs(stop - start) + 1.1*step)/step)
         self._pixeltime = rowtime/(npts-1)
         return self._pixeltime
@@ -1008,7 +1008,7 @@ class GSEXRM_MapFile(object):
                     sumcor = detraw[:]
 
                     if self.roi_slices is None:
-                        lims = self.xrmmap['config/rois/limits'].value
+                        lims = self.xrmmap['config/rois/limits'][()]
                         nrois, nmca, nx = lims.shape
 
                         self.roi_slices = []
@@ -1102,7 +1102,7 @@ class GSEXRM_MapFile(object):
                 sumcor = detraw[:]
 
                 if self.roi_slices is None:
-                    lims = self.xrmmap['config/rois/limits'].value
+                    lims = self.xrmmap['config/rois/limits'][()]
                     nrois, nmca, nx = lims.shape
 
                     self.roi_slices = []
@@ -1215,11 +1215,11 @@ class GSEXRM_MapFile(object):
         # self.add_map_config(cfile.config, nmca=nmca)
         conf = xrmmap['config']
 
-        offset = conf['mca_calib/offset'].value
-        slope  = conf['mca_calib/slope'].value
+        offset = conf['mca_calib/offset'][()]
+        slope  = conf['mca_calib/slope'][()]
         quad = np.array([0.0]*len(offset))
         if 'quad' in conf['mca_calib']:
-            quad   = conf['mca_calib/quad'].value
+            quad   = conf['mca_calib/quad'][()]
 
         if len(offset) != nmca:
             raise GSEXRM_Exception("incorrect XRF calibration data: need %d MCAs, not %d" % (nmca, len(offset)))
@@ -1241,7 +1241,7 @@ class GSEXRM_MapFile(object):
             roishape = conf['rois/name'].shape
             if roishape[0] > 0:
                 roi_names = [h5str(s) for s in conf['rois/name']]
-                roi_limits = np.einsum('jik->ijk', conf['rois/limits'].value)
+                roi_limits = np.einsum('jik->ijk', conf['rois/limits'][()])
             else:
                 roi_names = ['_']
                 roi_limits = np.array([[[0, 2]]])
@@ -1388,7 +1388,7 @@ class GSEXRM_MapFile(object):
 
             roi_names = [h5str(s) for s in conf['rois/name']]
             roi_addrs = [h5str(s) for s in conf['rois/address']]
-            roi_limits = conf['rois/limits'].value
+            roi_limits = conf['rois/limits'][()]
             for imca in range(nmca):
                 dname = 'det%i' % (imca+1)
                 dgrp = xrmmap.create_group(dname)
@@ -1942,7 +1942,7 @@ class GSEXRM_MapFile(object):
         if 'roistats' in area.attrs:
             return json.loads(area.attrs.get('roistats',''))
 
-        amask = area.value
+        amask = area[()]
 
         roidata = []
         d_addrs = [d.lower() for d in self.xrmmap['roimap/det_address']]
@@ -1951,7 +1951,7 @@ class GSEXRM_MapFile(object):
         ctime = [1.e-6*self.xrmmap['roimap/det_raw'][:,:,0][amask]]
         for i in range(self.xrmmap.attrs.get('N_Detectors',0)):
             tname = 'det%i/realtime' % (i+1)
-            ctime.append(1.e-6*self.xrmmap[tname].value[amask])
+            ctime.append(1.e-6*self.xrmmap[tname][()][amask])
 
         for idet, dname in enumerate(d_names):
             daddr = d_addrs[idet]
@@ -2021,11 +2021,11 @@ class GSEXRM_MapFile(object):
     def get_tomography_center(self):
         tomogrp = ensure_subgroup('tomo', self.xrmmap)
         try:
-            return tomogrp['center'].value
+            return tomogrp['center'][()]
         except:
             self.set_tomography_center()
 
-        return tomogrp['center'].value
+        return tomogrp['center'][()]
 
     def set_tomography_center(self,center=None):
         if center is None:
@@ -2150,21 +2150,21 @@ class GSEXRM_MapFile(object):
 
         ## define sino group from datapath
         if 'scalars' in datapath or 'xrd' in datapath:
-            sino = datagroup.value
+            sino = datagroup[()]
         elif dtcorrect:
             if 'sum' in datapath:
-                sino = np.zeros(np.shape(np.einsum('jki->ijk', datagroup.value)))
+                sino = np.zeros(np.shape(np.einsum('jki->ijk', datagroup[()])))
                 for i in range(self.nmca):
                     idatapath = datapath.replace('sum', str(i+1))
                     idatagroup = self.xrmmap[idatapath]
                     idetpath  = detpath.replace('sum', str(i+1))
                     idetgroup = self.xrmmap[idetpath]
-                    sino += np.einsum('jki->ijk', idatagroup.value) * idetgroup['dtfactor'].value
+                    sino += np.einsum('jki->ijk', idatagroup[()]) * idetgroup['dtfactor'][()]
 
             else:
-                sino = np.einsum('jki->ijk', datagroup.value) * detgroup['dtfactor'].value
+                sino = np.einsum('jki->ijk', datagroup[()]) * detgroup['dtfactor'][()]
         else:
-            sino = datagroup.value
+            sino = datagroup[()]
 
         sino,order = reshape_sinogram(sino, x, omega)
 
@@ -2380,7 +2380,7 @@ class GSEXRM_MapFile(object):
             group = self.xrmmap[det]
         except:
             group = self.get_detgroup(det)
-        return group['energy'].value
+        return group['energy'][()]
 
     def get_shape(self):
         '''returns NY, NX shape of array data'''
@@ -2476,7 +2476,7 @@ class GSEXRM_MapFile(object):
 
         '''
         try:
-            area = self.get_area(areaname).value
+            area = self.get_area(areaname)[()]
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
         if dtcorrect is None:
@@ -2593,7 +2593,7 @@ class GSEXRM_MapFile(object):
             self.incident_energy = self.get_incident_energy()
 
         _mca.incident_energy = 0.001*self.incident_energy
-        _mca.energy =  map['energy'].value
+        _mca.energy =  map['energy'][()]
         env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
         env_addrs = [h5str(a) for a in self.xrmmap['config/environ/address']]
         env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
@@ -2644,7 +2644,7 @@ class GSEXRM_MapFile(object):
 
         '''
         try:
-            area = self.get_area(areaname).value
+            area = self.get_area(areaname)[()]
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
@@ -2679,7 +2679,7 @@ class GSEXRM_MapFile(object):
         xrd.mapname = mapdat.name
         fmt = "Data from File '%s', detector '%s', area '%s'"
         xrd.info  =  fmt % (self.filename, mapdat.name, name)
-        xrd.q = mapdat['q'].value
+        xrd.q = mapdat['q'][()]
         return xrd
 
     def get_xrd2d_area(self, areaname, callback=None, **kws):
@@ -2698,7 +2698,7 @@ class GSEXRM_MapFile(object):
         slow because it really reads from the raw XRD h5 files
         '''
         try:
-            area = self.get_area(areaname).value
+            area = self.get_area(areaname)[()]
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
             return
