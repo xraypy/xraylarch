@@ -17,6 +17,8 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
 
     # need to work this out better for GTK3 - lots of small
     # differences with GTK2, but this one is the biggest headache.
+    # SpinCtrlDouble is like FloatSpin, but with every option
+    # having a slightly different name...
     if is_gtk3 and False:
         maxval = kws.pop('max_val', None)
         minval = kws.pop('min_val', None)
