@@ -7,7 +7,7 @@
 prefix=$HOME/xraylarch
 
 uname=`uname`
-if test $uname = Darwin; then
+if [ $uname == Darwin ]; then
     uname=MacOSX
 fi
 
@@ -61,15 +61,15 @@ fi
 ## set list of conda packages to install from conda-forge
 cforge_pkgs="numpy scipy matplotlib scikit-image scikit-learn"
 
-if test $uname==MacOSX ; then
+if [ $uname == 'MacOSX' ] ; then
     cforge_pkgs="$cforge_pkgs python.app"
 fi
 
-if test $with_wx = 1; then
+if [ $with_wx == 1 ]; then
     cforge_pkgs="$cforge_pkgs wxpython"
 fi
 
-if test $with_tomopy = 1; then
+if [ $with_tomopy == 1 ]; then
     cforge_pkgs="$cforge_pkgs tomopy"
 fi
 
@@ -82,34 +82,47 @@ echo "##  " | tee -a $logfile
 echo "##  See GetLarch.log for complete log and error messages" | tee -a $logfile
 echo "##############  " | tee -a $logfile
 
+
 ## download miniconda installer if needed
 if [ ! -f $condafile ] ; then
     echo "## Downloading Miniconda installer for $uname" | tee -a $logfile
+    echo "#>  /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O " | tee -a $logfile
     /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O | tee -a $logfile
 fi
 
 # install and update miniconda
 echo "##  Installing Miniconda for $uname to $prefix" | tee -a $logfile
+echo "#>  sh ./$condafile -b -p $prefix " | tee -a $logfile
 sh ./$condafile -b -p $prefix | tee -a $logfile
 
+unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX
+
 echo "##  Running conda updates"  | tee -a $logfile
+echo "#>  $prefix/bin/conda clean -y --all " | tee -a $logfile
+$prefix/bin/conda clean -y --all | tee -a $logfile
+
+echo "##  Running conda updates"  | tee -a $logfile
+echo "#>  $prefix/bin/conda update -n base -yc defaults --all " | tee -a $logfile
 $prefix/bin/conda update -n base -yc defaults --all | tee -a $logfile
 
 export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
+echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
 $prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
 
 ## pip install of dependencies and Larch
 echo "##  Installing xraylarch dependencies from PyPI" | tee -a $logfile
+echo "#> $prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn " | tee -a $logfile
 $prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn | tee -a $logfile
 echo "##Installing xraylarch from PyPI"  | tee -a $logfile
+echo "#> $prefix/bin/pip install xraylarch "| tee -a $logfile
 $prefix/bin/pip install xraylarch | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"
 $prefix/bin/larch -m
- 
+
 echo "##############  " | tee -a $logfile
 echo "##  Larch Installation to $prefix done." | tee -a $logfile
 echo "##  Applications can be run from the Larch folder on your Desktop." | tee -a $logfile
