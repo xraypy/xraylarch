@@ -12,10 +12,10 @@ if test $uname = Darwin; then
 fi
 
 condafile=Miniconda3-latest-$uname-x86_64.sh
+logfile=GetLarch.log
 
 with_wx=1
 with_tomopy=1
-
 ## get command line options
 for opt ; do
   option=''
@@ -52,56 +52,68 @@ EOF
   esac
 done
 
-##
-##
 ## test for prefix already existing
 if [ -d $prefix ] ; then
    echo "##Error: $prefix exists."
    exit 0
 fi
 
-## download miniconda installer if needed
-if [ ! -f $condafile ] ; then
-    echo "##Downloading Miniconda installer for $uname"
-    /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O
+## set list of conda packages to install from conda-forge
+cforge_pkgs="numpy scipy matplotlib scikit-image scikit-learn"
+
+if test $uname==MacOSX ; then
+    cforge_pkgs="$cforge_pkgs python.app"
 fi
 
-# install and update miniconda
-echo "##Installing Miniconda for $uname to $prefix"
-sh ./$condafile -b -p $prefix
-
-echo "#Running conda updates"
-$prefix/bin/conda update -n base -yc defaults --all
-
-export PATH=$prefix/bin:$PATH
-
-## optional conda installs of wxPython and TomoPy
 if test $with_wx = 1; then
-    echo "##Installing wxPython"
-    $prefix/bin/conda install -yc conda-forge wxpython
+    cforge_pkgs="$cforge_pkgs wxpython"
 fi
 
 if test $with_tomopy = 1; then
-    echo "##Installing tomopy"
-    $prefix/bin/conda install -yc conda-forge tomopy
+    cforge_pkgs="$cforge_pkgs tomopy"
 fi
 
-## pip install of dependencies and Larch
-echo "##Installing xraylarch dependencies from PyPI"
-$prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn
-echo "##Installing xraylarch from PyPI"
-$prefix/bin/pip install xraylarch
+echo "##############  " | tee $logfile
+echo "##  This script will install Larch for $uname to $prefix" | tee -a $logfile
+echo "##  " | tee -a $logfile
+echo "##  See GetLarch.log for complete log and error messages" | tee -a $logfile
+echo "##############  " | tee -a $logfile
 
+## download miniconda installer if needed
+if [ ! -f $condafile ] ; then
+    echo "## Downloading Miniconda installer for $uname" | tee -a $logfile
+    /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O | tee -a $logfile
+fi
+
+# install and update miniconda
+echo "##  Installing Miniconda for $uname to $prefix" | tee -a $logfile
+sh ./$condafile -b -p $prefix | tee -a $logfile
+
+echo "##  Running conda updates"  | tee -a $logfile
+$prefix/bin/conda update -n base -yc defaults --all | tee -a $logfile
+
+export PATH=$prefix/bin:$PATH
+
+echo "##  Installing packages from conda-forge"  | tee -a $logfile
+$prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
+
+## pip install of dependencies and Larch
+echo "##  Installing xraylarch dependencies from PyPI" | tee -a $logfile
+$prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn | tee -a $logfile
+echo "##Installing xraylarch from PyPI"  | tee -a $logfile
+$prefix/bin/pip install xraylarch | tee -a $logfile
 
 ## create desktop shortcuts
-echo "##Creating desktop shortcuts"
+echo "## Creating desktop shortcuts"
 $prefix/bin/larch -m
-
-msg="######\n
-Installation done!  You may want to add:\n\n
-     export PATH=$prefix/bin:\$PATH\n
-\nto your $SHELL startup script.\n
-######\n
-"
-
-echo -e $msg
+ 
+echo "##############  " | tee -a $logfile
+echo "##  Larch Installation to $prefix done." | tee -a $logfile
+echo "##  Applications can be run from the Larch folder on your Desktop." | tee -a $logfile
+echo "##  "| tee -a $logfile
+echo "##  To use from a terminal, you may want to add:"  | tee -a $logfile
+echo "        export PATH=$prefix/bin:\$PATH"  | tee -a $logfile
+echo "##  to your $SHELL startup script."  | tee -a $logfile
+echo "##  "| tee -a $logfile
+echo "##  See GetLarch.log for complete log and error messages" | tee -a $logfile
+echo "##############  " | tee -a $logfile
