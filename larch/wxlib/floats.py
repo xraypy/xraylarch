@@ -13,14 +13,35 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
     if value is None:
         value = 0
     if is_gtk3:
-        fs = wx.SpinCtrlDouble(parent, -1, size=size, value=value,
-                               digits=digits, increment=increment, **kws)
+        size = (size[0]+30, size[1])
+
+    # need to work this out better for GTK3 - lots of small
+    # differences with GTK2, but this one is the biggest headache.
+    if is_gtk3 and False:
+        maxval = kws.pop('max_val', None)
+        minval = kws.pop('min_val', None)
+        fmt = "%%%df" % digits
+        fs = wx.SpinCtrlDouble(parent, -1, value=fmt % value,
+                               size=(size[0]+25, size[1]),
+                               inc=increment, **kws)
+        fs = wx.SpinCtrlDouble(parent, -1, value=fmt % value,
+                               size=(size[0]+25, size[1]),
+                               inc=increment, **kws)
+        fs.SetDigits(digits)
+        if minval is not None:
+            fs.SetMin(minval)
+        if maxval is not None:
+            fs.SetMax(maxval)
+
+        if action is not None:
+            fs.Bind(wx.EVT_SPINCTRLDOUBLE, action)
+
     else:
         fs = fspin.FloatSpin(parent, -1, size=size, value=value,
                              digits=digits, increment=increment, **kws)
 
-    if action is not None:
-        fs.Bind(fspin.EVT_FLOATSPIN, action)
+        if action is not None:
+            fs.Bind(fspin.EVT_FLOATSPIN, action)
     if tooltip is not None:
         if is_wxPhoenix:
             fs.SetToolTip(tooltip)
