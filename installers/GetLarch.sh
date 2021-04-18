@@ -76,6 +76,9 @@ fi
 echo "##############  " | tee $logfile
 echo "##  This script will install Larch for $uname to $prefix" | tee -a $logfile
 echo "##  " | tee -a $logfile
+echo "##  The following packages will be taken from conda-forge:" | tee -a $logfile
+echo "##        $cforge_pkgs " | tee -a $logfile
+echo "##  " | tee -a $logfile
 echo "##  See GetLarch.log for complete log and error messages" | tee -a $logfile
 echo "##############  " | tee -a $logfile
 
