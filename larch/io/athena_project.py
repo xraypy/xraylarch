@@ -228,8 +228,8 @@ def make_athena_args(group, hashkey=None, **kws):
         args['bkg_dk'] = autobk_args['dk']
         args['bkg_kwindow'] = autobk_args['win']
         args['bkg_nclamp'] = autobk_args['nclamp']
-        args['bkg_clamp0'] = autobk_args['clamp_lo']
-        args['bkg_clamp1'] = autobk_args['clamp_hi']
+        args['bkg_clamp1'] = autobk_args['clamp_lo']
+        args['bkg_clamp2'] = autobk_args['clamp_hi']
 
     xftf_details = getattr(group, 'xftf_details', None)
     xftf_args = getattr(xftf_details, 'call_args', None)

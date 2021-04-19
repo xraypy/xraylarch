@@ -260,13 +260,11 @@ class EXAFSPanel(TaskPanel):
         """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        # print("EXAFS panel get_config ", dgroup)
+
         conf = getattr(dgroup, self.configname, self.get_defaultconfig())
-        # print("EXAFS panel get_config ", conf.get('e0', -123.))
 
         bkg_kmax = conf.get('bkg_kmax', None)
         fft_kmax = conf.get('fft_kmax', None)
-
         if None in (bkg_kmax, fft_kmax):
             e0 = conf.get('e0', -1)
             emin = min(dgroup.energy)
@@ -278,6 +276,22 @@ class EXAFSPanel(TaskPanel):
                 conf['bkg_kmax'] = kmax + 0.1
             if fft_kmax is None or fft_kmax < 0:
                 conf['fft_kmax'] = kmax - 1
+
+        if hasattr(dgroup, 'bkg_params'): # from Athena
+            conf['e0'] =  dgroup.bkg_params.e0
+            conf['rbkg'] =  dgroup.bkg_params.rbkg
+            conf['bkg_kmin'] =  dgroup.bkg_params.spl1
+            conf['bkg_kmax'] =  dgroup.bkg_params.spl2
+            conf['bkg_kweight'] =  dgroup.bkg_params.kw
+            conf['bkg_clamplo'] =  dgroup.bkg_params.clamp1
+            conf['bkg_clamphi'] =  dgroup.bkg_params.clamp2
+
+        if hasattr(dgroup, 'fft_params'): # from Athena
+            conf['fft_kmin'] =  dgroup.fft_params.kmin
+            conf['fft_kmax'] =  dgroup.fft_params.kmax
+            conf['fft_dk'] =  dgroup.fft_params.dk
+            conf['fft_kweight'] =  dgroup.fft_params.kw
+            conf['fft_kwindow'] =  dgroup.fft_params.kwindow
 
         if dgroup is not None:
             setattr(dgroup, self.configname, conf)
