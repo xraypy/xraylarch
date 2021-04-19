@@ -153,7 +153,8 @@ class PrePeakFitResultFrame(wx.Frame):
                           style=FRAMESTYLE, size=(900, 700), **kws)
         self.peakframe = peakframe
         self.datagroup = datagroup
-        self.peakfit_history = getattr(datagroup.prepeaks, 'fit_history', [])
+        prepeaks = getattr(datagroup, 'prepeaks', None)
+        self.peakfit_history = getattr(prepeaks, 'fit_history', [])
         self.parent = parent
         self.datasets = {}
         self.form = {}
@@ -355,13 +356,19 @@ class PrePeakFitResultFrame(wx.Frame):
                         default_file=deffile, wildcard=wcards)
         if path is None:
             return
+        if os.path.exists(path):
+            if wx.ID_YES != Popup(self,
+                                  "Overwrite existing Statistics File?",
+                                  "Overwrite existing file?", style=wx.YES_NO):
+                return
 
         ppeaks_tmpl = self.datasets[fnames[0]].prepeaks
         param_names = list(reversed(ppeaks_tmpl.fit_history[0].params.keys()))
         user_opts = ppeaks_tmpl.user_options
-
+        model_desc = self.get_model_desc(ppeaks_tmpl.fit_history[0].model).replace('\n', ' ')
         out = ['# Pre-edge Peak Fit Report %s' % time.ctime(),
                '# Fitted Array name: %s' %  user_opts['array_name'],
+               '# Model form: %s' % model_desc,
                '# Baseline form: %s' % user_opts['baseline_form'],
                '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
                '#--------------------']
@@ -544,15 +551,8 @@ class PrePeakFitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
 
-    def show_fitresult(self, nfit=0, datagroup=None):
-        if datagroup is not None:
-            self.datagroup = datagroup
-
-        result = self.get_fitresult(nfit=nfit)
-        wids = self.wids
-        wids['data_title'].SetLabel(self.datagroup.filename)
-
-        model_repr = result.model._reprstring(long=True)
+    def get_model_desc(self, model):
+        model_repr = model._reprstring(long=True)
         for word in ('Model(', ',', '(', ')', '+'):
             model_repr = model_repr.replace(word, ' ')
         words = []
@@ -566,7 +566,17 @@ class PrePeakFitResultFrame(wx.Frame):
                     delim = '+' if imodel % 2 == 1 else '+\n'
                     words.append(delim)
                 imodel += 1
-        wids['model_desc'].SetLabel(''.join(words))
+        return ''.join(words)
+
+
+    def show_fitresult(self, nfit=0, datagroup=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+
+        result = self.get_fitresult(nfit=nfit)
+        wids = self.wids
+        wids['data_title'].SetLabel(self.datagroup.filename)
+        wids['model_desc'].SetLabel(self.get_model_desc(result.model))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for param in reversed(result.params.values()):
