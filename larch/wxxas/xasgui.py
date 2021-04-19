@@ -466,13 +466,13 @@ class XASFrame(wx.Frame):
         for page in self.nb.pagelist:
             if name in page.__class__.__name__.lower():
                 return page
-        
+
     def onNBChanged(self, event=None):
         is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')
         for imenu, menudat in enumerate(self.menubar.GetMenus()):
             if 'pre-edge' in menudat[1].lower():
                 self.menubar.EnableTop(imenu, is_prepeak)
-                    
+
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
@@ -706,6 +706,12 @@ class XASFrame(wx.Frame):
 
         if outfile is None:
             return
+        if os.path.exists(outfile):
+            if wx.ID_YES != Popup(self,
+                                  "Overwrite existing Project File?",
+                                  "Overwrite existing file?", style=wx.YES_NO):
+                return
+
         aprj = AthenaProject(filename=outfile, _larch=self.larch)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp)
@@ -849,7 +855,7 @@ class XASFrame(wx.Frame):
         thispage = self.nb.GetCurrentPage()
         if 'prepeak' in thispage.__class__.__name__.lower():
             thispage.onLoadFitResult()
-        
+
     def onConfigDataFitting(self, event=None):
         pass
 
