@@ -47,7 +47,8 @@ def look_for_nans(path):
         dat = read_ascii(path)
     except:
         etype, emsg, etb = sys.exc_info()
-        return nanresult(False, emsg, nan_rows, nan_cols, inf_rows, inf_cols)
+    if len(dat.data) < 1:
+        return nanresult(False, 'no data in file', nan_rows, nan_cols, inf_rows, inf_cols)
 
     if np.all(np.isfinite(dat.data)):
         return nanresult(True, 'file ok', nan_rows, nan_cols, inf_rows, inf_cols)
@@ -291,16 +292,21 @@ def read_ascii(filename, labels=None, simple_labels=False,
             if len(words) > 1:
                 header_attrs[key] = words[1].strip()
 
-    if sort and sort_column >= 0 and sort_column < ncol:
-         data = data[:, np.argsort(data[sort_column])]
 
     path, fname = os.path.split(filename)
     attrs = {'filename': filename}
     group = Group(name='ascii_file %s' % filename,
                   path=filename,
                   filename=fname,
-                  header=headers,
-                  data=data)
+                  header=headers, data=[], array_labels=[])
+
+    if len(data) == 0:
+        return group
+
+    if sort and sort_column >= 0 and sort_column < ncol:
+         data = data[:, np.argsort(data[sort_column])]
+
+    group.data = data
 
     if len(footers) > 0:
         group.footer = footers
