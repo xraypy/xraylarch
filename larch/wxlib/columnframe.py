@@ -553,6 +553,17 @@ class ColumnDataFileFrame(wx.Frame) :
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs
             nan_result = look_for_nans(path)
+            if 'read error' in nan_result.message:
+                title = "Cannot read %s" % path
+                message = "Error reading %s\n%s" %(path, nan_result.message)
+                r = Popup(self.parent, message, title)
+                return None
+            if 'no data' in nan_result.message:
+                title = "No data in %s" % path
+                message = "No data found in file %s" % path
+                r = Popup(self.parent, message, title)
+                return None
+
             if ('has nans' in nan_result.message or
                 'has infs' in nan_result.message):
                 reader = 'read_ascii'
