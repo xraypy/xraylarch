@@ -186,7 +186,6 @@ def make_athena_args(group, hashkey=None, **kws):
         args[k] = v
 
     args['datagroup'] = args['tag'] = args['label'] = hashkey
-
     en = getattr(group, 'energy', [])
     args['npts'] = len(en)
     if len(en) > 0:
@@ -218,13 +217,28 @@ def make_athena_args(group, hashkey=None, **kws):
     args['bkg_spl2e'] = '%.5f' % emax
     args['bkg_spl1'] = '0'
     args['bkg_spl2'] = '%.5f' % etok(emax)
-    if hasattr(group, 'fft_params'):
-        for aname  in ('dk', 'kmin', 'kmax', 'kwindow', 'pc', 'edge',
-                       'pc', 'pcpathgroup', 'pctype'):
-            val = getattr(group.fft_params, aname, None)
-            if val is not None:
-                args['fft_%s' % aname] = val
 
+    autobk_details = getattr(group, 'autobk_details', None)
+    autobk_args = getattr(autobk_details, 'call_args', None)
+    if autobk_args is not None:
+        args['bkg_rbkg'] = autobk_args['rbkg']
+        args['bkg_spl1'] = autobk_args['kmin']
+        args['bkg_spl2'] = autobk_args['kmax']
+        args['bkg_kw'] = autobk_args['kweight']
+        args['bkg_dk'] = autobk_args['dk']
+        args['bkg_kwindow'] = autobk_args['win']
+        args['bkg_nclamp'] = autobk_args['nclamp']
+        args['bkg_clamp0'] = autobk_args['clamp_lo']
+        args['bkg_clamp1'] = autobk_args['clamp_hi']
+
+    xftf_details = getattr(group, 'xftf_details', None)
+    xftf_args = getattr(xftf_details, 'call_args', None)
+    if xftf_args is not None:
+        args['fft_kmin'] = xftf_args['kmin']
+        args['fft_kmax'] = xftf_args['kmax']
+        args['fft_kw'] = xftf_args['kweight']
+        args['fft_dk'] = xftf_args['dk']
+        args['fft_kwindow'] = xftf_args['window']
     args.update(kws)
     return args
 
