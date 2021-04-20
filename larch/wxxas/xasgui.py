@@ -32,10 +32,11 @@ from larch.utils.strutils import (file2groupname, unique_name,
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
-                         FileCheckList, FloatCtrl, SetTip, get_icon,
-                         SimpleText, pack, Button, Popup, HLine, FileSave,
-                         Choice, Check, MenuItem, GUIColors, CEN,
-                         LEFT, FRAMESTYLE, Font, FONTSIZE, flatnotebook)
+                         SpecfileImporter, FileCheckList, FloatCtrl,
+                         SetTip, get_icon, SimpleText, pack, Button, Popup,
+                         HLine, FileSave, Choice, Check, MenuItem,
+                         GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
+                         flatnotebook)
 
 from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
@@ -56,15 +57,15 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           OverAbsorptionDialog, DeconvolutionDialog,
                           SpectraCalcDialog,  QuitDialog)
 
-from larch.io import (read_ascii, read_xdi, read_gsexdi,
-                      gsescan_group, fix_varname, groups2csv,
-                      is_athena_project, AthenaProject, make_hashkey)
+from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
+                      fix_varname, groups2csv, is_athena_project,
+                      AthenaProject, make_hashkey, is_specfile, open_specfile)
 
 from larch.xafs import pre_edge, pre_edge_baseline
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj)|*.0*;*.dat;*.DAT;*.xdi;*.prj|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj,*.spc)|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.spc|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (950, 750)
@@ -953,17 +954,52 @@ class XASFrame(wx.Frame):
 
         # check for athena projects
         if is_athena_project(path):
-            kwargs = dict(filename=path,
-                          _larch=self.controller.larch,
-                          read_ok_cb=self.onReadAthenaProject_OK)
-            self.show_subframe('athena_import', AthenaImporter, **kwargs)
+            self.show_subframe('athena_import', AthenaImporter,
+                               filename=path,
+                               _larch=self.controller.larch,
+                               read_ok_cb=self.onReadAthenaProject_OK)
+        # check for Spec File
+        elif is_specfile(path):
+            self.show_subframe('spec_import', SpecfileImporter,
+                               filename=path,
+                               _larch=self.controller.larch,
+                               read_ok_cb=self.onReadSpecfile_OK)
+        # default to Column File
         else:
-            kwargs = dict(filename=path,
-                          _larch=self.larch_buffer.larchshell,
-                          last_array_sel = self.last_array_sel,
-                          read_ok_cb=self.onRead_OK)
+            self.show_subframe('readfile', ColumnDataFileFrame,
+                               filename=path,
+                               _larch=self.larch_buffer.larchshell,
+                               last_array_sel = self.last_array_sel,
+                               read_ok_cb=self.onRead_OK)
 
-            self.show_subframe('readfile', ColumnDataFileFrame, **kwargs)
+    def onReadSpecfile_OK(self, path, scanlist):
+        """read groups from a list of scans from a specfile"""
+        self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
+        dgroup = None
+        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
+
+        cur_panel = self.nb.GetCurrentPage()
+        cur_panel.skip_plotting = True
+        for gname in namelist:
+            cur_panel.skip_plotting = (gname == namelist[-1])
+            this = getattr(self.larch.symtable._prj, gname)
+            gid = str(getattr(this, 'athena_id', gname))
+            if self.larch.symtable.has_group(gid):
+                count, prefix = 0, gname[:3]
+                while count < 1e7 and self.larch.symtable.has_group(gid):
+                    gid = prefix + make_hashkey(length=7)
+                    count += 1
+
+            self.larch.eval(script.format(group=gid, prjgroup=gname))
+            dgroup = self.install_group(gid, gname, process=True, plot=False)
+        self.larch.eval("del _specfile")
+        cur_panel.skip_plotting = False
+
+        if len(namelist) > 0:
+            gname = self.controller.file_groups[namelist[0]]
+            self.ShowFile(groupname=gname, process=True, plot=True)
+        self.write_message("read %d datasets from %s" % (len(namelist), path))
+
 
     def onReadAthenaProject_OK(self, path, namelist):
         """read groups from a list of groups from an athena project file"""
@@ -992,6 +1028,7 @@ class XASFrame(wx.Frame):
             gname = self.controller.file_groups[namelist[0]]
             self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
+
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   array_sel=None, overwrite=False):
