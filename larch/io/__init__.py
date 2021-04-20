@@ -38,7 +38,8 @@ from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups
 from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
                               spec_getmap2group, spec_getmrg2group,
-                              str2rng_larch, read_specfile, open_specfile)
+                              str2rng_larch, read_specfile, open_specfile,
+                              is_specfile)
 
 from .stepscan_file import read_stepscan
 from . import tifffile

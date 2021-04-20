@@ -270,6 +270,19 @@ def _pymca_SG(ydat, npoints=3, degree=1, order=0):
             "SGModule is not available -- this operation cannot be performed!"
         )
 
+def is_specfile(filename):
+    """tests whether file may be a Specfile (text or HDF5)"""
+    with open(filename, 'rb') as fh:
+        topbytes = fh.read(10)
+    scans = None
+    if (topbytes.startswith(b'\x89HDF\r') or # HDF5
+        topbytes.startswith(b'#F ')):        # Ascii text
+        try:
+            scans = DataSourceSpecH5(filename).get_scans()
+        except:
+            pass
+    return scans is not None
+
 
 ### ==================================================================
 ### CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
@@ -639,7 +652,7 @@ class DataSourceSpecH5(object):
             )
         return iscn
 
-    def get_scan_axis(self, scan=None):
+    def get_scan_axis(self, scan=None, verbose=False):
         """Get the name of the scanned axis from scan title"""
         if scan is not None:
             self.set_scan(scan)
@@ -648,11 +661,14 @@ class DataSourceSpecH5(object):
         _axisout = iscn["scan_axis"]
         _mots, _cnts = self.get_motors(), self.get_counters()
         if not (_axisout in _mots):
-            self._logger.info(f"'{_axisout}' not in (real) motors")
+            if verbose:
+                self._logger.info(f"'{_axisout}' not in (real) motors")
         if not (_axisout in _cnts):
-            self._logger.warning(f"'{_axisout}' not in counters")
+            if verbose:
+                self._logger.warning(f"'{_axisout}' not in counters")
             _axisout = _cnts[0]
-            self._logger.warning(f"using the first counter: '{_axisout}'")
+            if verbose:
+                self._logger.warning(f"using the first counter: '{_axisout}'")
         return _axisout
 
     def get_array(self, cnt, scan=None):
@@ -704,25 +720,32 @@ class DataSourceSpecH5(object):
             self._logger.error(f"'{mot}' not found in available motors: {mots}")
             return None
 
-    def read_scan(self, scan=None):
+    def get_scan(self, scan=None):
         """Get arrays for scan
 
         Parameters
         ----------
-        cnt : str or int
-            counter name or index in the list of counters
+        scan  : str, int, or None
+             scan address
 
         Returns
         -------
-        larch Group
+        larch Group with scan data
         """
         self.get_scangroup(scan)
         labels = self.get_counters()
+        title = self.get_title()
+        timestring = self.get_time()
+        timestamp = self.get_timestamp()
         path, filename = os.path.split(self.fname)
-
+        axis = self.get_scan_axis(verbose=False)
         out = Group(__name__=f"Spec file: {filename}, scan: {scan}",
                     path=path, filename=filename, datatype=None,
-                    array_labels=labels)
+                    array_labels=labels, axis=axis,
+                    scan_index=self._scan_n,
+                    scan_name=self._scan_url,
+                    title=title, timestring=timestring,
+                    timestamp=timestamp)
 
         data = []
         for label in labels:
@@ -1476,4 +1499,4 @@ def open_specfile(filename):
 
 def read_specfile(filename, scan=None):
     """simple mapping of a Spec file to a larch group"""
-    return DataSourceSpecH5(filename).read_scan(scan=scan)
+    return DataSourceSpecH5(filename).get_scan(scan)
