@@ -9,7 +9,7 @@ pyyaml
 pytest
 termcolor
 scipy>=1.5
-numpy>=1.16
+numpy>=1.18
 matplotlib>=3.0
 sqlalchemy>=1.0
 h5py>=2.8
