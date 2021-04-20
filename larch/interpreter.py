@@ -19,7 +19,6 @@ from .symboltable import SymbolTable, Group, isgroup
 from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
                        Procedure, StdWriter, enable_plugins)
-from .fitting  import isParameter
 from .closure import Closure
 from .utils import debugtime
 
@@ -33,19 +32,19 @@ UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__globals__', '__code__',
 
 
 OPERATORS = {
-    ast.Add:    lambda a, b: b.__radd__(a) if isParameter(b) else a + b,
-    ast.Sub:    lambda a, b: b.__rsub__(a) if isParameter(b) else a - b,
-    ast.Mult:   lambda a, b: b.__rmul__(a) if isParameter(b) else a * b,
-    ast.Div:      lambda a, b: b.__rtruediv__(a) if isParameter(b) else a/b,
-    ast.FloorDiv: lambda a, b: b.__rfloordiv__(a) if isParameter(b) else a//b,
-    ast.Mod:    lambda a, b: b.__rmod__(a) if isParameter(b) else a % b,
-    ast.Pow:    lambda a, b: b.__rpow__(a) if isParameter(b) else a ** b,
-    ast.Eq:     lambda a, b: b.__eq__(a)  if isParameter(b) else a == b,
-    ast.Gt:     lambda a, b: b.__le__(a) if isParameter(b) else a > b,
-    ast.GtE:    lambda a, b: b.__lt__(a) if isParameter(b) else a >= b,
-    ast.Lt:     lambda a, b: b.__ge__(a) if isParameter(b) else a < b,
-    ast.LtE:    lambda a, b: b.__gt__(a) if isParameter(b) else a <= b,
-    ast.NotEq:  lambda a, b: b.__ne__(a) if isParameter(b) else a != b,
+    ast.Add:    lambda a, b: a + b,
+    ast.Sub:    lambda a, b: a - b,
+    ast.Mult:   lambda a, b: a * b,
+    ast.Div:      lambda a, b: a/b,
+    ast.FloorDiv: lambda a, b: a//b,
+    ast.Mod:    lambda a, b: a % b,
+    ast.Pow:    lambda a, b: a ** b,
+    ast.Eq:     lambda a, b: a == b,
+    ast.Gt:     lambda a, b: a > b,
+    ast.GtE:    lambda a, b: a >= b,
+    ast.Lt:     lambda a, b: a < b,
+    ast.LtE:    lambda a, b: a <= b,
+    ast.NotEq:  lambda a, b: a != b,
     ast.Is:     lambda a, b: a is b,
     ast.IsNot:  lambda a, b: a is not b,
     ast.In:     lambda a, b: a in b,
@@ -281,18 +280,6 @@ class Interpreter:
             self.raise_exception(node, expr=self.expr,
                                  fname=self.fname, lineno=self.lineno)
         else:
-            # for some cases (especially when using Parameter objects),
-            # a calculation returns an otherwise numeric array, but with
-            # dtype 'object'. fix here, trying (float, complex, list).
-            if isinstance(out, numpy.ndarray):
-                if out.dtype == numpy.object:
-                    try:
-                        out = out.astype(float)
-                    except (ValueError, TypeError):
-                        try:
-                            out = out.astype(complex)
-                        except TypeError:
-                            out = list(out)
             # enumeration objects are list-ified here...
             if isinstance(out, enumerate):
                 out = list(out)
