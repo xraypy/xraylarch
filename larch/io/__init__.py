@@ -38,7 +38,8 @@ from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups
 from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
                               spec_getmap2group, spec_getmrg2group,
-                              str2rng_larch, read_specfile)
+                              str2rng_larch, read_specfile, open_specfile)
+
 from .stepscan_file import read_stepscan
 from . import tifffile
 def read_tiff(fname, _larch=None, *args, **kws):
@@ -100,6 +101,7 @@ if HAS_SPECFILE:
                             read_specfile_map=spec_getmap2group,
                             read_specfile_mrg=spec_getmrg2group,
                             str2rng=str2rng_larch,
-                            read_specfile=read_specfile))
+                            read_specfile=read_specfile,
+                            specfile=open_specfile))
 
 _larch_builtins = {'_io':__exports__}
