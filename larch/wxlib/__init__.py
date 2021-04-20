@@ -54,6 +54,7 @@ if HAS_WXPYTHON:
     from .larchframe import LarchFrame, LarchPanel
     from .columnframe import ColumnDataFileFrame, EditColumnFrame
     from .athena_importer import AthenaImporter
+    from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame
     from .gui_utils import gcd, databrowser, fileprompt, wx_update
 

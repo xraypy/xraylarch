@@ -75,7 +75,8 @@ EFano_Text = 'Peak Widths:  sigma = sqrt(E_Fano * Energy + Noise**2) '
 Geom_Text = 'Angles in degrees: 90=normal to surface, 0=grazing surface'
 Energy_Text = 'All energies in keV'
 
-xrfmod_setup = """## Set up XRF Model
+xrfmod_setup = """### XRF Model: {mca_label:s}  @ {datetime:s}
+# setup XRF Model:
 _xrfmodel = xrf_model(xray_energy={en_xray:.2f}, count_time={count_time:.5f},
                       energy_min={en_min:.2f}, energy_max={en_max:.2f})
 
@@ -88,14 +89,18 @@ _xrfmodel.set_detector(thickness={det_thk:.5f}, material='{det_mat:s}',
                 peak_gamma={peak_gamma:.5f}, vary_peak_gamma={peak_gamma_vary:s},
                 noise={det_noise:.5f}, vary_noise={det_noise_vary:s})"""
 
-xrfmod_scattpeak = """_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
+xrfmod_scattpeak = """
+# add scatter peak
+_xrfmodel.add_scatter_peak(name='{peakname:s}', center={_cen:.2f},
                 amplitude=1e5, step={_step:.5f}, tail={_tail:.5f}, beta={_beta:.5f},
                 sigmax={_sigma:.5f},  vary_center={vcen:s}, vary_step={vstep:s},
                 vary_tail={vtail:s}, vary_beta={vbeta:s}, vary_sigmax={vsigma:s})"""
 
 xrfmod_fitscript = """
+# run XRF fit, save results
 _xrffitresult = _xrfmodel.fit_spectrum({group:s}, energy_min={emin:.2f}, energy_max={emax:.2f})
 _xrfresults.insert(0, _xrffitresult)
+########
 """
 
 xrfmod_filter = "_xrfmodel.add_filter('{name:s}', {thick:.5f}, vary_thickness={vary:s})"
@@ -106,6 +111,7 @@ xrfmod_escape = "_xrfmodel.add_escape(scale={scale:.3f}, vary={vary:s})"
 xrfmod_savejs = "_xrfresults[{nfit:d}].save('{filename:s}')"
 
 xrfmod_elems = """
+# add elements
 for atsym in {elemlist:s}:
     _xrfmodel.add_element(atsym)
 #endfor
@@ -151,7 +157,7 @@ class FitSpectraFrame(wx.Frame):
         mca_label = getattr(self.mca, 'label', None)
         if mca_label is None:
             mca_label = getattr(self.mca, 'filename', 'mca')
-
+        self.mca_label = mca_label
         self.wids['mca_name'] = SimpleText(pan, mca_label, size=(300, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
@@ -1108,7 +1114,8 @@ class FitSpectraFrame(wx.Frame):
         opts['count_time'] = getattr(self.mca, 'real_time', 1.0)
         if opts['count_time'] is None:
             opts['count_time'] = 1.0
-
+        opts['datetime'] = time.ctime()
+        opts['mca_label'] = self.mca_label
         script = [xrfmod_setup.format(**opts)]
 
         for peakname in ('Elastic', 'Compton1', 'Compton2'):
