@@ -34,13 +34,13 @@ def encode4js(obj, grouplist=None):
         elif obj.dtype.name == 'object':
             out['value'] = [encode4js(i, grouplist=grouplist) for i in out['value']]
         return out
-    elif isinstance(obj, (np.bool, np.bool_)):
+    elif isinstance(obj, (bool, np.bool_)):
         return bool(obj)
-    elif isinstance(obj, (np.float, np.int)):
+    elif isinstance(obj, (float, np.float64, np.float32, int, np.int64, np.int32)):
         return float(obj)
     elif isinstance(obj, str):
         return str(obj)
-    elif isinstance(obj, np.complex):
+    elif isinstance(obj,(complex, np.complex128)):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isgroup(obj):
         classname = 'Group'

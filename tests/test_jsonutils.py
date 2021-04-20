@@ -144,7 +144,7 @@ class EncodeDecode4Json_Test(unittest.TestCase):
     def test_eval_array3(self):
         testval = np.arange(10)/2.0 - 1j*np.arange(10)
         out = deval(testval)
-        assert(out.dtype == np.complex)
+        assert(out.dtype == complex)
         assert_allclose(out, testval, rtol=1.e-4)
 
     def test_encode_param1(self):
