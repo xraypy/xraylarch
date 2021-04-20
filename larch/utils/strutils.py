@@ -241,7 +241,7 @@ def file2groupname(filename, slen=5, symtable=None):
     Arguments
     ---------
     filename  (str)  filename to use
-    slen      (int)  length of string portion (default 4)
+    slen      (int)  length of string portion (default 5)
     symtable  (None or larch symbol table) symbol table for
               checking that the group name is unique
     """
