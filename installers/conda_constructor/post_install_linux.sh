@@ -5,9 +5,11 @@ if [ xx$PREFIX == 'xx' ]; then
     PREFIX=$(echo "$2/__NAME_LOWER__" | sed -e 's,//,/,g')
 fi
 
-# use pip to install some known-safe-for-pip packages
-$PREFIX/bin/pip install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils xraylarch
+# force install of packages from conda-forge
+$PREFIX/bin/conda install -yc conda-forge wxpython tomopy
 
+# use pip to install some known-safe-for-pip packages
+$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m

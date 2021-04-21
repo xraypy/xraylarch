@@ -5,11 +5,11 @@ if [ xx$PREFIX == 'xx' ]; then
     PREFIX=$(echo "$2/__NAME_LOWER__" | sed -e 's,//,/,g')
 fi
 
-# force install of packages that are noarch or have install problems
-# $PREFIX/bin/conda install --force-reinstall qtpy dask pytz pyparsing networkx bokeh
+# force install of packages that have install problems
+$PREFIX/bin/conda install --force-reinstall -yc conda-forge python.app wxpython tomopy
 
 # use pip to install some known-safe-for-pip packages
-$PREFIX/bin/pip install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils xraylarch
+$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
 
 
 # fix pythonw on MacOSX

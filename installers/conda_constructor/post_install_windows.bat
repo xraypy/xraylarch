@@ -1,11 +1,14 @@
 
+REM # install wxpython and tomopy from conda-forge
+call %PREFIX%\condabin\conda install -yc conda-forge wxpython tomopy
+
 REM # use pip to install some known-safe-for-pip packages
-%PREFIX%\Scripts\pip.exe install lmfit peakutils pyepics pyshortcuts termcolor xraydb wxmplot wxutils xraylarch
+call %PREFIX%\Scripts\pip.exe install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
 
 sleep 1
 
 REM # make desktop icons
-%PREFIX%\Scripts\larch.exe -m
+call %PREFIX%\Scripts\larch.exe -m
 
 
 echo '# Larch post install done!'
