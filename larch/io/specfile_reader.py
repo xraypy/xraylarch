@@ -291,7 +291,7 @@ class DataSourceSpecH5(object):
     """Data source utility wrapper for a Spec file read as HDF5 object
     via silx.io.open"""
 
-    def __init__(self, fname=None, logger=None, urls_fmt="silx"):
+    def __init__(self, fname=None, logger=None, urls_fmt="silx", verbose=False):
         """init with file name and default attributes
 
         Parameters
@@ -309,10 +309,13 @@ class DataSourceSpecH5(object):
             from larch.utils.logging import getLogger
 
             _logger_name = "larch.io.specfile_reader.DataSourceSpecH5"
-            self._logger = getLogger(_logger_name, level="INFO")
+            self._logger = getLogger(_logger_name, level="WARNING")
         else:
             self._logger = logger
 
+        if verbose:
+            self._logger.set_level("INFO")
+        
         self.fname = fname
         self._scanfile = None
         if self.fname is not None:
@@ -396,7 +399,7 @@ class DataSourceSpecH5(object):
         none: sets attribute self._group_url
         """
         self._group_url = group_url
-        if self._group_url is not None:
+        if self._group_url is not None and self.verbose:
             self._logger.info(f"Selected group {self._group_url}")
 
     def set_scan(self, scan_n, scan_idx=1, group_url=None, scan_kws=None):
@@ -652,7 +655,7 @@ class DataSourceSpecH5(object):
             )
         return iscn
 
-    def get_scan_axis(self, scan=None, verbose=False):
+    def get_scan_axis(self, scan=None):
         """Get the name of the scanned axis from scan title"""
         if scan is not None:
             self.set_scan(scan)
@@ -661,14 +664,11 @@ class DataSourceSpecH5(object):
         _axisout = iscn["scan_axis"]
         _mots, _cnts = self.get_motors(), self.get_counters()
         if not (_axisout in _mots):
-            if verbose:
-                self._logger.info(f"'{_axisout}' not in (real) motors")
+            self._logger.info(f"'{_axisout}' not in (real) motors")
         if not (_axisout in _cnts):
-            if verbose:
-                self._logger.warning(f"'{_axisout}' not in counters")
+            self._logger.info(f"'{_axisout}' not in counters")
             _axisout = _cnts[0]
-            if verbose:
-                self._logger.warning(f"using the first counter: '{_axisout}'")
+            self._logger.info(f"using the first counter: '{_axisout}'")
         return _axisout
 
     def get_array(self, cnt, scan=None):
@@ -738,7 +738,7 @@ class DataSourceSpecH5(object):
         timestring = self.get_time()
         timestamp = self.get_timestamp()
         path, filename = os.path.split(self.fname)
-        axis = self.get_scan_axis(verbose=False)
+        axis = self.get_scan_axis()
         out = Group(__name__=f"Spec file: {filename}, scan: {scan}",
                     path=path, filename=filename, datatype=None,
                     array_labels=labels, axis=axis,
