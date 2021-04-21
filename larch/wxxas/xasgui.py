@@ -962,7 +962,6 @@ class XASFrame(wx.Frame):
         elif is_specfile(path):
             self.show_subframe('spec_import', SpecfileImporter,
                                filename=path,
-                               _larch=self.controller.larch,
                                read_ok_cb=self.onReadSpecfile_OK)
         # default to Column File
         else:
@@ -972,33 +971,36 @@ class XASFrame(wx.Frame):
                                last_array_sel = self.last_array_sel,
                                read_ok_cb=self.onRead_OK)
 
-    def onReadSpecfile_OK(self, path, scanlist):
+    def onReadSpecfile_OK(self, script, path, scanlist):
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
-        script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
-
+        _path, fname = os.path.split(path)
+        first_group = None
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
-        for gname in namelist:
-            cur_panel.skip_plotting = (gname == namelist[-1])
-            this = getattr(self.larch.symtable._prj, gname)
-            gid = str(getattr(this, 'athena_id', gname))
-            if self.larch.symtable.has_group(gid):
-                count, prefix = 0, gname[:3]
-                while count < 1e7 and self.larch.symtable.has_group(gid):
-                    gid = prefix + make_hashkey(length=7)
-                    count += 1
-
-            self.larch.eval(script.format(group=gid, prjgroup=gname))
-            dgroup = self.install_group(gid, gname, process=True, plot=False)
-        self.larch.eval("del _specfile")
+        symtable = self.larch.symtable
+        for scan in scanlist:
+            gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
+            if hasattr(symtable, gname):
+                n = 0
+                while n < 99000:
+                    n += 1
+                    gname = fix_varname("{:s}_{%d}".format(gname, n))
+            
+            cur_panel.skip_plotting = (scan == scanlist[-1])
+            displayname = "%s_scan%s" % (fname, scan)
+            if first_group is None:
+                first_group = gname
+            self.larch.eval(script.format(group=gname, path=path,
+                                          scan=scan))
+            dgroup = self.install_group(gname, displayname,
+                                        process=True, plot=False)
         cur_panel.skip_plotting = False
 
-        if len(namelist) > 0:
-            gname = self.controller.file_groups[namelist[0]]
-            self.ShowFile(groupname=gname, process=True, plot=True)
-        self.write_message("read %d datasets from %s" % (len(namelist), path))
+        if first_group is not None:
+            self.ShowFile(groupname=first_group, process=True, plot=True)
+        self.write_message("read %d datasets from %s" % (len(scanlist), path))
 
 
     def onReadAthenaProject_OK(self, path, namelist):
