@@ -1,37 +1,54 @@
 This folder contains install scripts for Larch.   These include:
 
-1.  conda_constructor - A folder with configuration files and resources
+ 1. conda_constructor - A folder with configuration files and resources
     to build stand-alone installers for Windows, MacOSX, and Linux.
+   
+ 2. GetLarch.sh -  A shell script for installing on Linux/MacOSX, with
+    some command-line arguments.
+
+ 3. GetLarch.bat - A Windows batch file for for installing on Windows,
+    no command-line arguments.
+
+The two GetLarch scripts use the same approach to install an "xraylarch"
+folder in the users home directory that contains a complete, isolated Python
+environment for Larch.
+
+For those who might want to modify this process, say to install on a shared
+machine or install using a different version of Python, in more detail this
+process does:
+   
+
+ 1. Download and install a Miniconda Python ("latest version",  which is
+    Python 3.8 as of this writing) to the "xraylarch" folder in your home
+    directory.  This gives a dedicated Python environment.
+
+ 2. Run "conda update --all" for this environment.
+
+ 3. Select and install a few packages from the "conda-forge" conda channel,
+    including wxPython and TomoPy which are not available for all platforms
+    on PyPI, and "python.app" on MacOSX.
+
+ 4. Install xraylarch from PyPI, which will also pull any missing dependencies
+    from PyPI.
+
+For the Linux/MacOSX installer, there are options for changing the "prefix" for
+the installation directory (default is $HOME/xraylarch) and for selecting whether
+wxPython and/or TomoPY are installed.
+
+Note that wxPython is not required to use the Larch library, but all
+the graphical user interfaces and code for plotting and data
+visualization in Larch use wxPython.
+
+Similarly, TomoPy is also not required except for tomographic
+reconstructions of X-ray fluorescence tomography data.  That is, if
+you are using Larch only for its XAFS, XRF, and XRF imaging tools, you
+do not need TomoPy.
+
+If you are interested in installing Larch in some way other than for
+an individual user, say on a Linux or MacOSX server, this shell script
+may be useful as a template.
     
-2.  GetLarch.sh -  A shell script for installing on Linux/MacOSX.
-    This downloads and installs a Miniconda Python to the "xraylarch"
-    folder in your home directory.  This gives a dedicated Python
-    environment for Larch.  The installer then selects and installs
-    a few packages from the "conda-forge" conda channel, including
-    wxPython and TomoPy which are not available for all platforms
-    on PyPI. Finally, xraylarch is installed from PyPI.
 
-    There are options for changing the "prefix" for the installation
-    directory (default is $HOME/xraylarch) and for selecting
-    whether wxPython and/or TomoPY are installed.
+2021-April-21
 
-    wxPython is not required to use the Larch library, but all the
-    graphical user interfaces and code for plotting and data
-    visualization in Larch use wxPython.
-
-    TomoPy is also not required, and is needed for tomographic
-    reconstructions of X-ray fluorescence tomography data.  That is,
-    if you are using Larch only for its XAFS, XRF, and XRF imaging
-    tools, you do not need TomoPy.
-
-    If you are interested in installing Larch in some way other than
-    for an individual user, say on a Linux or MacOSX server, this
-    shell script may be useful as a template.
-    
-
-3.  GetLarch.bat -  A Windows batch file for for installing on Windows.
-    This follows the GetLarch.sh file in its approach, but is less
-    complete.  It will need manual intervention and for steps to
-    be run from a Terminal. This should definitely be used as a guide for
-    the steps to take to install Larch on Windows.
     

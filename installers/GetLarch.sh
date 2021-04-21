@@ -3,7 +3,6 @@
 ## script to install Larch on Linux or MacOS
 ## using a Miniconda environment and all required packages
 
-
 prefix=$HOME/xraylarch
 
 uname=`uname`
@@ -112,12 +111,9 @@ echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logf
 $prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
 
 ## pip install of dependencies and Larch
-echo "##  Installing xraylarch dependencies from PyPI" | tee -a $logfile
-echo "#> $prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn " | tee -a $logfile
-$prefix/bin/pip install packaging pyepics epicsapps psycopg2-binary wxmplot wxutils PyCIFRW pyFAI lmfit numdifftools peakutils scikit-image scikit-learn | tee -a $logfile
-echo "##Installing xraylarch from PyPI"  | tee -a $logfile
-echo "#> $prefix/bin/pip install xraylarch "| tee -a $logfile
-$prefix/bin/pip install xraylarch | tee -a $logfile
+echo "##Installing xraylarch and dependencies from PyPI"  | tee -a $logfile
+echo "#> $prefix/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools"| tee -a $logfile
+$prefix/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"
