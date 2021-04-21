@@ -334,7 +334,7 @@ class SpecfileImporter(wx.Frame) :
         curscan = None
         for scandata in self.specfile.get_scans():
             name, cmd, dtime = scandata
-            self.scans.append(name)
+            self.scans.append("%s: %s" % (name, cmd))
             if curscan is None:
                 curscan = name
 
@@ -388,10 +388,10 @@ class SpecfileImporter(wx.Frame) :
 
         sel_none = Button(ltop, 'Select None', size=(100, 30), action=self.onSelNone)
         sel_all  = Button(ltop, 'Select All', size=(100, 30), action=self.onSelAll)
-        sel_imp  = Button(ltop, 'Import Selected Scans', size=(200, 30), action=self.onOK)
+        sel_imp  = Button(ltop, 'Import Selected Scans', size=(200, -1), action=self.onOK)
 
-        self.grouplist = FileCheckList(leftpanel, select_action=self.onScanSelect)
-        self.grouplist.AppendItems(self.scans)
+        self.scanlist = FileCheckList(leftpanel, select_action=self.onScanSelect)
+        self.scanlist.AppendItems(self.scans)
 
         tsizer = wx.GridBagSizer(2, 2)
         tsizer.Add(sel_all, (0, 0), (1, 1), LEFT, 0)
@@ -401,7 +401,7 @@ class SpecfileImporter(wx.Frame) :
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ltop, 0, LEFT|wx.GROW, 1)
-        sizer.Add(self.grouplist, 1, LEFT|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.scanlist, 1, LEFT|wx.GROW|wx.ALL, 1)
         pack(leftpanel, sizer)
 
         # right hand side
@@ -523,18 +523,18 @@ class SpecfileImporter(wx.Frame) :
         self.onUpdate(self)
 
     def onScanSelect(self, event=None):
-
         try:
-            name = event.GetString()
+            scan_desc = event.GetString()
+            name = [s.strip() for s in scan_desc.split(':')][0]
             self.curscan = self.specfile.get_scan(name)
         except:
             return
-        glist = list(self.grouplist.GetCheckedStrings())
-        if name not in glist:
-            glist.append(name)
-        self.grouplist.SetCheckedStrings(glist)
+        slist = list(self.scanlist.GetCheckedStrings())
+        if scan_desc not in slist:
+            slist.append(scan_desc)
+        self.scanlist.SetCheckedStrings(slist)
 
-            
+
         self.wid_scantitle.SetLabel("  %s" % self.curscan.title)
         self.wid_scantime.SetLabel(self.curscan.timestring)
 
@@ -624,15 +624,17 @@ class SpecfileImporter(wx.Frame) :
         self.onUpdate()
 
     def onSelAll(self, event=None):
-        self.grouplist.SetCheckedStrings(self.scans)
+        self.scanlist.SetCheckedStrings(self.scans)
 
     def onSelNone(self, event=None):
-        self.grouplist.SetCheckedStrings([])
+        self.scanlist.SetCheckedStrings([])
 
     def onOK(self, event=None):
         """ build arrays according to selection """
-
-        scanlist = [str(n) for n in self.grouplist.GetCheckedStrings()]
+        scanlist = []
+        for s in self.scanlist.GetCheckedStrings():
+            words = [s.strip() for s in s.split(':')]
+            scanlist.append(words[0])
         if len(scanlist) == 0:
             cancel = Popup(self, """No scans selected.
          Cancel import from this project?""", 'Cancel Import?',
