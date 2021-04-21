@@ -20,7 +20,7 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
 
 import larch
 from larch import Group
-from larch.utils.strutils import fix_varname, file2groupname
+from larch.utils.strutils import fix_varname
 from larch.io import look_for_nans, is_specfile, open_specfile
 
 CEN |=  wx.ALL
@@ -116,6 +116,7 @@ class AddColumnsFrame(wx.Frame):
 
         pack(self, mainsizer)
         self.Show()
+        self.SetSize(self.GetBestSize())
         self.Raise()
 
     def make_sum(self):
@@ -315,10 +316,7 @@ class EditColumnFrame(wx.Frame) :
 
 class SpecfileImporter(wx.Frame) :
     """Column Data File, select columns"""
-    def __init__(self, parent, filename=None, groupname=None,
-                 last_array_sel=None, read_ok_cb=None,
-                 edit_groupname=True, _larch=None):
-
+    def __init__(self, parent, filename=None, read_ok_cb=None):
         if not is_specfile(filename):
             title = "Not a Specfile: %s" % filename
             message = "Error reading %s as a Specfile" % filename
@@ -326,7 +324,6 @@ class SpecfileImporter(wx.Frame) :
             return None
 
         self.parent = parent
-        self._larch = _larch
         self.path = filename
         path, fname = os.path.split(filename)
         self.filename = fname
@@ -344,7 +341,7 @@ class SpecfileImporter(wx.Frame) :
         self.curscan = self.specfile.get_scan(curscan)
         self.subframes = {}
         self.workgroup = Group()
-        for attr in ('path', 'filename', 'groupname', 'datatype',
+        for attr in ('path', 'filename', 'datatype',
                      'array_labels', 'data'):
             setattr(self.workgroup, attr, None)
 
@@ -356,17 +353,11 @@ class SpecfileImporter(wx.Frame) :
             if 'en' in self.curscan.axis.lower():
                 self.workgroup.datatype = 'xas'
 
-        groupname = "{:s}_{:s}".format(self.filename[:5], self.curscan.scan_name)
-        groupname = fix_varname(groupname)
-
         self.read_ok_cb = read_ok_cb
         self.array_sel = {'scan': '',
                           'xpop': '',  'xarr': None,
                           'ypop': '',  'yop': '/',
                           'yarr1': None, 'yarr2': None}
-
-        if last_array_sel is not None:
-            self.array_sel.update(last_array_sel)
 
         if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
             self.array_sel['yarr2'] = 'i0'
@@ -381,7 +372,8 @@ class SpecfileImporter(wx.Frame) :
                           'Build Arrays for %s' % filename,
                           style=FRAMESTYLE)
 
-        self.SetMinSize((850, 650))
+        self.SetMinSize((750, 550))
+        self.SetSize((800, 650))
         self.colors = GUIColors()
 
         x0, y0 = parent.GetPosition()
@@ -398,7 +390,7 @@ class SpecfileImporter(wx.Frame) :
         sel_all  = Button(ltop, 'Select All', size=(100, 30), action=self.onSelAll)
         sel_imp  = Button(ltop, 'Import Selected Scans', size=(200, 30), action=self.onOK)
 
-        self.grouplist = FileCheckList(leftpanel, select_action=self.onShowScan)
+        self.grouplist = FileCheckList(leftpanel, select_action=self.onScanSelect)
         self.grouplist.AppendItems(self.scans)
 
         tsizer = wx.GridBagSizer(2, 2)
@@ -418,12 +410,12 @@ class SpecfileImporter(wx.Frame) :
         panel = wx.Panel(rightpanel)
         # title row
         self.title = SimpleText(panel,
-                                "%s  Scan %s" % (self.path, self.curscan.scan_name),
+                                "  %s  Scan %s" % (self.path, self.curscan.scan_name),
                                 font=Font(11), colour=self.colors.title, style=LEFT)
 
-        self.wid_scan = Choice(panel, choices=self.scans,
-                               size=(200, -1), action=self.onScanSelect)
-        self.wid_scan.SetStringSelection(self.curscan.scan_name)
+        # self.wid_scan = Choice(panel, choices=self.scans,
+        #                        size=(200, -1), action=self.onScanSelect)
+        # self.wid_scan.SetStringSelection(self.curscan.scan_name)
 
         self.wid_scantitle = SimpleText(panel, self.curscan.title,
                                        font=Font(11), style=LEFT)
@@ -477,11 +469,11 @@ class SpecfileImporter(wx.Frame) :
         self.yarr2.SetSelection(iy2sel)
 
         sizer = wx.GridBagSizer(2, 2)
-        sizer.Add(self.title,     (0, 0), (1, 7), LEFT, 5)
+        ir = 0
+        sizer.Add(self.title,     (ir, 0), (1, 7), LEFT, 5)
 
-        ir = 1
-        sizer.Add(scanlabel,     (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_scan, (ir, 1), (1, 3), LEFT, 0)
+        # sizer.Add(scanlabel,     (ir, 0), (1, 1), LEFT, 0)
+        # sizer.Add(self.wid_scan, (ir, 1), (1, 3), LEFT, 0)
 
         ir += 1
         sizer.Add(self.wid_scantitle,  (ir, 0), (1, 2), LEFT, 0)
@@ -513,18 +505,12 @@ class SpecfileImporter(wx.Frame) :
 
         self.wid_filename = wx.TextCtrl(panel, value=filename,
                                          size=(300, -1))
-        self.wid_groupname = wx.TextCtrl(panel, value=groupname,
-                                         size=(150, -1))
-        if not edit_groupname:
-            self.wid_groupname.Disable()
 
         ir += 1
         sizer.Add(SimpleText(panel, 'Displayed Name:'), (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.wid_filename,                (ir, 1), (1, 2), LEFT, 0)
         ir += 1
-        sizer.Add(SimpleText(panel, 'Group/Code Name:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(self.message,                     (ir, 3), (1, 4), LEFT, 0)
+        sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
 
         pack(panel, sizer)
 
@@ -543,20 +529,26 @@ class SpecfileImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        self.SetSize(self.GetBestSize())
         self.Show()
         self.Raise()
         self.onUpdate(self)
 
-    def onScanSelect(self, event=None, name=None):
-        if name is None:
+    def onScanSelect(self, event=None):
+
+        try:
             name = event.GetString()
-        if name in self.scans:
             self.curscan = self.specfile.get_scan(name)
+        except:
+            return
+        glist = list(self.grouplist.GetCheckedStrings())
+        if name not in glist:
+            glist.append(name)
+        self.grouplist.SetCheckedStrings(glist)
+
+            
         self.wid_scantitle.SetLabel(self.curscan.title)
         self.wid_scantime.SetLabel(self.curscan.timestring)
-        gname = "{:s}_{:s}".format(self.filename[:6], self.curscan.scan_name)
-        self.wid_groupname.SetValue(fix_varname(gname))
-
 
         self.title.SetLabel("%s  Scan %s" % (self.path, self.curscan.scan_name))
         arr_labels = [l.lower() for l in self.curscan.array_labels]
@@ -586,6 +578,10 @@ class SpecfileImporter(wx.Frame) :
         self.yarr2.AppendItems(yarr_labels)
         if y2sel in yarr_labels:
             self.yarr2.SetStringSelection(y2sel)
+
+        xsel = self.xarr.GetStringSelection()
+        self.workgroup.datatype = 'xas' if 'en' in xsel else 'raw'
+        self.datatype.SetStringSelection(self.workgroup.datatype)
 
         self.onUpdate()
 
@@ -645,12 +641,6 @@ class SpecfileImporter(wx.Frame) :
     def onSelNone(self, event=None):
         self.grouplist.SetCheckedStrings([])
 
-    def onShowScan(self, event=None):
-        """column selection to select scan"""
-        self.onScanSelect(name=event.GetString())
-        self.wid_scan.SetStringSelection(event.GetString())
-
-
     def onOK(self, event=None):
         """ build arrays according to selection """
 
@@ -665,8 +655,6 @@ class SpecfileImporter(wx.Frame) :
                 return
 
         filename = self.wid_filename.GetValue()
-        groupname = fix_varname(self.wid_groupname.GetValue())
-
         yerr_op = self.yerr_op.GetStringSelection().lower()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
@@ -678,7 +666,7 @@ class SpecfileImporter(wx.Frame) :
         self.expressions['yerr'] = yerr_expr
 
         # generate script to pass back to calling program:
-        read_cmd = "read_specfile('{path}', scan='{scan}')"
+        read_cmd = "_specfile.get_scan(scan='{scan}')"
         buff = ["{group} = %s" % read_cmd,
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
@@ -706,11 +694,9 @@ class SpecfileImporter(wx.Frame) :
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
-        print("script: ", script)
-        print(groupname, self.path, scanlist)
 
         if self.read_ok_cb is not None:
-            self.read_ok_cb(script, self.path, scans=scanlist)
+            self.read_ok_cb(script, self.path, scanlist)
 
         for f in self.subframes.values():
             try:
