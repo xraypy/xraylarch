@@ -410,14 +410,10 @@ class SpecfileImporter(wx.Frame) :
         panel = wx.Panel(rightpanel)
         # title row
         self.title = SimpleText(panel,
-                                "  %s  Scan %s" % (self.path, self.curscan.scan_name),
+                                "  %s, scan %s" % (self.path, self.curscan.scan_name),
                                 font=Font(11), colour=self.colors.title, style=LEFT)
 
-        # self.wid_scan = Choice(panel, choices=self.scans,
-        #                        size=(200, -1), action=self.onScanSelect)
-        # self.wid_scan.SetStringSelection(self.curscan.scan_name)
-
-        self.wid_scantitle = SimpleText(panel, self.curscan.title,
+        self.wid_scantitle = SimpleText(panel, " %s" % self.curscan.title,
                                        font=Font(11), style=LEFT)
         self.wid_scantime = SimpleText(panel, self.curscan.timestring,
                                        font=Font(11), style=LEFT)
@@ -443,8 +439,6 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-
-        scanlabel = SimpleText(panel, 'Arrays for Scan : ')
         ylab = SimpleText(panel, 'Y = ')
         xlab = SimpleText(panel, 'X = ')
         yerr_lab = SimpleText(panel, 'Yerror = ')
@@ -503,12 +497,6 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.datatype,                    (ir, 1), (1, 2), LEFT, 0)
 
-        self.wid_filename = wx.TextCtrl(panel, value=filename,
-                                         size=(300, -1))
-
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Displayed Name:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_filename,                (ir, 1), (1, 2), LEFT, 0)
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
 
@@ -547,10 +535,10 @@ class SpecfileImporter(wx.Frame) :
         self.grouplist.SetCheckedStrings(glist)
 
             
-        self.wid_scantitle.SetLabel(self.curscan.title)
+        self.wid_scantitle.SetLabel("  %s" % self.curscan.title)
         self.wid_scantime.SetLabel(self.curscan.timestring)
 
-        self.title.SetLabel("%s  Scan %s" % (self.path, self.curscan.scan_name))
+        self.title.SetLabel("  %s, scan %s" % (self.path, self.curscan.scan_name))
         arr_labels = [l.lower() for l in self.curscan.array_labels]
         self.orig_labels = arr_labels[:]
 
@@ -654,7 +642,6 @@ class SpecfileImporter(wx.Frame) :
             else:
                 return
 
-        filename = self.wid_filename.GetValue()
         yerr_op = self.yerr_op.GetStringSelection().lower()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
