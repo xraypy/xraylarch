@@ -276,7 +276,7 @@ def is_specfile(filename):
         topbytes = fh.read(10)
     scans = None
     if (topbytes.startswith(b'\x89HDF\r') or # HDF5
-        topbytes.startswith(b'#F ')):        # Ascii text
+        topbytes.startswith(b'#F ')):        # full specscan
         try:
             scans = DataSourceSpecH5(filename).get_scans()
         except:
@@ -315,7 +315,7 @@ class DataSourceSpecH5(object):
 
         if verbose:
             self._logger.set_level("INFO")
-        
+
         self.fname = fname
         self._scanfile = None
         if self.fname is not None:
@@ -733,18 +733,22 @@ class DataSourceSpecH5(object):
         larch Group with scan data
         """
         self.get_scangroup(scan)
+        scan_index  = self._scan_n
+        scan_name = self._scan_str
+        scan_group = self._scangroup
         labels = self.get_counters()
         title = self.get_title()
         timestring = self.get_time()
         timestamp = self.get_timestamp()
         path, filename = os.path.split(self.fname)
         axis = self.get_scan_axis()
-        out = Group(__name__=f"Spec file: {filename}, scan: {scan}",
+        out = Group(__name__=f"Spec file: {filename}, scan: {scan_name}",
                     path=path, filename=filename, datatype=None,
                     array_labels=labels, axis=axis,
-                    scan_index=self._scan_n,
-                    scan_name=self._scan_url,
-                    title=title, timestring=timestring,
+                    scan_index=scan_index,
+                    scan_name=scan_name,
+                    title=title,
+                    timestring=timestring,
                     timestamp=timestamp)
 
         data = []
@@ -1499,4 +1503,9 @@ def open_specfile(filename):
 
 def read_specfile(filename, scan=None):
     """simple mapping of a Spec file to a larch group"""
-    return DataSourceSpecH5(filename).get_scan(scan)
+    df = DataSourceSpecH5(filename)
+    if scan is None:
+        df.set_scan(df.get_scans()[0][0])
+    else:
+        df.set_scan(scan)
+    return df.get_scan()
