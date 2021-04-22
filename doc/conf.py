@@ -69,6 +69,7 @@ numfig_format = {'figure': 'Figure %s',
                  'code-block': 'Listing %s',
                  'section': 'Section %s'}
 
+bibtex_bibfiles = ['larch.bib']
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
