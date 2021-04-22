@@ -8,7 +8,7 @@ channels:
 
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
-license_file: ../LICENSE
+license_file: ../../LICENSE
 ignore_duplicate_files: True
 
 osxpkg_readme: readme.rtf # [osx]
@@ -21,7 +21,7 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python>=3.8
+    - python==3.8.8
     - conda
     - openssl
     - setuptools
