@@ -12,12 +12,13 @@ Downloading and Installation
 .. _lmfit:                         https://lmfit.github.io/lmfit-py/
 .. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
+.. _Larch Installer Scripts:       https://github.com/xraypy/xraylarch/tree/master/installers
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49.tar.gz
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49-Linux-x86_64.sh
-.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.49_docs-examples.zip
+.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51.tar.gz
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-Linux-x86_64.sh
+.. _Larch Docs and Examples:       https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
@@ -76,7 +77,6 @@ applications listed in :ref:`Table of Larch Applications and Programs
 <larch_app_table>`.  This includes tools for X-ray Absorption spectroscopy,
 X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
 
-
 .. _install-win:
 
 Windows Notes
@@ -123,7 +123,7 @@ Linux Notes
 For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
 move to the download folder (typically `$HOME/Downloads`) and run::
 
-    ~> bash ./xraylarch-0.9.50-Linux-x86_64.sh
+    ~> bash ./xraylarch-0.9.51-Linux-x86_64.sh
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
@@ -133,28 +133,91 @@ in the Applications selection of the "Start Menu" or Applications list.
 
 .. _install-src:
 
+Using Installation Scripts `GetLarch.sh` and `GetLarch.bat`
+=============================================================
+
+The scripts `GetLarch.sh` (for Linux and MacOSX) and `GetLarch.bat` in the
+`installers` folder of the source distribution (see `Larch Installer
+Scripts`_) will download and install `Miniconda Python` and use that as the
+basis of an installation that will be essentially identical to the
+environment installed by the binary installers.  You can read these scripts
+and modify them for your needs (or maybe suggest ways we could maintain
+that for others to use too).  In simple bash, that might look like this:
+
+.. code:: bash
+	  
+    #!/usr/bin/sh
+    prefix=$HOME/xraylarch
+    condafile=Miniconda3-latest-$uname-x86_64.sh
+    condaforge_pkgs="wxpython tomopy"    
+    uname=`uname`
+    if [ $uname == Darwin ]; then
+        uname=MacOSX
+        condaforge_pkgs="wxpython tomopy python.app"    
+    fi
+    /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile
+    sh ./$condafile -b -p $prefix
+    $prefix/bin/conda update -y --all 
+    $prefix/bin/conda install --force-reinstall -yc conda-forge $condaforge_pkgs
+    $prefix/bin/pip install xraylarch pyepics epicsapps pyFAI PyCIFRW numdifftools 
+
+Note that this script will install several extra packages that are not
+strictly necessary for using Larch, but do add some useful and/or
+convenient functionality.  That is, for any Python (version 3.6 or higher):
+
+.. code:: bash
+	  
+   pip install xraylarch
+
+will install a functional version of the Larch library, pulling in any
+missing dependencies.
+
+Some of the *extra* packages that are installed here are:
+
+   * `wxpython`: needed for all plotting, graphics and GUI applications.
+   * `python.app`: needed (from conda-forge) for any Anaconda-based Python
+     on MacOSX (but no other systems).
+   * `tomopy`:  needed for reconstructing X-ray fluorescence tomography.
+   * `pyepics`, `epicsapps`: needed to interact with Epics control system.
+   * `pyFAI`: needed for integrating 2D X-ray Diffraction images to 1D XRD
+     patterns.
+     
+None of these are strictly needed for using the Larch library for XAFS analysis.
+
+
 Install with Python
 ======================================
 
-For those familiar with Python, Larch can be installed into an existing Python environment.  Larch
-requires Python 3.6 or higher.
+For those familiar with Python, Larch can be installed into an existing
+Python environment. Larch requires Python 3.6 or higher.
 
 If you are starting out with Python and interested in Larch, using
 `Anaconda Python`_ for Larch is a good option as Anaconda provides and
 maintains a free Python distribution than contains many of the scientific
 Python packages needed for Larch.
 
-You can also install Larch in other Python environments.
+But, you can also install Larch in other Python environments. While the
+binary installers are convenient, they do install a full Python environment
+with many additional packages in a user directory on your machine.  In some
+cases, you may want to install Larch with a different version of Python,
+without every package, or in a system-wide location.  The instructions here
+should help you do that.
+
+
+
+
 
 Using Anaconda Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, Anaconda Python installs into your own home folder (on Windows, this will be the
-`APPDATA` location, which is typically something like ``C:\\Users\<YourName>\Anaconda3`` or
-``C:\\Users\<YourName>\AppData\Local\Continuum\Anaconda3``).  As with the single-file installers
-above, installing Anaconda Python does not require extra permissions to install, upgrade, or remove
-components.  Anaconda includes a robust package manager called *conda* that makes it easy to update
-the packages it manages, including Larch.
+By default, Anaconda Python installs into your own home folder (on Windows,
+this will be the `APPDATA` location, which is typically something like
+``C:\\Users\<YourName>\Anaconda3`` or
+``C:\\Users\<YourName>\AppData\Local\Anaconda3``).  As with the single-file
+installers above, installing Anaconda Python does not require extra
+permissions to install, upgrade, or remove components.  Anaconda includes a
+robust package manager called *conda* that makes it easy to update the
+packages it manages, including Larch.
 
 Start by installing the latest version of Anaconda Python from the
 `Anaconda Downloads`_ site.  Python 3.7 or Python 3.8 is recommended.
@@ -165,7 +228,7 @@ starting distribution.
 Once Anaconda or Miniconda Python is installed, you can open a Terminal (on
 Linux or Mac OSX) or the Anaconda prompt (on Windows) and type::
 
-    conda install -yc GSECARS xraylarch
+    pip install xraylarch
 
 to install Larch.
 
@@ -181,33 +244,16 @@ give the path to Python and/or Larch::
 
 from Linux or MacOSX or::
 
-   %APPDATA%\\Local\\Continuum\xraylarch\Scripts\larch.exe -m
+   %APPDATA%\\Local\\xraylarch\Scripts\larch.exe -m
 
 from Windows.
 
-Updating  `conda`
+Updating  with `conda`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Anaconda Python makes updates very easy for us to provide and for you to
-install.  As new releases of Larch and the required packages are released,
-you may be able to upgrade to the latest versions with::
+This is no longer supported.  Use `pip` to update, even when using Anaconda Python.
 
-   conda update --all
-
-This approach to updating will not work for all new versions of Larch,
-depending on which underlying libraries are used.
-
-Note that for Windows, The `xraylarch` folder is not typically put in your
-path, and so you would need to open a Command or Powershell window and type::
-
-   C:\Users\<YourName>\xraylarch\Scripts\conda.exe update --all
-
-.. note::
-   `conda update --all` *will not* work to upgrade from 0.9.42 or earlier,
-   but it *will* work to upgrade from 0.9.43 or higher.
-
-
-Using `pip`
+Updating  with `pip`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting with Larch version 0.9.46, Larch can be used with Python versions
@@ -217,8 +263,7 @@ and install (most of) Larch simply with::
     pip install --upgrade xraylarch
 
 This will install Larch and all of the required packages. Some of the
-"recommended" packages listed below may not be installed and you may have
-to forgo thes capabilities or install those packages by hand.
+recommended packages listed below may need to be installed separately.
 
 
 Source Installation
@@ -253,33 +298,6 @@ are listed in the table below.  Note that most of these will be
 installed with Larch whether you install from a binary installer,
 with `conda install xraylarch`, with `pip install xraylarch`, or with
 `python setup.py install`
-
-
-.. _recommended_packages_table:
-
-**Table of Recommended Packages for Larch** This is not a complete list of
-packages needed for Larch.  Instead, this is a list of packages that may
-not be available with `pip install` but are available with `Anaconda
-Python`.  None of these are required for using Larch, but may prevent some
-functionality from working.
-
-  +----------------+------------------------------------------+
-  | Package name   | used for                                 |
-  +================+==========================================+
-  | dioptas        | XRD image display and integration        |
-  +----------------+------------------------------------------+
-  | tomopy         | Tomographic reconstruction               |
-  +----------------+------------------------------------------+
-  | pycifrw        | Reading CIF file                         |
-  +----------------+------------------------------------------+
-  | psycopg2       | Interacting with PostgresQL database     |
-  +----------------+------------------------------------------+
-
-If using Anaconda Python, all of these will be installed with
-`conda install -c GSECARS <package_name>`.
-
-To be clear, most of Larch will work fine without these modules installed,
-but the corresponding functionality will not be available.
 
 
 Getting Help
