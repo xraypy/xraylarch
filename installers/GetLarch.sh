@@ -107,8 +107,8 @@ $prefix/bin/conda update -n base -yc defaults --all | tee -a $logfile
 export PATH=$prefix/bin:$PATH
 
 echo "##  Installing packages from conda-forge"  | tee -a $logfile
-echo "#> $prefix/bin/conda install -yc conda-forge $cforge_pkgs " | tee -a $logfile
-$prefix/bin/conda install -yc conda-forge $cforge_pkgs | tee -a $logfile
+echo "#> $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs " | tee -a $logfile
+$prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs | tee -a $logfile
 
 ## pip install of dependencies and Larch
 echo "##Installing xraylarch and dependencies from PyPI"  | tee -a $logfile
