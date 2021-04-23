@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>13.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>13.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -138,7 +137,7 @@ subtleties.  This section is devoted to background subtraction with the
 <h2><span class="section-number">13.4.1. </span>The <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="autobk">
-<code class="sig-name descname">autobk</code><span class="sig-paren">(</span><em class="sig-param">energy</em>, <em class="sig-param">mu=None</em>, <em class="sig-param">group=None</em>, <em class="sig-param">rbkg=1.0</em>, <em class="sig-param">...</em><span class="sig-paren">)</span><a class="headerlink" href="#autobk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">autobk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">energy</span></em>, <em class="sig-param"><span class="pre">mu=None</span></em>, <em class="sig-param"><span class="pre">group=None</span></em>, <em class="sig-param"><span class="pre">rbkg=1.0</span></em>, <em class="sig-param"><span class="pre">...</span></em><span class="sig-paren">)</span><a class="headerlink" href="#autobk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the post-edge background function, <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, and
 corresponding <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="field-list simple">
@@ -269,7 +268,7 @@ determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <spa
 <div class="section" id="the-autobk-algorithm">
 <h2><span class="section-number">13.4.2. </span>The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
-(see <a class="bibtex reference internal" href="#id3" id="id1">[Newville et al. (1993)]</a>), in which a spline function is matched to the
+(see <span id="id1">[<a class="reference internal" href="#id22">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <p>For reference, <span class="math notranslate nohighlight">\(k = \sqrt{2m_e (E-E_0)/\hbar^2}\)</span> is the wavenumber of
 the ejected photo-electron, where <span class="math notranslate nohighlight">\(E_0\)</span> is the absorption threshold
@@ -499,13 +498,13 @@ using all the default inputs would be:</p>
 </div>
 <p>with the resulting outputs looking like this:</p>
 <div class="figure compound align-center" id="fig-xafs2">
-<div style="width: 45%" class="subfigure align-center" id="id4">
+<div style="width: 45%" class="subfigure align-center" id="id79">
 <span id="fig-xafs2a"></span><a class="reference external image-reference" href="../_images/xafs_autobk1a.png"><img alt="../_images/xafs_autobk1a.png" src="../_images/xafs_autobk1a.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.4.3.1 </span><span class="caption-text"><span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.4.3.1 </span><span class="caption-text"><span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span><a class="headerlink" href="#id79" title="Permalink to this image">¶</a></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="id5">
+<div style="width: 45%" class="subfigure align-center" id="id80">
 <span id="fig-xafs2b"></span><a class="reference external image-reference" href="../_images/xafs_autobk1b.png"><img alt="../_images/xafs_autobk1b.png" src="../_images/xafs_autobk1b.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.4.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.4.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#id80" title="Permalink to this image">¶</a></p>
 </div>
 <p class="caption"><span class="caption-text">Example of simple usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for Cu metal.</span></p>
 </div><p id="fig-xafs2">Thus demonstrating that we can process data on Cu metal.</p>
@@ -577,9 +576,9 @@ clamp:</p>
 </pre></div>
 </div>
 <p>results in the following comparison:</p>
-<div class="figure align-default" id="id6">
+<div class="figure align-default" id="id81">
 <span id="xafs-fig4"></span><a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.4.3.5 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.4.3.3 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id81" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="id2">
@@ -617,8 +616,8 @@ function.</p>
 </pre></div>
 </div>
 <p class="rubric">References</p>
-<p id="bibtex-bibliography-xafs/autobk-0"><dl class="citation">
-<dt class="bibtex label" id="id3"><span class="brackets"><a class="fn-backref" href="#id1">Newville et al. (1993)</a></span></dt>
+<p id="id3"><dl class="citation">
+<dt class="label" id="id22"><span class="brackets"><a class="fn-backref" href="#id1">Newville et al. (1993)</a></span></dt>
 <dd><p>M. Newville, P. Livins, Y. Yacoby, J. J. Rehr, and E. A. Stern. Near-edge x-ray-absorption fine structure of Pb: A comparison of theory and experiment. <em>Physical Review B</em>, 47(21):14126–14131, 1993. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.47.14126">doi:10.1103/PhysRevB.47.14126</a>.</p>
 </dd>
 </dl>
@@ -659,7 +658,7 @@ function.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

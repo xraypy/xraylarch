@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -157,14 +156,14 @@ tabulated value.  This is seen at the top of Figure
 added to the tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span> spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
 shown at the bottom of <a class="reference internal" href="#fig-cu-diffkk"><span class="std std-numref">Figure 13.9.1.1</span></a>.</p>
-<div class="figure align-center" id="id1">
+<div class="figure align-center" id="id77">
 <span id="fig-cu-diffkk"></span><a class="reference external image-reference" href="../_images/diffkk_cu.png"><img alt="../_images/diffkk_cu.png" src="../_images/diffkk_cu.png" style="width: 65%;" /></a>
 <p class="caption"><span class="caption-number">Figure 13.9.1.1 </span><span class="caption-text">The anomalous scattering factors determined for copper metal from
-a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a class="headerlink" href="#id77" title="Permalink to this image">¶</a></p>
 </div>
 <dl class="py function">
 <dt id="diffkk">
-<code class="sig-name descname">diffkk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge</span><span class="o">=</span><span class="default_value">'K'</span></em>, <em class="sig-param"><span class="n">mback_kws</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">diffkk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a diffKK Group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -184,7 +183,7 @@ a copper foil, compared with the bare-atom, Cromer-Liberman values.</span><a cla
 
 <dl class="py function">
 <dt id="diffkk.kk">
-<code class="sig-prename descclassname">diffkk.</code><code class="sig-name descname">kk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">energy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">edge</span><span class="o">=</span><span class="default_value">'K'</span></em>, <em class="sig-param"><span class="n">mback_kws</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">diffkk.</span></code><code class="sig-name descname"><span class="pre">kk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'K'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mback_kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffkk.kk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the KK transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -261,17 +260,17 @@ weight underneath the white lines and in part because the step size
 ratios in real data may not match the step size ratios in the
 tabulated <span class="math notranslate nohighlight">\(f'(E)\)</span>.</p>
 <div class="figure compound align-center" id="fig-ceo2-diffkkcomp">
-<div style="width: 32%" class="subfigure align-default" id="id2">
+<div style="width: 32%" class="subfigure align-default" id="id78">
 <span id="fig-ceo2-xafs"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_xafs.png"><img alt="../_images/diffkk_ceo2_xafs.png" src="../_images/diffkk_ceo2_xafs.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.1 </span><span class="caption-text">L edge data measured on CeO<sub>2</sub></span><a class="headerlink" href="#id78" title="Permalink to this image">¶</a></p>
 </div>
-<div style="width: 32%" class="subfigure align-default" id="id3">
+<div style="width: 32%" class="subfigure align-default" id="id79">
 <span id="fig-ceo2-notok"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_notok.png"><img alt="../_images/diffkk_ceo2_notok.png" src="../_images/diffkk_ceo2_notok.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.2 </span><span class="caption-text">A poor stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id79" title="Permalink to this image">¶</a></p>
 </div>
-<div style="width: 32%" class="subfigure align-default" id="id4">
+<div style="width: 32%" class="subfigure align-default" id="id80">
 <span id="fig-ceo2-diffkk"></span><a class="reference external image-reference" href="../_images/diffkk_ceo2_ok.png"><img alt="../_images/diffkk_ceo2_ok.png" src="../_images/diffkk_ceo2_ok.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-number">Figure 13.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Figure 13.9.2.3 </span><span class="caption-text">A better stab at diffKK analysis of CeO<sub>2</sub></span><a class="headerlink" href="#id80" title="Permalink to this image">¶</a></p>
 </div>
 </div><p id="fig-ceo2-diffkkcomp">These larch command created the plot in <a class="reference internal" href="#fig-ceo2-notok"><span class="std std-numref">Figure 13.9.2.2</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">=</span><span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;CeO2_L321.xmu&#39;</span><span class="p">)</span>
@@ -304,8 +303,7 @@ ranges so that the matching algorithm can be made to do a good job far
 away from the absorption edges.  Or perhaps a non-differential
 algorithm would be more appropriate for L edge data.</p>
 <p class="rubric">References</p>
-<p id="bibtex-bibliography-xafs/diffkk-0"></p>
-</div>
+<span class="target" id="id1"></span></div>
 </div>
 
 
@@ -340,7 +338,7 @@ algorithm would be more appropriate for L edge data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

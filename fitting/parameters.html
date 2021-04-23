@@ -6,16 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>12.2. Parameters &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>12.2. Parameters &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -148,7 +146,7 @@ upper and lower bounds for the Parameter value, or to set an algebraic
 expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
 <dl class="py function">
 <dt id="param">
-<code class="sig-name descname">param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">vary</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">expr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">param</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a Parameter, setting some of it principle attributes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -234,7 +232,7 @@ or give additional information about its value:</p>
 </div></blockquote>
 <dl class="py function">
 <dt id="guess">
-<code class="sig-name descname">guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">expr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">guess</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a variable Parameter, setting some of it principle attributes.
 The arguments here are identical to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a>, except that
 <code class="docutils literal notranslate"><span class="pre">vary=True</span></code> is set.</p>
@@ -349,7 +347,7 @@ larch&gt; print(params.amp1, params.amp2)
 </div></blockquote>
 <dl class="py function">
 <dt id="param_group">
-<code class="sig-name descname">param_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kws</span></em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">param_group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>create and return a <em>Parameter Group</em> that uses <cite>_sys.fiteval</cite> for
 constraint expression.</p>
 <dl class="field-list simple">
@@ -408,7 +406,7 @@ the fitting symbol table for a new fit.  This should not be necessary, but
 it is available with the function <a class="reference internal" href="#reset_fiteval" title="reset_fiteval"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_fiteval()</span></code></a>:</p>
 <dl class="py function">
 <dt id="reset_fiteval">
-<code class="sig-name descname">reset_fiteval</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reset_fiteval" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">reset_fiteval</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reset_fiteval" title="Permalink to this definition">¶</a></dt>
 <dd><p>clear and reset <cite>_sys.fiteval</cite> for a new fit.   This function takes no
 arguments.</p>
 </dd></dl>
@@ -472,7 +470,7 @@ to the result (ignoring correlations).</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

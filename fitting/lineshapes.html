@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>12.5. Some Builtin Line-shape Functions &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>12.5. Some Builtin Line-shape Functions &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -116,7 +115,7 @@ be amended easily.  All these functions return either a floating point
 scalar or array, depending on the input <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 <dl class="py function">
 <dt id="gaussian">
-<code class="sig-name descname">gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">gaussian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>a Gaussian or normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Normal_distribution">http://en.wikipedia.org/wiki/Normal_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
@@ -131,7 +130,7 @@ approximately <span class="math notranslate nohighlight">\(2.3548\sigma\)</span>
 
 <dl class="py function">
 <dt id="lorentzian">
-<code class="sig-name descname">lorentzian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lorentzian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Lorentzian or Cauchy-Lorentz distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Cauchy_distribution">http://en.wikipedia.org/wiki/Cauchy_distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>.</p>
@@ -145,7 +144,7 @@ half maximum is <span class="math notranslate nohighlight">\(2\sigma\)</span>.  
 
 <dl class="py function">
 <dt id="voigt">
-<code class="sig-name descname">voigt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">voigt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Voigt distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Voigt_profile">http://en.wikipedia.org/wiki/Voigt_profile</a>), with four Parameters:
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code>, <code class="docutils literal notranslate"><span class="pre">center</span></code>, <code class="docutils literal notranslate"><span class="pre">sigma</span></code>, and <code class="docutils literal notranslate"><span class="pre">gamma</span></code> defined as:</p>
@@ -167,7 +166,7 @@ to <code class="docutils literal notranslate"><span class="pre">sigma</span></co
 
 <dl class="py function">
 <dt id="pvoigt">
-<code class="sig-name descname">pvoigt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">fraction</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pvoigt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>A pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>) , <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and the same full
@@ -183,7 +182,7 @@ giving the full definition of</p>
 
 <dl class="py function">
 <dt id="pearson7">
-<code class="sig-name descname">pearson7</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">exponent</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pearson7</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pearson7" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>A Pearson VII distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution">http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution</a>),
@@ -194,12 +193,12 @@ in</p>
 \[f(x; A, \mu, \sigma, m) = \frac{A}{\sigma{\beta(m-\frac{1}{2}, \frac{1}{2})}} \bigl[1 + \frac{(x-\mu)^2}{\sigma^2}  \bigr]^{-m}\]</div>
 </div></blockquote>
 <p>where <span class="math notranslate nohighlight">\(\beta\)</span> is the beta function (see <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html">scipy.special.beta</a>
-in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.5.4)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
+in <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/special.html#module-scipy.special" title="(in SciPy v1.6.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy.special</span></code></a>).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="students_t">
-<code class="sig-name descname">students_t</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">students_t</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Student’s t distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Student%27s_t-distribution">http://en.wikipedia.org/wiki/Student%27s_t-distribution</a>), with three
 Parameters: <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and
@@ -213,7 +212,7 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 
 <dl class="py function">
 <dt id="breit_wigner">
-<code class="sig-name descname">breit_wigner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">amplitude</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">center</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">q</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">breit_wigner</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Breit-Wigner-Fano distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Fano_resonance">http://en.wikipedia.org/wiki/Fano_resonance</a>&gt;), with four Parameters:
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>), <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
@@ -224,7 +223,7 @@ Parameters: <code class="docutils literal notranslate"><span class="pre">amplitu
 
 <dl class="py function">
 <dt id="lognormal">
-<code class="sig-name descname">lognormal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">cen</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lognormal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Log-normal distribution function (see
 <a class="reference external" href="http://en.wikipedia.org/wiki/Lognormal">http://en.wikipedia.org/wiki/Lognormal</a>), with three Parameters
 <code class="docutils literal notranslate"><span class="pre">amplitude</span></code> (<span class="math notranslate nohighlight">\(A\)</span>), <code class="docutils literal notranslate"><span class="pre">center</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) and <code class="docutils literal notranslate"><span class="pre">sigma</span></code>
@@ -329,7 +328,7 @@ etc) can be accessed from scipy.special:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

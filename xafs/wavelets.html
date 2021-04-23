@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>13.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>13.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -120,16 +119,16 @@ contributions of a waveform into both time and frequency (or, for EXAFS,
 <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
 applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
-Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" id="id1">[Munoz, Argoul, and Farges (2003)]</a> being one early application.   The
+Munoz <em>et al</em> <span id="id1">[<a class="reference internal" href="#id56">Munoz, Argoul, and Farges (2003)</a>]</span> being one early application.   The
 <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
 <h2><span class="section-number">13.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
-<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <a class="bibtex reference internal" href="#munoz-wavelet" id="id2">[Munoz, Argoul, and Farges (2003)]</a>
+<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <span id="id2">[<a class="reference internal" href="#id56">Munoz, Argoul, and Farges (2003)</a>]</span>
 is implemented as the function <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
 <dl class="py function">
 <dt id="cauchy_wavelet">
-<code class="sig-name descname">cauchy_wavelet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em>, <em class="sig-param"><span class="n">chi</span></em>, <em class="sig-param"><span class="n">group</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kweight</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">rmax_out</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">cauchy_wavelet</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kweight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmax_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -245,8 +244,8 @@ and real part on the right hand panel.</span></p>
 space.  In the left hand panel, the original EXAFS <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span>
 is shown for comparison.</span></p>
 </div><p class="rubric" id="fig-xafswt3">References</p>
-<p id="bibtex-bibliography-xafs/wavelets-0"><dl class="citation">
-<dt class="bibtex label" id="munoz-wavelet"><span class="brackets">Munoz, Argoul, and Farges (2003)</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>)</span></dt>
+<p id="id3"><dl class="citation">
+<dt class="label" id="id56"><span class="brackets">Munoz, Argoul, and Farges (2003)</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id2">2</a>)</span></dt>
 <dd><p>M. Munoz, P. Argoul, and F. Farges. Continuous Cauchy wavelet transform analyses of EXAFS spectra: A qualitative approach. <em>American Mineralogist</em>, 88(4):694–700, 2003.</p>
 </dd>
 </dl>
@@ -286,7 +285,7 @@ is shown for comparison.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

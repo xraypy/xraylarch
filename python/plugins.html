@@ -6,16 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plugins &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>Plugins &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -151,7 +149,7 @@ would use something like:</p>
 more complicated work inside the function.</p>
 <dl class="py function">
 <dt>
-<code class="sig-name descname">registerLarchPlugin():</code></dt>
+<code class="sig-name descname"><span class="pre">registerLarchPlugin():</span></code></dt>
 <dd><p>register a set of functions or data resources defined in the module into
 the current Larch interpreter.   This function should return a tuple of
 (GroupName, Symbols_Dictionary), where the Group name is the
@@ -170,7 +168,7 @@ or C:\Users\USERNAME\larch\plugins on Windows).</p>
 Larch session with the <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> function.</p>
 <dl class="py function">
 <dt id="builtin.add_plugin">
-<span id="_builtin.add_plugin"></span><code class="sig-prename descclassname">_builtin.</code><code class="sig-name descname">add_plugin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">python_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#builtin.add_plugin" title="Permalink to this definition">¶</a></dt>
+<span id="_builtin.add_plugin"></span><code class="sig-prename descclassname"><span class="pre">_builtin.</span></code><code class="sig-name descname"><span class="pre">add_plugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">python_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#builtin.add_plugin" title="Permalink to this definition">¶</a></dt>
 <dd><p>add a plugin from the given plugin python file.  In contrast to the
 <code class="docutils literal notranslate"><span class="pre">import</span></code> statement, <a class="reference internal" href="../larchlang/builtins.html#add_plugin" title="add_plugin"><code class="xref py py-func docutils literal notranslate"><span class="pre">add_plugin()</span></code></a> will install the resources
 defined by <code class="xref py py-func docutils literal notranslate"><span class="pre">registerLarchPlugin()</span></code> every time it is run.</p>
@@ -211,7 +209,7 @@ in the Larch interpreter.</p>
 the plugin is registered to initialize plugin functionality.</p>
 <dl class="py function">
 <dt id="initializeLarchPlugin">
-<code class="sig-name descname">initializeLarchPlugin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_larch</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#initializeLarchPlugin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initializeLarchPlugin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#initializeLarchPlugin" title="Permalink to this definition">¶</a></dt>
 <dd><p>initializes a Larch plugin.  If defined for a plugin, this function is
 run immediately after installing all the symbols.</p>
 </dd></dl>
@@ -263,7 +261,7 @@ not be installed.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

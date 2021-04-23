@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>12.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>12.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -134,7 +133,7 @@ many (perhaps most) cases, they do not provide much better insight than the
 automatic method.</p>
 <dl class="py function">
 <dt id="confidence_intervals">
-<code class="sig-name descname">confidence_intervals</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minimizer</span></em>, <em class="sig-param"><span class="n">sigmas</span><span class="o">=</span><span class="default_value">1, 2, 3</span></em>, <em class="sig-param"><span class="n">prob_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">200</span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">confidence_intervals</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate confidence intervals for the parameters from a given fit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -158,7 +157,7 @@ other parameters until it finds the parameter values that increase sigma by
 the levels indicated.</p>
 <dl class="py function">
 <dt id="confidence_report">
-<code class="sig-name descname">confidence_report</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conf_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">confidence_report</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a> into a printable report.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -172,7 +171,7 @@ the levels indicated.</p>
 
 <dl class="py function">
 <dt id="f_test">
-<code class="sig-name descname">f_test</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ndata</span></em>, <em class="sig-param"><span class="n">nparams</span></em>, <em class="sig-param"><span class="n">chisquare</span></em>, <em class="sig-param"><span class="n">chisquare0</span></em>, <em class="sig-param"><span class="n">nfix</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">f_test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ndata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chisquare</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chisquare0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the standard F-test value for the probability that one fit is
 better than another.</p>
 </dd></dl>
@@ -434,7 +433,7 @@ and correlation are reasonable, and to look for pathological cases.  The
 of variable parameters by brute force.</p>
 <dl class="py function">
 <dt id="chi2_map">
-<code class="sig-name descname">chi2_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minimizer</span></em>, <em class="sig-param"><span class="n">xname</span></em>, <em class="sig-param"><span class="n">yname</span></em>, <em class="sig-param"><span class="n">nx</span><span class="o">=</span><span class="default_value">11</span></em>, <em class="sig-param"><span class="n">ny</span><span class="o">=</span><span class="default_value">11</span></em>, <em class="sig-param"><span class="n">sigmas</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">xrange</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">yrange</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">chi2_map</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a chi-square map for two parameters in a fit</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -538,7 +537,7 @@ correlation, or when nearing a final analysis.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>

@@ -6,15 +6,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.49 documentation</title>
-    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <title>13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting &#8212; xraylarch 0.9.51 documentation</title>
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
@@ -210,7 +209,7 @@ linear combinations of spectra from known compounds to understand the
 makeup of the unknown sample is an important analysis method.</p>
 <dl class="py function">
 <dt id="lincombo_fit">
-<code class="sig-name descname">lincombo_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">components</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lincombo_fit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrayname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'norm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_to_one</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fitting for a group</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -243,7 +242,7 @@ group to be fitted.</p></li>
 
 <dl class="py function">
 <dt id="lincombo_fitall">
-<code class="sig-name descname">lincombo_fitall</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">components</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">maxvals</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fitall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lincombo_fitall</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrayname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'norm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_to_one</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lincombo_fitall" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform linear combination fittings for a group with all combinations
 of 2 or more of the components given</p>
 <dl class="field-list simple">
@@ -277,7 +276,7 @@ how many independent components are needed to describe the variation in the
 collection.</p>
 <dl class="py function">
 <dt id="pca_train">
-<code class="sig-name descname">pca_train</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">groups</span></em>, <em class="sig-param"><span class="n">arrayname</span><span class="o">=</span><span class="default_value">'norm'</span></em>, <em class="sig-param"><span class="n">xmin</span><span class="o">=</span><span class="default_value">- np.inf</span></em>, <em class="sig-param"><span class="n">xmax</span><span class="o">=</span><span class="default_value">np.inf</span></em>, <em class="sig-param"><span class="n">sum_to_one</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_train" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pca_train</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">groups</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrayname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'norm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sum_to_one</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_train" title="Permalink to this definition">¶</a></dt>
 <dd><p>use a list of data groups to train a Principal Component Analysis model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -348,7 +347,7 @@ in data content and array names.</p></li>
 </div></blockquote>
 <dl class="py function">
 <dt id="pca_fit">
-<code class="sig-name descname">pca_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em>, <em class="sig-param"><span class="n">pca_model</span></em>, <em class="sig-param"><span class="n">ncomps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_larch</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_fit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pca_fit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pca_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_larch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pca_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit a spectrum from a group to a pca training model from pca_train()</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -541,7 +540,7 @@ by the variances seen in the main 4 components from the training set.</span><a c
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
   </body>
 </html>
