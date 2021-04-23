@@ -13,8 +13,10 @@ Downloading and Installation
 .. _xraydb:                        https://xraypy.github.io/XrayDB/
 .. _Larch Releases (github.com):   https://github.com/xraypy/xraylarch/releases
 .. _Larch Installer Scripts:       https://github.com/xraypy/xraylarch/tree/master/installers
+.. _GetLarch.sh:                   https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.sh
+.. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
-.. _source code (tar.gz):          https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51.tar.gz
+.. _source code (tar.gz):          https://github.com/xraypy/xraylarch/archive/refs/tags/0.9.51.tar.gz
 .. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-Windows-x86_64.exe
 .. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-MacOSX-x86_64.pkg
 .. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-0.9.51-Linux-x86_64.sh
@@ -41,26 +43,27 @@ Single-File Installers and Source Installation Files
 
 **Table of Larch Installers and Downloads**
 
-  +----------------------+------------------------------+-----------------------------+
-  | Operating System     |   Installer File             | Installation Notes          |
-  +======================+==============================+=============================+
-  | Windows (64 bit)     | `Larch for Windows`_         | :ref:`Notes <install-win>`  |
-  +----------------------+------------------------------+-----------------------------+
-  | Mac OSX (64 bit)     | `Larch for MacOSX`_          | :ref:`Notes <install-mac>`  |
-  +----------------------+------------------------------+-----------------------------+
-  | Linux (64 bit)       | `Larch for Linux`_           | :ref:`Notes <install-lin>`  |
-  +----------------------+------------------------------+-----------------------------+
-  | Source Code          | `source code (tar.gz)`_      | :ref:`Notes <install-src>`  |
-  +----------------------+------------------------------+-----------------------------+
-  | Docs and Examples    | `Larch Docs and Examples`_   | :ref:`Notes <install-exa>`  |
-  | (all systems)        |                              |                             |
-  +----------------------+------------------------------+-----------------------------+
+  +---------------------+------------------------+-----------------------------+-----------------------------+
+  | Operating System    | Binary Installer File  | Installation Script         | Installation Notes          |
+  +=====================+========================+=============================+=============================+
+  | Windows (64 bit)    | `Larch for Windows`_   | `GetLarch.bat`_             | :ref:`Notes <install-win>`  |
+  +---------------------+------------------------+-----------------------------+-----------------------------+
+  | Mac OSX (64 bit)    | `Larch for MacOSX`_    | `GetLarch.sh`_              | :ref:`Notes <install-mac>`  |
+  +---------------------+------------------------+-----------------------------+-----------------------------+
+  | Linux (64 bit)      | `Larch for Linux`_     | `GetLarch.sh`_              | :ref:`Notes <install-lin>`  |
+  +---------------------+------------------------+-----------------------------+-----------------------------+
+  | Source Code         |                        | `source code (tar.gz)`_     | :ref:`Notes <install-src>`  |
+  +---------------------+------------------------+-----------------------------+-----------------------------+
+  | Docs and Examples   |                        | `Larch Docs and Examples`_  | :ref:`Notes <install-exa>`  |
+  | (all systems)       |                        |                             |                             |
+  +---------------------+------------------------+-----------------------------+-----------------------------+
 
-Installers for Windows, MacOSX, and Linux, are available at `Larch Binary
-Installers`_.  These are fairly large (400 to 600 Mb files) self-contained
-files that will install a complete Anaconda Python environment with all of
-libraries needed by Larch.  Normally, this installation will be create a folder
-called `xraylarch` in your home folder -- see platform-specific notes below.
+Standalone binary installers for Windows, MacOSX, and Linux, are available at `Larch Binary Installers`_.  These are
+fairly large (400 to 600 Mb files) self-contained files that will install a complete Anaconda Python environment with
+all of libraries needed by Larch.  Normally, this installation will be create a folder called `xraylarch` in your
+home folder -- see platform-specific notes below.  The installation scripts listed above are much smaller and will
+download and install a complete Larch environment that will be essentially identical to the one from the binary
+installers.
 
 .. note::
 
@@ -82,15 +85,22 @@ X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
 Windows Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For Windows, download the `Larch for Windows`_ installer above and run it to install Larch.  This
-will be installed to ``C:\Users\<YourName>\xraylarch`` for most individual Windows installations or
-to ``C:\Users\<YourName>\AppData\Local\Continuum\xraylarch`` if your machine is part of a Windows
-Workgroup or Domain.
+For Windows, download the `Larch for Windows`_ binary installer above and run it to
+install Larch.  This will be installed to ``C:\Users\<YourName>\xraylarch`` for most
+individual Windows installations or to
+``C:\Users\<YourName>\AppData\Local\xraylarch`` if your machine is part of a
+Windows Workgroup or Domain.
 
 .. note::
 
    If you get prompted for an administrative password during the installation process, you
    should make sure you are installing to a folder that is writable by the user.
+
+
+Alternatively you can download the `GetLarch.bat`_ script, and run that by double-clicking
+on it. This will download, install, and configure the Larch package, with a result that
+is nearly identical to the binary installer.   
+
 
 .. _install-mac:
 
@@ -98,8 +108,8 @@ MacOS Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-For Mac OS, download the `Larch for MacOSX`_ installer above and click it to install Larch.  There
-are two important notes:
+For Mac OS, download the `Larch for MacOSX`_ package installer above and click it to
+install Larch.  There are two important notes:
 
 .. note::
 
@@ -114,6 +124,14 @@ are two important notes:
    get prompted for an Administrative password by the installer, go back and explicitly choose
    "Install only for me".
 
+Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
+session (Applications->Utilities->Terminal). This will download, install, and configure
+the Larch package, with a result that is nearly identical to the binary installer.  If you
+run into any problems with permissions or adminstrative privileges or "unauthorized
+application" with the package installer, running this installer script actually avoids all
+of those issues since your user account will simply be running the commands to write files
+to your home directory. 
+   
 
 .. _install-lin:
 
@@ -129,6 +147,10 @@ Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, 
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
 desktop with KDE and many other systems, but not with Gnome.  Clickable icons should also show up
 in the Applications selection of the "Start Menu" or Applications list.
+
+Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
+session. This will download, install, and configure the Larch package, with a result that
+is nearly identical to the binary installer. 
 
 
 .. _install-src:
