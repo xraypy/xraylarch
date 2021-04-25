@@ -5,8 +5,11 @@ if [ xx$PREFIX == 'xx' ]; then
     PREFIX=$(echo "$2/__NAME_LOWER__" | sed -e 's,//,/,g')
 fi
 
+echo " THIS IS POST INSTALL LINUX  PREFIX " $PREFIX
 # force install of packages from conda-forge
-$PREFIX/bin/conda install -yc conda-forge wxpython tomopy
+echo "### $PREFIX/bin/conda install -yc conda-forge wxpython tomopy "
+
+$PREFIX/bin/conda install --force-reinstall -yc conda-forge  wxpython tomopy
 
 # use pip to install some known-safe-for-pip packages
 $PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
