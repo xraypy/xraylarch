@@ -309,18 +309,47 @@ patterns.</p></li>
 </div>
 <div class="section" id="install-with-python">
 <h2><span class="section-number">1.3. </span>Install with Python<a class="headerlink" href="#install-with-python" title="Permalink to this headline">¶</a></h2>
-<p>For those familiar with Python, Larch can be installed into an existing
-Python environment. Larch requires Python 3.6 or higher.</p>
-<p>If you are starting out with Python and interested in Larch, using
-<a class="reference external" href="https://www.continuum.io/">Anaconda Python</a> for Larch is a good option as Anaconda provides and
-maintains a free Python distribution than contains many of the scientific
-Python packages needed for Larch.</p>
-<p>But, you can also install Larch in other Python environments. While the
-binary installers are convenient, they do install a full Python environment
-with many additional packages in a user directory on your machine.  In some
-cases, you may want to install Larch with a different version of Python,
-without every package, or in a system-wide location.  The instructions here
-should help you do that.</p>
+<p>For those familiar with Python, Larch can be installed into an existing Python
+environment. Larch requires Python 3.6 or higher.</p>
+<p>If you are starting out with Python and interested in Larch, using <a class="reference external" href="https://www.continuum.io/">Anaconda Python</a> for
+Larch is a good option as Anaconda provides and maintains a free Python distribution than
+contains many of the scientific Python packages needed for Larch.</p>
+<p>But, you can also install Larch in other Python environments. While the binary installers
+are convenient, they do install a full Python environment with many additional packages in
+a user directory on your machine.  In some cases, you may want to install Larch with a
+different version of Python, without every package, or in a system-wide location.  The
+instructions here should help you do that.</p>
+<p>For Linux users, if you have Python 3.7 installed on your system, you should be able to
+make a separate environment yourself on any operating system by opening a Terminal, moving
+to your home folder (or where ever you want to install Larch) and do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">xraylarth</span>
+</pre></div>
+</div>
+<p>Then you can do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">source</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">xraylarch</span><span class="o">/</span><span class="n">activate</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">xraylarch</span>
+</pre></div>
+</div>
+<p>That will install the basic library.  On Linux, binary installs for wxPython are not
+available on PyPI, and the above will try to compile wxPython from source (which requires
+many “developer” packages). For many Linux distributions, you can get these with one of:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">centos</span><span class="o">-</span><span class="mi">7</span> <span class="n">wxPython</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">centos</span><span class="o">-</span><span class="mi">8</span>  <span class="n">wxPython</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">debian</span><span class="o">-</span><span class="mi">10</span>  <span class="n">wxPython</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">fedora</span><span class="o">-</span><span class="mi">31</span>  <span class="n">wxPython</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">ubunto</span><span class="o">-</span><span class="mf">18.04</span>  <span class="n">wxPython</span>
+<span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">extras</span><span class="o">.</span><span class="n">wxpython</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wxPython4</span><span class="o">/</span><span class="n">extras</span><span class="o">/</span><span class="n">linux</span><span class="o">/</span><span class="n">gtk3</span><span class="o">/</span><span class="n">ubunto</span><span class="o">-</span><span class="mf">20.04</span>  <span class="n">wxPython</span>
+</pre></div>
+</div>
+<p>To install the other “extra” packages, you can do (or omit any packages you do not need):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">pyepics</span> <span class="n">epicsapps</span> <span class="n">pyFAI</span> <span class="n">PyCIFRW</span> <span class="n">numdifftools</span>
+</pre></div>
+</div>
+<p>If <cite>wxPython</cite> has been installed, then running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">larch</span> <span class="o">-</span><span class="n">m</span>
+</pre></div>
+</div>
+<p>will create a Larch folder on your desktop pointing this Python environment.</p>
 <div class="section" id="using-anaconda-python">
 <h3><span class="section-number">1.3.1. </span>Using Anaconda Python<a class="headerlink" href="#using-anaconda-python" title="Permalink to this headline">¶</a></h3>
 <p>By default, Anaconda Python installs into your own home folder (on Windows,
