@@ -210,25 +210,53 @@ None of these are strictly needed for using the Larch library for XAFS analysis.
 Install with Python
 ======================================
 
-For those familiar with Python, Larch can be installed into an existing
-Python environment. Larch requires Python 3.6 or higher.
+For those familiar with Python, Larch can be installed into an existing Python
+environment. Larch requires Python 3.6 or higher.
 
-If you are starting out with Python and interested in Larch, using
-`Anaconda Python`_ for Larch is a good option as Anaconda provides and
-maintains a free Python distribution than contains many of the scientific
-Python packages needed for Larch.
+If you are starting out with Python and interested in Larch, using `Anaconda Python`_ for
+Larch is a good option as Anaconda provides and maintains a free Python distribution than
+contains many of the scientific Python packages needed for Larch.
 
-But, you can also install Larch in other Python environments. While the
-binary installers are convenient, they do install a full Python environment
-with many additional packages in a user directory on your machine.  In some
-cases, you may want to install Larch with a different version of Python,
-without every package, or in a system-wide location.  The instructions here
-should help you do that.
+But, you can also install Larch in other Python environments. While the binary installers
+are convenient, they do install a full Python environment with many additional packages in
+a user directory on your machine.  In some cases, you may want to install Larch with a
+different version of Python, without every package, or in a system-wide location.  The
+instructions here should help you do that.
+
+For Linux users, if you have Python 3.7 installed on your system, you should be able to
+make a separate environment yourself on any operating system by opening a Terminal, moving
+to your home folder (or where ever you want to install Larch) and do::
+
+   > python3 -m venv xraylarth
+
+Then you can do::
+  
+   > source/bin/xraylarch/activate
+   > pip install xraylarch
+
+That will install the basic library.  On Linux, binary installs for wxPython are not
+available on PyPI, and the above will try to compile wxPython from source (which requires
+many "developer" packages). For many Linux distributions, you can get these with one of::
+
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/centos-7 wxPython
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/centos-8  wxPython
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-10  wxPython
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/fedora-31  wxPython
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubunto-18.04  wxPython
+   > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubunto-20.04  wxPython
 
 
+To install the other "extra" packages, you can do (or omit any packages you do not need)::
 
+   > pip install pyepics epicsapps pyFAI PyCIFRW numdifftools
 
+If `wxPython` has been installed, then running::
 
+   > larch -m
+
+will create a Larch folder on your desktop pointing this Python environment.
+
+    
 Using Anaconda Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
