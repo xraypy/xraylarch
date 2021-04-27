@@ -986,7 +986,7 @@ class XASFrame(wx.Frame):
                 n = 0
                 while n < 99000:
                     n += 1
-                    gname = fix_varname("{:s}_{%d}".format(gname, n))
+                    gname = fix_varname("{:s}_{:d}".format(gname, n))
             
             cur_panel.skip_plotting = (scan == scanlist[-1])
             displayname = "%s_scan%s" % (fname, scan)
