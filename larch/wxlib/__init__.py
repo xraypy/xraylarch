@@ -57,7 +57,7 @@ if HAS_WXPYTHON:
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame
     from .gui_utils import gcd, databrowser, fileprompt, wx_update
-
+    from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
     from .periodictable import PeriodicTablePanel
 
