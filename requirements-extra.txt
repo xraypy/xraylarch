@@ -1,21 +1,22 @@
 # List of larch extra dependencies to enable extra features.
 # Install with :
 #   pip install -r ./requirements-extra.txt
+# Many of these will be installed by default when running
+#   larch -m
 wxpython>=4.0.4
 wxutils>=0.2.3
 wxmplot>=0.9.43
 pyepics>=3.4.1
-hdf5plugin
+epicsapps
+fabio
+pyfai
+pycifrw
+psycopg2-binary
 pytest
 sphinx
 numpydoc
 sphinxcontrib-bibtex
 sphinxcontrib-argdoc
-fabio
-pyfai
-psutil
-pycifrw
-psycopg2
 PyQt5
 pyqtwebengine
 pyqtgraph

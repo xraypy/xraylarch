@@ -23,3 +23,6 @@ uncertainties>=3.1
 pyshortcuts>=1.7.2
 xraydb>=4.4
 silx>=0.12
+hdf5plugin
+numdifftools
+psutil
