@@ -1,20 +1,21 @@
 # List of larch extra dependencies to enable extra features.
 # Install with :
 #   pip install -r ./requirements-extra.txt
-#  or
-#   conda config --env --append channels conda-forge 
-#   conda install --file ./requirements-extra.txt
 wxpython>=4.0.4
 wxutils>=0.2.3
 wxmplot>=0.9.43
 pyepics>=3.4.1
+hdf5plugin
+pytest
+sphinx
+numpydoc
+sphinxcontrib-bibtex
+sphinxcontrib-argdoc
 fabio
 pyfai
 psutil
 pycifrw
 psycopg2
-PyQt5==5.14
-pyqtwebengine==5.14
-pyqt
+PyQt5
+pyqtwebengine
 pyqtgraph
-qtpy
