@@ -318,8 +318,7 @@ class DataSourceSpecH5(object):
 
         self.fname = fname
         self._scanfile = None
-        if self.fname is not None:
-            self._init_source_file()
+        self._scans = None
         self._scan_n = None
         self._scan_str = None
 
@@ -348,14 +347,18 @@ class DataSourceSpecH5(object):
             self._logger.error("'urls_fmt' not understood")
         self.set_group()
 
+        if self.fname is not None:
+            self._init_source_file()
+
     def _init_source_file(self):
         """init source file object"""
         #: source file object (h5py-like)
         try:
             self._scanfile = silx_open(self.fname)
+            self._scans = self.get_scans()
+            self.set_scan(self._scans[0][0]) #set the first scan at init
         except OSError:
             self._logger.error(f"cannot open {self.fname}")
-            self._scanfile = None
 
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
