@@ -1,7 +1,7 @@
 @echo off
 
 set prefix=%USERPROFILE%\xraylarch
-  
+
 set condafile=Miniconda3-latest-Windows-x86_64.exe
 
 if not exist %~dp0%condafile% (
@@ -25,7 +25,7 @@ echo ## Installing wxpython and tomopy from conda-forge
 call %prefix%\condabin\conda install -yc conda-forge wxpython tomopy
 
 echo ## Installing xraylarch and dependencies from PyPI
-call %prefix%\Scripts\pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
+call %prefix%\Scripts\pip install xraylarch
 
 echo ## Creating desktop shortcuts
 call %prefix%\Scripts\larch -m
@@ -38,7 +38,3 @@ echo ## To use from a terminal or command-line, you may want to add
 echo ##     %prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts
 echo ## to your PATH environment, such as
 echo ##     set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
-
-
-
-

@@ -112,8 +112,8 @@ $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs | tee -
 
 ## pip install of dependencies and Larch
 echo "##Installing xraylarch and dependencies from PyPI"  | tee -a $logfile
-echo "#> $prefix/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools"| tee -a $logfile
-$prefix/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools | tee -a $logfile
+echo "#> $prefix/bin/pip install xraylarch"| tee -a $logfile
+$prefix/bin/pip install xraylarch | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"

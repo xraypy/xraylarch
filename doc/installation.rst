@@ -99,7 +99,7 @@ Windows Workgroup or Domain.
 
 Alternatively you can download the `GetLarch.bat`_ script, and run that by double-clicking
 on it. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer.   
+is nearly identical to the binary installer.
 
 
 .. _install-mac:
@@ -130,8 +130,8 @@ the Larch package, with a result that is nearly identical to the binary installe
 run into any problems with permissions or adminstrative privileges or "unauthorized
 application" with the package installer, running this installer script actually avoids all
 of those issues since your user account will simply be running the commands to write files
-to your home directory. 
-   
+to your home directory.
+
 
 .. _install-lin:
 
@@ -150,7 +150,7 @@ in the Applications selection of the "Start Menu" or Applications list.
 
 Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
 session. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer. 
+is nearly identical to the binary installer.
 
 
 .. _install-src:
@@ -167,28 +167,28 @@ and modify them for your needs (or maybe suggest ways we could maintain
 that for others to use too).  In simple bash, that might look like this:
 
 .. code:: bash
-	  
+
     #!/usr/bin/sh
     prefix=$HOME/xraylarch
     condafile=Miniconda3-latest-$uname-x86_64.sh
-    condaforge_pkgs="wxpython tomopy"    
+    condaforge_pkgs="wxpython tomopy"
     uname=`uname`
     if [ $uname == Darwin ]; then
         uname=MacOSX
-        condaforge_pkgs="wxpython tomopy python.app"    
+        condaforge_pkgs="wxpython tomopy python.app"
     fi
     /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile
     sh ./$condafile -b -p $prefix
-    $prefix/bin/conda update -y --all 
+    $prefix/bin/conda update -y --all
     $prefix/bin/conda install --force-reinstall -yc conda-forge $condaforge_pkgs
-    $prefix/bin/pip install xraylarch pyepics epicsapps pyFAI PyCIFRW numdifftools 
+    $prefix/bin/pip install xraylarch
 
 Note that this script will install several extra packages that are not
 strictly necessary for using Larch, but do add some useful and/or
 convenient functionality.  That is, for any Python (version 3.6 or higher):
 
 .. code:: bash
-	  
+
    pip install xraylarch
 
 will install a functional version of the Larch library, pulling in any
@@ -203,7 +203,7 @@ Some of the *extra* packages that are installed here are:
    * `pyepics`, `epicsapps`: needed to interact with Epics control system.
    * `pyFAI`: needed for integrating 2D X-ray Diffraction images to 1D XRD
      patterns.
-     
+
 None of these are strictly needed for using the Larch library for XAFS analysis.
 
 
@@ -230,7 +230,7 @@ to your home folder (or where ever you want to install Larch) and do::
    > python3 -m venv xraylarth
 
 Then you can do::
-  
+
    > source/bin/xraylarch/activate
    > pip install xraylarch
 
@@ -246,17 +246,15 @@ many "developer" packages). For many Linux distributions, you can get these with
    > pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubunto-20.04  wxPython
 
 
-To install the other "extra" packages, you can do (or omit any packages you do not need)::
-
-   > pip install pyepics epicsapps pyFAI PyCIFRW numdifftools
-
 If `wxPython` has been installed, then running::
 
    > larch -m
 
-will create a Larch folder on your desktop pointing this Python environment.
+will create a Larch folder on your desktop pointing this Python
+environment, and may install other packages needed for using the wxPython
+applications.
 
-    
+
 Using Anaconda Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
