@@ -276,6 +276,7 @@ def is_specfile(filename):
         topbytes = fh.read(10)
     scans = None
     if (topbytes.startswith(b'\x89HDF\r') or # HDF5
+        topbytes.startswith(b'#S ') or       # partial specscan
         topbytes.startswith(b'#F ')):        # full specscan
         try:
             scans = DataSourceSpecH5(filename).get_scans()
