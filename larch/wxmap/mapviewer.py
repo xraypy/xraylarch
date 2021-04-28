@@ -4,8 +4,6 @@ GUI for displaying maps from HDF5 files
 
 """
 
-VERSION = '10 (14-March-2018)'
-
 import os
 import platform
 import sys
@@ -15,9 +13,10 @@ import socket
 import datetime
 from functools import partial
 from threading import Thread
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 import wx
+from wx.adv import AboutBox, AboutDialogInfo
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 
@@ -42,13 +41,15 @@ import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
-                         Choice, Check, GridPanel, FileSave, HLine, flatnotebook)
+                         Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
+                         HLine, OkCancel, LEFT, LarchUpdaterDialog)
 from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
 from larch.site_config import icondir
 
 from ..xrd import lambda_from_E, xrd1d, save1D, calculate_xvalues
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup, DEFAULT_XRAY_ENERGY
+from ..apps import check_larchversion, update_larch
 from ..epics import pv_fullname
 from ..wxlib.xrfdisplay import XRFDisplayFrame
 
@@ -1776,8 +1777,10 @@ class MapViewerFrame(wx.Frame):
         #self.Bind(wx.EVT_MENU, self.onShow1DXRD, id=cmenu.Id)
 
         hmenu = wx.Menu()
-        cmenu = hmenu.Append(-1, '&About', 'About GSECARS MapViewer')
-        self.Bind(wx.EVT_MENU, self.onAbout, id=cmenu.Id)
+        MenuItem(self, hmenu, 'About GSE XRM MapViewer', 'About GSE XRM MapViewer',
+                 self.onAbout)
+        MenuItem(self, hmenu, 'Check for Updates', 'Check for Updates',
+                 self.onCheckforUpdates)
 
         self.menubar.Append(fmenu, '&File')
         self.menubar.Append(rmenu, '&ROIs')
@@ -1810,22 +1813,32 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onAbout(self, event=None):
-        info = wx.AboutDialogInfo()
-        info.SetName('GSECARS X-ray Microprobe Map Viewer')
-        desc = 'Using X-ray Larch version: %s' % larch.version.__version__
-        info.SetDescription(desc)
-        info.SetVersion(VERSION)
-        info.AddDeveloper('Matt Newville: newville at cars.uchicago.edu')
-        dlg = wx.AboutBox(info)
+        info = AboutDialogInfo()
+        info.SetName('GSE XRM MapViewer')
+        info.SetDescription('X-ray Microprobe Mapping Data Visualization and Analysis')
+        info.SetVersion(larch.version.__version__)
+        info.AddDeveloper('Matthew Newville: newville at cars.uchicago.edu')
+        dlg = AboutBox(info)
 
+    def onCheckforUpdates(self, event=None):
+        dlg = LarchUpdaterDialog(self, caller='GSE MapViewer')
+        dlg.Raise()
+        dlg.SetWindowStyle(wx.STAY_ON_TOP)
+        res = dlg.GetResponse()
+        dlg.Destroy()
+        if res.ok and res.run_updates:
+            from larch.apps import update_larch
+            update_larch()
+            self.onClose(evt=event, prompt=False)
 
-    def onClose(self, evt):
-        dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
-                               wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+    def onClose(self, evt=None, prompt=True):
+        if prompt:
+            dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
+                                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
 
-        ret = dlg.ShowModal()
-        if ret != wx.ID_YES:
-            return
+            ret = dlg.ShowModal()
+            if ret != wx.ID_YES:
+                return
 
         save_workdir('gsemap.dat')
         for xrmfile in self.filemap.values():

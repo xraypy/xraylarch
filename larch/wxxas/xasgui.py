@@ -16,6 +16,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 import wx.lib.mixins.inspection
+from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
@@ -36,7 +37,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SetTip, get_icon, SimpleText, pack, Button, Popup,
                          HLine, FileSave, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         flatnotebook)
+                         flatnotebook, LarchUpdaterDialog)
 
 from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
@@ -636,6 +637,13 @@ class XASFrame(wx.Frame):
         self.menubar.Append(data_menu, "Data")
         self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
 
+        hmenu = wx.Menu()
+        MenuItem(self, hmenu, 'About XAS Viewer', 'About XAS Viewer',
+                 self.onAbout)
+        MenuItem(self, hmenu, 'Check for Updates', 'Check for Updates',
+                 self.onCheckforUpdates)
+
+        self.menubar.Append(hmenu, '&Help')
         # self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
@@ -864,26 +872,40 @@ class XASFrame(wx.Frame):
         app = wx.GetApp()
         app.ShowInspectionTool()
 
-    def onAbout(self,evt):
-        dlg = wx.MessageDialog(self, self._about,
-                               "About Larch XAS GUI",
-                               wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
 
-    def onClose(self, event):
-        dlg = QuitDialog(self)
+    def onAbout(self, event=None):
+        info = AboutDialogInfo()
+        info.SetName('XAS Viewer')
+        info.SetDescription('X-ray Absorption Visualization and Analysis')
+        info.SetVersion('Larch %s ' % larch.version.__version__)
+        info.AddDeveloper('Matthew Newville: newville at cars.uchicago.edu')
+        dlg = AboutBox(info)
+
+    def onCheckforUpdates(self, event=None):
+        dlg = LarchUpdaterDialog(self, caller='XAS Viewer')
         dlg.Raise()
         dlg.SetWindowStyle(wx.STAY_ON_TOP)
         res = dlg.GetResponse()
         dlg.Destroy()
-        if not res.ok:
-            return
+        if res.ok and res.run_updates:
+            from larch.apps import update_larch
+            update_larch()
+            self.onClose(event=event, prompt=False)
 
-        if res.save:
-            groups = [gname for gname in self.controller.file_groups]
-            if len(groups) > 0:
-                self.save_athena_project(groups[0], groups, prompt=True)
+    def onClose(self, event=None, prompt=True):
+        if prompt:
+            dlg = QuitDialog(self)
+            dlg.Raise()
+            dlg.SetWindowStyle(wx.STAY_ON_TOP)
+            res = dlg.GetResponse()
+            dlg.Destroy()
+            if not res.ok:
+                return
+
+            if res.save:
+                groups = [gname for gname in self.controller.file_groups]
+                if len(groups) > 0:
+                    self.save_athena_project(groups[0], groups, prompt=True)
 
         self.controller.save_config()
         wx.CallAfter(self.controller.close_all_displays)
@@ -987,7 +1009,7 @@ class XASFrame(wx.Frame):
                 while n < 99000:
                     n += 1
                     gname = fix_varname("{:s}_{:d}".format(gname, n))
-            
+
             cur_panel.skip_plotting = (scan == scanlist[-1])
             displayname = "%s_scan%s" % (fname, scan)
             if first_group is None:
