@@ -20,11 +20,12 @@ warnings.simplefilter('ignore')
 if (sys.version_info.major < 3 or sys.version_info.minor < 5):
     raise EnvironmentError('larch requires python 3.6 or higher')
 
+logger = logging.getLogger()
+logger.level = logging.ERROR + 1
+
 # note: for HDF5 File / Filter Plugins to be useful, the
 # hdf5plugin module needs to be imported before h5py
 try:
-    l = logging.getLogger("hdf5plugin")
-    l.level = logging.ERROR
     import hdf5plugin
 except ImportError:
     pass
@@ -44,7 +45,7 @@ import lmfit
 
 from .version import __date__, __version__
 from .symboltable import Group, isgroup
-from .larchlib import (ValidateLarchPlugin, Make_CallArgs, enable_plugins,
+from .larchlib import (ValidateLarchPlugin, Make_CallArgs,
                        parse_group_args, isNamedClass)
 
 from .site_config import show_site_config
@@ -58,11 +59,9 @@ from .fitting import Parameter, isParameter, param_value
 
 from . import shell
 
+logger.level = logging.INFO
+
 # from . import apps import (run_gse_mapviewer, run_gse_dtcorrect, run_xas_viewer,
 #                    run_xrfdisplay, run_xrfdisplay_epics, run_xrd1d_viewer,
 #                    run_xrd2d_viewer, run_gse_dtcorrect, run_feff8l,
 #                    run_larch_server, run_larch)
-
-enable_plugins()
-
-is_from_python = True
