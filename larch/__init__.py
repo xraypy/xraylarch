@@ -5,6 +5,8 @@
 """
 import os
 import sys
+import logging
+
 # note: may need to set CONDA env *before* loading numpy!
 if os.name == 'nt':
     os.environ['CONDA_DLL_SEARCH_MODIFICATION_ENABLE'] = '1'
@@ -21,6 +23,8 @@ if (sys.version_info.major < 3 or sys.version_info.minor < 5):
 # note: for HDF5 File / Filter Plugins to be useful, the
 # hdf5plugin module needs to be imported before h5py
 try:
+    l = logging.getLogger("hdf5plugin")
+    l.level = logging.ERROR
     import hdf5plugin
 except ImportError:
     pass
