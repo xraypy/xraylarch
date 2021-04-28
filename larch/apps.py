@@ -4,7 +4,12 @@ import numpy
 import time
 from argparse import ArgumentParser
 import pkg_resources
+from collections import namedtuple
 from subprocess import check_call
+from packaging.version import parse as ver_parse
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from pyshortcuts import make_shortcut, ico_ext
 
@@ -30,14 +35,43 @@ call %~dp0%activate base
 
 """
 
+VersionStatus = namedtuple('VersionStatus', ('update_available', 'local_version', 'remote_version'))
+def check_larchversion():
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    req = requests.get('https://raw.githubusercontent.com/xraypy/xraylarch/gh-pages/version.txt',
+                       verify=False, timeout=5)
+    remote_version = '0.9.00'
+    if req.status_code == 200:
+        try:
+            for line in req.text.split('\n'):
+                line = line.strip()
+                if not line.startswith('#'):
+                    remote_version = line
+                    break
+        except:
+            pass
+    return VersionStatus(ver_parse(remote_version) > ver_parse(__version__),
+                         __version__, remote_version)
+
+update_message = """
+================== Update Available ==================
+Larch version {remote_version:s} is available. Your version is currently {local_version:s}.
+To update the latest version run
+   larch -u
+from a Command Window or Terminal.
+======================================================
+"""
+
+
 def install_extras(package_set):
     all_packages = set([pkg.key for pkg in pkg_resources.working_set])
     missing = package_set - all_packages
     if missing:
         command = [sys.executable, '-m', 'pip', 'install', *missing]
-        print("running: ", ' '.join(command))
         check_call(command)
 
+def update_larch():
+    check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'xraylarch'])
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
@@ -130,7 +164,6 @@ def make_desktop_shortcuts():
     """make desktop shortcuts for Larch apps"""
     for app in APPS:
         app.create_shortcut()
-
 
 def make_cli(description='run larch program', filedesc='data file'):
     usage = "usage: %prog [options] file"
@@ -247,6 +280,9 @@ def run_larch():
     parser.add_argument("-m", "--makeicons", dest="makeicons", action="store_true",
                         default=False, help="create desktop icons")
 
+    parser.add_argument('-u', '--update', dest='update', action='store_true',
+                        default=False, help='update larch to the latest version')
+
     parser.add_argument("-r", "--remote", dest="server_mode", action="store_true",
                         default=False, help="run in remote server mode")
 
@@ -259,6 +295,10 @@ def run_larch():
     args = parser.parse_args()
     if args.version:
         print(make_banner())
+        vinfo = check_larchversion()
+        if vinfo.update_available:
+            print(update_message.format(**vinfo._asdict()))
+
         return
 
     with_wx = HAS_WXPYTHON and (not args.nowx)
@@ -269,10 +309,18 @@ def run_larch():
         make_desktop_shortcuts()
         return
 
+    # run updates
+    if args.update:
+        update_larch()
+        return
+
     # run in server mode
     if args.server_mode:
         if with_wx:
             use_mpl_wxagg()
+        vinfo = check_larchversion()
+        if vinfo.update_available:
+            print(update_message.format(**vinfo._asdict()))
 
         from larch.xmlrpc_server import LarchServer
         server = LarchServer(host='localhost', port=int(args.port))
@@ -294,6 +342,9 @@ def run_larch():
             install_extras(extras_wxgraph)
         install_extras(extras_epics)
         install_extras(extras_xrd)
+        vinfo = check_larchversion()
+        if vinfo.update_available:
+            print(update_message.format(**vinfo._asdict()))
         cli = shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if args.scripts is not None:
