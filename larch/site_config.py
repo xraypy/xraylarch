@@ -15,6 +15,15 @@ from .utils import uname, get_homedir, nativepath
 from .version import __version__ as larch_version
 
 
+# lists of recommended packages that are not installed by default
+# but may be installed if several of the larch apps are run.
+extras_wxgraph = set(['wxutils', 'wxmplot'])
+extras_epics = set(['pyepics', 'epicsapps', 'psycopg2-binary'])
+extras_xrd   = set(['fabio', 'pyfai', 'pycifrw'])
+extras_doc   = set(['pytest', 'sphinx', 'numpydoc',
+                    'sphinxcontrib-bibtex', 'sphinxcontrib-argdoc'])
+extras_qtgraph = set(['pyqt5', 'pyqtwebengine', 'pyqtgraph'])
+
 def pjoin(*args):
     return nativepath(join(*args))
 
