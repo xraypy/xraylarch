@@ -921,8 +921,6 @@ class Interpreter:
             thismod = st_sys.modules[name]
         elif name in sys.modules:
             thismod = sys.modules[name]
-        if name == 'larch':
-            thismod.is_from_python = False
         if thismod is None or do_reload:
             # first look for "name.lar"
             islarch = False
