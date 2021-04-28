@@ -3,10 +3,14 @@ import sys
 import numpy
 import time
 from argparse import ArgumentParser
+import pkg_resources
+from subprocess import check_call
 
 from pyshortcuts import make_shortcut, ico_ext
 
 from .site_config import icondir, home_dir, uname
+from .site_config import (extras_wxgraph, extras_qtgraph,
+                          extras_epics, extras_xrd, extras_doc)
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 from .version import __version__, __date__, make_banner
@@ -25,6 +29,15 @@ call %~dp0%activate base
 %~dp0%*
 
 """
+
+def install_extras(package_set):
+    all_packages = set([pkg.key for pkg in pkg_resources.working_set])
+    missing = package_set - all_packages
+    if missing:
+        command = [sys.executable, '-m', 'pip', 'install', *missing]
+        print("running: ", ' '.join(command))
+        check_call(command)
+
 
 def use_mpl_wxagg():
     """import matplotlib, set backend to wxAgg"""
@@ -130,6 +143,9 @@ def make_cli(description='run larch program', filedesc='data file'):
 def run_gse_mapviewer():
     """Mapviewer"""
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
+    install_extras(extras_epics)
+    install_extras(extras_xrd)
     from larch.wxmap import MapViewer
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
@@ -138,12 +154,15 @@ def run_gse_mapviewer():
 def run_gse_dtcorrect():
     """GSE DT Correct """
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
+    install_extras(extras_epics)
     from larch.wxmap import DTViewer
     DTViewer().MainLoop()
 
 def run_xas_viewer():
     """XAS Viewer """
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
     from larch.wxxas import XASViewer
     kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program",
                       filedesc='XAS data file or Project File (.dat, .prj)')
@@ -152,6 +171,8 @@ def run_xas_viewer():
 def run_xrfdisplay():
     """ XRF Display"""
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
+    install_extras(extras_epics)
     from larch.wxlib.xrfdisplay import XRFApp
     kwargs = make_cli(description="Larch's XRF Viewer and Analysis Program",
                     filedesc='MCA File (.mca)')
@@ -160,6 +181,8 @@ def run_xrfdisplay():
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
+    install_extras(extras_epics)
     from larch.epics import EpicsXRFApp
     EpicsXRFApp().MainLoop()
 
@@ -172,6 +195,9 @@ def run_xrd1d_viewer():
 def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
     use_mpl_wxagg()
+    install_extras(extras_wxgraph)
+    install_extras(extras_epics)
+    install_extras(extras_xrd)
     from larch.wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
@@ -239,6 +265,7 @@ def run_larch():
 
     # create desktop icons
     if args.makeicons:
+        install_extras(extras_wxgraph)
         make_desktop_shortcuts()
         return
 
@@ -254,6 +281,9 @@ def run_larch():
     # run wx Larch GUI
     elif args.wxgui:
         use_mpl_wxagg()
+        install_extras(extras_wxgraph)
+        install_extras(extras_epics)
+        install_extras(extras_xrd)
         from larch.wxlib.larchframe import LarchApp
         LarchApp().MainLoop()
 
@@ -261,6 +291,9 @@ def run_larch():
     else:
         if with_wx:
             use_mpl_wxagg()
+            install_extras(extras_wxgraph)
+        install_extras(extras_epics)
+        install_extras(extras_xrd)
         cli = shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if args.scripts is not None:
