@@ -1005,10 +1005,11 @@ class XASFrame(wx.Frame):
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
             if hasattr(symtable, gname):
-                n = 0
-                while n < 99000:
-                    n += 1
-                    gname = fix_varname("{:s}_{:d}".format(gname, n))
+                count, tname = 0, gname
+                while count < 1e7 and self.larch.symtable.has_group(tname):
+                    tname = gname + make_hashkey(length=7)
+                    count += 1
+                gname = tname
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
             displayname = "%s_scan%s" % (fname, scan)
