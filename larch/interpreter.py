@@ -134,6 +134,9 @@ class Interpreter:
         for fname, sym in list(builtins.numpy_renames.items()):
             setattr(mathgroup, fname, getattr(numpy, sym))
 
+        for name, value in builtins.constants.items():
+            setattr(mathgroup, name, value)
+
         core_groups = ['_main', '_sys', '_builtin', '_math']
         for groupname, entries in builtins.init_builtins.items():
             if groupname not in core_groups:

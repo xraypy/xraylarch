@@ -26,6 +26,7 @@ from . import xrf
 from . import xafs
 from . import xrd
 from . import xrmmap
+from .utils import physical_constants
 
 __core_modules = [math, fitting, io, xray, xrf, xafs, xrd, xrmmap]
 
@@ -121,14 +122,14 @@ from_numpy = ('ComplexWarning', 'Inf', 'NAN', 'abs', 'absolute', 'add',
               'nan', 'nan_to_num', 'nanargmax', 'nanargmin', 'nanmax',
               'nanmin', 'nansum', 'nbytes', 'ndarray', 'ndenumerate',
               'ndfromtxt', 'ndim', 'ndindex', 'negative', 'newaxis',
-              'newbuffer', 'nextafter', 'nonzero', 'not_equal', 
+              'newbuffer', 'nextafter', 'nonzero', 'not_equal',
                'number', 'obj2sctype', 'object0',
               'object_', 'ogrid', 'ones', 'ones_like', 'outer', 'packbits',
-              'percentile', 'pi', 'piecewise', 'pkgload', 'place', 
+              'percentile', 'pi', 'piecewise', 'pkgload', 'place',
               'poly', 'poly1d', 'polyadd', 'polyder', 'polydiv', 'polyfit',
               'polyint', 'polymul', 'polynomial', 'polysub', 'polyval',
               'power', 'prod', 'product', 'ptp', 'put', 'putmask',
-              'rad2deg', 'radians', 'random', 'rank', 
+              'rad2deg', 'radians', 'random', 'rank',
               'ravel', 'real', 'real_if_close', 'rec', 'recarray',
               'recfromcsv', 'recfromtxt', 'reciprocal', 'record',
               'remainder', 'repeat', 'require', 'reshape', 'resize',
@@ -156,6 +157,11 @@ numpy_renames = {'ln':'log', 'asin':'arcsin', 'acos':'arccos',
                  'atan':'arctan', 'atan2':'arctan2', 'atanh':'arctanh',
                  'acosh':'arccosh', 'asinh':'arcsinh', 'npy_save': 'save',
                  'npy_load': 'load', 'npy_loads': 'loads', 'npy_copy': 'copy'}
+
+constants = {}
+for pconst_name in ('PLANCK_HC', 'AVOGADRO', 'AMU',
+                    'R_ELECTRON_ANG','DEG2RAD', 'RAD2DEG'):
+    constants[pconst_name] = getattr(physical_constants, pconst_name)
 
 ##
 ## More builtin commands, to set up the larch language:
@@ -547,7 +553,7 @@ _main_builtins.update(show_builtins)
 init_builtins = dict(_builtin=_main_builtins)
 
 # functions to run (with signature fcn(_larch)) at interpreter startup
-init_funcs = [init_display_group] 
+init_funcs = [init_display_group]
 
 # group/classes to register for save-restore
 init_groups = []
