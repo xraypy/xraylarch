@@ -6,6 +6,7 @@ from numpy import pi
 
 RAD2DEG  = 180.0/pi
 DEG2RAD  = pi/180.0
+PI = pi
 
 # cross-section unit
 BARN     = 1.e-24   # cm^2

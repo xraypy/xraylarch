@@ -16,12 +16,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          plotlabels)
 
 from larch.xafs.xafsutils  import etok, ktoe
-
-PI = np.pi
-DEG2RAD  = PI/180.0
-
-# Planck constant over 2 pi times c: 197.3269718 (0.0000044) MeV fm
-PLANCK_HC = 1973.269718 * 2 * PI # hc in eV * Ang = 12398.4193
+from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
 
 Plot_Choices = OrderedDict((('Normalized', 'norm'),
                             ('Derivative', 'dmude')))
