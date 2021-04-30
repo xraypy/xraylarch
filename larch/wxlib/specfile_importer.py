@@ -656,7 +656,6 @@ class SpecfileImporter(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
         scanlist = []
-        print(" On OK")
         for s in self.scanlist.GetCheckedStrings():
             words = [s.strip() for s in s.split(':')]
             scanlist.append(words[0])
