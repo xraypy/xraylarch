@@ -699,7 +699,7 @@ class SpecfileImporter(wx.Frame) :
             buff.append("{group}.%s = '%s'" % (attr, val))
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
-        escale = 1000.0 if en_units == 'keV' else escale = 1.0
+        escale = 1000.0 if en_units == 'keV' else 1.0
         buff.append(f"{{group}}.xdat = {escale:.1f}*{expr:s}")
         for aname in ('ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
