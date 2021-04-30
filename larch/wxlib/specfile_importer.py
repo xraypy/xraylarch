@@ -36,8 +36,8 @@ ARR_OPS = ('+', '-', '*', '/')
 YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
-DATATYPES = ('raw', 'xas')
-ENUNITS_TYPES = ('eV', 'keV', 'not energy')
+XDATATYPES = ('raw', 'xas')
+ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 class AddColumnsFrame(wx.Frame):
     """Add Column Labels for a larch grouop"""
@@ -358,7 +358,7 @@ class SpecfileImporter(wx.Frame) :
 
         self.read_ok_cb = read_ok_cb
         self.array_sel = {'scan': '',
-                          'xpop': '',  'xarr': None,
+                          'xarr': None,
                           'ypop': '',  'yop': '/',
                           'yarr1': None, 'yarr2': None}
 
@@ -429,28 +429,30 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_arr = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr.Disable()
 
-        self.xpop = Choice(panel, choices=XPRE_OPS, action=self.onUpdate, size=(120, -1))
-        self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(120, -1))
+        self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(150, -1))
 
-        self.datatype = Choice(panel, choices=DATATYPES, action=self.onUpdate, size=(120, -1))
+        self.datatype = Choice(panel, choices=XDATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
-        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onUpdate, size=(120, -1))
+        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onUpdate, size=(150, -1))
         self.en_units.SetSelection(0)
 
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
 
-        self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(120, -1))
+        self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
         self.yerr_op.SetSelection(0)
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        ylab = SimpleText(panel, 'Y: ')
-        xlab = SimpleText(panel, 'X: ')
-        yerr_lab = SimpleText(panel, 'Yerror: ')
+        xlab = SimpleText(panel, ' X array: ')
+        ylab = SimpleText(panel, ' Y array: ')
+        units_lab = SimpleText(panel, '  Units:  ')
+        yerr_lab = SimpleText(panel, ' Yerror: ')
+        dtype_lab = SimpleText(panel, ' Data Type: ')
+        val_lab = SimpleText(panel, 'Value:')
+
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
-        self.xpop.SetStringSelection(self.array_sel['xpop'])
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
         if '(' in self.array_sel['ypop']:
@@ -475,43 +477,42 @@ class SpecfileImporter(wx.Frame) :
         # sizer.Add(self.wid_scan, (ir, 1), (1, 3), LEFT, 0)
 
         ir += 1
-        sizer.Add(self.wid_scantitle,  (ir, 0), (1, 2), LEFT, 0)
-        sizer.Add(self.wid_scantime,   (ir, 2), (1, 2), LEFT, 0)
+        sizer.Add(self.wid_scantitle,  (ir, 0), (1, 3), LEFT, 0)
+        sizer.Add(self.wid_scantime,   (ir, 3), (1, 2), LEFT, 0)
 
 
         ir += 1
         sizer.Add(xlab,      (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.xpop, (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.xarr, (ir, 2), (1, 1), CEN, 0)
+        sizer.Add(self.xarr,  (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(units_lab,     (ir, 2), (1, 2), RIGHT, 0)
+        sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)
 
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.datatype,                    (ir, 1), (1, 1), LEFT, 0)
-        sizer.Add(SimpleText(panel, 'Energy Units:'), (ir, 2), (1, 1), LEFT, 0)
-        sizer.Add(self.en_units,                     (ir, 3), (1, 2), LEFT, 0)
 
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.ypop,  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.yarr1, (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.yop,   (ir, 3), (1, 1), CEN, 0)
-        sizer.Add(self.yarr2, (ir, 4), (1, 1), CEN, 0)
+        sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(self.yarr1, (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.yop,   (ir, 3), (1, 1), LEFT, 0)
+        sizer.Add(self.yarr2, (ir, 4), (1, 1), LEFT, 0)
 
         ir += 1
         sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.yerr_op,  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.yerr_arr, (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
-        sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
+        sizer.Add(self.yerr_op,  (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(self.yerr_arr, (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(val_lab,         (ir, 3), (1, 1), LEFT, 0)
+        sizer.Add(self.yerr_const, (ir, 4), (1, 2), LEFT, 0)
 
 
         ir += 1
-        sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
+        sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,      (ir, 1), (1, 1), LEFT, 0)
 
+        ir += 1
+        sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
         pack(panel, sizer)
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
-        self.plotpanel.SetMinSize((200, 200))
+        self.plotpanel.SetMinSize((300, 250))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, LEFT|wx.GROW, 1)
@@ -525,8 +526,11 @@ class SpecfileImporter(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         self.guess_energy_units()
-
-        self.SetSize(self.GetBestSize())
+        csize = self.GetSize()
+        bsize = self.GetBestSize()
+        if bsize[0] > csize[0]: csize[0] = bsize[0]
+        if bsize[1] > csize[1]: csize[1] = bsize[1]
+        self.SetSize(csize)
         self.Show()
         self.Raise()
         self.onUpdate(self)
@@ -807,11 +811,6 @@ class SpecfileImporter(wx.Frame) :
                 arr[np.where(np.isnan(arr))] = 0
             return suf, opstr, arr
 
-        try:
-            xsuf, xpop, workgroup.xdat = pre_op(self.xpop, workgroup.xdat)
-            exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
-        except:
-            return
 
         xlabel = xname
         ylabel = yname1
@@ -872,7 +871,7 @@ class SpecfileImporter(wx.Frame) :
 
 
         self.expressions = exprs
-        self.array_sel = {'xpop': xpop, 'xarr': xname,
+        self.array_sel = {'xarr': xname,
                           'ypop': ypop, 'yop': yop,
                           'yarr1': yname1, 'yarr2': yname2}
         try:
