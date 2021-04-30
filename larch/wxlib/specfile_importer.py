@@ -714,7 +714,6 @@ class SpecfileImporter(wx.Frame) :
         script = "\n".join(buff)
 
         if self.read_ok_cb is not None:
-            print(" SENDING READ_OK_CB " , self.path, script, scanlist)
             self.read_ok_cb(script, self.path, scanlist)
 
         for f in self.subframes.values():
