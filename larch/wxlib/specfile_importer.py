@@ -375,7 +375,7 @@ class SpecfileImporter(wx.Frame) :
                           style=FRAMESTYLE)
 
         self.SetMinSize((750, 550))
-        self.SetSize((800, 650))
+        self.SetSize((850, 650))
         self.colors = GUIColors()
 
         x0, y0 = parent.GetPosition()
@@ -434,7 +434,7 @@ class SpecfileImporter(wx.Frame) :
         self.datatype = Choice(panel, choices=XDATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
-        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onUpdate, size=(150, -1))
+        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onEnUnitsSelect, size=(150, -1))
         self.en_units.SetSelection(0)
 
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
@@ -443,12 +443,15 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
+        self.monod_val.Disable()
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
         units_lab = SimpleText(panel, '  Units:  ')
         yerr_lab = SimpleText(panel, ' Yerror: ')
         dtype_lab = SimpleText(panel, ' Data Type: ')
-        val_lab = SimpleText(panel, 'Value:')
+        monod_lab = SimpleText(panel, ' Mono D (Ang): ')
+        yerrval_lab = SimpleText(panel, ' Value:')
 
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
@@ -487,7 +490,6 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(units_lab,     (ir, 2), (1, 2), RIGHT, 0)
         sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)
 
-
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
@@ -499,14 +501,15 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_op,  (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_arr, (ir, 2), (1, 1), LEFT, 0)
-        sizer.Add(val_lab,         (ir, 3), (1, 1), LEFT, 0)
+        sizer.Add(yerrval_lab,   (ir, 3), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), LEFT, 0)
 
 
         ir += 1
         sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.datatype,      (ir, 1), (1, 1), LEFT, 0)
-
+        sizer.Add(monod_lab,          (ir, 2), (1, 2), RIGHT, 0)
+        sizer.Add(self.monod_val,     (ir, 4), (1, 1), LEFT, 0)
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
         pack(panel, sizer)
@@ -702,8 +705,15 @@ class SpecfileImporter(wx.Frame) :
             buff.append("{group}.%s = '%s'" % (attr, val))
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
-        escale = 1000.0 if en_units == 'keV' else 1.0
-        buff.append(f"{{group}}.xdat = {escale:.1f}*{expr:s}")
+        if en_units.startswith('deg'):
+            dspace = float(self.monod_val.GetValue())
+            buff.append(f"mono_dspace = {dspace:.9f}")
+            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
+        elif en_units.startswith('keV'):
+            buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
+        else:
+            buff.append(f"{{group}}.xdat = {expr:s}")
+
         for aname in ('ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
@@ -746,7 +756,6 @@ class SpecfileImporter(wx.Frame) :
         self.onUpdate()
 
     def onXSelect(self, evt=None):
-        print("onXSelect ", evt)
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
 
@@ -758,6 +767,7 @@ class SpecfileImporter(wx.Frame) :
         else:
             workgroup.xdat = rdata[ix, :]
 
+        self.monod_val.Disable()
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
             self.en_units.SetSelection(4)
         else:
@@ -766,6 +776,13 @@ class SpecfileImporter(wx.Frame) :
                 self.en_units.SetStringSelection('eV')
             elif eguess.startswith('keV'):
                 self.en_units.SetStringSelection('keV')
+            elif eguess.startswith('deg'):
+                self.en_units.SetStringSelection('deg')
+                self.monod_val.Enable()
+        self.onUpdate()
+
+    def onEnUnitsSelect(self, evt=None):
+        self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
         self.onUpdate()
 
 
