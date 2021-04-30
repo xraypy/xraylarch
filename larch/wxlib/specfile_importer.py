@@ -21,7 +21,9 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
 import larch
 from larch import Group
 from larch.utils.strutils import fix_varname
+from larch.xafs.xafsutils import guess_energy_units
 from larch.io import look_for_nans, is_specfile, open_specfile
+from larch.utils.physical_constants import PLANCK_HC, DEG2RAD, PI
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -35,6 +37,7 @@ YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
+ENUNITS_TYPES = ('eV', 'keV', 'not energy')
 
 class AddColumnsFrame(wx.Frame):
     """Add Column Labels for a larch grouop"""
@@ -368,8 +371,7 @@ class SpecfileImporter(wx.Frame) :
             elif 'i1' in arr_labels:
                 self.array_sel['yarr1'] = 'i1'
 
-        wx.Frame.__init__(self, None, -1,
-                          'Build Arrays for %s' % filename,
+        wx.Frame.__init__(self, None, -1, f'Build Arrays for {filename:s}',
                           style=FRAMESTYLE)
 
         self.SetMinSize((750, 550))
@@ -421,7 +423,7 @@ class SpecfileImporter(wx.Frame) :
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['_index']
 
-        self.xarr   = Choice(panel, choices=xarr_labels, action=self.onUpdate, size=(150, -1))
+        self.xarr   = Choice(panel, choices=xarr_labels, action=self.onXSelect, size=(150, -1))
         self.yarr1  = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yarr2  = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
@@ -433,15 +435,18 @@ class SpecfileImporter(wx.Frame) :
         self.datatype = Choice(panel, choices=DATATYPES, action=self.onUpdate, size=(120, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
+        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onUpdate, size=(120, -1))
+        self.en_units.SetSelection(0)
+
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
 
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(120, -1))
         self.yerr_op.SetSelection(0)
 
         self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        ylab = SimpleText(panel, 'Y = ')
-        xlab = SimpleText(panel, 'X = ')
-        yerr_lab = SimpleText(panel, 'Yerror = ')
+        ylab = SimpleText(panel, 'Y: ')
+        xlab = SimpleText(panel, 'X: ')
+        yerr_lab = SimpleText(panel, 'Yerror: ')
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
@@ -480,6 +485,12 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(self.xarr, (ir, 2), (1, 1), CEN, 0)
 
         ir += 1
+        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,                    (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(SimpleText(panel, 'Energy Units:'), (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.en_units,                     (ir, 3), (1, 2), LEFT, 0)
+
+        ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), CEN, 0)
         sizer.Add(self.yarr1, (ir, 2), (1, 1), CEN, 0)
@@ -493,9 +504,6 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
 
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.datatype,                    (ir, 1), (1, 2), LEFT, 0)
 
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
@@ -516,11 +524,28 @@ class SpecfileImporter(wx.Frame) :
         statusbar_fields = [filename, ""]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+        self.guess_energy_units()
 
         self.SetSize(self.GetBestSize())
         self.Show()
         self.Raise()
         self.onUpdate(self)
+
+    def guess_energy_units(self):
+        ix  = self.xarr.GetSelection()
+        xname = self.xarr.GetStringSelection()
+        rdata = self.curscan.data
+        ncol, npts = rdata.shape
+        workgroup = self.workgroup
+        if xname.startswith('_index') or ix >= ncol:
+            workgroup.xdat = 1.0*np.arange(npts)
+        else:
+            workgroup.xdat = rdata[ix, :]
+        eguess =  guess_energy_units(workgroup.xdat)
+        if eguess.startswith('eV'):
+            self.en_units.SetStringSelection('eV')
+        elif eguess.startswith('keV'):
+            self.en_units.SetStringSelection('keV')
 
     def onScanSelect(self, event=None):
         try:
@@ -533,7 +558,6 @@ class SpecfileImporter(wx.Frame) :
         if scan_desc not in slist:
             slist.append(scan_desc)
         self.scanlist.SetCheckedStrings(slist)
-
 
         self.wid_scantitle.SetLabel("  %s" % self.curscan.title)
         self.wid_scantime.SetLabel(self.curscan.timestring)
@@ -571,8 +595,8 @@ class SpecfileImporter(wx.Frame) :
         self.workgroup.datatype = 'xas' if 'en' in xsel else 'raw'
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
+        self.guess_energy_units()
         self.onUpdate()
-
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
@@ -632,6 +656,7 @@ class SpecfileImporter(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
         scanlist = []
+        print(" On OK")
         for s in self.scanlist.GetCheckedStrings():
             words = [s.strip() for s in s.split(':')]
             scanlist.append(words[0])
@@ -644,6 +669,7 @@ class SpecfileImporter(wx.Frame) :
             else:
                 return
 
+        en_units = self.en_units.GetStringSelection()
         yerr_op = self.yerr_op.GetStringSelection().lower()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
@@ -672,7 +698,10 @@ class SpecfileImporter(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        for aname in ('xdat', 'ydat', 'yerr'):
+        expr = self.expressions['xdat'].replace('%s', '{group:s}')
+        escale = 1000.0 if en_units == 'keV' else escale = 1.0
+        buff.append(f"{{group}}.xdat = {escale:.1f}*{expr:s}")
+        for aname in ('ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
 
@@ -685,6 +714,7 @@ class SpecfileImporter(wx.Frame) :
         script = "\n".join(buff)
 
         if self.read_ok_cb is not None:
+            print(" SENDING READ_OK_CB " , self.path, script, scanlist)
             self.read_ok_cb(script, self.path, scanlist)
 
         for f in self.subframes.values():
@@ -711,6 +741,29 @@ class SpecfileImporter(wx.Frame) :
             self.yerr_const.Enable()
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
+        self.onUpdate()
+
+    def onXSelect(self, evt=None):
+        print("onXSelect ", evt)
+        ix  = self.xarr.GetSelection()
+        xname = self.xarr.GetStringSelection()
+
+        workgroup = self.workgroup
+        rdata = self.curscan.data
+        ncol, npts = rdata.shape
+        if xname.startswith('_index') or ix >= ncol:
+            workgroup.xdat = 1.0*np.arange(npts)
+        else:
+            workgroup.xdat = rdata[ix, :]
+
+        if self.datatype.GetStringSelection().strip().lower() == 'raw':
+            self.en_units.SetSelection(4)
+        else:
+            eguess =  guess_energy_units(workgroup.xdat)
+            if eguess.startswith('eV'):
+                self.en_units.SetStringSelection('eV')
+            elif eguess.startswith('keV'):
+                self.en_units.SetStringSelection('keV')
         self.onUpdate()
 
 
