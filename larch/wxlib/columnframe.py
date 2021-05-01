@@ -20,6 +20,7 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
 
 import larch
 from larch import Group
+from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import fix_varname, file2groupname
 from larch.io import look_for_nans
 
@@ -35,6 +36,7 @@ YERR_OPS = ('Constant', 'Sqrt(Y)', 'Array')
 CONV_OPS  = ('Lorenztian', 'Gaussian')
 
 DATATYPES = ('raw', 'xas')
+ENUNITS_TYPES = ('eV', 'keV', 'degrees', 'not energy')
 
 class AddColumnsFrame(wx.Frame):
     """Add Column Labels for a larch grouop"""
@@ -338,14 +340,13 @@ class ColumnDataFileFrame(wx.Frame) :
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
             for arrlab in arr_labels[:4]:
-                if 'energ' in arrlab:
+                if 'ener' in arrlab.lower():
                     self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-        self.array_sel = {'xpop': '',  'xarr': None,
-                          'ypop': '',  'yop': '/',
-                          'yarr1': None, 'yarr2': None, 'use_deriv': False}
-
+        self.array_sel = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
+                              ypop='', monod=3.1355316, en_units='eV',
+                              yerror='constant', yerr_val=1, yerr_arr=None)
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
 
@@ -371,65 +372,71 @@ class ColumnDataFileFrame(wx.Frame) :
         self.colors = GUIColors()
 
         # title row
-        title = SimpleText(panel, message, font=Font(13),
+        title = SimpleText(panel, message, font=Font(12),
                            colour=self.colors.title, style=LEFT)
 
-        opts = dict(action=self.onUpdate, size=(120, -1))
         yarr_labels = self.yarr_labels = arr_labels + ['1.0', '0.0', '']
         xarr_labels = self.xarr_labels = arr_labels + ['_index']
 
-        self.xarr   = Choice(panel, choices=xarr_labels, **opts)
-        self.yarr1  = Choice(panel, choices= arr_labels, **opts)
-        self.yarr2  = Choice(panel, choices=yarr_labels, **opts)
-        self.yerr_arr = Choice(panel, choices=yarr_labels, **opts)
+        self.xarr   = Choice(panel, choices=xarr_labels, action=self.onXSelect, size=(150, -1))
+        self.yarr1  = Choice(panel, choices= arr_labels, action=self.onUpdate, size=(150, -1))
+        self.yarr2  = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
+        self.yerr_arr = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr.Disable()
 
-        self.datatype = Choice(panel, choices=DATATYPES, **opts)
+        self.datatype = Choice(panel, choices=DATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
+        self.datatype.SetStringSelection(self.workgroup.datatype)
 
-        opts['size'] = (50, -1)
-        self.yop =  Choice(panel, choices=ARR_OPS, **opts)
+        self.en_units = Choice(panel, choices=ENUNITS_TYPES,
+                               action=self.onEnUnitsSelect, size=(150, -1))
 
-        opts['size'] = (150, -1)
-
-        self.use_deriv = Check(panel, label='use derivative',
-                               default=self.array_sel['use_deriv'], **opts)
-
-        self.xpop = Choice(panel, choices=XPRE_OPS, **opts)
-        self.ypop = Choice(panel, choices=YPRE_OPS, **opts)
-
-        opts['action'] = self.onYerrChoice
-        self.yerr_op = Choice(panel, choices=YERR_OPS, **opts)
+        self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(150, -1))
+        self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
+        self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
         self.yerr_op.SetSelection(0)
 
-        self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
+        self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
 
-        ylab = SimpleText(panel, 'Y = ')
-        xlab = SimpleText(panel, 'X = ')
-        yerr_lab = SimpleText(panel, 'Yerror = ')
-        self.xsuf = SimpleText(panel, '')
+        xlab = SimpleText(panel, ' X array: ')
+        ylab = SimpleText(panel, ' Y array: ')
+        units_lab = SimpleText(panel, '  Units:  ')
+        yerr_lab = SimpleText(panel, ' Yerror: ')
+        dtype_lab = SimpleText(panel, ' Data Type: ')
+        monod_lab = SimpleText(panel, ' Mono D spacing (Ang): ')
+        yerrval_lab = SimpleText(panel, ' Value:')
+
         self.ysuf = SimpleText(panel, '')
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
-        self.xpop.SetStringSelection(self.array_sel['xpop'])
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
+        self.monod_val.SetValue(self.array_sel['monod'])
+        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))        
+        self.en_units.SetStringSelection(self.array_sel['en_units'])
+        self.yerr_op.SetStringSelection(self.array_sel['yerror'])
+        self.yerr_val.SetValue(self.array_sel['yerr_val'])
         if '(' in self.array_sel['ypop']:
             self.ysuf.SetLabel(')')
 
-        ixsel, iysel, iy2sel = 0, 1, len(yarr_labels)-1
+        ixsel, iysel, iy2sel, iyesel = 0, 1, len(yarr_labels)-1, len(yarr_labels)-1
         if self.array_sel['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.array_sel['xarr'])
         if self.array_sel['yarr1'] in arr_labels:
             iysel = arr_labels.index(self.array_sel['yarr1'])
         if self.array_sel['yarr2'] in yarr_labels:
             iy2sel = yarr_labels.index(self.array_sel['yarr2'])
+        if self.array_sel['yerr_arr'] in yarr_labels:
+            iyesel = yarr_labels.index(self.array_sel['yerr_arr'])
+           
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
-
+        self.yerr_arr.SetSelection(iyesel)
+        
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         _ok    = Button(bpanel, 'OK', action=self.onOK)
@@ -444,49 +451,52 @@ class ColumnDataFileFrame(wx.Frame) :
         _ok.SetDefault()
         pack(bpanel, bsizer)
 
-        sizer = wx.GridBagSizer(4, 8)
+        sizer = wx.GridBagSizer(2, 2)
         sizer.Add(title,     (0, 0), (1, 7), LEFT, 5)
 
         ir = 1
         sizer.Add(xlab,      (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.xpop, (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.xarr, (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.xsuf, (ir, 3), (1, 1), CEN, 0)
+        sizer.Add(self.xarr, (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(units_lab,     (ir, 2), (1, 2), RIGHT, 0)
+        sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)        
+
+        ir += 1
+        sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,      (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(monod_lab,          (ir, 2), (1, 2), RIGHT, 0)
+        sizer.Add(self.monod_val,     (ir, 4), (1, 1), LEFT, 0)
 
         ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.ypop,  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.yarr1, (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.yop,   (ir, 3), (1, 1), CEN, 0)
-        sizer.Add(self.yarr2, (ir, 4), (1, 1), CEN, 0)
-        sizer.Add(self.ysuf,  (ir, 5), (1, 1), CEN, 0)
-        sizer.Add(self.use_deriv, (ir, 6), (1, 1), LEFT, 0)
+        sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(self.yarr1, (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.yop,   (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.yarr2, (ir, 4), (1, 1), LEFT, 0)
+        sizer.Add(self.ysuf,  (ir, 5), (1, 1), LEFT, 0)
+
 
         ir += 1
         sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.yerr_op,  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.yerr_arr, (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, 'Value:'), (ir, 3), (1, 1), CEN, 0)
-        sizer.Add(self.yerr_const, (ir, 4), (1, 2), CEN, 0)
+        sizer.Add(self.yerr_op,  (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(self.yerr_arr, (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(yerrval_lab,   (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.yerr_val, (ir, 4), (1, 2), LEFT, 0)
 
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Data Type:'),  (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.datatype,                    (ir, 1), (1, 2), LEFT, 0)
 
         self.wid_filename = wx.TextCtrl(panel, value=group.filename,
-                                         size=(300, -1))
+                                         size=(250, -1))
         self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
                                          size=(150, -1))
         if not edit_groupname:
             self.wid_groupname.Disable()
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'Displayed Name:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_filename,                (ir, 1), (1, 2), LEFT, 0)
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Group/Code Name:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_groupname,               (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(self.message,                     (ir, 3), (1, 4), LEFT, 0)
+        sizer.Add(SimpleText(panel, 'Display Name:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_filename,                  (ir, 1), (1, 2), LEFT, 0)
+        sizer.Add(SimpleText(panel, 'Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.wid_groupname,                 (ir, 4), (1, 2), LEFT, 0)
+        ir +=1
+        sizer.Add(self.message,                     (ir, 1), (1, 4), LEFT, 0)
 
 
         ir += 1
@@ -527,6 +537,7 @@ class ColumnDataFileFrame(wx.Frame) :
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        self.set_energy_units()
         self.Show()
         self.Raise()
         self.onUpdate(self)
@@ -656,7 +667,7 @@ class ColumnDataFileFrame(wx.Frame) :
         yerr_op = self.yerr_op.GetStringSelection().lower()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
-            yerr_expr = "%f" % self.yerr_const.GetValue()
+            yerr_expr = "%f" % self.yerr_val.GetValue()
         elif yerr_op.startswith('array'):
             yerr_expr = '%%s.data[%i, :]' % self.yerr_arr.GetSelection()
         elif yerr_op.startswith('sqrt'):
@@ -721,20 +732,65 @@ class ColumnDataFileFrame(wx.Frame) :
     def onYerrChoice(self, evt=None):
         yerr_choice = evt.GetString()
         self.yerr_arr.Disable()
-        self.yerr_const.Disable()
+        self.yerr_val.Disable()
         if 'const' in yerr_choice.lower():
-            self.yerr_const.Enable()
+            self.yerr_val.Enable()
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
         self.onUpdate()
 
+
+    def onXSelect(self, evt=None):
+        ix  = self.xarr.GetSelection()
+        xname = self.xarr.GetStringSelection()
+
+        workgroup = self.workgroup
+        rdata = self.initgroup.data        
+        ncol, npts = rdata.shape
+        if xname.startswith('_index') or ix >= ncol:
+            workgroup.xdat = 1.0*np.arange(npts)
+        else:
+            workgroup.xdat = rdata[ix, :]
+
+        self.monod_val.Disable()
+        if self.datatype.GetStringSelection().strip().lower() == 'raw':
+            self.en_units.SetSelection(4)
+        else:
+            eguess =  guess_energy_units(workgroup.xdat)
+            if eguess.startswith('eV'):
+                self.en_units.SetStringSelection('eV')
+            elif eguess.startswith('keV'):
+                self.en_units.SetStringSelection('keV')
+            elif eguess.startswith('deg'):
+                self.en_units.SetStringSelection('deg')
+                self.monod_val.Enable()
+        self.onUpdate()
+
+    def onEnUnitsSelect(self, evt=None):
+        self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
+        self.onUpdate()
+
+    def set_energy_units(self):
+        ix  = self.xarr.GetSelection()
+        xname = self.xarr.GetStringSelection()
+        rdata = self.initgroup.data
+        ncol, npts = rdata.shape
+        workgroup = self.workgroup
+        if xname.startswith('_index') or ix >= ncol:
+            workgroup.xdat = 1.0*np.arange(npts)
+        else:
+            workgroup.xdat = rdata[ix, :]
+        eguess =  guess_energy_units(workgroup.xdat)
+        if eguess.startswith('eV'):
+            self.en_units.SetStringSelection('eV')
+        elif eguess.startswith('keV'):
+            self.en_units.SetStringSelection('keV')
 
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
         # dtcorr = self.dtcorr.IsChecked()
 
         dtcorr = False
-        use_deriv = self.use_deriv.IsChecked()
         rawgroup = self.initgroup
         workgroup = self.workgroup
         rdata = self.initgroup.data
@@ -767,13 +823,6 @@ class ColumnDataFileFrame(wx.Frame) :
                     arr = -np.log(arr)
                 arr[np.where(np.isnan(arr))] = 0
             return suf, opstr, arr
-
-        try:
-            xsuf, xpop, workgroup.xdat = pre_op(self.xpop, workgroup.xdat)
-            self.xsuf.SetLabel(xsuf)
-            exprs['xdat'] = '%s%s%s' % (xpop, exprs['xdat'], xsuf)
-        except:
-            return
 
         try:
             xunits = rawgroup.array_units[ix].strip()
@@ -834,7 +883,7 @@ class ColumnDataFileFrame(wx.Frame) :
         yerr_op = self.yerr_op.GetStringSelection().lower()
         exprs['yerr'] = '1'
         if yerr_op.startswith('const'):
-            yerr = self.yerr_const.GetValue()
+            yerr = self.yerr_val.GetValue()
             exprs['yerr'] = '%f' % yerr
         elif yerr_op.startswith('array'):
             iyerr = self.yerr_arr.GetSelection()
@@ -844,20 +893,11 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr = np.sqrt(workgroup.ydat)
             exprs['yerr'] = 'sqrt(%s.ydat)'
 
-        if use_deriv:
-            try:
-                workgroup.ydat = (np.gradient(workgroup.ydat) /
-                                 np.gradient(workgroup.xdat))
-                exprs['ydat'] = 'deriv(%s)/deriv(%s)' % (exprs['ydat'],
-                                                         exprs['xdat'])
-            except:
-                pass
 
         self.expressions = exprs
-        self.array_sel = {'xpop': xpop, 'xarr': xname,
+        self.array_sel = {'xarr': xname,
                           'ypop': ypop, 'yop': yop,
-                          'yarr1': yname1, 'yarr2': yname2,
-                          'use_deriv': use_deriv}
+                          'yarr1': yname1, 'yarr2': yname2}
 
         try:
             npts = min(len(workgroup.xdat), len(workgroup.ydat))

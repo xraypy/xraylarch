@@ -434,18 +434,19 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_arr = Choice(panel, choices=yarr_labels, action=self.onUpdate, size=(150, -1))
         self.yerr_arr.Disable()
 
-        self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(150, -1))
-
         self.datatype = Choice(panel, choices=XDATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
         self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onEnUnitsSelect,
                                size=(150, -1))
 
+        self.ypop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(150, -1))
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
+        
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
+        
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
         units_lab = SimpleText(panel, '  Units:  ')
@@ -461,7 +462,7 @@ class SpecfileImporter(wx.Frame) :
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
         self.monod_val.SetValue(self.array_sel['monod'])
-        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))        
+        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
         self.en_units.SetStringSelection(self.array_sel['en_units'])
         self.yerr_op.SetStringSelection(self.array_sel['yerror'])
         self.yerr_val.SetValue(self.array_sel['yerr_val'])
@@ -486,9 +487,6 @@ class SpecfileImporter(wx.Frame) :
         ir = 0
         sizer.Add(self.title,     (ir, 0), (1, 7), LEFT, 5)
 
-        # sizer.Add(scanlabel,     (ir, 0), (1, 1), LEFT, 0)
-        # sizer.Add(self.wid_scan, (ir, 1), (1, 3), LEFT, 0)
-
         ir += 1
         sizer.Add(self.wid_scantitle,  (ir, 0), (1, 3), LEFT, 0)
         sizer.Add(self.wid_scantime,   (ir, 3), (1, 2), LEFT, 0)
@@ -510,14 +508,15 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(self.yarr1, (ir, 2), (1, 1), LEFT, 0)
-        sizer.Add(self.yop,   (ir, 3), (1, 1), LEFT, 0)
+        sizer.Add(self.yop,   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.yarr2, (ir, 4), (1, 1), LEFT, 0)
+        sizer.Add(self.ysuf,  (ir, 5), (1, 1), LEFT, 0)        
 
         ir += 1
         sizer.Add(yerr_lab,      (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_op,  (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_arr, (ir, 2), (1, 1), LEFT, 0)
-        sizer.Add(yerrval_lab,   (ir, 3), (1, 1), LEFT, 0)
+        sizer.Add(yerrval_lab,   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.yerr_val, (ir, 4), (1, 2), LEFT, 0)
 
         ir += 1
@@ -538,7 +537,7 @@ class SpecfileImporter(wx.Frame) :
         statusbar_fields = [filename, ""]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        self.guess_energy_units()
+        self.set_energy_units()
         csize = self.GetSize()
         bsize = self.GetBestSize()
         if bsize[0] > csize[0]: csize[0] = bsize[0]
@@ -548,7 +547,7 @@ class SpecfileImporter(wx.Frame) :
         self.Raise()
         self.onUpdate(self)
 
-    def guess_energy_units(self):
+    def set_energy_units(self):
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
         rdata = self.curscan.data
@@ -612,7 +611,7 @@ class SpecfileImporter(wx.Frame) :
         self.workgroup.datatype = 'xas' if 'en' in xsel else 'raw'
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
-        self.guess_energy_units()
+        self.set_energy_units()
         self.onUpdate()
 
     def show_subframe(self, name, frameclass, **opts):
