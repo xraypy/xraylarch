@@ -491,6 +491,12 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)
 
         ir += 1
+        sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.datatype,      (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(monod_lab,          (ir, 2), (1, 2), RIGHT, 0)
+        sizer.Add(self.monod_val,     (ir, 4), (1, 1), LEFT, 0)
+
+        ir += 1
         sizer.Add(ylab,       (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.ypop,  (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(self.yarr1, (ir, 2), (1, 1), LEFT, 0)
@@ -504,12 +510,6 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(yerrval_lab,   (ir, 3), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_const, (ir, 4), (1, 2), LEFT, 0)
 
-
-        ir += 1
-        sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.datatype,      (ir, 1), (1, 1), LEFT, 0)
-        sizer.Add(monod_lab,          (ir, 2), (1, 2), RIGHT, 0)
-        sizer.Add(self.monod_val,     (ir, 4), (1, 1), LEFT, 0)
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
         pack(panel, sizer)
