@@ -319,7 +319,8 @@ class EditColumnFrame(wx.Frame) :
 
 class SpecfileImporter(wx.Frame) :
     """Column Data File, select columns"""
-    def __init__(self, parent, filename=None, read_ok_cb=None):
+    def __init__(self, parent, filename=None, last_array_sel=None, _larch=None,
+                 read_ok_cb=None):
         if not is_specfile(filename):
             title = "Not a Specfile: %s" % filename
             message = "Error reading %s as a Specfile" % filename
@@ -331,7 +332,7 @@ class SpecfileImporter(wx.Frame) :
         path, fname = os.path.split(filename)
         self.filename = fname
         self.extra_sums = {}
-
+        self._larch = _larch
         self.specfile = open_specfile(filename)
         self.scans = []
         curscan = None
@@ -353,14 +354,18 @@ class SpecfileImporter(wx.Frame) :
 
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
-            if 'en' in self.curscan.axis.lower():
-                self.workgroup.datatype = 'xas'
+            for arrlab in arr_labels[:4]:
+                if 'ener' in arrlab.lower():
+                    self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
-        self.array_sel = {'scan': '',
-                          'xarr': None,
-                          'ypop': '',  'yop': '/',
-                          'yarr1': None, 'yarr2': None}
+
+        self.array_sel = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
+                              ypop='', monod=3.1355316, en_units='eV',
+                              yerror=YERR_OPS[0], yerr_val=1, yerr_arr=None)
+
+        if last_array_sel is not None:
+            self.array_sel.update(last_array_sel)
 
         if self.array_sel['yarr2'] is None and 'i0' in arr_labels:
             self.array_sel['yarr2'] = 'i0'
@@ -434,43 +439,48 @@ class SpecfileImporter(wx.Frame) :
         self.datatype = Choice(panel, choices=XDATATYPES, action=self.onUpdate, size=(150, -1))
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
-        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onEnUnitsSelect, size=(150, -1))
-        self.en_units.SetSelection(0)
+        self.en_units = Choice(panel, choices=ENUNITS_TYPES, action=self.onEnUnitsSelect,
+                               size=(150, -1))
 
         self.yop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(50, -1))
-
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
-        self.yerr_op.SetSelection(0)
-
-        self.yerr_const = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
+        self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
         self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
-        self.monod_val.Disable()
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
         units_lab = SimpleText(panel, '  Units:  ')
         yerr_lab = SimpleText(panel, ' Yerror: ')
         dtype_lab = SimpleText(panel, ' Data Type: ')
-        monod_lab = SimpleText(panel, ' Mono D (Ang): ')
+        monod_lab = SimpleText(panel, ' Mono D spacing (Ang): ')
         yerrval_lab = SimpleText(panel, ' Value:')
 
+        self.ysuf = SimpleText(panel, '')
         self.message = SimpleText(panel, '', font=Font(11),
                            colour=self.colors.title, style=LEFT)
 
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
+        self.monod_val.SetValue(self.array_sel['monod'])
+        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))        
+        self.en_units.SetStringSelection(self.array_sel['en_units'])
+        self.yerr_op.SetStringSelection(self.array_sel['yerror'])
+        self.yerr_val.SetValue(self.array_sel['yerr_val'])
         if '(' in self.array_sel['ypop']:
             self.ysuf.SetLabel(')')
 
-        ixsel, iysel, iy2sel = 0, 1, len(yarr_labels)-1
+        ixsel, iysel, iy2sel, iyesel = 0, 1, len(yarr_labels)-1,  len(yarr_labels)-1
         if self.array_sel['xarr'] in xarr_labels:
             ixsel = xarr_labels.index(self.array_sel['xarr'])
         if self.array_sel['yarr1'] in arr_labels:
             iysel = arr_labels.index(self.array_sel['yarr1'])
         if self.array_sel['yarr2'] in yarr_labels:
             iy2sel = yarr_labels.index(self.array_sel['yarr2'])
+        if self.array_sel['yerr_arr'] in yarr_labels:
+            iyesel = yarr_labels.index(self.array_sel['yerr_arr'])
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
+        self.yerr_arr.SetSelection(iyesel)
 
         sizer = wx.GridBagSizer(2, 2)
         ir = 0
@@ -508,7 +518,7 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(self.yerr_op,  (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(self.yerr_arr, (ir, 2), (1, 1), LEFT, 0)
         sizer.Add(yerrval_lab,   (ir, 3), (1, 1), LEFT, 0)
-        sizer.Add(self.yerr_const, (ir, 4), (1, 2), LEFT, 0)
+        sizer.Add(self.yerr_val, (ir, 4), (1, 2), LEFT, 0)
 
         ir += 1
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
@@ -676,12 +686,21 @@ class SpecfileImporter(wx.Frame) :
                 return
 
         en_units = self.en_units.GetStringSelection()
-        yerr_op = self.yerr_op.GetStringSelection().lower()
+        monod    = float(self.monod_val.GetValue())
+        xarr     = self.xarr.GetStringSelection()
+        yarr1    = self.yarr1.GetStringSelection()
+        yarr2    = self.yarr2.GetStringSelection()
+        ypop     = self.ypop.GetStringSelection()
+        yop      = self.yop.GetStringSelection()
+        yerr_op = self.yerr_op.GetStringSelection()
+        yerr_arr = self.yerr_arr.GetStringSelection()        
+        yerr_idx = self.yerr_arr.GetSelection()        
+        yerr_val = self.yerr_val.GetValue()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
-            yerr_expr = "%f" % self.yerr_const.GetValue()
-        elif yerr_op.startswith('array'):
-            yerr_expr = '%%s.data[%i, :]' % self.yerr_arr.GetSelection()
+            yerr_expr = "%f" % yerr_val
+        elif yerr_op.lower().startswith('array'):
+            yerr_expr = '%%s.data[%i, :]' % yerr_idx
         elif yerr_op.startswith('sqrt'):
             yerr_expr = 'sqrt(%s.ydat)'
         self.expressions['yerr'] = yerr_expr
@@ -706,7 +725,7 @@ class SpecfileImporter(wx.Frame) :
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
-            dspace = float(self.monod_val.GetValue())
+            dspace = monod
             buff.append(f"mono_dspace = {dspace:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
@@ -726,8 +745,20 @@ class SpecfileImporter(wx.Frame) :
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
 
+        self.array_sel['xarr'] = xarr
+        self.array_sel['yarr1'] = yarr1
+        self.array_sel['yarr2'] = yarr2
+        self.array_sel['yop'] = yop
+        self.array_sel['ypop'] = ypop
+        self.array_sel['yerror'] = yerr_op
+        self.array_sel['yerr_val'] = yerr_val
+        self.array_sel['yerr_arr'] = yerr_arr
+        self.array_sel['monod'] = monod
+        self.array_sel['en_units'] = en_units
+
         if self.read_ok_cb is not None:
-            self.read_ok_cb(script, self.path, scanlist)
+            self.read_ok_cb(script, self.path, scanlist,
+                            array_sel=self.array_sel)
 
         for f in self.subframes.values():
             try:
@@ -748,9 +779,9 @@ class SpecfileImporter(wx.Frame) :
     def onYerrChoice(self, evt=None):
         yerr_choice = evt.GetString()
         self.yerr_arr.Disable()
-        self.yerr_const.Disable()
+        self.yerr_val.Disable()
         if 'const' in yerr_choice.lower():
-            self.yerr_const.Enable()
+            self.yerr_val.Enable()
         elif 'array' in yerr_choice.lower():
             self.yerr_arr.Enable()
         self.onUpdate()
@@ -876,7 +907,7 @@ class SpecfileImporter(wx.Frame) :
         yerr_op = self.yerr_op.GetStringSelection().lower()
         exprs['yerr'] = '1'
         if yerr_op.startswith('const'):
-            yerr = self.yerr_const.GetValue()
+            yerr = self.yerr_val.GetValue()
             exprs['yerr'] = '%f' % yerr
         elif yerr_op.startswith('array'):
             iyerr = self.yerr_arr.GetSelection()
