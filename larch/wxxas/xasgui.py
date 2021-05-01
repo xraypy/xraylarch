@@ -373,7 +373,8 @@ class XASFrame(wx.Frame):
     def __init__(self, parent=None, _larch=None, filename=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
 
-        self.last_array_sel = {}
+        self.last_array_sel_col = {}
+        self.last_array_sel_spec = {}
         self.paths2read = []
 
         title = "Larch XAS GUI: XAS Visualization and Analysis"
@@ -934,7 +935,7 @@ class XASFrame(wx.Frame):
         dgroup = self.controller.get_group()
         self.show_subframe('readfile', ColumnDataFileFrame,
                            group=dgroup.raw,
-                           last_array_sel=self.last_array_sel,
+                           last_array_sel=self.last_array_sel_col,
                            _larch=self.larch,
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
@@ -984,16 +985,18 @@ class XASFrame(wx.Frame):
         elif is_specfile(path):
             self.show_subframe('spec_import', SpecfileImporter,
                                filename=path,
+                               _larch=self.larch_buffer.larchshell,
+                               last_array_sel=self.last_array_sel_spec,
                                read_ok_cb=self.onReadSpecfile_OK)
         # default to Column File
         else:
             self.show_subframe('readfile', ColumnDataFileFrame,
                                filename=path,
                                _larch=self.larch_buffer.larchshell,
-                               last_array_sel = self.last_array_sel,
+                               last_array_sel = self.last_array_sel_col,
                                read_ok_cb=self.onRead_OK)
 
-    def onReadSpecfile_OK(self, script, path, scanlist):
+    def onReadSpecfile_OK(self, script, path, scanlist, array_sel=None):
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
@@ -1002,6 +1005,9 @@ class XASFrame(wx.Frame):
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         symtable = self.larch.symtable
+        if array_sel is not None:
+            self.last_array_sel_spec = array_sel
+
         for scan in scanlist:
             gname = fix_varname("{:s}{:s}".format(fname[:6], scan))
             if hasattr(symtable, gname):
@@ -1075,7 +1081,7 @@ class XASFrame(wx.Frame):
 
         self.larch.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
-            self.last_array_sel = array_sel
+            self.last_array_sel_col = array_sel
         self.install_group(groupname, filename, overwrite=overwrite)
 
         # check if rebin is needed
