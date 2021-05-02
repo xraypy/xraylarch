@@ -445,7 +445,8 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
         
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7,
+                                    size=(90, -1), action=self.onUpdate)
         
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
@@ -556,7 +557,7 @@ class SpecfileImporter(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
         eguess =  guess_energy_units(workgroup.xdat)
         if eguess.startswith('eV'):
             self.en_units.SetStringSelection('eV')
@@ -685,7 +686,7 @@ class SpecfileImporter(wx.Frame) :
                 return
 
         en_units = self.en_units.GetStringSelection()
-        monod    = float(self.monod_val.GetValue())
+        dspace   = float(self.monod_val.GetValue())
         xarr     = self.xarr.GetStringSelection()
         yarr1    = self.yarr1.GetStringSelection()
         yarr2    = self.yarr2.GetStringSelection()
@@ -724,7 +725,6 @@ class SpecfileImporter(wx.Frame) :
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
-            dspace = monod
             buff.append(f"mono_dspace = {dspace:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
@@ -752,7 +752,7 @@ class SpecfileImporter(wx.Frame) :
         self.array_sel['yerror'] = yerr_op
         self.array_sel['yerr_val'] = yerr_val
         self.array_sel['yerr_arr'] = yerr_arr
-        self.array_sel['monod'] = monod
+        self.array_sel['monod'] = dspace
         self.array_sel['en_units'] = en_units
 
         if self.read_ok_cb is not None:
@@ -795,7 +795,7 @@ class SpecfileImporter(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
 
         self.monod_val.Disable()
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
@@ -841,9 +841,19 @@ class SpecfileImporter(wx.Frame) :
             xname = '_index'
             exprs['xdat'] = 'arange(%i)' % npts
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
             exprs['xdat'] = '%%s.data[%i, : ]' % ix
 
+        xlabel = xname
+        en_units = self.en_units.GetStringSelection()
+        if en_units.startswith('deg'):
+            dspace = float(self.monod_val.GetValue())
+            workgroup.xdat = PLANCK_HC/(2*dspace*np.sin(DEG2RAD*workgroup.xdat))
+            xlabel = xname + ' (eV)'
+        elif en_units.startswith('keV'):
+            workgroup.xdat *= 1000.0
+            xlabel = xname + ' (eV)'
+        
         workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
         def pre_op(opwid, arr):
@@ -859,7 +869,6 @@ class SpecfileImporter(wx.Frame) :
             return suf, opstr, arr
 
 
-        xlabel = xname
         ylabel = yname1
         if len(yname2) == 0:
             yname2 = '1.0'

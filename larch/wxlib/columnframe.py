@@ -398,7 +398,8 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7,
+                                    size=(90, -1), action=self.onUpdate)
 
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
@@ -664,7 +665,17 @@ class ColumnDataFileFrame(wx.Frame) :
         if self.wid_groupname is not None:
             groupname = fix_varname(self.wid_groupname.GetValue())
 
-        yerr_op = self.yerr_op.GetStringSelection().lower()
+        en_units = self.en_units.GetStringSelection()
+        dspace   = float(self.monod_val.GetValue())
+        xarr     = self.xarr.GetStringSelection()
+        yarr1    = self.yarr1.GetStringSelection()
+        yarr2    = self.yarr2.GetStringSelection()
+        ypop     = self.ypop.GetStringSelection()
+        yop      = self.yop.GetStringSelection()
+        yerr_op  = self.yerr_op.GetStringSelection()
+        yerr_arr = self.yerr_arr.GetStringSelection()        
+        yerr_idx = self.yerr_arr.GetSelection()        
+        yerr_val = self.yerr_val.GetValue()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
             yerr_expr = "%f" % self.yerr_val.GetValue()
@@ -688,12 +699,20 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{group}.data = append({group}.data, _tmparr.reshape(1, _tmpn), axis=0)")
             buff.append("del _tmparr, _tmpn")
 
-
         for attr in ('datatype', 'plot_xlabel', 'plot_ylabel'):
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        for aname in ('xdat', 'ydat', 'yerr'):
+        expr = self.expressions['xdat'].replace('%s', '{group:s}')
+        if en_units.startswith('deg'):
+            buff.append(f"mono_dspace = {dspace:.9f}")
+            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
+        elif en_units.startswith('keV'):
+            buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
+        else:
+            buff.append(f"{{group}}.xdat = {expr:s}")
+
+        for aname in ('ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
 
@@ -707,6 +726,17 @@ class ColumnDataFileFrame(wx.Frame) :
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
         script = "\n".join(buff)
+
+        self.array_sel['xarr'] = xarr
+        self.array_sel['yarr1'] = yarr1
+        self.array_sel['yarr2'] = yarr2
+        self.array_sel['yop'] = yop
+        self.array_sel['ypop'] = ypop
+        self.array_sel['yerror'] = yerr_op
+        self.array_sel['yerr_val'] = yerr_val
+        self.array_sel['yerr_arr'] = yerr_arr
+        self.array_sel['monod'] = dspace
+        self.array_sel['en_units'] = en_units
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, groupname=groupname,
@@ -750,7 +780,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
 
         self.monod_val.Disable()
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
@@ -779,7 +809,7 @@ class ColumnDataFileFrame(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
         eguess =  guess_energy_units(workgroup.xdat)
         if eguess.startswith('eV'):
             self.en_units.SetStringSelection('eV')
@@ -807,8 +837,18 @@ class ColumnDataFileFrame(wx.Frame) :
             xname = '_index'
             exprs['xdat'] = 'arange(%i)' % npts
         else:
-            workgroup.xdat = rdata[ix, :]
+            workgroup.xdat = 1.0*rdata[ix, :]
             exprs['xdat'] = '%%s.data[%i, : ]' % ix
+
+        xlabel = xname
+        en_units = self.en_units.GetStringSelection()
+        if en_units.startswith('deg'):
+            dspace = float(self.monod_val.GetValue())
+            workgroup.xdat = PLANCK_HC/(2*dspace*np.sin(DEG2RAD*workgroup.xdat))
+            xlabel = xname + ' (eV)'
+        elif en_units.startswith('keV'):
+            workgroup.xdat *= 1000.0
+            xlabel = xname + ' (eV)'
 
         workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
@@ -823,12 +863,6 @@ class ColumnDataFileFrame(wx.Frame) :
                     arr = -np.log(arr)
                 arr[np.where(np.isnan(arr))] = 0
             return suf, opstr, arr
-
-        try:
-            xunits = rawgroup.array_units[ix].strip()
-            xlabel = '%s (%s)' % (xname, xunits)
-        except:
-            xlabel = xname
 
         yname1  = self.yarr1.GetStringSelection().strip()
         yname2  = self.yarr2.GetStringSelection().strip()
