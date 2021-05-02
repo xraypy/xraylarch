@@ -445,8 +445,7 @@ class SpecfileImporter(wx.Frame) :
         self.yerr_op = Choice(panel, choices=YERR_OPS, action=self.onYerrChoice, size=(150, -1))
         
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7,
-                                    size=(90, -1), action=self.onUpdate)
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
         
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
@@ -463,6 +462,8 @@ class SpecfileImporter(wx.Frame) :
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
         self.monod_val.SetValue(self.array_sel['monod'])
+        self.monod_val.SetAction(self.onUpdate)
+        
         self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
         self.en_units.SetStringSelection(self.array_sel['en_units'])
         self.yerr_op.SetStringSelection(self.array_sel['yerror'])
@@ -524,12 +525,43 @@ class SpecfileImporter(wx.Frame) :
         sizer.Add(self.message,                     (ir, 0), (1, 4), LEFT, 0)
         pack(panel, sizer)
 
+        self.nb = fnb.FlatNotebook(rightpanel, -1, agwStyle=FNB_STYLE)
+        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
         self.plotpanel.SetMinSize((300, 250))
 
+        shead = wx.Panel(rightpanel)
+        self.scanheader = wx.TextCtrl(shead, style=wx.TE_MULTILINE|wx.TE_READONLY,
+                                      size=(400, 250))
+        self.scanheader.SetValue('\n'.join(self.curscan.scan_header))
+        self.scanheader.SetFont(Font(10))        
+        textsizer = wx.BoxSizer(wx.VERTICAL)
+        textsizer.Add(self.scanheader, 1, LEFT|wx.GROW, 1)
+        pack(shead, textsizer)
+
+        
+        fhead = wx.Panel(rightpanel)
+        self.fileheader = wx.TextCtrl(fhead, style=wx.TE_MULTILINE|wx.TE_READONLY,
+                                      size=(400, 250))
+        self.fileheader.SetValue('\n'.join(self.curscan.file_header))
+        self.fileheader.SetFont(Font(10))        
+        textsizer = wx.BoxSizer(wx.VERTICAL)
+        textsizer.Add(self.fileheader, 1, LEFT|wx.GROW, 1)
+        pack(fhead, textsizer)
+
+
+
+        self.nb.AddPage(fhead, ' File Header ', True)
+        self.nb.AddPage(shead, ' Scan Header ', True)
+        self.nb.AddPage(self.plotpanel, ' Plot of Selected Arrays ', True)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, LEFT|wx.GROW, 1)
-        sizer.Add(self.plotpanel, 1, LEFT|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.nb, 1, LEFT|wx.GROW|wx.ALL, 1)
         pack(rightpanel, sizer)
 
         splitter.SplitVertically(leftpanel, rightpanel, 1)
@@ -538,6 +570,7 @@ class SpecfileImporter(wx.Frame) :
         statusbar_fields = [filename, ""]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+
         self.set_energy_units()
         csize = self.GetSize()
         bsize = self.GetBestSize()
@@ -612,6 +645,7 @@ class SpecfileImporter(wx.Frame) :
         self.workgroup.datatype = 'xas' if 'en' in xsel else 'raw'
         self.datatype.SetStringSelection(self.workgroup.datatype)
 
+        self.scanheader.SetValue('\n'.join(self.curscan.scan_header))
         self.set_energy_units()
         self.onUpdate()
 
@@ -801,14 +835,15 @@ class SpecfileImporter(wx.Frame) :
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
             self.en_units.SetSelection(4)
         else:
-            eguess =  guess_energy_units(workgroup.xdat)
-            if eguess.startswith('eV'):
-                self.en_units.SetStringSelection('eV')
-            elif eguess.startswith('keV'):
-                self.en_units.SetStringSelection('keV')
+            eguess = guess_energy_units(workgroup.xdat)
+            if eguess.startswith('keV'):
+                self.en_units.SetSelection(1)
             elif eguess.startswith('deg'):
-                self.en_units.SetStringSelection('deg')
+                self.en_units.SetSelection(2)
                 self.monod_val.Enable()
+            else:
+                self.en_units.SetSelection(0)
+                
         self.onUpdate()
 
     def onEnUnitsSelect(self, evt=None):
@@ -942,9 +977,8 @@ class SpecfileImporter(wx.Frame) :
             ((len(en) > 1000 or any(np.diff(en) < 0) or
               ((max(en)-min(en)) > 350 and
                (np.diff(en[:100]).mean() < 1.0))))):
-            self.message.SetLabel("Warning: XAS data may need to be rebinned!")
-        else:
-            self.message.SetLabel("")
+            self.statusbar.SetStatusText("Warning: XAS data may need to be rebinned!")
+
 
         workgroup.filename    = self.curscan.filename
         workgroup.npts        = npts
@@ -969,4 +1003,4 @@ class SpecfileImporter(wx.Frame) :
 
 
     def plot_messages(self, msg, panel=1):
-        self.SetStatusText(msg, panel)
+        self.statusbar.SetStatusText(msg, panel)
