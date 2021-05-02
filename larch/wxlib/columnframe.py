@@ -398,8 +398,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yerr_op.SetSelection(0)
 
         self.yerr_val = FloatCtrl(panel, value=1, precision=4, size=(90, -1))
-        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7,
-                                    size=(90, -1), action=self.onUpdate)
+        self.monod_val  = FloatCtrl(panel, value=3.1355316, precision=7, size=(90, -1))
 
         xlab = SimpleText(panel, ' X array: ')
         ylab = SimpleText(panel, ' Y array: ')
@@ -416,6 +415,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
         self.monod_val.SetValue(self.array_sel['monod'])
+        self.monod_val.SetAction(self.onUpdate)        
         self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))        
         self.en_units.SetStringSelection(self.array_sel['en_units'])
         self.yerr_op.SetStringSelection(self.array_sel['yerror'])
@@ -786,15 +786,15 @@ class ColumnDataFileFrame(wx.Frame) :
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
             self.en_units.SetSelection(4)
         else:
-            eguess =  guess_energy_units(workgroup.xdat)
-            if eguess.startswith('eV'):
-                self.en_units.SetStringSelection('eV')
-            elif eguess.startswith('keV'):
-                self.en_units.SetStringSelection('keV')
+            eguess = guess_energy_units(workgroup.xdat)
+            if eguess.startswith('keV'):
+                self.en_units.SetSelection(1)
             elif eguess.startswith('deg'):
-                self.en_units.SetStringSelection('deg')
+                self.en_units.SetSelection(2)
                 self.monod_val.Enable()
-        self.onUpdate()
+            else:
+                self.en_units.SetSelection(0)
+        
 
     def onEnUnitsSelect(self, evt=None):
         self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
@@ -976,4 +976,4 @@ class ColumnDataFileFrame(wx.Frame) :
                 self.nb.SetSelection(i)
 
     def plot_messages(self, msg, panel=1):
-        self.SetStatusText(msg, panel)
+        self.statusbar.SetStatusText(msg, panel)
