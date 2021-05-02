@@ -746,12 +746,22 @@ class DataSourceSpecH5(object):
         timestamp = self.get_timestamp()
         path, filename = os.path.split(self.fname)
         axis = self.get_scan_axis()
+
+        scan_header = list(scan_group.get('instrument/specfile/scan_header', []))
+        file_header = list(scan_group.get('instrument/specfile/file_header', []))
+        header = []
+        for scanh in scan_header:
+            if scanh.startswith('#CXDI '):
+                header.append(scanh[6:].strip())
+
         out = Group(__name__=f"Spec file: {filename}, scan: {scan_name}",
                     path=path, filename=filename, datatype=None,
                     array_labels=labels, axis=axis,
                     scan_index=scan_index,
-                    scan_name=scan_name,
-                    title=title,
+                    scan_name=scan_name, 
+                    title=title, header=header,
+                    scan_header=scan_header,
+                    file_header=file_header,
                     timestring=timestring,
                     timestamp=timestamp)
 
