@@ -39,6 +39,7 @@ from larch import Group
 
 from ..xrf import xrf_background, MCA, FanoFactors
 from ..utils.jsonutils import encode4js, decode4js
+from ..utils.physical_constants import E_MASS
 
 from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
                                MAKE_XRFRESULTS_GROUP)
@@ -262,12 +263,15 @@ class FitSpectraFrame(wx.Frame):
         p.Add((2, 2), newrow=True)
 
         #                name, escale, step, sigmax, beta, tail
-        scatter_peaks = (('Elastic',  1.00, 0.05, 1.0, 0.5, 0.10),
-                         ('Compton1', 0.97, 0.05, 1.5, 2.0, 0.25),
-                         ('Compton2', 0.94, 0.05, 2.0, 2.5, 0.25))
+        scatter_peaks = (('Elastic',  0, 0.05, 1.0, 0.5, 0.10),
+                         ('Compton1', 1, 0.05, 1.5, 2.0, 0.25),
+                         ('Compton2', 2, 0.05, 2.0, 2.5, 0.25))
         opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
         for name, escale, dstep, dsigma, dbeta, dtail in scatter_peaks:
-            en = escale * self.mca.incident_energy
+            en = self.mca.incident_energy
+            for i in range(escale):
+                en = en * (1 - 1/(1 + (E_MASS*0.001)/en))    # Compton shift at 90 deg
+            
             t = name.lower()
             vary_en = 1 if t.startswith('compton') else 0
 
@@ -1188,6 +1192,9 @@ class FitSpectraFrame(wx.Frame):
                     ampname = '%s_amp' % nam
                     if nam in ('background', 'pileup', 'escape'):
                         scale = 1.0
+                    if nam in ('compton2',):
+                        scale /= 5.0
+                        
                 paramval = self.xrfmod.params[ampname].value
                 s = "_xrfmodel.params['%s'].value = %.5f" % (ampname, paramval*scale)
                 cmds.append(s)
