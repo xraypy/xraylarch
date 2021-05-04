@@ -1028,8 +1028,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if outfile is None:
             return
 
-        area = self.owner.current_file.xrmmap['areas/%s' % aname][()]
-        npix = area.sum()
+        area = self.owner.current_file.xrmmap['areas/%s' % aname]
+        npix = area[()].sum()
         pixtime = self.owner.current_file.pixeltime
 
         mca   = self.owner.current_file.get_mca_area(aname)
@@ -1078,9 +1078,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             aname = self._getarea()
         except:
             return
-        area  = self.owner.current_file.xrmmap['areas/%s' % aname][()]
-        npix = area.sum()
-        yvals, xvals = np.where(area)
+        area  = self.owner.current_file.xrmmap['areas/%s' % aname]
+        npix = area[()].sum()
+        yvals, xvals = np.where(area[()])
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         info1_fmt = '%i Pixels, %.3f seconds'
@@ -1112,13 +1112,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onShow(self, event=None):
         aname = self._getarea()
-        area  = self.owner.current_file.xrmmap['areas'][aname][()]
+        area  = self.owner.current_file.xrmmap['areas'][aname]
         label = bytes2str(area.attrs.get('description', aname))
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
             try:
-                imd.add_highlight_area(area, label=label)
+                imd.add_highlight_area(area[()], label=label)
             except:
                 pass
 
@@ -1127,7 +1127,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             h, w = self.owner.current_file.get_shape()
             highlight = np.zeros((h, w))
 
-            highlight[np.where(area)] = 1
+            highlight[np.where(area[()])] = 1
             imd.panel.add_highlight_area(highlight, label=label)
 
     def onDelete(self, event=None):
