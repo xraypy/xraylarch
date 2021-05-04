@@ -507,7 +507,7 @@ class GSEXRM_MapFile(object):
                     "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
         self.filename = filename
         if self.h5root is None:
-            self.h5root = h5py.File(self.filename)
+            self.h5root = h5py.File(self.filename, 'a')
         self.xrmmap = self.h5root[root]
         if self.folder is None:
             self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
@@ -2719,7 +2719,6 @@ class GSEXRM_MapFile(object):
             data = None
             for yrow in range(ymin, ymax+1):
                 xrd_file = os.path.join(self.folder, self.rowdata[yrow][4])
-                print("row ", yrow)
                 h5file = h5py.File(xrd_file, 'r')
                 rowdat = h5file['entry/data/data'][1:,:,:]
                 h5file.close()

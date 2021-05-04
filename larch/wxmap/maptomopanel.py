@@ -527,7 +527,7 @@ class TomographyPanel(GridPanel):
 
 
         if refine_center:
-            self.set_center(xrmfile.xrmmap['tomo/center'].value)
+            self.set_center(xrmfile.xrmmap['tomo/center'][()])
             self.refine_center.SetValue(False)
 
 

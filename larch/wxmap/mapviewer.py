@@ -580,25 +580,25 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         self.wids['Scan Time'].SetLabel( time_str )
         self.wids['File Compression'].SetLabel(bytes2str(xrmmap.attrs.get('Compression','')))
 
-        comments = h5str(xrmmap['config/scan/comments'].value).split('\n', 2)
+        comments = h5str(xrmmap['config/scan/comments'][()]).split('\n', 2)
         for i, comm in enumerate(comments):
             self.wids['User Comments %i' %(i+1)].SetLabel(comm)
 
         pos_addrs = [str(x) for x in xrmmap['config/positioners'].keys()]
-        pos_label = [h5str(x.value) for x in xrmmap['config/positioners'].values()]
+        pos_label = [h5str(x[()]) for x in xrmmap['config/positioners'].values()]
 
-        scan_pos1 = h5str(xrmmap['config/scan/pos1'].value)
-        scan_pos2 = h5str(xrmmap['config/scan/pos2'].value)
+        scan_pos1 = h5str(xrmmap['config/scan/pos1'][()])
+        scan_pos2 = h5str(xrmmap['config/scan/pos2'][()])
         i1 = pos_addrs.index(scan_pos1)
         i2 = pos_addrs.index(scan_pos2)
 
-        start1 = float(xrmmap['config/scan/start1'].value)
-        start2 = float(xrmmap['config/scan/start2'].value)
-        stop1  = float(xrmmap['config/scan/stop1'].value)
-        stop2  = float(xrmmap['config/scan/stop2'].value)
+        start1 = float(xrmmap['config/scan/start1'][()])
+        start2 = float(xrmmap['config/scan/start2'][()])
+        stop1  = float(xrmmap['config/scan/stop1'][()])
+        stop2  = float(xrmmap['config/scan/stop2'][()])
 
-        step1 = float(xrmmap['config/scan/step1'].value)
-        step2 = float(xrmmap['config/scan/step2'].value)
+        step1 = float(xrmmap['config/scan/step1'][()])
+        step2 = float(xrmmap['config/scan/step2'][()])
 
         npts1 = int((abs(stop1 - start1) + 1.1*step1)/step1)
         npts2 = int((abs(stop2 - start2) + 1.1*step2)/step2)
@@ -607,7 +607,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         scan1 = sfmt % (pos_label[i1], start1, stop1, step1, npts1)
         scan2 = sfmt % (pos_label[i2], start2, stop2, step2, npts2)
 
-        rowtime = float(xrmmap['config/scan/time1'].value)
+        rowtime = float(xrmmap['config/scan/time1'][()])
 
         self.wids['Scan Fast Motor'].SetLabel(scan1)
         self.wids['Scan Slow Motor'].SetLabel(scan2)
@@ -891,7 +891,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         ctime     = xrmfile.pixeltime
 
         area = xrmfile.get_area(name=areaname)
-        amask = area.value
+        amask = area[()]
 
         def match_mask_shape(det, mask):
            if mask.shape[1] == det.shape[1] - 2: # hotcols
@@ -924,13 +924,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
         for i in range(1, xrmfile.nmca+1):
             tname = '%s%i/realtime' % (d_pref, i)
-            rtime = xrmmap[tname].value
+            rtime = xrmmap[tname][()]
             if amask.shape[1] == rtime.shape[1] - 2: # hotcols
                 rtime = rtime[:,1:-1]
 
         if version_ge(version, '2.0.0'):
             for scalar in d_scas:
-                d = xrmmap['scalars'][scalar].value
+                d = xrmmap['scalars'][scalar][()]
                 d = match_mask_shape(d, amask)
                 report_info(scalar, d/ctime)
 
@@ -1028,9 +1028,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         if outfile is None:
             return
 
-        area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-
-        npix = len(area.value[np.where(area.value)])
+        area = self.owner.current_file.xrmmap['areas/%s' % aname][()]
+        npix = area.sum()
         pixtime = self.owner.current_file.pixeltime
 
         mca   = self.owner.current_file.get_mca_area(aname)
@@ -1079,9 +1078,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             aname = self._getarea()
         except:
             return
-        area  = self.owner.current_file.xrmmap['areas/%s' % aname]
-        npix = len(area.value[np.where(area.value)])
-        yvals, xvals = np.where(area.value)
+        area  = self.owner.current_file.xrmmap['areas/%s' % aname][()]
+        npix = area.sum()
+        yvals, xvals = np.where(area)
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         info1_fmt = '%i Pixels, %.3f seconds'
@@ -1113,13 +1112,13 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onShow(self, event=None):
         aname = self._getarea()
-        area  = self.owner.current_file.xrmmap['areas'][aname]
+        area  = self.owner.current_file.xrmmap['areas'][aname][()]
         label = bytes2str(area.attrs.get('description', aname))
 
         if len(self.owner.tomo_displays) > 0:
             imd = self.owner.tomo_displays[-1]
             try:
-                imd.add_highlight_area(area.value, label=label)
+                imd.add_highlight_area(area, label=label)
             except:
                 pass
 
@@ -1128,7 +1127,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             h, w = self.owner.current_file.get_shape()
             highlight = np.zeros((h, w))
 
-            highlight[np.where(area.value)] = 1
+            highlight[np.where(area)] = 1
             imd.panel.add_highlight_area(highlight, label=label)
 
     def onDelete(self, event=None):
@@ -1181,7 +1180,8 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         mca_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
-        npix = len(area.value[np.where(area.value)])
+        
+        npix = area[()].sum()
         self._mca.filename = fname
         self._mca.title = label
         self._mca.npixels = npix
@@ -1227,7 +1227,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             stem = '%s_%s' % (stem,title)
 
         kwargs = dict(filename=self.owner.current_file.filename,
-                      npixels = len(area.value[np.where(area.value)]),
+                      npixels = area[()].sum(),
                       energy  = 0.001*xrmfile.get_incident_energy(),
                       calfile = ponifile, title = title, xrd2d=False)
 
@@ -1439,7 +1439,7 @@ class MapViewerFrame(wx.Frame):
             path, fname = os.path.split(xrmfile.filename)
             aname = self.sel_mca.areaname
             area  = xrmfile.xrmmap['areas/%s' % aname]
-            npix  = len(area.value[np.where(area.value)])
+            npix  = area[()].sum()
             self.sel_mca.filename = fname
             self.sel_mca.title = aname
             self.sel_mca.npixels = npix
@@ -1481,10 +1481,10 @@ class MapViewerFrame(wx.Frame):
 
         xrmmap = self.current_file.xrmmap
         pos_addrs = [str(x) for x in xrmmap['config/positioners'].keys()]
-        pos_label = [str(x.value) for x in xrmmap['config/positioners'].values()]
+        pos_label = [str(x[()]) for x in xrmmap['config/positioners'].values()]
 
-        pos1 = str(xrmmap['config/scan/pos1'].value)
-        pos2 = str(xrmmap['config/scan/pos2'].value)
+        pos1 = h5str(xrmmap['config/scan/pos1'][()])
+        pos2 = h5str(xrmmap['config/scan/pos2'][()])
         i1 = pos_addrs.index(pos1)
         i2 = pos_addrs.index(pos2)
         msg = '%s(%s) = %.4f, %s(%s) = %.4f?' % (pos_label[i1], pos_addrs[i1], xval,
@@ -1543,8 +1543,8 @@ class MapViewerFrame(wx.Frame):
         for addr, val in zip(env_addrs, env_vals):
             if addr in allpvs:
                 position[addr] = float(val)
-        position[pvn(h5str(conf['scan/pos1'].value))] = x
-        position[pvn(h5str(conf['scan/pos2'].value))] = y
+        position[pvn(h5str(conf['scan/pos1'][()]))] = x
+        position[pvn(h5str(conf['scan/pos2'][()]))] = y
 
         notes = {'source': '%s: %s' % (xrmfile.filename, name)}
         self.instdb.save_position(self.inst_name, name, position,

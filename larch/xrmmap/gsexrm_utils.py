@@ -80,23 +80,23 @@ class GSEXRM_MCADetector(object):
         self.shape =  self.xrmmap['%s/livetime' % detname].shape
 
         # energy
-        self.energy = self.xrmmap['%s/energy' % detname].value
+        self.energy = self.xrmmap['%s/energy' % detname][()]
 
         # set up rois
-        rnames = self.xrmmap['%s/roi_names' % detname].value
-        raddrs = self.xrmmap['%s/roi_addrs' % detname].value
-        rlims  = self.xrmmap['%s/roi_limits' % detname].value
+        rnames = self.xrmmap['%s/roi_names' % detname][()]
+        raddrs = self.xrmmap['%s/roi_addrs' % detname][()]
+        rlims  = self.xrmmap['%s/roi_limits' % detname][()]
         for name, addr, lims in zip(rnames, raddrs, rlims):
             self.rois.append(ROI(name=name, address=addr,
                                  left=lims[0], right=lims[1]))
 
     def __getval(self, param):
         if self.det is None:
-            out = self.xrmmap['%s1/%s' % (self.prefix, param)].value
+            out = self.xrmmap['%s1/%s' % (self.prefix, param)][()]
             for i in range(2, self.__ndet):
-                out += self.xrmmap['%s%i/%s' % (self.prefix, i, param)].value
+                out += self.xrmmap['%s%i/%s' % (self.prefix, i, param)][()]
             return out
-        return self.det[param].value
+        return self.det[param][()]
 
     @property
     def counts(self):
@@ -138,7 +138,7 @@ class GSEXRM_Area(object):
         if isinstance(index, int):
             index = 'area_%3.3i' % index
         self._area = self.xrmmap['areas/%s' % index]
-        self.npts = self._area.value.sum()
+        self.npts = self._area[()].sum()
 
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(self._area)]
         self.yslice, self.xslice = sy, sx
