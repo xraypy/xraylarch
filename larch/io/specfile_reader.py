@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Read data in SPEC_ format via `silx.io.open`
+"""Utility wrapper for h5py-like API to Spec files
 ===================================================
+
+This is a wrapper on top of `silx.io.open` to read Spec_ files via an HDF5-like API.
 
 .. _SPEC: http://www.certif.com/content/spec
 
 Requirements
 ------------
-- silx (http://www.silx.org/doc/silx/dev/modules/io/specfilewrapper.html)
-
+- silx (http://www.silx.org/doc/silx/latest/modules/io/spech5.html)
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
@@ -18,6 +18,8 @@ __version__ = "2021.05.1_larch"
 import os, sys
 import copy
 import datetime
+import six
+import collections
 import numpy as np
 import h5py
 from silx.io.utils import open as silx_open
@@ -28,6 +30,11 @@ from scipy.ndimage import map_coordinates
 from larch.math.utils import savitzky_golay
 from larch import Group
 
+#: Python 3.8+ compatibility
+try:
+    collectionsAbc = collections.abc
+except Exception:
+    collectionsAbc = collections
 
 ### UTILITIES (the class is below!)
 def _str2rng(rngstr, keeporder=True, rebin=None):
@@ -125,6 +132,21 @@ def is_specfile(filename):
         except:
             pass
     return scans is not None
+
+def update_nested(d, u):
+    """Update a nested dictionary
+
+    From: https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
+    """
+    for k, v in six.iteritems(u):
+        dv = d.get(k, {})
+        if not isinstance(dv, collectionsAbc.Mapping):
+            d[k] = v
+        elif isinstance(v, collectionsAbc.Mapping):
+            d[k] = update_nested(dv, v)
+        else:
+            d[k] = v
+    return d
 
 
 ### ==================================================================
@@ -286,8 +308,6 @@ class DataSourceSpecH5(object):
         assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
         self._scan_n = scan_n
         if scan_kws is not None:
-            from sloth.utils.dicts import update_nested
-
             self._scan_kws = update_nested(self._scan_kws, scan_kws)
         if self._urls_fmt == "silx":
             self._scan_str = f"{scan_n}.{scan_idx}"
