@@ -36,9 +36,7 @@ from .xafs_beamlines import guess_beamline
 from .csvfiles import groups2csv, read_csv
 from .export_modelresult import export_modelresult
 from .mergegroups import merge_groups
-from .specfile_reader import (HAS_SPECFILE, spec_getscan2group,
-                              spec_getmap2group, spec_getmrg2group,
-                              str2rng_larch, read_specfile, open_specfile,
+from .specfile_reader import (str2rng_larch, read_specfile, open_specfile,
                               is_specfile)
 
 from .stepscan_file import read_stepscan
@@ -92,17 +90,9 @@ __exports__ = dict(increment_filename=increment_filename,
                    h5file=h5file,
                    netcdf_file=netcdf_file,
                    netcdf_group=netcdf_group,
+                   str2rng=str2rng_larch,
+                   read_specfile=read_specfile,
+                   specfile=open_specfile
                    )
-
-
-
-
-if HAS_SPECFILE:
-    __exports__.update(dict(read_specfile_scan=spec_getscan2group,
-                            read_specfile_map=spec_getmap2group,
-                            read_specfile_mrg=spec_getmrg2group,
-                            str2rng=str2rng_larch,
-                            read_specfile=read_specfile,
-                            specfile=open_specfile))
 
 _larch_builtins = {'_io':__exports__}
