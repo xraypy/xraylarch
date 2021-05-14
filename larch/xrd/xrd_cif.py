@@ -2643,7 +2643,7 @@ class CIF(object):
                     self.atom.symm_wyckoff += ['error']
 
 
-    def calc_q(self, wavelength=1.54056, q_min=0.2, q_max=10.0):
+    def calc_q(self, q_min=0.2, q_max=10.2, qstep=0.1):
         """
         """
         hkl_list = generate_hkl(positive_only=True)
