@@ -357,7 +357,7 @@ class cifDB(object):
         for spgrp_no in SPACEGROUPS.keys():
             for spgrp_name in SPACEGROUPS[spgrp_no]:
                 try:
-                    def_spgp.execute(iuc_id=spgrp_no,hm_notation=spgrp_name)
+                    def_spgp.execute(iuc_id=spgrp_no, hm_notation=spgrp_name)
                 except:
                     if verbose:
                         print('Duplicate: %s %s' % (spgrp_no,spgrp_name))
@@ -626,9 +626,7 @@ class cifDB(object):
 ##################################################################################
 
     def amcsd_info(self, amcsd_id, no_qpeaks=None, ciffile=None):
-
         mineral_id,iuc_id = self.cif_by_amcsd(amcsd_id,only_ids=True)
-
         mineral_name = self.search_for_mineral(minid=mineral_id)[0].mineral_name
         authors      = self.author_by_amcsd(amcsd_id)
 
@@ -640,7 +638,7 @@ class cifDB(object):
             print(' ===================== ')
         print(' AMCSD: %i' % amcsd_id)
         print(' Name: %s' % mineral_name)
-        print(' %s' % self.composition_by_amcsd(amcsd_id,string=True))
+        print(' %s' % self.composition_by_amcsd(amcsd_id))
         try:
             print(' Space Group No.: %s (%s)' % (iuc_id,self.symm_id(iuc_id)))
         except:
@@ -746,7 +744,7 @@ class cifDB(object):
         qaxis = self.axis[imin:imax]
         stepq = (qaxis[1]-qaxis[0])
 
-        amcsd, q_amcsd = self.match_q(list=list, qmin=qmin, qmax=qmax)
+        amcsd, q_amcsd = self.match_qc(list=list, qmin=qmin, qmax=qmax)
 
         ## Re-bins data if different step size is specified
         if qstep > stepq:
@@ -818,7 +816,6 @@ class cifDB(object):
                 amcsd_incld += [amcsd_id]
             else:
                 amcsd_excld += [amcsd_id]
-
         return amcsd_incld
 
 

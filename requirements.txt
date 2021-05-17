@@ -26,3 +26,4 @@ silx>=0.12
 hdf5plugin
 numdifftools
 psutil
+pymatgen

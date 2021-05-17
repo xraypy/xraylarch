@@ -34,9 +34,10 @@ from .mback import mback, mback_norm
 from .diffkk import diffkk, diffKKGroup
 from .fluo import fluo_corr
 
+from .cif2feff import cif_sites, cif2feff6l
+
 from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l, find_exe
 from .feff8lpath import feff8_xafs
-
 
 
 from .cauchy_wavelet import cauchy_wavelet
@@ -51,7 +52,7 @@ def _larch_init(_larch):
     # initialize _xafs._feff_executable
     feff6_exe = find_exe('feff6l')
     _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
-    
+
 
 _larch_groups = (diffKKGroup, FeffRunner, FeffDatFile, FeffPathGroup,
                  TransformGroup, FeffitDataSet)
