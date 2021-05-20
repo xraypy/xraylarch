@@ -200,6 +200,8 @@ class DataSourceSpecH5(object):
         self._cnts_url = "measurement"
         self._title_url = "title"
         self._time_url = "start_time"
+        self._sample_url = "sample/name"
+        self._plotcnts_url = "plotselect"
         self._urls_fmt = "silx"
 
         if urls_fmt == "spec2nexus":
@@ -237,7 +239,6 @@ class DataSourceSpecH5(object):
         """Close source file silx.io.spech5.SpecH5"""
         self._scanfile.close()
         self._scanfile = None
-
 
     def get_scangroup(self, scan=None):
         """get current scan group
@@ -599,7 +600,7 @@ class DataSourceSpecH5(object):
         larch Group with scan data
         """
         self.get_scangroup(scan)
-        scan_index  = self._scan_n
+        scan_index = self._scan_n
         scan_name = self._scan_str
         scan_group = self._scangroup
         labels = self.get_counters()
@@ -635,13 +636,12 @@ class DataSourceSpecH5(object):
         out.data = np.array(data)
         return out
 
-
     # =================== #
     #: WRITE DATA METHODS
     # =================== #
 
     def write_scans_to_h5(self, scans, fname_out, scans_groups=None,
-                           h5path=None, overwrite=False, conf_dict=None):
+                          h5path=None, overwrite=False, conf_dict=None):
         """Export a selected list of scans to HDF5 file
 
         .. note:: This is a simple wrapper to
@@ -740,6 +740,7 @@ str2rng_larch.__doc__ = _str2rng.__doc__
 
 def open_specfile(filename):
     return DataSourceSpecH5(filename)
+
 
 def read_specfile(filename, scan=None):
     """simple mapping of a Spec file to a larch group"""
