@@ -17,9 +17,13 @@ OK, that looks like "well, why not just save the CIF files"?
 """
 
 import os
+import time
 import json
 from base64 import b64encode, b64decode
 from collections import namedtuple
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 import numpy as np
 
 from sqlalchemy import MetaData, create_engine, func, text, and_
@@ -34,14 +38,22 @@ except IOError:
 
 from xraydb.chemparser import chemparse
 
-from amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
-                            put_optarray, get_optarray)
+from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
+                             put_optarray, get_optarray)
 
+from ..site_config import user_larchdir
+from .. import logger
 
 CifPublication = namedtuple('CifPublication', ('id', 'journalname', 'year',
                                             'volume', 'page_first',
                                             'page_last', 'authors'))
 
+
+_CIFDB = None
+AMSCIF_FULL = 'amscif_full.db'
+AMSCIF_TRIM = 'amscif_trim.db'
+SOURCE_URLS = ('https://docs.xrayabsorption.org/',
+               'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
 class CifStructure():
 
@@ -98,13 +110,13 @@ class AMSCIFDB():
        http://rruff.geo.arizona.edu/AMS/amcsd.php
 
     """
-    def __init__(self, dbname='amscif.db', read_only=False):
+    def __init__(self, dbname=None, read_only=False):
         "connect to an existing database"
-        if not os.path.exists(dbname):
+        if dbname is None:
             parent, _ = os.path.split(__file__)
-            dbname = os.path.join(parent, dbname)
-            if not os.path.exists(dbname):
-                raise IOError("Database '%s' not found!" % dbname)
+            dbname = os.path.join(parent, AMSCIF_TRIM)
+        if not os.path.exists(dbname):
+            raise IOError("Database '%s' not found!" % dbname)
 
         if not isAMSCIFDB(dbname):
             raise ValueError("'%s' is not a valid AMSCIF Database!" % dbname)
@@ -185,7 +197,7 @@ class AMSCIFDB():
 
     def add_spacegroup(self, hm_name, symmetry_xyz, category=None):
         """add entry to spacegroups table, including HM notation and CIF symmetry operations
-        """                        
+        """
         sg = self.get_spacegroup(hm_name)
         if sg is not None and sg.symmetry_xyz == symmetry_xyz:
             return sg
@@ -198,10 +210,10 @@ class AMSCIFDB():
         return self.get_spacegroup(hm_name)
 
     def get_publications(self, journalname=None, year=None, volume=None,
-                        page_first=None, page_last=None, id=None): 
+                        page_first=None, page_last=None, id=None):
         """get rows from publications table by journalname, year (required)
         and optionally volume, page_first, or page_last.
-        """                       
+        """
         tab = self.tables['publications']
 
         args = []
@@ -224,7 +236,7 @@ class AMSCIFDB():
             authtab = self.tables['authors']
             patab = self.tables['publication_authors']
             for row in rows:
-                q = select(authtab.c.name).where(and_(authtab.c.id==patab.c.author_id, 
+                q = select(authtab.c.name).where(and_(authtab.c.id==patab.c.author_id,
                                                       patab.c.publication_id==row.id))
                 authors = tuple([i[0] for i in self.conn.execute(q).fetchall()])
                 out.append(CifPublication(row.id, row.journalname, row.year,
@@ -334,7 +346,7 @@ class AMSCIFDB():
                                     volume=dat['_journal_volume'],
                                     page_first=dat['_journal_page_first'],
                                     page_last=dat['_journal_page_last'])
-        
+
         if pubs is None:
             pub = self.add_publication(dat['_journal_name_full'],
                                        dat['_journal_year'],
@@ -490,7 +502,7 @@ class AMSCIFDB():
             out.append('_atom_site_fract_x')
             out.append('_atom_site_fract_y')
             out.append('_atom_site_fract_z')
-            
+
 
             natoms = len(atoms_sites)
             atoms_x = get_optarray(cif.atoms_x)
@@ -562,9 +574,38 @@ class AMSCIFDB():
                 out.append(self.get_cif(row[0]))
                 found.append(row[0])
         return out
-    
-            
-        
-            
 
 
+def get_amscifdb(download_full=True, timeout=30):
+    """return instance of the AMS CIF Database
+
+    Returns:
+        AMSCIF DB
+    Example:
+
+    """
+    global _CIFDB
+    if _CIFDB is not None:
+        return _CIFDB
+
+    dbfull = os.path.join(user_larchdir, AMSCIF_FULL)
+    if os.path.exists(dbfull):
+        _CIFDB = AMSCIFDB(dbfull)
+        return _CIFDB
+    t0 = time.time()
+    if download_full:
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        for src in SOURCE_URLS:
+            url = f"{src:s}/{AMSCIF_FULL:s}"
+            req = requests.get(url, verify=True, timeout=timeout)
+            if req.status_code == 200:
+                break
+        if req.status_code == 200:
+            with open(dbfull, 'wb') as fh:
+                fh.write(req.content)
+            print("Downloaded  %s : %.2f sec" % (dbfull, time.time()-t0))
+            time.sleep(0.25)
+            _CIFDB = AMSCIFDB(dbfull)
+            return _CIFDB
+    # finally download of full must have failed
+    return AMSCIFDB()
