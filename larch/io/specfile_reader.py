@@ -135,7 +135,7 @@ def is_specfile(filename):
         or topbytes.startswith(b"#F ")  # full Spec file
     ):  # full specscan
         try:
-            scans = DataSourceSpecH5(filename)
+            scans = DataSourceSpecH5(filename)._scans
         except Exception:
             pass
     return scans is not None
@@ -208,7 +208,8 @@ class DataSourceSpecH5(object):
         self._mots_url = "instrument/positioners"
         self._cnts_url = "measurement"
         self._title_url = "title"
-        self._time_url = "start_time"
+        self._time_start_url = "start_time"
+        self._time_end_url = "end_time"
         self._sample_url = "sample/name"
         self._plotcnts_url = "plotselect"
         self._scan_header_url = "instrument/specfile/scan_header"
@@ -391,7 +392,7 @@ class DataSourceSpecH5(object):
         """
         allscans = []
         for sn, sg in self._sourcefile.items():
-            allscans.append([sn, sg[self._title_url][()], sg[self._time_url][()]])
+            allscans.append([sn, sg[self._title_url][()], sg[self._time_start_url][()]])
         return allscans
 
     def get_motors(self, scan=None):
@@ -444,28 +445,15 @@ class DataSourceSpecH5(object):
 
         Returns
         -------
-        start_time (str): scan start time self._scangroup[self._time_url][()]
+        start_time (str): scan start time self._scangroup[self._time_start_url][()]
         """
         sg = self.get_scangroup(scan)
-        return sg[self._time_url][()]
+        return sg[self._time_start_url][()]
 
-    def get_timestamp(self, scan=None):
-        """Get integer timestamp from the start time str
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
-        """
-        if scan is not None:
-            self.set_scan(scan)
-        d, t = self.get_time().split("T")
-        dd = d.split("-")
-        tt = t.split(":")
-        ddd = [int(_dd) for _dd in dd]
-        ttt = [int(_tt) for _tt in tt]
-        dt = ddd + ttt
-        return int(datetime.datetime(*dt).timestamp())
+    def get_timestamp(self):
+        """Get timestamp from the current scan"""
+        dt = np.datetime64(self.get_time())
+        return dt.astype(datetime.datetime).timestamp()
 
     def get_scan_info_from_title(self, scan=None):
         """Parser to get scan information from title
