@@ -164,6 +164,8 @@ class DataSourceSpecH5(object):
     """Data source utility wrapper for a Spec file read as HDF5 object
     via silx.io.open"""
 
+    _file_types = ("Spec", "HDF5")
+
     def __init__(self, fname=None, logger=None, urls_fmt="silx", verbose=False):
         """init with file name and default attributes
 
@@ -191,6 +193,7 @@ class DataSourceSpecH5(object):
 
         self._fname = fname
         self._sourcefile = None
+        self._sourcefile_type = None
         self._scans = None
         self._scan_n = None
         self._scan_str = None
@@ -234,6 +237,9 @@ class DataSourceSpecH5(object):
         #: source file object (h5py-like)
         try:
             self._sourcefile = silx_open(self._fname)
+            for ft in self._file_types:
+                if ft in str(self._sourcefile):
+                    self._sourcefile_type = ft
             self._scans = self.get_scans()
             self.set_scan(self._scans[0][0])  # set the first scan at init
         except OSError:
@@ -618,13 +624,14 @@ class DataSourceSpecH5(object):
 
         scan_header = list(scan_group.get(self._scan_header_url, []))
         file_header = list(scan_group.get(self._file_header_url, []))
+        file_type = self._sourcefile_type
         header = []
         for scanh in scan_header:
             if scanh.startswith("#CXDI "):
                 header.append(scanh[6:].strip())
 
         out = Group(
-            __name__=f"Spec file: {filename}, scan: {scan_name}",
+            __name__=f"{file_type} file: {filename}, scan: {scan_name}",
             path=path,
             filename=filename,
             datatype=None,
