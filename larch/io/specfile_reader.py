@@ -130,12 +130,12 @@ def is_specfile(filename):
         topbytes = fh.read(10)
     scans = None
     if (
-        topbytes.startswith(b"\x89HDF\r")
-        or topbytes.startswith(b"#S ")  # HDF5
-        or topbytes.startswith(b"#F ")  # partial specscan
+        topbytes.startswith(b"\x89HDF\r")  # HDF5
+        or topbytes.startswith(b"#S ")  # partial Spec file (1 scan)
+        or topbytes.startswith(b"#F ")  # full Spec file
     ):  # full specscan
         try:
-            scans = DataSourceSpecH5(filename).get_scans()
+            scans = DataSourceSpecH5(filename)
         except Exception:
             pass
     return scans is not None
