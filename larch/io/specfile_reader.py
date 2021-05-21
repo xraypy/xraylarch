@@ -205,6 +205,8 @@ class DataSourceSpecH5(object):
         self._time_url = "start_time"
         self._sample_url = "sample/name"
         self._plotcnts_url = "plotselect"
+        self._scan_header_url = "instrument/specfile/scan_header"
+        self._file_header_url = "instrument/specfile/file_header"
         self._urls_fmt = "silx"
 
         if urls_fmt == "spec2nexus":
@@ -226,7 +228,7 @@ class DataSourceSpecH5(object):
         try:
             self._scanfile = silx_open(self.fname)
             self._scans = self.get_scans()
-            self.set_scan(self._scans[0][0]) #set the first scan at init
+            self.set_scan(self._scans[0][0])  # set the first scan at init
         except OSError:
             self._logger.error(f"cannot open {self.fname}")
 
@@ -613,8 +615,8 @@ class DataSourceSpecH5(object):
         path, filename = os.path.split(self.fname)
         axis = self.get_scan_axis()
 
-        scan_header = list(scan_group.get('instrument/specfile/scan_header', []))
-        file_header = list(scan_group.get('instrument/specfile/file_header', []))
+        scan_header = list(scan_group.get(self._scan_header_url, []))
+        file_header = list(scan_group.get(self._file_header_url, []))
         header = []
         for scanh in scan_header:
             if scanh.startswith('#CXDI '):
