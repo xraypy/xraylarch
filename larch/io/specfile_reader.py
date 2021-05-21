@@ -15,7 +15,7 @@ Requirements
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
 __version__ = "2021.05.1_larch"
 
-import os, sys
+import os
 import copy
 import datetime
 import six
@@ -24,10 +24,9 @@ import numpy as np
 import h5py
 from silx.io.utils import open as silx_open
 from silx.io.convert import write_to_h5, _is_commonh5_group
-from scipy.interpolate import interp1d
-from scipy.ndimage import map_coordinates
-
-from larch.math.utils import savitzky_golay
+# from scipy.interpolate import interp1d
+# from scipy.ndimage import map_coordinates
+# from larch.math.utils import savitzky_golay
 from larch import Group
 
 #: Python 3.8+ compatibility
@@ -36,7 +35,9 @@ try:
 except Exception:
     collectionsAbc = collections
 
-### UTILITIES (the class is below!)
+# UTILITIES (the class is below!)
+
+
 def _str2rng(rngstr, keeporder=True, rebin=None):
     """simple utility to convert a generic string representing a compact
     list of scans to a sorted list of integers
@@ -78,7 +79,7 @@ def _str2rng(rngstr, keeporder=True, rebin=None):
     if rebin is not None:
         try:
             _rngout = _rngout[:: int(rebin)]
-        except:
+        except Exception:
             raise NameError("Wrong rebin={0}".format(int(rebin)))
 
     def uniquify(seq):
@@ -119,6 +120,7 @@ def _make_dlist(dall, rep=1):
         dlist[idx] = dall[idx::rep]
     return dlist
 
+
 def is_specfile(filename):
     """tests whether file may be a Specfile (text or HDF5)"""
     with open(filename, 'rb') as fh:
@@ -129,9 +131,10 @@ def is_specfile(filename):
         topbytes.startswith(b'#F ')):        # full specscan
         try:
             scans = DataSourceSpecH5(filename).get_scans()
-        except:
+        except Exception:
             pass
     return scans is not None
+
 
 def update_nested(d, u):
     """Update a nested dictionary
@@ -149,9 +152,9 @@ def update_nested(d, u):
     return d
 
 
-### ==================================================================
-### CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
-### ==================================================================
+# ==================================================================
+# CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
+# ==================================================================
 class DataSourceSpecH5(object):
     """Data source utility wrapper for a Spec file read as HDF5 object
     via silx.io.open"""
