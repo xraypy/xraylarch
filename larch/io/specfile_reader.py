@@ -491,18 +491,18 @@ class DataSourceSpecH5(object):
         _title = self.get_title()
         if isinstance(_title, np.ndarray):
             _title = np.char.decode(_title)[0]
-        _title_splitted = _title.split(" ")
+        _title_splitted = [s for s in _title.split(" ") if not s == ""]
         _iax = 0
         _scntype = _title_splitted[_iax]
         if _scntype == "ascan":
             iscn.update(
                 dict(
                     scan_type=_scntype,
-                    scan_axis=_title_splitted[2],
-                    scan_start=_title_splitted[3],
-                    scan_end=_title_splitted[4],
-                    scan_pts=_title_splitted[6],
-                    scan_ct=_title_splitted[7],
+                    scan_axis=_title_splitted[1],
+                    scan_start=_title_splitted[2],
+                    scan_end=_title_splitted[3],
+                    scan_pts=_title_splitted[4],
+                    scan_ct=_title_splitted[5],
                 )
             )
         if _scntype == "Escan":
@@ -606,10 +606,9 @@ class DataSourceSpecH5(object):
         -------
         larch Group with scan data
         """
-        self.get_scangroup(scan)
+        scan_group = self.get_scangroup(scan)
         scan_index = self._scan_n
         scan_name = self._scan_str
-        scan_group = self._scangroup
         labels = self.get_counters()
         title = self.get_title()
         timestring = self.get_time()
