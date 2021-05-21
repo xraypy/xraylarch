@@ -184,8 +184,8 @@ class DataSourceSpecH5(object):
         if verbose:
             self._logger.set_level("INFO")
 
-        self.fname = fname
-        self._scanfile = None
+        self._fname = fname
+        self._sourcefile = None
         self._scans = None
         self._scan_n = None
         self._scan_str = None
@@ -219,31 +219,31 @@ class DataSourceSpecH5(object):
             self._logger.error("'urls_fmt' not understood")
         self.set_group()
 
-        if self.fname is not None:
+        if self._fname is not None:
             self._init_source_file()
 
     def _init_source_file(self):
         """init source file object"""
         #: source file object (h5py-like)
         try:
-            self._scanfile = silx_open(self.fname)
+            self._sourcefile = silx_open(self._fname)
             self._scans = self.get_scans()
             self.set_scan(self._scans[0][0])  # set the first scan at init
         except OSError:
-            self._logger.error(f"cannot open {self.fname}")
+            self._logger.error(f"cannot open {self._fname}")
 
     def open(self, mode="r"):
         """Open the source file object with h5py in given mode"""
         try:
-            self._scanfile = h5py.File(self.fname, mode)
+            self._sourcefile = h5py.File(self._fname, mode)
         except OSError:
-            self._logger.error(f"cannot open {self.fname}")
+            self._logger.error(f"cannot open {self._fname}")
             pass
 
     def close(self):
         """Close source file silx.io.spech5.SpecH5"""
-        self._scanfile.close()
-        self._scanfile = None
+        self._sourcefile.close()
+        self._sourcefile = None
 
     def get_scangroup(self, scan=None):
         """get current scan group
@@ -329,7 +329,7 @@ class DataSourceSpecH5(object):
         else:
             self._scan_url = f"{self._scan_str}"
         try:
-            self._scangroup = self._scanfile[self._scan_url]
+            self._scangroup = self._sourcefile[self._scan_url]
             self._scan_title = self.get_title()
             self._scan_start = self.get_time()
             self._logger.info(
@@ -382,7 +382,7 @@ class DataSourceSpecH5(object):
         list of strings: [['scan.n', 'title', 'start_time'], ... ]
         """
         allscans = []
-        for sn, sg in self._scanfile.items():
+        for sn, sg in self._sourcefile.items():
             allscans.append([sn, sg[self._title_url][()], sg[self._time_url][()]])
         return allscans
 
@@ -612,7 +612,7 @@ class DataSourceSpecH5(object):
         title = self.get_title()
         timestring = self.get_time()
         timestamp = self.get_timestamp()
-        path, filename = os.path.split(self.fname)
+        path, filename = os.path.split(self._fname)
         axis = self.get_scan_axis()
 
         scan_header = list(scan_group.get(self._scan_header_url, []))
