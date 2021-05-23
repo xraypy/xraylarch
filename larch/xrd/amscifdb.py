@@ -47,6 +47,7 @@ from xraydb.chemparser import chemparse
 from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
                              put_optarray, get_optarray)
 from .xrd_cif import XRDCIF
+from ..xafs.cif2feff import cif2feff6l
 
 from ..site_config import user_larchdir
 from .. import logger
@@ -210,7 +211,6 @@ class CifStructure():
                 for i in range(natoms):
                     out.append(f"{aniso_label[i]}   {u11[i]}  {u22[i]}  {u33[i]}  {u12[i]}  {u13[i]}  {u23[i]}")
 
-
         out.append('')
         out.append('')
         self._ciftext = '\n'.join(out)
@@ -221,6 +221,21 @@ class CifStructure():
         return _xrdcif.structure_factors(wavelength=wavelength,
                                          energy=energy, qmin=qmin,
                                          qmax=qmax)
+
+    def get_feff6inp(self, absorber, edge=None, cluster_size=8.0, site=0):
+        pub = self.publication
+        journal = f"{pub.journalname} {pub.volume}, {pub.page_first}-{pub.page_last} ({pub.year:d})"
+        authors = ', '.join(pub.authors)
+        titles = [f'Structure from AMSCIF DB, AMS id = {self.ams_id:d}',
+                  f'Mineral Name: {self.mineral.name:s}',
+                  f'Title: {self.formula_title}',
+                  f'Journal: {journal}',
+                  f'Authors: {authors}']
+        
+        
+        return cif2feff6l(self.ciftext, absorber, edge=edge,
+                          cluster_size=cluster_size, site=site,
+                          extra_titles=titles)
 
 class AMSCIFDB():
     """
