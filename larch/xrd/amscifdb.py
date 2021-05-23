@@ -11,7 +11,13 @@ add a CIF file:
 generatt the text of a CIF file from index:
   cif_text = amcifdb.get_ciftext(300)
 
-OK, that looks like "well, why not just save the CIF files"?
+OK, that looks like 'well, why not just save the CIF files'?
+
+And the answers are that there are simple methods for:
+   a) getting the XRD Q points
+   b) getting structure factors
+   c) getting atomic clustes as for feff files
+   d) saving Feff.inp files  
 
 
 """
@@ -40,6 +46,7 @@ from xraydb.chemparser import chemparse
 
 from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
                              put_optarray, get_optarray)
+from .xrd_cif import XRDCIF
 
 from ..site_config import user_larchdir
 from .. import logger
@@ -55,6 +62,14 @@ AMSCIF_TRIM = 'amscif_trim.db'
 SOURCE_URLS = ('https://docs.xrayabsorption.org/',
                'https://millenia.cars.aps.anl.gov/xraylarch/downloads/')
 
+def get_nonzero(thing):
+    try:
+        if len(thing) == 1 and abs(thing[0]) < 1.e-5:
+            return None
+    except:
+        pass
+    return thing
+    
 class CifStructure():
 
     def __init__(self, ams_id=None, publication=None, mineral=None,
@@ -90,18 +105,122 @@ class CifStructure():
         self.atoms_x = atoms_x
         self.atoms_y = atoms_y
         self.atoms_z = atoms_z
-        self.atoms_occupancy = atoms_occupancy
-        self.atoms_u_iso = atoms_u_iso
-        self.atoms_aniso_u11 = atoms_aniso_u11
-        self.atoms_aniso_u22 = atoms_aniso_u22
-        self.atoms_aniso_u33 = atoms_aniso_u33
-        self.atoms_aniso_u12 = atoms_aniso_u12
-        self.atoms_aniso_u13 = atoms_aniso_u13
-        self.atoms_aniso_u23 = atoms_aniso_u23
+        self.atoms_occupancy = get_nonzero(atoms_occupancy)
+        self.atoms_u_iso = get_nonzero(atoms_u_iso)
+        self.atoms_aniso_u11 = get_nonzero(atoms_aniso_u11)
+        self.atoms_aniso_u22 = get_nonzero(atoms_aniso_u22)
+        self.atoms_aniso_u33 = get_nonzero(atoms_aniso_u33)
+        self.atoms_aniso_u12 = get_nonzero(atoms_aniso_u12)
+        self.atoms_aniso_u13 = get_nonzero(atoms_aniso_u13)
+        self.atoms_aniso_u23 = get_nonzero(atoms_aniso_u23)
         self.natoms = 0
+        self._xrdcif = None
+        self._ciftext = None
         if atoms_sites not in (None, '<missing>'):
             self.natoms = len(atoms_sites)
 
+    @property
+    def ciftext(self):
+        if self._ciftext is not None:
+            return self._ciftext
+
+        out = ['data_global']
+        if self.formula_title != '<missing>':
+            out.append(f"_amcsd_formula_title '{self.formula_title:s}'")
+
+        if self.mineral.name != '<missing>':
+            out.append(f"_chemical_name_mineral '{self.mineral.name:s}'")
+        out.append('loop_')
+        out.append('_publ_author_name')
+        for a in self.publication.authors:
+            out.append(f"'{a:s}'")
+
+        out.append(f"_journal_name_full '{self.publication.journalname}'")
+        out.append(f"_journal_volume {self.publication.volume}")
+        out.append(f"_journal_year {self.publication.year}")
+        out.append(f"_journal_page_first {self.publication.page_first}")
+        out.append(f"_journal_page_last {self.publication.page_last}")
+        out.append('_publ_section_title')
+        out.append(';')
+        out.append(f"{self.pub_title:s}")
+        out.append(';')
+        out.append(f"_database_code_amcsd {self.ams_id:07d}")
+        if self.compound != '<missing>':
+            out.append(f"_chemical_compound_source '{self.compound}'")
+        out.append(f"_chemical_formula_sum '{self.formula}'")
+        out.append(f"_cell_length_a {self.a}")
+        out.append(f"_cell_length_b {self.b}")
+        out.append(f"_cell_length_c {self.c}")
+        out.append(f"_cell_angle_alpha {self.alpha}")
+        out.append(f"_cell_angle_beta {self.beta}")
+        out.append(f"_cell_angle_gamma {self.gamma}")
+        out.append(f"_cell_volume {self.cell_volume}")
+        out.append(f"_exptl_crystal_density_diffrn  {self.crystal_density}")
+        out.append(f"_symmetry_space_group_name_H-M '{self.hm_symbol}'")
+        out.append('loop_')
+        out.append('_space_group_symop_operation_xyz')
+        for xyzop in json.loads(self.spacegroup.symmetry_xyz):
+            out.append(f"  '{xyzop:s}'")
+
+        atoms_sites = self.atoms_sites
+        if atoms_sites not in (None, 'None', '0', '<missing>'):
+            out.append('loop_')
+            out.append('_atom_site_label')
+            out.append('_atom_site_fract_x')
+            out.append('_atom_site_fract_y')
+            out.append('_atom_site_fract_z')
+
+
+            natoms = len(atoms_sites)
+            atoms_x = self.atoms_x
+            atoms_y = self.atoms_y
+            atoms_z = self.atoms_z
+            atoms_occ = self.atoms_occupancy
+            atoms_u_iso = self.atoms_u_iso
+            if atoms_occ is not None:
+                out.append('_atom_site_occupancy')
+            if atoms_u_iso is not None:
+                out.append('_atom_site_U_iso_or_equiv')
+            for i in range(natoms):
+                adat = f"{atoms_sites[i]}   {atoms_x[i]}  {atoms_y[i]}  {atoms_z[i]}"
+                if atoms_occ is not None:
+                    adat +=  f"  {atoms_occ[i]}"
+                if atoms_u_iso is not None:
+                    adat +=  f"  {atoms_u_iso[i]}"
+                out.append(adat)
+
+            aniso_label = self.atoms_aniso_label
+            if aniso_label not in (None, '0', '<missing>'):
+                out.append('loop_')
+                out.append('_atom_site_aniso_label')
+                out.append('_atom_site_aniso_U_11')
+                out.append('_atom_site_aniso_U_22')
+                out.append('_atom_site_aniso_U_33')
+                out.append('_atom_site_aniso_U_12')
+                out.append('_atom_site_aniso_U_13')
+                out.append('_atom_site_aniso_U_23')
+                natoms = len(aniso_label)
+                u11 = self.atoms_aniso_u11
+                u22 = self.atoms_aniso_u22
+                u33 = self.atoms_aniso_u33
+                u12 = self.atoms_aniso_u12
+                u13 = self.atoms_aniso_u13
+                u23 = self.atoms_aniso_u23
+
+                for i in range(natoms):
+                    out.append(f"{aniso_label[i]}   {u11[i]}  {u22[i]}  {u33[i]}  {u12[i]}  {u13[i]}  {u23[i]}")
+
+
+        out.append('')
+        out.append('')
+        self._ciftext = '\n'.join(out)
+        return self.ciftext
+
+    def get_structure_factors(self, wavelength=None, energy=None, qmin=0.1, qmax=10):
+        _xrdcif = XRDCIF(text=self.ciftext)
+        return _xrdcif.structure_factors(wavelength=wavelength,
+                                         energy=energy, qmin=qmin,
+                                         qmax=qmax)
 
 class AMSCIFDB():
     """
@@ -440,7 +559,9 @@ class AMSCIFDB():
                          'atoms_aniso_u33', 'atoms_aniso_u12',
                          'atoms_aniso_u13', 'atoms_aniso_u23'):
                 val =  get_optarray(getattr(cif, attr))
-                if not as_strings and '?' not in val:
+                if val == '0':
+                    val = None
+                elif not as_strings and '?' not in val:
                     val = np.array([float(v) for v in val])
                 setattr(out, attr, val)
 
@@ -450,103 +571,6 @@ class AMSCIFDB():
                                               dtype='uint8'))
         return out
 
-
-    def get_ciftext(self, cif_id):
-        """generate and return text of CIF file"""
-        cif = self.get_cif(cif_id, as_strings=True)
-        if cif is None:
-            return
-
-        out = ['data_global']
-        if cif.formula_title != '<missing>':
-            out.append(f"_amcsd_formula_title '{cif.formula_title:s}'")
-
-        if cif.mineral.name != '<missing>':
-            out.append(f"_chemical_name_mineral '{cif.mineral.name:s}'")
-        out.append('loop_')
-        out.append('_publ_author_name')
-        for a in authors:
-            out.append(f"'{a:s}'")
-
-        out.append(f"_journal_name_full '{cif.pub.journalname}'")
-        out.append(f"_journal_volume {cif.pub.volume}")
-        out.append(f"_journal_year {ciflpub.year}")
-        out.append(f"_journal_page_first {cif.pub.page_first}")
-        out.append(f"_journal_page_last {cif.pub.page_last}")
-        out.append('_publ_section_title')
-        out.append(';')
-        out.append(f"{cif.pub_title:s}")
-        out.append(';')
-        out.append(f"_database_code_amcsd {cif_id:07d}")
-        if cif.compound != '<missing>':
-            out.append(f"_chemical_compound_source '{cif.compound}'")
-        out.append(f"_chemical_formula_sum '{cif.formula}'")
-        out.append(f"_cell_length_a {cif.a}")
-        out.append(f"_cell_length_b {cif.b}")
-        out.append(f"_cell_length_c {cif.c}")
-        out.append(f"_cell_angle_alpha {cif.alpha}")
-        out.append(f"_cell_angle_beta {cif.beta}")
-        out.append(f"_cell_angle_gamma {cif.gamma}")
-        out.append(f"_cell_volume {cif.cell_volume}")
-        out.append(f"_exptl_crystal_density_diffrn  {cif.crystal_density}")
-        out.append(f"_symmetry_space_group_name_H-M '{hm_symbol}'")
-        out.append('loop_')
-        out.append('_space_group_symop_operation_xyz')
-        for xyzop in json.loads(cif.spacegroup.symmetry_xyz):
-            out.append(f"  '{xyzop:s}'")
-
-        atoms_sites =json.loads(cif.atoms_sites)
-        if atoms_sites not in (None, 'None', '0', '<missing>'):
-            out.append('loop_')
-            out.append('_atom_site_label')
-            out.append('_atom_site_fract_x')
-            out.append('_atom_site_fract_y')
-            out.append('_atom_site_fract_z')
-
-
-            natoms = len(atoms_sites)
-            atoms_x = get_optarray(cif.atoms_x)
-            atoms_y = get_optarray(cif.atoms_y)
-            atoms_z = get_optarray(cif.atoms_z)
-            atoms_occ = get_optarray(cif.atoms_occupancy)
-            atoms_u_iso = get_optarray(cif.atoms_u_iso)
-            if atoms_occ != '0':
-                out.append('_atom_site_occupancy')
-            if atoms_u_iso != '0':
-                out.append('_atom_site_U_iso_or_equiv')
-            for i in range(natoms):
-                adat = f"{atoms_sites[i]}   {atoms_x[i]}  {atoms_y[i]}  {atoms_z[i]}"
-                if atoms_occ != '0':
-                    adat +=  f"  {atoms_occ[i]}"
-                if atoms_u_iso != '0':
-                    adat +=  f"  {atoms_u_iso[i]}"
-                out.append(adat)
-
-            aniso_label =json.loads(cif.atoms_aniso_label)
-            if aniso_label not in ('0', '<missing>'):
-                out.append('loop_')
-                out.append('_atom_site_aniso_label')
-                out.append('_atom_site_aniso_U_11')
-                out.append('_atom_site_aniso_U_22')
-                out.append('_atom_site_aniso_U_33')
-                out.append('_atom_site_aniso_U_12')
-                out.append('_atom_site_aniso_U_13')
-                out.append('_atom_site_aniso_U_23')
-                natoms = len(aniso_label)
-                u11 = get_optarray(cif.atoms_aniso_u11)
-                u22 = get_optarray(cif.atoms_aniso_u22)
-                u33 = get_optarray(cif.atoms_aniso_u33)
-                u12 = get_optarray(cif.atoms_aniso_u12)
-                u13 = get_optarray(cif.atoms_aniso_u13)
-                u23 = get_optarray(cif.atoms_aniso_u23)
-
-                for i in range(natoms):
-                    out.append(f"{aniso_label[i]}   {u11[i]}  {u22[i]}  {u33[i]}  {u12[i]}  {u13[i]}  {u23[i]}")
-
-
-        out.append('')
-        out.append('')
-        return '\n'.join(out)
 
     def find_cifs(self, id=None, mineral_name=None, mineral_id=None,
                   publication_id=None, elements=None):
