@@ -8,16 +8,22 @@ mkak 2017.02.06 (originally written spring 2016)
 ##########################################################################
 # IMPORT PYTHON PACKAGES
 
+import time
 import numpy as np
 import os
 import re
 import math
-import cmath
 from io import StringIO
+from collections import namedtuple
 
-from xraydb import f0
+from xraydb import f0, f1_chantler, f2_chantler
+
 from .xrd_tools import (generate_hkl, qv_from_hkl, d_from_hkl, q_from_d,
-                        twth_from_d, d_from_q, twth_from_q)
+                        twth_from_d, d_from_q, twth_from_q, E_from_lambda,
+                        lambda_from_E)
+
+from ..utils.physical_constants import PI
+from ..math import index_nearest
 
 HAS_CifFile = False
 try:
@@ -27,10 +33,14 @@ except ImportError:
     pass
 
 
+StructureFactor = namedtuple('StructureFactor', ('q', 'intensity', 'hkl',
+                                                 'twotheta', 'd',
+                                                 'wavelength', 'energy',
+                                                 'f2hkl', 'degen', 'lorentz'))
+
+
 ##########################################################################
 # GLOBAL CONSTANTS
-
-imag = complex(0,1)
 
 elem_symbol = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al',
                'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe',
@@ -2381,9 +2391,9 @@ class Citation(object):
         self.first_page = None
         self.last_page = None
 
-class CIF(object):
+class XRDCIF(object):
     '''
-    CIF data class
+    CIF data class for XRD
 
     Attributes:
     ------------
@@ -2400,7 +2410,7 @@ class CIF(object):
     mkak 2017.04.13
     '''
 
-    def __init__(self):
+    def __init__(self, text=None):
 
         self.label   = None
         self.formula = None
@@ -2416,6 +2426,8 @@ class CIF(object):
         self.publication = Citation()
         self.formula = None
         self.elem_uvw = {}
+        if text is not None:
+            self.read_ciftext(text)
 
     def read_ciffile(self, ciffile, verbose=False):
         if not os.path.exists(ciffile):
@@ -2643,7 +2655,7 @@ class CIF(object):
                     self.atom.symm_wyckoff += ['error']
 
 
-    def calc_q(self, q_min=0.2, q_max=10.2, qstep=0.1):
+    def calc_q(self, q_min=0.2, q_max=10.2):
         """
         """
         hkl_list = generate_hkl(positive_only=True)
@@ -2663,72 +2675,103 @@ class CIF(object):
                 for el in self.atom.label:  ## loops through each element
                     for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
                         hukvlw = hkl[0]*uvw[0]+hkl[1]*uvw[1]+hkl[2]*uvw[2]## (hu+kv+lw)
-                        Fhkl = Fhkl + (cmath.exp(2*cmath.pi*imag*hukvlw)).real
+                        Fhkl = Fhkl + (np.exp(2*1j*PI*hukvlw)).real
             if abs(Fhkl) > 1e-5:
                 F2hkl[i] = np.float(Fhkl**2)
 
         ## removes zero value structure factors
         ii = ii*(F2hkl > 0.001)
 
-        qarr = np.array(qhkl[ii],dtype=np.float16)
+        qarr = np.array(qhkl[ii], dtype=np.float64)
 
         return sorted(np.array(list(set(qarr))))
 
 
-    def structure_factors(self, wavelength=1.54056, q_min=0.2, q_max=10.0):
-        hkl_list = generate_hkl()
-        dhkl = d_from_hkl(hkl_list, *self.unitcell)
-        qhkl = q_from_d(dhkl)
+    def structure_factors(self, wavelength=None, energy=None, qmin=0.2, qmax=10.2):
+        if energy is not None:
+            wavelength = lambda_from_E(energy, E_units='eV')
+        if wavelength is None:
+            wavelength = 1.0
+        if energy is None:
+            energy = E_from_lambda(wavelength, E_units='eV')
 
-        F2hkl = np.zeros(len(hkl_list))
+        hkls = generate_hkl(hmax=12, kmax=12, lmax=12, positive_only=False)
+        dhkl = d_from_hkl(hkls, *self.unitcell)
+        qhkl = q_from_d(dhkl)
+        f2hkl = np.zeros(len(hkls))
 
         ## removes q values outside of range
-        ii, jj = qhkl < q_max, qhkl > q_min
+        ii, jj = qhkl < qmax, qhkl > qmin
         ii = jj*ii
+        # pre-calculate form factors
+        f0vals = {}        
+        f1vals, f2vals = {}, {}
+        for el in self.atom.label:
+            f0vals[el] = f0(el, np.array(qhkl/(4*PI)))
+            f1vals[el] = f1_chantler(el, energy)
+            f2vals[el] = f2_chantler(el, energy)            
 
-
-        for i, hkl in enumerate(hkl_list):
-            Fhkl = 0
-            if ii[i]:
-                for el in self.atom.label:  ## loops through each element
-                    f0 = f0(el, qhkl[i]/(4*math.pi))
-                    for uvw in self.elem_uvw[el]: ## loops through each position in unit cell
-                        hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2] ## (hu+kv+lw)
-                        Fhkl = Fhkl + f0*(cmath.exp(2*cmath.pi*imag*hukvlw)).real
-            if abs(Fhkl) > 1e-2:
-                F2hkl[i] = np.float(Fhkl**2)
+        for i, hkl in enumerate(hkls):
+            if not ii[i]:
+                continue
+            fhkl = 0.0
+            for el in self.atom.label: 
+                fval = f0vals[el][i] + f1vals[el] - 1j*f2vals[el]
+                for uvw in self.elem_uvw[el]:
+                    # (hu+kv+lw)                        
+                    hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2]
+                    fhkl += fval*np.exp(2*1j*PI*hukvlw)
+            f2hkl[i] = (fhkl*fhkl.conjugate()).real
 
         ## removes zero value structure factors
-        ii = ii*(F2hkl > 0.001)
-        # print(" II ", len(ii), ii.sum())
+        ii = ii*(f2hkl > 1.e-4)
+        
+        # push q values to large ints to better find duplicates
+        qhkl   = [int(round(_q*1.e7)) for _q in qhkl[ii]]
+        hkl    = hkls[ii]
+        f2hkl  = f2hkl[ii]
 
-        qarr = np.array(qhkl[ii], dtype=np.float32)
-        qarr = sorted(np.array(list(set(qarr))))
-        kk = len(qarr)
+        # find duplicates, set degen
+        qwork, degen, f2work, hklwork = [], [], [], []
+        for i, _q in enumerate(qhkl):
+            if _q in qwork:
+                degen[qwork.index(_q)] += 1
+            else:
+                qwork.append(_q)
+                degen.append(1)
+                f2work.append(f2hkl[i])
+                hklwork.append(hkl[i])
+        
+        qorder = np.argsort(qwork)
+        qhkl  = np.array(qwork, dtype=np.float64)[qorder]/1.e7
+        degen = np.array(degen)[qorder]
+        f2hkl = np.array(f2work)[qorder]
+        hkl   = abs(np.array(hklwork)[qorder])
+        
+        twotheta = twth_from_q(qhkl, wavelength)
+        if np.any(np.isnan(twotheta)):
+            nan_mask = np.where(np.isfinite(twotheta))
+            twotheta = twotheta[nan_mask]
+            hkl  = hkl[nan_mask]
+            qhkl = qhkl[nan_mask]
+            f2hkl  = f2hkl[nan_mask]
+            degen = degen[nan_mask]
 
-        self.hkl    = np.zeros(kk, dtype=np.ndarray)
-        self.qhkl   = np.zeros(kk, dtype=np.float32)
-        self.F2hkl  = np.zeros(kk, dtype=np.float32)
-        self.phkl   = np.zeros(kk, dtype=np.int)
+        dhkl  = d_from_q(qhkl)
+        lap_corr = self.correction_factor(twotheta)
+        
+        ihkl = degen * f2hkl * lap_corr
+        if self.volume is not None:
+            ihkl *= wavelength**3 / float(self.volume)
 
-        for i, row in enumerate(zip(list(hkl_list[ii]), qhkl[ii], F2hkl[ii])):
-            hkl, q, F2 = row
-            j = (np.abs(qarr-q)).argmin()
-
-            self.hkl[j]  = hkl
-            self.qhkl[j] = q
-            self.F2hkl[j] = F2
-            self.phkl[j] += 1
-
-        self.dhkl = d_from_q(self.qhkl)
-        self.twthhkl = twth_from_q(self.qhkl,wavelength)
-        self.LAP = self.correction_factor(self.twthhkl)
-
-        self.Ihkl = self.LAP * self.phkl * self.F2hkl
-
-    def correction_factor(self,twth):
+        return StructureFactor(q=qhkl, intensity=ihkl, hkl=hkl, d=dhkl,
+                               f2hkl=f2hkl, twotheta=twotheta, degen=degen,
+                               lorentz=lap_corr, wavelength=wavelength,
+                               energy=energy)
+        
+    def correction_factor(self, twth):
         ## calculates Lorentz and Polarization corrections
-        twth = np.radians(twth)
+        twth = PI*twth/180
         return (1+np.cos(twth)**2)/(np.sin(twth/2)**2*np.cos(twth/2))
 
 def check_elemsym(atom):
@@ -2761,20 +2804,17 @@ def check_elemsym(atom):
 def removeNonAscii(s):
     return "".join(i for i in s if ord(i)<128)
 
-def create_cif(filename=None, text=None, cifdb=None, amcsd_id=None):
+def create_xrdcif(filename=None, text=None):
     """
     create CIF representation from CIF filename, text of CIF file,
-    or AMCSD id in CIFDB
 
     Arguments
     ---------
     ciffile
     """
-    cif = CIF()
-    if filename is not None:
-        cif.read_ciffile(filename)
-    elif text is not None:
-        cif.read_ciftext(text)
-    elif cifdb is not None and amcsd_id is not None:
-        cif.read_ciftext(cifdb.return_cif(amcsd_id))
-    return cif
+    if text is None and filename is not None and os.path.exists(filename):
+        with open(filename, 'r') as fh:
+            text = fh.read()
+            
+    return XRDCIF(text=text)
+

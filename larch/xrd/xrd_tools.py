@@ -103,8 +103,18 @@ def qv_from_hkl(hklall, a, b, c, alpha, beta, gamma):
         qv[i] = [TAU*hkl[0]*q0[0], TAU*hkl[1]*q0[1], TAU*hkl[2]*q0[2]]
     return qv
 
-def d_from_hkl(hklall, a, b, c, alpha, beta, gamma):
+def d_from_hkl(hkl, a, b, c, alpha, beta, gamma):
+    h, k, l = hkl[:, 0], hkl[:, 1], hkl[:, 2]
+    alpha, beta, gamma = DEG2RAD*alpha, DEG2RAD*beta, DEG2RAD*gamma
+    x = 1-cos(alpha)**2 - cos(beta)**2 - cos(gamma)**2 \
+        + 2*cos(alpha)*cos(beta)*cos(gamma)
+    y = (h*sin(alpha)/a)**2 + 2*k*l*(cos(beta)*cos(gamma)-cos(alpha))/(b*c) + \
+        (k*sin(beta)/b)**2 + 2*l*h*(cos(gamma)*cos(alpha)-cos(beta))/(c*a) + \
+        (l*sin(gamma)/c)**2 + 2*h*k*(cos(alpha)*cos(beta)-cos(gamma))/(a*b)
+    d = np.sqrt(x/y)
+    return d
 
+def d_from_hkl_orig(hklall, a, b, c, alpha, beta, gamma):
     d = np.zeros(len(hklall))
     alpha, beta, gamma = DEG2RAD*alpha, DEG2RAD*beta, DEG2RAD*gamma
     for i,hkl in enumerate(hklall):
@@ -115,7 +125,6 @@ def d_from_hkl(hklall, a, b, c, alpha, beta, gamma):
             + (k*sin(beta)/b)**2 + 2*l*h*(cos(gamma)*cos(alpha)-cos(beta))/(c*a) \
             + (l*sin(gamma)/c)**2 + 2*h*k*(cos(alpha)*cos(beta)-cos(gamma))/(a*b)
         d[i] = np.sqrt(x/y)
-    print(" -> ", d)
     return d
 
 def unit_cell_volume(a, b, c, alpha, beta, gamma):

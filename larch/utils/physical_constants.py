@@ -4,6 +4,8 @@
 import scipy.constants as consts
 from numpy import pi
 
+I = 0.0 + 1.0j
+
 RAD2DEG = 180.0/pi
 DEG2RAD = pi/180.0
 PI = pi
@@ -25,7 +27,7 @@ E_MASS = consts.electron_mass * consts.c**2 / consts.e
 #   h*c    ~= 12398.42 eV*Ang
 #   hbar*c ~=  1973.27 eV*Ang
 PLANCK_HC    = 1.e10 * consts.Planck * consts.c / consts.e
-PLANCK_HBARC = PLANCK_HC / (2*pi)
+PLANCK_HBARC = PLANCK_HC / TAU
 
 # classical electron radius in cm
 R_ELECTRON_CM  = 100.0 * consts.codata.physical_constants['classical electron radius'][0]
