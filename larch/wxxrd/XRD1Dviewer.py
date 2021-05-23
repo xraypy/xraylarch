@@ -36,7 +36,7 @@ from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
                        d_from_twth,twth_from_d,q_from_d, lambda_from_E,
                        E_from_lambda,calc_broadening,
                        instrumental_fit_uvw,peaklocater,peakfitter,
-                       xrd1d, peakfinder_methods,SPACEGROUPS, create_cif,
+                       xrd1d, peakfinder_methods,SPACEGROUPS, create_xrdcif,
                        save1D)
 
 ###################################
@@ -824,7 +824,7 @@ class Fitting1DXRD(BasePanel):
 
             xi = self.rngpl.ch_xaxis.GetSelection()
 
-            cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
+            cif = create_xrdcif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
             cif.structure_factors(wavelength=wavelength, q_max=qmax)
             qall,Iall = cif.qhkl,cif.Ihkl
             Iall = Iall/max(Iall)*maxI
@@ -1974,7 +1974,7 @@ class Viewer1DXRD(wx.Panel):
             qmin = 0.95*np.min(data[0])
             if qmax > (4*math.pi/wavelength): qmax = (4*math.pi/wavelength)*0.95
 
-        cif = create_cif(filename=path)
+        cif = create_xrdcif(filename=path)
         cif.structure_factors(wavelength=wavelength, q_min=qmin, q_max=qmax)
         qall, Iall = plot_sticks(cif.qhkl, cif.Ihkl)
         if len(Iall) > 0:
@@ -2296,11 +2296,11 @@ class Viewer1DXRD(wx.Panel):
 
                 if dlg.type == 'file':
                     path = dlg.path
-                    cif = create_cif(filename=path)
+                    cif = create_xrdcif(filename=path)
                     name = os.path.split(path)[-1]
                 elif dlg.type == 'database':
                     amcsd_id = dlg.amcsd_id
-                    cif = create_cif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
+                    cif = create_xrdcif(cifdb=self.owner.cifdb, amcsd_id=amcsd_id)
                     name = 'AMCSD %i' % amcsd_id
                 if cif.label is not None:
                     name = '%s : %s' % (name,cif.label)

@@ -11,7 +11,7 @@ from distutils.version import StrictVersion
 
 import larch
 from .xrd_fitting import peaklocater
-from .xrd_cif import create_cif, SPACEGROUPS
+from .xrd_cif import create_xrdcif, SPACEGROUPS
 from .xrd_tools import lambda_from_E
 
 import json
@@ -399,7 +399,7 @@ class cifDB(object):
         else:
             with open(ciffile,'r') as file:
                 cifstr = str(file.read())
-        cif = create_cif(text=cifstr)
+        cif = create_xrdcif(text=cifstr)
 
         if cif.id_no is None:
             cif_no = 99999
@@ -1326,4 +1326,4 @@ def read_cif(filename=None, amcsd_id=None, _larch=None):
     CIF representation
     """
     cifdb = get_cifdb(_larch=_larch)
-    return create_cif(filename=filename, cifdb=cifdb, amcsd_id=amcsd_id)
+    return create_xrdcif(filename=filename, cifdb=cifdb, amcsd_id=amcsd_id)

@@ -17,7 +17,7 @@ from .xrd_tools import (d_from_q, d_from_twth, twth_from_d, twth_from_q,
                         q_from_twth, qv_from_hkl, d_from_hkl,
                         unit_cell_volume, generate_hkl)
 
-from .xrd_cif import (SPACEGROUPS, create_cif, check_elemsym, SPGRP_SYMM)
+from .xrd_cif import (SPACEGROUPS, create_xrdcif, check_elemsym, SPGRP_SYMM)
 
 from .cifdb import (get_cifdb, cifDB, cif_match, read_cif, SearchCIFdb,
                     match_database, CATEGORIES, QSTEP, QMIN, QMAX, QAXIS)
