@@ -22,7 +22,7 @@ from .xrd_cif import (SPACEGROUPS, create_xrdcif, check_elemsym, SPGRP_SYMM)
 from .cifdb import (get_cifdb, cifDB, cif_match, read_cif, SearchCIFdb,
                     match_database, CATEGORIES, QSTEP, QMIN, QMAX, QAXIS)
 
-from .amscifdb import CifStructure, get_amscifdb
+from .amscifdb import CifStructure, get_amscifdb, get_cif
 
 from .xrd_files import xy_file_reader
 
@@ -67,6 +67,7 @@ _larch_builtins = {'_xrd':  {'d_from_q': d_from_q,
                              'instrumental_fit_uvw': instrumental_fit_uvw,
                              'xy_file_reader': xy_file_reader,
                              'get_amscifdb': get_amscifdb,
+                             'get_cif': get_cif,
                              }}
 
 #                      'data_gaussian_fit': data_gaussian_fit,

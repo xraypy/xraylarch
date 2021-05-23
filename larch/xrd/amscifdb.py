@@ -224,13 +224,16 @@ class CifStructure():
 
     def get_feff6inp(self, absorber, edge=None, cluster_size=8.0, site=0):
         pub = self.publication
-        journal = f"{pub.journalname} {pub.volume}, {pub.page_first}-{pub.page_last} ({pub.year:d})"
+        journal = f"{pub.journalname} {pub.volume}, pp. {pub.page_first}-{pub.page_last} ({pub.year:d})"
         authors = ', '.join(pub.authors)
-        titles = [f'Structure from AMSCIF DB, AMS id = {self.ams_id:d}',
+        titles = [f'Structure from AMSCIFDB, AMS_ID: {self.ams_id:d}',
                   f'Mineral Name: {self.mineral.name:s}',
-                  f'Title: {self.formula_title}',
                   f'Journal: {journal}',
                   f'Authors: {authors}']
+        if not self.formula_title.startswith('<missing'):
+            titles.appen(f'Title: {self.formula_title}')
+            
+        
         
         
         return cif2feff6l(self.ciftext, absorber, edge=edge,
@@ -648,3 +651,9 @@ def get_amscifdb(download_full=True, timeout=30):
             return _CIFDB
     # finally download of full must have failed
     return AMSCIFDB()
+
+def get_cif(ams_id):
+    """ get CIF by AMS ID"""
+    db = get_amscifdb()
+    return db.get_cif(ams_id)
+
