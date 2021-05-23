@@ -80,7 +80,7 @@ def put_optarray(dat, attr):
     return d
 
 def get_optarray(dat):
-    if dat != '0':
+    if dat not in (0, '0'):
         dat = decode_farray(dat)
     return dat
 
