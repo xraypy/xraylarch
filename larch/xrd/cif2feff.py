@@ -5,7 +5,7 @@ from io import StringIO
 HAS_PYMATGEN = False
 try:
     from pymatgen.io.cif import CifParser
-    from pymatgen.io.feff import Atoms, get_atom_map
+    from pymatgen.io.feff import Atoms
     from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
     HAS_PYMATGEN = True
 except:
@@ -16,6 +16,24 @@ from larch.io.fileutils import gformat
 
 nonletters = ''.join([a for a in printable if a not in ascii_letters])
 TRANS_NONLETTERS = str.maketrans(nonletters, ' '*(len(nonletters)))
+
+
+def get_atom_map(structure):
+    """generalization of pymatgen atom map
+    Returns:
+        dict of ipots
+    """
+    unique_pot_atoms = []
+    for site in structure:
+        for elems in site.species.elements:
+            if elem.symbol not in unique_pot_atoms:
+                unique_pot_atoms.append(elem)
+
+    atom_map = {}
+    for i, atom in enumerate(unique_pot_atoms):
+        atom_map[atom] = i + 1
+    return atom_map
+
 
 def read_cif_structure(ciftext):
     """read CIF text, return CIF Structure
