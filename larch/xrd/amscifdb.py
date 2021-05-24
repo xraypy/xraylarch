@@ -46,8 +46,8 @@ from xraydb.chemparser import chemparse
 
 from .amscifdb_utils import (make_engine, isAMSCIFDB, create_amscifdb,
                              put_optarray, get_optarray)
-from .xrd_cif import XRDCIF
-from ..xafs.cif2feff import cif2feff6l
+from .xrd_cif import XRDCIF, elem_symbol
+from .cif2feff import cif2feff6l
 
 from ..site_config import user_larchdir
 from .. import logger
@@ -275,6 +275,7 @@ class AMSCIFDB():
         self.metadata.reflect()
         self.tables = self.metadata.tables
         elems = self.tables['elements'].select().execute()
+        self.cif_elems = None
 
     def close(self):
         "close session"
@@ -590,8 +591,43 @@ class AMSCIFDB():
         return out
 
 
-    def find_cifs(self, id=None, mineral_name=None, mineral_id=None,
-                  publication_id=None, elements=None):
+    def all_minerals(self):
+        names = []
+        for row in self.tables['minerals'].select().execute().fetchall():
+            if row.name not in names:
+                names.append(row.name)
+        return names
+
+    def all_authors(self):
+        names = []
+        for row in self.tables['authors'].select().execute().fetchall():
+            if row.name not in names:
+                names.append(row.name)
+        return names
+
+    def all_journals(self):
+        names = []
+        for row in self.tables['publications'].select().execute().fetchall():
+            if row.journalname not in names:
+                names.append(row.journalname)
+        return names
+
+    def get_cif_elems(self):
+        if self.cif_elems is None:
+            out = {}
+            for row in self.tables['cif_elements'].select().execute().fetchall():
+                cifid = int(row.cif_id)
+                if cifid not in out:
+                    out[cifid] = []
+                if row.element not in out[cifid]:
+                    out[cifid].append(row.element)
+
+            self.cif_elems = out
+        return self.cif_elems
+            
+    def find_cifs(self, id=None, mineral_name=None, author_name=None,
+                  journal_name=None, contains_elements=None,
+                  excludes_elements=None, strict_contains=False):
         """return list of CIF Structures matching mineral, publication, or elements
         """
         if id is not None:
@@ -602,20 +638,55 @@ class AMSCIFDB():
         tabcif = self.tables['cif']
         tabmin = self.tables['minerals']
         tabpub = self.tables['publications']
-        tabcifelem = self.tables['cif_elements']
+        tabaut = self.tables['authors']
+        tab_ap = self.tables['publication_authors']
+        tab_ce = self.tables['cif_elements']
+        
         args = []
         if mineral_name is not None:
             args.append(func.lower(tabmin.c.name)==mineral_name.lower())
             args.append(tabmin.c.id==tabcif.c.mineral_id)
 
-        query = select(tabcif.c.id).where(and_(*args))
-        found = []
-        out = []
-        for row in self.conn.execute(query).fetchall():
-            if row[0] not in found:
-                out.append(self.get_cif(row[0]))
-                found.append(row[0])
-        return out
+        if journal_name is not None:
+            args.append(func.lower(tabpub.c.journalname)==journal_name.lower())
+            args.append(tabpub.c.id==tabcif.c.publication_id)
+
+        if author_name is not None:
+            args.append(func.lower(tabaut.c.name)==author_name.lower())
+            args.append(tabcif.c.publication_id==tab_ap.c.publication_id)
+            args.append(tabaut.c.id==tab_ap.c.author_id)
+
+
+        query = select(tabcif.c.id)
+        if len(args) > 0:
+            query = select(tabcif.c.id).where(and_(*args))
+        matches = [row[0] for row in self.conn.execute(query).fetchall()]
+        matches = list(set(matches))
+        #
+        cif_elems = self.get_cif_elems()
+        
+        if contains_elements is not None:
+            for el in contains_elements:
+                new_matches = []
+                for row in matches:
+                    if el in cif_elems[row]:
+                        new_matches.append(row)
+                matches = new_matches
+
+            if excludes_elements is None and strict_contains:
+                excludes_elements = elem_symbol[:]
+                for c in contains_elements:
+                    excludes_elements.remove(c)
+                
+        if excludes_elements is not None:
+            bad = []
+            for el in excludes_elements:
+                for row in matches:
+                    if el in cif_elems[row] and row not in bad:
+                        bad.append(row)
+            for row in bad:
+                matches.remove(row)
+        return [self.get_cif(cid) for cid in matches]
 
 
 def get_amscifdb(download_full=True, timeout=30):
@@ -653,7 +724,31 @@ def get_amscifdb(download_full=True, timeout=30):
     return AMSCIFDB()
 
 def get_cif(ams_id):
-    """ get CIF by AMS ID"""
+    """
+    get CIF Structure by AMS ID
+    """
     db = get_amscifdb()
     return db.get_cif(ams_id)
 
+def find_cifs(mineral_name=None, journal_name=None, author_name=None,
+              contains_elements=None, excludes_elements=None,
+              strict_contains=False):
+    
+    """
+    return a list of CIF Structures matching a set of criteria:
+    
+     mineral_name:  case-insensitive match of mineral name
+     journal_name:
+     author_name:
+     contains_elements:  list of atomic symbols required to be in structure
+     excludes_elements:  list of atomic symbols required to NOT be in structure
+     strict_contains:    `contains_elements` is complete -- no other elements.
+
+    """
+    db = get_amscifdb()
+    return db.find_cifs(mineral_name=mineral_name,
+                        journal_name=journal_name,
+                        author_name=author_name, 
+                        contains_elements=contains_elements,
+                        excludes_elements=excludes_elements,
+                        strict_contains=strict_contains)
