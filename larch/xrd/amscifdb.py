@@ -72,6 +72,8 @@ def get_nonzero(thing):
     return thing
     
 class CifStructure():
+    """representation of a Cif Structure
+    """
 
     def __init__(self, ams_id=None, publication=None, mineral=None,
                  spacegroup=None, hm_symbol=None, formula_title=None,
@@ -119,6 +121,11 @@ class CifStructure():
         self._ciftext = None
         if atoms_sites not in (None, '<missing>'):
             self.natoms = len(atoms_sites)
+
+    def __repr__(self):
+        if self.ams_id is None or self.formula is None:
+            return '<CifStructure empty>'
+        return f'<CifStructure, ams_id={self.ams_id:d}, formula={self.formula:s}>'
 
     @property
     def ciftext(self):
@@ -227,13 +234,16 @@ class CifStructure():
         journal = f"{pub.journalname} {pub.volume}, pp. {pub.page_first}-{pub.page_last} ({pub.year:d})"
         authors = ', '.join(pub.authors)
         titles = [f'Structure from AMSCIFDB, AMS_ID: {self.ams_id:d}',
-                  f'Mineral Name: {self.mineral.name:s}',
-                  f'Journal: {journal}',
-                  f'Authors: {authors}']
+                  f'Mineral Name: {self.mineral.name:s}']
+
         if not self.formula_title.startswith('<missing'):
-            titles.appen(f'Title: {self.formula_title}')
+            titles.appen(f'Formula Title: {self.formula_title}')
             
-        
+        titles.extend([f'Journal: {journal}', f'Authors: {authors}'])
+        if not self.pub_title.startswith('<missing'):
+            for i, line in enumerate(self.pub_title.split('\n')):
+                titles.append(f'Title{i+1:d}: {line}')
+
         
         
         return cif2feff6l(self.ciftext, absorber, edge=edge,
