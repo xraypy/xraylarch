@@ -176,7 +176,7 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     out_text.append(f'TITLE SpaceGroup: {space_group:s}')
     out_text.append(f'TITLE # sites:    {cstruct.num_sites}')
 
-    out_text.append('* crystallographics sites: note that these sites may not be unique!'))
+    out_text.append('* crystallographics sites: note that these sites may not be unique!')
     out_text.append(f'*     using absorber at site {1+absorber_index:d} in the list below')
     out_text.append(f'*     selected as "absorber={absorber:s}, absorber_site={absorber_site:d}" ')
     out_text.append('* index   X        Y        Z      species')
@@ -210,7 +210,7 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     out_text.append('')
     out_text.append('ATOMS')
-    out_text.append(f'*    x         y         z       ipot  tag   distance  site_notes')
+    out_text.append(f'*    x         y         z       ipot  tag   distance  site_info')
 
     acount = 0
     for dist, x, y, z, ipot, sym, tag in sorted(at_lines, key=lambda x: x[0]):
