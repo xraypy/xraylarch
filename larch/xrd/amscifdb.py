@@ -17,7 +17,7 @@ And the answers are that there are simple methods for:
    a) getting the XRD Q points
    b) getting structure factors
    c) getting atomic clustes as for feff files
-   d) saving Feff.inp files  
+   d) saving Feff.inp files
 
 
 """
@@ -70,7 +70,7 @@ def get_nonzero(thing):
     except:
         pass
     return thing
-    
+
 class CifStructure():
     """representation of a Cif Structure
     """
@@ -229,7 +229,7 @@ class CifStructure():
                                          energy=energy, qmin=qmin,
                                          qmax=qmax)
 
-    def get_feff6inp(self, absorber, edge=None, cluster_size=8.0, site=0):
+    def get_feff6inp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1):
         pub = self.publication
         journal = f"{pub.journalname} {pub.volume}, pp. {pub.page_first}-{pub.page_last} ({pub.year:d})"
         authors = ', '.join(pub.authors)
@@ -238,17 +238,35 @@ class CifStructure():
 
         if not self.formula_title.startswith('<missing'):
             titles.appen(f'Formula Title: {self.formula_title}')
-            
+
         titles.extend([f'Journal: {journal}', f'Authors: {authors}'])
         if not self.pub_title.startswith('<missing'):
             for i, line in enumerate(self.pub_title.split('\n')):
                 titles.append(f'Title{i+1:d}: {line}')
 
-        
-        
         return cif2feff6l(self.ciftext, absorber, edge=edge,
-                          cluster_size=cluster_size, site=site,
-                          extra_titles=titles)
+                          cluster_size=cluster_size,
+                          absorber_site=absorber_site, extra_titles=titles)
+
+    def save_feff6inp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1,
+                      filename=None):
+        feff6text = self.get_feff6inp(absorber, edge=edge, cluster_size=cluster_size,
+                                      absorber_site=absorber_site)
+        if filename is None:
+            min_name = self.mineral.name.lower()
+            if min_name in ('', '<missing>', 'None'):
+                name = f'{absorber:s}_{edge:s}_CIF{self.ams_id:06d}'
+            else:
+                name = f'{absorber:s}_{edge:s}_{min_name:s}_CIF{self.ams_id:06d}'
+
+            bfolder = os.path.join(user_larchdir, 'feff6', name)
+            if not os.path.exists(bfolder):
+                os.makedirs(bfolder)
+
+            filename = os.path.join(bfolder, 'feff.inp')
+        with open(filename, 'w') as fh:
+            fh.write(feff6text)
+        return filename
 
 class AMSCIFDB():
     """
@@ -634,10 +652,10 @@ class AMSCIFDB():
 
             self.cif_elems = out
         return self.cif_elems
-            
+
     def find_cifs(self, id=None, mineral_name=None, author_name=None,
                   journal_name=None, contains_elements=None,
-                  excludes_elements=None, strict_contains=False):
+                  excludes_elements=None, strict_contains=False, full_occupancy=False):
         """return list of CIF Structures matching mineral, publication, or elements
         """
         if id is not None:
@@ -651,7 +669,7 @@ class AMSCIFDB():
         tabaut = self.tables['authors']
         tab_ap = self.tables['publication_authors']
         tab_ce = self.tables['cif_elements']
-        
+
         args = []
         if mineral_name is not None:
             args.append(func.lower(tabmin.c.name)==mineral_name.lower())
@@ -674,7 +692,7 @@ class AMSCIFDB():
         matches = list(set(matches))
         #
         cif_elems = self.get_cif_elems()
-        
+
         if contains_elements is not None:
             for el in contains_elements:
                 new_matches = []
@@ -687,7 +705,7 @@ class AMSCIFDB():
                 excludes_elements = elem_symbol[:]
                 for c in contains_elements:
                     excludes_elements.remove(c)
-                
+
         if excludes_elements is not None:
             bad = []
             for el in excludes_elements:
@@ -696,6 +714,21 @@ class AMSCIFDB():
                         bad.append(row)
             for row in bad:
                 matches.remove(row)
+
+
+        if full_occupancy:
+            good = []
+            for cif_id in matches:
+                cif = tabcif.select(tabcif.c.id==cif_id).execute().fetchone()
+                occ = get_optarray(getattr(cif, 'atoms_occupancy'))
+                if occ in ('0', 0, None):
+                    good.append(cif_id)
+                else:
+                    min_wt = min([float(x) for x in occ])
+                    if min_wt > 0.96:
+                        good.append(cif_id)
+            matches = good
+
         return [self.get_cif(cid) for cid in matches]
 
 
@@ -742,11 +775,11 @@ def get_cif(ams_id):
 
 def find_cifs(mineral_name=None, journal_name=None, author_name=None,
               contains_elements=None, excludes_elements=None,
-              strict_contains=False):
-    
+              strict_contains=False, full_occupancy=False):
+
     """
     return a list of CIF Structures matching a set of criteria:
-    
+
      mineral_name:  case-insensitive match of mineral name
      journal_name:
      author_name:
@@ -758,7 +791,8 @@ def find_cifs(mineral_name=None, journal_name=None, author_name=None,
     db = get_amscifdb()
     return db.find_cifs(mineral_name=mineral_name,
                         journal_name=journal_name,
-                        author_name=author_name, 
+                        author_name=author_name,
                         contains_elements=contains_elements,
                         excludes_elements=excludes_elements,
-                        strict_contains=strict_contains)
+                        strict_contains=strict_contains,
+                        full_occupancy=full_occupancy)
