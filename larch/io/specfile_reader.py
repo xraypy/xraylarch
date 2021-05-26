@@ -466,9 +466,10 @@ class DataSourceSpecH5(object):
 
         Known types of scans
         --------------------
-        'ascan'
-        'Escan'
-        'Emiscan'
+        'ascan'/'dscan'
+        'Escan' (ESRF-BM30/BM16)
+        'Emiscan' (ESRF-BM30/BM16)
+        'fscan' (ESRF-ID26)
 
         Returns
         -------
@@ -500,10 +501,22 @@ class DataSourceSpecH5(object):
         _title_splitted = [s for s in _title.split(" ") if not s == ""]
         _iax = 0
         _scntype = _title_splitted[_iax]
-        if _scntype == "ascan":
+        try:
             iscn.update(
                 dict(
                     scan_type=_scntype,
+                    scan_start=_title_splitted[1],
+                    scan_end=_title_splitted[2],
+                    scan_pts=_title_splitted[3],
+                    scan_ct=_title_splitted[4],
+                )
+            )
+        except IndexError:
+            pass
+
+        if _scntype in ("ascan", "dscan"):
+            iscn.update(
+                dict(
                     scan_axis=_title_splitted[1],
                     scan_start=_title_splitted[2],
                     scan_end=_title_splitted[3],
@@ -512,27 +525,11 @@ class DataSourceSpecH5(object):
                 )
             )
         if _scntype == "Escan":
-            iscn.update(
-                dict(
-                    scan_type=_scntype,
-                    scan_axis="Energy",
-                    scan_start=_title_splitted[1],
-                    scan_end=_title_splitted[2],
-                    scan_pts=_title_splitted[3],
-                    scan_ct=_title_splitted[4],
-                )
-            )
+            iscn.update(dict(scan_axis="Energy"))
         if _scntype == "Emiscan":
-            iscn.update(
-                dict(
-                    scan_type=_scntype,
-                    scan_axis="Emi_Energy",
-                    scan_start=_title_splitted[1],
-                    scan_end=_title_splitted[2],
-                    scan_pts=_title_splitted[3],
-                    scan_ct=_title_splitted[4],
-                )
-            )
+            iscn.update(dict(scan_axis="Emi_Energy"))
+        if _scntype == 'fscan':
+            iscn.update(dict(scan_axis="mono_energy"))
         return iscn
 
     def get_scan_axis(self, scan=None):
