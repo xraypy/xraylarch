@@ -397,7 +397,8 @@ class DataSourceSpecH5(object):
         list of strings: [['scan.n', 'title', 'start_time'], ... ]
         """
         allscans = []
-        for sn, sg in self._sourcefile.items():
+        for sn in self._sourcefile["/"].keys():
+            sg = self._sourcefile[sn]
             allscans.append([sn, sg[self._title_url][()], sg[self._time_start_url][()]])
         return allscans
 
