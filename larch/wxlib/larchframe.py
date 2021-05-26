@@ -182,8 +182,8 @@ class LarchPanel(wx.Panel):
     def __init__(self,  parent=None, _larch=None,
                  historyfile='history_larchgui.lar', **kwds):
         self.parent = parent
-        if not historyfile.startswith(larch.site_config.usr_larchdir):
-            historyfile = os.path.join(larch.site_config.usr_larchdir,
+        if not historyfile.startswith(larch.site_config.user_larchdir):
+            historyfile = os.path.join(larch.site_config.user_larchdir,
                                        historyfile)
 
         wx.Panel.__init__(self, parent, -1, size=(750, 725))

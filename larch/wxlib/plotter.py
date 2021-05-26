@@ -21,11 +21,11 @@ from wxmplot import PlotFrame, ImageFrame, StackedPlotFrame
 import larch
 from ..xrf import isLarchMCAGroup
 from ..larchlib import ensuremod
-from ..site_config import usr_larchdir
+from ..site_config import user_larchdir
 
 from .xrfdisplay import XRFDisplayFrame
 
-mpl_dir = os.path.join(usr_larchdir, 'matplotlib')
+mpl_dir = os.path.join(user_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
     try:
@@ -298,7 +298,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                     s = display.GetSize()
                 except RuntimeError:  # window has been deleted
                     display = None
-            
+
         if display is None:
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
@@ -313,7 +313,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display_dict.pop(win)
         display = _get_disp(symname, creator, win, display_dict, wxparent,
                             size, _larch)
-        display.SetTitle(title) 
+        display.SetTitle(title)
     if  hasattr(_larch, 'symtable'):
         _larch.symtable.set_symbol(symname, display)
     return display

@@ -29,20 +29,20 @@ def pjoin(*args):
 
 ##
 # set system-wide and local larch folders
-#   usr_larchdir = get_homedir() + '.larch' (#unix)
-#                = get_homedir() + 'larch'  (#win)
+#   user_larchdir = get_homedir() + '.larch' (#unix)
+#                 = get_homedir() + 'larch'  (#win)
 ##
 home_dir = get_homedir()
 
 here, i_am = os.path.split(__file__)
 icondir = os.path.join(here, 'icons')
 
-usr_larchdir = pjoin(home_dir, '.larch')
+user_larchdir = pjoin(home_dir, '.larch')
 if uname == 'win':
-    usr_larchdir = pjoin(home_dir, 'larch')
+    user_larchdir = pjoin(home_dir, 'larch')
 
 if 'LARCHDIR' in os.environ:
-    usr_larchdir = nativepath(os.environ['LARCHDIR'])
+    user_larchdir = nativepath(os.environ['LARCHDIR'])
 
 # on Linux, check for HOME/.local/share,
 # make with mode=711 if needed
@@ -69,7 +69,7 @@ if hasattr(sys, 'frozen'):
 
 modules_path = []
 plugins_path = []
-_path = [usr_larchdir]
+_path = [user_larchdir]
 
 if 'LARCHPATH' in os.environ:
     _path.extend([nativepath(s) for s in os.environ['LARCHPATH'].split(':')])
@@ -84,7 +84,7 @@ for pth in _path:
         plugins_path.append(pdir)
 
 # initialization larch files to be run on startup
-init_files = [pjoin(usr_larchdir, 'init.lar')]
+init_files = [pjoin(user_larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
@@ -92,7 +92,7 @@ if 'LARCHSTARTUP' in os.environ:
         init_files = [nativepath(startup)]
 
 # history file:
-history_file = pjoin(usr_larchdir, 'history.lar')
+history_file = pjoin(user_larchdir, 'history.lar')
 
 def make_user_larchdirs():
     """create user's larch directories"""
@@ -123,12 +123,12 @@ def make_user_larchdirs():
             except:
                 print(sys.exc_info()[1])
 
-    make_dir(usr_larchdir)
+    make_dir(user_larchdir)
     for fname, text in files.items():
-        write_file(pjoin(usr_larchdir, fname), text)
+        write_file(pjoin(user_larchdir, fname), text)
 
     for sdir, text in subdirs.items():
-        sdir = pjoin(usr_larchdir, sdir)
+        sdir = pjoin(user_larchdir, sdir)
         make_dir(sdir)
         write_file(pjoin(sdir, 'README'), text)
 
@@ -146,7 +146,7 @@ def show_site_config():
 ========================
 """ % (larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
-       usr_larchdir,
+       user_larchdir,
        history_file, init_files,
        modules_path, plugins_path))
 

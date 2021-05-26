@@ -34,7 +34,7 @@ from .mback import mback, mback_norm
 from .diffkk import diffkk, diffKKGroup
 from .fluo import fluo_corr
 
-from .cif2feff import cif_sites, cif2feff6l
+## from .cif2feff import cif_sites, cif2feff6l
 
 from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l, find_exe
 from .feff8lpath import feff8_xafs
