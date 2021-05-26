@@ -370,7 +370,8 @@ class XASFrame(wx.Frame):
 
     Matt Newville <newville @ cars.uchicago.edu>
     """
-    def __init__(self, parent=None, _larch=None, filename=None, **kws):
+    def __init__(self, parent=None, _larch=None, filename=None,
+                 version_info=None, **kws):
         wx.Frame.__init__(self, parent, -1, size=XASVIEW_SIZE, style=FRAMESTYLE)
 
         self.last_array_sel_col = {}
@@ -405,6 +406,9 @@ class XASFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
             self.current_filename = filename
         self.Show()
+        if version_info is not None:
+            if version_info.update_available:
+                self.onCheckforUpdates()
         if filename is not None:
             wx.CallAfter(self.onRead, filename)
 
@@ -1153,15 +1157,19 @@ class XASFrame(wx.Frame):
 
 
 class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, filename=None, **kws):
+    def __init__(self, filename=None, description='Larch XAS Viewer',
+                 version_info=None,  **kws):
         self.filename = filename
+        self.description = description
+        self.version_info = version_info
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = XASFrame(filename=self.filename)
+        frame = XASFrame(filename=self.filename,
+                         version_info=self.version_info)
         self.SetTopWindow(frame)
 
     def OnInit(self):

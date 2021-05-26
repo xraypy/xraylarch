@@ -4,12 +4,7 @@ import numpy
 import time
 from argparse import ArgumentParser
 import pkg_resources
-from collections import namedtuple
 from subprocess import check_call
-from packaging.version import parse as ver_parse
-
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from pyshortcuts import make_shortcut, ico_ext
 
@@ -18,7 +13,7 @@ from .site_config import (extras_wxgraph, extras_qtgraph,
                           extras_epics, extras_xrd, extras_doc)
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
-from .version import __version__, __date__, make_banner
+from .version import __version__, __date__, make_banner, check_larchversion
 
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
@@ -34,34 +29,6 @@ call %~dp0%activate base
 %~dp0%*
 
 """
-
-VersionStatus = namedtuple('VersionStatus', ('update_available', 'local_version', 'remote_version'))
-def check_larchversion():
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    req = requests.get('https://raw.githubusercontent.com/xraypy/xraylarch/gh-pages/version.txt',
-                       verify=False, timeout=5)
-    remote_version = '0.9.00'
-    if req.status_code == 200:
-        try:
-            for line in req.text.split('\n'):
-                line = line.strip()
-                if not line.startswith('#'):
-                    remote_version = line
-                    break
-        except:
-            pass
-    return VersionStatus(ver_parse(remote_version) > ver_parse(__version__),
-                         __version__, remote_version)
-
-update_message = """
-================== Update Available ==================
-Larch version {remote_version:s} is available. Your version is currently {local_version:s}.
-To update the latest version run
-   larch -u
-from a Command Window or Terminal.
-======================================================
-"""
-
 
 def install_extras(package_set):
     all_packages = set([pkg.key for pkg in pkg_resources.working_set])
@@ -179,10 +146,11 @@ def run_gse_mapviewer():
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
     install_extras(extras_xrd)
+    vinfo = check_larchversion()
     from larch.wxmap import MapViewer
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
                       filedesc='XRM Map File (.h5)')
-    MapViewer(**kwargs).MainLoop()
+    MapViewer(version_info=vinfo, **kwargs).MainLoop()
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
@@ -196,10 +164,10 @@ def run_xas_viewer():
     """XAS Viewer """
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
+    vinfo = check_larchversion()
     from larch.wxxas import XASViewer
-    kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program",
-                      filedesc='XAS data file or Project File (.dat, .prj)')
-    XASViewer(**kwargs).MainLoop()
+    kwargs = make_cli(description="Larch's XAS Viewer and Analysis Program")
+    XASViewer(version_info=vinfo, **kwargs).MainLoop()
 
 def run_xrfdisplay():
     """ XRF Display"""
@@ -297,8 +265,7 @@ def run_larch():
         print(make_banner())
         vinfo = check_larchversion()
         if vinfo.update_available:
-            print(update_message.format(**vinfo._asdict()))
-
+            print(vinfo.message)
         return
 
     with_wx = HAS_WXPYTHON and (not args.nowx)
@@ -320,7 +287,7 @@ def run_larch():
             use_mpl_wxagg()
         vinfo = check_larchversion()
         if vinfo.update_available:
-            print(update_message.format(**vinfo._asdict()))
+            print(vinfo.message)
 
         from larch.xmlrpc_server import LarchServer
         server = LarchServer(host='localhost', port=int(args.port))
@@ -344,7 +311,8 @@ def run_larch():
         install_extras(extras_xrd)
         vinfo = check_larchversion()
         if vinfo.update_available:
-            print(update_message.format(**vinfo._asdict()))
+            print(vinfo.message)
+
         cli = shell(quiet=args.quiet, with_wx=with_wx)
         # execute scripts listed on command-line
         if args.scripts is not None:

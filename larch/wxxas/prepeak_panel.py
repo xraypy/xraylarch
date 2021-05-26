@@ -1432,7 +1432,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
 
     def autosave_modelresult(self, result, fname=None):
         """autosave model result to user larch folder"""
-        confdir = os.path.join(site_config.usr_larchdir, 'xas_viewer')
+        confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
         if not os.path.exists(confdir):
             try:
                 os.makedirs(confdir)

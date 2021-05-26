@@ -1,6 +1,6 @@
 import wx
 from collections import namedtuple
-from ..apps import check_larchversion
+from ..version import check_larchversion
 from . import GridPanel, SimpleText, OkCancel, LEFT, HLine
 
 class LarchUpdaterDialog(wx.Dialog):
@@ -15,12 +15,16 @@ class LarchUpdaterDialog(wx.Dialog):
         self.update_available = vinfo.update_available
 
         if self.update_available:
+            tmessage = ' Update Available! '
             umessage = ' Click OK to update (you will need to restart %s)' % (caller)
         else:
-            umessage = ' Your version is up to date'
+            tmessage = ' Your version is up to date.'
+            umessage = ' '
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
 
+        panel.Add((5, 5))
+        panel.Add(SimpleText(panel, tmessage), newrow=True)
         panel.Add((5, 5))
         panel.Add(SimpleText(panel, cver), newrow=True)
         panel.Add(SimpleText(panel, lver), newrow=True)

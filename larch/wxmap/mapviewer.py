@@ -1180,7 +1180,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
         mca_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
-        
+
         npix = area[()].sum()
         self._mca.filename = fname
         self._mca.title = label
@@ -1287,7 +1287,8 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, parent=None, filename=None, _larch=None, use_scandb=False,
+    def __init__(self, parent=None, filename=None, _larch=None,
+                 use_scandb=False, version_info=None,
                  size=(925, 650), **kwds):
 
         kwds['style'] = wx.DEFAULT_FRAME_STYLE
@@ -1353,6 +1354,10 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
         self.move_callback = None
+        if version_info is not None:
+            if version_info.update_available:
+                self.onCheckforUpdates()
+
         if filename is not None:
             wx.CallAfter(self.onRead, filename)
 
@@ -2659,8 +2664,9 @@ class OpenMapFolder(wx.Dialog):
 
 class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, use_scandb=False, _larch=None, filename=None,
-                 with_inspect=False, **kws):
+                 version_info=None, with_inspect=False, **kws):
         self._larch = _larch
+        self.version_info = version_info
         self.filename = filename
         self.use_scandb = use_scandb
         self.with_inspect = with_inspect
@@ -2668,7 +2674,9 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def createApp(self):
         frame = MapViewerFrame(use_scandb=self.use_scandb,
-                               filename=self.filename, _larch=self._larch)
+                               filename=self.filename,
+                               version_info=self.version_info,
+                               _larch=self._larch)
         self.SetTopWindow(frame)
 
     def OnInit(self):

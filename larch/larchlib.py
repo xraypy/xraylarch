@@ -13,7 +13,7 @@ import ctypes
 import ctypes.util
 
 from .symboltable import Group, isgroup
-from .site_config import usr_larchdir
+from .site_config import user_larchdir
 from .closure import Closure
 from .utils import uname, bindir
 
@@ -415,7 +415,7 @@ def read_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(usr_larchdir, conffile)
+        w_file = os.path.join(user_larchdir, conffile)
         if os.path.exists(w_file):
             line = open(w_file, 'r').readlines()
             workdir = line[0][:-1]
@@ -432,7 +432,7 @@ def save_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(usr_larchdir, conffile)
+        w_file = os.path.join(user_larchdir, conffile)
         fh = open(w_file, 'w')
         fh.write("%s\n" % os.getcwd())
         fh.close()
@@ -446,7 +446,7 @@ def read_config(conffile):
 
     returns dictionary / configuration
     """
-    cfile = os.path.join(usr_larchdir, conffile)
+    cfile = os.path.join(user_larchdir, conffile)
     out = None
     if os.path.exists(cfile):
         with open(cfile, 'r') as fh:
@@ -462,7 +462,7 @@ def save_config(conffile, config):
     compare read_confif(conffile) which will read this value
 
     """
-    cfile = os.path.join(usr_larchdir, conffile)
+    cfile = os.path.join(user_larchdir, conffile)
     if not HAS_YAML:
         raise RuntimeError('yaml is not available')
     out = yaml.dump(config)

@@ -176,7 +176,7 @@ class Interpreter:
 
         if with_plugins: # add all plugins in standard plugins folder
             print("WARNING: Plugins are deprecated and will be removed in 2022")
-            plugins_dir = os.path.join(site_config.usr_larchdir, 'plugins')
+            plugins_dir = os.path.join(site_config.user_larchdir, 'plugins')
             loaded_plugins = []
             for pname in sorted(os.listdir(plugins_dir)):
                 if pname not in loaded_plugins:
