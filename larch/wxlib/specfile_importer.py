@@ -360,7 +360,7 @@ class SpecfileImporter(wx.Frame) :
 
         self.read_ok_cb = read_ok_cb
 
-        self.array_sel = dict(xarr=self.specfile.get_scan_axis(), yarr1=None, yarr2=None, yop='/',
+        self.array_sel = dict(xarr=self.curscan.axis.lower(), yarr1=None, yarr2=None, yop='/',
                               ypop='', monod=3.1355316, en_units='eV',
                               yerror=YERR_OPS[0], yerr_val=1, yerr_arr=None)
 
