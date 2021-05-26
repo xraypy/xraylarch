@@ -415,7 +415,7 @@ class DataSourceSpecH5(object):
         return self._list_from_url(self._mots_url)
 
     def get_counters(self, scan=None):
-        """Get list of motors names
+        """Get list of counters names
 
         Parameters
         ----------
