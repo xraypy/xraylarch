@@ -29,6 +29,7 @@ from silx.io.convert import write_to_h5, _is_commonh5_group
 # from scipy.ndimage import map_coordinates
 # from larch.math.utils import savitzky_golay
 from larch import Group
+from larch.utils.strutils import bytes2str
 
 #: Python 3.8+ compatibility
 try:
@@ -399,11 +400,13 @@ class DataSourceSpecH5(object):
         allscans = []
         for sn in self._sourcefile["/"].keys():
             sg = self._sourcefile[sn]
-            allscans.append([sn, sg[self._title_url][()], sg[self._time_start_url][()]])
+            allscans.append([sn,
+                             bytes2str(sg[self._title_url][()]),
+                             bytes2str(sg[self._time_start_url][()])])
         return allscans
 
     def get_motors(self, scan=None):
-        """Get list of motors names
+        """Get list of all available motors names
 
         Parameters
         ----------
@@ -414,8 +417,8 @@ class DataSourceSpecH5(object):
             self.set_scan(scan)
         return self._list_from_url(self._mots_url)
 
-    def get_counters(self, scan=None):
-        """Get list of counters names
+    def get_scan_motors(self, scan=None):
+        """Get list of motors names actually used in the scan
 
         Parameters
         ----------
@@ -424,7 +427,28 @@ class DataSourceSpecH5(object):
         """
         if scan is not None:
             self.set_scan(scan)
-        return self._list_from_url(self._cnts_url)
+        all_motors = self._list_from_url(self._mots_url)
+        counters = self._list_from_url(self._cnts_url)
+        return [i for i in counters if i in all_motors]
+
+    def get_counters(self, scan=None, remove_motors=False):
+        """Get list of counters names
+
+        Parameters
+        ----------
+        scan  : str, int, or None
+             scan address
+        remove_motors:  bool [False]
+             whether to remove counters that would also be in the motors list
+        """
+        if scan is not None:
+            self.set_scan(scan)
+            self.set_scan(scan)
+        counters = self._list_from_url(self._cnts_url)
+        if remove_motors:
+            motors = self._list_from_url(self._mots_url)
+            counters = [i for i in counters if i not in motors]
+        return counters
 
     def get_title(self, scan=None):
         """Get title str for the current scan
@@ -440,7 +464,7 @@ class DataSourceSpecH5(object):
 
         """
         sg = self.get_scangroup(scan)
-        return sg[self._title_url][()]
+        return bytes2str(sg[self._title_url][()])
 
     def get_time(self, scan=None):
         """Get start time str for the current scan
@@ -455,7 +479,7 @@ class DataSourceSpecH5(object):
         start_time (str): scan start time self._scangroup[self._time_start_url][()]
         """
         sg = self.get_scangroup(scan)
-        return sg[self._time_start_url][()]
+        return bytes2str(sg[self._time_start_url][()])
 
     def get_timestamp(self):
         """Get timestamp from the current scan"""
@@ -613,7 +637,9 @@ class DataSourceSpecH5(object):
         scan_group = self.get_scangroup(scan)
         scan_index = self._scan_n
         scan_name = self._scan_str
-        labels = self.get_counters()
+        all_labels = self.get_counters()
+        motor_names = self.get_scan_motors()
+        array_labels = motor_names + [i for i in all_labels if i not in motor_names]
         title = self.get_title()
         timestring = self.get_time()
         timestamp = self.get_timestamp()
@@ -633,7 +659,8 @@ class DataSourceSpecH5(object):
             path=path,
             filename=filename,
             datatype=None,
-            array_labels=labels,
+            array_labels=array_labels,
+            motor_names=motor_names,
             axis=axis,
             scan_index=scan_index,
             scan_name=scan_name,
@@ -646,7 +673,7 @@ class DataSourceSpecH5(object):
         )
 
         data = []
-        for label in labels:
+        for label in array_labels:
             arr = self.get_array(label)
             setattr(out, label, arr)
             data.append(arr)
