@@ -4,7 +4,6 @@ import numpy as np
 np.seterr(all='ignore')
 
 from functools import partial
-from collections import OrderedDict
 import json
 
 import wx
@@ -608,7 +607,7 @@ class PrePeakPanel(TaskPanel):
                            title='Pre-edge Peak Analysis',
                            config=defaults, **kws)
 
-        self.fit_components = OrderedDict()
+        self.fit_components = {}
         self.user_added_params = None
 
         self.pick2_timer = wx.Timer(self)
@@ -1014,7 +1013,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                        SLabel("  Min", size=(60, -1)),
                        SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
 
-        parwids = OrderedDict()
+        parwids = {}
         parnames = sorted(minst.param_names)
 
         for a in minst._func_allargs:

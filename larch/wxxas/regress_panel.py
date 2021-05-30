@@ -11,7 +11,6 @@ import pickle
 import base64
 
 from functools import partial
-from collections import OrderedDict
 
 from lmfit.printfuncs import gformat
 from larch import Group

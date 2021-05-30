@@ -2,7 +2,6 @@ import time
 import os
 import platform
 from functools import partial
-from collections import OrderedDict
 
 import numpy as np
 np.seterr(all='ignore')

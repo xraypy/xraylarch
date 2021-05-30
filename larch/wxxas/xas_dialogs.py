@@ -1,5 +1,5 @@
 import os
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 from functools import partial
 import numpy as np
 from lmfit import Parameters, minimize
@@ -18,8 +18,7 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
 
-Plot_Choices = OrderedDict((('Normalized', 'norm'),
-                            ('Derivative', 'dmude')))
+Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
 ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
@@ -1393,10 +1392,10 @@ class ExportCSVDialog(wx.Dialog):
         title = "Export Selected Groups"
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
-        self.ychoices = OrderedDict((('normalized mu(E)', 'norm'),
-                                     ('raw mu(E)', 'mu'),
-                                     ('flattened mu(E)', 'flat'),
-                                     ('d mu(E) / dE', 'dmude')))
+        self.ychoices = {'normalized mu(E)': 'norm',
+                         'raw mu(E)': 'mu',
+                         'flattened mu(E)': 'flat',
+                         'd mu(E) / dE': 'dmude'}
 
         default_fname = 'Data.csv'
         if len(groupnames) > 0:
