@@ -10,12 +10,6 @@ import socket
 
 from functools import partial
 import wx
-try:
-    from wx._core import PyDeadObjectError
-except:
-    PyDeadObjectError = Exception
-
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 
 import numpy as np
 from matplotlib.figure import Figure
@@ -188,16 +182,12 @@ class with_profile_mode:
         zdc.SetBrush(wx.TRANSPARENT_BRUSH)
         zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
         zdc.ResetBoundingBox()
-        if not is_wxPhoenix:
-            zdc.BeginDrawing()
 
         # erase previous box
         if self.rbbox is not None:
             zdc.DrawLine(*self.rbbox)
         self.rbbox = (xmin, ymin, xmax, ymax)
         zdc.DrawLine(*self.rbbox)
-        if not is_wxPhoenix:
-            zdc.EndDrawing()
 
     def prof_leftdown(self, event=None):
         self.report_leftdown(event=event)
@@ -213,11 +203,7 @@ class with_profile_mode:
             zdc.SetBrush(wx.TRANSPARENT_BRUSH)
             zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
             zdc.ResetBoundingBox()
-            if not is_wxPhoenix:
-                zdc.BeginDrawing()
             zdc.DrawLine(*self.rbbox)
-            if not is_wxPhoenix:
-                zdc.EndDrawing()
             self.rbbox = None
 
         if self.zoom_ini is None or self.lastpoint[0] is None:
@@ -260,7 +246,7 @@ class with_profile_mode:
                 self.prof_plotter.Raise()
                 self.prof_plotter.clear()
 
-            except (AttributeError, PyDeadObjectError):
+            except (AttributeError, Exception):
                 self.prof_plotter = None
 
         if self.prof_plotter is None:
