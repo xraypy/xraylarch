@@ -23,6 +23,7 @@ from larch import Group
 from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import fix_varname, file2groupname
 from larch.io import look_for_nans
+from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -249,7 +250,6 @@ class EditColumnFrame(wx.Frame) :
 
             cnew.Bind(wx.EVT_KILL_FOCUS, partial(self.update, index=i))
             cnew.Bind(wx.EVT_CHAR, partial(self.update_char, index=i))
-            cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
 
             arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
@@ -415,8 +415,8 @@ class ColumnDataFileFrame(wx.Frame) :
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
         self.monod_val.SetValue(self.array_sel['monod'])
-        self.monod_val.SetAction(self.onUpdate)        
-        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))        
+        self.monod_val.SetAction(self.onUpdate)
+        self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
         self.en_units.SetStringSelection(self.array_sel['en_units'])
         self.yerr_op.SetStringSelection(self.array_sel['yerror'])
         self.yerr_val.SetValue(self.array_sel['yerr_val'])
@@ -432,12 +432,12 @@ class ColumnDataFileFrame(wx.Frame) :
             iy2sel = yarr_labels.index(self.array_sel['yarr2'])
         if self.array_sel['yerr_arr'] in yarr_labels:
             iyesel = yarr_labels.index(self.array_sel['yerr_arr'])
-           
+
         self.xarr.SetSelection(ixsel)
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
         self.yerr_arr.SetSelection(iyesel)
-        
+
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         _ok    = Button(bpanel, 'OK', action=self.onOK)
@@ -459,7 +459,7 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(xlab,      (ir, 0), (1, 1), LEFT, 0)
         sizer.Add(self.xarr, (ir, 1), (1, 1), LEFT, 0)
         sizer.Add(units_lab,     (ir, 2), (1, 2), RIGHT, 0)
-        sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)        
+        sizer.Add(self.en_units,  (ir, 4), (1, 2), LEFT, 0)
 
         ir += 1
         sizer.Add(dtype_lab,          (ir, 0), (1, 1), LEFT, 0)
@@ -672,8 +672,8 @@ class ColumnDataFileFrame(wx.Frame) :
         ypop     = self.ypop.GetStringSelection()
         yop      = self.yop.GetStringSelection()
         yerr_op  = self.yerr_op.GetStringSelection()
-        yerr_arr = self.yerr_arr.GetStringSelection()        
-        yerr_idx = self.yerr_arr.GetSelection()        
+        yerr_arr = self.yerr_arr.GetStringSelection()
+        yerr_idx = self.yerr_arr.GetSelection()
         yerr_val = self.yerr_val.GetValue()
         yerr_expr = '1'
         if yerr_op.startswith('const'):
@@ -774,7 +774,7 @@ class ColumnDataFileFrame(wx.Frame) :
         xname = self.xarr.GetStringSelection()
 
         workgroup = self.workgroup
-        rdata = self.initgroup.data        
+        rdata = self.initgroup.data
         ncol, npts = rdata.shape
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
@@ -793,7 +793,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 self.monod_val.Enable()
             else:
                 self.en_units.SetSelection(0)
-        
+
 
     def onEnUnitsSelect(self, evt=None):
         self.monod_val.Enable(self.en_units.GetStringSelection().startswith('deg'))
