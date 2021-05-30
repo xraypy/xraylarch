@@ -556,9 +556,10 @@ class ColumnDataFileFrame(wx.Frame) :
         if 'epics scan' in line1:
             reader = 'read_gsescan'
         if 'xdi' in line1:
-            reader = 'read_gsexdi' if 'epics stepscan file' in line1 else 'read_xdi'
-
-        if ("#s" in line1) or ("#f" in line1):
+            reader = 'read_xdi'
+            if 'epics stepscan file' in line1 :
+                reader = 'read_gsexdi'
+        elif ("#s" in line1) or ("#f" in line1):
             reader = 'read_specfile'
 
         if reader in ('read_xdi', 'read_gsexdi'):
