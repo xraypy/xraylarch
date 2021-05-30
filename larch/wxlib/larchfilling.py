@@ -26,8 +26,7 @@ from functools import partial
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.larchlib import Procedure
-from wxutils  import Button, pack, is_wxPhoenix
-
+from wxutils  import Button, pack
 
 VERSION = '0.9.5(Larch)'
 
@@ -111,9 +110,6 @@ class FillingTree(wx.TreeCtrl):
         self.static = static
         self.item = None
         self.root = None
-        if is_wxPhoenix:
-            self.GetPyData = self.GetItemData
-
         self.setRootObject(rootObject)
 
     def setRootObject(self, rootObject=None):
@@ -123,11 +119,7 @@ class FillingTree(wx.TreeCtrl):
         if not self.rootLabel:
             self.rootLabel = 'Larch Data'
 
-        rootData = rootObject
-        if not is_wxPhoenix:
-            rootData = wx.TreeItemData(rootData)
-        self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  rootData)
-
+        self.item = self.root = self.AddRoot(self.rootLabel, -1, -1,  self.rootObject)
         self.SetItemHasChildren(self.root,  self.objHasChildren(self.rootObject))
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding, id=self.GetId())
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, id=self.GetId())
@@ -163,7 +155,7 @@ class FillingTree(wx.TreeCtrl):
         """Launch a DirFrame."""
         item = event.GetItem()
         text = self.getFullName(item)
-        obj = self.GetPyData(item)
+        obj = self.GetItemData(item)
         frame = FillingFrame(parent=self, size=(500, 500),
                              rootObject=obj,
                              rootLabel=text, rootIsNamespace=False)
@@ -219,7 +211,7 @@ class FillingTree(wx.TreeCtrl):
 
     def addChildren(self, item):
         self.DeleteChildren(item)
-        obj = self.GetPyData(item)
+        obj = self.GetItemData(item)
         children = self.objGetChildren(obj)
         if not children:
             return
@@ -237,17 +229,15 @@ class FillingTree(wx.TreeCtrl):
                 (item != self.root or
                  (item == self.root and not self.rootIsNamespace))):
                 itemtext = repr(key)
-            child = data = children[key]
-            if not is_wxPhoenix:
-                data = wx.TreeItemData(child)
-            branch = self.AppendItem(parent=item, text=itemtext, data=data)
+            child  = children[key]
+            branch = self.AppendItem(parent=item, text=itemtext, data=child)
             self.SetItemHasChildren(branch, self.objHasChildren(child))
 
     def display(self):
         item = self.item
         if not item:
             return
-        obj = self.GetPyData(item)
+        obj = self.GetItemData(item)
         if self.IsExpanded(item):
             self.addChildren(item)
         self.setText('')
@@ -310,7 +300,7 @@ class FillingTree(wx.TreeCtrl):
         obj = None
         if item != self.root:
             parent = self.GetItemParent(item)
-            obj = self.GetPyData(item)
+            obj = self.GetItemData(item)
         # Apply dictionary syntax to dictionary items, except the root
         # and first level children of a namepace.
         if ((isinstance(obj, dict) or hasattr(obj, 'keys')) and

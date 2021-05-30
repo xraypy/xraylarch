@@ -16,14 +16,6 @@ from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
 
 import wx
-from wxutils import is_wxPhoenix
-
-if is_wxPhoenix:
-    is_wxMain = wx.IsMainThread
-    wx_EvtLoop = wx.GUIEventLoop
-else:
-    is_wxMain = wx.Thread_IsMain
-    wx_EvtLoop = wx.EventLoop
 
 POLLTIME = 10 # milliseconds
 ON_INTERRUPT = None
@@ -112,7 +104,7 @@ class EventLoopRunner(object):
         if poll_time is None:
             poll_time = POLLTIME
         self.t0 = clock()
-        self.evtloop = wx_EvtLoop()
+        self.evtloop = wx.GUIEventLoop()
         self.timer = wx.Timer()
         self.parent.Bind(wx.EVT_TIMER, self.check_stdin)
         self.timer.Start(poll_time)
@@ -147,11 +139,11 @@ def inputhook_wx():
     try:
         app = wx.GetApp()
         if app is not None:
-            assert is_wxMain()
+            assert wx.IsMainThread()
 
             if not callable(signal.getsignal(signal.SIGINT)):
                 signal.signal(signal.SIGINT, signal.default_int_handler)
-            evtloop = wx_EvtLoop()
+            evtloop = wx.GUIEventLoop()
             ea = wx.EventLoopActivator(evtloop)
             t = clock()
             while not stdin_ready() and not update_requested():
@@ -196,7 +188,7 @@ def inputhook_darwin():
     try:
         app = wx.GetApp()
         if app is not None:
-            assert is_wxMain()
+            assert wx.IsMainThread()
             modal_hook = EnteredModalDialogHook()
             modal_hook.Register()
             eloop = EventLoopRunner(parent=app)
@@ -233,7 +225,7 @@ def ping(timeout=0.001):
         t0 = clock()
         app = wx.GetApp()
         if app is not None:
-            assert is_wxMain()
+            assert wx.IsMainThread()
             # Make a temporary event loop and process system events until
             # there are no more waiting, then allow idle events (which
             # will also deal with pending or posted wx events.)

@@ -20,7 +20,6 @@ from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
-is_wxPhoenix = 'phoenix' in wx.PlatformInfo
 is_windows = platform.system().startswith('Windows')
 WX_DEBUG = False
 
