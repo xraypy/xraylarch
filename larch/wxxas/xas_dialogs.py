@@ -168,11 +168,14 @@ class OverAbsorptionDialog(wx.Dialog):
         ppanel.oplot
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
-
-
+        
         opts = dict(linewidth=3, ylabel=plotlabels.norm,
                     xlabel=plotlabels.energy, delay_draw=True,
                     show_legend=True)
+
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
 
         ppanel.plot(dgroup.energy, dgroup.norm_corr, zorder=10, marker=None,
                     title='Over-absorption Correction:\n %s' % fname,
@@ -398,14 +401,16 @@ overwriting current arrays''')
             ynew = np.gradient(ynew)/np.gradient(xnew)
             ylabel = plotlabels.dmude
 
-        opts = dict(xmin=xmin, xmax=xmax, linewidth=3,
-                    ylabel=ylabel, xlabel=plotlabels.energy,
-                    delay_draw=True, show_legend=True)
+        opts = dict(xmin=xmin, xmax=xmax, linewidth=3, ylabel=ylabel,
+                    xlabel=plotlabels.energy, show_legend=True)
 
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+        
         ppanel.plot(xnew, ynew, zorder=20, marker=None,
                     title='Energy Calibration:\n %s' % fname,
-                    label='shifted', **opts)
-
+                    label='shifted', delay_draw=True, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.norm
         if use_deriv:
@@ -423,14 +428,12 @@ overwriting current arrays''')
                          marker=None, label=refgroup.filename, **opts)
 
         axv_opts = dict(ymin=0.05, ymax=0.95, linewidth=2.0, alpha=0.5,
-                        zorder=1, label='_nolegend_')
-
+                         zorder=1, label='_nolegend_')
         color1 = ppanel.conf.traces[0].color
         color2 = ppanel.conf.traces[1].color
         ppanel.axes.axvline(e0_new, color=color1, **axv_opts)
         ppanel.axes.axvline(e0_old, color=color2, **axv_opts)
         ppanel.canvas.draw()
-        ppanel.conf.draw_legend(show=True)
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
@@ -609,20 +612,24 @@ class RebinDataDialog(wx.Dialog):
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
         xnew, ynew, yerr, e0 = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
+        opts = {}
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+            
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
                     linewidth=3, title='Enegy rebinning:\n %s' % fname,
                     label='rebinned', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.mu)
+                    ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
-                     label='original', show_legend=True)
+                     label='original', show_legend=True, **opts)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -787,20 +794,24 @@ class SmoothDataDialog(wx.Dialog):
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
         xnew, ynew = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
+        opts = {}
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='Smoothing:\n %s' % fname,
                     label='smoothed', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.mu)
+                    ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.mu
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
-                     label='original', show_legend=True)
+                     label='original', show_legend=True, **opts)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -912,20 +923,24 @@ class DeconvolutionDialog(wx.Dialog):
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
         xnew, ynew = self.data
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
+        opts = {}
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='Deconvolving:\n %s' % fname,
                     label='deconvolved', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.mu)
+                    ylabel=plotlabels.mu, **opts)
 
         xold, yold = self.dgroup.energy, self.dgroup.norm
         ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                      marker='o', markersize=4, linewidth=2.0,
-                     label='original', show_legend=True)
+                     label='original', show_legend=True, **opts)
         ppanel.canvas.draw()
 
     def GetResponse(self):
@@ -1114,21 +1129,24 @@ clear undo history''')
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
-        ppanel.oplot
         xnew, ynew = self.data[-1]
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
 
+        opts = {}
+        if self.controller.plot_erange is not None:
+            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='De-glitching:\n %s' % fname,
                     label='current', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.mu)
+                    ylabel=plotlabels.mu, **opts)
 
         if len(self.data) > 1:
             xold, yold = self.data[0]
             ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
                          marker='o', markersize=4, linewidth=2.0,
-                         label='original', show_legend=True)
+                         label='original', show_legend=True, **opts)
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
 

@@ -1,12 +1,11 @@
 import os
 import copy
+import numpy as np
 
 import larch
-
-from larch import Group
-from larch.larchlib import read_workdir, save_workdir, read_config, save_config
-
-import numpy as np
+from larch.larchlib import read_config, save_config
+from larch.utils import group2dict, unique_name
+from larch.wxlib.plotter import last_cursor_pos
 
 PLOTWIN_SIZE = (550, 550)
 
@@ -24,7 +23,7 @@ class XASController():
         self.file_groups = {}
         self.fit_opts = {}
         self.group = None
-
+        self.plot_erange = None
         self.groupname = None
         self.report_frame = None
         self.symtable = self.larch.symtable
@@ -43,7 +42,7 @@ class XASController():
                     config[sname] = val
 
         for key, value in config.items():
-            setattr(_larch.symtable._sys.xas_viewer, key, value)
+            setattr(self.larch.symtable._sys.xas_viewer, key, value)
         try:
             os.chdir(config['workdir'])
         except:
@@ -147,6 +146,9 @@ class XASController():
         this.plot_ylabel = yarray
         return outgroup
 
+    def set_plot_erange(self, erange):
+        self.plot_erange = erange
+
     def copy_group(self, filename, new_filename=None):
         """copy XAS group (by filename) to new group"""
         groupname = self.file_groups[filename]
@@ -154,10 +156,7 @@ class XASController():
             return
 
         ogroup = self.get_group(groupname)
-
-        ngroup = Group(datatype=ogroup.datatype,
-                       copied_from=groupname)
-
+        ngroup = larch.Group(datatype=ogroup.datatype, copied_from=groupname)
         for attr in dir(ogroup):
             do_copy = True
             if attr in ('xdat', 'ydat', 'i0', 'data' 'yerr',
@@ -223,6 +222,7 @@ class XASController():
             popts['xmax'] = viewlims[1]
             popts['ymin'] = viewlims[2]
             popts['ymax'] = viewlims[3]
+           
 
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel

@@ -47,6 +47,13 @@ PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
                    'd\u03BC(E)/dE (raw)': 'dmude',
                    'd\u03BC(E)/dE (normalized)': 'dnormde'}
 
+Plot_EnergyRanges = {'full E range': None,
+                     'E0 -20:+80eV':  (-20, 80),
+                     'E0 -30:+120eV': (-30, 120),
+                     'E0 -50:+250eV': (-50, 250),
+                     'E0 -100:+500eV': (-100, 500)}
+
+
 PlotOne_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude',
@@ -80,12 +87,16 @@ class XASNormPanel(TaskPanel):
     def build_display(self):
         panel = self.panel
         self.wids = {}
-
+        self.last_plot_type = 'one'
         self.plotone_op = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                  action=self.onPlotOne, size=(200, -1))
         self.plotsel_op = Choice(panel, choices=list(PlotSel_Choices.keys()),
                                  action=self.onPlotSel, size=(200, -1))
 
+        self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
+                                 action=self.onPlotEither, size=(120, -1))
+        
+        self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
 
@@ -144,8 +155,8 @@ class XASNormPanel(TaskPanel):
         atsyms = ['?'] + self.larch.symtable._xray._xraydb.atomic_symbols
         edges = ('K', 'L3', 'L2', 'L1', 'M5')
 
-        self.wids['atsym'] = Choice(panel, choices=atsyms, size=(75, -1))
-        self.wids['edge'] = Choice(panel, choices=edges, size=(60, -1))
+        self.wids['atsym']  = Choice(panel, choices=atsyms, size=(75, -1))
+        self.wids['edge']   = Choice(panel, choices=edges, size=(60, -1))
 
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
@@ -177,7 +188,8 @@ class XASNormPanel(TaskPanel):
         panel.Add(plot_voff, style=RIGHT)
 
         panel.Add(plot_one, newrow=True)
-        panel.Add(self.plotone_op, dcol=4)
+        panel.Add(self.plotone_op, dcol=3)
+        panel.Add(self.plot_erange, dcol=1)
         panel.Add(CopyBtn('plotone_op'), dcol=1, style=RIGHT)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -408,7 +420,14 @@ class XASNormPanel(TaskPanel):
     def onFreezeGroup(self, evt=None):
         self._set_frozen(evt.IsChecked())
 
+    def onPlotEither(self, evt=None):
+        if self.last_plot_type == 'multi':
+            self.onPlotSel(evt=evt)
+        else:
+            self.onPlotOne(evt=evt)
+            
     def onPlotOne(self, evt=None):
+        self.last_plot_type = 'one'
         self.plot(self.controller.get_group())
 
     def onVoffset(self, evt=None):
@@ -417,6 +436,7 @@ class XASNormPanel(TaskPanel):
 
     def onPlotSel(self, evt=None):
         newplot = True
+        self.last_plot_type = 'multi'        
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
@@ -616,7 +636,7 @@ class XASNormPanel(TaskPanel):
             return
         form = self.read_form()
         self.process(dgroup=dgroup)
-        self.plot(dgroup)
+        self.onPlotEither()
 
     def make_dnormde(self, dgroup):
         form = dict(group=dgroup.groupname)
@@ -847,6 +867,9 @@ class XASNormPanel(TaskPanel):
         if new:
             plotcmd = ppanel.plot
 
+        erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
+        self.controller.set_plot_erange(erange)
+        
         groupname = getattr(dgroup, 'groupname', None)
         if groupname is None:
             return
@@ -882,6 +905,10 @@ class XASNormPanel(TaskPanel):
             popts['xmax'] = viewlims[1]
             popts['ymin'] = viewlims[2]
             popts['ymax'] = viewlims[3]
+
+        if erange is not None:
+            popts['xmin'] = dgroup.e0 + erange[0]
+            popts['xmax'] = dgroup.e0 + erange[1]
 
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
