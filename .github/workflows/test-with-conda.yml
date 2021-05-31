@@ -30,9 +30,9 @@ jobs:
         conda list
     - name: Install xraylarch
       run: |
-	pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils
         python setup.py install
     - name: Run test suite
       run: |
         cd tests
-	pytest
+        pytest
