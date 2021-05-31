@@ -655,14 +655,24 @@ class XASFrame(wx.Frame):
                     self.save_athena_project(groups[0], groups, prompt=True)
 
         self.controller.save_config()
-        wx.CallAfter(self.controller.close_all_displays)
+        try:
+            self.controller.close_all_displays()
+        except Exception:
+            pass
 
         if self.larch_buffer is not None:
-            wx.CallAfter(self.larch_buffer.Destroy)
+            try:
+                self.larch_buffer.Destroy()
+            except Exception:
+                pass
 
         for name, wid in self.subframes.items():
             if hasattr(wid, 'Destroy'):
-                wx.CallAfter(wid.Destroy)
+                try:
+                    wid.Destroy()
+                except Exception:
+                    pass
+        time.sleep(0.05)
 
         self.Destroy()
 
