@@ -25,7 +25,8 @@ jobs:
       run: |
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
-        conda install numpy scipy matplotlib  h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee tomopy wxpython pymatgen
+        conda install numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen
+        conda install tomopy wxpython
         conda info -a
         conda list
     - name: Install xraylarch
