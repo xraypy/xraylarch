@@ -45,7 +45,7 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
             chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
             chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
-            wavelet:  "plot_wavelet({group:s}", 
+            wavelet:  "plot_wavelet({group:s}",
             noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
@@ -287,11 +287,16 @@ class EXAFSPanel(TaskPanel):
             conf['bkg_clamphi'] =  dgroup.bkg_params.clamp2
 
         if hasattr(dgroup, 'fft_params'): # from Athena
-            conf['fft_kmin'] =  dgroup.fft_params.kmin
-            conf['fft_kmax'] =  dgroup.fft_params.kmax
-            conf['fft_dk'] =  dgroup.fft_params.dk
-            conf['fft_kweight'] =  dgroup.fft_params.kw
-            conf['fft_kwindow'] =  dgroup.fft_params.kwindow
+            conf['fft_kmin'] =  2.0
+            conf['fft_kmax'] =  None
+            conf['fft_dk'] =  4.0
+            conf['fft_kwindow'] =  'kaiser-bessel'
+            conf['fft_kweight'] =  2
+            if hasattr(dgroup.fft_params, 'kw'):
+                conf[f'fft_kweight'] = getattr(dgroup.fft_params, 'kw')
+            for attr in ('kmin', 'kmax', 'dk', 'kwindow'):
+                if hasattr(dgroup.fft_params, attr):
+                    conf[f'fft_{attr:s}'] = getattr(dgroup.fft_params, attr)
 
         if dgroup is not None:
             setattr(dgroup, self.configname, conf)
