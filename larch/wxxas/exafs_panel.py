@@ -324,7 +324,6 @@ class EXAFSPanel(TaskPanel):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 
-
         frozen = opts.get('is_frozen', False)
         if hasattr(dgroup, 'is_frozen'):
             frozen = dgroup.is_frozen
@@ -414,6 +413,8 @@ class EXAFSPanel(TaskPanel):
     def onProcess(self, event=None):
         """ handle process events"""
         if self.skip_process:
+            time.sleep(0.25)
+            self.skip_process = False
             return
         self.skip_process = True
         self.read_form()
