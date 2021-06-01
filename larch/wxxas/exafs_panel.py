@@ -360,9 +360,7 @@ class EXAFSPanel(TaskPanel):
             form_opts[attr] = wids[attr].GetStringSelection()
         time.sleep(0.001)
         conf = self.get_config()
-
         conf.update(form_opts)
-
         self.skip_process = skip_save
         return form_opts
 
@@ -433,7 +431,7 @@ class EXAFSPanel(TaskPanel):
 
         conf = self.get_config(self.dgroup)
         conf['group'] = self.dgroup.groupname
-
+        conf.update(self.read_form())
         conf.update(kws)
         if not 'fft_kwindow' in conf:
             return
@@ -447,7 +445,8 @@ class EXAFSPanel(TaskPanel):
                 val = -1.0
             bkgpars.append("%.3f" % val)
         bkgpars = ':'.join(bkgpars)
-        # print(" EXAFS Process #2 : ", bkgpars)
+        # print(" EXAFS Process #2 : ", bkgpars, self.dgroup.groupname,
+        #       bkgpars == self.last_process_bkg.get(self.dgroup.groupname, ''))
 
         if bkgpars != self.last_process_bkg.get(self.dgroup.groupname, ''):
             self.larch_eval(autobk_cmd.format(**conf))
@@ -459,6 +458,8 @@ class EXAFSPanel(TaskPanel):
             fftpars.append("%.3f" % conf.get(attr, 0.0))
         fftpars = ':'.join(fftpars)
 
+        # print(" EXAFS Process #3 : ", fftpars, self.dgroup.groupname,
+        #       fftpars == self.last_process_fft.get(self.dgroup.groupname, ''))
         if fftpars != self.last_process_fft.get(self.dgroup.groupname, ''):
             self.larch_eval(xftf_cmd.format(**conf))
             self.last_process_fft[self.dgroup.groupname] = fftpars
