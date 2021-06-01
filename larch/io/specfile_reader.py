@@ -639,12 +639,14 @@ class DataSourceSpecH5(object):
         scan_name = self._scan_str
         all_labels = self.get_counters()
         motor_names = self.get_scan_motors()
-        array_labels = motor_names + [i for i in all_labels if i not in motor_names]
         title = self.get_title()
         timestring = self.get_time()
         timestamp = self.get_timestamp()
         path, filename = os.path.split(self._fname)
         axis = self.get_scan_axis()
+        array_labels = [axis]
+        array_labels.extend([i for i in motor_names if i not in array_labels])
+        array_labels.extend([i for i in all_labels if i not in array_labels])
 
         scan_header = list(scan_group.get(self._scan_header_url, []))
         file_header = list(scan_group.get(self._file_header_url, []))
@@ -653,7 +655,6 @@ class DataSourceSpecH5(object):
         for scanh in scan_header:
             if scanh.startswith("#CXDI "):
                 header.append(scanh[6:].strip())
-
         out = Group(
             __name__=f"{file_type} file: {filename}, scan: {scan_name}",
             path=path,
@@ -674,7 +675,7 @@ class DataSourceSpecH5(object):
 
         data = []
         for label in array_labels:
-            arr = self.get_array(label)
+            arr = self.get_array(label).astype(np.float64)
             setattr(out, label, arr)
             data.append(arr)
         out.data = np.array(data)
