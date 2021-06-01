@@ -30,9 +30,10 @@ chikwin = '\u03c7(k) + Window(k)'
 chirmag = '|\u03c7(R)|'
 chirre  = 'Re[\u03c7(R)]'
 chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
+wavelet = 'EXAFS wavelet'
 noplot  = '<no plot>'
 
-PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr]
+PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
 PlotSel_Choices = [chie, chik, chirmag, chirre]
 
@@ -44,6 +45,7 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
             chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
             chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
+            wavelet:  "plot_wavelet({group:s}", 
             noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
