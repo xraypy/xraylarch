@@ -107,6 +107,7 @@ if HAS_WXPYTHON:
                                     plot_chie=xafsplots.plot_chie,
                                     plot_chik=xafsplots.plot_chik,
                                     plot_chir=xafsplots.plot_chir,
+                                    plot_wavelet=xafsplots.plot_wavelet,
                                     plot_chifit=xafsplots.plot_chifit,
                                     plot_path_k=xafsplots.plot_path_k,
                                     plot_path_r=xafsplots.plot_path_r,

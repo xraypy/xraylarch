@@ -21,6 +21,7 @@ Plotting macros for XAFS data sets and fits
 from numpy import gradient, ndarray, diff, where, arange, argmin
 from larch import Group
 from larch.math import (index_of, index_nearest, interp)
+from larch.xafs import cauchy_wavelet
 
 try:
     import wx
@@ -31,7 +32,7 @@ except ImportError:
 if HAS_WXPYTHON:
     from .plotter import (_getDisplay, _plot, _oplot, _newplot, _fitplot,
                           _plot_text, _plot_marker, _plot_arrow,
-                          _plot_axvline, _plot_axhline)
+                          _plot_axvline, _plot_axhline, _imshow)
 else:
     def nullfunc(*args, **kws): pass
 
@@ -468,6 +469,49 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     #endif
     if show_mag or show_real or show_imag:
         redraw(win=win, xmax=rmax, _larch=_larch)
+    #endif
+#enddef
+
+def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
+                 rmax=None, kmax=None, kweight=None, title=None, win=1, _larch=None):
+    """
+    plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
+              rmax=None, kmax=None, kweight=None, title=None, win=1)
+
+    Plot wavelet for XAFS data group
+
+    Arguments
+    ----------
+     dgroup       group of XAFS data after xftf() results (see Note 1)
+     show_mag     bool whether to plot wavelet magnitude [True]
+     show_real    bool whether to plot real part of wavelet [False]
+     show_imag    bool whether to plot imaginary part of wavelet [False]
+     title        string for plot titlel [None, may use filename if available]
+     rmax         max R to show [None, end of data]
+     kmax         max k to show [None, end of data]
+     kweight      k-weight to use to construct wavelet [None, take from group]
+     win          integer image window to use [1]
+
+    Notes
+    -----
+     The wavelet will be performed 
+    """
+    if kweight is None:
+        kweight = dgroup.xftf_details.call_args['kweight']
+        
+    title = _get_title(dgroup, title=title)
+
+    opts = dict(win=win, title=title, x=dgroup.k, y=dgroup.r, xmax=kmax,
+                ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
+                show_axis=True, _larch=_larch)
+
+    cauchy_wavelet(dgroup, kweight=kweight)
+    if show_mag:
+        _imshow(dgroup.wcauchy_mag, **opts)
+    elif show_real:
+        _imshow(dgroup.wcauchy_real, **opts)        
+    elif show_imag:
+        _imshow(dgroup.wcauchy_imag, **opts)
     #endif
 #enddef
 
