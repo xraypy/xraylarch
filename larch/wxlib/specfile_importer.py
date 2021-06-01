@@ -585,7 +585,11 @@ class SpecfileImporter(wx.Frame) :
         ix  = self.xarr.GetSelection()
         xname = self.xarr.GetStringSelection()
         rdata = self.curscan.data
-        ncol, npts = rdata.shape
+        try:
+            ncol, npts = rdata.shape
+        except:
+            self.statusbar.SetStatusText(f"Warning: Could not read data for scan '{self.curscan.title:s}'")
+            
         workgroup = self.workgroup
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
