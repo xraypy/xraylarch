@@ -168,7 +168,7 @@ class OverAbsorptionDialog(wx.Dialog):
         ppanel.oplot
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
-        
+
         opts = dict(linewidth=3, ylabel=plotlabels.norm,
                     xlabel=plotlabels.energy, delay_draw=True,
                     show_legend=True)
@@ -407,7 +407,7 @@ overwriting current arrays''')
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
-        
+
         ppanel.plot(xnew, ynew, zorder=20, marker=None,
                     title='Energy Calibration:\n %s' % fname,
                     label='shifted', delay_draw=True, **opts)
@@ -472,11 +472,9 @@ class RebinDataDialog(wx.Dialog):
                              **opts)
         pre1 = 10.0*(1+int((xmin-e0val)/10.0))
         wids['pre1'] = FloatCtrl(panel, value=pre1,  **opts)
-        wids['pre2'] = FloatCtrl(panel, value=-20, **opts)
-
+        wids['pre2'] = FloatCtrl(panel, value=-15, **opts)
         wids['xanes1'] = FloatCtrl(panel, value=-15,  **opts)
         wids['xanes2'] = FloatCtrl(panel, value=15, **opts)
-
         wids['exafs1'] = FloatCtrl(panel, value=etok(15),  **opts)
         wids['exafs2'] = FloatCtrl(panel, value=etok(xmax-e0val), **opts)
 
@@ -620,7 +618,7 @@ class RebinDataDialog(wx.Dialog):
         if self.controller.plot_erange is not None:
             opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
             opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
-            
+
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker='square',
                     linewidth=3, title='Enegy rebinning:\n %s' % fname,
                     label='rebinned', xlabel=plotlabels.energy,
