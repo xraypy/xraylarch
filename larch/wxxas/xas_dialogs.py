@@ -1188,7 +1188,7 @@ class SpectraCalcDialog(wx.Dialog):
         xmax = max(self.dgroup.energy)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(475, 525),
                            title="Spectra Calculations: Add, Subtract Spectra")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
