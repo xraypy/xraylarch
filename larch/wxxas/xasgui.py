@@ -20,8 +20,7 @@ from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
-is_windows = platform.system().startswith('Windows')
-WX_DEBUG = True
+WX_DEBUG = False
 
 import larch
 from larch import Group
@@ -210,7 +209,7 @@ class XASFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def process_normalization(self, dgroup):
-        self.get_nbpage('xasnorm').process(dgroup)
+        self.get_nbpage('xasnorm').process(dgroup, noskip=True)
 
     def get_nbpage(self, name):
         "get nb page by name"

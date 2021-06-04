@@ -11,6 +11,7 @@ import wx.dataview as dv
 import numpy as np
 
 from functools import partial
+from collections import OrderedDict
 
 from lmfit.printfuncs import gformat
 
@@ -224,9 +225,6 @@ class PCAPanel(TaskPanel):
     def fill_form(self, dgroup):
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
-        if not hasattr(dgroup, 'norm'):
-            self.xasmain.process_normalization(dgroup)
-
         if isinstance(dgroup, Group):
             d_emin = min(dgroup.energy)
             d_emax = max(dgroup.energy)
@@ -309,7 +307,6 @@ class PCAPanel(TaskPanel):
         gname = form['groupname']
         cmd = "pca_fit(%s, pca_result, ncomps=%d)" % (gname, ncomps)
         self.larch_eval(cmd)
-
         dgroup = self.controller.get_group()
         pca_chisquare = dgroup.pca_result.chi_square
         self.wids['fit_chi2'].SetLabel(gformat(dgroup.pca_result.chi_square))
@@ -333,7 +330,7 @@ class PCAPanel(TaskPanel):
         for gname in groups:
             grp = self.controller.get_group(gname)
             if not hasattr(grp, 'norm'):
-                self.xasmain.process_normalization(grp)
+                self.parent.nb.pagelist[0].process(grp)
 
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
