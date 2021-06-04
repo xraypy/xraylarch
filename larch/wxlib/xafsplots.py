@@ -412,10 +412,9 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     redraw(win=win, xmax=kmax, _larch=_larch)
 #enddef
 
-
 def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
-              rmax=None, label=None, title=None, new=True, delay_draw=False,
-              offset=0, win=1, _larch=None):
+              show_window=False, rmax=None, label=None, title=None,
+              new=True, delay_draw=False, offset=0, win=1, _larch=None):
     """
     plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
               rmax=None, label=None, new=True, win=1)
@@ -428,6 +427,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_mag     bool whether to plot |chi(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
+     show_window  bool whether to R-windw for back FT (will be scaled) [False]
      label        string for label [``None`` to use 'chir']
      title        string for plot titlel [None, may use filename if available]
      rmax         max R to show [None, end of data]
@@ -467,10 +467,69 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_imag:
         _plot(dgroup.r, dgroup.chir_im+offset, label='%s (imag)' % label, **opts)
     #endif
-    if show_mag or show_real or show_imag:
+    if show_window and hasattr(dgroup, 'rwin'):
+        rwin = dgroup.rwin * max(dgroup.chir_mag)
+        opts['zorder'] = 15
+        _plot(dgroup.r, rwin+offset, label='window',  **opts)
+    #endif
+
+    if show_mag or show_real or show_imag or show_window:
         redraw(win=win, xmax=rmax, _larch=_larch)
     #endif
 #enddef
+
+def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
+              title=None, new=True, delay_draw=False, offset=0, win=1,
+              _larch=None):
+    """
+    plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
+              new=True, win=1)
+
+    Plot Fourier filtered chi(k), optionally with k-weighted chi(k) for XAFS data group
+
+    Arguments
+    ----------
+     dgroup       group of XAFS data after autobk() results (see Note 1)
+     kweight      k-weighting for plot [read from last xftf(), or 0]
+     kmax         max k to show [None, end of data]
+     show_chik    bool whether to also plot k-weighted chi(k) [False]
+     label        string for label [``None`` to use 'chi']
+     title        string for plot titlel [None, may use filename if available]
+     new          bool whether to start a new plot [True]
+     delay_draw   bool whether to delay draw until more traces are added [False]
+     offset       vertical offset to use for y-array [0]
+     win          integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         k, chi, kwin, filename
+    """
+    if kweight is None:
+        kweight = 0
+        xft = getattr(dgroup, 'xftf_details', None)
+        if xft is not None:
+            kweight = xft.call_args.get('kweight', 0)
+        #endif
+    #endif
+    nk = len(dgroup.k)
+    chiq = dgroup.chiq_re[:nk]
+    opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3, _larch=_larch)
+    if label is None:
+        label = 'chi(q) (filtered)'
+    #endif
+    title = _get_title(dgroup, title=title)
+    _plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
+         ylabel=plotlabels.chikw.format(kweight), title=title,
+         label=label, zorder=20, new=new, xmax=kmax, **opts)
+
+    if show_chik:
+        chik = dgroup.chi * dgroup.k ** kweight
+        _plot(dgroup.k, chik+offset, zorder=16, label='chi(k)',  **opts)
+    #endif
+    redraw(win=win, xmax=kmax, _larch=_larch)
+#enddef
+
 
 def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
                  rmax=None, kmax=None, kweight=None, title=None, win=1, _larch=None):
