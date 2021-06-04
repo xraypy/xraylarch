@@ -440,7 +440,7 @@ and so on are then given.
        {'Si': (1, 28.0855, 33.879432430185062), 'elements': ['Si', 'O'],
        'mass': 60.0843, 'O': (2.0, 15.9994, 5.9528248152970837), 'density': 2.65}
 
-.. function:: xray_delta_beta(material, energy, photo_only=False)
+.. function:: xray_delta_beta(material, density, energy, photo_only=False)
 
     return anomalous components of the index of refraction for a material,
     using the tabulated scattering components from Chantler.
