@@ -17,7 +17,7 @@ from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         NumericCombo, CEN, LEFT, Font)
+                         NumericCombo, CEN, LEFT, Font, FileSave, FileOpen)
 from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 
@@ -451,19 +451,13 @@ class RegressionPanel(TaskPanel):
         self.write_message('Read CSV File %s ' % fname)
 
     def onSaveCSV(self, event=None):
-        dlg = wx.FileDialog(self, message="Save CSV Data File",
-                            defaultDir=os.getcwd(),
-                            defaultFile=self.save_csvfile,
-                            wildcard=FILE_WILDCARDS,
-                            style=wx.FD_SAVE)
-        fname = None
-        if dlg.ShowModal() == wx.ID_OK:
-            fname = dlg.GetPath()
-        dlg.Destroy()
+        wildcard = 'CSV file (*.csv)|*.csv|All files (*.*)|*.*'
+        fname = FileSave(self, message='Save CSV Data File',
+                         wildcard=wildcard,
+                         default_file=self.save_csvfile)
         if fname is None:
             return
         self.save_csvfile = os.path.split(fname)[1]
-
         buff = []
         for  row in self.wids['table'].table.data:
             buff.append("%s, %s, %s" % (row[0], gformat(row[1]), gformat(row[2])))
