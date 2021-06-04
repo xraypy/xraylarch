@@ -21,7 +21,7 @@ from wx.adv import AboutBox, AboutDialogInfo
 from wx.richtext import RichTextCtrl
 
 is_windows = platform.system().startswith('Windows')
-WX_DEBUG = False
+WX_DEBUG = True
 
 import larch
 from larch import Group
@@ -131,7 +131,7 @@ class XASFrame(wx.Frame):
         self.controller = XASController(wxparent=self, _larch=self.larch)
         iconfile = os.path.join(icondir, ICON_FILE)
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
-        
+
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -208,6 +208,9 @@ class XASFrame(wx.Frame):
 
         splitter.SplitVertically(leftpanel, panel, 1)
         wx.CallAfter(self.init_larch)
+
+    def process_normalization(self, dgroup):
+        self.get_nbpage('xasnorm').process(dgroup)
 
     def get_nbpage(self, name):
         "get nb page by name"

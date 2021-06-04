@@ -626,6 +626,8 @@ class PrePeakPanel(TaskPanel):
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
+            if not hasattr(dgroup, 'norm'):
+                self.xasmain.process_normalization(dgroup)
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
@@ -767,6 +769,8 @@ class PrePeakPanel(TaskPanel):
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
+            if not hasattr(dat, 'norm'):
+                self.xasmain.process_normalization(dat)
             # self.wids['ppeak_e0'].SetValue(dat.e0)
             if hasattr(dat, 'prepeaks'):
                 self.wids['ppeak_emin'].SetValue(dat.prepeaks.emin)
@@ -1322,7 +1326,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         for igroup, gname in enumerate(groups):
             dgroup = self.controller.get_group(gname)
             if not hasattr(dgroup, 'norm'):
-                self.xasmain.get_nbpage('xasnorm').process(dgroup)
+                self.xasmain.process_normalization(dgroup)
             self.build_fitmodel(gname)
             opts['group'] = opts['gname']
             self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))

@@ -131,10 +131,14 @@ class LinComboResultFrame(wx.Frame):
         splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(200)
 
-        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+        dl = self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
-        panel = scrolled.ScrolledPanel(splitter)
 
+        dl.SetOwnBackgroundColour(wx.Colour(235, 235, 200))
+        dl.SetBackgroundColour(wx.Colour(235, 235, 200))
+        dl.SetForegroundColour(wx.Colour(5, 5, 50))
+        dl.SetOwnForegroundColour(wx.Colour(5, 5, 50))
+        panel = scrolled.ScrolledPanel(splitter)
 
         self.SetMinSize((650, 600))
         self.colors = GUIColors()
@@ -716,6 +720,8 @@ class LinearComboPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
+        if not hasattr(dgroup, 'norm'):
+            self.xasmain.process_normalization(dgroup)
         self.dgroup = dgroup
         if isinstance(dgroup, Group):
             d_emin = min(dgroup.energy)

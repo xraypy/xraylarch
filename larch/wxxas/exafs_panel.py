@@ -52,7 +52,7 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             wavelet: "plot_wavelet({group:s}",
             chir_w:  "plot_chir({group:s}, show_mag=True, show_real=True, show_window=True",
             chiq:    "plot_chiq({group:s}, show_chik=False",
-            chikq:   "plot_chiq({group:s}, show_chik=True",            
+            chikq:   "plot_chiq({group:s}, show_chik=True",
             noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
@@ -76,7 +76,7 @@ defaults = dict(e0=-1.0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=0,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
                 fft_rmin=1, fft_rmax=6, fft_dr=0.25,
                 fft_rwindow='Hanning')
-                
+
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
@@ -149,11 +149,11 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 
-        opts.update({'increment': 0.1, 'digits': 2, 'max_val': 20})        
+        opts.update({'increment': 0.1, 'digits': 2, 'max_val': 20})
         fft_rmin = self.add_floatspin('fft_rmin', value=1, with_pin=True, **opts)
         fft_rmax = self.add_floatspin('fft_rmax', value=6, with_pin=True, **opts)
 
-        wids['fft_dr'] = FloatSpin(panel, value=0.5,  **opts)        
+        wids['fft_dr'] = FloatSpin(panel, value=0.5,  **opts)
 
         opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
         wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
@@ -170,7 +170,7 @@ class EXAFSPanel(TaskPanel):
                                      action=self.onProcess, size=(150, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
 
-        
+
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -350,11 +350,13 @@ class EXAFSPanel(TaskPanel):
             setattr(dgroup, self.configname, conf)
         return conf
 
-
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
+        if not hasattr(dgroup, 'norm'):
+            self.xasmain.process_normalization(dgroup)
+
         self.skip_process = True
         wids = self.wids
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
@@ -366,6 +368,11 @@ class EXAFSPanel(TaskPanel):
             wids[attr].SetValue(val)
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
+            val = getattr(dgroup, attr, None)
+            if val is None:
+                val = opts.get(attr, -1)
+                if val is None:
+                    val = '0'
             wids[attr].SetStringSelection("%d" % opts.get(attr, 0))
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
@@ -469,7 +476,7 @@ class EXAFSPanel(TaskPanel):
     def onRbkg(self, event=None):
         self.wids['fft_rmin'].SetValue(self.wids['rbkg'].GetValue())
         self.onProcess(event=event)
-        
+
     def onProcess(self, event=None):
         """ handle process events"""
         if self.skip_process:

@@ -227,6 +227,8 @@ class RegressionPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.dgroup = dgroup
         if isinstance(dgroup, Group):
+            if not hasattr(dgroup, 'norm'):
+                self.xasmain.process_normalization(dgroup)
             d_emin = min(dgroup.energy)
             d_emax = max(dgroup.energy)
             if opts['xmin'] < d_emin:

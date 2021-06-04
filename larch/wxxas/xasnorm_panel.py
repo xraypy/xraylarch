@@ -95,7 +95,7 @@ class XASNormPanel(TaskPanel):
 
         self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
                                  action=self.onPlotEither, size=(120, -1))
-        
+
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
         self.plotsel_op.SetSelection(1)
@@ -178,7 +178,7 @@ class XASNormPanel(TaskPanel):
         HLINEWID = 575
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
-        
+
         panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
                   style=RIGHT, dcol=2)
 
@@ -292,7 +292,7 @@ class XASNormPanel(TaskPanel):
 
         setattr(dgroup, self.configname, conf)
         return conf
-    
+
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
@@ -425,7 +425,7 @@ class XASNormPanel(TaskPanel):
             self.onPlotSel(evt=evt)
         else:
             self.onPlotOne(evt=evt)
-            
+
     def onPlotOne(self, evt=None):
         self.last_plot_type = 'one'
         self.plot(self.controller.get_group())
@@ -436,7 +436,7 @@ class XASNormPanel(TaskPanel):
 
     def onPlotSel(self, evt=None):
         newplot = True
-        self.last_plot_type = 'multi'        
+        self.last_plot_type = 'multi'
         group_ids = self.controller.filelist.GetCheckedStrings()
         if len(group_ids) < 1:
             return
@@ -733,7 +733,6 @@ class XASNormPanel(TaskPanel):
 {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
             self.larch_eval(expr.format(**form))
 
-
         self.make_dnormde(dgroup)
 
         if form['auto_e0']:
@@ -869,7 +868,7 @@ class XASNormPanel(TaskPanel):
 
         erange = Plot_EnergyRanges[self.plot_erange.GetStringSelection()]
         self.controller.set_plot_erange(erange)
-        
+
         groupname = getattr(dgroup, 'groupname', None)
         if groupname is None:
             return

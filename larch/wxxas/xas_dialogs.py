@@ -160,7 +160,7 @@ class OverAbsorptionDialog(wx.Dialog):
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def plot_results(self, event=None):
@@ -359,7 +359,7 @@ overwriting current arrays''')
         xdat, ydat = self.data
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def on_apply_sel(self, event=None):
@@ -368,7 +368,7 @@ overwriting current arrays''')
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
-            self.parent.nb.pagelist[0].process(dgroup)
+            self.parent.process_normalization(dgroup)
 
     def on_saveas(self, event=None):
         wids = self.wids
@@ -553,7 +553,7 @@ class RebinDataDialog(wx.Dialog):
         ngroup.mu     = ngroup.ydat = ydat
 
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
-        self.parent.nb.pagelist[0].process(ngroup)
+        self.parent.process_normalization(dgroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -602,7 +602,7 @@ class RebinDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = dgroup.xdat = xdat
         dgroup.mu     = dgroup.ydat = ydat
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -732,7 +732,7 @@ class SmoothDataDialog(wx.Dialog):
         xdat, ydat = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb.pagelist[0].process(ngroup)
+        self.parent.process_normalization(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -784,7 +784,7 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def on_done(self, event=None):
@@ -890,7 +890,7 @@ class DeconvolutionDialog(wx.Dialog):
         xdat, ydat = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb.pagelist[0].process(ngroup)
+        self.parent.process_normalization(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
@@ -916,7 +916,7 @@ class DeconvolutionDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def plot_results(self):
@@ -1060,7 +1060,7 @@ clear undo history''')
         xdat, ydat = self.data[-1]
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
-        self.parent.nb.pagelist[0].process(ngroup)
+        self.parent.process_normalization(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def reset_data_history(self):
@@ -1122,7 +1122,7 @@ clear undo history''')
         dgroup.energy = dgroup.xdat = xdat
         dgroup.mu     = dgroup.ydat = ydat
         self.reset_data_history()
-        self.parent.nb.pagelist[0].process(dgroup)
+        self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def plot_results(self):
