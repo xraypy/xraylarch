@@ -42,7 +42,7 @@ if HAS_WXPYTHON:
                          FRAMESTYLE, hms, DateTimeCtrl, Button,
                          ToggleButton, BitmapButton, Choice, YesNo,
                          SimpleText, TextCtrl, LabeledTextCtrl, HyperText,
-                         EditableListBox, get_icon, GUIColors, OkCancel,
+                         get_icon, GUIColors, OkCancel,
                          FileOpen, FileSave, SelectWorkdir, fix_filename,
                          SavedParameterDialog, FileCheckList,
                          FileDropTarget, GridPanel, RowPanel, make_steps,
@@ -57,7 +57,7 @@ if HAS_WXPYTHON:
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame
-    from .gui_utils import gcd, databrowser, fileprompt, wx_update
+    from .gui_utils import gcd, databrowser, fileprompt, wx_update, EditableListBox
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
     from .periodictable import PeriodicTablePanel
