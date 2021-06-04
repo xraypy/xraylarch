@@ -31,9 +31,13 @@ chirmag = '|\u03c7(R)|'
 chirre  = 'Re[\u03c7(R)]'
 chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
 wavelet = 'EXAFS wavelet'
+chir_w  = '\u03c7(R) + Window(R)'
+chiq    = 'Filtered \u03c7(k)'
+chikq   = '\u03c7(k) + Filtered \u03c7(k)'
 noplot  = '<no plot>'
 
-PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet]
+PlotOne_Choices = [mu_bkg, chie, chik, chikwin, chirmag, chirre, chirmr, wavelet,
+                   chir_w, chiq, chikq]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
 PlotSel_Choices = [chie, chik, chirmag, chirre]
 
@@ -45,7 +49,10 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             chirmag: "plot_chir({group:s}, show_mag=True, show_real=False",
             chirre:  "plot_chir({group:s}, show_mag=False, show_real=True",
             chirmr:  "plot_chir({group:s}, show_mag=True, show_real=True",
-            wavelet:  "plot_wavelet({group:s}",
+            wavelet: "plot_wavelet({group:s}",
+            chir_w:  "plot_chir({group:s}, show_mag=True, show_real=True, show_window=True",
+            chiq:    "plot_chiq({group:s}, show_chik=False",
+            chikq:   "plot_chiq({group:s}, show_chik=True",            
             noplot: None}
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
@@ -60,10 +67,16 @@ autobk_cmd = """autobk({group:s}, rbkg={rbkg: .3f}, e0={e0: .4f},
 xftf_cmd = """xftf({group:s}, kmin={fft_kmin: .3f}, kmax={fft_kmax: .3f},
       kweight={fft_kweight: .3f}, dk={fft_dk: .3f}, window='{fft_kwindow:s}')"""
 
+xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
+      dr={fft_dr: .3f}, window='{fft_rwindow:s}')"""
+
 
 defaults = dict(e0=-1.0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=0,
                 bkg_clamphi=1, bkg_kweight=1, fft_kmin=2.5, fft_kmax=None,
-                fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel')
+                fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
+                fft_rmin=1, fft_rmax=6, fft_dr=0.25,
+                fft_rwindow='Hanning')
+                
 
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
@@ -123,9 +136,11 @@ class EXAFSPanel(TaskPanel):
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
 
-        opts['max_val'] = 5
+        opts['max_val'] = 6
+        opts['action'] = self.onRbkg
         wids['rbkg'] = FloatSpin(panel, value=1.0, **opts)
 
+        opts['action'] = self.onProcess
         opts['max_val'] = 125
         bkg_kmin = self.add_floatspin('bkg_kmin', value=0, with_pin=True, **opts)
         bkg_kmax = self.add_floatspin('bkg_kmax', value=20, with_pin=True, **opts)
@@ -134,9 +149,14 @@ class EXAFSPanel(TaskPanel):
 
         wids['fft_dk'] = FloatSpin(panel, value=3,  **opts)
 
+        opts.update({'increment': 0.1, 'digits': 2, 'max_val': 20})        
+        fft_rmin = self.add_floatspin('fft_rmin', value=1, with_pin=True, **opts)
+        fft_rmax = self.add_floatspin('fft_rmax', value=6, with_pin=True, **opts)
+
+        wids['fft_dr'] = FloatSpin(panel, value=0.5,  **opts)        
+
         opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
         wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
-
         wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
 
         opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.onProcess)
@@ -146,6 +166,11 @@ class EXAFSPanel(TaskPanel):
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
                                      action=self.onProcess, size=(150, -1))
 
+        wids['fft_rwindow'] = Choice(panel, choices=list(FTWINDOWS),
+                                     action=self.onProcess, size=(150, -1))
+        wids['fft_rwindow'].SetStringSelection('Hanning')
+
+        
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
@@ -217,7 +242,7 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        panel.Add(SimpleText(panel, ' Fourier transform    ', size=(200, -1),
+        panel.Add(SimpleText(panel, ' Fourier transform  (k -> R) ', size=(250, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
@@ -241,6 +266,29 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, ' dk : '))
         panel.Add(wids['fft_dk'])
         panel.Add(CopyBtn('fft_kwindow'), style=RIGHT)
+
+
+        panel.Add((10, 10), newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
+
+        panel.Add(SimpleText(panel, ' Back Fourier transform  (R -> q) ', size=(250, -1),
+                             **self.titleopts), dcol=2, style=LEFT, newrow=True)
+        panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
+                  style=RIGHT, dcol=3)
+
+        panel.Add(SimpleText(panel, 'R min: '), newrow=True)
+        panel.Add(fft_rmin)
+
+        panel.Add(SimpleText(panel, 'R max:', size=(75, -1)), style=LEFT)
+        panel.Add(fft_rmax)
+        panel.Add(CopyBtn('fft_rrange'), style=RIGHT)
+
+        panel.Add(SimpleText(panel, 'R window : '), newrow=True)
+        panel.Add(wids['fft_rwindow'])
+        panel.Add(SimpleText(panel, ' dR : '))
+        panel.Add(wids['fft_dr'])
+        panel.Add(CopyBtn('fft_rwindow'), style=RIGHT)
+
 
         panel.Add((10, 10), newrow=True)
         panel.Add(self.wids['is_frozen'], dcol=1, newrow=True)
@@ -348,14 +396,17 @@ class EXAFSPanel(TaskPanel):
         wids = self.wids
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'fft_kmin', 'fft_kmax',
-                     'fft_kweight', 'fft_dk', 'plot_kweight',
+                     'fft_kweight', 'fft_dk',
+                     'fft_rmin', 'fft_rmax', 'fft_dr',
+                     'plot_kweight',
                      'plot_kweight_alt', 'plot_voffset'):
             form_opts[attr] = wids[attr].GetValue()
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
             form_opts[attr] = int(wids[attr].GetStringSelection())
 
-        for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
+        for attr in ('fft_kwindow', 'fft_rwindow', 'plotone_op',
+                     'plotsel_op', 'plotalt_op'):
             form_opts[attr] = wids[attr].GetStringSelection()
         time.sleep(0.001)
         conf = self.get_config()
@@ -387,6 +438,10 @@ class EXAFSPanel(TaskPanel):
             opts = copy_attrs('fft_kmin', 'fft_kmax')
         elif name == 'fft_kwindow':
             opts = copy_attrs('fft_kwindow', 'fft_dk')
+        elif name == 'fft_rrange':
+            opts = copy_attrs('fft_rmin', 'fft_rmax')
+        elif name == 'fft_rwindow':
+            opts = copy_attrs('fft_rwindow', 'fft_dr')
 
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
@@ -403,6 +458,7 @@ class EXAFSPanel(TaskPanel):
 
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax', 'bkg_kweight',
                      'fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
+                     'fft_rmin', 'fft_rmax', 'fft_dr',
                      'bkg_clamplo', 'bkg_clamphi', 'fft_kwindow'):
             self.wids[attr].Enable(not frozen)
 
@@ -410,6 +466,10 @@ class EXAFSPanel(TaskPanel):
         self._set_frozen(evt.IsChecked())
 
 
+    def onRbkg(self, event=None):
+        self.wids['fft_rmin'].SetValue(self.wids['rbkg'].GetValue())
+        self.onProcess(event=event)
+        
     def onProcess(self, event=None):
         """ handle process events"""
         if self.skip_process:
@@ -454,8 +514,9 @@ class EXAFSPanel(TaskPanel):
             self.last_process_bkg[self.dgroup.groupname] = bkgpars
             self.last_process_fft[self.dgroup.groupname] = ''
 
-        fftpars = [conf['fft_kwindow']]
-        for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk'):
+        fftpars = [conf['fft_kwindow'], conf['fft_rwindow']]
+        for attr in ('fft_kmin', 'fft_kmax', 'fft_kweight', 'fft_dk',
+                     'fft_rmin', 'fft_rmax', 'fft_dr'):
             fftpars.append("%.3f" % conf.get(attr, 0.0))
         fftpars = ':'.join(fftpars)
 
@@ -463,6 +524,7 @@ class EXAFSPanel(TaskPanel):
         #       fftpars == self.last_process_fft.get(self.dgroup.groupname, ''))
         if fftpars != self.last_process_fft.get(self.dgroup.groupname, ''):
             self.larch_eval(xftf_cmd.format(**conf))
+            self.larch_eval(xftr_cmd.format(**conf))
             self.last_process_fft[self.dgroup.groupname] = fftpars
 
         setattr(dgroup, self.configname, conf)
