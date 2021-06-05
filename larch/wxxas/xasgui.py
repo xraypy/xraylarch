@@ -444,7 +444,7 @@ class XASFrame(wx.Frame):
         self.save_athena_project(groups[0], groups, prompt=True)
 
     def onSaveProject(self, evt=None):
-        groups = [gname for gname in self.controller.file_groups]
+        groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
             Popup(self, "No files selected to export to Athena",
                   "No files selected")
