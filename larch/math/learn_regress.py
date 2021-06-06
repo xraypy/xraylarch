@@ -241,7 +241,7 @@ def lasso_predict(group, model):
              model.model.__repr__().startswith('Lasso'))
     if not valid:
         raise ValueError("lasso_predict needs a Lasso training model")
-    return _predict(group, mod)
+    return _predict(group, model)
 
 def pls_predict(group, model):
     """
