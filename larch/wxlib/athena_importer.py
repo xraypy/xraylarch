@@ -82,11 +82,13 @@ class AthenaImporter(wx.Frame) :
 
         self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False,
                                      _larch=_larch)
-        self.allgroups = []
-        for item in self.a_project._athena_groups:
-            if not item.startswith('_athena_'):
-                self.allgroups.append(item)
-                self.grouplist.Append(item)
+        self.allgroups = {}
+        for sname, item in self.a_project._athena_groups.items():
+            try:
+                self.allgroups[item.label] = sname
+                self.grouplist.Append(item.label)
+            except:
+                print(' ? ', sname, item.label, item)
         self.Show()
         self.Raise()
 
@@ -95,7 +97,7 @@ class AthenaImporter(wx.Frame) :
 
     def onOK(self, event=None):
         """generate script to import groups"""
-        namelist = [str(n) for n in self.grouplist.GetCheckedStrings()]
+        namelist = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
         if len(namelist) == 0:
 
             cancel = Popup(self, """No data groups selected.
@@ -108,26 +110,27 @@ class AthenaImporter(wx.Frame) :
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(self.filename, namelist)
-
         self.Destroy()
 
     def onCancel(self, event=None):
         self.Destroy()
 
     def onSelAll(self, event=None):
-        self.grouplist.SetCheckedStrings(self.allgroups)
+        self.grouplist.SetCheckedStrings(list(self.allgroups.keys()))
 
     def onSelNone(self, event=None):
         self.grouplist.SetCheckedStrings([])
 
     def onShowGroup(self, event=None):
         """column selections changed calc xdat and ydat"""
-        gname = event.GetString()
+        label = event.GetString()
+        gname = self.allgroups[label]
         grp = getattr(self.a_project, gname)
-        glist = list(self.grouplist.GetCheckedStrings())
-        if gname not in glist:
-            glist.append(gname)
-        self.grouplist.SetCheckedStrings(glist)
         if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
             self.plotpanel.plot(grp.energy, grp.mu,
-                                xlabel='Energy', ylabel='mu',title=gname)
+                                xlabel='Energy', ylabel='mu',title=label)
+
+        glist = list(self.grouplist.GetCheckedStrings())
+        if label not in glist:
+            glist.append(label)
+        self.grouplist.SetCheckedStrings(glist)

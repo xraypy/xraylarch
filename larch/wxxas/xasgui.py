@@ -798,6 +798,7 @@ class XASFrame(wx.Frame):
 
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
+        labels = []
         for gname in namelist:
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
@@ -807,14 +808,15 @@ class XASFrame(wx.Frame):
                 while count < 1e7 and self.larch.symtable.has_group(gid):
                     gid = prefix + make_hashkey(length=7)
                     count += 1
-
+            label = getattr(this, 'label', gname)
+            labels.append(label)
             self.larch.eval(script.format(group=gid, prjgroup=gname))
-            dgroup = self.install_group(gid, gname, process=True, plot=False)
+            dgroup = self.install_group(gid, label, process=True, plot=False)
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
 
-        if len(namelist) > 0:
-            gname = self.controller.file_groups[namelist[0]]
+        if len(labels) > 0:
+            gname = self.controller.file_groups[labels[0]]
             self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
 
