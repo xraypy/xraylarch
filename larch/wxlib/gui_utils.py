@@ -206,11 +206,11 @@ class EditableListBox(wx.ListBox):
     def __init__(self, parent, select_action, right_click=True,
                  remove_action=None, **kws):
         wx.ListBox.__init__(self, parent, **kws)
-        self.SetBackgroundColour(wx.Colour(240, 240, 220))
-        self.SetForegroundColour(wx.Colour(10, 10, 30))
+        self.SetBackgroundColour(wx.Colour(240, 240, 230))
+        self.SetForegroundColour(wx.Colour(10, 10, 20))
 
-        self.SetOwnBackgroundColour(wx.Colour(220, 240, 240))
-        self.SetOwnForegroundColour(wx.Colour(30, 10, 10))
+        self.SetOwnBackgroundColour(wx.Colour(240, 240, 230))
+        self.SetOwnForegroundColour(wx.Colour(10, 10, 20))
 
         self.Bind(wx.EVT_LISTBOX,  select_action)
         self.remove_action = remove_action
