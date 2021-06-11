@@ -169,9 +169,11 @@ class APSGSE_BeamlineData(GenericBeamlineData):
                     label, entry = label.split(':')
                     entry = entry.strip()
                     if ' ' in entry:
-                        entry, units = entry.split(' ')
-                        if 'energy' in entry.lower() and len(units) > 1:
-                            self.energy_units = units
+                        words = [a.strip() for a in entry.split()]
+                        if len(words) > 1:
+                            entry, units = words[0], words[1]
+                            if 'energy' in entry.lower() and len(units) > 1:
+                                self.energy_units = units
                     labels.append(entry)
         return self._set_labels(labels, ncolumns=ncolumns)
 
