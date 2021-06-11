@@ -18,6 +18,9 @@ functions for data handling.
 .. _h5py:    http://code.google.com/p/h5py/
 .. _pyepics: http://pyepics.github.com/pyepics/
 .. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
+.. _spec:    http://www.certif.com/content/spec
+.. _bliss:   https://bliss.gitlab-pages.esrf.fr/bliss/master/
+.. _silx:    http://www.silx.org/
 
 Simple ASCII Column Files
 ============================
@@ -447,3 +450,15 @@ groups and data structures can be saved and restored.
     groups in the save file will be returned (in the order in which they
     were saved).  If ``group`` is an existing Larch group, the groups in
     the save file will be put inside that group, and will not be returned.
+
+
+Reading Spec/BLISS files via `silx.io.open`
+============================================
+
+Spec ASCII files (see `spec`_) and BLISS HDF5 files (see `bliss`_) are read via
+the `silx.io.open` module (see `silx`_).
+
+.. function:: read_specfile(filename, scan=None)
+
+   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
+    
