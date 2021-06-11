@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "2021.05.1_larch"
+__version__ = "larch_0.9.52"
 
 import os
 import copy
@@ -162,7 +162,7 @@ def update_nested(d, u):
 # CLASS BASED ON SPECH5 (CURRENT/RECOMMENDED)
 # ==================================================================
 class DataSourceSpecH5(object):
-    """Data source utility wrapper for a Spec file read as HDF5 object
+    """Data source utility wrapper for a Spec/BLISS file read as HDF5 object
     via silx.io.open"""
 
     _file_types = ("Spec", "HDF5")
@@ -259,16 +259,8 @@ class DataSourceSpecH5(object):
         self._sourcefile.close()
         self._sourcefile = None
 
-    def get_scangroup(self, scan=None):
-        """get current scan group
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
-        """
-        if scan is not None:
-            self.set_scan(scan)
+    def get_scangroup(self):
+        """get current scan group"""
         if self._scangroup is None:
             raise AttributeError(
                 "Group/Scan not selected -> use 'self.set_scan()' first"
@@ -400,85 +392,57 @@ class DataSourceSpecH5(object):
         allscans = []
         for sn in self._sourcefile["/"].keys():
             sg = self._sourcefile[sn]
-            allscans.append([sn,
-                             bytes2str(sg[self._title_url][()]),
-                             bytes2str(sg[self._time_start_url][()])])
+            allscans.append(
+                [
+                    sn,
+                    bytes2str(sg[self._title_url][()]),
+                    bytes2str(sg[self._time_start_url][()]),
+                ]
+            )
         return allscans
 
-    def get_motors(self, scan=None):
-        """Get list of all available motors names
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
-        """
-        if scan is not None:
-            self.set_scan(scan)
+    def get_motors(self):
+        """Get list of all available motors names"""
         return self._list_from_url(self._mots_url)
 
-    def get_scan_motors(self, scan=None):
-        """Get list of motors names actually used in the scan
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
-        """
-        if scan is not None:
-            self.set_scan(scan)
+    def get_scan_motors(self):
+        """Get list of motors names actually used in the scan"""
         all_motors = self._list_from_url(self._mots_url)
         counters = self._list_from_url(self._cnts_url)
         return [i for i in counters if i in all_motors]
 
-    def get_counters(self, scan=None, remove_motors=False):
+    def get_counters(self, remove_motors=False):
         """Get list of counters names
 
         Parameters
         ----------
-        scan  : str, int, or None
-             scan address
         remove_motors:  bool [False]
              whether to remove counters that would also be in the motors list
         """
-        if scan is not None:
-            self.set_scan(scan)
-            self.set_scan(scan)
         counters = self._list_from_url(self._cnts_url)
         if remove_motors:
             motors = self._list_from_url(self._mots_url)
             counters = [i for i in counters if i not in motors]
         return counters
 
-    def get_title(self, scan=None):
+    def get_title(self):
         """Get title str for the current scan
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
 
         Returns
         -------
         title (str): scan title self._scangroup[self._title_url][()]
-
         """
-        sg = self.get_scangroup(scan)
+        sg = self.get_scangroup()
         return bytes2str(sg[self._title_url][()])
 
-    def get_time(self, scan=None):
+    def get_time(self):
         """Get start time str for the current scan
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
 
         Returns
         -------
         start_time (str): scan start time self._scangroup[self._time_start_url][()]
         """
-        sg = self.get_scangroup(scan)
+        sg = self.get_scangroup()
         return bytes2str(sg[self._time_start_url][()])
 
     def get_timestamp(self):
@@ -486,7 +450,7 @@ class DataSourceSpecH5(object):
         dt = np.datetime64(self.get_time())
         return dt.astype(datetime.datetime).timestamp()
 
-    def get_scan_info_from_title(self, scan=None):
+    def get_scan_info_from_title(self):
         """Parser to get scan information from title
 
         Known types of scans
@@ -508,9 +472,6 @@ class DataSourceSpecH5(object):
              scan_ct : "",
             }
         """
-        if scan is not None:
-            self.set_scan(scan)
-
         iscn = dict(
             scan_type=None,
             scan_axis=None,
@@ -553,15 +514,12 @@ class DataSourceSpecH5(object):
             iscn.update(dict(scan_axis="Energy"))
         if _scntype == "Emiscan":
             iscn.update(dict(scan_axis="Emi_Energy"))
-        if _scntype == 'fscan':
+        if _scntype == "fscan":
             iscn.update(dict(scan_axis="mono_energy"))
         return iscn
 
-    def get_scan_axis(self, scan=None):
+    def get_scan_axis(self):
         """Get the name of the scanned axis from scan title"""
-        if scan is not None:
-            self.set_scan(scan)
-
         iscn = self.get_scan_info_from_title()
         _axisout = iscn["scan_axis"]
         _mots, _cnts = self.get_motors(), self.get_counters()
@@ -573,7 +531,7 @@ class DataSourceSpecH5(object):
             self._logger.info(f"using the first counter: '{_axisout}'")
         return _axisout
 
-    def get_array(self, cnt, scan=None):
+    def get_array(self, cnt):
         """Get array of a given counter
 
         Parameters
@@ -585,7 +543,7 @@ class DataSourceSpecH5(object):
         -------
         array
         """
-        sg = self.get_scangroup(scan)
+        sg = self.get_scangroup()
         cnts = self.get_counters()
         if type(cnt) is int:
             cnt = cnts[cnt]
@@ -598,7 +556,7 @@ class DataSourceSpecH5(object):
             sel_cnt = f"{self._cnts_url}/{cnts[0]}"
             return np.zeros_like(sg[sel_cnt][()])
 
-    def get_motor_position(self, mot, scan=None):
+    def get_motor_position(self, mot):
         """Get motor position
 
         Parameters
@@ -610,7 +568,7 @@ class DataSourceSpecH5(object):
         -------
         value
         """
-        sg = self.get_scangroup(scan)
+        sg = self.get_scangroup()
         mots = self.get_motors()
         if type(mot) is int:
             mot = mots[mot]
@@ -622,19 +580,14 @@ class DataSourceSpecH5(object):
             self._logger.error(f"'{mot}' not found in available motors: {mots}")
             return None
 
-    def get_scan(self, scan=None):
-        """Get arrays for scan
-
-        Parameters
-        ----------
-        scan  : str, int, or None
-             scan address
+    def get_scan(self):
+        """Get Larch group for the current scan
 
         Returns
         -------
         larch Group with scan data
         """
-        scan_group = self.get_scangroup(scan)
+        scan_group = self.get_scangroup()
         scan_index = self._scan_n
         scan_name = self._scan_str
         all_labels = self.get_counters()
@@ -674,10 +627,17 @@ class DataSourceSpecH5(object):
         )
 
         data = []
+        axis_shape = self.get_array(axis).shape
         for label in array_labels:
             arr = self.get_array(label).astype(np.float64)
-            setattr(out, label, arr)
-            data.append(arr)
+            if arr.shape == axis_shape:
+                setattr(out, label, arr)
+                data.append(arr)
+            else:
+                self._logger.warning(
+                    f"'{label}' skipped (shape is different from '{axis}')"
+                )
+                array_labels.pop(label)
         out.data = np.array(data)
         return out
 
@@ -795,10 +755,8 @@ def open_specfile(filename):
 
 
 def read_specfile(filename, scan=None):
-    """simple mapping of a Spec file to a larch group"""
+    """simple mapping of a Spec/BLISS file to a Larch group"""
     df = DataSourceSpecH5(filename)
-    if scan is None:
-        df.set_scan(df.get_scans()[0][0])
-    else:
+    if scan is not None:
         df.set_scan(scan)
     return df.get_scan()
