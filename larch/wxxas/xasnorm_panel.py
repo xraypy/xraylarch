@@ -39,13 +39,18 @@ PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
                    'MBACK + Poly Normalized': 'mback_poly',
                    'd\u03BC(E)/dE': 'dmude',
                    'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
-                   'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde'}
+                   'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde',
+                   'd^2\u03BC(E)/dE^2': 'd2mude',
+                   'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2': 'norm+d2normde',
+                   }
 
 PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
                    'Normalized \u03BC(E)': 'norm',
                    'Flattened \u03BC(E)': 'flat',
                    'd\u03BC(E)/dE (raw)': 'dmude',
-                   'd\u03BC(E)/dE (normalized)': 'dnormde'}
+                   'd\u03BC(E)/dE (normalized)': 'dnormde',
+                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde',
+                   }
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -20:+80eV':  (-20, 80),
@@ -641,6 +646,7 @@ class XASNormPanel(TaskPanel):
     def make_dnormde(self, dgroup):
         form = dict(group=dgroup.groupname)
         self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
+        self.larch_eval("{group:s}.d2normde={group:s}.d2mude/{group:s}.edge_step".format(**form))
 
     def process(self, dgroup=None, force_mback=False, noskip=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
@@ -773,6 +779,7 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_ylabel = 'y'
             dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'ydat')]
             dgroup.dmude = np.gradient(dgroup.ydat)/np.gradient(dgroup.xdat)
+            dgroup.d2mude = np.gradient(dgroup.dmude)/np.gradient(dgroup.xdat)
             if not hasattr(dgroup, 'scale'):
                 dgroup.scale = 1.0
 
@@ -780,6 +787,9 @@ class XASNormPanel(TaskPanel):
             if pchoice == 'dmude':
                 dgroup.plot_ylabel = 'dy/dx'
                 dgroup.plot_yarrays = [('dmude', PLOTOPTS_1, 'dy/dx')]
+            elif pchoice == 'd2mude':
+                dgroup.plot_ylabel = 'd2y/dx2'
+                dgroup.plot_yarrays = [('d2mude', PLOTOPTS_1, 'd2y/dx')]
             elif pchoice == 'norm':
                 dgroup.plot_ylabel = 'scaled y'
                 dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y/scale')]
@@ -788,12 +798,17 @@ class XASNormPanel(TaskPanel):
                 dgroup.plot_y2label = 'dy/dx'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
                                        ('dnormde', PLOTOPTS_D, 'dy/dx')]
+            elif pchoice == 'norm+d2normde':
+                lab = plotlabels.norm
+                dgroup.plot_y2label = 'd2y/dx2'
+                dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
+                                       ('d2normde', PLOTOPTS_D, 'd2y/dx')]
             return
 
-        req_attrs = ['e0', 'norm', 'dmude', 'pre_edge']
+        req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
-        if pchoice in ('mu', 'norm', 'flat', 'dmude'):
+        if pchoice in ('mu', 'norm', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
@@ -812,12 +827,24 @@ class XASNormPanel(TaskPanel):
             dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
                                    ('dmude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
+        elif pchoice == 'mu+d2mude':
+            lab = plotlabels.mu
+            lab2 = plotlabels.d2mude
+            dgroup.plot_yarrays = [('mu', PLOTOPTS_1, lab),
+                                   ('d2mude', PLOTOPTS_D, lab2)]
+            dgroup.plot_y2label = lab2
 
         elif pchoice == 'norm+dnormde':
             lab = plotlabels.norm
             lab2 = plotlabels.dmude + ' (normalized)'
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
                                    ('dnormde', PLOTOPTS_D, lab2)]
+            dgroup.plot_y2label = lab2
+        elif pchoice == 'norm+d2normde':
+            lab = plotlabels.norm
+            lab2 = plotlabels.d2mude + ' (normalized)'
+            dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
+                                   ('d2normde', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
         elif pchoice == 'mback_norm':
@@ -881,6 +908,7 @@ class XASNormPanel(TaskPanel):
              getattr(dgroup, 'mu', None) is None or
              getattr(dgroup, 'e0', None) is None or
              getattr(dgroup, 'dmude', None) is None or
+             getattr(dgroup, 'd2mude', None) is None or
              getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
         self.get_plot_arrays(dgroup)
@@ -940,12 +968,13 @@ class XASNormPanel(TaskPanel):
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
+            print(" PLOT :: ", i, pydat)
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
 
             popts['delay_draw'] = delay_draw or (i != narr)
-            if yaname == 'dnormde' and not hasattr(dgroup, yaname):
+            if yaname in ('dnormde', 'd2normde') and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, noskip=True, force_mback=True)
@@ -957,7 +986,7 @@ class XASNormPanel(TaskPanel):
             axes = ppanel.axes
             for etype, x, y, opts in plot_extras:
                 if etype == 'marker':
-                    xpopts = {'marker': 'o', 'markersize': 4,
+                    xpopts = {'marker': 'o', 'markersize': 6,
                               'label': '_nolegend_',
                               'markerfacecolor': 'red',
                               'markeredgecolor': '#884444'}
