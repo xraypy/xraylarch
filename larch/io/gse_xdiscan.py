@@ -22,7 +22,7 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     """
 
     MAX_MCAS = nmca
-    group = _larch.symtable.create_group()
+    group = Group()
     group.__name__ ='GSE XDI Data file %s' % fname
     xdi = XDIFile(str(fname))
 
@@ -71,7 +71,8 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
     group.with_xspress3 = is_xspress3
     dtc_taus = XSPRESS3_TAUS
-    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+    if (_larch is not None and
+        _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus')):
         dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     dtc_mode = 'icr/ocr'
