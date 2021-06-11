@@ -674,10 +674,15 @@ class DataSourceSpecH5(object):
         )
 
         data = []
+        axis_shape = self.get_array(axis).shape
         for label in array_labels:
             arr = self.get_array(label).astype(np.float64)
-            setattr(out, label, arr)
-            data.append(arr)
+            if arr.shape == axis_shape:
+                setattr(out, label, arr)
+                data.append(arr)
+            else:
+                self._logger.warning(f"'{label}' skipped (shape is different from '{axis}')")
+                array_labels.pop(label)
         out.data = np.array(data)
         return out
 
