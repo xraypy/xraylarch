@@ -4,7 +4,7 @@ import numpy as np
 
 import larch
 from larch.larchlib import read_config, save_config
-from larch.utils import group2dict, unique_name
+from larch.utils import group2dict, unique_name, fix_varname
 from larch.wxlib.plotter import last_cursor_pos
 
 PLOTWIN_SIZE = (550, 550)
