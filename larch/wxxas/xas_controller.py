@@ -6,7 +6,7 @@ import larch
 from larch.larchlib import read_config, save_config
 from larch.utils import group2dict, unique_name
 from larch.wxlib.plotter import last_cursor_pos
-
+from larch.io import fix_varname
 PLOTWIN_SIZE = (550, 550)
 
 class XASController():

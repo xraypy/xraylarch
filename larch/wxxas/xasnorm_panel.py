@@ -968,7 +968,7 @@ class XASNormPanel(TaskPanel):
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
             yaname, yopts, yalabel = pydat
-            print(" PLOT :: ", i, pydat)
+            # print(" PLOT :: ", i, pydat)
             popts.update(yopts)
             if yalabel is not None:
                 popts['label'] = yalabel
