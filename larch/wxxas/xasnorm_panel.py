@@ -49,8 +49,7 @@ PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
                    'Flattened \u03BC(E)': 'flat',
                    'd\u03BC(E)/dE (raw)': 'dmude',
                    'd\u03BC(E)/dE (normalized)': 'dnormde',
-                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde',
-                   }
+                   'd^2\u03BC(E)/dE^2': 'd2normde'}
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -20:+80eV':  (-20, 80),
@@ -933,7 +932,7 @@ class XASNormPanel(TaskPanel):
             popts['ymin'] = viewlims[2]
             popts['ymax'] = viewlims[3]
 
-        if erange is not None:
+        if erange is not None and hasattr(dgroup, 'e0'):
             popts['xmin'] = dgroup.e0 + erange[0]
             popts['xmax'] = dgroup.e0 + erange[1]
 
