@@ -33,7 +33,7 @@ extensions = ['sphinx.ext.autodoc',
 #                    'singlehtml_toc', 'singletext'])
 
 intersphinx_mapping = {'py':    ('https://docs.python.org/3', None),
-                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+                       'numpy': ('https://numpy.org/doc/stable/', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
                        }
 
@@ -43,6 +43,8 @@ extlinks = {
     'lmfitdoc' : ('https://lmfit.github.io/lmfit-py/%s.html', 'lmfit.'),
     'lmfitx' : ('https://lmfit.github.io/lmfit-py/%s', ' '),
     }
+
+
 
 # List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
