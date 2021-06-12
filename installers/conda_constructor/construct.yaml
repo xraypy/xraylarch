@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 0.9.51
+version: 0.9.52
 
 channels:
     - https://repo.continuum.io/pkgs/main
@@ -21,7 +21,7 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.8.8
+    - python==3.8.10
     - conda
     - openssl
     - setuptools

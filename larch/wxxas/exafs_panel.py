@@ -242,7 +242,7 @@ class EXAFSPanel(TaskPanel):
 
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        panel.Add(SimpleText(panel, ' Fourier transform  (k -> R) ', size=(250, -1),
+        panel.Add(SimpleText(panel, ' Fourier transform (k->R) ', size=(275, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
@@ -271,7 +271,7 @@ class EXAFSPanel(TaskPanel):
         panel.Add((10, 10), newrow=True)
         panel.Add(HLine(panel, size=(500, 3)), dcol=6, newrow=True)
 
-        panel.Add(SimpleText(panel, ' Back Fourier transform  (R -> q) ', size=(250, -1),
+        panel.Add(SimpleText(panel, ' Back Fourier transform (R->q) ', size=(275, -1),
                              **self.titleopts), dcol=2, style=LEFT, newrow=True)
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
