@@ -108,14 +108,15 @@ Table of Contents
    getting_started.rst
    overview.rst
    guis.rst
-   xasviewer/index.rst
-   gsemapviewer/index.rst
-   qtrixs/index.rst
-   python/index.rst
-   larchlang/index.rst
-   data/index.rst
-   plotting/index.rst
-   fitting/index.rst
-   xafs/index.rst
-   xray/index.rst
-   xrf/index.rst
+   wxxas_viewer.rst
+   wxmap_viewer.rst
+   qtrixs.rst
+   python.rst
+   larchlang.rst
+   data.rst
+   plotting.rst
+   fitting
+   xafs.rst
+   xray.rst
+   xrf.rst
+   bibliography.rst

@@ -458,8 +458,3 @@ the BSD License:
 .. literalinclude:: ../LICENSE
 
 
-.. rubric:: References
-
-.. bibliography:: larch.bib
-   :filter: cited and ('installation' in docnames)
-   :style: authorlist
