@@ -118,7 +118,7 @@ class LarchApp:
 APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
         LarchApp('Larch GUI', 'larch --wxgui'),
         LarchApp('XAS Viewer',  'xas_viewer',  icon='onecone'),
-        LarchApp('GSE MapVewer', 'gse_mapviewer',  icon='gse_xrfmap'),
+        LarchApp('GSE MapViewer', 'gse_mapviewer',  icon='gse_xrfmap'),
         LarchApp('XRF Display',  'xrfdisplay',  icon='ptable'),
         # LarchApp('GSE DTCorrect', 'gse_dtcorrect'),
         # LarchApp('Dioptas', 'dioptas_larch', icon='dioptas'),
