@@ -5,8 +5,8 @@ import time
 from argparse import ArgumentParser
 import pkg_resources
 from subprocess import check_call
-
-from pyshortcuts import make_shortcut, ico_ext
+import shutil
+from pyshortcuts import make_shortcut, ico_ext, get_desktop
 
 from .site_config import icondir, home_dir, uname
 from .site_config import (extras_wxgraph, extras_qtgraph,
@@ -128,7 +128,11 @@ APPS = (LarchApp('Larch CLI', 'larch', terminal=True),
 
 
 def make_desktop_shortcuts():
-    """make desktop shortcuts for Larch apps"""
+    """make desktop shortcuts for Larch apps,
+    first clearing any existing shortcuts"""
+    larchdir = os.path.join(get_desktop(), 'Larch')
+    if os.path.exists(larchdir):
+        shutil.rmtree(larchdir)
     for app in APPS:
         app.create_shortcut()
 
