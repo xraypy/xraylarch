@@ -5,12 +5,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Larch &#8212; xraylarch 0.9.51 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Larch &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -55,10 +56,9 @@
              accesskey="N">next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
-   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
 
         <li class="nav-item nav-item-this"><a href="">Larch</a></li> 
       </ul>
@@ -67,7 +67,7 @@
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 <h3> Get Larch</h3>
-<p>Current version: <b>0.9.51</b></p>
+<p>Current version: <b>0.9.52</b></p>
 
 &nbsp; &nbsp; <a href="installation.html">Install Latest Version</a>  <br>
 &nbsp; &nbsp; <a href="http://github.com/xraypy/xraylarch"> Development Version</a> <br>
@@ -80,14 +80,14 @@
 &nbsp; &nbsp; <a href="getting_started.html"> Getting Started</a><br>
 
 &nbsp; &nbsp; <a href="guis.html"> Graphical Interface Programs </a><br>
-&nbsp; &nbsp; <a href="data/index.html"> Reading Data </a><br>
-&nbsp; &nbsp; <a href="plotting/index.html"> Plotting Data</a><br>
-&nbsp; &nbsp; <a href="fitting/index.html"> Fitting Data</a><br>
-&nbsp; &nbsp; <a href="xafs/index.html"> XAFS Analysis </a><br>
-&nbsp; &nbsp; <a href="xray/index.html"> X-ray Databases </a><br>
-&nbsp; &nbsp; <a href="xrf/index.html"> X-ray Fluoresence Analysis</a><br>
-&nbsp; &nbsp; <a href="python/index.html"> Larch Python library</a><br>
-&nbsp; &nbsp; <a href="larchlang/index.html"> Larch macro language</a><br>
+&nbsp; &nbsp; <a href="data.html"> Reading Data </a><br>
+&nbsp; &nbsp; <a href="plotting.html"> Plotting Data</a><br>
+&nbsp; &nbsp; <a href="fitting.html"> Fitting Data</a><br>
+&nbsp; &nbsp; <a href="xafs.html"> XAFS Analysis </a><br>
+&nbsp; &nbsp; <a href="xray.html"> X-ray Databases </a><br>
+&nbsp; &nbsp; <a href="xrf.html"> X-ray Fluoresence Analysis</a><br>
+&nbsp; &nbsp; <a href="python.html"> Larch Python library</a><br>
+&nbsp; &nbsp; <a href="larchlang.html"> Larch macro language</a><br>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -106,7 +106,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="larch">
+  <section id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch is a open-source library and set of <a class="reference internal" href="#larch-app-table"><span class="std std-ref">applications</span></a> for processing and analyzing X-ray absorption and
 fluorescence spectroscopy data and X-ray fluorescence and diffraction image
@@ -121,9 +121,9 @@ beamlines.</p>
 python libraries including <a class="reference external" href="https://numpy.scipy.org/">numpy</a>, <a class="reference external" href="https://scipy.org/">scipy</a>, <a class="reference external" href="https://code.google.com/p/h5py/">h5py</a>, <a class="reference external" href="https://matplotlib.org/">matplotlib</a>, and
 provides a Python library for processing and analyzing X-ray spectroscopy
 and imaging data.  There are a few GUI applications written using this
-library for common data visualization and analysis tasks, notably <a class="reference internal" href="xasviewer/index.html#xasviewer-app"><span class="std std-ref">XAS
-Viewer</span></a>, <a class="reference internal" href="gsemapviewer/index.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a>, and
-<a class="reference internal" href="xrf/xrfviewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a> as described in more detail below.</p>
+library for common data visualization and analysis tasks, notably <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS
+Viewer</span></a>, <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a>, and
+<a class="reference internal" href="xrf_viewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a> as described in more detail below.</p>
 <p>While Larch can be used as a Python library, the applications built with
 Larch use a Python-like macro language - the “Larch language” - for
 interactive and batch processing.  This macro language is available from an
@@ -167,7 +167,7 @@ license to redistrubute.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference internal" href="xasviewer/index.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>XAFS Processing and Analysis: XANES pre-edge peak
 fitting, linear analysis, PCA/LASSO, EXAFS extraction</p></td>
@@ -180,19 +180,19 @@ fitting, linear analysis, PCA/LASSO, EXAFS extraction</p></td>
 <td><p>GUI</p></td>
 <td><p>enhanced command-line interface with data browser</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="gsemapviewer/index.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Map Viewer</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>XRF Map Viewer for GSECARS X-ray microprobe data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xrf/xrfviewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xrf_viewer.html#xrfviewer-app"><span class="std std-ref">XRF Viewer</span></a></p></td>
 <td><p>GUI</p></td>
 <td><p>Display and Analyze XRF Spectra.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xafs/feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff6l-app"><span class="std std-ref">feff6l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 6 EXAFS calculations</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xafs/feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xafs_feffpaths.html#feff8l-app"><span class="std std-ref">feff8l</span></a></p></td>
 <td><p>CLI</p></td>
 <td><p>Feff 8 EXAFS calculations (no XANES)</p></td>
 </tr>
@@ -215,7 +215,7 @@ fitting, linear analysis, PCA/LASSO, EXAFS extraction</p></td>
 patterns, written and maintained by Clemens Prescher has been included with
 earlier versions of Larch. It is no longer included, but we recommend
 downloading and installing that for working with XRD image data.</p>
-<div class="section" id="table-of-contents">
+<section id="table-of-contents">
 <span id="contents"></span><h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
@@ -247,32 +247,32 @@ downloading and installing that for working with XRD image data.</p>
 <li class="toctree-l2"><a class="reference internal" href="guis.html#basic-larch-gui">4.2. Basic Larch GUI</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xasviewer/index.html">5. XASViewer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#reading-data-into-xas-viewer">5.1. Reading Data into XAS Viewer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#common-xas-processing-dialogs">5.2. Common XAS Processing Dialogs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#pre-edge-subtraction-and-normalization">5.3. Pre-edge subtraction and Normalization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#pre-edge-peak-fitting">5.4. Pre-edge peak fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#linear-combination-analysis">5.5. Linear Combination Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#principal-component-and-non-negative-factor-analysis">5.6. Principal Component and Non-negative Factor Analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#exafs-processing-background-subtraction">5.7. EXAFS Processing: Background Subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xasviewer/index.html#exafs-processing-fourier-transforms">5.8. EXAFS Processing:  Fourier Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wxxas_viewer.html">5. XASViewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#reading-data-into-xas-viewer">5.1. Reading Data into XAS Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#common-xas-processing-dialogs">5.2. Common XAS Processing Dialogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#pre-edge-subtraction-and-normalization">5.3. Pre-edge subtraction and Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#pre-edge-peak-fitting">5.4. Pre-edge peak fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#linear-combination-analysis">5.5. Linear Combination Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#principal-component-and-non-negative-factor-analysis">5.6. Principal Component and Non-negative Factor Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#exafs-processing-background-subtraction">5.7. EXAFS Processing: Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wxxas_viewer.html#exafs-processing-fourier-transforms">5.8. EXAFS Processing:  Fourier Transforms</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gsemapviewer/index.html">6. GSECARS Mapviewr</a></li>
-<li class="toctree-l1"><a class="reference internal" href="qtrixs/index.html">7. QtRIXS</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="qtrixs/index.html#reading-rixs-data">7.1. Reading RIXS data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qtrixs/index.html#plotting-rixs-data">7.2. Plotting RIXS data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wxmap_viewer.html">6. GSECARS Mapviewr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qtrixs.html">7. QtRIXS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qtrixs.html#reading-rixs-data">7.1. Reading RIXS data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qtrixs.html#plotting-rixs-data">7.2. Plotting RIXS data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="python/index.html">8. Programming with Larch from Python</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="python/index.html#creating-and-using-a-larch-interpreter-in-python">8.1. creating and using a larch interpreter in Python</a></li>
-<li class="toctree-l2"><a class="reference internal" href="python/index.html#the-larch-group">8.2. The Larch <cite>Group</cite></a></li>
-<li class="toctree-l2"><a class="reference internal" href="python/index.html#the-optional-larch-argument">8.3. The optional <cite>_larch</cite> argument</a></li>
-<li class="toctree-l2"><a class="reference internal" href="python/index.html#converting-larch-code-into-python">8.4. Converting “Larch code” into Python</a></li>
-<li class="toctree-l2"><a class="reference internal" href="python/index.html#larch-submodules">8.5. Larch submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python.html">8. Programming with Larch from Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python.html#creating-and-using-a-larch-interpreter-in-python">8.1. creating and using a larch interpreter in Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#the-larch-group">8.2. The Larch <cite>Group</cite></a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#the-optional-larch-argument">8.3. The optional <cite>_larch</cite> argument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#converting-larch-code-into-python">8.4. Converting “Larch code” into Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python.html#larch-submodules">8.5. Larch submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="larchlang/index.html">9. Larch Macro Language Tutorial</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="larchlang.html">9. Larch Macro Language Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/start.html">9.1. Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/datatypes.html">9.2. Basic and Complex Data Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html">9.3. Basic Array Manipulation</a></li>
@@ -281,64 +281,67 @@ downloading and installing that for working with XRD image data.</p>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html">9.6. Writing Functions or Procedures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/modules.html">9.7. Running Larch Scripts, and Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="larchlang/builtins.html">9.8. Builtin Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/notpython.html">9.9. Differences between Larch and Python</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">10. Reading and Writing Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#simple-ascii-column-files">10.1. Simple ASCII Column Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#athena-project-files">10.2. Athena Project Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-hdf5-files">10.3. Reading HDF5 Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-netcdf-files">10.4. Reading NetCDF Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-tiff-images">10.5. Reading TIFF Images</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#working-with-epics-channel-access">10.6. Working with Epics Channel Access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-scan-data-from-aps-beamlines">10.7. Reading Scan Data from APS Beamlines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-xafs-data-interchange-xdi-files">10.8. Reading XAFS Data Interchange (XDI) Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data/index.html#saving-and-restoring-larch-groups">10.9. Saving and Restoring Larch Groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">10. Reading and Writing Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data.html#simple-ascii-column-files">10.1. Simple ASCII Column Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#athena-project-files">10.2. Athena Project Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-hdf5-files">10.3. Reading HDF5 Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-netcdf-files">10.4. Reading NetCDF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-tiff-images">10.5. Reading TIFF Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#working-with-epics-channel-access">10.6. Working with Epics Channel Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-scan-data-from-aps-beamlines">10.7. Reading Scan Data from APS Beamlines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-xafs-data-interchange-xdi-files">10.8. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#saving-and-restoring-larch-groups">10.9. Saving and Restoring Larch Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#reading-spec-bliss-files-via-silx-io-open">10.10. Reading Spec/BLISS files via <cite>silx.io.open</cite></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">11. Plotting and Displaying Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#line-plots">11.1. Line Plots</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#image-display-and-contour">11.2. Image Display and Contour</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#advanced-plotting-using-matplotlib">11.3. Advanced Plotting: using matplotlib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">11. Plotting and Displaying Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html#line-plots">11.1. Line Plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html#image-display-and-contour">11.2. Image Display and Contour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting.html#advanced-plotting-using-matplotlib">11.3. Advanced Plotting: using matplotlib</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">12. Fitting and Modeling Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fitting/overview.html">12.1. Fitting Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/parameters.html">12.2. Parameters</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/minimize.html">12.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/results.html">12.4. Fit Results and Outputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/lineshapes.html">12.5. Some Builtin Line-shape Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/examples.html">12.6. Fit Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/fitpeaks.html">12.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="fitting/confidence.html">12.8. Advanced Confidence Intervals and Chi-square maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fitting.html">12. Fitting and Modeling Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting_overview.html">12.1. Fitting Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_parameters.html">12.2. Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_minimize.html">12.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_results.html">12.4. Fit Results and Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_lineshapes.html">12.5. Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_examples.html">12.6. Fit Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_fitpeaks.html">12.7. Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting_confidence.html">12.8. Advanced Confidence Intervals and Chi-square maps</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">13. XAFS Analysis</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xafs/utilities.html">13.1. XAFS Functions: Overview and Naming Conventions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/preedge.html">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/xanes.html">13.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/autobk.html">13.4. XAFS: Post-edge Background Subtraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/xafsft.html">13.5. XAFS: Fourier Transforms for XAFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/wavelets.html">13.6. XAFS: Wavelet Transforms for XAFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/feffpaths.html">13.7. XAFS: Reading and using Feff Paths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/feffit.html">13.8. XAFS: Fitting XAFS to Feff Paths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafs/diffkk.html">13.9. XAFS: Computing anomalous scattering factors from XAFS data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xafs.html">13. XAFS Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xafs_utilities.html">13.1. XAFS Functions: Overview and Naming Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_preedge.html">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_xanes.html">13.3. XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_autobk.html">13.4. XAFS: Post-edge Background Subtraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_fourier.html">13.5. XAFS: Fourier Transforms for XAFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_wavelets.html">13.6. XAFS: Wavelet Transforms for XAFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_feffpaths.html">13.7. XAFS: Reading and using Feff Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_feffit.html">13.8. XAFS: Fitting XAFS to Feff Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafs_diffkk.html">13.9. XAFS: Computing anomalous scattering factors from XAFS data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xray/index.html">14. X-ray Databases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xray/index.html#x-ray-properties-of-the-elements">14.1. X-ray Properties of the Elements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xray/index.html#x-ray-properties-of-materials-and-chemicals">14.2. X-ray Properties of Materials and Chemicals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xray.html">14. X-ray Databases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xray.html#x-ray-properties-of-the-elements">14.1. X-ray Properties of the Elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xray.html#x-ray-properties-of-materials-and-chemicals">14.2. X-ray Properties of Materials and Chemicals</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">15. X-ray Fluorescence Analysis</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xrf/mca.html">15.1. XRF Data: MCA and ROI objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xrf/xrfviewer.html">15.2. The XRF Viewer Application</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xrf/xrf_modelling.html">15.3. Modelling XRF Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf.html">15. X-ray Fluorescence Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xrf_mca.html">15.1. XRF Data: MCA and ROI objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xrf_viewer.html">15.2. The XRF Viewer Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xrf_modelling.html">15.3. Modelling XRF Data</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">16. References</a></li>
 </ul>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -358,17 +361,16 @@ downloading and installing that for working with XRD image data.</p>
              >next</a> |</li>
    <li>[<a href="#"> Larch</a>|</li>
    <li><a href="getting_started.html"> Getting Started</a>|</li>
-   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
 
         <li class="nav-item nav-item-this"><a href="">Larch</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

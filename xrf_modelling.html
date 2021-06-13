@@ -1,0 +1,158 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>15.3. Modelling XRF Data &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="16. References" href="bibliography.html" />
+    <link rel="prev" title="15.2. The XRF Viewer Application" href="xrf_viewer.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="bibliography.html" title="16. References"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xrf_viewer.html" title="15.2. The XRF Viewer Application"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xrf.html" accesskey="U"><span class="section-number">15. </span>X-ray Fluorescence Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15.3. </span>Modelling XRF Data</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xrf_viewer.html"
+                        title="previous chapter"><span class="section-number">15.2. </span>The XRF Viewer Application</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bibliography.html"
+                        title="next chapter"><span class="section-number">16. </span>References</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xrf_modelling.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="modelling-xrf-data">
+<span id="xrf-modelling"></span><h1><span class="section-number">15.3. </span>Modelling XRF Data<a class="headerlink" href="#modelling-xrf-data" title="Permalink to this headline">¶</a></h1>
+<p>X-ray fluorescence (XRF) is the emission of X-rays of well-defined
+energies that correspond to the known electronic enery levels of
+atoms.  This phenomenon is closely associated to the quantum
+understanding of atom and the use of X-rays of certain characteristic
+energies to identify the presence of particular elements has been used
+very soon after the discovery of X-rays.  While the basic XRF
+phenomenon and the use of X-ray emission to identify the presence of
+certain atomic species are well understood, the quantivative analysis
+of X-ray fluorescence spectra to accurately determine atomic
+concentrations is a bit complicated by several different factors.
+With these complicating factors accounted for, accurate elemental
+abundances can be extracted from XRF data.  Here, we’ll cover some of
+the details of what makes XRF analysis somewhat challenging and
+discuss how to use Larch to analyze XRF data to extract quantitative
+values for concentrations.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="bibliography.html" title="16. References"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xrf_viewer.html" title="15.2. The XRF Viewer Application"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xrf.html" ><span class="section-number">15. </span>X-ray Fluorescence Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15.3. </span>Modelling XRF Data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

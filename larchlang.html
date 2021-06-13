@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>9. Larch Macro Language Tutorial &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="9.1. Getting Started" href="larchlang/start.html" />
+    <link rel="prev" title="8. Programming with Larch from Python" href="python.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="larchlang/start.html" title="9.1. Getting Started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="python.html" title="8. Programming with Larch from Python"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9. </span>Larch Macro Language Tutorial</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="python.html"
+                        title="previous chapter"><span class="section-number">8. </span>Programming with Larch from Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="larchlang/start.html"
+                        title="next chapter"><span class="section-number">9.1. </span>Getting Started</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/larchlang.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="larch-macro-language-tutorial">
+<span id="tutorial-chapter"></span><h1><span class="section-number">9. </span>Larch Macro Language Tutorial<a class="headerlink" href="#larch-macro-language-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Larch provides both a Python programming library and Python-like
+programming or macro language (which we’ll call <em>Larch macro language</em>
+here) for processing of scientific data.  You can use either of these to
+interact with the X-ray analysis functions described throughout this
+document.  If you already know Python or are interested in learning and
+using Python, we definitely encourage to use the Python interface.</p>
+<p>Here, the <em>Larch macro language</em> is described in some detail. This macro
+language is a dialect of Python and is used for the Larch command-line
+shell program.  This macro language is also used for communication between
+the Larch server process and Athena/Artemis.  Perhaps most importantly, it
+is also embedded in the Larch GUI applications so that you can “open the
+Larch buffer” and use the Larch/Python functions on the data that has been
+loaded into the GUI.  The <em>XAS Viewer</em> program really does all of its work
+with the Larch buffer so that you can see the complete (if somewhat)
+verbose list of commands and functions it is running when processing your
+data.  You can take these commands as documentation of the processing steps
+or use them as examples for writing batch processing scripts or more
+complex programs.</p>
+<p>This chapter describes the Larch language and using it for data processing.
+An important goal of Larch is to make writing and modifying data analysis
+scripts as simple as possible.  Although aimed at the novice programmer,
+this tutorial does make a few assumptions about the readers experience with
+scientific programming.  For example, the reader is expected to have a
+technical background and some familiarity with using scientific data
+analysis programs.  Some understanding of the concepts of how scientific
+data is stored on computers and of the basics of programming will greatly
+help the reader.</p>
+<p>The Larch language is implemented in Python, and heavily based upon it.
+Knowledge of Python will greatly simplify learning Larch, and vice versa.
+This shared syntax is intentional, so that as you learn Larch, you will
+also be learning Python, which can be used to extend Larch.  Alternatively,
+knowledge of Python will make Larch easy to learn.  For further details on
+Python, including tutorials, see the Python documentation at
+<a class="reference external" href="http://python.org/">http://python.org/</a></p>
+<p>If you are familar with Python and want to use the <cite>larch</cite> module from
+Python, skip ahead to <span class="xref std std-ref">programming_chapter</span>.</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/start.html">9.1. Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/start.html#larch-as-a-basic-calculator">9.1.1. Larch as a Basic Calculator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/datatypes.html">9.2. Basic and Complex Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/datatypes.html#basic-data-types">9.2.1. Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/datatypes.html#objects-and-groups">9.2.2. Objects and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">9.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/datatypes.html#object-identities-copying-and-equality-vs-identity">9.2.4. Object identities, copying, and equality vs. identity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/arrays.html">9.3. Basic Array Manipulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#functions-for-creating-arrays">9.3.1. Functions for creating arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#the-array-dtype-datatype">9.3.2. The array <em>dtype</em> – datatype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#id1">9.3.3. Basic array manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#slicing-and-extracting-sub-arrays">9.3.4. Slicing and extracting sub-arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#array-attributes-and-methods">9.3.5. Array attributes and methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/arrays.html#mathematical-functions-for-arrays">9.3.6. Mathematical functions for arrays</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/flow.html">9.4. Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/flow.html#conditional-evaluation-with-if-and-else">9.4.1. Conditional Evaluation with if and else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/flow.html#for-loops">9.4.2. For loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/flow.html#while-loops">9.4.3. While loops</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/errors.html">9.5. Dealing With Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/errors.html#syntax-errors">9.5.1. Syntax Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/errors.html#exceptions">9.5.2. Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/errors.html#try-and-except">9.5.3. Try and Except</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/errors.html#raising-your-own-exceptions">9.5.4. Raising your own exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/procedures.html">9.6. Writing Functions or Procedures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html#def-statement">9.6.1. Def statement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html#namespace-and-scope-inside-a-procedure">9.6.2. Namespace and “Scope” inside a Procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html#the-return-statement-and-multiple-return-values">9.6.3. The return statement, and multiple Return values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html#keyword-arguments">9.6.4. Keyword arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/procedures.html#documentation-strings">9.6.5. Documentation Strings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/modules.html">9.7. Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/modules.html#running-a-larch-script-with-run">9.7.1. Running a larch script with <code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/modules.html#importing-a-larch-script-as-a-module">9.7.2. Importing a Larch Script as a Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/builtins.html">9.8. Builtin Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/builtins.html#builtin-data-values">9.8.1. Builtin data values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/builtins.html#larch-specific-builtin-functions">9.8.2. Larch-Specific Builtin functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/builtins.html#builtin-functions-inherited-from-python">9.8.3. Builtin functions inherited from Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="larchlang/notpython.html">9.9. Differences between Larch and Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/notpython.html#code-block-ends">9.9.1. Code Block Ends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/notpython.html#groups-vs-modules">9.9.2. Groups vs Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/notpython.html#symbol-lookup-rules">9.9.3. Symbol Lookup Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="larchlang/notpython.html#unimplemented-features">9.9.4. Unimplemented features</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="larchlang/start.html" title="9.1. Getting Started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="python.html" title="8. Programming with Larch from Python"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">9. </span>Larch Macro Language Tutorial</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>8. Programming with Larch from Python &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="9. Larch Macro Language Tutorial" href="larchlang.html" />
+    <link rel="prev" title="7. QtRIXS" href="qtrixs.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="larchlang.html" title="9. Larch Macro Language Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qtrixs.html" title="7. QtRIXS"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>Programming with Larch from Python</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. Programming with Larch from Python</a><ul>
+<li><a class="reference internal" href="#creating-and-using-a-larch-interpreter-in-python">8.1. creating and using a larch interpreter in Python</a></li>
+<li><a class="reference internal" href="#the-larch-group">8.2. The Larch <cite>Group</cite></a></li>
+<li><a class="reference internal" href="#the-optional-larch-argument">8.3. The optional <cite>_larch</cite> argument</a></li>
+<li><a class="reference internal" href="#converting-larch-code-into-python">8.4. Converting “Larch code” into Python</a></li>
+<li><a class="reference internal" href="#larch-submodules">8.5. Larch submodules</a><ul>
+<li><a class="reference internal" href="#top-level-larch">8.5.1. Top-level <cite>larch</cite></a></li>
+<li><a class="reference internal" href="#larch-io">8.5.2. <cite>larch.io</cite></a></li>
+<li><a class="reference internal" href="#larch-xafs">8.5.3. <cite>larch.xafs</cite></a></li>
+<li><a class="reference internal" href="#larch-xray">8.5.4. <cite>larch.xray</cite></a></li>
+<li><a class="reference internal" href="#larch-xrf">8.5.5. <cite>larch.xrf</cite></a></li>
+<li><a class="reference internal" href="#larch-xrd">8.5.6. <cite>larch.xrd</cite></a></li>
+<li><a class="reference internal" href="#larch-xrmmap">8.5.7. <cite>larch.xrmmap</cite></a></li>
+<li><a class="reference internal" href="#larch-fitting">8.5.8. <cite>larch.fitting</cite></a></li>
+<li><a class="reference internal" href="#larch-math">8.5.9. <cite>larch.math</cite></a></li>
+<li><a class="reference internal" href="#larch-utils">8.5.10. <cite>larch.utils</cite></a></li>
+<li><a class="reference internal" href="#larch-epics">8.5.11. <cite>larch.epics</cite></a></li>
+<li><a class="reference internal" href="#larch-xmlrpc-server">8.5.12. <cite>larch.xmlrpc_server</cite></a></li>
+<li><a class="reference internal" href="#larch-shell">8.5.13. <cite>larch.shell</cite></a></li>
+<li><a class="reference internal" href="#larch-wxlib">8.5.14. <cite>larch.wxlib</cite></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="qtrixs.html"
+                        title="previous chapter"><span class="section-number">7. </span>QtRIXS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="larchlang.html"
+                        title="next chapter"><span class="section-number">9. </span>Larch Macro Language Tutorial</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/python.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="programming-with-larch-from-python">
+<span id="frompython-section"></span><h1><span class="section-number">8. </span>Programming with Larch from Python<a class="headerlink" href="#programming-with-larch-from-python" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the use of the <cite>larch</cite> module from Python.
+There are plenty of good reasons to want to do this, and it is certainly
+recommended over using the Larch mini-language for anything fairly
+complicated.</p>
+<p>All the functionality described elsewhere in this documentation is
+available from the <cite>larch</cite> Python module - the focus here is on how to work
+with the larch functions from Python.</p>
+<p>To start, you can import larch from Python with</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">larch</span>
+</pre></div>
+</div>
+<p>The toplevel <cite>larch</cite> module does not do much, so you will probably want to
+import some of the submodules like <cite>xafs</cite> or <cite>io</cite>. A simple Python session
+might look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.xafs</span> <span class="kn">import</span> <span class="n">autobk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">wxmplot.interactive</span> <span class="kn">import</span> <span class="n">plot</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;examples/xafsdata/fe3c_rt.xdi&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">mutrans</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">*</span><span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;k 1/A&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;chi*k&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.xray</span> <span class="kn">import</span> <span class="n">xray_line</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">xray_line</span><span class="p">(</span><span class="s1">&#39;Cu&#39;</span><span class="p">,</span> <span class="s1">&#39;Ka1&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="mf">8046.3</span><span class="p">,</span> <span class="mf">0.577108</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;L3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>More elaborate examples and documentation on what the larch functions do
+are given throughout this documentation.</p>
+<section id="creating-and-using-a-larch-interpreter-in-python">
+<h2><span class="section-number">8.1. </span>creating and using a larch interpreter in Python<a class="headerlink" href="#creating-and-using-a-larch-interpreter-in-python" title="Permalink to this headline">¶</a></h2>
+<p>The example above shows the larch functionality being accessed directly
+from Python.  In addition, from Python you can create an instance of an
+interpreter of the <cite>larch</cite> mini-language and communicate with it the Larch
+macro language with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interpreter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">Interpreter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">  dat = read_xdi(&#39;examples/xafsdata/fe3c_rt.xdi&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">  dat.mu = dat.mutrans</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">  autobk(dat, rbkg=1.0, kweight=2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and so forth (and note that the tolerance against whitespace in the larch macro
+language might seem not so silly after all!). If you’re running pre-defined
+scripts or starting from the larch code generated by one of the GUIs, this can be
+a useful way to use Larch from python - combine that with some string formatting
+and you can readily have a program that wraps analysis procedures.  Indeed this
+is how <cite>XAS_Viewer</cite> works.</p>
+<p>The larch <cite>session</cite> instance will have a <cite>symtable</cite> attribute that is the
+top-level of the data namespace in the larch session - the <cite>_main</cite> group - that
+you can access directly from Python.  For example, following the above session,
+you could do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">dat</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">e0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">chi</span><span class="p">))</span>
+<span class="go">fe3c_rt.xdi 7122.5 348 299</span>
+</pre></div>
+</div>
+</section>
+<section id="the-larch-group">
+<h2><span class="section-number">8.2. </span>The Larch <cite>Group</cite><a class="headerlink" href="#the-larch-group" title="Permalink to this headline">¶</a></h2>
+<p>As described throughout the rest of the documentation, Larch organizes data using
+<cite>Group</cite> objects.  For example, the <cite>dat</cite> value extracted from the larch session
+in the example above will be a <cite>Group</cite>.  Many of the container objects created
+and used in Larch will be larch Groups.</p>
+<p>For the Python user, these Groups are very similar to instances of an empty
+class or <cite>argparse.Namespace</cite> objects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GroupLite</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>That is, it is a containrer object with data accessed using Python’s
+<cite>thing.attribute</cite> syntax.  A larch Group has no public attributes or methods, but
+does have a few private ones.  The most important of these is <cite>__name__</cite>, which
+you can assign at initialization with the <cite>name</cite> argument and will be shown in
+the “representation” string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;my group&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>
+<span class="go">&lt;Group my group&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">y</span>
+<span class="go">(1, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">name</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">AttributeError</span>: <span class="n">&#39;Group&#39; object has no attribute &#39;name&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="vm">__name__</span>
+<span class="go">&#39;foo&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Bob&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">name</span>
+<span class="go">(1, 2, &#39;Bob&#39;)</span>
+</pre></div>
+</div>
+<p>As you can see, you can create and use Groups from Python and set them into the
+namespace of a larch session and then access that data from the session:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mygroup</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">frompy</span>  <span class="o">=</span> <span class="n">mygroup</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="p">(</span><span class="s2">&quot;print(frompy.message, len(frompy.x))&quot;</span><span class="p">)</span>
+<span class="go">hello 201</span>
+</pre></div>
+</div>
+<p>This can make it very easy to embed a larch session (or more than one) into a
+Python program and use it as a calculation engine.</p>
+</section>
+<section id="the-optional-larch-argument">
+<h2><span class="section-number">8.3. </span>The optional <cite>_larch</cite> argument<a class="headerlink" href="#the-optional-larch-argument" title="Permalink to this headline">¶</a></h2>
+<p>In earlier versions of larch, many functions in the Python interface required or
+strongly recommended making a larch interpreter and passing this around as a
+“session instance” to many of the larch functions.  That is, you might see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch</span> <span class="kn">import</span> <span class="n">Interreter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">larch.io</span> <span class="kn">import</span> <span class="n">read_xdi</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_larch</span> <span class="o">=</span> <span class="n">Interpreter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dat</span> <span class="o">=</span> <span class="n">read_xdi</span><span class="p">(</span><span class="s1">&#39;examples/xafsdata/fe3c_rt.xdi&#39;</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="n">_larch</span><span class="p">)</span>  <span class="c1"># not needed!</span>
+</pre></div>
+</div>
+<p>With version 0.9.49, this is no longer needed.  For backward compatibility, many
+functions still have an optional <cite>_larch</cite> argument.  You may see this usage in
+some existing code, but at this point, this is no longer needed or recommended.</p>
+</section>
+<section id="converting-larch-code-into-python">
+<h2><span class="section-number">8.4. </span>Converting “Larch code” into Python<a class="headerlink" href="#converting-larch-code-into-python" title="Permalink to this headline">¶</a></h2>
+<p>As discussed in more detail in the next section, the Larch macro language is
+essentially a dialect of Python so that converting code from the macro language
+into Python is nearly trivial.  The main differences between Python and the larch
+macro language are described here.  Briefly, the differences are:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><cite>Larch language</cite> is missing several constructs: <cite>class</cite>, <cite>lambda</cite>,
+generators, any asynchronous programming constructs.</p></li>
+<li><p><cite>Larch language</cite> doe not use indentation.  Leading whitespace is ignored and
+blocks must be terminated with a matching <cite>#endif</cite>, <cite>#endfor</cite>, <cite>#enddef</cite>,
+<cite>#endwhile</cite>, or <cite>#endtry</cite>.</p></li>
+<li><p><cite>import</cite> statements are not required for all of the built-in larch
+functionality, including large parts of <cite>numpy</cite> and <cite>scipy</cite>.  As is
+appropropriate for a domain-specific language, many functions are readily
+available, though they are organized in a namespace with look-up rules.
+From a Larch session, you can import and use Python modules.</p></li>
+</ol>
+</div></blockquote>
+<p>Other than these changes, code in the <cite>Larch language</cite> <em>is</em> Python code (it is
+parsed and evaluated using Python’s language tools) and all Larch objects are
+really Python objects. That means that converting Larch code into Python code
+can be very easy, with the main steps being</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>check indentation and <cite>#end*</cite> block terminators.</p></li>
+<li><p>make sure the import statements are correctly provided.</p></li>
+</ol>
+</div></blockquote>
+<p>Note that if the code is properly indented and also uses <cite>#end*</cite> block
+terminators that code can be both valid Python and Larch.  The examples in
+the current document use this convention and have import statements
+commented out at the top so that they can be easily run in Python or from
+the Larch interpreter.</p>
+</section>
+<section id="larch-submodules">
+<h2><span class="section-number">8.5. </span>Larch submodules<a class="headerlink" href="#larch-submodules" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>larch</cite> module is broken up into a number of submodules, as described
+in the table and sections below.  To be clear, this list is incomplete and
+subject to change.  The rest of this document should be used for details of
+the functionality of the various modules and functions.</p>
+<p id="pymodules-table"><strong>Table of the Larch Python Modules</strong> This is an incomplete list of all the
+Python modules available from <cite>larch</cite>, but should cover those that are most
+useful to Python programmers.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>module name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><cite>larch</cite></p></td>
+<td><p>top-level module, with Interpreter and applications</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.io</cite></p></td>
+<td><p>input/output routines</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.xafs</cite></p></td>
+<td><p>XAFS analysis and data processingd</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.xray</cite></p></td>
+<td><p>X-ray properties (with <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.xrf</cite></p></td>
+<td><p>X-ray fluorescenece processing and analysis</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.xrd</cite></p></td>
+<td><p>X-ray diffraction processing</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.xrmmap</cite></p></td>
+<td><p>working with XRF/XRD microprobe maps</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.fitting</cite></p></td>
+<td><p>Data fitting (with <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.math</cite></p></td>
+<td><p>General-purpose mathematical functions</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.utils</cite></p></td>
+<td><p>General-purpose utility functions</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.epics</cite></p></td>
+<td><p>using with Epics control system (with <a class="reference external" href="https://pyepics.github.io/pyepics/">pyepics</a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.xmlrpc_server</cite></p></td>
+<td><p>running a Larch server for other processes</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>larch.shell</cite></p></td>
+<td><p>command-line shell</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>larch.wxlib</cite></p></td>
+<td><p>Wx-python utilities (including <a class="reference external" href="https://newville.github.io/wxmplot/">wxmplot</a> plotting)</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Note that several of these modules (<cite>xray</cite>, <cite>fitting</cite>, <cite>epics</cite>, the plotting
+functionality in <cite>wxlib</cite>) are fairly thin wrappers around other python libraries
+that are generally well-documented and do not need to be used only from with
+larch.  If you find yourself using these submodules, it might be easier to just
+use the more general-purpose library.</p>
+<section id="top-level-larch">
+<h3><span class="section-number">8.5.1. </span>Top-level <cite>larch</cite><a class="headerlink" href="#top-level-larch" title="Permalink to this headline">¶</a></h3>
+<p>The top-level <cite>larch</cite> module contains several modules and a few important
+classes and methods.  An incomplete list, but the most important objects in
+the top-level module are:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="Interpreter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Interpreter</span></span><a class="headerlink" href="#Interpreter" title="Permalink to this definition">¶</a></dt>
+<dd><p>class to build a Larch Interpreter</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="Group">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Group</span></span><a class="headerlink" href="#Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>class to build a Larch Group</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="site_config">
+<span class="sig-name descname"><span class="pre">site_config</span></span><a class="headerlink" href="#site_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>a container (module) of site configuration information.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="is_from_python">
+<span class="sig-name descname"><span class="pre">is_from_python</span></span><a class="headerlink" href="#is_from_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>a boolean value indicating whether this larch module has been imported
+into Python (True) or into a Larch Interpreter (False)</p>
+</dd></dl>
+
+</section>
+<section id="larch-io">
+<h3><span class="section-number">8.5.2. </span><cite>larch.io</cite><a class="headerlink" href="#larch-io" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>io</cite> module contains functions for reading and writing data with known
+formats.</p>
+</section>
+<section id="larch-xafs">
+<h3><span class="section-number">8.5.3. </span><cite>larch.xafs</cite><a class="headerlink" href="#larch-xafs" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>xafs</cite> module contains functions for XAFS analysis.</p>
+</section>
+<section id="larch-xray">
+<h3><span class="section-number">8.5.4. </span><cite>larch.xray</cite><a class="headerlink" href="#larch-xray" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>xray</cite> module contains functions for X-ray properties, as imported from <a class="reference external" href="https://xraypy.github.io/XrayDB/">xraydb</a>.</p>
+</section>
+<section id="larch-xrf">
+<h3><span class="section-number">8.5.5. </span><cite>larch.xrf</cite><a class="headerlink" href="#larch-xrf" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>xrf</cite> module contains functions for X-ray fluorescence data.</p>
+</section>
+<section id="larch-xrd">
+<h3><span class="section-number">8.5.6. </span><cite>larch.xrd</cite><a class="headerlink" href="#larch-xrd" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-xrmmap">
+<h3><span class="section-number">8.5.7. </span><cite>larch.xrmmap</cite><a class="headerlink" href="#larch-xrmmap" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-fitting">
+<h3><span class="section-number">8.5.8. </span><cite>larch.fitting</cite><a class="headerlink" href="#larch-fitting" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>fitting</cite> module contains functions for fitting data, including to
+known lineshapes.  Much of this is taken directly from <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> or modified
+slightly for Larch.  If you’re writing programs for fitting data, we do
+recommend using <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> directly.</p>
+</section>
+<section id="larch-math">
+<h3><span class="section-number">8.5.9. </span><cite>larch.math</cite><a class="headerlink" href="#larch-math" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-utils">
+<h3><span class="section-number">8.5.10. </span><cite>larch.utils</cite><a class="headerlink" href="#larch-utils" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-epics">
+<h3><span class="section-number">8.5.11. </span><cite>larch.epics</cite><a class="headerlink" href="#larch-epics" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-xmlrpc-server">
+<h3><span class="section-number">8.5.12. </span><cite>larch.xmlrpc_server</cite><a class="headerlink" href="#larch-xmlrpc-server" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-shell">
+<h3><span class="section-number">8.5.13. </span><cite>larch.shell</cite><a class="headerlink" href="#larch-shell" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="larch-wxlib">
+<h3><span class="section-number">8.5.14. </span><cite>larch.wxlib</cite><a class="headerlink" href="#larch-wxlib" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="larchlang.html" title="9. Larch Macro Language Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qtrixs.html" title="7. QtRIXS"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>Programming with Larch from Python</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

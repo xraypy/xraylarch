@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>7. QtRIXS &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="8. Programming with Larch from Python" href="python.html" />
+    <link rel="prev" title="6. GSECARS Mapviewr" href="wxmap_viewer.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="python.html" title="8. Programming with Larch from Python"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wxmap_viewer.html" title="6. GSECARS Mapviewr"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7. </span>QtRIXS</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">7. QtRIXS</a><ul>
+<li><a class="reference internal" href="#reading-rixs-data">7.1. Reading RIXS data</a></li>
+<li><a class="reference internal" href="#plotting-rixs-data">7.2. Plotting RIXS data</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wxmap_viewer.html"
+                        title="previous chapter"><span class="section-number">6. </span>GSECARS Mapviewr</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="python.html"
+                        title="next chapter"><span class="section-number">8. </span>Programming with Larch from Python</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/qtrixs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="qtrixs">
+<span id="qtrixs-chapter"></span><h1><span class="section-number">7. </span>QtRIXS<a class="headerlink" href="#qtrixs" title="Permalink to this headline">¶</a></h1>
+<p>The QtRIXS GUI is still under active development, this means that its design
+will evolve/change in the future and bugs are probably present in the code.
+<em>Any help is welcome!</em></p>
+<p>The GUI follows the Qt model/view paradigm and it is heavily based on <a class="reference external" href="http://www.silx.org">SILX</a>
+library. At the current status (July 2019), the GUI is not fully functional,
+thus it comes with a command line interface (CLI), that is, the graphical part
+must be instantiated from a Python shell. For a better experience, working
+within <a class="reference external" href="http://ipython.org/">IPython</a> is recommended.</p>
+<p>The CLI interface is based on a simple list model, that is, the</p>
+<section id="reading-rixs-data">
+<h2><span class="section-number">7.1. </span>Reading RIXS data<a class="headerlink" href="#reading-rixs-data" title="Permalink to this headline">¶</a></h2>
+<p>RIXS data are stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">larch.qtrixs.rixsdata.RixsData</span></code>. This
+is a relatively simple Python object with few attributes mapping the data,
+and methods to grid the original (X, Y, Z) arrays to RIXS maps. Usually the
+data are converted from ASCII collected at the beamline and stored in a
+HDF5 file, following a simple format
+(c.f. <code class="xref py py-func docutils literal notranslate"><span class="pre">larch.io.rixs_aps_gsecars.get_rixs_13ide()</span></code>). After that,
+reading in the <cite>RixsData</cite> object is as simple as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.qtrixs.rixsdata</span> <span class="kn">import</span> <span class="n">RixsData</span>
+<span class="n">my_rixs1</span> <span class="o">=</span> <span class="n">RixsData</span><span class="p">()</span>
+<span class="n">my_rixs1</span><span class="o">.</span><span class="n">load_from_h5</span><span class="p">(</span><span class="s1">&#39;filename_rixs.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plotting-rixs-data">
+<h2><span class="section-number">7.2. </span>Plotting RIXS data<a class="headerlink" href="#plotting-rixs-data" title="Permalink to this headline">¶</a></h2>
+<p>Once the data are read in the <cite>RixsData</cite> object, can be added to the model
+where are stored in a list and easily retrieved or plotted using their
+index. Here an example to load a couple of planes and show them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">larch.qtrixs.plotrixs</span> <span class="kn">import</span> <span class="n">RixsMainWindow</span>
+<span class="n">main_win</span> <span class="o">=</span> <span class="n">RixsMainWindow</span><span class="p">()</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="n">RixsData</span><span class="p">()</span>
+<span class="n">data1</span><span class="o">.</span><span class="n">load_from_h5</span><span class="p">(</span><span class="s1">&#39;FeRIXS_FeO_rixs.h5&#39;</span><span class="p">)</span>  <span class="c1"># change with your data</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="n">RixsData</span><span class="p">()</span>
+<span class="n">data2</span><span class="o">.</span><span class="n">load_from_h5</span><span class="p">(</span><span class="s1">&#39;FeRIXS_Fe2O3_rixs.h5&#39;</span><span class="p">)</span>  <span class="c1"># change with your data</span>
+<span class="c1">#: load the data in the model -&gt; will show in the view widget on the left</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">addData</span><span class="p">(</span><span class="n">data1</span><span class="p">)</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">addData</span><span class="p">(</span><span class="n">data2</span><span class="p">)</span>
+<span class="c1">#: plot the rixs planes in two separate windows</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rixs_et</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1">#: data[0] in plot[1]</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">rixs_et</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1">#: data[1] in plot[2] (new plot window is created)</span>
+</pre></div>
+</div>
+<p>The output of this script is shown in <a class="reference internal" href="#fig-qtrixs-main"><span class="std std-numref">Figure 7.2.1</span></a></p>
+<figure class="align-center" id="id1">
+<span id="fig-qtrixs-main"></span><a class="reference external image-reference" href="_images/qtrixs_main_window.png"><img alt="_images/qtrixs_main_window.png" src="_images/qtrixs_main_window.png" style="width: 55%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 7.2.1 </span><span class="caption-text">QtRIXS main window showing two RIXS data objects loaded in the model and
+plotted in the plot area.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Dock (= dragable) information widgets for selecting regions of interest on
+the plot and getting the coordinates can be added to the main window simply
+by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">main_win</span><span class="o">.</span><span class="n">addRixsDOIDockWidget</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#: the argument is the index of the plot</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">addRixsDOIDockWidget</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1">#: another info box for plot 2</span>
+</pre></div>
+</div>
+<p>The result is shown in <a class="reference internal" href="#fig-qtrixs-cursors"><span class="std std-numref">Figure 7.2.2</span></a>.</p>
+<figure class="align-center" id="id2">
+<span id="fig-qtrixs-cursors"></span><a class="reference external image-reference" href="_images/qtrixs_cursors.png"><img alt="_images/qtrixs_cursors.png" src="_images/qtrixs_cursors.png" style="width: 55%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 7.2.2 </span><span class="caption-text">Main window with added two widgets for getting information on the
+regions of interest.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The data can also be cropped or plotted in energy transfer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crop_area</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7108</span><span class="p">,</span> <span class="mi">7040</span><span class="p">,</span> <span class="mi">7120</span><span class="p">,</span> <span class="mi">7065</span><span class="p">)</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="n">crop_area</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>  <span class="c1">#: it is possible to change the number of contours lines for a better visualization</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="n">crop_area</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">main_win</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="n">crop_area</span><span class="p">,</span> <span class="n">rixs_et</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To take line cuts with a given width (in pixels), it is possible to use the
+toolbar on each RIXS plot. This will push the corresponding cut to a common
+plot window called <cite>Profiles</cite>. From that window is possible to save the
+profiles to ASCII files and then process them independently. The profiles
+toolbar works correctly for horizontal and vertical cuts only. For taking a
+diagonal cut in energy transfer (i.e., HERFD-XAS) the best is to simply take an
+horizontal cut in emitted energy. If the profiles window gets busy of many
+curves, the plot can be simply be cleaned by popping the context menu with
+right click on the legends. This is shown in <a class="reference internal" href="#fig-qtrixs-profiles"><span class="std std-numref">Figure 7.2.3</span></a>.</p>
+<figure class="align-center" id="id3">
+<span id="fig-qtrixs-profiles"></span><a class="reference external image-reference" href="_images/qtrixs_profiles.png"><img alt="_images/qtrixs_profiles.png" src="_images/qtrixs_profiles.png" style="width: 55%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 7.2.3 </span><span class="caption-text">Cropped plots, plot in energy transfer and line cuts to visualize the
+profiles of the spectra. A context menu is available to clean, highlight or
+move one line to right axis of the plot.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="python.html" title="8. Programming with Larch from Python"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wxmap_viewer.html" title="6. GSECARS Mapviewr"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7. </span>QtRIXS</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

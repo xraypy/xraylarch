@@ -1,0 +1,544 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>12.8. Advanced Confidence Intervals and Chi-square maps &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="13. XAFS Analysis" href="xafs.html" />
+    <link rel="prev" title="12.7. Simplified Peak Fitting with fit_peak()" href="fitting_fitpeaks.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xafs.html" title="13. XAFS Analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fitting_fitpeaks.html" title="12.7. Simplified Peak Fitting with fit_peak()"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">12.8. Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li><a class="reference internal" href="#confidence-interval-example-1">12.8.1. Confidence interval, Example 1</a></li>
+<li><a class="reference internal" href="#confidence-interval-example-2">12.8.2. Confidence interval, Example 2</a></li>
+<li><a class="reference internal" href="#chi-square-maps">12.8.3. Chi-square Maps</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fitting_fitpeaks.html"
+                        title="previous chapter"><span class="section-number">12.7. </span>Simplified Peak Fitting with <code class="xref py py-func docutils literal notranslate"><span class="pre">fit_peak()</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xafs.html"
+                        title="next chapter"><span class="section-number">13. </span>XAFS Analysis</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fitting_confidence.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="advanced-confidence-intervals-and-chi-square-maps">
+<h1><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Permalink to this headline">¶</a></h1>
+<p>Having good estimates for uncertainties in fitted parameters is important
+for any scientific analysis.  One of principle attractions to using the
+Levenberg-Marquardt algorithm that is the default fitting mechanism with
+the <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function is that it will automatically calculate
+estimates of parameter uncertainties and correlations.  This is very
+convenient and generally reliable, but it should be made clear that the
+basic assumptions made when these uncertainties are estimated are not
+always perfect.  Unfortunately, it is sometimes difficult to tell when this
+is the case.</p>
+<p>It is therefore fairly common to see analyses that include explicit
+exploration of Parameter values away from their best-fit solution, in order
+to determine the degree of confidence in the best-fit values. Larch
+provides two main functions to help explore such cases.  To be sure, they
+are much slower than the automatic estimation of the uncertainties.  For
+many (perhaps most) cases, they do not provide much better insight than the
+automatic method.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="confidence_intervals">
+<span class="sig-name descname"><span class="pre">confidence_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate confidence intervals for the parameters from a given fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>minimizer</strong> – the minimizer object returned by <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p></li>
+<li><p><strong>sigmas</strong> – list of sigma-levels to find parameter values for.</p></li>
+<li><p><strong>prob_func</strong> – <code class="docutils literal notranslate"><span class="pre">None</span></code> or callable function to calculate the
+probability from the optimized chi-square. By default,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">f_compare()</span></code>, the standard F-test, is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a dictionary of parameter names, with each value containing
+a list of (sigma, value) pairs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>This function will adjust the value for each parameter, re-optimizing the
+other parameters until it finds the parameter values that increase sigma by
+the levels indicated.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="confidence_report">
+<span class="sig-name descname"><span class="pre">confidence_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a> into a printable report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conf_values</strong> – confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a string containing the report, which can be printed or stored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="f_test">
+<span class="sig-name descname"><span class="pre">f_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ndata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nparams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chisquare</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chisquare0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the standard F-test value for the probability that one fit is
+better than another.</p>
+</dd></dl>
+
+<section id="confidence-interval-example-1">
+<h2><span class="section-number">12.8.1. </span>Confidence interval, Example 1<a class="headerlink" href="#confidence-interval-example-1" title="Permalink to this headline">¶</a></h2>
+<p>Let’s begin with a shortened version of the first example from the previous
+section.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_conf1.lar</span>
+<span class="c1"># create mock data</span>
+<span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">12.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
+         <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
+
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                     <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+                     <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+
+<span class="c1"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">myresid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
+<span class="c1">#enddef</span>
+
+<span class="c1"># perform fit</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">myresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
+
+<span class="c1"># print report of parameters, uncertainties</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+<span class="c1">## end of examples/fitting/doc_example_conf1.lar</span>
+</pre></div>
+</div>
+<p>The printed output from <code class="docutils literal notranslate"><span class="pre">fit_report(params)</span></code> will include this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">12.129867</span> <span class="o">+/-</span> <span class="mf">0.124722</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.000000</span><span class="p">)</span>
+   <span class="n">cen</span>            <span class="o">=</span>  <span class="mf">1.476822</span> <span class="o">+/-</span> <span class="mf">0.017266</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">2.000000</span><span class="p">)</span>
+   <span class="n">off</span>            <span class="o">=</span>  <span class="mf">0.998814</span> <span class="o">+/-</span> <span class="mf">0.007131</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.000000</span><span class="p">)</span>
+   <span class="n">wid</span>            <span class="o">=</span>  <span class="mf">2.022301</span> <span class="o">+/-</span> <span class="mf">0.016938</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.000000</span><span class="p">)</span>
+
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">off</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.861</span>
+   <span class="n">amp</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span>  <span class="mf">0.808</span>
+   <span class="n">off</span><span class="p">,</span> <span class="n">wid</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">0.692</span>
+<span class="o">=======================================================</span>
+</pre></div>
+</div>
+<p>while the output from the much more explicit search done in
+<a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_intervals()</span></code></a> and reported by <a class="reference internal" href="#confidence_report" title="confidence_report"><code class="xref py py-func docutils literal notranslate"><span class="pre">confidence_report()</span></code></a> will be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Confidence Interval Report</span>
+<span class="c1"># Sigmas:          -3         -2         -1          0          1          2          3</span>
+<span class="c1"># Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730</span>
+<span class="c1">#==========================================================================================</span>
+ <span class="n">amp</span>             <span class="mf">11.755</span>      <span class="mf">11.88</span>     <span class="mf">12.005</span>      <span class="mf">12.13</span>     <span class="mf">12.256</span>     <span class="mf">12.385</span>     <span class="mf">12.517</span>
+    <span class="o">-</span><span class="n">best</span>      <span class="o">-</span><span class="mf">0.37459</span>   <span class="o">-</span><span class="mf">0.24967</span>   <span class="o">-</span><span class="mf">0.12455</span>          <span class="mi">0</span>    <span class="mf">0.12604</span>    <span class="mf">0.25555</span>    <span class="mf">0.38759</span>
+ <span class="n">wid</span>             <span class="mf">1.9707</span>     <span class="mf">1.9885</span>     <span class="mf">2.0053</span>     <span class="mf">2.0223</span>     <span class="mf">2.0395</span>     <span class="mf">2.0569</span>     <span class="mf">2.0749</span>
+    <span class="o">-</span><span class="n">best</span>     <span class="o">-</span><span class="mf">0.051552</span>  <span class="o">-</span><span class="mf">0.033784</span>  <span class="o">-</span><span class="mf">0.016975</span>          <span class="mi">0</span>   <span class="mf">0.017156</span>   <span class="mf">0.034567</span>   <span class="mf">0.052626</span>
+ <span class="n">off</span>             <span class="mf">0.9766</span>    <span class="mf">0.98468</span>     <span class="mf">0.9912</span>    <span class="mf">0.99881</span>     <span class="mf">1.0064</span>     <span class="mf">1.0128</span>     <span class="mf">1.0209</span>
+    <span class="o">-</span><span class="n">best</span>     <span class="o">-</span><span class="mf">0.022212</span>  <span class="o">-</span><span class="mf">0.014138</span>  <span class="o">-</span><span class="mf">0.0076156</span>          <span class="mi">0</span>  <span class="mf">0.0075667</span>   <span class="mf">0.013987</span>   <span class="mf">0.022049</span>
+ <span class="n">cen</span>             <span class="mf">1.4248</span>     <span class="mf">1.4423</span>     <span class="mf">1.4596</span>     <span class="mf">1.4768</span>     <span class="mf">1.4941</span>     <span class="mf">1.5113</span>     <span class="mf">1.5289</span>
+    <span class="o">-</span><span class="n">best</span>     <span class="o">-</span><span class="mf">0.052057</span>   <span class="o">-</span><span class="mf">0.03452</span>  <span class="o">-</span><span class="mf">0.017248</span>          <span class="mi">0</span>   <span class="mf">0.017249</span>   <span class="mf">0.034524</span>   <span class="mf">0.052068</span>
+</pre></div>
+</div>
+<p>The automatic error estimates given from <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> are meant to be
+1-<span class="math notranslate nohighlight">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 37%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Best Value</p></th>
+<th class="head"><p>Automatic 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</p></th>
+<th class="head"><p>Explicit 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>amp</p></td>
+<td><p>12.1299</p></td>
+<td><p>+/- 0.1247</p></td>
+<td><p>+0.1267, -0.1246</p></td>
+</tr>
+<tr class="row-odd"><td><p>cen</p></td>
+<td><p>1.4768</p></td>
+<td><p>+/- 0.0173</p></td>
+<td><p>+0.0172, -0.0172</p></td>
+</tr>
+<tr class="row-even"><td><p>off</p></td>
+<td><p>0.9988</p></td>
+<td><p>+/- 0.0071</p></td>
+<td><p>+0.0076, -0.0076</p></td>
+</tr>
+<tr class="row-odd"><td><p>cen</p></td>
+<td><p>2.0223</p></td>
+<td><p>+/- 0.0169</p></td>
+<td><p>+0.0172, -0.0170</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>which seems to justify the use of the automated method.  The uncertainties
+found from the more thorough exploration shows symmetric uncertainties,
+even out to the 3-<span class="math notranslate nohighlight">\(\sigma\)</span> level, and of the 4 1-<span class="math notranslate nohighlight">\(\sigma\)</span>
+uncertainties, 3 are within 2%, and the worst agreement, for the smallest
+uncertainty is within 7%.    It also shows that the scaling of
+uncertainties is fairly linear with <span class="math notranslate nohighlight">\(\sigma\)</span>:  the 3-<span class="math notranslate nohighlight">\(\sigma\)</span>
+values are approximately 3 times the 1-<span class="math notranslate nohighlight">\(\sigma\)</span> values.</p>
+</section>
+<section id="confidence-interval-example-2">
+<h2><span class="section-number">12.8.2. </span>Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
+<p>Of course, there are more challenging cases than the one above.  A double
+exponential function is one such example, so we start with a fit to mock
+data</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/fitting/doc_example_conf2.lar</span>
+<span class="c1">#  Shows usage of fitting with non-normal correlation of variables,</span>
+<span class="c1">#  and confidence intervals.</span>
+
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">))</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+<span class="n">fitparams</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">3.5</span><span class="p">),</span>
+                        <span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="o">-</span><span class="mf">9.5</span><span class="p">),</span>
+                        <span class="n">t1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                        <span class="n">t2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">15</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">fit_exp</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dat</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">a1</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">pars</span><span class="o">.</span><span class="n">t1</span><span class="p">)</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">a2</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">pars</span><span class="o">.</span><span class="n">t2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span> <span class="o">-</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span>
+<span class="n">enddef</span>
+
+<span class="n">minout</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fit_exp</span><span class="p">,</span> <span class="n">fitparams</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+<span class="nb">print</span><span class="p">(</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">final</span> <span class="o">=</span> <span class="n">fit_exp</span><span class="p">(</span><span class="n">fitparams</span><span class="p">,</span> <span class="n">dat</span><span class="p">)</span> <span class="o">+</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span>
+<span class="n">newplot</span> <span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+   <span class="n">plot</span> <span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">)</span>
+
+<span class="c1">## end of examples/fitting/doc_example_conf2.lar</span>
+</pre></div>
+</div>
+<p>The resulting statistics report with the automated uncertainties is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">=====================</span> <span class="n">FIT</span> <span class="n">RESULTS</span> <span class="o">=====================</span>
+<span class="p">[[</span><span class="n">Statistics</span><span class="p">]]</span>    <span class="n">Fit</span> <span class="n">succeeded</span><span class="p">,</span>  <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;leastsq&#39;</span><span class="o">.</span>
+   <span class="n">Message</span> <span class="kn">from</span> <span class="nn">fit</span>    <span class="o">=</span> <span class="n">Fit</span> <span class="n">succeeded</span><span class="o">.</span>
+   <span class="n">npts</span><span class="p">,</span> <span class="n">nvarys</span><span class="p">,</span> <span class="n">nfree</span> <span class="o">=</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">97</span>
+   <span class="n">nfev</span> <span class="p">(</span><span class="n">func</span> <span class="n">calls</span><span class="p">)</span>   <span class="o">=</span> <span class="mi">36</span>
+   <span class="n">chi_square</span>          <span class="o">=</span> <span class="mf">0.191322</span>
+   <span class="n">reduced</span> <span class="n">chi_square</span>  <span class="o">=</span> <span class="mf">0.001972</span>
+
+<span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
+   <span class="n">a1</span>             <span class="o">=</span>  <span class="mf">2.828857</span> <span class="o">+/-</span> <span class="mf">0.149776</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">3.500000</span><span class="p">)</span>
+   <span class="n">a2</span>             <span class="o">=</span> <span class="o">-</span><span class="mf">4.819553</span> <span class="o">+/-</span> <span class="mf">0.159495</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">9.500000</span><span class="p">)</span>
+   <span class="n">t1</span>             <span class="o">=</span>  <span class="mf">1.878519</span> <span class="o">+/-</span> <span class="mf">0.100212</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">3.000000</span><span class="p">)</span>
+   <span class="n">t2</span>             <span class="o">=</span>  <span class="mf">9.270866</span> <span class="o">+/-</span> <span class="mf">0.309035</span> <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">15.000000</span><span class="p">)</span>
+
+<span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>     <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
+   <span class="n">a2</span><span class="p">,</span> <span class="n">t2</span>               <span class="o">=</span>  <span class="mf">0.991</span>
+   <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span>               <span class="o">=</span> <span class="o">-</span><span class="mf">0.991</span>
+   <span class="n">a1</span><span class="p">,</span> <span class="n">t2</span>               <span class="o">=</span> <span class="o">-</span><span class="mf">0.988</span>
+   <span class="n">a2</span><span class="p">,</span> <span class="n">t1</span>               <span class="o">=</span> <span class="o">-</span><span class="mf">0.968</span>
+   <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span>               <span class="o">=</span> <span class="o">-</span><span class="mf">0.937</span>
+   <span class="n">a1</span><span class="p">,</span> <span class="n">t1</span>               <span class="o">=</span>  <span class="mf">0.935</span>
+<span class="o">=======================================================</span>
+</pre></div>
+</div>
+<p>You can see that the correlations between <strong>all 6 pairs of variables</strong> is
+above 90%.  The resulting plot of the best-fit looks fairly reasonable:</p>
+<figure class="align-center" id="id1">
+<span id="fit-conf1"></span><a class="reference external image-reference" href="_images/fit_example_conf2.png"><img alt="_images/fit_example_conf2.png" src="_images/fit_example_conf2.png" style="width: 65%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 12.8.2.1 </span><span class="caption-text">Fit to double exponential function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>But if we we ask for the more thorough investigation of the confidence
+intervals in these parameters with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conf_int</span> <span class="o">=</span> <span class="n">confidence_intervals</span><span class="p">(</span><span class="n">minout</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">confidence_report</span><span class="p">(</span><span class="n">conf_int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the resulting report is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Confidence Interval Report</span>
+<span class="c1"># Sigmas:          -3         -2         -1          0          1          2          3</span>
+<span class="c1"># Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730</span>
+<span class="c1">#==========================================================================================</span>
+ <span class="n">a1</span>              <span class="mf">2.4622</span>     <span class="mf">2.5704</span>      <span class="mf">2.691</span>     <span class="mf">2.8289</span>     <span class="mf">2.9936</span>     <span class="mf">3.1985</span>      <span class="mf">3.467</span>
+    <span class="o">-</span><span class="n">best</span>      <span class="o">-</span><span class="mf">0.36665</span>   <span class="o">-</span><span class="mf">0.25842</span>   <span class="o">-</span><span class="mf">0.13785</span>          <span class="mi">0</span>    <span class="mf">0.16472</span>    <span class="mf">0.36968</span>    <span class="mf">0.63812</span>
+ <span class="n">a2</span>             <span class="o">-</span><span class="mf">5.4926</span>    <span class="o">-</span><span class="mf">5.2111</span>    <span class="o">-</span><span class="mf">4.9945</span>    <span class="o">-</span><span class="mf">4.8196</span>    <span class="o">-</span><span class="mf">4.6726</span>     <span class="o">-</span><span class="mf">4.544</span>     <span class="o">-</span><span class="mf">4.429</span>
+    <span class="o">-</span><span class="n">best</span>      <span class="o">-</span><span class="mf">0.67309</span>   <span class="o">-</span><span class="mf">0.39152</span>   <span class="o">-</span><span class="mf">0.17499</span>          <span class="mi">0</span>    <span class="mf">0.14698</span>    <span class="mf">0.27553</span>    <span class="mf">0.39058</span>
+ <span class="n">t2</span>              <span class="mf">8.2604</span>     <span class="mf">8.6221</span>     <span class="mf">8.9556</span>     <span class="mf">9.2709</span>     <span class="mf">9.5761</span>     <span class="mf">9.8776</span>     <span class="mf">10.182</span>
+    <span class="o">-</span><span class="n">best</span>       <span class="o">-</span><span class="mf">1.0105</span>   <span class="o">-</span><span class="mf">0.64882</span>   <span class="o">-</span><span class="mf">0.31531</span>          <span class="mi">0</span>    <span class="mf">0.30526</span>    <span class="mf">0.60676</span>    <span class="mf">0.91132</span>
+ <span class="n">t1</span>              <span class="mf">1.6107</span>     <span class="mf">1.6942</span>     <span class="mf">1.7827</span>     <span class="mf">1.8785</span>     <span class="mf">1.9841</span>     <span class="mf">2.1049</span>     <span class="mf">2.2456</span>
+    <span class="o">-</span><span class="n">best</span>      <span class="o">-</span><span class="mf">0.26785</span>   <span class="o">-</span><span class="mf">0.18436</span>   <span class="o">-</span><span class="mf">0.09583</span>          <span class="mi">0</span>    <span class="mf">0.10553</span>    <span class="mf">0.22637</span>    <span class="mf">0.36709</span>
+</pre></div>
+</div>
+<p>Now can see more asymmetric uncertainty values, specifically that the
+-n-<span class="math notranslate nohighlight">\(\sigma\)</span> and +n-<span class="math notranslate nohighlight">\(\sigma\)</span> are different, and don’t seem to be
+linear in n.  Comparing the 1-<span class="math notranslate nohighlight">\(\sigma\)</span> levels between the automated
+and explicit methods as we did above, we now have</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 37%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Best Value</p></th>
+<th class="head"><p>Automatic 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</p></th>
+<th class="head"><p>Explicit 1-<span class="math notranslate nohighlight">\(\sigma\)</span> value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>a1</p></td>
+<td><p>2.8289</p></td>
+<td><p>+/- 0.1498</p></td>
+<td><p>+0.1647, -0.1379</p></td>
+</tr>
+<tr class="row-odd"><td><p>a2</p></td>
+<td><p>-4.8196</p></td>
+<td><p>+/- 0.1595</p></td>
+<td><p>+0.1470, -0.1750</p></td>
+</tr>
+<tr class="row-even"><td><p>t1</p></td>
+<td><p>9.2709</p></td>
+<td><p>+/- 0.1002</p></td>
+<td><p>+0.1055, -0.0958</p></td>
+</tr>
+<tr class="row-odd"><td><p>t2</p></td>
+<td><p>1.8785</p></td>
+<td><p>+/- 0.3090</p></td>
+<td><p>+0.3053, -0.3153</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>In fairness, the automated values don’t look too bad, given that they
+cannot reflect asymmetric uncertainties.  But, like the reported
+correlations, the full report above hints at a less than ideal case.</p>
+</section>
+<section id="chi-square-maps">
+<h2><span class="section-number">12.8.3. </span>Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
+<p>We can further explore the correlation between pairs of variables by making
+and visualizing a map of the chi-square (<span class="math notranslate nohighlight">\(\chi^2\)</span>) statistic.  This
+can be helpful to determine if the automatically calculated uncertainties
+and correlation are reasonable, and to look for pathological cases.  The
+<a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">chi2_map()</span></code></a> function will calculate a map of <span class="math notranslate nohighlight">\(\chi^2\)</span> for a pair
+of variable parameters by brute force.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="chi2_map">
+<span class="sig-name descname"><span class="pre">chi2_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a chi-square map for two parameters in a fit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>minimizer</strong> – the minimizer object returned by <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a>.</p></li>
+<li><p><strong>xname</strong> – name of variable for x-axis</p></li>
+<li><p><strong>yname</strong> – name of variable for y-axis</p></li>
+<li><p><strong>nx</strong> – number of steps in x [11]</p></li>
+<li><p><strong>ny</strong> – number of steps in y [11]</p></li>
+<li><p><strong>sigmas</strong> – extent of x, y values to calculate, in <span class="math notranslate nohighlight">\(\sigma\)</span></p></li>
+<li><p><strong>xrange</strong> – explicit x range of calculations [x.best +/- <code class="docutils literal notranslate"><span class="pre">sigmas</span></code> * x.stderr]</p></li>
+<li><p><strong>yrange</strong> – explicit y range of calculations [y.best +/- <code class="docutils literal notranslate"><span class="pre">sigmas</span></code> * y.stderr]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple of (x_vals, y_vals, chi2_map)</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">xrange</span></code> and <code class="docutils literal notranslate"><span class="pre">yrange</span></code> arguments can be used to fully dictate the x
+and y values to use.  By default, the x and y values are automatically
+determined from <code class="docutils literal notranslate"><span class="pre">nx</span></code>, <code class="docutils literal notranslate"><span class="pre">ny</span></code>, and <code class="docutils literal notranslate"><span class="pre">sigmas</span></code>, with the <code class="docutils literal notranslate"><span class="pre">sigmas</span></code> argument
+sets how far from the best value to extend the ranges.</p>
+</dd></dl>
+
+<p>As an example usage, we return to the first example of the “well-behaved”
+fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">chi2_map()</span></code></a> on a pair of variables with low correlation
+and a pair with high correlation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">chi2_ampwid</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s1">&#39;amp&#39;</span><span class="p">,</span> <span class="s1">&#39;wid&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampcen</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, cen)&#39;</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">chi2_ampwid</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(amp, wid)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>with the resulting Chi-square maps looking like this:</p>
+<div class="figure compound align-center" id="fig-chi2map1">
+<figure class="align-center" id="fig-chi2map1a">
+<a class="reference external image-reference" href="_images/fit_example_conf3a.png"><img alt="_images/fit_example_conf3a.png" src="_images/fit_example_conf3a.png" style="width: 100%;" /></a>
+</figure>
+<figure class="align-center" id="fig-chi2map1b">
+<a class="reference external image-reference" href="_images/fit_example_conf3b.png"><img alt="_images/fit_example_conf3b.png" src="_images/fit_example_conf3b.png" style="width: 100%;" /></a>
+</figure>
+</div><p id="fig-chi2map1">The circular map for the uncorrelated parameters <em>amp</em> and <em>cen</em>
+and the elliptical map for the highly correlated parameters <em>amp</em> and <em>wid</em>
+are exactly as would be expected, and what the automated estimate of
+uncertainties and correlations assumes.</p>
+<p>But now, if we turn to the more pathological case of the double
+exponential, we calculate the chi-square maps as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;a2&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">minout</span><span class="p">,</span> <span class="s1">&#39;a1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y1</span><span class="p">,</span>        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, a2)&#39;</span><span class="p">)</span>
+<span class="n">contour</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Correlation(a1, t1)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>with the resulting contour plots:</p>
+<div class="figure compound align-center" id="fig-chi2map2">
+<figure class="align-center" id="fig-chi2map2a">
+<a class="reference external image-reference" href="_images/fit_example_conf4a.png"><img alt="_images/fit_example_conf4a.png" src="_images/fit_example_conf4a.png" style="width: 100%;" /></a>
+</figure>
+<figure class="align-center" id="fig-chi2map2b">
+<a class="reference external image-reference" href="_images/fit_example_conf4b.png"><img alt="_images/fit_example_conf4b.png" src="_images/fit_example_conf4b.png" style="width: 100%;" /></a>
+</figure>
+</div><p id="fig-chi2map2">Here, the values of chi-square quickly grow very large away from the ideal
+fit.  More importantly, the maps are not remotely elliptical.</p>
+<p>Finally, it should be emphasized that while all the tests in this section
+are informative, they are also fairly slow, re-running the fits many times.
+It is probably safe to rely on the automatic calculations of uncertainties
+and correlations, and use these methods on occasions of extremely high
+correlation, or when nearing a final analysis.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xafs.html" title="13. XAFS Analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fitting_fitpeaks.html" title="12.7. Simplified Peak Fitting with fit_peak()"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.8. </span>Advanced Confidence Intervals and Chi-square maps</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>12.2. Parameters &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="12.3. minimize() and objective Functions" href="fitting_minimize.html" />
+    <link rel="prev" title="12.1. Fitting Overview" href="fitting_overview.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fitting_minimize.html" title="12.3. minimize() and objective Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fitting_overview.html" title="12.1. Fitting Overview"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.2. </span>Parameters</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">12.2. Parameters</a><ul>
+<li><a class="reference internal" href="#setting-bounds">12.2.1. setting bounds</a></li>
+<li><a class="reference internal" href="#using-algebraic-constraints">12.2.2. using algebraic constraints</a></li>
+<li><a class="reference internal" href="#param-group-creating-a-parameter-group-for-fitting-constraints">12.2.3. <code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code>: creating a Parameter Group for fitting constraints</a></li>
+<li><a class="reference internal" href="#fiteval-and-details-about-algebraic-constraints">12.2.4. <cite>fiteval</cite> and details about algebraic constraints</a></li>
+<li><a class="reference internal" href="#working-with-uncertainties">12.2.5. working with uncertainties</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fitting_overview.html"
+                        title="previous chapter"><span class="section-number">12.1. </span>Fitting Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fitting_minimize.html"
+                        title="next chapter"><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fitting_parameters.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="parameters">
+<span id="fitting-parameters-sec"></span><h1><span class="section-number">12.2. </span>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
+<p>The parameters used in the fitting model are all meant to be continuous
+variables – floating point numbers.  In general, the fitting procedure may
+assign any value to any parameter.  In many cases, however, you may want to
+place some restrictions on the value a parameter can take.  For example, if
+you’re fitting data to a line, you may want to ensure that the slope of the
+line is positive.  For more complex cases, you might want to write a a
+general model describing the data, but keep some of the parameters in the
+model fixed.</p>
+<p>In Larch, a <strong>Parameter</strong> is a fundamental data type designed to hold
+variables for fits that can be restricted in the values it can take.  A
+Parameter has several attributes, the most important of which is a
+<code class="docutils literal notranslate"><span class="pre">value</span></code> – the current value.  A Parameter’s value can be changed of
+course – this is what will happen during a fit – but other attributes can
+be set to help determine its value too.  In most cases, a Parameter can be
+used as a floating point number, and its value attribute will be used.
+Thus:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span>
+<span class="n">param</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span> <span class="n">x</span><span class="o">+</span><span class="mi">2</span>
+<span class="mi">12</span>
+</pre></div>
+</div>
+<p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> function, which takes a value
+as its first argument, and a few optional keyword arguments to control
+whether the value is to be varied in a fit or kept fixed, to set optional
+upper and lower bounds for the Parameter value, or to set an algebraic
+expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="param">
+<span class="sig-name descname"><span class="pre">param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a Parameter, setting some of it principle attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – floating point value.  This value may be adjusted during a fit.</p></li>
+<li><p><strong>vary</strong> – flag telling whether Parameter is to be varied during a  fit (<code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>) [<code class="docutils literal notranslate"><span class="pre">False</span></code>]</p></li>
+<li><p><strong>min</strong> – minimum value the Parameter can take.</p></li>
+<li><p><strong>max</strong> – maximum value the Parameter can take.</p></li>
+<li><p><strong>expr</strong> – algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label"><span class="std std-ref">using algebraic constraints</span></a>  for details.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a new Parameter defined according to input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>A Parameter may have the following attributes to either control its value
+or give additional information about its value:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 32%" />
+<col style="width: 16%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute</p></th>
+<th class="head"><p>meaning</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>set by which functions:</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>value</p></td>
+<td><p>value</p></td>
+<td></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>vary</p></td>
+<td><p>value can change in fit</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p>min</p></td>
+<td><p>lower bound</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>max</p></td>
+<td><p>upper bound</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p>name</p></td>
+<td><p>optional name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>expr</p></td>
+<td><p>algebraic constraint</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p>stderr</p></td>
+<td><p>standard error</p></td>
+<td></td>
+<td><p><a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>correl</p></td>
+<td><p>correlations</p></td>
+<td></td>
+<td><p><a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p>uvalue</p></td>
+<td><p>value with uncertainty</p></td>
+<td></td>
+<td><p><a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="py function">
+<dt class="sig sig-object py" id="guess">
+<span class="sig-name descname"><span class="pre">guess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a variable Parameter, setting some of it principle attributes.
+The arguments here are identical to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a>, except that
+<code class="docutils literal notranslate"><span class="pre">vary=True</span></code> is set.</p>
+</dd></dl>
+
+<p>An example of creating some parameters,  and creating a group of parameters would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># create some Parameters</span>
+<span class="n">c1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>              <span class="c1"># a constant (non-varying) parameter</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>     <span class="c1"># a bounded variable parameter</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c1"># a semi-bounded variable parameter</span>
+
+<span class="c1"># create a group of parameters, either from existing parameters</span>
+<span class="c1"># or ones created right here</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a2</span><span class="p">,</span>
+               <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># add more parameters to the group:</span>
+<span class="n">params</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="n">c1</span>
+
+<span class="c1"># add a constrained parameter: dependent on other parameters in the group</span>
+<span class="n">params</span><span class="o">.</span><span class="n">e1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;a1 - c1*sqrt(a2)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="setting-bounds">
+<h2><span class="section-number">12.2.1. </span>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
+<p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
+<em>max</em> arguments to <a class="reference internal" href="#param" title="param"><code class="xref py py-func docutils literal notranslate"><span class="pre">param()</span></code></a> or by setting the <em>min</em> and <em>max</em>
+attribute of an existing Parameter.  To remove a bound, set the
+corresponding attribute to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>During a fit, a Parameter’s value may approach or even equal one of the
+bounds, but will never violate the boundary.  It should be kept in mind that a
+Parameter with a best-fit value at or very close to a boundary may not have
+an accurate estimate of its uncertainty.  In some cases, it may even be
+that a best-fit value at a boundary will prevent a reasonable estimate of
+the uncertainty in any of the other Parameters in the fit.</p>
+</section>
+<section id="using-algebraic-constraints">
+<span id="param-constraints-label"></span><h2><span class="section-number">12.2.2. </span>using algebraic constraints<a class="headerlink" href="#using-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<p>It is often useful to be able to build a fitting model in which Parameters
+in the model are related to one another.  As a simple example, it might be
+useful to fit a spectrum with a sum of two lineshapes that have different
+centroids, but the same width.  As a second example, it might be useful to
+fit a spectrum to a sum of two model spectra where the relative weight of
+the model spectra must add to 1.</p>
+<p>For each of these cases, one could write a model function that implemented
+such constraints.  Rather than trying to capture and encourage such special
+cases, Larch takes a more general approach, allowing Parameters to get
+their value from an algebraic expression.  Thus, one might define an
+objective function for a sum of two Gaussian functions (discussed in more
+detail in <a class="reference internal" href="fitting_lineshapes.html#lineshape-functions-label"><span class="std std-ref">Some Builtin Line-shape Functions</span></a>), as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="p">)</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>This is general and does not impose any relations between the parameter values
+within the objective function.  But one can place such relations in the
+definitions of the parameters and have them obeyed within the fit.  That
+is, one could constrain the two widths of the Gaussians to be the same
+value with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;wid1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the value of <cite>params.wid2</cite> will have the same value as <cite>params.wid1</cite>
+every time the objective is called, and will not be an independent variable
+in the fit.  For the second example, one could constrain the two amplitude
+parameters to add to 1 and each be between 0 and 1 as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p id="index-0">One can use more complex expressions, and also access built-in values and
+common mathematical functions, like <cite>pi</cite>, <cite>sin</cite>, and <cite>log</cite>.  Essentially
+any valid Python/Larch expression is allowed, including slicing of arrays
+and array methods. Some additional details are discussed below
+(<a class="reference internal" href="#fitting-fiteval-sec"><span class="std std-ref">fiteval and details about algebraic constraints</span></a>),</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><cite>_sys.paramGroup</cite> is no longer used, and <cite>_sys.fiteval</cite> is used instead.</p>
+</div>
+</section>
+<section id="param-group-creating-a-parameter-group-for-fitting-constraints">
+<span id="param-param-group-label"></span><h2><span class="section-number">12.2.3. </span><a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a>: creating a Parameter Group for fitting constraints<a class="headerlink" href="#param-group-creating-a-parameter-group-for-fitting-constraints" title="Permalink to this headline">¶</a></h2>
+<p>While the examples of constraint expressions above will work during a fit,
+the constraint values will not be updated immediately in the main Larch
+interpreter.  That is, doing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                      <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="o">-</span><span class="n">inf</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That is, the value of constrained parameter <cite>amp2</cite> is not properly set yet.
+To be clear, a fit with this group of parameters will work, but it’s
+sometimes useful to see the values for the constrained parameters.</p>
+<p>The function <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> will create a “live, working” group of
+parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In addition, you can change the value of <cite>params.amp1</cite>, with the value of
+<cite>params.amp2</cite> being automatically updated:</p>
+<blockquote>
+<div><p>larch&gt; params.amp1.value = 0.2
+larch&gt; print(params.amp1, params.amp2)
+(&lt;Parameter ‘amp1’, 0.2, bounds=[0:1]&gt;, &lt;Parameter ‘amp2’, 0.8, bounds=[-inf:inf], expr=’1-amp1’&gt;)</p>
+</div></blockquote>
+<dl class="py function">
+<dt class="sig sig-object py" id="param_group">
+<span class="sig-name descname"><span class="pre">param_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#param_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>create and return a <em>Parameter Group</em> that uses <cite>_sys.fiteval</cite> for
+constraint expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kws</strong> – optional keyword/argument values for parameters</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a new Parameter Group with working constraint expressions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>A Parameter Group can contain non-Parameter values as well as fitting
+Parameters.  For backward compatibility, a simple group containing
+parameters will work with fitting, but a <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> is recommended
+for many cases.</p>
+</section>
+<section id="fiteval-and-details-about-algebraic-constraints">
+<span id="fitting-fiteval-sec"></span><h2><span class="section-number">12.2.4. </span><cite>fiteval</cite> and details about algebraic constraints<a class="headerlink" href="#fiteval-and-details-about-algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<p>Beginning with version 0.9.34, Larch uses the <a class="reference external" href="https://lmfit.github.io/lmfit-py/">lmfit</a> python library to do
+all the fitting.  This project is related to and very similar to Larch
+itself, but is maintained and developed separately.  Lmfit supports
+algebraic constraints like those discussed in the previous section, using
+an isolated, embedded mini-interpreter (very similar to Larch itself, based
+on <a class="reference external" href="https://lmfit.github.io/asteval">asteval</a>).  Within Larch, this embedded expression interpreter for
+fitting constraints is held in the Larch system variable <cite>_sys.fiteval</cite>.
+The set of available functions and variables is in its symbol table,
+<cite>_sys.fiteval.symtable</cite>, which has more than 400 named functions and
+variables available, most of them from numpy.</p>
+<p>During a fit, all the components of the <em>paramgroup</em> given to
+<a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> will be put put into the <cite>_sys.fiteval</cite> symbol table.  Any
+of these variables can be used in the constraint expressions.  In addition,
+all the true parameters in the <em>paramgroup</em> will be converted into
+<cite>lmfit.Parameters</cite>.  After the fit is complete, the updated parameter
+values will be put back into the</p>
+<p>The <a class="reference internal" href="#param_group" title="param_group"><code class="xref py py-func docutils literal notranslate"><span class="pre">param_group()</span></code></a> function discussed above keeps an internal link to
+<cite>_sys.fiteval</cite> and uses that for evaluating constraint expressions.  That
+is, following the above example, one can see the current values for
+<cite>params.amp1</cite> and <cite>params.amp2</cite> within the <cite>_sys.fiteval</cite> symbol table:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">amp1</span><span class="o">=</span><span class="n">guess</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">amp2</span><span class="o">=</span><span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1 - amp1&#39;</span><span class="p">))</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">_sys</span><span class="o">.</span><span class="n">fiteval</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="mf">0.4</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">params1</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="p">(</span><span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp1&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">Parameter</span> <span class="s1">&#39;amp2&#39;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">inf</span><span class="p">:</span><span class="n">inf</span><span class="p">],</span> <span class="n">expr</span><span class="o">=</span><span class="s1">&#39;1-amp1&#39;</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">_sys</span><span class="o">.</span><span class="n">fiteval</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">amp2</span><span class="p">)</span>
+<span class="mf">0.9</span>
+</pre></div>
+</div>
+<p>Because <cite>_sys.fiteval</cite> is used for all fits with <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> (and for
+XAFS, with <a class="reference internal" href="xafs_feffit.html#id0" title="feffit"><code class="xref py py-func docutils literal notranslate"><span class="pre">feffit()</span></code></a>), you may find yourself wanting to clear or reset
+the fitting symbol table for a new fit.  This should not be necessary, but
+it is available with the function <a class="reference internal" href="#reset_fiteval" title="reset_fiteval"><code class="xref py py-func docutils literal notranslate"><span class="pre">reset_fiteval()</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="reset_fiteval">
+<span class="sig-name descname"><span class="pre">reset_fiteval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#reset_fiteval" title="Permalink to this definition">¶</a></dt>
+<dd><p>clear and reset <cite>_sys.fiteval</cite> for a new fit.   This function takes no
+arguments.</p>
+</dd></dl>
+
+</section>
+<section id="working-with-uncertainties">
+<span id="fitting-uncertainties-sec"></span><h2><span class="section-number">12.2.5. </span>working with uncertainties<a class="headerlink" href="#working-with-uncertainties" title="Permalink to this headline">¶</a></h2>
+<p>After a fit, each Parameter that was actually varied in the fit should be
+assigned information about the uncertainty in the fitted value as well as
+its best fit value.  On rare occasions (such as when a best-fit value is
+very close to a bound) the setting of uncertainties is not possible.  The
+primary way the uncertainty for a Parameter is expressed is with the
+<code class="docutils literal notranslate"><span class="pre">stderr</span></code> attribute, which holds the estimated standard error for the
+Parameter’s value.  The correlation with all other Parameters is held in
+the <code class="docutils literal notranslate"><span class="pre">correl</span></code> attribute – a dictionary with keys of variable names and
+values of correlation with that variable.  In addition, the two-dimensional
+covariance matrix will be held in the <code class="docutils literal notranslate"><span class="pre">covar</span></code> attribute of the parameter
+group for each fit.</p>
+<p>Note that the uncertainties calculated for constrained parameters involving
+more than one variable will encapsulate not only the simple propogation of
+errors for the independent variables, but also their correlation.  This can
+have a significant impact on the uncertainties for constrained parameters.</p>
+<p>Finally, each Parameter will have a <code class="docutils literal notranslate"><span class="pre">uvalue</span></code> attribute which is a special
+object from the <a class="reference external" href="http://packages.python.org/uncertainties/">uncertainties</a> package that holds both the best-fit value
+and standard error.  A key feature of these <code class="docutils literal notranslate"><span class="pre">uvalue</span></code> attributes is that
+they can be used in simple mathematical expressions (addition, subtraction,
+multiplication, division, exponentiation) and propogate the uncertainties
+to the result (ignoring correlations).</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fitting_minimize.html" title="12.3. minimize() and objective Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fitting_overview.html" title="12.1. Fitting Overview"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.2. </span>Parameters</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

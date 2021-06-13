@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>6. GSECARS Mapviewr &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="7. QtRIXS" href="qtrixs.html" />
+    <link rel="prev" title="5. XASViewer" href="wxxas_viewer.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="qtrixs.html" title="7. QtRIXS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wxxas_viewer.html" title="5. XASViewer"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6. </span>GSECARS Mapviewr</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wxxas_viewer.html"
+                        title="previous chapter"><span class="section-number">5. </span>XASViewer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="qtrixs.html"
+                        title="next chapter"><span class="section-number">7. </span>QtRIXS</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/wxmap_viewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="gsecars-mapviewr">
+<span id="mapviewer-app"></span><h1><span class="section-number">6. </span>GSECARS Mapviewr<a class="headerlink" href="#gsecars-mapviewr" title="Permalink to this headline">¶</a></h1>
+<p>The GSECARS Mapviewer is one of the main GUI applications of Larch,
+allowing users to read and display HDF5 files containing X-ray fluorescence
+maps from synchrotron X-ray microprobes.  The program plays the dual role
+of displaying existing X-ray microprobe maps in HDF5 format and assembling
+those HDF5 X-ray microprobe map files from the raw data as collected APS
+beamline 13-ID-E or other microprobes using the same Epics scanning
+software used there.</p>
+<a class="reference external image-reference" href="_images/Mapviewer_1ROI.png"><img alt="_images/Mapviewer_1ROI.png" src="_images/Mapviewer_1ROI.png" style="width: 50%;" /></a>
+<a class="reference external image-reference" href="_images/MapviewerImage_1ROI.png"><img alt="_images/MapviewerImage_1ROI.png" src="_images/MapviewerImage_1ROI.png" style="width: 40%;" /></a>
+<p>The Application itself contains two main panels.  On the left is a browser
+from which the user can select which of several open map files to use.  On
+the right a set of tabbed windows selects how to interact with that
+selected map file.</p>
+<p>In the first (left most and default) of these tabbed views, one can select
+pre-calculated Regions of Interest (ROIs) for viewing.  These ROIs usually
+representing a single X-ray fluorescence line for a single element.  One
+can view these ROI data as intensity mapse, either shown as a false-color
+image for a single ROI, a Red-Green-Blue image for 3 different ROIs, or as
+a 2-D grid of maps and correlation plots for 2 different ROIs.</p>
+<p>All these images are made using <a class="reference external" href="http://newville.github.io/wxmplot">wxmplot</a> and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>, and are fully
+interactive with zooming, changing interpolation methods and color tables,
+and setting intensity thresholds.</p>
+<p>The images have 3 different “cursor modes” to change how the program
+responds to the cursor (left mouse button).  The main mode is that
+Left-Mouse-Button down-and-drag draws a rectangle to select a zoomed-in
+portion of the image when the button is released.</p>
+<p>The user can also put the cursor into a mode to “Pick Area for XRF
+Spectrum”.  In this mode, the mouse is used to draw freestyle “lasso box”
+around any selected points in the map.  When released, the full X-ray
+fluorescence spectrum from that map area is extracted from the map and
+displays, as shown below.</p>
+<a class="reference external image-reference" href="_images/XRFDisplay.png"><img alt="_images/XRFDisplay.png" src="_images/XRFDisplay.png" style="width: 75%;" /></a>
+<a class="reference external image-reference" href="_images/MapviewerImage_3ROI.png"><img alt="_images/MapviewerImage_3ROI.png" src="_images/MapviewerImage_3ROI.png" style="width: 45%;" /></a>
+<a class="reference external image-reference" href="_images/Mapviewer_correlation_maps.png"><img alt="_images/Mapviewer_correlation_maps.png" src="_images/Mapviewer_correlation_maps.png" style="width: 45%;" /></a>
+<p>Other displays of the same XRF Map data.  On the left, 3 different elements are
+encoded into Red, Green, and Blue. On the right, an interactive display of
+the correlation of two maps is shown.</p>
+<a class="reference external image-reference" href="_images/Mapviewer_XRD_Display.png"><img alt="_images/Mapviewer_XRD_Display.png" src="_images/Mapviewer_XRD_Display.png" style="width: 75%;" /></a>
+<p>Larch can also handle micro-X-ray Diffraction maps, with a simple view of a
+diffraction pattern shown here.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="qtrixs.html" title="7. QtRIXS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wxxas_viewer.html" title="5. XASViewer"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6. </span>GSECARS Mapviewr</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

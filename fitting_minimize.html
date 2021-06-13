@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>12.3. minimize() and objective Functions &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="12.4. Fit Results and Outputs" href="fitting_results.html" />
+    <link rel="prev" title="12.2. Parameters" href="fitting_parameters.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fitting_results.html" title="12.4. Fit Results and Outputs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fitting_parameters.html" title="12.2. Parameters"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" accesskey="U"><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fitting_parameters.html"
+                        title="previous chapter"><span class="section-number">12.2. </span>Parameters</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fitting_results.html"
+                        title="next chapter"><span class="section-number">12.4. </span>Fit Results and Outputs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fitting_minimize.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="minimize-and-objective-functions">
+<span id="fitting-minimize-sec"></span><h1><span class="section-number">12.3. </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> and objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
+<p>As mentioned above, the objective function returns an array calculated from
+given a group of parameters.  This array will be minimized in the
+least-squares sense in the fitting process.  For most fits, the objective
+function should return the residual array (data - model), given a group of
+parameters and optional inputs.  You’ll note that we didn’t explicitly
+mention any <em>data</em> in describing the objective function.  This is because,
+formally, the minimization process may be looking for a solution to a
+purely mathematical problem, not just fitting to data.  Even when the
+objective function does return the difference of data and model, the data
+to be modeled may be quite complex.  It might, for example, be contained in
+two or more arrays – perhaps what you want to model is the difference of
+two image arrays, or the fourier filtered average of ten spectra.  Because
+of such complexities, the reliance of optional arguments appears to be the
+best approach.</p>
+<p id="index-0">A simple objective function that models data as a line might look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                     <span class="n">slope</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">xdata</span>
+    <span class="n">diff</span>  <span class="o">=</span> <span class="n">ydata</span> <span class="o">-</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">diff</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>Here <code class="docutils literal notranslate"><span class="pre">params</span></code> is a Group containing two Parameters as defined by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_math.param()</span></code>, discussed earlier.</p>
+<p>To actually perform the fit, the <a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function must be
+called.  This takes the objective function as its first argument, and
+the group containing all the Parameters as its second argument,
+keyword arguments for the optional arguments for the objective
+function, and several keyword arguments to alter the fitting process
+itself.  Here is the function call using the objective function
+defined above, assuming you have a group called <code class="docutils literal notranslate"><span class="pre">data</span></code> containing
+the data you are trying to fit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xdata&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;ydata&#39;</span><span class="p">:</span><span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>As the fit proceeds, the values the Parameter values will be updated, and
+the objective function will be called to recalculate the residual array.
+Thus the objective function may be called many times before the fitting
+procedure decides it has found the best solution that it can.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.9.34: </span><a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> returns a result group containing fit statistics.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="minimize">
+<span class="sig-name descname"><span class="pre">minimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fcn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kws</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'leastsq'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">extra_kws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>find the best-fit values for the Parameters in <code class="docutils literal notranslate"><span class="pre">paramgroup</span></code> such that the
+output array from the objective function <code class="xref py py-func docutils literal notranslate"><span class="pre">fcn()</span></code> has minimal sum-of-squares.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fcn</strong> – objective function, which must have signature and output as described below.</p></li>
+<li><p><strong>paramgroup</strong> – a Group containing the Parameters used by the
+objective function. This will be passed as the first argument to the
+objective function.  The Group can contain other components in
+addition to the set of Parameters for the model.</p></li>
+<li><p><strong>args</strong> – a tuple of positional arguments to pass to the
+objective function.  Note that a single argument tuple
+is constructed by following a value with a comma (it
+is not sufficient to enclose a single value in
+parentheses)</p></li>
+<li><p><strong>kws</strong> – a dictionary of keyword/value arguments to pass to the objective function.</p></li>
+<li><p><strong>method</strong> – name (case insensitive) of minimization method to use (default=’leastsq’)</p></li>
+<li><p><strong>extra_kws</strong> – additional keywords to pass to fitting method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a Group containing several fitting statisics and best-fit parameters.</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">method</span></code> argument gives the name of the fitting method to be
+used.  Several methods are available, as described below in
+<a class="reference internal" href="#minimize-methods-table"><span class="std std-ref">Table of Fitting Methods</span></a>.</p>
+</dd></dl>
+
+<blockquote id="minimize-methods-table">
+<div><p>Table of Fitting Methods.</p>
+<p>Listed are the names and description of fitting methods available to the
+<a class="reference internal" href="#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function.  The <em>leastsq</em> method is the default, and the
+only method for which uncertainties and correlations are automatically
+calculated.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 84%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>method name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Leastsq</p></td>
+<td><p>Levenberg-Marquardt.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nelder-Mead</p></td>
+<td><p>Nelder-Mead downhill simplex.</p></td>
+</tr>
+<tr class="row-even"><td><p>Powell</p></td>
+<td><p>Powell’s method.</p></td>
+</tr>
+<tr class="row-odd"><td><p>BFGS</p></td>
+<td><p>quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno.</p></td>
+</tr>
+<tr class="row-even"><td><p>CG</p></td>
+<td><p>Conjugate Gradient.</p></td>
+</tr>
+<tr class="row-odd"><td><p>LBFGSB</p></td>
+<td><p>Limited-Memory BFGS Method with Constraints.</p></td>
+</tr>
+<tr class="row-even"><td><p>TNC</p></td>
+<td><p>Truncated Newton method.</p></td>
+</tr>
+<tr class="row-odd"><td><p>COBYLA</p></td>
+<td><p>Constrained Optimization BY Linear Approximation.</p></td>
+</tr>
+<tr class="row-even"><td><p>SLSQP</p></td>
+<td><p>Sequential Least SQuares Programming.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<p>Further information on these methods, including full lists of extra
+parameters that can be passed to them, can be found at
+<a class="reference external" href="https://lmfit.github.io/lmfit-py/fitting.html">lmfit.fitting</a>.</p>
+<p>It should be noted that the Levenberg-Marquardt algorithm is almost always
+the fastest of the methods listed (often by 10x), and is generally fairly
+robust.  It is sometimes criticized as being sensitive to initial guesses
+and prone to finding local minima.  The other fitting methods use very
+different algorithms, and so can be used to explore these effects. Many of
+them are much slower – using more than ten times as many evaluations of
+the objective function is not unusual. This does not guarantee a more
+robust answer, but it does allow one to try out and compare the results of
+the different methods.</p>
+<p>While the TNC, COBYLA, SLSQP, and LBFGSB methods are supported, their
+principle justification is that the underlying algorithms support
+constraints.  For Larch, this advantage is not particularly important, as
+all fitting methods can have constraints applied through Parameters, and
+the mechanism used by the native methods is not actually even supported
+with Larch.  That said, all these methods are still interesting to explore.</p>
+<p>Extra keywords for the <em>leastsq</em> method include:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 16%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">extra_kw</span></code> arg for
+<code class="docutils literal notranslate"><span class="pre">method='leastsq'</span></code></p></th>
+<th class="head"><p>Default Value</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>xtol</p></td>
+<td><p>1.e-7</p></td>
+<td><p>Relative error in the approximate solution</p></td>
+</tr>
+<tr class="row-odd"><td><p>ftol</p></td>
+<td><p>1.e-7</p></td>
+<td><p>Relative error in the desired sum of squares</p></td>
+</tr>
+<tr class="row-even"><td><p>maxfev</p></td>
+<td><p>2000*(nvar+1)</p></td>
+<td><p>maximum number of function calls (nvar= # of variables)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dfun</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>function to call for Jacobian calculation</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>By default, numerical derivatives are used, and the following arguments are
+used.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fitting_results.html" title="12.4. Fit Results and Outputs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fitting_parameters.html" title="12.2. Parameters"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="fitting.html" ><span class="section-number">12. </span>Fitting and Modeling Data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">12.3. </span><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code> and objective Functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

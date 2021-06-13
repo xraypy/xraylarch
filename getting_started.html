@@ -5,12 +5,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2. Getting Started with Larch &#8212; xraylarch 0.9.51 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>2. Getting Started with Larch &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -59,10 +60,9 @@
              accesskey="P">previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="#"> Getting Started</a>|</li>
-   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>Getting Started with Larch</a></li> 
       </ul>
@@ -111,7 +111,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="getting-started-with-larch">
+  <section id="getting-started-with-larch">
 <h1><span class="section-number">2. </span>Getting Started with Larch<a class="headerlink" href="#getting-started-with-larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch provides several tools for working with X-ray spectroscopy data.
 First, Larch provides a Python programming library that includes (or, at
@@ -129,14 +129,14 @@ and to assist creating batch scripts and more complicated analysis scripts.</p>
 <p>Because of these different levels of access available, it can be somewhat
 confusing to answer the question “What is Larch?” and slightly overwhelming
 for new people to know where to get started using it.</p>
-<div class="section" id="first-install-larch">
+<section id="first-install-larch">
 <h2><span class="section-number">2.1. </span>First, install Larch<a class="headerlink" href="#first-install-larch" title="Permalink to this headline">¶</a></h2>
 <p>If you are new to Larch, we recommend installing using the binary installer
 for your operating system listed in the <a class="reference internal" href="installation.html#installers-table"><span class="std std-ref">Table of Larch Installers</span></a>.  On the other hand, if you are familiar with Python
 and want to use Larch as a library see <a class="reference internal" href="installation.html#install-chapter"><span class="std std-ref">Downloading and Installation</span></a> for other ways to install Larch into your existing
 Python environment.</p>
-</div>
-<div class="section" id="second-use-athena-xas-viewer-and-or-gse-mapviewer">
+</section>
+<section id="second-use-athena-xas-viewer-and-or-gse-mapviewer">
 <h2><span class="section-number">2.2. </span>Second, use Athena, XAS Viewer and/or GSE MapViewer<a class="headerlink" href="#second-use-athena-xas-viewer-and-or-gse-mapviewer" title="Permalink to this headline">¶</a></h2>
 <p>If you are mostly interested in using Larch as a backend for the Athena and
 Artemis programs for XAFS Analysis, just install Larch and the latest
@@ -145,7 +145,7 @@ Analysis, replacing the older Ifeffit library and its many limitations.</p>
 <p>Even using Larch instead of Ifeffit, Athena still has some limitations for
 XAFS Analysis, and development and support for it has declined in recent
 years.  You may be interested in the XAS Viewer program for XAFS processing
-and visualization.  At this writing, <a class="reference internal" href="xasviewer/index.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>
+and visualization.  At this writing, <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>
 is nearly a complete replacement for Athena, with several improvements in
 graphics and handling of large data sets.  XAS Viewer is especially aimed
 at XANES Analysis, and so includes robust tools for peak-fitting, and
@@ -153,7 +153,7 @@ machine-learning methods such as Principal Component Analysis, Partial
 Least Squares and LASSO regression.</p>
 <p>If you are a user of the GSECARS microprobe beamline or have XRF Mapping
 data from a compatible beamline (XFM at NSLS-II, maybe others), you’ll want
-to start using the <a class="reference internal" href="gsemapviewer/index.html#mapviewer-app"><span class="std std-ref">GSE Mapviewer</span></a> program for
+to start using the <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Mapviewer</span></a> program for
 reading, displaying, and working with X-ray fluorescence maps.  Much of the
 documentation here discusses commands you can type in the “Larch Buffer”,
 available from the Mapviewer program for scripting and more detailed access
@@ -162,8 +162,8 @@ to the data in the XRF map HDF5 files.</p>
 analysis for many types of data, the Larch GUI can help you browse through
 the available commands and data, and provide a good starting point for
 interactive, exploratory data analysis.</p>
-</div>
-<div class="section" id="third-start-scripting-with-larch-and-or-python">
+</section>
+<section id="third-start-scripting-with-larch-and-or-python">
 <h2><span class="section-number">2.3. </span>Third, start scripting with Larch and/or Python<a class="headerlink" href="#third-start-scripting-with-larch-and-or-python" title="Permalink to this headline">¶</a></h2>
 <p>Once you’ve done a little bit of GUI or interactive work, you may be ready
 to write scripts.  Such scripts can help you automate repeated tasks and
@@ -171,8 +171,8 @@ can build and remember more complex analyses.  The combination of the high
 level commands of Larch and the interactive command-line GUI for
 exploratory data analysis are a great way to get started in writing your
 own scripts and building up more sophisticated programs.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -195,17 +195,16 @@ own scripts and building up more sophisticated programs.</p>
              >previous</a> |</li>
    <li>[<a href="index.html"> Larch</a>|</li>
    <li><a href="#"> Getting Started</a>|</li>
-   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
-   <li><a href="xray/index.html">X-ray Databases</a>|</li>
-   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
-   <li><a href="fitting/index.html">Curve Fitting</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
 
         <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>Getting Started with Larch</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>13.6. XAFS: Wavelet Transforms for XAFS &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="13.7. XAFS: Reading and using Feff Paths" href="xafs_feffpaths.html" />
+    <link rel="prev" title="13.5. XAFS: Fourier Transforms for XAFS" href="xafs_fourier.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xafs_feffpaths.html" title="13.7. XAFS: Reading and using Feff Paths"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xafs_fourier.html" title="13.5. XAFS: Fourier Transforms for XAFS"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">13.6. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#cauchy-wavelet">13.6.1. <code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a></li>
+<li><a class="reference internal" href="#wavelet-example">13.6.2. Wavelet Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xafs_fourier.html"
+                        title="previous chapter"><span class="section-number">13.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xafs_feffpaths.html"
+                        title="next chapter"><span class="section-number">13.7. </span>XAFS: Reading and using Feff Paths</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_wavelets.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="xafs-wavelet-transforms-for-xafs">
+<span id="xafs-wavelet-sec"></span><h1><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#xafs-wavelet-transforms-for-xafs" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
+contributions of a waveform into both time and frequency (or, for EXAFS,
+<span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>).  A variety of mathematical kernels can be used
+for wavelet transforms.  There are a few examples in the literature of
+applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
+Munoz <em>et al</em> <span id="id1">[<a class="reference internal" href="bibliography.html#id54">Munoz, Argoul, and Farges (2003)</a>]</span> being one early application.   The
+<a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a> function described below follows this work,  and
+that article should be cited as the reference for this transform.</p>
+<section id="cauchy-wavelet">
+<h2><span class="section-number">13.6.1. </span><a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
+<p>The Continuous Cauchy Wavelet transform of Munoz <em>et al</em> <span id="id2">[<a class="reference internal" href="bibliography.html#id54">Munoz, Argoul, and Farges (2003)</a>]</span>
+is implemented as the function <a class="reference internal" href="#cauchy_wavelet" title="cauchy_wavelet"><code class="xref py py-func docutils literal notranslate"><span class="pre">cauchy_wavelet()</span></code></a>:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cauchy_wavelet">
+<span class="sig-name descname"><span class="pre">cauchy_wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kweight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmax_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cauchy_wavelet" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform a Continuous Cauchy wavelet transform of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> – 1-d array of photo-electron wavenumber in <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span></p></li>
+<li><p><strong>chi</strong> – 1-d array of <span class="math notranslate nohighlight">\(\chi\)</span></p></li>
+<li><p><strong>group</strong> – output Group</p></li>
+<li><p><strong>rmax_out</strong> – highest <em>R</em> for output data (10 <span class="math notranslate nohighlight">\(\rm\AA\)</span>)</p></li>
+<li><p><strong>kweight</strong> – exponent for weighting spectra by <span class="math notranslate nohighlight">\(k^{\rm kweight}\)</span></p></li>
+<li><p><strong>nfft</strong> – value to use for <span class="math notranslate nohighlight">\(N_{\rm fft}\)</span> (2048).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code> – outputs are written to supplied group.</p>
+</dd>
+</dl>
+<p>If a <code class="docutils literal notranslate"><span class="pre">group</span></code> argument is provided of if the first argument is a
+Group, the following data arrays are put into it:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>array name</p></th>
+<th class="head"><p>meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>r</p></td>
+<td><p>uniform array of <span class="math notranslate nohighlight">\(R\)</span>, out to <code class="docutils literal notranslate"><span class="pre">rmax_out</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>wcauchy</p></td>
+<td><p>complex array cauchy transform of <span class="math notranslate nohighlight">\(R\)</span> and <span class="math notranslate nohighlight">\(k\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>wcaychy_mag</p></td>
+<td><p>magnitude of cauchy transform</p></td>
+</tr>
+<tr class="row-odd"><td><p>wcauchy_re</p></td>
+<td><p>real part of cauchy transform</p></td>
+</tr>
+<tr class="row-even"><td><p>wcauchy_im</p></td>
+<td><p>imaginary part of cauchy transform</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>It is expected that the input <code class="docutils literal notranslate"><span class="pre">k</span></code> be a uniformly spaced array of
+values with spacing <code class="docutils literal notranslate"><span class="pre">kstep</span></code>, starting a 0.</p>
+</dd></dl>
+
+</section>
+<section id="wavelet-example">
+<h2><span class="section-number">13.6.2. </span>Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
+<p>Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
+straightforward:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># wavelet transform in larch</span>
+<span class="c1"># follows method of Munuz, Argoul, and Farges</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s1">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">kopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;xlabel&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;$k \,(\AA^{-1})$&#39;</span><span class="p">,</span> 
+         <span class="s1">&#39;ylabel&#39;</span><span class="p">:</span> <span class="sa">r</span><span class="s1">&#39;$k^2\chi(k) \, (\AA^{-2})$&#39;</span><span class="p">,</span> 
+         <span class="s1">&#39;linewidth&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;FeO&#39;</span><span class="p">,</span> <span class="s1">&#39;show_legend&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;original data&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
+
+<span class="c1"># do wavelet transform (no window function yet)</span>
+<span class="n">cauchy_wavelet</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># display wavelet magnitude, real part</span>
+<span class="c1"># horizontal axis is k, vertical is R</span>
+<span class="n">imopts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">}</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Wavelet Transform: Magnitude&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Wavelet Transform: Real Part&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">imopts</span><span class="p">)</span>
+
+<span class="c1"># plot wavelet projected to k space</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_re</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
+
+<span class="n">ropts</span> <span class="o">=</span> <span class="n">kopts</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;xlabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$R \, (\AA) $&#39;</span>
+<span class="n">ropts</span><span class="p">[</span><span class="s1">&#39;ylabel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$|\chi(R)| \, (\AA^{-3})$&#39;</span>
+
+<span class="c1"># plot wavelet projected to R space</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">wcauchy_mag</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s1">&#39;projected wavelet&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ropts</span><span class="p">)</span>
+
+</pre></div>
+</div>
+<p>With results for the Cauchy transforms looking like (here, <span class="math notranslate nohighlight">\(k\)</span>is
+along the horizontal axis extending to 16 <span class="math notranslate nohighlight">\(\rm\AA^{-1}\)</span>, and with
+<span class="math notranslate nohighlight">\(R\)</span> along the vertical axis, increasing from 0 at the bottom to 10
+<span class="math notranslate nohighlight">\(\rm\AA\)</span> at the top.</p>
+<div class="figure compound align-center" id="fig-xafswt">
+<figure class="align-default" id="fig-xafswt-1">
+<a class="reference external image-reference" href="_images/xwt_mag.png"><img alt="_images/xwt_mag.png" src="_images/xwt_mag.png" style="width: 100%;" /></a>
+</figure>
+<figure class="align-default" id="fig-xafswt-2">
+<a class="reference external image-reference" href="_images/xwt_re.png"><img alt="_images/xwt_re.png" src="_images/xwt_re.png" style="width: 100%;" /></a>
+</figure>
+<p><span class="caption-text">The Cauchy Wavelet transforms, with magnitude on the left hand panel
+and real part on the right hand panel.</span></p>
+</div><p id="fig-xafswt">The projection of the wavelets to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span> space looks like:</p>
+<div class="figure compound align-center" id="fig-xafswt3">
+<figure class="align-default" id="fig-xafswt-3">
+<a class="reference external image-reference" href="_images/xwt_ksp.png"><img alt="_images/xwt_ksp.png" src="_images/xwt_ksp.png" style="width: 100%;" /></a>
+</figure>
+<figure class="align-default" id="fig-xafswt-4">
+<a class="reference external image-reference" href="_images/xwt_rsp.png"><img alt="_images/xwt_rsp.png" src="_images/xwt_rsp.png" style="width: 100%;" /></a>
+</figure>
+<p><span class="caption-text">The Cauchy Wavelet transform projected to <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
+space.  In the left hand panel, the original EXAFS <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span>
+is shown for comparison.</span></p>
+<span class="target" id="fig-xafswt3"></span></div></section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xafs_feffpaths.html" title="13.7. XAFS: Reading and using Feff Paths"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xafs_fourier.html" title="13.5. XAFS: Fourier Transforms for XAFS"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.6. </span>XAFS: Wavelet Transforms for XAFS</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

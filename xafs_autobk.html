@@ -1,0 +1,662 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>13.4. XAFS: Post-edge Background Subtraction &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="13.5. XAFS: Fourier Transforms for XAFS" href="xafs_fourier.html" />
+    <link rel="prev" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting" href="xafs_xanes.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xafs_fourier.html" title="13.5. XAFS: Fourier Transforms for XAFS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xafs_xanes.html" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xafs.html" accesskey="U"><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.4. </span>XAFS: Post-edge Background Subtraction</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">13.4. XAFS: Post-edge Background Subtraction</a><ul>
+<li><a class="reference internal" href="#the-autobk-function">13.4.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code> function</a></li>
+<li><a class="reference internal" href="#the-autobk-algorithm">13.4.2. The AUTOBK Algorithm</a><ul>
+<li><a class="reference internal" href="#r-rm-bkg-and-spline-for-mu-0-e">13.4.2.1. <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></a></li>
+<li><a class="reference internal" href="#selecting-fourier-transform-parameters">13.4.2.2. Selecting Fourier transform parameters</a></li>
+<li><a class="reference internal" href="#using-a-standard-chi-k">13.4.2.3. Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#end-point-clamps-for-the-spline">13.4.2.4. End-point clamps for the spline</a></li>
+<li><a class="reference internal" href="#recommendations">13.4.2.5. Recommendations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">13.4.3. Examples</a><ul>
+<li><a class="reference internal" href="#basic-example">13.4.3.1. Basic example</a></li>
+<li><a class="reference internal" href="#adjusting-spline-clamps">13.4.3.2. Adjusting spline clamps</a></li>
+<li><a class="reference internal" href="#id2">13.4.3.3. Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xafs_xanes.html"
+                        title="previous chapter"><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xafs_fourier.html"
+                        title="next chapter"><span class="section-number">13.5. </span>XAFS: Fourier Transforms for XAFS</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xafs_autobk.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="xafs-post-edge-background-subtraction">
+<h1><span class="section-number">13.4. </span>XAFS: Post-edge Background Subtraction<a class="headerlink" href="#xafs-post-edge-background-subtraction" title="Permalink to this headline">¶</a></h1>
+<p>Background subtraction is one of the most important data processing steps
+in EXAFS analysis, converting the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> into the
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> ready for quantitative analysis.  In Larch, this step is
+performed by the <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function, which has many options and
+subtleties.  This section is devoted to background subtraction with the
+<a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function and the underlying algorithm it uses.</p>
+<section id="the-autobk-function">
+<h2><span class="section-number">13.4.1. </span>The <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="autobk">
+<span class="sig-name descname"><span class="pre">autobk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">energy</span></em>, <em class="sig-param"><span class="pre">mu=None</span></em>, <em class="sig-param"><span class="pre">group=None</span></em>, <em class="sig-param"><span class="pre">rbkg=1.0</span></em>, <em class="sig-param"><span class="pre">...</span></em><span class="sig-paren">)</span><a class="headerlink" href="#autobk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the post-edge background function, <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, and
+corresponding <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> – 1-d array of x-ray energies, in eV</p></li>
+<li><p><strong>mu</strong> – 1-d array of <span class="math notranslate nohighlight">\(\mu(E)\)</span></p></li>
+<li><p><strong>group</strong> – output group (and input group for <code class="docutils literal notranslate"><span class="pre">e0</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_step</span></code>).</p></li>
+<li><p><strong>rbkg</strong> – distance (in <span class="math notranslate nohighlight">\(\rm\AA\)</span>) for <span class="math notranslate nohighlight">\(\chi(R)\)</span> above
+which the signal is ignored. Default = 1.</p></li>
+<li><p><strong>e0</strong> – edge energy, in eV.  If <cite>None</cite>, it will be determined.</p></li>
+<li><p><strong>edge_step</strong> – edge step.  If <cite>None</cite>, it will be determined.</p></li>
+<li><p><strong>pre_edge_kws</strong> – dictionary containing keyword arguments to pass to <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p></li>
+<li><p><strong>nknots</strong> – number of knots in spline.  If <cite>None</cite>, it will be determined.</p></li>
+<li><p><strong>kmin</strong> – minimum <span class="math notranslate nohighlight">\(k\)</span> value   [0]</p></li>
+<li><p><strong>kmax</strong> – maximum <span class="math notranslate nohighlight">\(k\)</span> value   [<code class="docutils literal notranslate"><span class="pre">None</span></code>, full data range].</p></li>
+<li><p><strong>kweight</strong> – <span class="math notranslate nohighlight">\(k\)</span> weight for FFT.  [1]</p></li>
+<li><p><strong>dk</strong> – FFT window window parameter.  [0.1]</p></li>
+<li><p><strong>win</strong> – FFT window function name.     [‘hanning’]</p></li>
+<li><p><strong>nfft</strong> – array size to use for FFT [2048]</p></li>
+<li><p><strong>kstep</strong> – <span class="math notranslate nohighlight">\(k\)</span> step size to use for FFT [0.05]</p></li>
+<li><p><strong>k_std</strong> – optional <span class="math notranslate nohighlight">\(k\)</span> array for standard <span class="math notranslate nohighlight">\(\chi(k)\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
+<li><p><strong>chi_std</strong> – optional <span class="math notranslate nohighlight">\(\chi\)</span> array for standard <span class="math notranslate nohighlight">\(\chi(k)\)</span> [<code class="docutils literal notranslate"><span class="pre">None</span></code>]</p></li>
+<li><p><strong>nclamp</strong> – number of energy end-points for clamp [2]</p></li>
+<li><p><strong>clamp_lo</strong> – weight of low-energy clamp [1]</p></li>
+<li><p><strong>clamp_hi</strong> – weight of high-energy clamp [1]</p></li>
+<li><p><strong>calc_uncertaintites</strong> – Flag to calculate uncertainties in  <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> and <span class="math notranslate nohighlight">\(\chi(k)\)</span> [<code class="docutils literal notranslate"><span class="pre">True</span></code>]</p></li>
+<li><p><strong>err_sigma</strong> – sigma level for uncertainties in mu_0(E) and chi(k) [1]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal notranslate"><span class="pre">energy</span></code> and <code class="docutils literal notranslate"><span class="pre">mu</span></code>.
+The following data is put into the output group:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute</p></th>
+<th class="head"><p>meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bkg</p></td>
+<td><p>array of <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> (not normalized)</p></td>
+</tr>
+<tr class="row-odd"><td><p>chie</p></td>
+<td><p>array of <span class="math notranslate nohighlight">\(\chi(E)\)</span> values.</p></td>
+</tr>
+<tr class="row-even"><td><p>k</p></td>
+<td><p>array of <span class="math notranslate nohighlight">\(k\)</span> values, on uniform grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p>chi</p></td>
+<td><p>array of <span class="math notranslate nohighlight">\(\chi(k)\)</span> values, the EXAFS.</p></td>
+</tr>
+<tr class="row-even"><td><p><em>delta_chi</em></p></td>
+<td><p>array of uncertainty in <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>delta_bkg</em></p></td>
+<td><p>array of uncertainty in <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p>autobk_details</p></td>
+<td><p>Group of arrays with autobk details.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Here, the arrays <code class="docutils literal notranslate"><span class="pre">group.k</span></code>, <code class="docutils literal notranslate"><span class="pre">group.chi</span></code> will be the same length,
+giving <span class="math notranslate nohighlight">\(\chi(k)\)</span> from 0 to a maximum k value set by <code class="docutils literal notranslate"><span class="pre">kmax</span></code> or
+the range of available data.  The arrays <code class="docutils literal notranslate"><span class="pre">group.bkg</span></code> and
+<code class="docutils literal notranslate"><span class="pre">group.chie</span></code> will correspond to the input <code class="docutils literal notranslate"><span class="pre">energy</span></code> array.</p>
+<p>The parameters <code class="docutils literal notranslate"><span class="pre">e0</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_step</span></code> are needed to determine
+<span class="math notranslate nohighlight">\(\chi(k)\)</span>, and can be specified here.  If they are not, but the
+input <code class="docutils literal notranslate"><span class="pre">group</span></code> has attributes <code class="docutils literal notranslate"><span class="pre">e0</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_step</span></code> – say, from
+running <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> – those values will be used.  If values
+cannot be found in either place, they will be determined by calling
+<a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> from within <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>, and the output parameters
+from <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> will be added to the output <code class="docutils literal notranslate"><span class="pre">group</span></code> here.
+The <code class="docutils literal notranslate"><span class="pre">pre_edge_kws</span></code> argument can be used here to hold a dictionary of
+parameters to pass to <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">calc_uncertainties</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the outputs
+<code class="docutils literal notranslate"><span class="pre">group.delta_chi</span></code> and <code class="docutils literal notranslate"><span class="pre">group.delta_bkg</span></code>, holding the uncertainties
+in <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, respectively.  These
+calculations are relatively costly, and can take 20 times longer to
+determine <span class="math notranslate nohighlight">\(\chi(k)\)</span> and <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> themselves.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">group.autobk_details</span></code> group will contain the following attributes:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>attribute</p></th>
+<th class="head"><p>meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>spline_pars</p></td>
+<td><p>Parameters used for determining <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> spline.</p></td>
+</tr>
+<tr class="row-odd"><td><p>init_bkg</p></td>
+<td><p>Initial value for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>init_chi</p></td>
+<td><p>Initial value for <span class="math notranslate nohighlight">\(\chi(k)\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>knots_e</p></td>
+<td><p>Spline knot energies</p></td>
+</tr>
+<tr class="row-even"><td><p>knots_y</p></td>
+<td><p>Spline knot values</p></td>
+</tr>
+<tr class="row-odd"><td><p>init_knots_y</p></td>
+<td><p>Initial Spline knot values</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+</section>
+<section id="the-autobk-algorithm">
+<h2><span class="section-number">13.4.2. </span>The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
+(see <span id="id1">[<a class="reference internal" href="bibliography.html#id20">Newville et al. (1993)</a>]</span>), in which a spline function is matched to the
+low-<em>R</em> components of the resulting <span class="math notranslate nohighlight">\(\chi(k)\)</span>.</p>
+<p>For reference, <span class="math notranslate nohighlight">\(k = \sqrt{2m_e (E-E_0)/\hbar^2}\)</span> is the wavenumber of
+the ejected photo-electron, where <span class="math notranslate nohighlight">\(E_0\)</span> is the absorption threshold
+energy (the 0 of photo-electron energy).  For <span class="math notranslate nohighlight">\(k\)</span> in units of
+<span class="math notranslate nohighlight">\(\rm \AA^{-1}\)</span> and <span class="math notranslate nohighlight">\(E\)</span> in units of eV, <span class="math notranslate nohighlight">\(k \approx
+\sqrt{(E-E_0)/3.81}\)</span>.  With this conversion of energy to wavenumber,
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> is defined from</p>
+<blockquote>
+<div><p><span class="math notranslate nohighlight">\(\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}\)</span></p>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> represents the idealized x-ray absorption of a
+bare atom, embedded in the molecular or solid environment, but without
+scattering of the outgoing photo-electron that gives rise to the EXAFS, and
+<span class="math notranslate nohighlight">\(\Delta\mu\)</span> is the edge step in <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
+<p>The quantity <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> cannot be independently measured.  Instead,
+we empirically determine it here given the dxta for <span class="math notranslate nohighlight">\(\mu(E)\)</span> by
+fitting a spline (a piece-polynomial function that is easily adjusted even
+while its smoothness is controlled) to <span class="math notranslate nohighlight">\(\mu(E)\)</span>.  An advantage to
+what could easily be described as an <em>ad hoc</em> approach is that the data for
+<span class="math notranslate nohighlight">\(\mu(E)\)</span> can include many systematic drifts and dependencies that are
+slowly varying with energy.</p>
+<p>The definition above normalizes to the edge step <span class="math notranslate nohighlight">\(\Delta\mu\)</span>
+(<code class="docutils literal notranslate"><span class="pre">edge_step</span></code>) instead of the energy-dependent <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, as is
+often described in introductory texts on EXAFS.  The reason for this is
+essentially the same – so that we do not need to carefully take care of
+slow energy drifts in the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> or worry about having an
+absolute measure of <span class="math notranslate nohighlight">\(\mu(E)\)</span>.</p>
+<section id="r-rm-bkg-and-spline-for-mu-0-e">
+<h3><span class="section-number">13.4.2.1. </span><span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> and spline for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span><a class="headerlink" href="#r-rm-bkg-and-spline-for-mu-0-e" title="Permalink to this headline">¶</a></h3>
+<p>A spline is a general mathematical function, and so using one to match
+<span class="math notranslate nohighlight">\(\mu(E)\)</span> that we will subtract from the same <span class="math notranslate nohighlight">\(\mu(E)\)</span> could
+easily match <em>too</em> well, and erase much of the data we’re interested in.
+Therefore, we have to carefully consider two aspects:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>what portions of the spectrum we want it to match, and</p></li>
+<li><p>how flexible the spline can be.</p></li>
+</ol>
+</div></blockquote>
+<p>What we want is a <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> that removes the low frequency (low-<em>R</em>)
+portions of the <span class="math notranslate nohighlight">\(\chi\)</span> spectra, and recognizing this can tell us how
+to determine both of these.</p>
+<p>First, since we know the EXAFS oscillations do not extend far below the
+near-neighbor distance and since atoms are essentially never closer than 1
+<span class="math notranslate nohighlight">\(\rm\AA\)</span>, and generally more like 2 <span class="math notranslate nohighlight">\(\rm\AA\)</span>, we can say that
+we want to remove the frequencies of <span class="math notranslate nohighlight">\(\chi\)</span> below some distance,
+<span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span> (<code class="docutils literal notranslate"><span class="pre">rbkg</span></code>).  That is, we want the spline function to
+be adjusted so that the components of <span class="math notranslate nohighlight">\(\chi(R)\)</span> below <span class="math notranslate nohighlight">\(R_{\rm
+bkg}\)</span> are minimized.  We can use a default of 1 <span class="math notranslate nohighlight">\(\rm\AA\)</span>, and
+recommend that the value be roughly half the expected near-neighbor
+distance.</p>
+<p>To do this, we create a spline function consisting of <span class="math notranslate nohighlight">\(N_{\rm knots}\)</span>
+adjustable points (<em>knots</em> in the spline, where the second derivatives are
+allowed to change), evenly spaced in <span class="math notranslate nohighlight">\(k\)</span> (that is, quadratic in
+energy).  We do a fit that adjusts the values of the function at each knot,
+computes <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> by simple spline interpolation, calculates
+<span class="math notranslate nohighlight">\(\chi(k)\)</span>, does a Fourier transform to <span class="math notranslate nohighlight">\(\chi(R)\)</span>, and then
+seeks to minimize the components of <span class="math notranslate nohighlight">\(\chi(R)\)</span> below <span class="math notranslate nohighlight">\(R_{\rm
+bkg}\)</span>.</p>
+<p>This leads to the second question of how flexible to make the spline is
+answered from basic signal processing through the <a class="reference external" href="http://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem">Nyquist-Shannon sampling
+theorem</a>,
+which tells us how many adjustable parameters to use for our spline:</p>
+<div class="math notranslate nohighlight">
+\[N_{\rm knots}  =  1 + \frac{2R_{\rm bkg} \Delta k}{\pi}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta k\)</span> is the <span class="math notranslate nohighlight">\(k\)</span> range of the data.  This value can
+be over-ridden by specifing <code class="docutils literal notranslate"><span class="pre">nknots</span></code>, but this is strongly recommended
+against.</p>
+<p>In this way we satisfy both considerations above: limiting the number of
+knots prevents the spline from being able to follow the frequencies of
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> we care about most, and limiting the portion of the
+spectrum to be minimized to the very low-<span class="math notranslate nohighlight">\(R\)</span> components, we do not
+even try to match those frequencies.  Thus, we are ensured of a
+<span class="math notranslate nohighlight">\(\mu_0(E)\)</span> that only removes the low-<span class="math notranslate nohighlight">\(R\)</span> components of
+<span class="math notranslate nohighlight">\(\chi\)</span>.</p>
+</section>
+<section id="selecting-fourier-transform-parameters">
+<h3><span class="section-number">13.4.2.2. </span>Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
+<p>In order to determine <span class="math notranslate nohighlight">\(\mu_0(E)\)</span>, we must do a Fourier transform.
+These are discussed in more detail in the next section, but here we give
+the parameters affecting the Fourier transform used, and their default
+values.</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 29%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>argument</p></th>
+<th class="head"><p>meaning</p></th>
+<th class="head"><p>default, recommended values</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>kmin</p></td>
+<td><p><span class="math notranslate nohighlight">\(k_{\rm min}\)</span></p></td>
+<td><ol class="arabic simple" start="0">
+<li><p>should be below 1.0</p></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p>kmax</p></td>
+<td><p><span class="math notranslate nohighlight">\(k_{\rm max}\)</span></p></td>
+<td><p>highest <span class="math notranslate nohighlight">\(k\)</span> value. Useful data range.</p></td>
+</tr>
+<tr class="row-even"><td><p>kweight</p></td>
+<td><p><span class="math notranslate nohighlight">\(kw\)</span></p></td>
+<td><ol class="arabic simple">
+<li><p>should be 0 or 1 (but not &gt; 2)</p></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p>win</p></td>
+<td><p>window function name</p></td>
+<td><p>Hanning, Parzen works well too.</p></td>
+</tr>
+<tr class="row-even"><td><p>dk</p></td>
+<td><p>window sill size</p></td>
+<td><ol class="arabic simple" start="0">
+<li><p>should be 0 or 1</p></li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td><p>nfft</p></td>
+<td><p>FFT array size</p></td>
+<td><ol class="arabic simple" start="2048">
+<li><p>No reason to change this.</p></li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td><p>kstep</p></td>
+<td><p><span class="math notranslate nohighlight">\(k\)</span> step size</p></td>
+<td><p>0.05.  No reason to change this.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The most important point is that the Fourier transform used to fit
+and visualize <span class="math notranslate nohighlight">\(\chi(k)\)</span> is not necessarily the one to use here.  In
+particular, the <code class="docutils literal notranslate"><span class="pre">kweight</span></code> parameter should be 0 or 1 here, as we want to
+emphasize the low-<span class="math notranslate nohighlight">\(k\)</span> portion of <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  The default
+parameter values for <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> are generally sufficient, and need only
+minor adjustments except in unusual cases.</p>
+</section>
+<section id="using-a-standard-chi-k">
+<h3><span class="section-number">13.4.2.3. </span>Using a standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard-chi-k" title="Permalink to this headline">¶</a></h3>
+<p>We said above that we want to minimize the low-<span class="math notranslate nohighlight">\(R\)</span> components of
+<span class="math notranslate nohighlight">\(\chi\)</span>.  In principle, there should be some leakage of the first
+shell to fairly low-<span class="math notranslate nohighlight">\(R\)</span>.  This is especially noticeable for a short
+ligand (say, below 1.75 <span class="math notranslate nohighlight">\(\rm\AA\)</span> or so) of a low-Z atom (notably, C,
+N, and O).  Normally, this is not a serious problem, but it does point out
+that <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> might want to leave some first-shell leakage at
+low-<span class="math notranslate nohighlight">\(R\)</span>.</p>
+<p>To accout for this, you can proved a spectrum of <span class="math notranslate nohighlight">\(\chi(k)\)</span> for a
+standard that is meant to be close to the spectrum being analyzed.  This is
+done by providing 2 arrays: <code class="docutils literal notranslate"><span class="pre">k_std</span></code> and <code class="docutils literal notranslate"><span class="pre">chi_std</span></code>, which need to be the
+same lenth.  By providing these, the best values for <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> will
+be those that minimize the Fourier transorm of the difference of
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> for the data and standard.  This can be especially helpful
+to give more consistent background for a set of related spectra.</p>
+</section>
+<section id="end-point-clamps-for-the-spline">
+<h3><span class="section-number">13.4.2.4. </span>End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
+<p>Because the spline is chosen to match the low-<span class="math notranslate nohighlight">\(R\)</span> components of
+<span class="math notranslate nohighlight">\(\chi\)</span>, the process does not even look at how the resulting
+<span class="math notranslate nohighlight">\(\mu_0(E)\)</span> looks.  This can lead to some unstable behavior at the
+end-points of the spline, causing <span class="math notranslate nohighlight">\(\chi(k)\)</span> to diverge at the ends.</p>
+<p>This can be remedied by adding <em>clamps</em> to the end-points of <span class="math notranslate nohighlight">\(chi(k)\)</span>
+to the fit.  That is, a few points at the low- and high-ends of the
+<span class="math notranslate nohighlight">\(\chi(k)\)</span> array are appended to the array to be minimized in the fit,
+which has the tendency to push the end-points of <span class="math notranslate nohighlight">\(\chi(k)\)</span> to zero.</p>
+<p>There are three parameters influencing these end-points clamps.  <code class="docutils literal notranslate"><span class="pre">nclamp</span></code>
+sets the number of data points of <span class="math notranslate nohighlight">\(\chi(k)\)</span> at the beginning and end
+of the <span class="math notranslate nohighlight">\(k\)</span> range to add to the fit.  <code class="docutils literal notranslate"><span class="pre">clamp_lo</span></code> sets the weighting
+factor applied to the first <code class="docutils literal notranslate"><span class="pre">nclamp</span></code> points for the low-<span class="math notranslate nohighlight">\(k\)</span> end fo
+the data range, and <code class="docutils literal notranslate"><span class="pre">clamp_hi</span></code> sets the weighting factor applied to the
+last <code class="docutils literal notranslate"><span class="pre">nclamp</span></code> points at the high-<span class="math notranslate nohighlight">\(k\)</span> end.</p>
+<p>There is not an easy way to determine ahead of time what the clamp
+parameters will be.  Typically, <code class="docutils literal notranslate"><span class="pre">nclamp</span></code> need only be 1 to 5 data points
+(with 2 being the default).  Setting <code class="docutils literal notranslate"><span class="pre">nclamp</span></code> to 0 will remove the clamps
+completely.  Values for <code class="docutils literal notranslate"><span class="pre">clamp_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">clamp_hi</span></code> are floating point
+numbers, and should range from about 1 (the default) to 10 or 20 for a very
+strong clamp that will almost certainly force <span class="math notranslate nohighlight">\(\chi(k)\)</span> to be 0 at
+the end-points.</p>
+</section>
+<section id="recommendations">
+<h3><span class="section-number">13.4.2.5. </span>Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
+<p>Here, we give a few recommendations on what parameters most affect the
+background subtraction.  These parameters are (in roughly increasing
+order):</p>
+<blockquote>
+<div><p>0. <code class="docutils literal notranslate"><span class="pre">rbkg</span></code>:  This is the main parameter that sets how flaexible the
+spline function can be.</p>
+<p>1.  <code class="docutils literal notranslate"><span class="pre">e0</span></code>: It can be hard to know what <span class="math notranslate nohighlight">\(E_0\)</span> should be for any XAFS
+spectra.  As this sets the value of <span class="math notranslate nohighlight">\(k=0\)</span>, it will affect the
+location of the knots, and can have a profound affect on the results.  If
+you’re unhappy with the <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> and <span class="math notranslate nohighlight">\(\chi(k)\)</span>, playing with
+the <code class="docutils literal notranslate"><span class="pre">e0</span></code> parameter.</p>
+<p>2. <code class="docutils literal notranslate"><span class="pre">kweight</span></code>: Increasing this emphasizes the fit at high <em>k</em>.  Trying
+both values of 0 and 1 is always a good idea.</p>
+<p>3. <code class="docutils literal notranslate"><span class="pre">clamp_lo</span></code> and <code class="docutils literal notranslate"><span class="pre">clamp_hi</span></code>: If <span class="math notranslate nohighlight">\(\mu_0(E)\)</span> swoops up or down at
+the endpoints too much, increasing these values can help greatly.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="examples">
+<h2><span class="section-number">13.4.3. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Here, we give a few examples using <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>, and outline some of its
+features.</p>
+<section id="basic-example">
+<h3><span class="section-number">13.4.3.1. </span>Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
+<p>The simplest example of reading data and doing background subtraction would
+using all the default inputs would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk1.lar</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu_rt01.xmu&#39;</span>
+<span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
+
+<span class="n">plot_bkg</span><span class="p">(</span><span class="n">cu</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">emax</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">cu</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1">## end of examples/xafs/doc_autobk1.lar</span>
+</pre></div>
+</div>
+<p>with the resulting outputs looking like this:</p>
+<div class="figure compound align-center" id="fig-xafs2">
+<figure class="align-center" id="id3">
+<span id="fig-xafs2a"></span><a class="reference external image-reference" href="_images/xafs_autobk1a.png"><img alt="_images/xafs_autobk1a.png" src="_images/xafs_autobk1a.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 13.4.3.1 </span><span class="caption-text"><span class="math notranslate nohighlight">\(\mu(E)\)</span> and background <span class="math notranslate nohighlight">\(\mu_0(E)\)</span></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id4">
+<span id="fig-xafs2b"></span><a class="reference external image-reference" href="_images/xafs_autobk1b.png"><img alt="_images/xafs_autobk1b.png" src="_images/xafs_autobk1b.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 13.4.3.2 </span><span class="caption-text">resulting <span class="math notranslate nohighlight">\(k\chi(k)\)</span></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><span class="caption-text">Example of simple usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for Cu metal.</span></p>
+</div><p id="fig-xafs2">Thus demonstrating that we can process data on Cu metal.</p>
+<p>For a slightly more challenging example, we try the As K-edge of scorodite
+(<span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>).  Here, we start by reading in data and
+constructing <span class="math notranslate nohighlight">\(\mu(E)\)</span>, then run <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>.  We take most of the
+default values for pararmeters, but pass explicit parameters such as
+<code class="docutils literal notranslate"><span class="pre">nnorm</span></code> to <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a> using <code class="docutils literal notranslate"><span class="pre">pre_edge_kws</span></code>.  Setting these
+parameters is not critically important for this data set, and is mostly
+here to demonstrate the method for passing arguments to <a class="reference internal" href="xafs_preedge.html#pre_edge" title="pre_edge"><code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk2.lar</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;FeAsSO4  (scorodite)&#39;</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">ln</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="o">/</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span><span class="p">)</span>
+
+<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">plot_bkg</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">emin</span><span class="o">=-</span><span class="mi">150</span><span class="p">)</span>
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">## end of examples/xafs/doc_autobk2.lar</span>
+</pre></div>
+</div>
+<p>The resulting outputs looks OK:</p>
+<div class="figure compound align-center" id="fig-xafs3">
+<figure class="align-default" id="fig-xafs3a">
+<a class="reference external image-reference" href="_images/xafs_autobk2a.png"><img alt="_images/xafs_autobk2a.png" src="_images/xafs_autobk2a.png" style="width: 100%;" /></a>
+</figure>
+<figure class="align-default" id="fig-xafs3b">
+<a class="reference external image-reference" href="_images/xafs_autobk2b.png"><img alt="_images/xafs_autobk2b.png" src="_images/xafs_autobk2b.png" style="width: 100%;" /></a>
+</figure>
+<p><span class="caption-text">Example usage of <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a> for <span class="math notranslate nohighlight">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</span></p>
+</div><p id="fig-xafs3">A close examimation of <span class="math notranslate nohighlight">\(k^2\chi(k)\)</span> suggests we might be able to do
+better, which brings us to the next section.</p>
+</section>
+<section id="adjusting-spline-clamps">
+<h3><span class="section-number">13.4.3.2. </span>Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
+<p>For the scorodite example above, the XAFS diverges from 0 at the
+high-<span class="math notranslate nohighlight">\(k\)</span> end of the spectra.  Playing with the spline clamps
+discussed above, we try a few options to study the effect of adding a
+clamp:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk3.lar</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;FeAsSO4  (scorodite)&#39;</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">mu</span>    <span class="o">=</span> <span class="n">ln</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="o">/</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span><span class="p">)</span>
+
+<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">clamp_hi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">chi0</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">bkg0</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bkg</span>
+
+<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">clamp_hi</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">chi10</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">bkg10</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bkg</span>
+
+<span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">,</span> <span class="n">clamp_hi</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">chi50</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">bkg50</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">bkg</span>
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;clamp_hi=0&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>  <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$k^2\chi(k)$&#39;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Effect of clamp_hi&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;clamp_hi=10&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">chi50</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;clamp_hi=50&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1">## end of examples/xafs/doc_autobk3.lar</span>
+</pre></div>
+</div>
+<p>results in the following comparison:</p>
+<figure class="align-default" id="id5">
+<span id="xafs-fig4"></span><a class="reference external image-reference" href="_images/xafs_autobk3.png"><img alt="_images/xafs_autobk3.png" src="_images/xafs_autobk3.png" style="width: 65%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 13.4.3.3 </span><span class="caption-text">Influence of spline clamps of <span class="math notranslate nohighlight">\(\chi(k)\)</span></span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="id2">
+<h3><span class="section-number">13.4.3.3. </span>Using a Standard <span class="math notranslate nohighlight">\(\chi(k)\)</span><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Since the EXAFS contribution from the first shell is not perfectly isolated
+in <span class="math notranslate nohighlight">\(R\)</span>, it can leak into portion of <span class="math notranslate nohighlight">\(\chi(R)\)</span> below
+<span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span>.  It may be desirable to not simply reduce the portion
+of <span class="math notranslate nohighlight">\(\chi(R)\)</span> below <span class="math notranslate nohighlight">\(R_{\rm bkg}\)</span>, but to account for the
+expected leakage from the first shell.  To do this, you can provide a
+<em>standard</em> <span class="math notranslate nohighlight">\(\chi(k)\)</span> spectrum that will simulate the first shell by
+specify arrays for <cite>k_std</cite> and <cite>chi_std</cite> arrays to the <a class="reference internal" href="#autobk" title="autobk"><code class="xref py py-func docutils literal notranslate"><span class="pre">autobk()</span></code></a>
+function.</p>
+<p>As an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## examples/xafs/doc_autobk4.lar</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu.xmu&#39;</span>
+<span class="n">chi_fname</span> <span class="o">=</span> <span class="s1">&#39;../xafsdata/cu10k.chi&#39;</span>
+
+<span class="n">cu1</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="n">chidat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">chi_fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s1">&#39;k chi&#39;</span><span class="p">)</span>
+
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
+
+<span class="n">cu2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">cu1</span><span class="p">)</span>
+
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
+
+<span class="c1"># now with std...</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu2</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu2</span><span class="p">,</span> <span class="n">k_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span>
+
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">cu1</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;no std&#39;</span><span class="p">)</span>
+<span class="n">plot_chik</span><span class="p">(</span><span class="n">cu2</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;with std&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1">## end of examples/xafs/doc_autobk4.lar</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xafs_fourier.html" title="13.5. XAFS: Fourier Transforms for XAFS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xafs_xanes.html" title="13.3. XANES Analysis: Linear Combination Analysis, Principal Component Analysis, Pre-edge Peak Fitting"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="xrf.html">XRF Analysis</a>|</li>
+
+          <li class="nav-item nav-item-1"><a href="xafs.html" ><span class="section-number">13. </span>XAFS Analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">13.4. </span>XAFS: Post-edge Background Subtraction</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,217 @@
+
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>15. X-ray Fluorescence Analysis &#8212; xraylarch 0.9.52 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="15.1. XRF Data: MCA and ROI objects" href="xrf_mca.html" />
+    <link rel="prev" title="14. X-ray Databases" href="xray.html" />
+
+<script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}}, "HTML-CSS": {scale: 90}});
+</script>
+
+
+  </head><body>
+<div style=" color: #c5daba;  text-align: left; height:65px; padding: 0px">
+<table border=0>
+  <tr>
+    <td width=20%>
+	<a href="index.html">
+	 <img src="_static/larchcones.png" height=50px alt="larchcones"/></a>
+    </td>
+    <td width=75% padding=0>
+      <font size=+2>
+	<a href="index.html" style="color:#772211">
+	  Larch: Data Analysis Tools for X-ray Spectroscopy
+	</a>
+      </font>
+    </td>
+   </tr></table>
+</div>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xrf_mca.html" title="15.1. XRF Data: MCA and ROI objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xray.html" title="14. X-ray Databases"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="#">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xray.html"
+                        title="previous chapter"><span class="section-number">14. </span>X-ray Databases</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xrf_mca.html"
+                        title="next chapter"><span class="section-number">15.1. </span>XRF Data: MCA and ROI objects</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/xrf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="x-ray-fluorescence-analysis">
+<h1><span class="section-number">15. </span>X-ray Fluorescence Analysis<a class="headerlink" href="#x-ray-fluorescence-analysis" title="Permalink to this headline">¶</a></h1>
+<p>X-ray Fluorescence (XRF) Data can be manipulated, viewed, and analyzed with
+Larch.  In this chapter, we’ll discuss how to transform data into Larch
+Groups of XRF data and how to use the Graphical visualization tool <cite>XRF
+Display</cite> to visualize and work with XRF spectr.  We’ll also discuss how to
+analyze XRF spectra to quantify elemental compositions of samples.  As part
+of that discussion of fitting XRF spectra, we’ll review some of the
+fundamental concepts of XRF Analysis and discuss how these features can
+affect the results of XRF analysis.</p>
+<p>Since XRF spectra can be collected in as little as a few milliseconds with
+modern X-ray sources and solid-state detectors, it is common to build 2- or
+even 3-dimensional maps of XRF data, with each pixel in the map holding an
+XRF spectrum that can be analyzed.  Larch’s <cite>GSE MapViewer</cite> is designed to
+work with and display such XRF maps, and to support the quantitative XRF
+analysis shown here.</p>
+<p>A basic XRF spectrum from a solid-state detector – a silicon drift
+detector – as displayed in the <cite>XRF Display</cite> program is shown below.  The
+spectrum consists of two arrays of a few thousand points: an <cite>energy</cite> array
+that holds energy at each point (or “channel”) in the array and a <cite>counts</cite>
+array that holds the counts in each channel.</p>
+<figure class="align-center" id="id1">
+<span id="xrf-fig1"></span><a class="reference external image-reference" href="_images/xrf_display1.png"><img alt="_images/xrf_display1.png" src="_images/xrf_display1.png" style="width: 65%;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 15.1 </span><span class="caption-text">Typical X-ray fluorescence spectrum.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The peaks in this specra correpsond to characteristic X-ray emission lines
+from the elements.  The presence of a particular peak in the spectrum
+indicates that the corresponding element was in the illuminated X-ray beam
+– the spectrum above indicates that Cu and Mn (and also Ca, V, and Co) are
+present in the sample.  Furthermore, the intensity of each peak can be used
+to determine (or at least “infer”) the concentration of that particular
+element in the illuminated sample.</p>
+<p>From a spectroscopic point-of-view XRF spectra are relatively easy to
+interpret: the characteristic emission energies for each atom are well
+known to high precision and the absorption and emission probabilities are
+known to pretty good precision (though perhaps only 10%).  In this sense, a
+crude approach to XRF analysis is to use the area under the appropriate
+peaks as a quantifiable value for the elements abundance.  This should
+definitely be taken as a rough approximation.  The complications preventing
+such a simle interpretion of XRF spectra are due mostly to:</p>
+<blockquote>
+<div><p>1. Strong X-ray attenuation effects.  The attenuation of X-rays goes
+approximately as <span class="math notranslate nohighlight">\(\mu \sim Z^4E^{-3}\)</span>, which is to say it has
+extremely high and non-linear dependence on the atomic number Z of the
+elements in the X-ray beam, and extremely high and non-linear
+dependence on the X-ray energy.</p>
+<p>2. Overlaps of elemental peaks.  That is, the emission energies for
+each element are known, but not unique.  Each element will have
+multiple series of lines (K, L, M, etc), and these can be close enough
+in energy to cause some uncertainty in which elements are present.</p>
+<p>3. Detector artefacts. Even the best energy-discriminating detectors
+used for most XRF analysis are limited in the resolution with which
+they can determine an X-ray energy. They also need some finite time
+(<span class="math notranslate nohighlight">\(100ns\)</span> to  <span class="math notranslate nohighlight">\(10{\mu}s\)</span>) to count each X-ray and so have a
+“dead time” and can suffer from “pileup” that can distort the spectra.</p>
+</div></blockquote>
+<p>These effects are understood pretty well and can mostly be compensated for
+in a thorough analysis, as will be discussed in more detail below.
+Importantly, together they means that simply taking the area under a
+portion of the curve in the XRF spectrum is generally not a good measure of
+the absolute abundance of an atom in the illuminated sample.  In limited
+cases, where the bulk of the sample composition does change much, where
+peak overlaps are small, and where the detector is not saturated, the
+integrated intensities of selected peaks can be a good relative measure of
+elemental abundance.</p>
+<span class="target" id="module-_xrf"></span><div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="xrf_mca.html">15.1. XRF Data: MCA and ROI objects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xrf_mca.html#creating-mca-objects">15.1.1. Creating MCA objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xrf_viewer.html">15.2. The XRF Viewer Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf_modelling.html">15.3. Modelling XRF Data</a></li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="xrf_mca.html" title="15.1. XRF Data: MCA and ROI objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xray.html" title="14. X-ray Databases"
+             >previous</a> |</li>
+   <li>[<a href="index.html"> Larch</a>|</li>
+   <li><a href="getting_started.html"> Getting Started</a>|</li>
+   <li><a href="xafs.html">XAFS Analysis</a>|</li>
+   <li><a href="xray.html">X-ray Databases</a>|</li>
+   <li><a href="#">XRF Analysis</a>|</li>
+
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">15. </span>X-ray Fluorescence Analysis</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright Matthew Newville, The University of Chicago, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>
