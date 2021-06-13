@@ -80,7 +80,7 @@ bibtex_bibfiles = ['larch.bib']
 # The short X.Y version.
 try:
     import larch
-    release = larch.__version__
+    release = larch.__release_version__
 # The full version, including alpha/beta/rc tags.
 except ImportError:
     release = 'unknown (larch import failed??)'
