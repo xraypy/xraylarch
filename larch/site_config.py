@@ -13,6 +13,7 @@ import os
 from os.path import exists, abspath, join
 from .utils import uname, get_homedir, nativepath
 from .version import __version__ as larch_version
+from .version import __release_version__ as release_version
 
 
 # lists of recommended packages that are not installed by default
@@ -135,6 +136,7 @@ def make_user_larchdirs():
 
 def show_site_config():
     print( """===  Larch Configuration
+  larch release:        %s
   larch version:        %s
   sys executable:       %s
   sys is frozen:        %s
@@ -144,7 +146,7 @@ def show_site_config():
   modules search path:  %s
   plugins search path:  %s (deprecated!!)
 ========================
-""" % (larch_version, sys.executable,
+""" % (larch_release, larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
        user_larchdir,
        history_file, init_files,

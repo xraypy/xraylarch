@@ -43,7 +43,7 @@ except:
 import matplotlib
 import lmfit
 
-from .version import __date__, __version__
+from .version import __date__, __version__, __release_version__
 from .symboltable import Group, isgroup
 from .larchlib import (ValidateLarchPlugin, Make_CallArgs,
                        parse_group_args, isNamedClass)

@@ -25,15 +25,6 @@ uname = sys.platform.lower()
 if os.name == 'nt':
     uname = 'win'
 
-_version__ = None
-with open(os.path.join('larch', 'version.py'), 'r') as version_file:
-    lines = version_file.readlines()
-    for line in lines:
-        line = line[:-1]
-        if line.startswith('__version__'):
-            key, vers = [w.strip() for w in line.split('=')]
-            __version__ = vers.replace("'",  "").replace('"',  "").strip()
-
 ## Dependencies: required and recommended modules
 install_reqs = []
 with open('requirements.txt', 'r') as f:
@@ -168,7 +159,7 @@ if INSTALL:
 setup(name = 'xraylarch',
       use_scm_version=True,
       setup_requires=['setuptools_scm'],
-      version = __version__,
+      # version = __version__,
       author = 'Matthew Newville and the X-rayLarch Development Team',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',

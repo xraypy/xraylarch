@@ -9,7 +9,7 @@ import matplotlib
 from .symboltable import SymbolTable
 from .interpreter import Interpreter
 from .site_config import history_file, show_site_config
-from .version import __version__, __date__, make_banner
+from .version import make_banner
 from .inputText import InputText
 from .larchlib import StdWriter
 from .utils import uname

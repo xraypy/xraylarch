@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 __date__    = '2021-Jun-12'
-__version__ = '0.9.52'
+__release_version__ = '0.9.52'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
+
 
 import sys
 import numpy
@@ -10,6 +11,13 @@ import matplotlib
 import lmfit
 from collections import OrderedDict, namedtuple
 from packaging.version import parse as ver_parse
+from importlib.metadata import version, PackageNotFoundError
+try:
+    __version__ = version("xraylarch")
+except PackageNotFoundError:
+    # package is not installedzaA
+    __version__ = __release_version__
+
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -19,7 +27,7 @@ def version_data(mods=None):
         sysvers = sysvers.split('\n')[0]
 
     vdat = OrderedDict()
-    vdat['larch'] = "%s (%s) %s" % (__version__, __date__, __authors__)
+    vdat['larch'] = f'{__release_version__} ({__date__}) {__authors__}'
     vdat['python'] = "%s" % (sysvers)
 
     allmods = [numpy, scipy, matplotlib, lmfit]
@@ -48,6 +56,8 @@ def make_banner(mods=None):
     for name, vstr in vdat.items():
         reqs.append('%s %s' % (name, vstr))
     lines.append(', '.join(reqs))
+    if __version__ != __release_version__:
+        lines.append(f'Devel Version: {__version__:s}')
 
     linelen = max([len(line) for line in lines])
     border = '='*max(linelen, 75)
@@ -89,7 +99,7 @@ def check_larchversion():
                     break
         except:
             pass
-    local_version = __version__
+    local_version = __release_version__
     update_available = ver_parse(remote_version) > ver_parse(local_version)
     message = UPDATE_MESSAGE if update_available else LATEST_MESSAGE
     message = message.format(remote_version=remote_version,

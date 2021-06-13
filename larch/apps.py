@@ -13,7 +13,7 @@ from .site_config import (extras_wxgraph, extras_qtgraph,
                           extras_epics, extras_xrd, extras_doc)
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
-from .version import __version__, __date__, make_banner, check_larchversion
+from .version import __date__, make_banner, check_larchversion
 
 HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
 
