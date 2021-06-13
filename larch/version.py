@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2020-Apr-22'
-__version__ = '0.9.51'
+__date__    = '2021-Jun-12'
+__version__ = '0.9.52'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
 
 import sys
