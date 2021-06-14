@@ -33,3 +33,4 @@ Thumbs.db
 *.ipynb_checkpoints/
 .vscode/
 .empty/
+.eggs/
