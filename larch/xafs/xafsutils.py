@@ -37,13 +37,16 @@ def guess_energy_units(e):
     ediff = np.diff(ework)
     emax = max(ework)
 
-    units = 'eV'
-    if emax > 200000:
-        units = 'steps'
-    if emax < 120.0 and (abs(ediff).min() < 0.005):
-        units = 'keV'
-        if emax < 90.0 and (ediff.mean() < 0.0):
-            units = 'deg'
+    try:
+        units = 'eV'
+        if emax > 200000:
+            units = 'steps'
+        if emax < 120.0 and (abs(ediff).min() < 0.005):
+            units = 'keV'
+            if emax < 90.0 and (ediff.mean() < 0.0):
+                units = 'deg'
+    except ValueError:
+        units = 'unknown'
     return units
 
 def set_xafsGroup(group, _larch=None):
