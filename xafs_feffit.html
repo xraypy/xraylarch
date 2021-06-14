@@ -133,7 +133,7 @@ process, and those sections will be referenced here.</p>
 <section id="the-feffit-strategy-for-modeling-exafs-data">
 <h2><span class="section-number">13.8.1. </span>The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
-<span id="id1">[<a class="reference internal" href="bibliography.html#id49">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
+<span id="id1">[<a class="reference internal" href="bibliography.html#id49" title="M Newville. Exafs analysis using feff and feffit. Journal of Synchrotron Radiation, 8(Part 2):96-100, 2001. doi:10.1107/S0909049500016290.">Newville (2001)b</a>]</span>) is to create a model EXAFS <span class="math notranslate nohighlight">\(\chi(k)\)</span> as a
 sum of scattering path&lt;s that will be compared to experimentally derived
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
@@ -171,7 +171,7 @@ Nyquist as</p>
 <div class="math notranslate nohighlight">
 \[N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1\]</div>
 <p>where <span class="math notranslate nohighlight">\(\Delta k\)</span> and <span class="math notranslate nohighlight">\(\Delta R\)</span> are the <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(R\)</span>
-range of the usable data under consideration.  <span id="id2">[<a class="reference internal" href="bibliography.html#id8">Stern (1993)</a>]</span>
+range of the usable data under consideration.  <span id="id2">[<a class="reference internal" href="bibliography.html#id8" title="E. A. Stern. Number of relevant independent points in x-ray-absorption fine-structure spectra. Physical Review B, 48(13):9825–9827, 1993. doi:10.1103/PhysRevB.48.9825.">Stern (1993)</a>]</span>
 argues convincingly that the ‘+1’ here should be ‘+2’, but we’ll remain
 conservative and keep the ‘+1’, and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -240,7 +240,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 <span class="math notranslate nohighlight">\(R\)</span>: white noise.  The function <a class="reference internal" href="xafs_utilities.html#estimate_noise" title="estimate_noise"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimate_noise()</span></code></a> does this
-<span id="id3">[<a class="reference internal" href="bibliography.html#id6">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
+<span id="id3">[<a class="reference internal" href="bibliography.html#id6" title="M. Newville, B. Boyanov, and D. E. Sayers. Estimation of uncertainties in XAFS data. Journal of Synchrotron Radiation, 6:264–265, 1999. doi:10.1107/S0909049598018147.">Newville, Boyanov, and Sayers (1999)</a>]</span>, and the estimate derived from this method is
 used unless you specify a value for <code class="docutils literal notranslate"><span class="pre">epsilon_k</span></code> the noise level in
 <span class="math notranslate nohighlight">\(\chi(k)\)</span>.  Though usually <span class="math notranslate nohighlight">\(\epsilon\)</span> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -2091,7 +2091,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
     </div>
   </body>
 </html>
