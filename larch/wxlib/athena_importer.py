@@ -84,11 +84,12 @@ class AthenaImporter(wx.Frame) :
                                      _larch=_larch)
         self.allgroups = {}
         for sname, item in self.a_project._athena_groups.items():
+            label = getattr(item, 'label', sname)
             try:
-                self.allgroups[item.label] = sname
-                self.grouplist.Append(item.label)
+                self.allgroups[label] = sname
+                self.grouplist.Append(label)
             except:
-                print(' ? ', sname, item.label, item)
+                print(' ? ', sname, label, item)
         self.Show()
         self.Raise()
 
