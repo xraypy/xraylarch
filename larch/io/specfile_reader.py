@@ -259,8 +259,16 @@ class DataSourceSpecH5(object):
         self._sourcefile.close()
         self._sourcefile = None
 
-    def get_scangroup(self):
-        """get current scan group"""
+    def get_scangroup(self, scan=None):
+        """get current scan group
+
+        Parameters
+        ----------
+        scan  : str, int, or None
+             scan address
+        """
+        if scan is not None:
+            self.set_scan(scan)        
         if self._scangroup is None:
             raise AttributeError(
                 "Group/Scan not selected -> use 'self.set_scan()' first"
@@ -580,14 +588,19 @@ class DataSourceSpecH5(object):
             self._logger.error(f"'{mot}' not found in available motors: {mots}")
             return None
 
-    def get_scan(self):
+    def get_scan(self, scan=None):
         """Get Larch group for the current scan
+
+        Parameters
+        ----------
+        scan  : str, int, or None
+             scan address 
 
         Returns
         -------
         larch Group with scan data
         """
-        scan_group = self.get_scangroup()
+        scan_group = self.get_scangroup(scan)
         scan_index = self._scan_n
         scan_name = self._scan_str
         all_labels = self.get_counters()
@@ -757,6 +770,4 @@ def open_specfile(filename):
 def read_specfile(filename, scan=None):
     """simple mapping of a Spec/BLISS file to a Larch group"""
     df = DataSourceSpecH5(filename)
-    if scan is not None:
-        df.set_scan(scan)
-    return df.get_scan()
+    return df.get_scan(scan)
