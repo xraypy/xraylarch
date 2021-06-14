@@ -463,7 +463,7 @@ class DataSourceSpecH5(object):
 
         Known types of scans
         --------------------
-        'ascan'/'dscan'
+        Generic: <scan_type> <scan_axis> <start> <end> <npoints> <counting_time>
         'Escan' (ESRF-BM30/BM16)
         'Emiscan' (ESRF-BM30/BM16)
         'fscan' (ESRF-ID26)
@@ -493,22 +493,9 @@ class DataSourceSpecH5(object):
         if isinstance(_title, np.ndarray):
             _title = np.char.decode(_title)[0]
         _title_splitted = [s for s in _title.split(" ") if not s == ""]
-        _iax = 0
-        _scntype = _title_splitted[_iax]
+        _scntype = _title_splitted[0]
+        iscn.update(dict(scan_type=_scntype))
         try:
-            iscn.update(
-                dict(
-                    scan_type=_scntype,
-                    scan_start=_title_splitted[1],
-                    scan_end=_title_splitted[2],
-                    scan_pts=_title_splitted[3],
-                    scan_ct=_title_splitted[4],
-                )
-            )
-        except IndexError:
-            pass
-
-        if _scntype in ("ascan", "dscan"):
             iscn.update(
                 dict(
                     scan_axis=_title_splitted[1],
@@ -518,6 +505,19 @@ class DataSourceSpecH5(object):
                     scan_ct=_title_splitted[5],
                 )
             )
+        except IndexError:
+            try:
+                iscn.update(
+                    dict(
+                        scan_start=_title_splitted[1],
+                        scan_end=_title_splitted[2],
+                        scan_pts=_title_splitted[3],
+                        scan_ct=_title_splitted[4],
+                    )
+                )
+            except IndexError:
+                pass
+
         if _scntype == "Escan":
             iscn.update(dict(scan_axis="Energy"))
         if _scntype == "Emiscan":
