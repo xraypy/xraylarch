@@ -329,6 +329,7 @@ class DataSourceSpecH5(object):
             self._scan_str = scan
             self._scan_n = self._scans_names.index(scan)
         else:
+            scan_n = scan
             if isinstance(scan, str):
                 scan_split = scan.split(".")
                 scan_n = scan_split[0]
@@ -424,7 +425,23 @@ class DataSourceSpecH5(object):
                         bytes2str(sg[self._time_start_url][()]),
                     ]
                 )
-            except
+            except KeyError:
+                self._logger.error(f"'{sn}' is a datagroup!")
+                #go one level below and try take first dataset only
+                dt0 = list(sg.keys())[0]
+                sgg = sg[dt0]
+                try:
+                    scname = f"{sn}/{dt0}"
+                    allscans.append(
+                        [
+                            scname,
+                            bytes2str(sgg[self._title_url][()]),
+                            bytes2str(sgg[self._time_start_url][()]),
+                        ]
+                    )
+                except Exception:
+                    self._logger.error(f"{scname} does not have standard title/time URLs")
+                    allscans.append([None, None, None])
         return allscans
 
     def get_motors(self):
