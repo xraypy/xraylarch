@@ -192,12 +192,13 @@ class DataSourceSpecH5(object):
             self._logger = logger
 
         if verbose:
-            self._logger.set_level("INFO")
+            self._logger.setLevel("INFO")
 
         self._fname = fname
         self._sourcefile = None
         self._sourcefile_type = None
         self._scans = None
+        self._scans_names = None
         self._scan_n = None
         self._scan_str = None
 
@@ -244,6 +245,7 @@ class DataSourceSpecH5(object):
                 if ft in str(self._sourcefile):
                     self._sourcefile_type = ft
             self._scans = self.get_scans()
+            self._scans_names = [scn[0] for scn in self._scans]
             try:
                 _iscn = 0
                 self.set_scan(self._scans[_iscn][0])  # set the first scan at init
@@ -300,15 +302,15 @@ class DataSourceSpecH5(object):
         """
         self._group_url = group_url
         if self._group_url is not None:
-            self._logger.info(f"Selected group {self._group_url}")
+            self._logger.info(f"selected group {self._group_url}")
 
-    def set_scan(self, scan_n, scan_idx=1, group_url=None, scan_kws=None):
-        """Select a given scan number
-
+    def set_scan(self, scan, scan_idx=1, group_url=None, scan_kws=None):
+        """Select a given scan
+        
         Parameters
         ----------
-        scan_n : int or str
-            scan number or address
+        scan : int or str
+            scan number or name
         scan_idx : int (optional)
             scan repetition index [1]
         group_url : str
@@ -321,33 +323,36 @@ class DataSourceSpecH5(object):
         none: set attributes
             self._scan_n, self._scan_str, self._scan_url, self._scangroup
         """
-        # check if scan_n is given already as "scan_n.scan_idx"
-        if isinstance(scan_n, str):
-            scan_split = scan_n.split(".")
-            scan_n = scan_split[0]
-            try:
-                scan_idx = scan_split[1]
-            except IndexError:
-                self._logger.warning("'scan_idx' kept at 1")
-                pass
-            try:
-                scan_n = int(scan_n)
-                scan_idx = int(scan_idx)
-            except ValueError:
-                self._logger.error("scan not selected, wrong 'scan_n'!")
-                return
-        assert isinstance(scan_n, int), "'scan_n' must be an integer"
-        assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
-        self._scan_n = scan_n
         if scan_kws is not None:
             self._scan_kws = update_nested(self._scan_kws, scan_kws)
-        if self._urls_fmt == "silx":
-            self._scan_str = f"{scan_n}.{scan_idx}"
-        elif self._urls_fmt == "spec2nexus":
-            self._scan_str = f"S{scan_n}"
+        if scan in self._scans_names:
+            self._scan_str = scan
+            self._scan_n = self._scans_names.index(scan)
         else:
-            self._logger.error("wrong 'urls_fmt'")
-            return
+            if isinstance(scan, str):
+                scan_split = scan.split(".")
+                scan_n = scan_split[0]
+                try:
+                    scan_idx = scan_split[1]
+                except IndexError:
+                    self._logger.warning("'scan_idx' kept at 1")
+                    pass
+                try:
+                    scan_n = int(scan_n)
+                    scan_idx = int(scan_idx)
+                except ValueError:
+                    self._logger.error("scan not selected, wrong 'scan_n'!")
+                    return
+            assert isinstance(scan_n, int), "'scan_n' must be an integer"
+            assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
+            self._scan_n = scan_n
+            if self._urls_fmt == "silx":
+                self._scan_str = f"{scan_n}.{scan_idx}"
+            elif self._urls_fmt == "spec2nexus":
+                self._scan_str = f"S{scan_n}"
+            else:
+                self._logger.error("wrong 'urls_fmt'")
+                return
         if group_url is not None:
             self.set_group(group_url)
         if self._group_url is not None:
@@ -359,12 +364,13 @@ class DataSourceSpecH5(object):
             self._scan_title = self.get_title()
             self._scan_start = self.get_time()
             self._logger.info(
-                f"selected scan {self._scan_url}: '{self._scan_title}' ({self._scan_start})"
+                f"selected scan '{self._scan_url}' | '{self._scan_title}' | '{self._scan_start}'"
             )
         except KeyError:
             self._scangroup = None
             self._scan_title = None
             self._logger.error(f"'{self._scan_url}' is not valid")
+
 
     def _list_from_url(self, url_str):
         """Utility method to get a list from a scan url
@@ -410,13 +416,15 @@ class DataSourceSpecH5(object):
         allscans = []
         for sn in self._sourcefile["/"].keys():
             sg = self._sourcefile[sn]
-            allscans.append(
-                [
-                    sn,
-                    bytes2str(sg[self._title_url][()]),
-                    bytes2str(sg[self._time_start_url][()]),
-                ]
-            )
+            try:
+                allscans.append(
+                    [
+                        sn,
+                        bytes2str(sg[self._title_url][()]),
+                        bytes2str(sg[self._time_start_url][()]),
+                    ]
+                )
+            except
         return allscans
 
     def get_motors(self):
