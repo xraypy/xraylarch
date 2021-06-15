@@ -180,6 +180,8 @@ class DataSourceSpecH5(object):
             how the data are organized in the HDF5 container
             'silx' : default
             'spec2nexus' : as converted by spec2nexus
+        verbose : bool [False]
+            if True it lowers the logger level to INFO, othewise WARNING by default
         """
         if logger is None:
             from larch.utils.logging import getLogger
@@ -297,7 +299,7 @@ class DataSourceSpecH5(object):
         none: sets attribute self._group_url
         """
         self._group_url = group_url
-        if self._group_url is not None and self.verbose:
+        if self._group_url is not None:
             self._logger.info(f"Selected group {self._group_url}")
 
     def set_scan(self, scan_n, scan_idx=1, group_url=None, scan_kws=None):
