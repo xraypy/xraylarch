@@ -209,17 +209,18 @@ class XASFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def process_normalization(self, dgroup):
-        self.get_nbpage('xasnorm').process(dgroup, noskip=True)
+        self.get_nbpage('xasnorm')[1].process(dgroup, noskip=True)
 
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
-        for page in self.nb.pagelist:
+        for i, page in enumerate(self.nb.pagelist):
             if name in page.__class__.__name__.lower():
-                return page
+                return i, page
+        return (1, self.nb.GetCurrentPage())
 
     def onNBChanged(self, event=None):
-        is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')
+        is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')[1]
         for imenu, menudat in enumerate(self.menubar.GetMenus()):
             if 'pre-edge' in menudat[1].lower():
                 self.menubar.EnableTop(imenu, is_prepeak)
