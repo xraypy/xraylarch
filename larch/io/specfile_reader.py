@@ -242,7 +242,12 @@ class DataSourceSpecH5(object):
                 if ft in str(self._sourcefile):
                     self._sourcefile_type = ft
             self._scans = self.get_scans()
-            self.set_scan(self._scans[0][0])  # set the first scan at init
+            _iscn = 0
+            self.set_scan(self._scans[_iscn][0])  # set the first scan at init
+            while len(self.get_counters()) == 1:
+                self._logger.warning(f"not enough data in scan {_iscn+1} '{self.get_title()}'")
+                _iscn += 1
+                self.set_scan(self._scans[_iscn][0])
         except OSError:
             self._logger.error(f"cannot open {self._fname}")
 
