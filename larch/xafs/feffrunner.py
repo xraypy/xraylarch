@@ -66,7 +66,8 @@ class FeffRunner(Group):
 
     Feff8l_modules = ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
-    def __init__(self, feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
+    def __init__(self, feffinp='feff.inp', folder='.', verbose=True, _larch=None,
+                 message_writer=None, **kws):
         kwargs = dict(name='Feff runner')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -77,6 +78,7 @@ class FeffRunner(Group):
         self.folder   = folder
         self.feffinp  = feffinp
         self.verbose  = verbose
+        self.message_writer   = message_writer
         self.mpse     = False
         self.resolved = None
         self.threshold = []
@@ -187,6 +189,9 @@ class FeffRunner(Group):
                 break
             if self.verbose:
                 write(line)
+            if callable(self.message_writer):
+                self.message_writer(line)
+
             ## snarf threshold energy
             pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
             match = pattern.search(line)
@@ -239,7 +244,8 @@ def feff6l(feffinp='feff.inp', folder='.', verbose=True, _larch=None, **kws):
     ------
       many results data files are generated in the Feff working folder
     """
-    feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
+    feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose,
+                            _larch=_larch, **kws)
     exe = find_exe('feff6l')
     feffrunner.run(exe=exe)
     return feffrunner
