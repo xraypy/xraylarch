@@ -23,6 +23,7 @@ And the answers are that there are simple methods for:
 """
 
 import os
+import re
 import time
 import json
 from base64 import b64encode, b64decode
@@ -481,17 +482,24 @@ class AMSCIFDB():
         return self.get_cif(cif_id)
 
 
-    def add_ciffile(self, filename, url=''):
+    def add_ciffile(self, filename, cif_id=None, url=''):
         if not HAS_CIFPARSER:
             raise ValueError("CifParser from pymatgen not available. Try 'pip install pymatgen'.")
         cif = CifParser(filename)
-        dat = cif._cif.data['global'].data
+        cifkey = list(cif._cif.data.keys())[0]
+        dat = cif._cif.data[cifkey].data
         formula = dat['_chemical_formula_sum']
         compound  = dat.get('_chemical_compound_source', '<missing>')
 
         # get spacegroup and symmetry
         sgroup_name = dat['_symmetry_space_group_name_H-M']
-        symm_xyz = json.dumps(dat['_space_group_symop_operation_xyz'])
+        symm_xyz = dat.get('_space_group_symop_operation_xyz', None)
+        if symm_xyz is None:
+            symm_xyz = dat.get('_symmetry_equiv_pos_as_xyz', None)
+        if symm_xyz is None:
+            raise ValueError(f'Cannot read symmetries from file {filename:s}')
+
+        symm_xyz = json.dumps(symm_xyz)
 
         sgroup = self.get_spacegroup(sgroup_name)
         if sgroup is not None and sgroup.symmetry_xyz != symm_xyz:
@@ -523,8 +531,24 @@ class AMSCIFDB():
         else:
             pub = pubs[0]
 
+        density = dat.get('_exptl_crystal_density_meas', None)
+        if density is None:
+            density = dat.get('_exptl_crystal_density_diffrn', None)
 
-        cif_id = int(dat['_database_code_amcsd'])
+        if cif_id is None:
+            cif_id = dat.get('_database_code_amcsd', None)
+            if cif_id is None:
+                cif_id = dat.get('_cod_database_code', None)
+            if cif_id is None:
+                cif_id = self.next_cif_id()
+        cif_id = int(cif_id)
+
+        # check again for this cif id
+        tabcif = self.tables['cif']
+        this = select(tabcif.c.id).where(tabcif.c.id==int(cif_id)).execute().fetchall()
+        if len(this) > 0:
+            return this[0][0]
+
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,
                          formula_title=dat.get('_amcsd_formula_title', '<missing>'),
@@ -549,9 +573,9 @@ class AMSCIFDB():
                          beta=dat['_cell_angle_beta'],
                          gamma=dat['_cell_angle_gamma'],
                          cell_volume=dat['_cell_volume'],
-                         crystal_density=dat['_exptl_crystal_density_diffrn'],
+                         crystal_density=density,
                          url=url)
-
+        return cif_id
 
     def get_cif(self, cif_id, as_strings=False):
         """get Cif Structure object """
@@ -583,15 +607,15 @@ class AMSCIFDB():
                      'cell_volume', 'crystal_density'):
             val = getattr(cif, attr, '-1')
             if not as_strings:
-                try:
-                    val = float(val)
-                except:
+                if val is not None:
+                    if '(' in val:
+                        val = val.split('(')[0]
                     if ',' in val and '.' not in val:
                         val = val.replace(',', '.')
-                        try:
-                            val = float(val)
-                        except:
-                            pass
+                    try:
+                        val = float(val)
+                    except:
+                        pass
             setattr(out, attr, val)
 
         for attr in ('atoms_sites', 'atoms_aniso_label'):
@@ -617,6 +641,16 @@ class AMSCIFDB():
             out.qval = np.unpackbits(np.array([int(b) for b in b64decode(cif.qdat)],
                                               dtype='uint8'))
         return out
+
+
+    def next_cif_id(self):
+        """next available CIF ID > 200000 that is not in current table"""
+        max_id = 200_000
+        tabcif = self.tables['cif']
+        for row in select(tabcif.c.id).where(tabcif.c.id>200000).execute().fetchall():
+            if row[0] > max_id:
+                max_id = row[0]
+        return max_id + 1
 
 
     def all_minerals(self):
@@ -671,26 +705,50 @@ class AMSCIFDB():
         tab_ap = self.tables['publication_authors']
         tab_ce = self.tables['cif_elements']
 
-        args = []
-        if mineral_name is not None:
-            args.append(func.lower(tabmin.c.name)==mineral_name.lower())
-            args.append(tabmin.c.id==tabcif.c.mineral_id)
+        matches = []
 
-        if journal_name is not None:
-            args.append(func.lower(tabpub.c.journalname)==journal_name.lower())
-            args.append(tabpub.c.id==tabcif.c.publication_id)
+        if mineral_name is not None and ('*' in mineral_name or
+                                         '^' in mineral_name or '$' in mineral_name):
+            pattern = mineral_name.replace('*', '.*').replace('..*', '.*')
+            matches = []
+            for row in self.tables['minerals'].select().execute().fetchall():
+                if re.search(pattern, row.name, flags=re.IGNORECASE) is not None:
+                    query = select(tabcif.c.id).where(tabcif.c.mineral_id==row.id)
+                    for m in [row[0] for row in query.execute().fetchall()]:
+                        if m not in matches:
+                           matches.append(m)
 
-        if author_name is not None:
-            args.append(func.lower(tabaut.c.name)==author_name.lower())
-            args.append(tabcif.c.publication_id==tab_ap.c.publication_id)
-            args.append(tabaut.c.id==tab_ap.c.author_id)
+            if journal_name is not None:
+                pattern = journal_name.replace('*', '.*').replace('..*', '.*')
+                new_matches = []
+                for c in matches:
+                    pub_id = select(tabcif.c.publication_id).where(tabcif.c.id==c).execute().fetchone()[0]
+                    this_journal = select(tabpub.c.journalname).where(tabpub.c.id==pub_id).execute().fetchone()[0]
+                    if re.search(pattern,  this_journal, flags=re.IGNORECASE) is not None:
+                        new_matches.append[c]
+                matches = new_matches
 
 
-        query = select(tabcif.c.id)
-        if len(args) > 0:
-            query = select(tabcif.c.id).where(and_(*args))
-        matches = [row[0] for row in self.conn.execute(query).fetchall()]
-        matches = list(set(matches))
+        else: # strict mineral name or no mineral name
+            args = []
+            if mineral_name is not None:
+                args.append(func.lower(tabmin.c.name)==mineral_name.lower())
+                args.append(tabmin.c.id==tabcif.c.mineral_id)
+
+            if journal_name is not None:
+                args.append(func.lower(tabpub.c.journalname)==journal_name.lower())
+                args.append(tabpub.c.id==tabcif.c.publication_id)
+
+            if author_name is not None:
+                args.append(func.lower(tabaut.c.name)==author_name.lower())
+                args.append(tabcif.c.publication_id==tab_ap.c.publication_id)
+                args.append(tabaut.c.id==tab_ap.c.author_id)
+
+            query = select(tabcif.c.id)
+            if len(args) > 0:
+                query = select(tabcif.c.id).where(and_(*args))
+            matches = [row[0] for row in self.conn.execute(query).fetchall()]
+            matches = list(set(matches))
         #
         cif_elems = self.get_cif_elems()
 
