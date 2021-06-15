@@ -934,3 +934,15 @@ class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
 def xas_viewer(**kws):
     XASViewer(**kws)
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Larch XAS GUI")
+    parser.add_argument(
+        '-f', '--filename',
+        dest='filename',
+        help='data file to load')
+    args = parser.parse_args()
+    app = XASViewer(**vars(args))
+    app.MainLoop()
