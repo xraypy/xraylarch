@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.9.52 - Unreleased]
+## [0.9.53 - Unreleased]
+
+## Fixed
+
+- XAS viewer
+  - fixed various bugs in Spec/BLISS files importer
+
+## [0.9.52 - 2021-06-13]
 
 ### Added
 
@@ -29,7 +36,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - XAS viewer
   - "Apply to all marked groups" feature for pre-edge peak fitting.
   - import multiple scans from a Spec file.
-
 - There are binary installers for Windows, MacOSX, and Linux.
 - "GetLarch.sh" and "GetLarch.bat" scripts.
 
