@@ -342,7 +342,7 @@ class DataSourceSpecH5(object):
                     scan_n = int(scan_n)
                     scan_idx = int(scan_idx)
                 except ValueError:
-                    self._logger.error("scan not selected, wrong 'scan_n'!")
+                    self._logger.error("scan not selected, wrong 'scan' parameter!")
                     return
             assert isinstance(scan_n, int), "'scan_n' must be an integer"
             assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
