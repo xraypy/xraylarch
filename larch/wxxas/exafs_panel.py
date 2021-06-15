@@ -90,6 +90,7 @@ class EXAFSPanel(TaskPanel):
         self.last_plot = 'one'
         self.last_process_bkg = {}
         self.last_process_fft = {}
+        self.last_process_time = time.time() - 5000
 
     def build_display(self):
         panel = self.panel
@@ -130,9 +131,11 @@ class EXAFSPanel(TaskPanel):
         wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
                                          action=self.onProcess)
         wids['plot_kweight'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                         action=self.onProcess, min_val=0, max_val=5)
+                                         action=self.onProcess,
+                                         min_val=0, max_val=5)
         wids['plot_kweight_alt'] = FloatSpin(panel, value=2, digits=1, increment=1,
-                                             action=self.onProcess,  min_val=0, max_val=5)
+                                             action=self.onProcess,
+                                             min_val=0, max_val=5)
 
         opts = dict(digits=2, increment=0.1, min_val=0, action=self.onProcess)
         wids['e0'] = FloatSpin(panel, **opts)
@@ -378,7 +381,11 @@ class EXAFSPanel(TaskPanel):
                 val = opts.get(attr, -1)
                 if val is None:
                     val = '0'
-            wids[attr].SetStringSelection("%d" % opts.get(attr, 0))
+            try:
+                wids[attr].SetStringSelection("%d" % float(opts.get(attr, 0)))
+            except:
+                print(f"could not set '{attr:s}' to {val}")
+
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             if attr in opts:
@@ -482,18 +489,14 @@ class EXAFSPanel(TaskPanel):
 
     def onProcess(self, event=None):
         """ handle process events"""
-        if self.skip_process:
-            time.sleep(0.25)
-            self.skip_process = False
+        if self.skip_process or ((time.time() - self.last_process_time) < 0.5):
             return
+        self.last_process_time = time.time()
         self.skip_process = True
         self.process(dgroup=self.dgroup)
         self.skip_process = False
-
-        plotter = self.onPlotOne
-        if self.last_plot == 'selected':
-            plotter = self.onPlotSel
-        wx.CallAfter(partial(plotter))
+        plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
+        plotter()
 
     def process(self, dgroup=None, **kws):
         if dgroup is not None:
