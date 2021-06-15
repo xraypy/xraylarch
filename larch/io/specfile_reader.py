@@ -655,7 +655,8 @@ class DataSourceSpecH5(object):
                 self._logger.warning(
                     f"'{label}' skipped (shape is different from '{axis}')"
                 )
-                array_labels.pop(label)
+                ipop = array_labels.index(label)
+                array_labels.pop(ipop)
         out.data = np.array(data)
         return out
 
