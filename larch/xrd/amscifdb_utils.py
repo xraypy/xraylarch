@@ -56,6 +56,9 @@ def encode_farray(dat):
         if d == '?':
             work.append(2) # out-of-bounds
         else:
+            if '(' in d or '(' in d:
+                d = d.replace(')', ' : ').replace('(', ' : ')
+                d = d.split(':')[0].strip()
             work.append(d)
     x = (farray_scale*np.array([float(x) for x in work])).round()
     return b64encode(x.astype(np.int32).tobytes()).decode('ascii')
