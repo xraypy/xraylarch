@@ -655,7 +655,8 @@ class AMSCIFDB():
 
     def find_cifs(self, id=None, mineral_name=None, author_name=None,
                   journal_name=None, contains_elements=None,
-                  excludes_elements=None, strict_contains=False, full_occupancy=False):
+                  excludes_elements=None, strict_contains=False,
+                  full_occupancy=False):
         """return list of CIF Structures matching mineral, publication, or elements
         """
         if id is not None:
@@ -701,10 +702,11 @@ class AMSCIFDB():
                         new_matches.append(row)
                 matches = new_matches
 
-            if excludes_elements is None and strict_contains:
+            if strict_contains:
                 excludes_elements = elem_symbol[:]
                 for c in contains_elements:
-                    excludes_elements.remove(c)
+                    if c in excludes_elements:
+                        excludes_elements.remove(c)
 
         if excludes_elements is not None:
             bad = []
