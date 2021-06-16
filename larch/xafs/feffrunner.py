@@ -308,7 +308,8 @@ def feff8l(feffinp='feff.inp', folder='.', module=None, verbose=True, _larch=Non
     ------
       many results data files are generated in the Feff working folder
     """
-    feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose, _larch=_larch)
+    feffrunner = FeffRunner(folder=folder, feffinp=feffinp, verbose=verbose,
+                            _larch=_larch, **kws)
     feffrunner.run(exe='feff8l')
     return feffrunner
 
