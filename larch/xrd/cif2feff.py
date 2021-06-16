@@ -78,9 +78,9 @@ def cif_sites(ciftext):
     cstruct = read_cif_structure(ciftext)
     return cstruct.sites
 
-def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
-               site_index=None, extra_titles=None):
-    """convert CIF text to Feff6l input
+def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
+                site_index=None, extra_titles=None, version8=True):
+    """convert CIF text to Feff8 or Feff6l input file
 
     Arguments
     ---------
@@ -91,7 +91,7 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
       cluster_size (float):     size of cluster, in Angstroms         [8.0]
       absorber_site (int):      index of site for absorber (see Note 3) [1]
       site_index (int or None): index of site for absorber (see Note 4) [None]
-
+      version8 (bool):          whether to write Feff8l input (see Note 5)[True]
     Returns
     -------
       text of Feff input file
@@ -100,16 +100,17 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     -----
       1. absorber is the atomic symbol or number of the absorbing element, and
          must be an element in the CIF structure.
-      2. If edge is a string, it must be one of 'K', 'L1', 'L2', or 'L3' (the
-         edges that Feff6 supports). If edge is None, it will be assigned to
-         be 'K' for absorbers with Z < 58 (Ce, with an edge energy < 40 keV),
-         and 'L3' for absorbers with Z >= 58.
+      2. If edge is a string, it must be one of 'K', 'L', 'M', or 'N' edges (note
+         Feff6 supports only 'K', 'L3', 'L2', and 'L1' edges). If edge is None,
+         it will be assigned to be 'K' for absorbers with Z < 58 (Ce, with an
+         edge energy < 40 keV), and 'L3' for absorbers with Z >= 58.
       3. for structures with multiple sites for the absorbing atom, the site
          can be selected by the order in which they are listed in the sites
          list. This depends on the details of the CIF structure, which can be
          found with `cif_sites(ciftext)`, starting counting by 1.
-      4. to explicitly state the index of the site in the sites list, use site_index
-         (starting at 1!)
+      4. to explicitly state the index of the site in the sites list, use
+         site_index (starting at 1!)
+      5. if version8 is False, outputs will be written for Feff6l
 
     """
     cstruct = read_cif_structure(ciftext)
@@ -123,7 +124,7 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     if edge is None:
         edge = 'K' if absorber_z < 58 else 'L3'
-    edge_index = {'K': 1, 'L1': 2, 'L2': 3, 'L3': 4}[edge]
+
     edge_energy = xray_edge(absorber, edge).energy
     edge_comment = f'{absorber:s} {edge:s} edge, around {edge_energy:.0f} eV'
 
@@ -192,11 +193,27 @@ def cif2feff6l(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         out_text.append(f'* {i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}  {site.species_string:s} {marker:s}')
 
     out_text.extend(['* ', '', ''])
-    out_text.append(f'HOLE    {edge_index:d}  1.0  * {edge_comment:s} (2nd number is S02)')
-    out_text.append(f'CONTROL 1 1 1 0 * phase, paths, feff, chi')
-    out_text.append(f'PRINT   1 0 0 0')
-    out_text.append(f'RMAX    {cluster_size:.2f}')
-    out_text.extend(['', 'POTENTIALS', '*    IPOT  Z   Tag'])
+
+    if version8:
+        out_text.append(f'EDGE    {edge:s}')
+        out_text.append('S02     1.0')
+        out_text.append('CONTROL 1 1 1 1 1 1')
+        out_text.append('PRINT   1 0 0 0 0 3')
+        out_text.append('EXAFS   20.0')
+        out_text.append(f'RPATH   {cluster_size:.2f}')
+        out_text.append('*SCF    5.0')
+        
+    else:
+        edge_index = {'K': 1, 'L1': 2, 'L2': 3, 'L3': 4}[edge]        
+        out_text.append(f'HOLE    {edge_index:d}  1.0  * {edge_comment:s} (2nd number is S02)')
+        out_text.append('CONTROL 1 1 1 0 * phase, paths, feff, chi')
+        out_text.append('PRINT   1 0 0 0')
+        out_text.append(f'RMAX    {cluster_size:.2f}')
+
+    out_text.extend(['', 'EXCHANGE 0', '',
+                     '*  POLARIZATION  0 0 0', '',
+                     'POTENTIALS',
+                     '*    IPOT  Z   Tag'])
 
     ipot, z = 0, absorber_z
     out_text.append(f'   {ipot:4d}  {z:4d}   {absorber:s}')
