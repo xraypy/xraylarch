@@ -25,7 +25,7 @@ from xraydb.chemparser import chemparse
 
 import larch
 from larch import Group
-from larch.xafs import feff6l
+from larch.xafs import feff8l, feff6l
 
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring)
@@ -83,10 +83,10 @@ class CIFFrame(wx.Frame):
         self.createMainPanel()
         self.createMenus()
 
-        path = os.path.join(user_larchdir, 'feff6')
+        path = os.path.join(user_larchdir, 'feff')
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
-        self.feff6_folder = path
+        self.feff_folder = path
 
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
         self.statusbar.SetStatusWidths([-3, -1])
@@ -121,7 +121,7 @@ class CIFFrame(wx.Frame):
         sizer = wx.GridBagSizer(2,2)
 
         self.title = SimpleText(panel, 'Search Am Min CIF Database:',
-                                size=(250, -1))
+                                size=(200, -1))
         self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
 
@@ -153,21 +153,28 @@ class CIFFrame(wx.Frame):
                                        label='Only Structures with Full Occupancy')
 
         wids['search']   = Button(panel, 'Search for CIFs',  action=self.onSearch)
-        wids['get_feff'] = Button(panel, 'Get Feff Input', action=self.onGetFeff)
-        wids['run_feff'] = Button(panel, 'Run Feff',       action=self.onRunFeff)
+        # wids['get_feff'] = Button(panel, 'Get Feff Input', action=self.onGetFeff)
+        # wids['get_feff'].Disable()
 
-        wids['get_feff'].Disable()
+        wids['run_feff'] = Button(panel, 'Run Feff',       action=self.onRunFeff)
         wids['run_feff'].Disable()
 
         wids['central_atom'] = Choice(panel, choices=['<empty>'], size=(75, -1),
                                       action=self.onCentralAtom)
-        wids['edge']         = Choice(panel, choices=['K', 'L3', 'L2', 'Ldddd1'],
-                                      size=(50, -1))
+        wids['edge']         = Choice(panel, choices=['K', 'L3', 'L2', 'L1',
+                                                      'M5', 'M4'],
+                                      size=(50, -1),
+                                      action=self.onGetFeff)                                                                             
 
+        wids['feffvers']      = Choice(panel, choices=['6', '8'], default=1,
+                                       size=(50, -1),
+                                      action=self.onGetFeff)                                       
         wids['site']         = Choice(panel, choices=['1', '2', '3', '4'],
-                                      size=(50, -1))
+                                      size=(50, -1),
+                                      action=self.onGetFeff)                                                                             
         wids['cluster_size'] = FloatSpin(panel, value=7.50, digits=2,
-                                         increment=0.1, max_val=10)
+                                         increment=0.1, max_val=10,
+                                         action=self.onGetFeff)
         wids['central_atom'].Disable()
         wids['edge'].Disable()
         wids['cluster_size'].Disable()
@@ -175,6 +182,7 @@ class CIFFrame(wx.Frame):
         sitelab  = SimpleText(panel, ' Crystal Site: ')
         edgelab  = SimpleText(panel, ' Edge: ')
         csizelab = SimpleText(panel, ' Cluster Size (\u212B): ')
+        fverslab = SimpleText(panel, ' Feff Version:')
 
         ir = 0
         sizer.Add(self.title,     (0, 0), (1, 3), LEFT, 2)
@@ -202,19 +210,19 @@ class CIFFrame(wx.Frame):
         ir += 1
         sizer.Add(exelemlab,        (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['excludes_elements'], (ir, 1), (1, 3), LEFT, 3)
-        ir += 1
-        sizer.Add(wids['strict_contains'], (ir, 0), (1, 3), LEFT, 3)
 
         ir += 1
-        sizer.Add(wids['full_occupancy'], (ir, 0), (1, 3), LEFT, 3)
+        sizer.Add(wids['search'],          (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['strict_contains'], (ir, 1), (1, 3), LEFT, 3)
 
         ir += 1
-        sizer.Add(wids['search'], (ir, 0), (1, 2), LEFT, 3)
+        sizer.Add(wids['full_occupancy'], (ir, 1), (1, 3), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
 
-        ir += 1
+        ir += 2
+        
         sizer.Add(catomlab,             (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['central_atom'], (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(sitelab,              (ir, 2), (1, 1), LEFT, 3)
@@ -227,8 +235,10 @@ class CIFFrame(wx.Frame):
         sizer.Add(wids['edge'],         (ir, 3), (1, 1), LEFT, 3)
 
         ir += 1
-        sizer.Add(wids['get_feff'],     (ir, 0), (1, 2), LEFT, 3)
-        sizer.Add(wids['run_feff'],     (ir, 2), (1, 2), LEFT, 3)
+        # sizer.Add(wids['get_feff'],     (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['run_feff'],     (ir, 1), (1, 1), LEFT, 3)
+        sizer.Add(fverslab,             (ir, 2), (1, 1), LEFT, 3)
+        sizer.Add(wids['feffvers'],     (ir, 3), (1, 1), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
@@ -371,7 +381,7 @@ class CIFFrame(wx.Frame):
         self.wids['central_atom'].Enable()
         self.wids['edge'].Enable()
         self.wids['cluster_size'].Enable()
-        self.wids['get_feff'].Enable()
+        # self.wids['get_feff'].Enable()
 
         self.wids['central_atom'].Clear()
         self.wids['central_atom'].AppendItems(list(elems.keys()))
@@ -394,20 +404,22 @@ class CIFFrame(wx.Frame):
         self.wids['site'].Clear()
         self.wids['site'].AppendItems(sites)
         self.wids['site'].Select(0)
+        self.onGetFeff()
 
     def onGetFeff(self, event=None):
         cif   = self.current_cif
         if cif is None:
             return
         edge  = self.wids['edge'].GetStringSelection()
+        version8 = '8' == self.wids['feffvers'].GetStringSelection()
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
         csize = self.wids['cluster_size'].GetValue()
 
-        feff6text = cif.get_feff6inp(catom, edge=edge, cluster_size=csize,
-                                     absorber_site=asite)
+        fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
+                                    absorber_site=asite, version8=version8)
 
-        self.wids['feff_text'].SetValue(feff6text)
+        self.wids['feff_text'].SetValue(fefftext)
         self.wids['run_feff'].Enable()
         i, p = self.get_nbpage('Feff Input')
         self.nb.SetSelection(i)
@@ -420,10 +432,11 @@ class CIFFrame(wx.Frame):
             return
         cc = self.current_cif
         edge  = self.wids['edge'].GetStringSelection()
+        version8 = '8' == self.wids['feffvers'].GetStringSelection()        
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
         dirname = f'{catom:s}{asite:d}_{edge:s}_{cc.mineral.name}_cif{cc.ams_id:d}'
-        dirname = os.path.join(self.feff6_folder, dirname)
+        dirname = os.path.join(self.feff_folder, dirname)
         if not os.path.exists(dirname):
             os.makedirs(dirname, mode=493)
         ix, p = self.get_nbpage('Feff Output')
@@ -441,7 +454,9 @@ class CIFFrame(wx.Frame):
         with open(fname, 'w') as fh:
             fh.write(fefftext)
         time.sleep(0.5)
-        fthread = Thread(target=feff6l,
+
+        feffexe = feff8l if version8 else feff6l
+        fthread = Thread(target=feffexe,
                          kwargs=dict(folder=dirname,
                                      message_writer=self.feff_output))
         fthread.start()
@@ -470,7 +485,7 @@ class CIFFrame(wx.Frame):
         cc = self.current_cif
 
         dirname = f'{cc.mineral.name}_cif{cc.ams_id:d}'
-        dirname = os.path.join(self.feff6_folder, dirname)
+        dirname = os.path.join(self.feff_folder, dirname)
         if not os.path.exists(dirname):
             os.makedirs(dirname, mode=493)
         fname = os.path.join(dirname, 'feff.inp')
@@ -519,13 +534,13 @@ class CIFFrame(wx.Frame):
         dlg = wx.DirDialog(self, 'Select Main Folder for Feff Calculations',
                            style=wx.DD_DEFAULT_STYLE|wx.DD_CHANGE_DIR)
 
-        dlg.SetPath(self.feff6_folder)
+        dlg.SetPath(self.feff_folder)
         if  dlg.ShowModal() == wx.ID_CANCEL:
             return None
         path = os.path.abspath(dlg.GetPath())
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
-        self.feff6_folder = path
+        self.feff_folder = path
 
 
 
