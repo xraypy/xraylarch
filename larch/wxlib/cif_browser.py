@@ -68,12 +68,8 @@ class CIFFrame(wx.Frame):
 
         title = "Larch American Mineralogist CIF Browser"
 
-        if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
 
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
-        self.larch = self.larch_buffer.larchshell
+        self.larch = _larch
 
         self.cifdb = get_amscifdb()
         self.all_minerals = self.cifdb.all_minerals()
@@ -84,7 +80,6 @@ class CIFFrame(wx.Frame):
         self.SetTitle(title)
         self.SetSize(MAINSIZE)
         self.SetFont(Font(FONTSIZE))
-        self.larch_buffer.Hide()
         self.createMainPanel()
         self.createMenus()
 
@@ -104,8 +99,8 @@ class CIFFrame(wx.Frame):
         display0 = wx.Display(0)
         client_area = display0.ClientArea
         xmin, ymin, xmax, ymax = client_area
-        xpos = int((xmax-xmin)*0.02) + xmin
-        ypos = int((ymax-ymin)*0.04) + ymin
+        xpos = int((xmax-xmin)*0.07) + xmin
+        ypos = int((ymax-ymin)*0.09) + ymin
         self.SetPosition((xpos, ypos))
 
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -295,7 +290,6 @@ class CIFFrame(wx.Frame):
         r_sizer.Add(self.nb, 1, LEFT|wx.GROW, 2)
         pack(rightpanel, r_sizer)
         splitter.SplitVertically(leftpanel, rightpanel, 1)
-        # wx.CallAfter(self.init_larch)
 
     def get_nbpage(self, name):
         "get nb page by name"
@@ -438,9 +432,9 @@ class CIFFrame(wx.Frame):
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'# Run Feff at {dirname:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff at {dirname:s}\n')
         out.SetInsertionPoint(out.GetLastPosition())
-        out.WriteText('##############\n')
+        out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
 
         fname = os.path.join(dirname, 'feff.inp')
@@ -567,7 +561,6 @@ class CIFFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.statusbar.SetStatusText(msg, panel)
 
-
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -597,40 +590,6 @@ class CIFFrame(wx.Frame):
 
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-
-    def onShowLarchBuffer(self, evt=None):
-        if self.larch_buffer is None:
-            self.larch_buffer = LarchFrame(_larch=self.larch, is_standalone=False)
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
-
-    def onSaveLarchHistory(self, evt=None):
-        wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
-        path = FileSave(self, message='Save Session History as Larch Script',
-                        wildcard=wildcard,
-                        default_file='xas_viewer_history.lar')
-        if path is not None:
-            self.larch._larch.input.history.save(path, session_only=True)
-            self.write_message("Wrote history %s" % path, 0)
-
-    def onAbout(self, event=None):
-        info = AboutDialogInfo()
-        info.SetName('XAS Viewer')
-        info.SetDescription('X-ray Absorption Visualization and Analysis')
-        info.SetVersion('Larch %s ' % larch.version.__version__)
-        info.AddDeveloper('Matthew Newville: newville at cars.uchicago.edu')
-        dlg = AboutBox(info)
-
-    def onCheckforUpdates(self, event=None):
-        dlg = LarchUpdaterDialog(self, caller='XAS Viewer')
-        dlg.Raise()
-        dlg.SetWindowStyle(wx.STAY_ON_TOP)
-        res = dlg.GetResponse()
-        dlg.Destroy()
-        if res.ok and res.run_updates:
-            from larch.apps import update_larch
-            update_larch()
-            self.onClose(event=event)
 
     def onClose(self, event=None):
         self.Destroy()

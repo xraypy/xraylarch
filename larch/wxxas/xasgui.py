@@ -35,7 +35,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SetTip, get_icon, SimpleText, pack, Button, Popup,
                          HLine, FileSave, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         flatnotebook, LarchUpdaterDialog)
+                         flatnotebook, LarchUpdaterDialog, CIFFrame)
 
 from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
 
@@ -299,6 +299,7 @@ class XASFrame(wx.Frame):
         fmenu = wx.Menu()
         group_menu = wx.Menu()
         data_menu = wx.Menu()
+        feff_menu = wx.Menu()
         ppeak_menu = wx.Menu()
         m = {}
 
@@ -386,6 +387,12 @@ class XASFrame(wx.Frame):
         self.menubar.Append(group_menu, "Groups")
         self.menubar.Append(data_menu, "Data")
         self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
+
+
+        MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
+                 "Browse CIF Structure, run Feff", self.onCIF)
+
+        self.menubar.Append(feff_menu, "Feff")
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, 'About XAS Viewer', 'About XAS Viewer',
@@ -698,6 +705,10 @@ class XASFrame(wx.Frame):
                            _larch=self.larch,
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
+
+    def onCIF(self, event=None):
+        self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
+
 
     def onLoadFitResult(self, event=None):
         pass

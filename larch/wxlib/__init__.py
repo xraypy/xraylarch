@@ -61,6 +61,7 @@ if HAS_WXPYTHON:
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
     from .periodictable import PeriodicTablePanel
+    from .cif_browser import CIFFrame
 
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
