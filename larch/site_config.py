@@ -103,7 +103,7 @@ def make_user_larchdirs():
              }
     subdirs = {'matplotlib': 'matplotlib may put files here',
                'dlls':       'put dlls here',
-               'feff6':      'Feff6 files and folders here',
+               'feff':       'Feff files and folders here',
                'modules':    'put custom larch or python modules here',
                'plugins':    'put custom larch plugins here (deprecated!!)'}
 
