@@ -516,7 +516,7 @@ class CIFFrame(wx.Frame):
 
     def onFeffFolder(self, eventa=None):
         "prompt for Feff Folder"
-        dlg = wx.DirDialog(parent, 'Select Main Folder for Feff Calculations',
+        dlg = wx.DirDialog(self, 'Select Main Folder for Feff Calculations',
                            style=wx.DD_DEFAULT_STYLE|wx.DD_CHANGE_DIR)
 
         dlg.SetPath(self.feff6_folder)
