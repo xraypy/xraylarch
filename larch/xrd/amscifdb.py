@@ -543,11 +543,16 @@ class AMSCIFDB():
                 cif_id = self.next_cif_id()
         cif_id = int(cif_id)
 
-        # check again for this cif id
+        # check again for this cif id (must match CIF AMS id and formula
         tabcif = self.tables['cif']
-        this = select(tabcif.c.id).where(tabcif.c.id==int(cif_id)).execute().fetchall()
-        if len(this) > 0:
-            return this[0][0]
+        this = select(tabcif.c.id, tabcif.c.formula).where(tabcif.c.id==int(cif_id)).execute().fetchone()
+        if this is not None:
+            _cid, _formula = this
+            if formula.replace(' ', '') == _formula.replace(' ', ''):
+                return cif_id
+            else:
+                cif_id = self.next_cif_id()
+
 
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,
