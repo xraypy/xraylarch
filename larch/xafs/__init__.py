@@ -38,8 +38,7 @@ from .fluo import fluo_corr
 
 from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l, find_exe
 from .feff8lpath import feff8_xafs
-from .feffutils import get_feffpathinfo
-
+from .feffutils import get_feff_pathinfo
 
 from .cauchy_wavelet import cauchy_wavelet
 from .deconvolve import xas_convolve, xas_deconvolve
@@ -82,4 +81,5 @@ _larch_builtins = {'_xafs': dict(autobk=autobk, etok=etok, ktoe=ktoe,
                                  feffrunner=feffrunner, feff6l=feff6l,
                                  feff8l=feff8l, feffpath= feffpath,
                                  path2chi=path2chi, ff2chi=ff2chi,
-                                 feff8_xafs=feff8_xafs)}
+                                 feff8_xafs=feff8_xafs,
+                                 get_feff_pathinfo=get_feff_pathinfo)}

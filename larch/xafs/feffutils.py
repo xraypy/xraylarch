@@ -14,7 +14,7 @@ class FeffResults:
         self.paths = paths
         self.datetime = datetime
                           
-def get_feffpathinfo(folder):
+def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
     """
     
