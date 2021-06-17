@@ -338,7 +338,7 @@ class SpecfileImporter(wx.Frame) :
         curscan = None
         for scandata in self.specfile.get_scans():
             name, cmd, dtime = scandata
-            self.scans.append("%s: %s" % (name, cmd))
+            self.scans.append("%s | %s" % (name, cmd))
             if curscan is None:
                 curscan = name
 
@@ -604,7 +604,7 @@ class SpecfileImporter(wx.Frame) :
     def onScanSelect(self, event=None):
         try:
             scan_desc = event.GetString()
-            name = [s.strip() for s in scan_desc.split(':')][0]
+            name = [s.strip() for s in scan_desc.split(' | ')][0]
             self.curscan = self.specfile.get_scan(name)
         except:
             return

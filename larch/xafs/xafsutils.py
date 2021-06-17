@@ -32,12 +32,10 @@ def guess_energy_units(e):
     Note that there is a potential for ambiguity between data
     measured in 'deg' and data measured in 'keV' with e decreasing!
     """
-
-    ework = e.flatten()
-    ediff = np.diff(ework)
-    emax = max(ework)
-
     try:
+        ework = e.flatten()
+        ediff = np.diff(ework)
+        emax = max(ework)
         units = 'eV'
         if emax > 200000:
             units = 'steps'
