@@ -452,15 +452,10 @@ class CIFFrame(wx.Frame):
         fname = os.path.join(dirname, 'feff.inp')
         with open(fname, 'w') as fh:
             fh.write(fefftext)
-        time.sleep(0.5)
+        time.sleep(0.25)
 
         feffexe = feff8l if version8 else feff6l
-        fthread = Thread(target=feffexe,
-                         kwargs=dict(folder=dirname,
-                                     message_writer=self.feff_output))
-        fthread.start()
-        time.sleep(1.0)
-        fthread.join()
+        wx.CallAfter(feffexe, folder=dirname, message_writer=self.feff_output)
 
     def feff_output(self, text):
         out = self.wids['feffout_text']
