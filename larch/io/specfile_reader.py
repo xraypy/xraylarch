@@ -180,6 +180,8 @@ class DataSourceSpecH5(object):
             how the data are organized in the HDF5 container
             'silx' : default
             'spec2nexus' : as converted by spec2nexus
+        verbose : bool [False]
+            if True it lowers the logger level to INFO, othewise WARNING by default
         """
         if logger is None:
             from larch.utils.logging import getLogger
@@ -190,12 +192,13 @@ class DataSourceSpecH5(object):
             self._logger = logger
 
         if verbose:
-            self._logger.set_level("INFO")
+            self._logger.setLevel("INFO")
 
         self._fname = fname
         self._sourcefile = None
         self._sourcefile_type = None
         self._scans = None
+        self._scans_names = None
         self._scan_n = None
         self._scan_str = None
 
@@ -242,7 +245,16 @@ class DataSourceSpecH5(object):
                 if ft in str(self._sourcefile):
                     self._sourcefile_type = ft
             self._scans = self.get_scans()
-            self.set_scan(self._scans[0][0])  # set the first scan at init
+            self._scans_names = [scn[0] for scn in self._scans]
+            try:
+                _iscn = 0
+                self.set_scan(self._scans[_iscn][0])  # set the first scan at init
+                while len(self.get_counters()) == 1:
+                    self._logger.warning(f"not enough data in scan {_iscn+1} '{self.get_title()}'")
+                    _iscn += 1
+                    self.set_scan(self._scans[_iscn][0])
+            except Exception as e:
+                self._logger.error(e)
         except OSError:
             self._logger.error(f"cannot open {self._fname}")
 
@@ -289,16 +301,16 @@ class DataSourceSpecH5(object):
         none: sets attribute self._group_url
         """
         self._group_url = group_url
-        if self._group_url is not None and self.verbose:
-            self._logger.info(f"Selected group {self._group_url}")
+        if self._group_url is not None:
+            self._logger.info(f"selected group {self._group_url}")
 
-    def set_scan(self, scan_n, scan_idx=1, group_url=None, scan_kws=None):
-        """Select a given scan number
-
+    def set_scan(self, scan, scan_idx=1, group_url=None, scan_kws=None):
+        """Select a given scan
+        
         Parameters
         ----------
-        scan_n : int or str
-            scan number or address
+        scan : int or str
+            scan number or name
         scan_idx : int (optional)
             scan repetition index [1]
         group_url : str
@@ -311,33 +323,37 @@ class DataSourceSpecH5(object):
         none: set attributes
             self._scan_n, self._scan_str, self._scan_url, self._scangroup
         """
-        # check if scan_n is given already as "scan_n.scan_idx"
-        if isinstance(scan_n, str):
-            scan_split = scan_n.split(".")
-            scan_n = scan_split[0]
-            try:
-                scan_idx = scan_split[1]
-            except IndexError:
-                self._logger.warning("'scan_idx' kept at 1")
-                pass
-            try:
-                scan_n = int(scan_n)
-                scan_idx = int(scan_idx)
-            except ValueError:
-                self._logger.error("scan not selected, wrong 'scan_n'!")
-                return
-        assert isinstance(scan_n, int), "'scan_n' must be an integer"
-        assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
-        self._scan_n = scan_n
         if scan_kws is not None:
             self._scan_kws = update_nested(self._scan_kws, scan_kws)
-        if self._urls_fmt == "silx":
-            self._scan_str = f"{scan_n}.{scan_idx}"
-        elif self._urls_fmt == "spec2nexus":
-            self._scan_str = f"S{scan_n}"
+        if scan in self._scans_names:
+            self._scan_str = scan
+            self._scan_n = self._scans_names.index(scan)
         else:
-            self._logger.error("wrong 'urls_fmt'")
-            return
+            scan_n = scan
+            if isinstance(scan, str):
+                scan_split = scan.split(".")
+                scan_n = scan_split[0]
+                try:
+                    scan_idx = scan_split[1]
+                except IndexError:
+                    self._logger.warning("'scan_idx' kept at 1")
+                    pass
+                try:
+                    scan_n = int(scan_n)
+                    scan_idx = int(scan_idx)
+                except ValueError:
+                    self._logger.error("scan not selected, wrong 'scan' parameter!")
+                    return
+            assert isinstance(scan_n, int), "'scan_n' must be an integer"
+            assert isinstance(scan_idx, int), "'scan_idx' must be an integer"
+            self._scan_n = scan_n
+            if self._urls_fmt == "silx":
+                self._scan_str = f"{scan_n}.{scan_idx}"
+            elif self._urls_fmt == "spec2nexus":
+                self._scan_str = f"S{scan_n}"
+            else:
+                self._logger.error("wrong 'urls_fmt'")
+                return
         if group_url is not None:
             self.set_group(group_url)
         if self._group_url is not None:
@@ -349,12 +365,13 @@ class DataSourceSpecH5(object):
             self._scan_title = self.get_title()
             self._scan_start = self.get_time()
             self._logger.info(
-                f"selected scan {self._scan_url}: '{self._scan_title}' ({self._scan_start})"
+                f"selected scan '{self._scan_url}' | '{self._scan_title}' | '{self._scan_start}'"
             )
         except KeyError:
             self._scangroup = None
             self._scan_title = None
             self._logger.error(f"'{self._scan_url}' is not valid")
+
 
     def _list_from_url(self, url_str):
         """Utility method to get a list from a scan url
@@ -400,13 +417,31 @@ class DataSourceSpecH5(object):
         allscans = []
         for sn in self._sourcefile["/"].keys():
             sg = self._sourcefile[sn]
-            allscans.append(
-                [
-                    sn,
-                    bytes2str(sg[self._title_url][()]),
-                    bytes2str(sg[self._time_start_url][()]),
-                ]
-            )
+            try:
+                allscans.append(
+                    [
+                        sn,
+                        bytes2str(sg[self._title_url][()]),
+                        bytes2str(sg[self._time_start_url][()]),
+                    ]
+                )
+            except KeyError:
+                self._logger.error(f"'{sn}' is a datagroup!")
+                #go one level below and try take first dataset only
+                dt0 = list(sg.keys())[0]
+                sgg = sg[dt0]
+                try:
+                    scname = f"{sn}/{dt0}"
+                    allscans.append(
+                        [
+                            scname,
+                            bytes2str(sgg[self._title_url][()]),
+                            bytes2str(sgg[self._time_start_url][()]),
+                        ]
+                    )
+                except Exception:
+                    self._logger.error(f"{scname} does not have standard title/time URLs")
+                    allscans.append([None, None, None])
         return allscans
 
     def get_motors(self):
@@ -650,7 +685,8 @@ class DataSourceSpecH5(object):
                 self._logger.warning(
                     f"'{label}' skipped (shape is different from '{axis}')"
                 )
-                array_labels.pop(label)
+                ipop = array_labels.index(label)
+                array_labels.pop(ipop)
         out.data = np.array(data)
         return out
 
