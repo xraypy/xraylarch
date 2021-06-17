@@ -696,7 +696,7 @@ class AMSCIFDB():
     def find_cifs(self, id=None, mineral_name=None, author_name=None,
                   journal_name=None, contains_elements=None,
                   excludes_elements=None, strict_contains=False,
-                  full_occupancy=False):
+                  full_occupancy=False, max_matches=1000):
         """return list of CIF Structures matching mineral, publication, or elements
         """
         if id is not None:
@@ -712,9 +712,14 @@ class AMSCIFDB():
         tab_ce = self.tables['cif_elements']
 
         matches = []
-
-        if mineral_name is not None and ('*' in mineral_name or
-                                         '^' in mineral_name or '$' in mineral_name):
+        t0 = time.time()
+        if mineral_name is None:
+            mineral_name = ''
+        mineral_name = mineral_name.strip()
+            
+        if mineral_name not in (None, '') and ('*' in mineral_name or
+                                               '^' in mineral_name or
+                                               '$' in mineral_name):
             pattern = mineral_name.replace('*', '.*').replace('..*', '.*')
             matches = []
             for row in self.tables['minerals'].select().execute().fetchall():
@@ -724,7 +729,7 @@ class AMSCIFDB():
                         if m not in matches:
                            matches.append(m)
 
-            if journal_name is not None:
+            if journal_name not in (None, ''):
                 pattern = journal_name.replace('*', '.*').replace('..*', '.*')
                 new_matches = []
                 for c in matches:
@@ -737,15 +742,15 @@ class AMSCIFDB():
 
         else: # strict mineral name or no mineral name
             args = []
-            if mineral_name is not None:
+            if mineral_name not in (None, ''):
                 args.append(func.lower(tabmin.c.name)==mineral_name.lower())
                 args.append(tabmin.c.id==tabcif.c.mineral_id)
 
-            if journal_name is not None:
+            if journal_name not in (None, ''):
                 args.append(func.lower(tabpub.c.journalname)==journal_name.lower())
                 args.append(tabpub.c.id==tabcif.c.publication_id)
 
-            if author_name is not None:
+            if author_name not in (None, ''):
                 args.append(func.lower(tabaut.c.name)==author_name.lower())
                 args.append(tabcif.c.publication_id==tab_ap.c.publication_id)
                 args.append(tabaut.c.id==tab_ap.c.author_id)
@@ -757,7 +762,6 @@ class AMSCIFDB():
             matches = list(set(matches))
         #
         cif_elems = self.get_cif_elems()
-
         if contains_elements is not None:
             for el in contains_elements:
                 new_matches = []
@@ -771,7 +775,6 @@ class AMSCIFDB():
                 for c in contains_elements:
                     if c in excludes_elements:
                         excludes_elements.remove(c)
-
         if excludes_elements is not None:
             bad = []
             for el in excludes_elements:
@@ -790,11 +793,16 @@ class AMSCIFDB():
                 if occ in ('0', 0, None):
                     good.append(cif_id)
                 else:
-                    min_wt = min([float(x) for x in occ])
+                    try:
+                        min_wt = min([float(x) for x in occ])
+                    except:
+                        min_wt = 0                            
                     if min_wt > 0.96:
                         good.append(cif_id)
             matches = good
 
+        if len(matches) > max_matches:
+            matches = matches[:max_matches]
         return [self.get_cif(cid) for cid in matches]
 
 
