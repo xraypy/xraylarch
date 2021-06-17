@@ -38,6 +38,7 @@ from .fluo import fluo_corr
 
 from .feffrunner import FeffRunner, feffrunner, feff6l, feff8l, find_exe
 from .feff8lpath import feff8_xafs
+from .feffutils import get_feffpathinfo
 
 
 from .cauchy_wavelet import cauchy_wavelet
