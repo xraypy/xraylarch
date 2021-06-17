@@ -128,8 +128,7 @@ class CIFFrame(wx.Frame):
 
         minlab = SimpleText(panel, ' Mineral Name: ')
         minhint= SimpleText(panel, ' example: mag* ')
-        wids['mineral'] = TextCtrl(panel, value='',   size=(250, -1),
-                                   action=self.onSearch)
+        wids['mineral'] = TextCtrl(panel, value='',   size=(250, -1))
 
         authlab = SimpleText(panel, ' Author Name: ')
         wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1))
@@ -264,7 +263,7 @@ class CIFFrame(wx.Frame):
 
         feff_panel = wx.Panel(rightpanel)
         wids['feff_text'] = wx.TextCtrl(feff_panel,
-                                       value='<FEFF TEXT>',
+                                       value='<Feff Input Text>',
                                        style=wx.TE_MULTILINE,
                                        size=(300, 350))
         wids['feff_text'].CanCopy()
@@ -277,7 +276,7 @@ class CIFFrame(wx.Frame):
 
         feffout_panel = wx.Panel(rightpanel)
         wids['feffout_text'] = wx.TextCtrl(feffout_panel,
-                                           value='<Feff Outpu>',
+                                           value='<Feff Output>',
                                            style=wx.TE_MULTILINE,
                                            size=(300, 350))
         wids['feffout_text'].CanCopy()
@@ -541,7 +540,6 @@ class CIFFrame(wx.Frame):
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
         self.feff_folder = path
-
 
 
     def onNBChanged(self, event=None):
