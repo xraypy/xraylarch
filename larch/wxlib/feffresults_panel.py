@@ -325,22 +325,10 @@ class FeffResultsFrame(wx.Frame):
             fullpath = os.path.join(self.feff_folder, path)
             if os.path.isdir(fullpath):
                 try:
-
+                    print('read path ', fullpath)
                 except:
                     pass
                 
-        
-                self.feff_folder.SetLabel(feffresult.folder)
-        self.feff_datetime.SetLabel(feffresult.datetime)
-        nhead = len(self.feff_header)
-        
-        for i, text in enumerate(feffresult.header.split('\n')[:nhead]):
-            self.feff_header[i].SetLabel(text)
-
-        self.model.feffpaths = feffresult.paths
-        self.model.read_data()
-
-
         
     def onCentralAtom(self, event=None):
         print("cent")
