@@ -161,7 +161,7 @@ class CIFFrame(wx.Frame):
         wids['site']         = Choice(panel, choices=['1', '2', '3', '4'],
                                       size=(80, -1),
                                       action=self.onGetFeff)                                                                             
-        wids['cluster_size'] = FloatSpin(panel, value=7.50, digits=2,
+        wids['cluster_size'] = FloatSpin(panel, value=7.0, digits=2,
                                          increment=0.1, max_val=10,
                                          action=self.onGetFeff)
         wids['central_atom'].Disable()
@@ -452,9 +452,7 @@ class CIFFrame(wx.Frame):
         # feffexe, folder=dirname, message_writer=self.feff_output)
 
     def run_feff(self, folder=None, version8=True):
-        
         _, dname = os.path.split(folder)
-
         prog, cmd = feff8l, 'feff8l'
         if not version8:
             prog, cmd = feff6l, 'feff6l'
@@ -463,7 +461,6 @@ class CIFFrame(wx.Frame):
 
         prog(folder=folder, message_writer=self.feff_output)
         self.larch.eval("## gathering results:\n")
-        
         self.larch.eval(f"_feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
         this_feffrun = self.larch.symtable._feffruns[f'{dname:s}']
         self.feffresults.set_feffresult(this_feffrun)
