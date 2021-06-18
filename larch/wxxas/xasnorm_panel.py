@@ -156,7 +156,7 @@ class XASNormPanel(TaskPanel):
         self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
-        atsyms = ['?'] + self.larch.symtable._xray._xraydb.atomic_symbols
+        atsyms = ['?'] + self.larch.symtable._xray.atomic_symbols
         edges = ('K', 'L3', 'L2', 'L1', 'M5')
 
         self.wids['atsym']  = Choice(panel, choices=atsyms, size=(75, -1))
