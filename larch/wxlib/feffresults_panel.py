@@ -8,11 +8,19 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.dataview as dv
 
-
+import larch
+from larch.site_config import user_larchdir
 from larch.wxlib import (GUIColors, Button, pack, SimpleText, FileOpen,
-                     FileSave, Font, LEFT, FRAMESTYLE)
+                         FileSave, Font, LEFT, FRAMESTYLE, FONTSIZE,
+                         MenuItem,  EditableListBox, FileCheckList,
+                         Choice, HLine)
+
 
 from larch.xafs import get_feff_pathinfo
+from larch.xray import atomic_symbols
+
+ATSYMS = ['<all>'] + atomic_symbols
+EDGES = ['<all>', 'K', 'L3', 'L2', 'L1', 'M5']
 
 
 LEFT = LEFT|wx.ALL
@@ -33,7 +41,7 @@ class FeffPathsModel(dv.DataViewIndexListModel):
     def read_data(self):
         self.data = []
         if self.feffpaths is None:
-            self.data.append(('feffNNNN.dat', '3', '2', '6', '100.0', False, '***'))
+            self.data.append(('feffNNNN.dat', '0.0000', '2', '6', '100.0', False, '***'))
         else:
             for fp in self.feffpaths:
                 use = False
@@ -104,12 +112,11 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         return False
 
 
-FeffResultsPanel = 7
 
 class FeffResultsPanel(wx.Panel):
     """ present Feff results """
     def __init__(self,  parent=None, feffresult=None, _larch=None):
-        wx.Panel.__init__(self, parent, -1, size=(600, 500), style=FRAMESTYLE)
+        wx.Panel.__init__(self, parent, -1, size=(650, 650))
 
         self.parent = parent
         self._larch = _larch
@@ -178,12 +185,12 @@ class FeffResultsPanel(wx.Panel):
 
         pack(panel, sizer)
 
-        for icol, dat in enumerate((('Feff File',  100, 'text'),
-                                     ('R (Ang)',     60, 'text'),
-                                     ('# legs',      60, 'text'),
-                                     ('Degeneracy',  60, 'text'),
-                                     ('Importance',  60, 'text'),
-                                     ('Use',         60, 'bool'),
+        for icol, dat in enumerate((('Feff File',   100, 'text'),
+                                     ('R (Ang)',     75, 'text'),
+                                     ('# legs',      50, 'text'),
+                                     ('Degeneracy',  75, 'text'),
+                                     ('Importance',  75, 'text'),
+                                     ('Use',         50, 'bool'),
                                      ('Geometry',   200, 'text'))):
  
              label, width, dtype = dat
@@ -236,8 +243,145 @@ class FeffResultsPanel(wx.Panel):
         self.model.read_data()
 
 
+
+
+class FeffResultsFrame(wx.Frame):
+    """ present Feff results """
+    def __init__(self,  parent=None, feffresult=None, _larch=None):
+        wx.Frame.__init__(self, parent, -1, size=(850, 650), style=FRAMESTYLE)
+
+
+        title = "Manage Feff calculation results"
+        self.larch = _larch
+        if _larch is None:
+            self.larch = larch.Interpreter()
+
+        path = os.path.join(user_larchdir, 'feff')
+        if not os.path.exists(path):
+            os.makedirs(path, mode=493)
+        self.feff_folder = path
+            
+        self.SetTitle(title)
+        self.SetSize((850, 650))
+        self.SetFont(Font(FONTSIZE))
+        self.createMenus()
+
+        display0 = wx.Display(0)
+        client_area = display0.ClientArea
+        xmin, ymin, xmax, ymax = client_area
+        xpos = int((xmax-xmin)*0.12) + xmin
+        ypos = int((ymax-ymin)*0.13) + ymin
+        self.SetPosition((xpos, ypos))
+
+        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(250)
+
+        # left hand panel
+        lpanel = wx.Panel(splitter)
+        self.fefflist = FileCheckList(lpanel,
+                                      select_action=self.onShowFeff,
+                                      remove_action=self.onRemoveFeff,
+                                      size=(300, -1))
+
+        lsizer = wx.BoxSizer(wx.VERTICAL)
+        lsizer.Add(self.fefflist, 1, LEFT|wx.GROW|wx.ALL, 1)
+        pack(lpanel, lsizer)
+
+        # right hand side
+        panel = wx.Panel(splitter)
+        wids = self.wids = {}
+        toprow = wx.Panel(panel)
+        wids['search'] = Button(toprow, 'Gather Feff Calculation',
+                                action=self.onSearch)
+        
+        wids['central_atom'] = Choice(toprow, choices=ATSYMS, size=(100, -1),
+                                      action=self.onCentralAtom)
+        wids['edge']         = Choice(toprow, choices=EDGES, size=(100, -1),
+                                      action=self.onAbsorbingEdge)
+
+        flabel = SimpleText(toprow, 'Limit to Element/Edge:', size=(150, -1))
+        tsizer = wx.BoxSizer(wx.HORIZONTAL)
+        tsizer.Add(wids['search'],       0, LEFT|wx.GROW, 2)
+        tsizer.Add(flabel,               1, LEFT, 2)
+        tsizer.Add(wids['central_atom'], 0, LEFT|wx.GROW, 2)
+        tsizer.Add(wids['edge'],         0, LEFT|wx.GROW, 2)
+        pack(toprow, tsizer)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        pan = FeffResultsPanel(panel, _larch=_larch)
+        sizer.Add(toprow, 0, LEFT|wx.GROW|wx.ALL, 2)
+        sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
+        sizer.Add(pan, 1, LEFT|wx.GROW|wx.ALL, 2)
+        pack(panel, sizer)
+        splitter.SplitVertically(lpanel, panel, 1)        
+        self.Show()
+
+    def onShowFeff(self, event=None):
+        print("show")
+
+    def onRemoveFeff(self, event=None):
+        print("remove")    
+
+    def onSearch(self, event=None):
+        print("search")
+
+    def onCentralAtom(self, event=None):
+        print("cent")
+
+    def onAbsorbingEdge(self, event=None):
+        print("edge")
+
+    def onSelAll(self, event=None):
+        self.fefflist.select_all()
+
+    def onSelNone(self, event=None):
+        self.fefflist.select_none()
+        
+    def onCleanFeffFolders(self, event=None):
+        print('clean')
+
+    def onRemoveFeffFolders(self, event=None):
+        print('remove')
+
+    def onFeffFolder(self, eventa=None):
+        "prompt for Feff Folder"
+        dlg = wx.DirDialog(self, 'Select Main Folder for Feff Calculations',
+                           style=wx.DD_DEFAULT_STYLE|wx.DD_CHANGE_DIR)
+
+        dlg.SetPath(self.feff_folder)
+        if  dlg.ShowModal() == wx.ID_CANCEL:
+            return None
+        path = os.path.abspath(dlg.GetPath())
+        if not os.path.exists(path):
+            os.makedirs(path, mode=493)
+        self.feff_folder = path
+
+    def createMenus(self):
+        # ppnl = self.plotpanel
+        self.menubar = wx.MenuBar()
+        fmenu = wx.Menu()
+
+        MenuItem(self, fmenu, "Select Main Feff Folder",
+                 "Select Main Folder for running Feff",
+                 self.onFeffFolder)
+
+        MenuItem(self, fmenu, "Cleanup Selected Feff folders",
+                 "Keep feff.dat files, but clean up unused files",
+                 self.onCleanFeffFolders)
+
+        MenuItem(self, fmenu, "Remove Selected Feff folders",
+                 "Completely remove Feff folders",  self.onRemoveFeffFolders)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Quit",  "Exit", self.onClose)
+
+        self.menubar.Append(fmenu, "&File")
+        self.SetMenuBar(self.menubar)
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
+
     def onClose(self, event=None):
         self.Destroy()
+
 
 
 class Viewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
