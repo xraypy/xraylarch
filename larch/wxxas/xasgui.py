@@ -37,10 +37,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, CIFFrame)
 
-from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
-
 from larch.fitting import fit_report
-from larch.utils import group2dict
 from larch.site_config import icondir
 
 from .prepeak_panel import PrePeakPanel
@@ -708,7 +705,6 @@ class XASFrame(wx.Frame):
 
     def onCIF(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
-
 
     def onLoadFitResult(self, event=None):
         pass

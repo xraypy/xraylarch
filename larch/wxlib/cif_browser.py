@@ -7,17 +7,13 @@ import os
 import sys
 import time
 import copy
-import platform
-from threading import Thread
 import numpy as np
 np.seterr(all='ignore')
 
 from functools import partial
-from collections import OrderedDict
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
-import wx.lib.mixins.inspection
 from wx.adv import AboutBox, AboutDialogInfo
 
 from wxmplot import PlotPanel
@@ -26,12 +22,7 @@ from xraydb.chemparser import chemparse
 import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
-
-from larch.utils.strutils import (file2groupname, unique_name,
-                                  common_startstring)
-
-from larch.larchlib import read_workdir, save_workdir, read_config, save_config
-
+from larch.utils.paths import unixpath
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, TextCtrl,
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
@@ -39,19 +30,12 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, TextCtrl,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
                          PeriodicTablePanel)
 
-from larch.wxlib.plotter import _newplot, _plot, last_cursor_pos
-from larch.utils import group2dict
 from larch.site_config import user_larchdir
-
 
 from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif
 
-from xraydb import (material_mu, xray_edge, materials, add_material,
-                    atomic_number, atomic_symbol, xray_line)
-
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
 FNB_STYLE |= fnb.FNB_NO_NAV_BUTTONS|fnb.FNB_NODRAG
 
@@ -68,8 +52,9 @@ class CIFFrame(wx.Frame):
 
         title = "Larch American Mineralogist CIF Browser"
 
-
         self.larch = _larch
+        self.larch.eval("# started CIF browser\n")
+        self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
 
         self.cifdb = get_amscifdb()
         self.all_minerals = self.cifdb.all_minerals()
@@ -434,29 +419,48 @@ class CIFFrame(wx.Frame):
         version8 = '8' == self.wids['feffvers'].GetStringSelection()        
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
-        dirname = f'{catom:s}{asite:d}_{edge:s}_{cc.mineral.name}_cif{cc.ams_id:d}'
-        dirname = os.path.join(self.feff_folder, dirname)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname, mode=493)
+        folder = f'{catom:s}{asite:d}_{edge:s}_{cc.mineral.name}_cif{cc.ams_id:d}'
+        folder = unixpath(os.path.join(self.feff_folder, folder))
+        
+        if not os.path.exists(folder):
+            os.makedirs(folder, mode=493)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
 
+        self.folder = folder
+        
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'########\n###\n# Run Feff at {dirname:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff at {folder:s}\n')
         out.SetInsertionPoint(out.GetLastPosition())
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
 
-        fname = os.path.join(dirname, 'feff.inp')
+        fname = os.path.join(folder, 'feff.inp')
         with open(fname, 'w') as fh:
             fh.write(fefftext)
-        time.sleep(0.25)
 
-        feffexe = feff8l if version8 else feff6l
-        wx.CallAfter(feffexe, folder=dirname, message_writer=self.feff_output)
+        wx.CallAfter(self.run_feff, folder, version8=version8)
+        # feffexe, folder=dirname, message_writer=self.feff_output)
 
+    def run_feff(self, folder=None, version8=True):
+        
+        _, dname = os.path.split(folder)
+
+        prog, cmd = feff8l, 'feff8l'
+        if not version8:
+            prog, cmd = feff6l, 'feff6l'
+        command = f"{cmd:s}(folder='{folder:s}')"
+        self.larch.eval(f"## running Feff as:\n#  {command:s}\n##\n")
+
+        prog(folder=folder, message_writer=self.feff_output)
+        self.larch.eval("## gathering results:\n")
+        
+        self.larch.eval(f"_feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
+        this_feffrun = self.larch.symtable._feffruns[f'{dname:s}']
+        
+        
     def feff_output(self, text):
         out = self.wids['feffout_text']
         ix, p = self.get_nbpage('Feff Output')
