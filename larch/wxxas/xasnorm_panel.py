@@ -23,6 +23,11 @@ from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel, autoset_fs_increment
 
+from larch.xray import atomic_symbols
+
+ATSYMS = ['?'] + atomic_symbols
+EDGES  = ['K', 'L3', 'L2', 'L1', 'M5']
+
 np.seterr(all='ignore')
 
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
@@ -156,11 +161,9 @@ class XASNormPanel(TaskPanel):
         self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
-        atsyms = ['?'] + self.larch.symtable._xray.atomic_symbols
-        edges = ('K', 'L3', 'L2', 'L1', 'M5')
 
-        self.wids['atsym']  = Choice(panel, choices=atsyms, size=(75, -1))
-        self.wids['edge']   = Choice(panel, choices=edges, size=(60, -1))
+        self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(75, -1))
+        self.wids['edge']   = Choice(panel, choices=EDGES, size=(60, -1))
 
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
