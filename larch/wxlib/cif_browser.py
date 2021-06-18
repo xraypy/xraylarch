@@ -30,6 +30,7 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, TextCtrl,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
                          PeriodicTablePanel)
 
+from larch.wxlib.feffresults_panel import FeffResultsPanel
 from larch.site_config import user_larchdir
 
 from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif
@@ -53,6 +54,9 @@ class CIFFrame(wx.Frame):
         title = "Larch American Mineralogist CIF Browser"
 
         self.larch = _larch
+        if _larch is None:
+            self.larch = larch.Interpreter()
+            
         self.larch.eval("# started CIF browser\n")
         self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
 
@@ -232,6 +236,8 @@ class CIFFrame(wx.Frame):
         self.nb = flatnotebook(rightpanel, {}, drag_tabs=False,
                                on_change=self.onNBChanged)
 
+        self.feffresults = FeffResultsPanel(rightpanel, _larch=self.larch)
+        
         self.plotpanel = PlotPanel(rightpanel)
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.onPanelExposed = self.showXRD1D
@@ -274,7 +280,9 @@ class CIFFrame(wx.Frame):
         for label, page in (('CIF Text',  cif_panel),
                             ('1-D XRD Pattern', self.plotpanel),
                             ('Feff Input Text', feff_panel),
-                            ('Feff Output Text', feffout_panel)):
+                            ('Feff Output Text', feffout_panel),
+                            ('Feff Results',    self.feffresults),
+                            ):
             self.nb.AddPage(page, label, True)
             self.nbpages.append((label, page))
         self.nb.SetSelection(0)
@@ -459,6 +467,9 @@ class CIFFrame(wx.Frame):
         
         self.larch.eval(f"_feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
         this_feffrun = self.larch.symtable._feffruns[f'{dname:s}']
+        self.feffresults.set_feffresult(this_feffrun)
+        ix, p = self.get_nbpage('Feff Results')
+        self.nb.SetSelection(ix)
         
         
     def feff_output(self, text):
