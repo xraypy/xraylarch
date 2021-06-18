@@ -5,7 +5,7 @@ from collections import namedtuple
 FPathInfo = namedtuple('FeffPathInfo',
                        ('filename', 'reff', 'nleg',
                         'degeneracy', 'cwratio', 'geom'))
-class FeffResults:
+class FeffCalcResults:
     def __init__(self, folder, header=None, ipots=None,
                  paths=None, datetime=None):
         self.folder = folder
@@ -84,7 +84,7 @@ def get_feffpathinfo(folder):
                                 cwratio=float(pinfo[4]),
                                 geom=geom))
 
-    return FeffResults(os.path.abspath(folder),
-                       ipots=ipots,
-                       header='\n'.join(header),
-                       paths=opaths, datetime=dtime)
+    return FeffCalcResults(os.path.abspath(folder),
+                           ipots=ipots,
+                           header='\n'.join(header),
+                           paths=opaths, datetime=dtime)
