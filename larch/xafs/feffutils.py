@@ -7,12 +7,15 @@ FPathInfo = namedtuple('FeffPathInfo',
                         'degeneracy', 'cwratio', 'geom'))
 class FeffCalcResults:
     def __init__(self, folder, header=None, ipots=None,
-                 paths=None, datetime=None):
+                 paths=None, datetime=None, absorber=None,
+                 edge=None):
         self.folder = folder
         self.header = header
         self.ipots = ipots
         self.paths = paths
         self.datetime = datetime
+        self.absorber = absorber
+        self.edge = edge
                           
 def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
@@ -72,6 +75,7 @@ def get_feff_pathinfo(folder):
                 paths[index].append(elems)
 
     ipots = [i for i in ipots if len(i) > 0]
+    absorber = ipots[0]
     ipots[0] = '[%s]' % ipots[0]
     opaths = []
     for pindex, pinfo in paths.items():
@@ -84,7 +88,18 @@ def get_feff_pathinfo(folder):
                                 cwratio=float(pinfo[4]),
                                 geom=geom))
 
+    # read absorbing shell
+    for line in header:
+        line = line.strip()
+        if (line.startswith('Abs ') and 'Rmt=' in line
+            and 'Rnm=' in line and 'shell' in line):
+            words= line.replace('shell', '').strip().split()
+            edge = words[-1]
+        
     return FeffCalcResults(os.path.abspath(folder),
+                           absorber=absorber,
+                           edge=edge,
                            ipots=ipots,
                            header='\n'.join(header),
-                           paths=opaths, datetime=dtime)
+                           paths=opaths,
+                           datetime=dtime)
