@@ -37,6 +37,18 @@ material_get = get_material
 from .cromer_liberman import f1f2 as f1f2_cl
 from .background import XrayBackground
 
+atomic_symbols = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+                  'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca',
+                  'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu',
+                  'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr',
+                  'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag',
+                  'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba',
+                  'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
+                  'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W',
+                  'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi',
+                  'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
+                  'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf']
+
 _larch_builtins = {'_xray': dict(chemparse=chemparse,
                                  material_get=material_get,
                                  material_add=material_add,
@@ -75,3 +87,4 @@ def _larch_init(_larch):
     setsym = _larch.symtable.set_symbol
     setsym('_xray._xraydb', XrayDB())
     setsym('_xray._materials', _read_materials_db())
+    setsym('_xray._atomic_symbols', atomic_symbols)
