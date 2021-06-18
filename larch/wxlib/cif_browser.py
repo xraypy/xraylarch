@@ -109,14 +109,14 @@ class CIFFrame(wx.Frame):
         panel = wx.Panel(rightpanel)
         sizer = wx.GridBagSizer(2,2)
 
-        self.title = SimpleText(panel, 'Search Am Min CIF Database:',
-                                size=(200, -1))
+        self.title = SimpleText(panel, 'Search American Mineralogical CIF Database:',
+                                size=(500, -1), style=LEFT)
         self.title.SetFont(Font(FONTSIZE+2))
         wids = self.wids = {}
 
 
         minlab = SimpleText(panel, ' Mineral Name: ')
-        minhint= SimpleText(panel, ' example: mag* ')
+        minhint= SimpleText(panel, ' example: hem* ')
         wids['mineral'] = TextCtrl(panel, value='',   size=(250, -1))
 
         authlab = SimpleText(panel, ' Author Name: ')
@@ -144,21 +144,22 @@ class CIFFrame(wx.Frame):
         # wids['get_feff'] = Button(panel, 'Get Feff Input', action=self.onGetFeff)
         # wids['get_feff'].Disable()
 
-        wids['run_feff'] = Button(panel, 'Run Feff',       action=self.onRunFeff)
+        wids['run_feff'] = Button(panel, ' Run Feff ',
+                                  action=self.onRunFeff)
         wids['run_feff'].Disable()
 
-        wids['central_atom'] = Choice(panel, choices=['<empty>'], size=(75, -1),
+        wids['central_atom'] = Choice(panel, choices=['<empty>'], size=(80, -1),
                                       action=self.onCentralAtom)
         wids['edge']         = Choice(panel, choices=['K', 'L3', 'L2', 'L1',
                                                       'M5', 'M4'],
-                                      size=(50, -1),
+                                      size=(80, -1),
                                       action=self.onGetFeff)                                                                             
 
         wids['feffvers']      = Choice(panel, choices=['6', '8'], default=1,
-                                       size=(50, -1),
+                                       size=(80, -1),
                                       action=self.onGetFeff)                                       
         wids['site']         = Choice(panel, choices=['1', '2', '3', '4'],
-                                      size=(50, -1),
+                                      size=(80, -1),
                                       action=self.onGetFeff)                                                                             
         wids['cluster_size'] = FloatSpin(panel, value=7.50, digits=2,
                                          increment=0.1, max_val=10,
@@ -173,7 +174,7 @@ class CIFFrame(wx.Frame):
         fverslab = SimpleText(panel, ' Feff Version:')
 
         ir = 0
-        sizer.Add(self.title,     (0, 0), (1, 3), LEFT, 2)
+        sizer.Add(self.title,     (0, 0), (1, 6), LEFT, 2)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
@@ -181,7 +182,7 @@ class CIFFrame(wx.Frame):
         ir += 1
         sizer.Add(minlab,          (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['mineral'], (ir, 1), (1, 3), LEFT, 3)
-        sizer.Add(minhint,         (ir, 4), (1, 1), LEFT, 3)
+        sizer.Add(minhint,         (ir, 4), (1, 2), LEFT, 3)
         ir += 1
         sizer.Add(authlab,        (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['author'], (ir, 1), (1, 3), LEFT, 3)
@@ -193,7 +194,7 @@ class CIFFrame(wx.Frame):
         ir += 1
         sizer.Add(elemlab,        (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['contains_elements'], (ir, 1), (1, 3), LEFT, 3)
-        sizer.Add(elemhint,         (ir, 4), (1, 1), LEFT, 3)
+        sizer.Add(elemhint,         (ir, 4), (1, 3), LEFT, 2)
 
         ir += 1
         sizer.Add(exelemlab,        (ir, 0), (1, 1), LEFT, 3)
@@ -201,10 +202,10 @@ class CIFFrame(wx.Frame):
 
         ir += 1
         sizer.Add(wids['search'],          (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(wids['strict_contains'], (ir, 1), (1, 3), LEFT, 3)
+        sizer.Add(wids['strict_contains'], (ir, 1), (1, 4), LEFT, 3)
 
         ir += 1
-        sizer.Add(wids['full_occupancy'], (ir, 1), (1, 3), LEFT, 3)
+        sizer.Add(wids['full_occupancy'], (ir, 1), (1, 4), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
@@ -215,18 +216,16 @@ class CIFFrame(wx.Frame):
         sizer.Add(wids['central_atom'], (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(sitelab,              (ir, 2), (1, 1), LEFT, 3)
         sizer.Add(wids['site'],         (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(edgelab,              (ir, 4), (1, 1), LEFT, 3)
+        sizer.Add(wids['edge'],         (ir, 5), (1, 1), LEFT, 3)
 
         ir += 1
         sizer.Add(csizelab,             (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['cluster_size'], (ir, 1), (1, 1), LEFT, 3)
-        sizer.Add(edgelab,              (ir, 2), (1, 1), LEFT, 3)
-        sizer.Add(wids['edge'],         (ir, 3), (1, 1), LEFT, 3)
-
-        ir += 1
-        # sizer.Add(wids['get_feff'],     (ir, 0), (1, 1), LEFT, 3)
-        sizer.Add(wids['run_feff'],     (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(fverslab,             (ir, 2), (1, 1), LEFT, 3)
         sizer.Add(wids['feffvers'],     (ir, 3), (1, 1), LEFT, 3)
+        sizer.Add(wids['run_feff'],     (ir, 5), (1, 1), LEFT, 3)
+
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
