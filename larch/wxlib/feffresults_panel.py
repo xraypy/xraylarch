@@ -19,16 +19,12 @@ from larch.wxlib import (GUIColors, Button, pack, SimpleText, FileOpen,
 from larch.xafs import get_feff_pathinfo
 from larch.xray import atomic_symbols
 
-ATSYMS = ['<all>'] + atomic_symbols
-EDGES = ['<all>', 'K', 'L3', 'L2', 'L1', 'M5']
+ATSYMS = ['< All >'] + atomic_symbols
+EDGES  = ['< All >', 'K', 'L3', 'L2', 'L1', 'M5']
 
 
 LEFT = LEFT|wx.ALL
 DVSTYLE = dv.DV_VERT_RULES|dv.DV_ROW_LINES|dv.DV_MULTIPLE
-COLOR_MSG  = '#0099BB'
-COLOR_OK   = '#0000BB'
-COLOR_WARN = '#BB9900'
-COLOR_ERR  = '#BB0000'
 
 class FeffPathsModel(dv.DataViewIndexListModel):
     def __init__(self, feffpaths):
@@ -134,12 +130,12 @@ class FeffResultsPanel(wx.Panel):
 
         bkws = dict(size=(125, -1))
         btn_insert = Button(panel, "Import Paths", action=self.onInsert, **bkws)
-        btn_all    = Button(panel, "Select All",    action=self.onSelAll, **bkws)
-        btn_none   = Button(panel, "Select None",   action=self.onSelNone, **bkws)
+        btn_above  = Button(panel, "Select All Above Current Paths",  action=self.onSelAbove, **bkws)
+        btn_none   = Button(panel, "Select No Paths",   action=self.onSelNone, **bkws)
 
         brow = wx.BoxSizer(wx.HORIZONTAL)
-        brow.Add(btn_all ,  0, LEFT|wx.EXPAND, 1)
-        brow.Add(btn_none,  0, LEFT|wx.EXPAND, 1)
+        brow.Add(btn_above,  0, LEFT|wx.EXPAND, 1)
+        brow.Add(btn_none,   0, LEFT|wx.EXPAND, 1)
         brow.Add(btn_insert,0, LEFT|wx.EXPAND, 1)
 
         opts = dict(size=(400, -1), style=LEFT)
@@ -323,8 +319,29 @@ class FeffResultsFrame(wx.Frame):
         print("remove")    
 
     def onSearch(self, event=None):
-        print("search")
+        print("search ", self.feff_folder)
+        feffruns = {}
+        for path in os.listdir(self.feff_folder):
+            fullpath = os.path.join(self.feff_folder, path)
+            if os.path.isdir(fullpath):
+                try:
 
+                except:
+                    pass
+                
+        
+                self.feff_folder.SetLabel(feffresult.folder)
+        self.feff_datetime.SetLabel(feffresult.datetime)
+        nhead = len(self.feff_header)
+        
+        for i, text in enumerate(feffresult.header.split('\n')[:nhead]):
+            self.feff_header[i].SetLabel(text)
+
+        self.model.feffpaths = feffresult.paths
+        self.model.read_data()
+
+
+        
     def onCentralAtom(self, event=None):
         print("cent")
 
