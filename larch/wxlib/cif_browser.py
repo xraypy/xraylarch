@@ -56,7 +56,6 @@ class CIFFrame(wx.Frame):
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
-            
         self.larch.eval("# started CIF browser\n")
         self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
 
@@ -153,14 +152,14 @@ class CIFFrame(wx.Frame):
         wids['edge']         = Choice(panel, choices=['K', 'L3', 'L2', 'L1',
                                                       'M5', 'M4'],
                                       size=(80, -1),
-                                      action=self.onGetFeff)                                                                             
+                                      action=self.onGetFeff)
 
         wids['feffvers']      = Choice(panel, choices=['6', '8'], default=1,
                                        size=(80, -1),
-                                      action=self.onGetFeff)                                       
+                                      action=self.onGetFeff)
         wids['site']         = Choice(panel, choices=['1', '2', '3', '4'],
                                       size=(80, -1),
-                                      action=self.onGetFeff)                                                                             
+                                      action=self.onGetFeff)
         wids['cluster_size'] = FloatSpin(panel, value=7.0, digits=2,
                                          increment=0.1, max_val=10,
                                          action=self.onGetFeff)
@@ -211,7 +210,7 @@ class CIFFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
 
         ir += 2
-        
+
         sizer.Add(catomlab,             (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['central_atom'], (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(sitelab,              (ir, 2), (1, 1), LEFT, 3)
@@ -236,7 +235,7 @@ class CIFFrame(wx.Frame):
                                on_change=self.onNBChanged)
 
         self.feffresults = FeffResultsPanel(rightpanel, _larch=self.larch)
-        
+
         self.plotpanel = PlotPanel(rightpanel)
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.onPanelExposed = self.showXRD1D
@@ -348,6 +347,8 @@ class CIFFrame(wx.Frame):
             try:
                 label = cif.formula.replace(' ', '')
                 mineral = cif.mineral.name
+                if mineral == '<missing>':
+                    mineral = cif.formula_title
                 year = cif.publication.year
                 journal= cif.publication.journalname
                 label = f'{label}: {mineral}, {year} {journal}'
@@ -423,19 +424,23 @@ class CIFFrame(wx.Frame):
             return
         cc = self.current_cif
         edge  = self.wids['edge'].GetStringSelection()
-        version8 = '8' == self.wids['feffvers'].GetStringSelection()        
+        version8 = '8' == self.wids['feffvers'].GetStringSelection()
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
-        folder = f'{catom:s}{asite:d}_{edge:s}_{cc.mineral.name}_cif{cc.ams_id:d}'
+        mineral = cc.mineral.name
+        if mineral == '<missing>':
+            mineral = cc.formula_title
+
+        folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
         folder = unixpath(os.path.join(self.feff_folder, folder))
-        
+
         if not os.path.exists(folder):
             os.makedirs(folder, mode=493)
         ix, p = self.get_nbpage('Feff Output')
         self.nb.SetSelection(ix)
 
         self.folder = folder
-        
+
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
@@ -466,8 +471,20 @@ class CIFFrame(wx.Frame):
         self.feffresults.set_feffresult(this_feffrun)
         ix, p = self.get_nbpage('Feff Results')
         self.nb.SetSelection(ix)
-        
-        
+
+        # clean up unused, intermediate Feff files
+        for fname in os.listdir(folder):
+            if (fname.endswith('.json') or fname.endswith('.pad') or
+                fname.endswith('.bin') or fname.startswith('log') or
+                fname in ('chi.dat', 'xmu.dat', 'misc.dat')):
+                os.unlink(os.path.join(folder, fname))
+
+
+
+
+
+
+
     def feff_output(self, text):
         out = self.wids['feffout_text']
         ix, p = self.get_nbpage('Feff Output')
@@ -480,7 +497,6 @@ class CIFFrame(wx.Frame):
         out.Update()
         out.Refresh()
 
-
     def onExportFeff(self, event=None):
         if self.current_cif is None:
             return
@@ -488,8 +504,10 @@ class CIFFrame(wx.Frame):
         if len(fefftext) < 20:
             return
         cc = self.current_cif
-
-        dirname = f'{cc.mineral.name}_cif{cc.ams_id:d}'
+        if cc.mineral.name == '<missing>':
+            dirname = f'{cc.formula_title}_cif{cc.ams_id:d}'
+        else:
+            dirname = f'{cc.mineral.name}_cif{cc.ams_id:d}'
         dirname = os.path.join(self.feff_folder, dirname)
         if not os.path.exists(dirname):
             os.makedirs(dirname, mode=493)
@@ -509,7 +527,10 @@ class CIFFrame(wx.Frame):
         if self.current_cif is None:
             return
         cc = self.current_cif
-        fname = f'{cc.mineral.name}_cif{cc.ams_id:d}.cif'
+        if cc.mineral.name == '<missing>':
+            fname = f'{cc.formula_title}_cif{cc.ams_id:d}.cif'
+        else:
+            fname = f'{cc.mineral.name}_cif{cc.ams_id:d}.cif'
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
         path = FileSave(self, message='Save CIF File',
                         wildcard=wildcard,
