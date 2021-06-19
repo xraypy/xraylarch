@@ -238,7 +238,7 @@ class CifStructure():
                   f'Mineral Name: {self.mineral.name:s}']
 
         if not self.formula_title.startswith('<missing'):
-            titles.appen(f'Formula Title: {self.formula_title}')
+            titles.append(f'Formula Title: {self.formula_title}')
 
         titles.extend([f'Journal: {journal}', f'Authors: {authors}'])
         if not self.pub_title.startswith('<missing'):
