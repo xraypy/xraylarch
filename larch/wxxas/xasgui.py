@@ -35,7 +35,8 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SetTip, get_icon, SimpleText, pack, Button, Popup,
                          HLine, FileSave, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         flatnotebook, LarchUpdaterDialog, CIFFrame)
+                         flatnotebook, LarchUpdaterDialog,
+                         CIFFrame, FeffResultsFrame)
 
 from larch.fitting import fit_report
 from larch.site_config import icondir
@@ -387,7 +388,9 @@ class XASFrame(wx.Frame):
 
 
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
-                 "Browse CIF Structure, run Feff", self.onCIF)
+                 "Browse CIF Structure, run Feff", self.onCIFBrowse)
+        MenuItem(self, feff_menu, "Browse Feff Calculations",
+                 "Browse Feff Calculations, Get Feff Paths", self.onFeffBrowse)
 
         self.menubar.Append(feff_menu, "Feff")
 
@@ -703,8 +706,11 @@ class XASFrame(wx.Frame):
                            read_ok_cb=partial(self.onRead_OK,
                                               overwrite=True))
 
-    def onCIF(self, event=None):
+    def onCIFBrowse(self, event=None):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
+
+    def onFeffBrowse(self, event=None):
+        self.show_subframe('feff_paths', FeffResultsFrame, _larch=self.larch)
 
     def onLoadFitResult(self, event=None):
         pass
