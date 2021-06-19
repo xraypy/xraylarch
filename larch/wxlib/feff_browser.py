@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import logging
-
+import shutil
 from datetime import datetime, timedelta
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -10,11 +10,11 @@ import wx.dataview as dv
 
 import larch
 from larch.site_config import user_larchdir
-from larch.wxlib import (GUIColors, Button, pack, SimpleText, FileOpen,
-                         FileSave, Font, LEFT, FRAMESTYLE, FONTSIZE,
-                         MenuItem,  EditableListBox, FileCheckList,
-                         Choice, HLine, ReportFrame)
 
+from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
+                         FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
+                         FONTSIZE, MenuItem, EditableListBox, OkCancel,
+                         FileCheckList, Choice, HLine, ReportFrame, Popup)
 
 from larch.xafs import get_feff_pathinfo
 from larch.xray import atomic_symbols
@@ -27,10 +27,11 @@ LEFT = LEFT|wx.ALL
 DVSTYLE = dv.DV_VERT_RULES|dv.DV_ROW_LINES|dv.DV_MULTIPLE
 
 class FeffPathsModel(dv.DataViewIndexListModel):
-    def __init__(self, feffpaths):
+    def __init__(self, feffpaths, with_use=True):
         dv.DataViewIndexListModel.__init__(self, 0)
         self.data = []
         self.paths = {}
+        self.with_use = with_use
         self.feffpaths = feffpaths
         self.read_data()
 
@@ -42,17 +43,22 @@ class FeffPathsModel(dv.DataViewIndexListModel):
     def read_data(self):
         self.data = []
         if self.feffpaths is None:
-            self.data.append(('feffNNNN.dat', '0.0000', '2', '6', '100.0', False, '***'))
+            row = ['feffNNNN.dat', '0.0000', '2', '6', '100.0']
+            if self.with_use: row.append(False)
+            row.append('* -> * -> *')
+            self.data.append(row)
         else:
             for fp in self.feffpaths:
+                row = [fp.filename, '%.4f' % fp.reff,
+                       '%.0f' % fp.nleg, '%.0f' % fp.degeneracy,
+                       '%.3f' % fp.cwratio]
                 use = False
-                if fp.filename in self.paths:
-                    use = self.paths[fp.filename]
-                self.data.append([fp.filename, '%.4f' % fp.reff,
-                                  '%.0f' % fp.nleg,
-                                  '%.0f' % fp.degeneracy,
-                                  '%.3f' % fp.cwratio,
-                                  use, fp.geom])
+                if self.with_use:
+                    if fp.filename in self.paths:
+                        use = self.paths[fp.filename]
+                    row.append(use)
+                row.append(fp.geom)
+                self.data.append(row)
                 self.paths[fp.filename] = use
         self.Reset(len(self.data))
 
@@ -72,7 +78,7 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         self.read_data()
 
     def GetColumnType(self, col):
-        if col == 5:
+        if self.with_use and col == 5:
             return "bool"
         return "string"
 
@@ -113,11 +119,33 @@ class FeffPathsModel(dv.DataViewIndexListModel):
         return False
 
 
+class RemoveFeffCalcDialog(wx.Dialog):
+    """dialog for removing Feff Calculations"""
+
+    def __init__(self, parent, ncalcs=1, **kws):
+        title = "Remove Feff calculations?"
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title, size=(325, 275))
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
+
+        panel.Add(SimpleText(panel, f'Remove {ncalcs:d} Feff calculations?'),
+                             dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, 'Warning: this cannot be undone!'),
+                             dcol=3, newrow=True)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=2, newrow=True)
+        panel.Add(OkCancel(panel), dcol=2, newrow=True)
+        panel.pack()
+
+    def GetResponse(self):
+        self.Raise()
+        return (self.ShowModal() == wx.ID_OK)
+
 class FeffResultsPanel(wx.Panel):
     """ present Feff results """
-    def __init__(self,  parent=None, feffresult=None, _larch=None):
+    def __init__(self, parent=None, feffresult=None, path_importer=None, _larch=None):
         wx.Panel.__init__(self, parent, -1, size=(650, 650))
         self.parent = parent
+        self.path_importer = path_importer
         self._larch = _larch
         self.feffresult = feffresult
         self.report_frame = None
@@ -125,20 +153,22 @@ class FeffResultsPanel(wx.Panel):
         self.dvc = dv.DataViewCtrl(self, style=DVSTYLE)
         self.dvc.SetMinSize((600, 350))
 
-        self.model = FeffPathsModel(None)
+        self.model = FeffPathsModel(None, with_use=callable(path_importer))
         self.dvc.AssociateModel(self.model)
 
         panel = wx.Panel(self)
         # panel.SetBackgroundColour(GUIColors.bg)
 
-        sizer = wx.GridBagSizer(2,2)
+        sizer = wx.GridBagSizer(1, 1)
 
         bkws = dict(size=(160, -1))
-        btn_insert = Button(panel, "Import Paths",     action=self.onInsert, **bkws)
-        btn_above  = Button(panel, "Select All Above Current", action=self.onSelAbove,  **bkws)
-        btn_none   = Button(panel, "Select None",      action=self.onSelNone, **bkws)
         btn_header = Button(panel, "Show Full Header", action=self.onShowHeader, **bkws)
         btn_feffinp = Button(panel, "Show Feff.inp",   action=self.onShowFeffInp, **bkws)
+
+        if callable(self.path_importer):
+            btn_import = Button(panel, "Import Paths",     action=self.onImportPath, **bkws)
+            btn_above  = Button(panel, "Select All Above Current", action=self.onSelAbove,  **bkws)
+            btn_none   = Button(panel, "Select None",      action=self.onSelNone, **bkws)
 
         opts = dict(size=(400, -1), style=LEFT)
         self.feff_folder = SimpleText(panel, '',  **opts)
@@ -159,58 +189,61 @@ class FeffResultsPanel(wx.Panel):
         sizer.Add(self.feff_datetime,                (ir, 1), (1, 5),  LEFT, 2)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'Header:'),      (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[0],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, 'Header:'),      (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[0],               (ir, 1), (1, 5),  LEFT, 1)
         ir += 1
-        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[1],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[1],               (ir, 1), (1, 5),  LEFT, 1)
         ir += 1
-        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[2],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[2],               (ir, 1), (1, 5),  LEFT, 1)
         ir += 1
-        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[3],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[3],               (ir, 1), (1, 5),  LEFT, 1)
         ir += 1
-        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[4],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[4],               (ir, 1), (1, 5),  LEFT, 1)
         ir += 1
-        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 2)
-        sizer.Add(self.feff_header[5],               (ir, 1), (1, 5),  LEFT, 2)
+        sizer.Add(SimpleText(panel, ''),             (ir, 0), (1, 1),  LEFT, 1)
+        sizer.Add(self.feff_header[5],               (ir, 1), (1, 5),  LEFT, 1)
 
         ir += 1
         sizer.Add(btn_header,      (ir, 0), (1, 2),  LEFT, 2)
         sizer.Add(btn_feffinp,     (ir, 2), (1, 2),  LEFT, 2)
 
-        ir += 1
-        sizer.Add(btn_above,       (ir, 0), (1, 2),  LEFT, 2)
-        sizer.Add(btn_none,        (ir, 2), (1, 2),  LEFT, 2)
-        sizer.Add(btn_insert,      (ir, 4), (1, 2),  LEFT, 2)
+        if callable(self.path_importer):
+            ir += 1
+            sizer.Add(btn_above,     (ir, 0), (1, 2),  LEFT, 2)
+            sizer.Add(btn_none,      (ir, 2), (1, 2),  LEFT, 2)
+            sizer.Add(btn_import,    (ir, 4), (1, 2),  LEFT, 2)
+
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(600, 2)),(ir, 0), (1, 6),  LEFT, 2)
 
         pack(panel, sizer)
 
-        for icol, dat in enumerate((('Feff File',   100, 'text'),
-                                     ('R (Ang)',     75, 'text'),
-                                     ('# legs',      50, 'text'),
-                                     ('Degeneracy',  75, 'text'),
-                                     ('Importance',  75, 'text'),
-                                     ('Use',         50, 'bool'),
-                                     ('Geometry',   200, 'text'))):
+        columns = [('Feff File',   90, 'text'),
+                   ('R (\u212B)',  65, 'text'),
+                   ('# legs',      60, 'text'),
+                   ('# paths',     65, 'text'),
+                   ('Importance',  90, 'text')]
+        if callable(self.path_importer):
+            columns.append(('Use',     50, 'bool'))
+        columns.append(('Geometry',   200, 'text'))
 
+        for icol, dat in enumerate(columns):
              label, width, dtype = dat
              method = self.dvc.AppendTextColumn
              mode = dv.DATAVIEW_CELL_EDITABLE
              if dtype == 'bool':
                  method = self.dvc.AppendToggleColumn
                  mode = dv.DATAVIEW_CELL_ACTIVATABLE
-             kws = {}
-             if icol > 0:
-                 kws['mode'] = mode
-             method(label, icol, width=width, **kws)
+             method(label, icol, width=width, mode=mode)
              c = self.dvc.Columns[icol]
-             c.Alignment = wx.ALIGN_LEFT
-             c.Sortable = False
+             align = wx.ALIGN_RIGHT if icol in (1, 2, 3, 4) else wx.ALIGN_LEFT
+             c.Alignment = c.Renderer.Alignment = align
+             c.SetSortable(False)
+
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel,    0, LEFT|wx.GROW, 1)
@@ -221,7 +254,6 @@ class FeffResultsPanel(wx.Panel):
 
         if feffresult is not None:
             self.set_feffresult(feffresult)
-
 
     def onSelAll(self, event=None):
         self.model.select_all(True)
@@ -266,8 +298,17 @@ class FeffResultsPanel(wx.Panel):
             except:
                 self.report_frame = ReportFrame(parent=self, text=text, title=title)
 
-    def onInsert(self, event=None):
-        print("on Insert")
+    def onImportPath(self, event=None):
+        print("on Import Paths",  self.path_importer,
+              self.feffresult.folder              )
+        folder  = self.feffresult.folder
+        _, fname = os.path.split(folder)
+        for data in self.model.data:
+            if data[5]:
+                self.path_importer(os.path.join(folder, data[0]),
+                                   label= f'{fname:s}: R={data[1]:s}, {data[6]:s}',
+                                   degen=float(data[3]))
+
 
     def set_feffresult(self, feffresult):
         self.feffresult = feffresult
@@ -285,13 +326,18 @@ class FeffResultsFrame(wx.Frame):
     def __init__(self,  parent=None, feffresult=None, _larch=None):
         wx.Frame.__init__(self, parent, -1, size=(850, 650), style=FRAMESTYLE)
 
-
         title = "Manage Feff calculation results"
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
         self.larch.eval("# started Feff results browser\n")
         self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
+        path_importer = None
+        if parent is not None:
+            try:
+                path_importer = parent.get_nbpage('feffit')[1].import_path
+            except:
+                pass
 
         path = os.path.join(user_larchdir, 'feff')
         if not os.path.exists(path):
@@ -329,9 +375,7 @@ class FeffResultsFrame(wx.Frame):
         tsizer.Add(sel_none, 1, LEFT|wx.GROW, 1)
         pack(ltop, tsizer)
 
-        self.fefflist = FileCheckList(lpanel,
-                                      select_action=self.onShowFeff,
-                                      remove_action=self.onRemoveFeff,
+        self.fefflist = FileCheckList(lpanel, select_action=self.onShowFeff,
                                       size=(300, -1))
 
         lsizer = wx.BoxSizer(wx.VERTICAL)
@@ -343,30 +387,28 @@ class FeffResultsFrame(wx.Frame):
         panel = wx.Panel(splitter)
         wids = self.wids = {}
         toprow = wx.Panel(panel)
-        wids['search'] = Button(toprow, 'Gather Feff Calculation',
-                                action=self.onSearch)
 
         wids['central_atom'] = Choice(toprow, choices=ATSYMS, size=(100, -1),
                                       action=self.onCentralAtom)
         wids['edge']         = Choice(toprow, choices=EDGES, size=(100, -1),
                                       action=self.onAbsorbingEdge)
 
-        flabel = SimpleText(toprow, 'Limit to Element/Edge:', size=(150, -1))
+        flabel = SimpleText(toprow, 'Filter Calculations by Element and Edge:', size=(275, -1))
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(wids['search'],       0, LEFT|wx.GROW, 2)
         tsizer.Add(flabel,               1, LEFT, 2)
         tsizer.Add(wids['central_atom'], 0, LEFT|wx.GROW, 2)
         tsizer.Add(wids['edge'],         0, LEFT|wx.GROW, 2)
         pack(toprow, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.feff_panel = FeffResultsPanel(panel, _larch=_larch)
+        self.feff_panel = FeffResultsPanel(panel, path_importer=path_importer, _larch=_larch)
         sizer.Add(toprow, 0, LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(panel, sizer)
         splitter.SplitVertically(lpanel, panel, 1)
         self.Show()
+        wx.CallAfter(self.onSearch)
 
     def onShowFeff(self, event=None):
         fr = self.feffruns.get(self.fefflist.GetStringSelection(), None)
@@ -382,7 +424,10 @@ class FeffResultsFrame(wx.Frame):
         self.fefflist.Clear()
         self.feffruns = {}
         self.larch.eval("## gathering results:\n")
-        for path in os.listdir(self.feff_folder):
+        flist = os.listdir(self.feff_folder)
+        flist = sorted(flist, key=lambda t: -os.stat(os.path.join(self.feff_folder, t)).st_mtime)
+
+        for path in flist:
             fullpath = os.path.join(self.feff_folder, path)
             if os.path.isdir(fullpath):
                 try:
@@ -406,19 +451,19 @@ class FeffResultsFrame(wx.Frame):
     def onSelNone(self, event=None):
         self.fefflist.select_none()
 
-    def onCleanFeffFolders(self, event=None):
-        for checked in self.fefflist.GetCheckedStrings():
-            print('clean ', checked)
-
     def onRemoveFeffFolders(self, event=None):
-        for checked in self.fefflist.GetCheckedStrings():
-            print('remove ', checked)
+        dlg = RemoveFeffCalcDialog(self, ncalcs=len(self.fefflist.GetCheckedStrings()))
+        dlg.Raise()
+        dlg.SetWindowStyle(wx.STAY_ON_TOP)
+        remove = dlg.GetResponse()
+        dlg.Destroy()
+        if remove:
+            for checked in self.fefflist.GetCheckedStrings():
+                print(os.path.join(self.feff_folder, checked))
+                shutil.rmtree(os.path.join(self.feff_folder, checked))
+            self.onSearch()
 
-    def onRemoveFeff(self, fname=None, event=None):
-        """remove **from displayed list**"""
-        pass
-
-    def onFeffFolder(self, eventa=None):
+    def onFeffFolder(self, event=None):
         "prompt for Feff Folder"
         dlg = wx.DirDialog(self, 'Select Main Folder for Feff Calculations',
                            style=wx.DD_DEFAULT_STYLE|wx.DD_CHANGE_DIR)
@@ -431,21 +476,49 @@ class FeffResultsFrame(wx.Frame):
             os.makedirs(path, mode=493)
         self.feff_folder = path
 
+    def onImportFeffCalc(self, event=None):
+        "prompt to import Feff calculation folder"
+        dlg = wx.DirDialog(self, 'Select Folder wth Feff Calculations',
+                           style=wx.DD_DEFAULT_STYLE|wx.DD_CHANGE_DIR)
+
+        dlg.SetPath(self.feff_folder)
+        if  dlg.ShowModal() == wx.ID_CANCEL:
+            return None
+        path = os.path.abspath(dlg.GetPath())
+        if os.path.exists(path):
+            flist = os.listdir(path)
+            if ('paths.dat' in flist and 'files.dat' in flist and
+                'feff0001.dat' in flist and 'feff.inp' in flist):
+                _, dname = os.path.split(path)
+                dest = os.path.join(self.feff_folder, dname)
+                shutil.copytree(path, dest)
+                self.onSearch()
+            else:
+                Popup(self, f"{path:s} is not a complete Feff calculation",
+                      "cannot import Feff calculation")
+
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
 
-        MenuItem(self, fmenu, "Select Main Feff Folder",
-                 "Select Main Folder for running Feff",
+        MenuItem(self, fmenu, "Rescan Main Feff Folder",
+                 "Rescan Feff Folder for Feff calculations",
+                 self.onSearch)
+
+        MenuItem(self, fmenu, "Import Feff calculation",
+                 "Import other Feff calculation",
+                 self.onImportFeffCalc)
+
+        fmenu.AppendSeparator()
+
+        MenuItem(self, fmenu, "Set Main Feff Folder",
+                 "Select Main Feff Folder for Feff calculations",
                  self.onFeffFolder)
 
-        MenuItem(self, fmenu, "Cleanup Selected Feff folders",
-                 "Keep feff.dat files, but clean up unused files",
-                 self.onCleanFeffFolders)
 
-        MenuItem(self, fmenu, "Remove Selected Feff folders",
-                 "Completely remove Feff folders",  self.onRemoveFeffFolders)
+        MenuItem(self, fmenu, "Remove Selected Feff calculations",
+                 "Completely remove Feff calculations",  self.onRemoveFeffFolders)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "Quit",  "Exit", self.onClose)
@@ -456,7 +529,6 @@ class FeffResultsFrame(wx.Frame):
 
     def onClose(self, event=None):
         self.Destroy()
-
 
 
 class Viewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
