@@ -23,15 +23,15 @@ import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.utils.paths import unixpath
+from larch.site_config import user_larchdir
+
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, TextCtrl,
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, GUIColors, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
-                         PeriodicTablePanel)
+                         PeriodicTablePanel, FeffResultsPanel)
 
-from larch.wxlib.feffresults_panel import FeffResultsPanel
-from larch.site_config import user_larchdir
 
 from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif
 
