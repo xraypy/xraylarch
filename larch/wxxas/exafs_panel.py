@@ -168,10 +168,10 @@ class EXAFSPanel(TaskPanel):
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.onProcess, size=(150, -1))
+                                     action=self.onProcess, size=(125, -1))
 
         wids['fft_rwindow'] = Choice(panel, choices=list(FTWINDOWS),
-                                     action=self.onProcess, size=(150, -1))
+                                     action=self.onProcess, size=(125, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
 
 
@@ -220,7 +220,6 @@ class EXAFSPanel(TaskPanel):
         panel.Add((10, 10), dcol=2)
         panel.Add(CopyBtn('e0'), style=RIGHT)
 
-
         add_text('R bkg: ')
         panel.Add(wids['rbkg'])
         panel.Add((10, 10), dcol=2)
@@ -228,7 +227,7 @@ class EXAFSPanel(TaskPanel):
 
         add_text('k min: ')
         panel.Add(bkg_kmin)
-        panel.Add(SimpleText(panel, 'k max:', size=(75, -1)), style=LEFT)
+        panel.Add(SimpleText(panel, 'k max:'), style=LEFT)
         panel.Add(bkg_kmax)
         panel.Add(CopyBtn('bkg_krange'), style=RIGHT)
 
@@ -236,7 +235,6 @@ class EXAFSPanel(TaskPanel):
         panel.Add(wids['bkg_kweight'])
         panel.Add((10, 10), dcol=2)
         panel.Add(CopyBtn('bkg_kweight'), style=RIGHT)
-
 
         add_text('Clamps Low E: ', newrow=True)
         panel.Add( wids['bkg_clamplo'])
@@ -251,11 +249,9 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, 'Copy To Selected Groups:'),
                   style=RIGHT, dcol=3)
 
-
         panel.Add(SimpleText(panel, 'k min: '), newrow=True)
         panel.Add(fft_kmin)
-
-        panel.Add(SimpleText(panel, 'k max:', size=(75, -1)), style=LEFT)
+        panel.Add(SimpleText(panel, 'k max:'), style=LEFT)
         panel.Add(fft_kmax)
         panel.Add(CopyBtn('fft_krange'), style=RIGHT)
 
@@ -264,10 +260,9 @@ class EXAFSPanel(TaskPanel):
         panel.Add((10, 10), dcol=2)
         panel.Add(CopyBtn('fft_kweight'), style=RIGHT)
 
-
-        panel.Add(SimpleText(panel, 'K window : '), newrow=True)
+        panel.Add(SimpleText(panel, 'k window : '), newrow=True)
         panel.Add(wids['fft_kwindow'])
-        panel.Add(SimpleText(panel, ' dk : '))
+        panel.Add(SimpleText(panel, 'dk : '))
         panel.Add(wids['fft_dk'])
         panel.Add(CopyBtn('fft_kwindow'), style=RIGHT)
 
@@ -283,13 +278,13 @@ class EXAFSPanel(TaskPanel):
         panel.Add(SimpleText(panel, 'R min: '), newrow=True)
         panel.Add(fft_rmin)
 
-        panel.Add(SimpleText(panel, 'R max:', size=(75, -1)), style=LEFT)
+        panel.Add(SimpleText(panel, 'R max:'), style=LEFT)
         panel.Add(fft_rmax)
         panel.Add(CopyBtn('fft_rrange'), style=RIGHT)
 
         panel.Add(SimpleText(panel, 'R window : '), newrow=True)
         panel.Add(wids['fft_rwindow'])
-        panel.Add(SimpleText(panel, ' dR : '))
+        panel.Add(SimpleText(panel, 'dR : '))
         panel.Add(wids['fft_dr'])
         panel.Add(CopyBtn('fft_rwindow'), style=RIGHT)
 
