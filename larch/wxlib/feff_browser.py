@@ -142,9 +142,11 @@ class RemoveFeffCalcDialog(wx.Dialog):
 
 class FeffResultsPanel(wx.Panel):
     """ present Feff results """
-    def __init__(self, parent=None, feffresult=None, path_importer=None, _larch=None):
+    def __init__(self, parent=None, feffresult=None, path_importer=None, xasmain=None,
+                 _larch=None):
         wx.Panel.__init__(self, parent, -1, size=(650, 650))
         self.parent = parent
+        self.xasmain = xasmain
         self.path_importer = path_importer
         self._larch = _larch
         self.feffresult = feffresult
@@ -299,16 +301,16 @@ class FeffResultsPanel(wx.Panel):
                 self.report_frame = ReportFrame(parent=self, text=text, title=title)
 
     def onImportPath(self, event=None):
-        print("on Import Paths",  self.path_importer,
-              self.feffresult.folder              )
         folder  = self.feffresult.folder
         _, fname = os.path.split(folder)
         for data in self.model.data:
             if data[5]:
-                self.path_importer(os.path.join(folder, data[0]),
-                                   label= f'{fname:s}: R={data[1]:s}, {data[6]:s}',
-                                   degen=float(data[3]))
+                self.path_importer(os.path.join(folder, data[0]), self.feffresult)
 
+        self.onSelNone()
+        # print(' on import xasmain = ', self.xasmain)
+        if self.xasmain is not None:
+            self.xasmain.nb.SetSelection(self.xasmain.get_nbpage('feffit')[0])
 
     def set_feffresult(self, feffresult):
         self.feffresult = feffresult
@@ -323,7 +325,7 @@ class FeffResultsPanel(wx.Panel):
 
 class FeffResultsFrame(wx.Frame):
     """ present Feff results """
-    def __init__(self,  parent=None, feffresult=None, _larch=None):
+    def __init__(self,  parent=None, feffresult=None, xasmain=None, _larch=None):
         wx.Frame.__init__(self, parent, -1, size=(850, 650), style=FRAMESTYLE)
 
         title = "Manage Feff calculation results"
@@ -332,10 +334,11 @@ class FeffResultsFrame(wx.Frame):
             self.larch = larch.Interpreter()
         self.larch.eval("# started Feff results browser\n")
         self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
+        self.parent = parent
         path_importer = None
         if parent is not None:
             try:
-                path_importer = parent.get_nbpage('feffit')[1].import_path
+                path_importer = parent.get_nbpage('feffit')[1].add_path
             except:
                 pass
 
@@ -401,7 +404,8 @@ class FeffResultsFrame(wx.Frame):
         pack(toprow, tsizer)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.feff_panel = FeffResultsPanel(panel, path_importer=path_importer, _larch=_larch)
+        self.feff_panel = FeffResultsPanel(panel, path_importer=path_importer,
+                                           xasmain=xasmain, _larch=_larch)
         sizer.Add(toprow, 0, LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(HLine(panel, size=(550, 2)), 0,  LEFT|wx.GROW|wx.ALL, 2)
         sizer.Add(self.feff_panel, 1, LEFT|wx.GROW|wx.ALL, 2)
@@ -459,7 +463,6 @@ class FeffResultsFrame(wx.Frame):
         dlg.Destroy()
         if remove:
             for checked in self.fefflist.GetCheckedStrings():
-                print(os.path.join(self.feff_folder, checked))
                 shutil.rmtree(os.path.join(self.feff_folder, checked))
             self.onSearch()
 
