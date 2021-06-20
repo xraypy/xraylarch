@@ -1,5 +1,6 @@
 import time
 import os
+import ast
 import numpy as np
 np.seterr(all='ignore')
 
@@ -20,14 +21,15 @@ from lmfit.printfuncs import gformat, CORREL_HEAD
 
 from larch import Group, site_config
 from larch.math import index_of
+from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
 from larch.io.export_modelresult import export_modelresult
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, pack,
-                         Button, HLine, Choice, Check, MenuItem, GUIColors,
-                         CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         FileSave, FileOpen, flatnotebook,
+                         SetTip, GridPanel, get_icon, SimpleText, TextCtrl,
+                         pack, Button, HLine, Choice, Check, MenuItem,
+                         GUIColors, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
+                         FONTSIZE, FileSave, FileOpen, flatnotebook,
                          EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
@@ -36,10 +38,24 @@ from .taskpanel import TaskPanel
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-KWeight_Choices = {'1': 1, '2': 2, '3': 3,
-                   '2 and 3': (2, 3),
-                   '1, 2, and 3':   (2, 1, 3)}
-FitSpace_Choices = {'k space': 'k', 'R space': 'R', 'wavelet': 'w'}
+KWeight_Choices = {'1': '1', '2': '2', '3': '3',
+                   '2 and 3': '[2, 3]',
+                   '1, 2, and 3':  '[2, 1, 3]'}
+FitSpace_Choices = {'R space': 'R', 'k space': 'k', 'wavelet': 'w'}
+FitPlot_Choices = {'K and R space': 'k+r', 'R space only': 'r'}
+
+
+chik    = '\u03c7(k)'
+chirmag = '|\u03c7(R)|'
+chirre  = 'Re[\u03c7(R)]'
+chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
+wavelet = 'EXAFS wavelet'
+noplot  = '<no plot>'
+
+PlotOne_Choices = [chirmag, chik, chirre, chirmr]
+PlotAlt_Choices = [noplot] + PlotOne_Choices
+
+
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
 ScriptWcards = "Fit Models(*.lar)|*.lar|All files (*.*)|*.*"
@@ -52,9 +68,33 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 MIN_CORREL = 0.10
 
 COMMANDS = {}
-COMMANDS['feffit_params'] = """# make feffit parameters"""
-COMMANDS['feffit_trans'] = """# setup feffit transform"""
-COMMANDS['dofit'] = """# do fit"""
+COMMANDS['feffit_params_init'] = """# create feffit parameters
+_feffit_params = param_group(S02=param(1.0, min=0, vary=True),
+                             e0=param(0, min=-25, max=25, vary=True))
+_paths = {}
+
+"""
+COMMANDS['feffit_trans'] = """
+_feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, kw={kwstring:s},
+                      window='{kwindow:s}', fitspace='{fitspace:s}', rmin={rmin:.3f}, rmax={rmax:.3f})
+"""
+COMMANDS['add_path'] = """
+_paths['{title:s}'] = feffpath('{fullpath:s}',
+                     label='{label:s}',   degen=1,
+                     s02='{amp:s}',       e0='{e0:s}',
+                     deltar='{delr:s}',   sigma2='{sigma2:s}',   c3='{c3:s}')
+"""
+
+
+COMMANDS['pathlist'] = "_pathlist  = {pathlist:s}"
+COMMANDS['ff2chi']   = "_pathsum = ff2chi(_pathlist, paramgroup=_feffit_params)"
+
+COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
+_feffit_dataset  = feffit_dataset(data={groupname:s}, transform=_feffit_trans,
+                                  pathlist=_feffit_trans)
+_feffit_result = feffit(_feffit_params, _feffit_dataset)
+
+"""
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
@@ -64,17 +104,117 @@ def get_xlims(x, xmin, xmax):
     i2 = index_of(x, xmax + xeps) + 1
     return i1, i2
 
+
+
+class FeffitParamsPanel(wx.Panel):
+    def __init__(self, parent=None, _larch=None, feffit_panel=None, **kws):
+        wx.Panel.__init__(self, parent, -1, size=(550, 450))
+        self.larch = _larch
+        self.feffit_panel = feffit_panel
+        self.parwids = {}
+        spanel = scrolled.ScrolledPanel(self)
+        
+        panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
+
+        def SLabel(label, size=(80, -1), **kws):
+            return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
+
+        panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
+        panel.Add(Button(panel, 'Add/Remove Parameters', action=self.onEditParams),
+                  dcol=5)
+                  
+        panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
+        panel.AddMany((SLabel(" Value"),
+                       SLabel(" Type"),
+                       SLabel(' Bounds'),
+                       SLabel("  Min", size=(60, -1)),
+                       SLabel("  Max", size=(60, -1)),
+                       SLabel(" Expression")))
+        
+        self.update()
+        panel.pack()
+        ssizer = wx.BoxSizer(wx.VERTICAL)
+        ssizer.Add(panel, 1,  wx.GROW|wx.ALL, 2)
+        pack(spanel, ssizer)
+        
+        spanel.SetupScrolling()
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
+        pack(self, mainsizer)
+       
+    def update(self):
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        if pargroup is None:
+            self.feffit_panel.larch_eval(COMMANDS['feffit_params_init'])
+            pargroup = getattr(self.larch.symtable, '_feffit_params')
+            
+        params = group2params(pargroup)
+        for pname, par in params.items():
+            if pname in self.parwids:
+                pwids = self.parwids[pname]
+                varstr = 'vary' if par.vary else 'fix'
+                if par.expr is not None:
+                    varstr = 'constrain'
+                    pwids.expr.SetValue(par.expr)                    
+                pwids.vary.SetStringSelection(varstr)
+                pwids.value.SetValue(par.value)
+                pwids.minval.SetValue(par.min)
+                pwids.maxval.SetValue(par.max)
+            else:
+                print("Add Param ", pname, par, hasattr(par, '_is_pathparam'))
+                if not hasattr(par, '_is_pathparam'):
+                    pwids = ParameterWidgets(self.panel, par,
+                                             name_size=100,
+                                             expr_size=150,
+                                             float_size=70,
+                                             widgets=('name',
+                                                      'value', 'minval', 'maxval',
+                                                      'vary', 'expr'))
+                    
+                    self.parwids[pname] = pwids
+                    self.panel.Add(pwids.name, newrow=True)
+                    self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
+                                    pwids.minval, pwids.maxval, pwids.expr))
+                    self.panel.pack()
+        self.panel.Update()
+
+    def onEditParams(self, event=None):
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        print('edit params ' , pargroup)
+
+
+    def RemoveParams(self, event=None, name=None):
+        if name is None:
+            return
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        if pargroup is None:
+            return
+        
+        if hasattr(pargroup, name):
+            delattr(pargroup, name)
+        if name in self.parwids:
+            pwids = self.parwids.pop(name)
+            pwids.name.Destroy()
+            pwids.value.Destroy()
+            pwids.vary.Destroy()
+            pwids.bounds.Destroy()
+            pwids.minval.Destroy()
+            pwids.maxval.Destroy()
+            pwids.expr.Destroy()
+            pwids.remover.Destroy()
+            
+        
+        
 class FeffPathPanel(wx.Panel):
     """Feff Path """
-
     def __init__(self, parent=None, feffdat_file=None, dirname=None,
                  fullpath=None, absorber=None, edge=None, reff=None,
                  degen=None, geom=None, npath=1, title='', user_label='',
-                 _larch=None, xasmain=None, **kws):
+                 _larch=None, feffit_panel=None, **kws):
 
         self.parent = parent
         self.title = title
-        self.xasmain = xasmain
+        self.feffit_panel = feffit_panel
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
         
@@ -89,29 +229,28 @@ class FeffPathPanel(wx.Panel):
         self.wids = wids = {}
         delr = 'delr' if npath == 1 else f'delr_{npath:d}'
         sigma2  = 'sigma2' if npath == 1 else f'sigma2_{npath:d}'
-        
-        wids['label']  = wx.TextCtrl(panel, -1, user_label, size=(250, -1))
-        wids['amp']    = wx.TextCtrl(panel, -1, f'{degen:.1f} * S02', size=(250, -1))
-        wids['e0']     = wx.TextCtrl(panel, -1, 'e0',   size=(250, -1))
-        wids['delr']   = wx.TextCtrl(panel, -1, delr,   size=(250, -1))
-        wids['sigma2'] = wx.TextCtrl(panel, -1, sigma2, size=(250, -1))
-        wids['c3']     = wx.TextCtrl(panel, -1, '',     size=(250, -1))
-        wids['amp_val']    = SimpleText(panel,  '', size=(150, -1))
-        wids['e0_val']     = SimpleText(panel,  '', size=(150, -1))
-        wids['delr_val']   = SimpleText(panel,  '', size=(150, -1))
-        wids['sigma2_val'] = SimpleText(panel,  '', size=(150, -1))
-        wids['c3_val']     = SimpleText(panel,  '', size=(150, -1))
 
         def SLabel(label, size=(80, -1), **kws):
-            return  SimpleText(panel, label,
-                               size=size, style=wx.ALIGN_LEFT, **kws)
+            return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
+
+        def make_parwid(name, expr):
+            wids[name] = TextCtrl(panel, expr, size=(250, -1),
+                                  action=partial(self.onExpression, name=name))
+            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1))
+
+        make_parwid('label', user_label)
+        make_parwid('amp',  f'{degen:.1f} * S02')
+        make_parwid('e0',  'e0')
+        make_parwid('delr',  delr)
+        make_parwid('sigma2',  sigma2)
+        make_parwid('c3',  '')
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))        
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
                              action=self.onRemovePath)
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {edge:s} edge'
         title2 = f'Reff={reff:.4f},  Degen={degen:.1f}   {geom:s}'
-
+        
         panel.Add(SLabel(title1, size=(275, -1), colour='#0000AA'),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
@@ -129,11 +268,32 @@ class FeffPathPanel(wx.Panel):
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
-        
+
+    def get_expressions(self):
+        out = {'use': self.wids['use'].IsChecked()}
+        for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'c3'):
+            val = self.wids[key].GetValue().strip()
+            if len(val) == 0: val = '0'
+            out[key] = val            
+        return out
+    
+    def onExpression(self, event=None, name=None):
+        if name in (None, 'label'):
+            return
+        expr = self.wids[name].GetValue().strip()
+        if len(expr) < 1:
+            return
+        opts= dict(value=1.e-3, minval=None, maxval=None)
+        if name == 'sigma2':
+            opts['minval'] = 0
+        elif name == 'amp':
+            opts['value'] = 1
+        self.feffit_panel.update_params_for_expr(expr, **opts)
 
     def onRemovePath(self, event=None):
-        print(' remove path ', self.fullpath, self.title, self.xasmain)
+        print(' remove path ', self.fullpath, self.title, self.feffit_panel)
         
+
 
 class FeffitResultFrame(wx.Frame):
     config_sect = 'feffit'
@@ -144,450 +304,6 @@ class FeffitResultFrame(wx.Frame):
         self.datagroup = datagroup
         feffit = getattr(datagroup, 'feffit', None)
         self.fit_history = getattr(feffit, 'fit_history', [])
-        self.parent = parent
-        self.datasets = {}
-        self.form = {}
-        self.larch_eval = None
-        self.nfit = 0
-        self.createMenus()
-        self.build()
-
-    def createMenus(self):
-        self.menubar = wx.MenuBar()
-        fmenu = wx.Menu()
-        m = {}
-        MenuItem(self, fmenu, "Save Model for Current Group",
-                 "Save Model and Result to be loaded later",
-                 self.onSaveFitResult)
-
-        MenuItem(self, fmenu, "Save Fit and Components for Current Fit",
-                 "Save Arrays and Results to Text File",
-                 self.onExportFitResult)
-
-        fmenu.AppendSeparator()
-        MenuItem(self, fmenu, "Save Parameters and Statistics for All Fitted Groups",
-                 "Save CSV File of Parameters and Statistics for All Fitted Groups",
-                 self.onSaveAllStats)
-        self.menubar.Append(fmenu, "&File")
-        self.SetMenuBar(self.menubar)
-
-    def build(self):
-        sizer = wx.GridBagSizer(3, 3)
-        sizer.SetVGap(3)
-        sizer.SetHGap(3)
-
-        splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(200)
-
-        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
-                                           size=(250, -1))
-        panel = scrolled.ScrolledPanel(splitter)
-
-        panel.SetMinSize((775, 575))
-        self.colors = GUIColors()
-
-        # title row
-        self.wids = wids = {}
-        title = SimpleText(panel, 'Feffit Results', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
-
-        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
-                                        minsize=(350, -1),
-                                        colour=self.colors.title, style=LEFT)
-
-        opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        wids['plot_rspace'] = Check(panel, label='Plot R-space', **opts)
-        wids['plot_kspace'] = Check(panel, label='Plot k-space', **opts)
-        self.plot_choice = Button(panel, 'Plot This Fit',
-                                  size=(125, -1), action=self.onPlot)
-
-        irow = 0
-        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
-
-        irow += 1
-        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(750, 50), style=LEFT)
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
-
-        irow += 1
-        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['plot_kspace'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['plot_rspace'], (irow, 3), (1, 1), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
-        subtitle = SimpleText(panel, '  (Fit #01 is most recent)',
-                              font=Font(FONTSIZE+1),  style=LEFT)
-
-        sizer.Add(title, (irow, 0), (1, 1), LEFT)
-        sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
-
-        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit#',  width=75)
-        sview.AppendTextColumn(' N_data', width=75)
-        sview.AppendTextColumn(' N_vary', width=75)
-        sview.AppendTextColumn('\u03c7\u00B2', width=110)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
-        sview.AppendTextColumn('Akaike Info', width=110)
-        sview.AppendTextColumn('Bayesian Info', width=110)
-
-        for col in range(sview.ColumnCount):
-            this = sview.Columns[col]
-            this.Sortable = True
-            this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
-            this.Renderer.Alignment = this.Alignment
-
-        sview.SetMinSize((700, 125))
-
-        irow += 1
-        sizer.Add(sview, (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
-        sizer.Add(title, (irow, 0), (1, 1), LEFT)
-
-        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
-                                          size=(250, -1), action=self.onCopyParams)
-
-        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
-
-        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        self.wids['paramsdata'] = []
-        pview.AppendTextColumn('Parameter',         width=150)
-        pview.AppendTextColumn('Best-Fit Value',    width=125)
-        pview.AppendTextColumn('Standard Error',    width=125)
-        pview.AppendTextColumn('Info ',             width=300)
-
-        for col in range(4):
-            this = pview.Columns[col]
-            this.Sortable = False
-            this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
-            this.Renderer.Alignment = this.Alignment
-
-        pview.SetMinSize((700, 200))
-        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
-
-        irow += 1
-        sizer.Add(pview, (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
-
-        self.wids['all_correl'] = Button(panel, 'Show All',
-                                          size=(100, -1), action=self.onAllCorrel)
-
-        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
-                                            min_val=0, size=(100, -1),
-                                            digits=3, increment=0.1)
-
-        ctitle = SimpleText(panel, 'minimum correlation: ')
-        sizer.Add(title,  (irow, 0), (1, 1), LEFT)
-        sizer.Add(ctitle, (irow, 1), (1, 1), LEFT)
-        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LEFT)
-        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
-
-        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-
-        cview.AppendTextColumn('Parameter 1',    width=150)
-        cview.AppendTextColumn('Parameter 2',    width=150)
-        cview.AppendTextColumn('Correlation',    width=150)
-
-        for col in (0, 1, 2):
-            this = cview.Columns[col]
-            this.Sortable = False
-            align = wx.ALIGN_LEFT
-            if col == 2:
-                align = wx.ALIGN_RIGHT
-            this.Alignment = this.Renderer.Alignment = align
-        cview.SetMinSize((475, 200))
-
-        irow += 1
-        sizer.Add(cview, (irow, 0), (1, 5), LEFT)
-
-        pack(panel, sizer)
-        panel.SetupScrolling()
-
-        splitter.SplitVertically(self.datalistbox, panel, 1)
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
-
-        pack(self, mainsizer)
-        self.Show()
-        self.Raise()
-
-
-    def onSaveAllStats(self, evt=None):
-        "Save Parameters and Statistics to CSV"
-        # get first dataset to extract fit parameter names
-        fnames = self.datalistbox.GetItems()
-        if len(fnames) == 0:
-            return
-
-        deffile = "FeffitResults.csv"
-        wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
-        path = FileSave(self, 'Save Parameter and Statistics for Feff Fits',
-                        default_file=deffile, wildcard=wcards)
-        if path is None:
-            return
-        if os.path.exists(path):
-            if wx.ID_YES != Popup(self,
-                                  "Overwrite existing Statistics File?",
-                                  "Overwrite existing file?", style=wx.YES_NO):
-                return
-
-        ppeaks_tmpl = self.datasets[fnames[0]].prepeaks
-        param_names = list(reversed(ppeaks_tmpl.fit_history[0].params.keys()))
-        user_opts = ppeaks_tmpl.user_options
-        model_desc = self.get_model_desc(ppeaks_tmpl.fit_history[0].model).replace('\n', ' ')
-        out = ['# Feffit Report %s' % time.ctime(),
-               '# Fitted Array name: %s' %  user_opts['array_name'],
-               '# Model form: %s' % model_desc,
-               '# Baseline form: %s' % user_opts['baseline_form'],
-               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
-               '#--------------------']
-
-        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
-                 'n_varys', 'chi-square', 'reduced_chi-square',
-                 'akaike_info', 'bayesian_info']
-
-        for pname in param_names:
-            labels.append(pname)
-            labels.append(pname+'_stderr')
-        out.append('# %s' % (', '.join(labels)))
-        for name, dgroup in self.datasets.items():
-            result = dgroup.prepeaks.fit_history[0]
-            label = dgroup.filename
-            if len(label) < 25:
-                label = (label + ' '*25)[:25]
-            dat = [label, dgroup.groupname,
-                   '%d' % result.ndata, '%d' % result.nvarys]
-            for attr in ('chisqr', 'redchi', 'aic', 'bic'):
-                dat.append(gformat(getattr(result, attr), 11))
-            for pname in param_names:
-                val = stderr = 0
-                if pname in result.params:
-                    par = result.params[pname]
-                    dat.append(gformat(par.value, 11))
-                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
-                    dat.append(stderr)
-            out.append(', '.join(dat))
-        out.append('')
-
-        with open(path, 'w') as fh:
-            fh.write('\n'.join(out))
-
-
-    def onSaveFitResult(self, event=None):
-        deffile = self.datagroup.filename.replace('.', '_') + 'peak.modl'
-        sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
-                           wildcard=ModelWcards)
-        if sfile is not None:
-            result = self.get_fitresult()
-            save_modelresult(result, sfile)
-
-    def onExportFitResult(self, event=None):
-        dgroup = self.datagroup
-        deffile = dgroup.filename.replace('.', '_') + '.xdi'
-        wcards = 'All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
-
-        result = self.get_fitresult()
-        if outfile is not None:
-            i1, i2 = get_xlims(dgroup.xdat,
-                               result.user_options['emin'],
-                               result.user_options['emax'])
-            x = dgroup.xdat[i1:i2]
-            y = dgroup.ydat[i1:i2]
-            yerr = None
-            if hasattr(dgroup, 'yerr'):
-                yerr = 1.0*dgroup.yerr
-                if not isinstance(yerr, np.ndarray):
-                    yerr = yerr * np.ones(len(y))
-                else:
-                    yerr = yerr[i1:i2]
-
-            export_modelresult(result, filename=outfile,
-                               datafile=dgroup.filename, ydata=y,
-                               yerr=yerr, x=x)
-
-
-    def get_fitresult(self, nfit=None):
-        if nfit is None:
-            nfit = self.nfit
-        self.fit_history = getattr(self.datagroup.feffit, 'fit_history', [])
-        self.nfit = max(0, nfit)
-        if self.nfit > len(self.fit_history):
-            self.nfit = 0
-        return self.fit_history[self.nfit]
-
-    def onPlot(self, event=None):
-        show_resid = self.wids['plot_kspace'].IsChecked()
-        sub_bline = self.wids['plot_rspace'].IsChecked()
-        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
-        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
-
-        self.peakframe.larch_eval(cmd)
-
-    def onSelectFit(self, evt=None):
-        if self.wids['stats'] is None:
-            return
-        item = self.wids['stats'].GetSelectedRow()
-        if item > -1:
-            self.show_fitresult(nfit=item)
-
-    def onSelectParameter(self, evt=None):
-        if self.wids['params'] is None:
-            return
-        if not self.wids['params'].HasSelection():
-            return
-        item = self.wids['params'].GetSelectedRow()
-        pname = self.wids['paramsdata'][item]
-
-        cormin= self.wids['min_correl'].GetValue()
-        self.wids['correl'].DeleteAllItems()
-
-        result = self.get_fitresult()
-        this = result.params[pname]
-        if this.correl is not None:
-            sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
-            for name, corval in reversed(sort_correl):
-                if abs(corval) > cormin:
-                    self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
-
-    def onAllCorrel(self, evt=None):
-        result = self.get_fitresult()
-        params = result.params
-        parnames = list(params.keys())
-
-        cormin= self.wids['min_correl'].GetValue()
-        correls = {}
-        for i, name in enumerate(parnames):
-            par = params[name]
-            if not par.vary:
-                continue
-            if hasattr(par, 'correl') and par.correl is not None:
-                for name2 in parnames[i+1:]:
-                    if (name != name2 and name2 in par.correl and
-                            abs(par.correl[name2]) > cormin):
-                        correls["%s$$%s" % (name, name2)] = par.correl[name2]
-
-        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
-        sort_correl.reverse()
-
-        self.wids['correl'].DeleteAllItems()
-
-        for namepair, corval in sort_correl:
-            name1, name2 = namepair.split('$$')
-            self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
-
-    def onCopyParams(self, evt=None):
-        result = self.get_fitresult()
-        self.peakframe.update_start_values(result.params)
-
-    def ShowDataSet(self, evt=None):
-        dataset = evt.GetString()
-        group = self.datasets.get(evt.GetString(), None)
-        if group is not None:
-            self.show_results(datagroup=group)
-
-    def add_results(self, dgroup, form=None, larch_eval=None, show=True):
-        name = dgroup.filename
-        if name not in self.datalistbox.GetItems():
-            self.datalistbox.Append(name)
-        self.datasets[name] = dgroup
-        if show:
-            self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
-
-    def show_results(self, datagroup=None, form=None, larch_eval=None):
-        if datagroup is not None:
-            self.datagroup = datagroup
-        if larch_eval is not None:
-            self.larch_eval = larch_eval
-
-        datagroup = self.datagroup
-        self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
-
-        cur = self.get_fitresult()
-        wids = self.wids
-        wids['stats'].DeleteAllItems()
-        for i, res in enumerate(self.peakfit_history):
-            args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
-                val = getattr(res.result, attr)
-                if isinstance(val, int):
-                    val = '%d' % val
-                else:
-                    val = gformat(val, 10)
-                args.append(val)
-            wids['stats'].AppendItem(tuple(args))
-        wids['data_title'].SetLabel(self.datagroup.filename)
-        self.show_fitresult(nfit=0)
-
-    def get_model_desc(self, model):
-        model_repr = model._reprstring(long=True)
-        for word in ('Model(', ',', '(', ')', '+'):
-            model_repr = model_repr.replace(word, ' ')
-        words = []
-        mname, imodel = '', 0
-        for word in model_repr.split():
-            if word.startswith('prefix'):
-                words.append("%sModel(%s)" % (mname.title(), word))
-            else:
-                mname = word
-                if imodel > 0:
-                    delim = '+' if imodel % 2 == 1 else '+\n'
-                    words.append(delim)
-                imodel += 1
-        return ''.join(words)
-
-
-    def show_fitresult(self, nfit=0, datagroup=None):
-        if datagroup is not None:
-            self.datagroup = datagroup
-
-        result = self.get_fitresult(nfit=nfit)
-        wids = self.wids
-        wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['model_desc'].SetLabel(self.get_model_desc(result.model))
-        wids['params'].DeleteAllItems()
-        wids['paramsdata'] = []
-        for param in reversed(result.params.values()):
-            pname = param.name
-            try:
-                val = gformat(param.value, 10)
-            except (TypeError, ValueError):
-                val = ' ??? '
-            serr = ' N/A '
-            if param.stderr is not None:
-                serr = gformat(param.stderr, 10)
-            extra = ' '
-            if param.expr is not None:
-                extra = '= %s ' % param.expr
-            elif not param.vary:
-                extra = '(fixed)'
-            elif param.init_value is not None:
-                extra = '(init=%s)' % gformat(param.init_value, 10)
-
-            wids['params'].AppendItem((pname, val, serr, extra))
-            wids['paramsdata'].append(pname)
-        self.Refresh()
 
 
 class FeffitPanel(TaskPanel):
@@ -601,6 +317,12 @@ class FeffitPanel(TaskPanel):
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         try:
+            pargroup = getattr(self.larch.symtable, '_feffit_params', None)
+            if pargroup is None:
+                self.larch_eval(COMMANDS['feffit_params_init'])
+                pargroup = getattr(self.larch.symtable, '_feffit_params')
+                
+            self.params_panel.update()
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group(gname)
@@ -612,6 +334,13 @@ class FeffitPanel(TaskPanel):
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {})
+
+        self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
+                                              _larch=self.larch,
+                                              feffit_panel=self)
+        
+        self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
+
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = wids = {}
@@ -633,22 +362,34 @@ class FeffitPanel(TaskPanel):
         wids['ffit_fitspace'] = Choice(pan, choices=list(FitSpace_Choices.keys()),
                                        size=(125, -1))
 
-        self.plotmodel_btn = Button(pan,'Plot Current Model',
-                                    action=self.onPlotModel,  size=(125, -1))
-        self.fitmodel_btn = Button(pan, 'Fit Current Group',
-                                   action=self.onFitModel,  size=(125, -1))
-        self.fitmodel_btn.Disable()
+        wids['plot_paths'] = Check(pan, default=True, label='Plot Each Path'
+                                   , size=(125, -1))
+        wids['plotone_op'] = Choice(pan, choices=PlotOne_Choices,
+                                    action=self.onPlotModel, size=(125, -1))
         
-        self.fitselected_btn = Button(pan, 'Fit Selected Groups',
-                                   action=self.onFitSelected,  size=(125, -1))
-        self.fitselected_btn.Disable()
-        self.fitmodel_btn.Disable()
+        wids['plotalt_op'] = Choice(pan, choices=PlotAlt_Choices,
+                                    action=self.onPlotModel, size=(125, -1))
+        
+        wids['plot_voffset'] = FloatSpin(pan, value=0, digits=2, increment=0.25,
+                                         action=self.onPlotModel)
 
+        wids['plot_current']  = Button(pan,'Plot Current Model',
+                                     action=self.onPlotModel,  size=(125, -1))
+        wids['do_fit']       = Button(pan, 'Fit Current Group',
+                                      action=self.onFitModel,  size=(125, -1))
+        wids['do_fit'].Disable()
+        
+        wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
+                                   action=self.onFitSelected,  size=(125, -1))
+        wids['do_fit_sel'].Disable()
+        
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
         pan.Add(SimpleText(pan, 'Feff Fitting',
-                           size=(350, -1), **self.titleopts), style=LEFT, dcol=4, newrow=True)
+                           size=(150, -1), **self.titleopts), style=LEFT, dcol=2, newrow=True)
+        pan.Add(SimpleText(pan, 'To add paths, use Feff->Browse Feff Calculations',
+                           size=(350, -1)), style=LEFT, dcol=3)
 
         add_text('Fitting Space: ')
         pan.Add(wids['ffit_fitspace'])
@@ -673,10 +414,16 @@ class FeffitPanel(TaskPanel):
 
         pan.Add(HLine(pan, size=(600, 2)), dcol=6, newrow=True)
 
-        pan.Add(self.plotmodel_btn, dcol=2, newrow=True)
-        pan.Add(self.fitmodel_btn, dcol=2, newrow=True)
-
-        pan.Add(self.fitselected_btn)
+        pan.Add(wids['plot_current'], dcol=1, newrow=True)
+        pan.Add(wids['plotone_op'], dcol=1)
+        pan.Add(wids['plot_paths'], dcol=2)
+        add_text('Add Second Plot: ', newrow=True)
+        pan.Add(wids['plotalt_op'], dcol=1)
+        add_text('Vertical offset: ', newrow=False)
+        pan.Add(wids['plot_voffset'], dcol=1)
+        
+        pan.Add(wids['do_fit'], dcol=2, newrow=True)
+        pan.Add(wids['do_fit_sel'], dcol=2)
         pan.Add((5, 5), newrow=True)
         
         pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
@@ -725,24 +472,21 @@ class FeffitPanel(TaskPanel):
     def read_form(self):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
-        array_desc = self.array_choice.GetStringSelection()
-        bline_form = self.bline_choice.GetStringSelection()
-        form_opts = {'gname': dgroup.groupname,
-                     'filename': dgroup.filename,
-                     'array_desc': array_desc.lower(),
-                     'array_name': Array_Choices[array_desc],
-                     'baseline_form': bline_form.lower(),
-                     'bkg_components': []}
-
-        # form_opts['e0'] = self.wids['ppeak_e0'].GetValue()
-        form_opts['emin'] = self.wids['ppeak_emin'].GetValue()
-        form_opts['emax'] = self.wids['ppeak_emax'].GetValue()
-        form_opts['elo'] = self.wids['ppeak_elo'].GetValue()
-        form_opts['ehi'] = self.wids['ppeak_ehi'].GetValue()
-        form_opts['plot_sub_bline'] = False # self.plot_sub_bline.IsChecked()
-        # form_opts['show_centroid'] = self.show_centroid.IsChecked()
-        form_opts['show_peakrange'] = self.show_peakrange.IsChecked()
-        form_opts['show_fitrange'] = self.show_fitrange.IsChecked()
+        form_opts = {'datagroup': dgroup}
+        wids = self.wids
+        form_opts['kmin'] = wids['ffit_kmin'].GetValue()
+        form_opts['kmax'] = wids['ffit_kmax'].GetValue()
+        form_opts['dk'] = wids['ffit_dk'].GetValue()
+        form_opts['rmin'] = wids['ffit_rmin'].GetValue()
+        form_opts['rmax'] = wids['ffit_rmax'].GetValue()
+        form_opts['kwstring'] = KWeight_Choices[wids['ffit_kweight'].GetStringSelection()]
+        form_opts['fitspace'] = FitSpace_Choices[wids['ffit_fitspace'].GetStringSelection()]
+        
+        form_opts['kwindow'] = wids['ffit_kwindow'].GetStringSelection()
+        form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
+        form_opts['plotone_op'] = wids['plotone_op'].GetStringSelection()
+        form_opts['plotalt_op'] = wids['plotalt_op'].GetStringSelection()
+        form_opts['plot_voffset'] = wids['plot_voffset'].GetValue()
         return form_opts
 
 
@@ -766,23 +510,24 @@ class FeffitPanel(TaskPanel):
 
     def onPlotModel(self, evt=None):
         dgroup = self.controller.get_group()
-        g = self.build_fitmodel(dgroup.groupname)
+        self.build_fitmodel(dgroup)
         self.onPlot(show_init=True)
 
     def onPlot(self, evt=None, baseline_only=False, show_init=False):
         opts = self.read_form()
         dgroup = self.controller.get_group()
-        opts['group'] = opts['gname']
-        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-
-        cmd = "plot_prepeaks_fit"
-        args = ['{gname}']
-        if baseline_only:
-            cmd = "plot_prepeaks_baseline"
-        else:
-            args.append("show_init=%s" % (show_init))
-        cmd = "%s(%s)" % (cmd, ', '.join(args))
-        self.larch_eval(cmd.format(**opts))
+        print("onPLOT " , dgroup, opts)
+        
+#         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+# 
+#         cmd = "plot_prepeaks_fit"
+#         args = ['{gname}']
+#         if baseline_only:
+#             cmd = "plot_prepeaks_baseline"
+#         else:
+#             args.append("show_init=%s" % (show_init))
+#         cmd = "%s(%s)" % (cmd, ', '.join(args))
+#         self.larch_eval(cmd.format(**opts))
 
     def add_path(self, feffdat_file,  feffresult):
         pathinfo = None
@@ -814,154 +559,55 @@ class FeffitPanel(TaskPanel):
                                   edge=feffresult.edge, reff=pathinfo.reff,
                                   degen=pathinfo.degeneracy,
                                   geom=pathinfo.geom, _larch=self.larch,
-                                  xasmain=self.xasmain)
+                                  feffit_panel=self)
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+        
+        for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
+            pathpanel.onExpression(name=pname)
+            
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
+
+    def update_params_for_expr(self, expr=None, value=1.e-3,
+                               minval=None, maxval=None):
+        if expr is None:
+            return
+
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        if pargroup is None:
+            self.larch_eval(COMMANDS['feffit_params_init'])
+            pargroup = getattr(self.larch.symtable, '_feffit_params')
+
+        symtable =  pargroup.__params__._asteval.symtable
+        extras= ''
+        if minval is not None:
+            extras = f', min={minval}'
+        if maxval is not None:
+            extras = f'{extras}, max={maxval}'
+            
+        for node in ast.walk(ast.parse(expr.lower())):
+            if isinstance(node, ast.Name):
+                sym = node.id
+                if sym not in symtable:                
+                    setattr(pargroup, sym, param(value, min=minval,
+                                                 max=maxval, vary=True))
+                    s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
+                    print(' -update> ', s)
+
+                    # self.larch_eval(s)
+                    
+                    
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
+        print("Updated param group, now: ", dir(pargroup))
+        # should walk through all parameters and expressions
+        # and make sure to set par.vary=False for unused symbols
+        self.params_panel.update()
+        
         
     def onRemovePath(self, label='__', event=None):
         print('--- remove path ', label)
-              
-    def addModel(self, event=None, model=None, prefix=None, isbkg=False):
-        if model is None and event is not None:
-            model = event.GetString()
-        if model is None or model.startswith('<'):
-            return
-
-        self.models_peaks.SetSelection(0)
-        self.models_other.SetSelection(0)
-
-        if prefix is None:
-            p = model[:5].lower()
-            curmodels = ["%s%i_" % (p, i+1) for i in range(1+len(self.fit_components))]
-            for comp in self.fit_components:
-                if comp in curmodels:
-                    curmodels.remove(comp)
-
-            prefix = curmodels[0]
-
-        label = "%s(prefix='%s')" % (model, prefix)
-        title = "%s: %s " % (prefix[:-1], model)
-        title = prefix[:-1]
-        mclass_kws = {'prefix': prefix}
-        if 'step' in model.lower():
-            form = model.lower().replace('step', '').strip()
-            if form.startswith('err'):
-                form = 'erf'
-            label = "Step(form='%s', prefix='%s')" % (form, prefix)
-            title = "%s: Step %s" % (prefix[:-1], form[:3])
-            mclass = lm_models.StepModel
-            mclass_kws['form'] = form
-            minst = mclass(form=form, prefix=prefix)
-        else:
-            if model in ModelFuncs:
-                mclass = getattr(lm_models, ModelFuncs[model])
-            else:
-                mclass = getattr(lm_models, model+'Model')
-
-            minst = mclass(prefix=prefix)
-
-        panel = GridPanel(self.paths_nb, ncols=2, nrows=5, pad=1, itemstyle=CEN)
-
-        def SLabel(label, size=(80, -1), **kws):
-            return  SimpleText(panel, label,
-                               size=size, style=wx.ALIGN_LEFT, **kws)
-        usebox = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
-        bkgbox = Check(panel, default=False, label='Is Baseline?', size=(125, -1))
-        if isbkg:
-            bkgbox.SetValue(1)
-
-        delbtn = Button(panel, 'Delete This Component', size=(200, -1),
-                        action=partial(self.onDeleteComponent, prefix=prefix))
-
-        pick2msg = SimpleText(panel, "    ", size=(125, -1))
-        pick2btn = Button(panel, 'Pick Values from Plot', size=(200, -1),
-                          action=partial(self.onPick2Points, prefix=prefix))
-
-        # SetTip(mname,  'Label for the model component')
-        SetTip(usebox,   'Use this component in fit?')
-        SetTip(bkgbox,   'Label this component as "background" when plotting?')
-        SetTip(delbtn,   'Delete this model component')
-        SetTip(pick2btn, 'Select X range on Plot to Guess Initial Values')
-
-        panel.Add(SLabel(label, size=(275, -1), colour='#0000AA'),
-                  dcol=4,  style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(usebox, dcol=2)
-        panel.Add(bkgbox, dcol=1, style=RIGHT)
-
-        panel.Add(pick2btn, dcol=2, style=wx.ALIGN_LEFT, newrow=True)
-        panel.Add(pick2msg, dcol=3, style=wx.ALIGN_RIGHT)
-        panel.Add(delbtn, dcol=2, style=wx.ALIGN_RIGHT)
-
-        panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
-        panel.AddMany((SLabel(" Value"), SLabel(" Type"), SLabel(' Bounds'),
-                       SLabel("  Min", size=(60, -1)),
-                       SLabel("  Max", size=(60, -1)),  SLabel(" Expression")))
-
-        parwids = {}
-        parnames = sorted(minst.param_names)
-
-        for a in minst._func_allargs:
-            pname = "%s%s" % (prefix, a)
-            if (pname not in parnames and
-                a in minst.param_hints and
-                a not in minst.independent_vars):
-                parnames.append(pname)
-
-        for pname in parnames:
-            sname = pname[len(prefix):]
-            hints = minst.param_hints.get(sname, {})
-
-            par = Parameter(name=pname, value=0, vary=True)
-            if 'min' in hints:
-                par.min = hints['min']
-            if 'max' in hints:
-                par.max = hints['max']
-            if 'value' in hints:
-                par.value = hints['value']
-            if 'expr' in hints:
-                par.expr = hints['expr']
-
-            pwids = ParameterWidgets(panel, par, name_size=100, expr_size=150,
-                                     float_size=80, prefix=prefix,
-                                     widgets=('name', 'value',  'minval',
-                                              'maxval', 'vary', 'expr'))
-            parwids[par.name] = pwids
-            panel.Add(pwids.name, newrow=True)
-
-            panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
-                           pwids.minval, pwids.maxval, pwids.expr))
-
-        for sname, hint in minst.param_hints.items():
-            pname = "%s%s" % (prefix, sname)
-            if 'expr' in hint and pname not in parnames:
-                par = Parameter(name=pname, value=0, expr=hint['expr'])
-                pwids = ParameterWidgets(panel, par, name_size=100, expr_size=400,
-                                         float_size=80, prefix=prefix,
-                                         widgets=('name', 'value', 'expr'))
-                parwids[par.name] = pwids
-                panel.Add(pwids.name, newrow=True)
-                panel.Add(pwids.value)
-                panel.Add(pwids.expr, dcol=5, style=wx.ALIGN_RIGHT)
-                pwids.value.Disable()
-
-        fgroup = Group(prefix=prefix, title=title, mclass=mclass,
-                       mclass_kws=mclass_kws, usebox=usebox, panel=panel,
-                       parwids=parwids, float_size=65, expr_size=150,
-                       pick2_msg=pick2msg, bkgbox=bkgbox)
-
-
-        self.fit_components[prefix] = fgroup
-        panel.pack()
-
-        self.paths_nb.AddPage(panel, title, True)
-        sx,sy = self.GetSize()
-        self.SetSize((sx, sy+1))
-        self.SetSize((sx, sy))
-        self.fitmodel_btn.Enable()
-        self.fitselected_btn.Enable()
 
 
     def onDeleteComponent(self, evt=None, prefix=None):
@@ -980,82 +626,6 @@ class FeffitPanel(TaskPanel):
         if len(self.fit_components) < 1:
             self.fitmodel_btn.Disable()
             self.fitselected_btn.Enable()
-
-
-    def onPick2Timer(self, evt=None):
-        """checks for 'Pick 2' events, and initiates 'Pick 2' guess
-        for a model from the selected data range
-        """
-        try:
-            plotframe = self.controller.get_display(win=1)
-            curhist = plotframe.cursor_hist[:]
-            plotframe.Raise()
-        except:
-            return
-
-        if (time.time() - self.pick2_t0) > self.pick2_timeout:
-            msg = self.pick2_group.pick2_msg.SetLabel(" ")
-            plotframe.cursor_hist = []
-            self.pick2_timer.Stop()
-            return
-
-        if len(curhist) < 2:
-            self.pick2_group.pick2_msg.SetLabel("%i/2" % (len(curhist)))
-            return
-
-        self.pick2_group.pick2_msg.SetLabel("done.")
-        self.pick2_timer.Stop()
-
-        # guess param values
-        xcur = (curhist[0][0], curhist[1][0])
-        xmin, xmax = min(xcur), max(xcur)
-
-        dgroup = getattr(self.larch.symtable, self.controller.groupname)
-        x, y = dgroup.xdat, dgroup.ydat
-        i0 = index_of(dgroup.xdat, xmin)
-        i1 = index_of(dgroup.xdat, xmax)
-        x, y = dgroup.xdat[i0:i1+1], dgroup.ydat[i0:i1+1]
-
-        mod = self.pick2_group.mclass(prefix=self.pick2_group.prefix)
-        parwids = self.pick2_group.parwids
-        try:
-            guesses = mod.guess(y, x=x)
-        except:
-            return
-        for name, param in guesses.items():
-            if 'amplitude' in name:
-                param.value *= 1.5
-            elif 'sigma' in name:
-                param.value *= 0.75
-            if name in parwids:
-                parwids[name].value.SetValue(param.value)
-
-        dgroup._tmp = mod.eval(guesses, x=dgroup.xdat)
-        plotframe = self.controller.get_display(win=1)
-        plotframe.cursor_hist = []
-        plotframe.oplot(dgroup.xdat, dgroup._tmp)
-        self.pick2erase_panel = plotframe.panel
-
-        self.pick2erase_timer.Start(60000)
-
-
-    def onPick2Points(self, evt=None, prefix=None):
-        fgroup = self.fit_components.get(prefix, None)
-        if fgroup is None:
-            return
-
-        plotframe = self.controller.get_display(win=1)
-        plotframe.Raise()
-
-        plotframe.cursor_hist = []
-        fgroup.npts = 0
-        self.pick2_group = fgroup
-
-        if fgroup.pick2_msg is not None:
-            fgroup.pick2_msg.SetLabel("0/2")
-
-        self.pick2_t0 = time.time()
-        self.pick2_timer.Start(1000)
 
 
     def onLoadFitResult(self, event=None):
@@ -1127,58 +697,55 @@ class FeffitPanel(TaskPanel):
         i2 = index_of(x, opts['emax'] + en_eps) + 1
         return i1, i2
 
+
+    def get_pathpage(self, name):
+        "get nb page for a Path by name"
+        name = name.lower().strip()
+        for page in self.paths_nb.pagelist:
+            if name in page.__class__.__name__.lower().strip():
+                return page
+
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
-        # self.summary = {'components': [], 'options': {}}
-        peaks = []
-        cmds = ["## set up pre-edge peak parameters", "peakpars = Parameters()"]
-        modcmds = ["## define pre-edge peak model"]
-        modop = " ="
+        paths = []
+        cmds = ["## set up feffit "]
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
+        if pargroup is None:
+            self.larch_eval(COMMANDS['feffit_params_init'])
+            pargroup = getattr(self.larch.symtable, '_feffit_params')
+        
+
         opts = self.read_form()
-        if groupname is None:
-            groupname = opts['gname']
+        cmds.append(COMMANDS['feffit_trans'].format(**opts))
 
-        opts['group'] = groupname
-        dgroup = self.controller.get_group(groupname)
-        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+        path_pages = {}
+        for i in range(self.paths_nb.GetPageCount()):
+            text = self.paths_nb.GetPageText(i).strip()
+            path_pages[text] = self.paths_nb.GetPage(i)
 
-        for comp in self.fit_components.values():
-            _cen, _amp = None, None
-            if comp.usebox is not None and comp.usebox.IsChecked():
-                for parwids in comp.parwids.values():
-                    this = parwids.param
-                    pargs = ["'%s'" % this.name, 'value=%f' % (this.value),
-                             'min=%f' % (this.min), 'max=%f' % (this.max)]
-                    if this.expr is not None:
-                        pargs.append("expr='%s'" % (this.expr))
-                    elif not this.vary:
-                        pargs.pop()
-                        pargs.pop()
-                        pargs.append("vary=False")
+        pathlist = []
+        for title, pathdata in self.paths_data.items():
+            pathlist.append(f"_paths['{title:s}']")
 
-                    cmds.append("peakpars.add(%s)" % (', '.join(pargs)))
-                    if this.name.endswith('_center'):
-                        _cen = this.name
-                    elif parwids.param.name.endswith('_amplitude'):
-                        _amp = this.name
-                compargs = ["%s='%s'" % (k,v) for k,v in comp.mclass_kws.items()]
-                modcmds.append("peakmodel %s %s(%s)" % (modop, comp.mclass.__name__,
-                                                        ', '.join(compargs)))
+            pdat = {'title': title, 'fullpath': pathdata[0]}
+            pdat.update(path_pages[title].get_expressions())
+            cmds.append(COMMANDS['add_path'].format(**pdat))            
 
-                modop = "+="
-                if not comp.bkgbox.IsChecked() and _cen is not None and _amp is not None:
-                    peaks.append((_amp, _cen))
-
-        if len(peaks) > 0:
-            denom = '+'.join([p[0] for p in peaks])
-            numer = '+'.join(["%s*%s "% p for p in peaks])
-            cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
-
-        cmds.extend(modcmds)
-        cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
-                                               user_opts=repr(opts)))
-
+        pathlist = '[%s]' % (', '.join(pathlist))
+        cmds.append(COMMANDS['pathlist'].format(pathlist=pathlist))
+        cmds.append(COMMANDS['ff2chi'])
         self.larch_eval("\n".join(cmds))
+
+# 
+#         if len(peaks) > 0:
+#             denom = '+'.join([p[0] for p in peaks])
+#             numer = '+'.join(["%s*%s "% p for p in peaks])
+#             cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
+# 
+#         cmds.extend(modcmds)
+#         cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
+#                                                user_opts=repr(opts)))
+# 
 
     def onFitSelected(self, event=None):
         dgroup = self.controller.get_group()
@@ -1241,8 +808,8 @@ class FeffitPanel(TaskPanel):
         dgroup = self.controller.get_group()
         if dgroup is None:
             return
-        self.build_fitmodel(dgroup.groupname)
         opts = self.read_form()
+        self.build_fitmodel(dgroup.groupname)
 
         dgroup = self.controller.get_group()
         opts['group'] = opts['gname']
