@@ -13,7 +13,7 @@ the path represented by the feffNNNN.dat
 creates a group that contains the chi(k) for the sum of paths.
 """
 import numpy as np
-
+from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
 from lmfit.printfuncs import gformat
@@ -252,7 +252,7 @@ class FeffPathGroup(Group):
         create Path Parameters within the current lmfit.Parameters namespace
         """
         if params is not None:
-            self.params = params
+            self.params = deepcopy(params)
         if self.params is None:
             self.params = Parameters()
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
@@ -268,6 +268,7 @@ class FeffPathGroup(Group):
             kws =  {'vary': False, attr: val}
             parname = fix_varname(PATHPAR_FMT % (pname, self.label))
             self.params.add(parname, **kws)
+            self.params[parname].is_pathparam = True
 
     def create_spline_coefs(self):
         """pre-calculate spline coefficients for feff data"""
