@@ -46,6 +46,7 @@ from .xasnorm_panel import XASNormPanel
 from .lincombo_panel import LinearComboPanel
 from .pca_panel import PCAPanel
 from .exafs_panel import EXAFSPanel
+from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
 from .xas_controller import XASController
 
@@ -74,7 +75,8 @@ NB_PANELS = {'Normalization': XASNormPanel,
              'PCA':  PCAPanel,
              'Linear Combo': LinearComboPanel,
              'Regression': RegressionPanel,
-             'EXAFS':  EXAFSPanel}
+             'EXAFS':  EXAFSPanel,
+             'Feff Fitting': FeffitPanel}
 
 QUIT_MESSAGE = '''Really Quit? You may want to save your project before quitting.
  This is not done automatically!'''
@@ -208,6 +210,9 @@ class XASFrame(wx.Frame):
 
     def process_normalization(self, dgroup):
         self.get_nbpage('xasnorm')[1].process(dgroup, noskip=True)
+
+    def process_exafs(self, dgroup):
+        self.get_nbpage('exafs')[1].process(dgroup)
 
     def get_nbpage(self, name):
         "get nb page by name"
@@ -710,7 +715,8 @@ class XASFrame(wx.Frame):
         self.show_subframe('cif_feff', CIFFrame, _larch=self.larch)
 
     def onFeffBrowse(self, event=None):
-        self.show_subframe('feff_paths', FeffResultsFrame, _larch=self.larch)
+        self.show_subframe('feff_paths', FeffResultsFrame,
+                           xasmain=self, _larch=self.larch)
 
     def onLoadFitResult(self, event=None):
         pass
