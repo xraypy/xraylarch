@@ -258,11 +258,11 @@ class ParameterWidgets(object):
         if self.expr is not None:
             self.expr.Enable(vary==PAR_CON)
         if self.minval is not None:
-            self.minval.Enable(vary==PAR_VAR)
+            self.minval.Enable(vary!=PAR_FIX)
         if self.maxval is not None:
-            self.maxval.Enable(vary==PAR_VAR)
+            self.maxval.Enable(vary!=PAR_FIX)
         if self.bounds is not None:
-            self.bounds.Enable(vary==PAR_VAR)
+            self.bounds.Enable(vary!=PAR_FIX)
 
 
 class ParameterDialog(wx.Dialog):
