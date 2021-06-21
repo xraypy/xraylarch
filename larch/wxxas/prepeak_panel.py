@@ -1098,9 +1098,6 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             self.fitmodel_btn.Disable()
             self.fitselected_btn.Enable()
 
-        # sx,sy = self.GetSize()
-        # self.SetSize((sx, sy+1))
-        # self.SetSize((sx, sy))
 
     def onPick2EraseTimer(self, evt=None):
         """erases line trace showing automated 'Pick 2' guess """
