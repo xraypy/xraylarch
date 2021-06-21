@@ -113,16 +113,19 @@ class FeffitParamsPanel(wx.Panel):
         self.feffit_panel = feffit_panel
         self.parwids = {}
         spanel = scrolled.ScrolledPanel(self)
-        
+
         panel = self.panel = GridPanel(spanel, ncols=8, nrows=30, pad=1, itemstyle=LEFT)
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
 
         panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
-        panel.Add(Button(panel, 'Add/Remove Parameters', action=self.onEditParams),
-                  dcol=5)
-                  
+        panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),
+                  dcol=2)
+        self.fix_unused = Check(panel, default=True,
+                                 label="'Fix' unused variables for fit", size=(200, -1))
+        panel.Add(self.fix_unused, dcol=4)
+
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"),
                        SLabel(" Type"),
@@ -130,24 +133,24 @@ class FeffitParamsPanel(wx.Panel):
                        SLabel("  Min", size=(60, -1)),
                        SLabel("  Max", size=(60, -1)),
                        SLabel(" Expression")))
-        
+
         self.update()
         panel.pack()
         ssizer = wx.BoxSizer(wx.VERTICAL)
         ssizer.Add(panel, 1,  wx.GROW|wx.ALL, 2)
         pack(spanel, ssizer)
-        
+
         spanel.SetupScrolling()
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
         pack(self, mainsizer)
-       
+
     def update(self):
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pargroup is None:
             self.feffit_panel.larch_eval(COMMANDS['feffit_params_init'])
             pargroup = getattr(self.larch.symtable, '_feffit_params')
-            
+
         params = group2params(pargroup)
         for pname, par in params.items():
             if pname in self.parwids:
@@ -155,7 +158,7 @@ class FeffitParamsPanel(wx.Panel):
                 varstr = 'vary' if par.vary else 'fix'
                 if par.expr is not None:
                     varstr = 'constrain'
-                    pwids.expr.SetValue(par.expr)                    
+                    pwids.expr.SetValue(par.expr)
                 pwids.vary.SetStringSelection(varstr)
                 pwids.value.SetValue(par.value)
                 pwids.minval.SetValue(par.min)
@@ -169,7 +172,7 @@ class FeffitParamsPanel(wx.Panel):
                                              widgets=('name',
                                                       'value', 'minval', 'maxval',
                                                       'vary', 'expr'))
-                    
+
                     self.parwids[pname] = pwids
                     self.panel.Add(pwids.name, newrow=True)
                     self.panel.AddMany((pwids.value, pwids.vary, pwids.bounds,
@@ -178,17 +181,17 @@ class FeffitParamsPanel(wx.Panel):
         self.panel.Update()
 
     def onEditParams(self, event=None):
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
         print('edit params ' , pargroup)
 
 
     def RemoveParams(self, event=None, name=None):
         if name is None:
             return
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pargroup is None:
             return
-        
+
         if hasattr(pargroup, name):
             delattr(pargroup, name)
         if name in self.parwids:
@@ -201,9 +204,9 @@ class FeffitParamsPanel(wx.Panel):
             pwids.maxval.Destroy()
             pwids.expr.Destroy()
             pwids.remover.Destroy()
-            
-        
-        
+
+
+
 class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent=None, feffdat_file=None, dirname=None,
@@ -216,7 +219,7 @@ class FeffPathPanel(wx.Panel):
         self.feffit_panel = feffit_panel
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
-        
+
         self.feffdat_file = feffdat_file
         self.fullpath = fullpath
 
@@ -243,14 +246,14 @@ class FeffPathPanel(wx.Panel):
         make_parwid('delr',  delr)
         make_parwid('sigma2',  sigma2)
         make_parwid('c3',  '')
-        wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))        
+        wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
                              action=self.onRemovePath)
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {edge:s} edge'
         title2 = f'Reff={reff:.4f},  Degen={degen:.1f}   {geom:s}'
-        
-        panel.Add(SLabel(title1, size=(275, -1), colour='#0000AA'),
+
+        panel.Add(SLabel(title1, size=(375, -1), colour='#0000AA'),
                   dcol=2,  style=wx.ALIGN_LEFT, newrow=True)
         panel.Add(wids['use'])
         panel.Add(wids['del'])
@@ -273,9 +276,9 @@ class FeffPathPanel(wx.Panel):
         for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'c3'):
             val = self.wids[key].GetValue().strip()
             if len(val) == 0: val = '0'
-            out[key] = val            
+            out[key] = val
         return out
-    
+
     def onExpression(self, event=None, name=None):
         if name in (None, 'label'):
             return
@@ -291,8 +294,16 @@ class FeffPathPanel(wx.Panel):
         self.feffit_panel.update_params_for_expr(expr, **opts)
 
     def onRemovePath(self, event=None):
-        print(' remove path ', self.fullpath, self.title, self.feffit_panel)
-        
+        msg = f"Delete Path {self.title:s}?"
+        dlg = wx.MessageDialog(self, msg, 'Warning', wx.YES | wx.NO )
+        if (wx.ID_YES == dlg.ShowModal()):
+            self.feffit_panel.paths_data.pop(self.title)
+            path_nb = self.feffit_panel.paths_nb
+            for i in range(path_nb.GetPageCount()):
+                if self.title == path_nb.GetPageText(i).strip():
+                    path_nb.DeletePage(i)
+        dlg.Destroy()
+
 
 
 class FeffitResultFrame(wx.Frame):
@@ -313,7 +324,7 @@ class FeffitPanel(TaskPanel):
                            title='Feff Fitting of EXAFS Paths',
                            config=defaults, **kws)
         self.paths_data = {}
-        
+
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         try:
@@ -321,7 +332,7 @@ class FeffitPanel(TaskPanel):
             if pargroup is None:
                 self.larch_eval(COMMANDS['feffit_params_init'])
                 pargroup = getattr(self.larch.symtable, '_feffit_params')
-                
+
             self.params_panel.update()
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
@@ -338,7 +349,7 @@ class FeffitPanel(TaskPanel):
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               _larch=self.larch,
                                               feffit_panel=self)
-        
+
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
 
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
@@ -352,7 +363,7 @@ class FeffitPanel(TaskPanel):
         ffit_dk   = self.add_floatspin('ffit_dk',    value=4, **fsopts)
         ffit_rmin = self.add_floatspin('ffit_rmin',  value=1, **fsopts)
         ffit_rmax = self.add_floatspin('ffit_rmax',  value=5, **fsopts)
-                
+
         wids['ffit_kweight'] = Choice(pan, size=(125, -1),
                                      choices=list(KWeight_Choices.keys()))
         wids['ffit_kweight'].SetSelection(1)
@@ -363,13 +374,15 @@ class FeffitPanel(TaskPanel):
                                        size=(125, -1))
 
         wids['plot_paths'] = Check(pan, default=True, label='Plot Each Path'
-                                   , size=(125, -1))
+                                   , size=(125, -1), action=self.onPlot)
+        wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows'
+                                   , size=(125, -1), action=self.onPlot)
         wids['plotone_op'] = Choice(pan, choices=PlotOne_Choices,
                                     action=self.onPlot, size=(125, -1))
-        
+
         wids['plotalt_op'] = Choice(pan, choices=PlotAlt_Choices,
                                     action=self.onPlot, size=(125, -1))
-        
+
         wids['plot_voffset'] = FloatSpin(pan, value=0, digits=2, increment=0.25,
                                          action=self.onPlot)
 
@@ -378,11 +391,11 @@ class FeffitPanel(TaskPanel):
         wids['do_fit']       = Button(pan, 'Fit Current Group',
                                       action=self.onFitModel,  size=(125, -1))
         wids['do_fit'].Disable()
-        
+
         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
                                    action=self.onFitSelected,  size=(125, -1))
         wids['do_fit_sel'].Disable()
-        
+
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
 
@@ -417,15 +430,16 @@ class FeffitPanel(TaskPanel):
         pan.Add(wids['plot_current'], dcol=1, newrow=True)
         pan.Add(wids['plotone_op'], dcol=1)
         pan.Add(wids['plot_paths'], dcol=2)
+        pan.Add(wids['plot_ftwindows'], dcol=2)
         add_text('Add Second Plot: ', newrow=True)
         pan.Add(wids['plotalt_op'], dcol=1)
         add_text('Vertical offset: ', newrow=False)
         pan.Add(wids['plot_voffset'], dcol=1)
-        
+
         pan.Add(wids['do_fit'], dcol=2, newrow=True)
         pan.Add(wids['do_fit_sel'], dcol=2)
         pan.Add((5, 5), newrow=True)
-        
+
         pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
         pan.pack()
 
@@ -480,8 +494,9 @@ class FeffitPanel(TaskPanel):
         form_opts['rmax'] = wids['ffit_rmax'].GetValue()
         form_opts['kwstring'] = KWeight_Choices[wids['ffit_kweight'].GetStringSelection()]
         form_opts['fitspace'] = FitSpace_Choices[wids['ffit_fitspace'].GetStringSelection()]
-        
+
         form_opts['kwindow']    = wids['ffit_kwindow'].GetStringSelection()
+        form_opts['plot_ftwindow'] = wids['plot_ftwindows'].IsChecked()
         form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
         form_opts['plotone_op'] = wids['plotone_op'].GetStringSelection()
         form_opts['plotalt_op'] = wids['plotalt_op'].GetStringSelection()
@@ -510,44 +525,50 @@ class FeffitPanel(TaskPanel):
 
     def onPlot(self, evt=None):
         opts = self.read_form()
-        try:        
+        try:
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group()
         except:
             gname  = dgroup = None
-            
+
         self.build_fitmodel(dgroup)
 
         plot1 = opts['plotone_op']
-        plot2 = opts['plotalt_op']        
+        plot2 = opts['plotalt_op']
         cmds = []
-        
-        ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'],
-                      dk=opts['dk'],  window=opts['kwindow'])
+
+        ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'], dk=opts['dk'],
+                      window=opts['kwindow'], rmin=opts['rmin'],
+                      rmax=opts['rmax'], dr=opts.get('dr', 0.1))
+
         if ',' in opts['kwstring']:
             kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
         else:
             kw = int(opts['kwstring'])
-            
-        ftargs['kweight'] = kw
-        ftcmd = "xftf({pathgroup:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
 
-        cmds.append(ftcmd.format(pathgroup='_pathsum', **ftargs))
-                  
+        ftargs['kweight'] = kw
+        xftfcmd = "xftf({pathgroup:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
+
+        xftrcmd = "xftr({pathgroup:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='hanning')"
+        cmds.append(xftfcmd.format(pathgroup='_pathsum', **ftargs))
+        cmds.append(xftrcmd.format(pathgroup='_pathsum', **ftargs))
+
         if opts['plot_paths']:
             for path in self.pathlist:
                 cmds.append(f"path2chi({path:s}, paramgroup=_feffit_params)")
-                cmds.append(ftcmd.format(pathgroup=path, **ftargs))
+                cmds.append(xftfcmd.format(pathgroup=path, **ftargs))
 
-            self.larch_eval('\n'.join(cmds))
+        self.larch_eval('\n'.join(cmds))
+        with_win = opts['plot_ftwindow']
+
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
             pcmd = 'plot_chir'
-            pextra = f', win={i+1:d}, title="sum of paths"'
+            pextra = f', win={i+1:d}'
             if plot == chik:
                 pcmd = 'plot_chik'
-                pextra += f', kweight={kw:d}, show_window=False'
+                pextra += f', kweight={kw:d}'
             elif plot == chirre:
                 pextra += ', show_mag=False, show_real=True'
             elif plot == chirmr:
@@ -555,18 +576,18 @@ class FeffitPanel(TaskPanel):
             if plot == noplot:
                 continue
             if dgroup is not None:
-                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, new=True)")
-                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, new=False)")                
+                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='sum of path', new=True)")
+                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, show_win={with_win}, new=True)")
             else:
-                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, new=True)")
+                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, title='sum of paths', show_window={with_win}, new=True)")
             if opts['plot_paths']:
                 voff = opts['plot_voffset']
                 for i, path in enumerate(self.pathlist):
                     plabel = path.replace('_paths', '').replace('[', '').replace(']', '')
-                    cmds.append(f"{pcmd}({path}, label={plabel:s}{pextra}, offset={i*voff}, new=False)")                        
+                    cmds.append(f"{pcmd}({path}, label={plabel:s}{pextra}, offset={i*voff}, show_window=False, new=False)")
 
         self.larch_eval('\n'.join(cmds))
-              
+
 
     def add_path(self, feffdat_file,  feffresult):
         pathinfo = None
@@ -603,10 +624,10 @@ class FeffitPanel(TaskPanel):
                                   feffit_panel=self)
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
-        
+
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             pathpanel.onExpression(name=pname)
-            
+
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
@@ -616,7 +637,7 @@ class FeffitPanel(TaskPanel):
         if expr is None:
             return
 
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)        
+        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pargroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
             pargroup = getattr(self.larch.symtable, '_feffit_params')
@@ -627,43 +648,22 @@ class FeffitPanel(TaskPanel):
             extras = f', min={minval}'
         if maxval is not None:
             extras = f'{extras}, max={maxval}'
-            
-        for node in ast.walk(ast.parse(expr.lower())):
+
+        for node in ast.walk(ast.parse(expr)):
             if isinstance(node, ast.Name):
                 sym = node.id
-                if sym not in symtable:                
+                if sym not in symtable:
                     #setattr(pargroup, sym, param(value, min=minval,
                     #                             max=maxval, vary=True))
                     s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
                     self.larch_eval(s)
-                                        
+
         pargroup = getattr(self.larch.symtable, '_feffit_params', None)
 
         # should walk through all parameters and expressions
         # and make sure to set par.vary=False for unused symbols
         self.params_panel.update()
-        
-        
-    def onRemovePath(self, label='__', event=None):
-        print('--- remove path ', label)
 
-
-    def onDeleteComponent(self, evt=None, prefix=None):
-        fgroup = self.fit_components.get(prefix, None)
-        if fgroup is None:
-            return
-
-        for i in range(self.paths_nb.GetPageCount()):
-            if fgroup.title == self.paths_nb.GetPageText(i):
-                self.paths_nb.DeletePage(i)
-
-        for attr in dir(fgroup):
-            setattr(fgroup, attr, None)
-
-        self.fit_components.pop(prefix)
-        if len(self.fit_components) < 1:
-            self.fitmodel_btn.Disable()
-            self.fitselected_btn.Enable()
 
 
     def onLoadFitResult(self, event=None):
@@ -720,7 +720,6 @@ class FeffitPanel(TaskPanel):
             return None
 
         _x, _y = last_cursor_pos(win=win, _larch=self.larch)
-
         if _x is not None:
             if relative_e0 and 'e0' in self.wids:
                 _x -= self.wids['e0'].GetValue()
@@ -751,7 +750,7 @@ class FeffitPanel(TaskPanel):
         if pargroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
             pargroup = getattr(self.larch.symtable, '_feffit_params')
-        
+
 
         opts = self.read_form()
         cmds.append(COMMANDS['feffit_trans'].format(**opts))
@@ -763,28 +762,56 @@ class FeffitPanel(TaskPanel):
 
         pathlist = []
         for title, pathdata in self.paths_data.items():
+            if title not in path_pages:
+                continue
+
             pdat = {'title': title, 'fullpath': pathdata[0], 'use':True}
             pdat.update(path_pages[title].get_expressions())
             if pdat['use']:
                 cmds.append(COMMANDS['add_path'].format(**pdat))
-                pathlist.append(f"_paths['{title:s}']")                
+                pathlist.append(f"_paths['{title:s}']")
         self.pathlist = pathlist
-        
+
         paths_string = '[%s]' % (', '.join(pathlist))
         cmds.append(COMMANDS['pathlist'].format(pathlist=paths_string))
         cmds.append(COMMANDS['ff2chi'])
         self.larch_eval("\n".join(cmds))
 
-# 
+
+    def find_unused_params(self, action='fix'):
+        used_syms = []
+        path_pages = {}
+        for i in range(self.paths_nb.GetPageCount()):
+            text = self.paths_nb.GetPageText(i).strip()
+            path_pages[text] = self.paths_nb.GetPage(i)
+
+        for title in self.paths_data:
+            if title not in path_pages:
+                continue
+            exprs = path_pages[title].get_expressions()
+            exprs.pop('use')
+            exprs.pop('label')
+
+            for expr in exprs:
+                for node in ast.walk(ast.parse(expr)):
+                    if isinstance(node, ast.Name):
+                        sym = node.id
+                        if sym not in used_syms:
+                            used_syms.append(sym)
+
+        print("current symbols: ",  used_syms)
+
+
+#
 #         if len(peaks) > 0:
 #             denom = '+'.join([p[0] for p in peaks])
 #             numer = '+'.join(["%s*%s "% p for p in peaks])
 #             cmds.append("peakpars.add('fit_centroid', expr='(%s)/(%s)')" % (numer, denom))
-# 
+#
 #         cmds.extend(modcmds)
 #         cmds.append(COMMANDS['prepfit'].format(group=dgroup.groupname,
 #                                                user_opts=repr(opts)))
-# 
+#
 
     def onFitSelected(self, event=None):
         dgroup = self.controller.get_group()
