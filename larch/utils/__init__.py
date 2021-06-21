@@ -6,7 +6,7 @@ import numpy as np
 import copy
 import json
 
-from .paths import uname, bindir, nativepath, get_homedir
+from .paths import uname, bindir, nativepath, unixpath, get_homedir
 from .debugtime import debugtime, debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str,

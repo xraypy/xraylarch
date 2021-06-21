@@ -11,7 +11,7 @@ from __future__ import print_function
 import sys
 import os
 from os.path import exists, abspath, join
-from .utils import uname, get_homedir, nativepath
+from .utils import uname, get_homedir, nativepath, unixpath
 from .version import __version__ as larch_version
 from .version import __release_version__ as release_version
 
@@ -40,7 +40,7 @@ icondir = os.path.join(here, 'icons')
 
 user_larchdir = pjoin(home_dir, '.larch')
 if uname == 'win':
-    user_larchdir = pjoin(home_dir, 'larch')
+    user_larchdir = unixpath(pjoin(home_dir, 'larch'))
 
 if 'LARCHDIR' in os.environ:
     user_larchdir = nativepath(os.environ['LARCHDIR'])

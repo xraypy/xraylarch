@@ -10,7 +10,7 @@ import wx.dataview as dv
 
 import larch
 from larch.site_config import user_larchdir
-
+from larch.utils import unixpath
 from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
@@ -274,13 +274,13 @@ class FeffResultsPanel(wx.Panel):
     def onShowFeffInp(self, event=None):
         if self.feffresult is not None:
             text = None
-            fname = os.path.join(self.feffresult.folder, 'feff.inp')
+            fname = unixpath(os.path.join(self.feffresult.folder, 'feff.inp'))
             if os.path.exists(fname):
                 with open(fname, 'r') as fh:
                     text = fh.read()
             else:
-                fname = os.path.join(user_larchdir, 'feff',
-                                     self.feffresult.folder, 'feff.inp')
+                fname = unixpath(os.path.join(user_larchdir, 'feff',
+                                              self.feffresult.folder, 'feff.inp'))
                 if os.path.exists(fname):
                     with open(fname, 'r') as fh:
                         text = fh.read()
@@ -305,8 +305,9 @@ class FeffResultsPanel(wx.Panel):
         _, fname = os.path.split(folder)
         for data in self.model.data:
             if data[5]:
-                self.path_importer(os.path.join(folder, data[0]), self.feffresult)
-
+                self.path_importer(unixpath(os.path.join(folder, data[0])),
+                                   self.feffresult)
+                
         self.onSelNone()
         # print(' on import xasmain = ', self.xasmain)
         if self.xasmain is not None:
@@ -342,7 +343,7 @@ class FeffResultsFrame(wx.Frame):
             except:
                 pass
 
-        path = os.path.join(user_larchdir, 'feff')
+        path = unixpath(os.path.join(user_larchdir, 'feff'))
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
         self.feff_folder = path
@@ -429,10 +430,10 @@ class FeffResultsFrame(wx.Frame):
         self.feffruns = {}
         self.larch.eval("## gathering results:\n")
         flist = os.listdir(self.feff_folder)
-        flist = sorted(flist, key=lambda t: -os.stat(os.path.join(self.feff_folder, t)).st_mtime)
+        flist = sorted(flist, key=lambda t: -os.stat(unixpath(os.path.join(self.feff_folder, t))).st_mtime)
 
         for path in flist:
-            fullpath = os.path.join(self.feff_folder, path)
+            fullpath = unixpath(os.path.join(self.feff_folder, path))
             if os.path.isdir(fullpath):
                 try:
                     self.larch.eval(f"_feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
@@ -463,7 +464,7 @@ class FeffResultsFrame(wx.Frame):
         dlg.Destroy()
         if remove:
             for checked in self.fefflist.GetCheckedStrings():
-                shutil.rmtree(os.path.join(self.feff_folder, checked))
+                shutil.rmtree(unixpath(os.path.join(self.feff_folder, checked)))
             self.onSearch()
 
     def onFeffFolder(self, event=None):
@@ -493,7 +494,7 @@ class FeffResultsFrame(wx.Frame):
             if ('paths.dat' in flist and 'files.dat' in flist and
                 'feff0001.dat' in flist and 'feff.inp' in flist):
                 _, dname = os.path.split(path)
-                dest = os.path.join(self.feff_folder, dname)
+                dest = unixpath(os.path.join(self.feff_folder, dname))
                 shutil.copytree(path, dest)
                 self.onSearch()
             else:

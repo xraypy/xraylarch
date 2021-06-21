@@ -71,7 +71,7 @@ class CIFFrame(wx.Frame):
         self.createMainPanel()
         self.createMenus()
 
-        path = os.path.join(user_larchdir, 'feff')
+        path = unixpath(os.path.join(user_larchdir, 'feff'))
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
         self.feff_folder = path
@@ -449,7 +449,7 @@ class CIFFrame(wx.Frame):
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
 
-        fname = os.path.join(folder, 'feff.inp')
+        fname = unixpath(os.path.join(folder, 'feff.inp'))
         with open(fname, 'w') as fh:
             fh.write(fefftext)
 
@@ -477,11 +477,7 @@ class CIFFrame(wx.Frame):
             if (fname.endswith('.json') or fname.endswith('.pad') or
                 fname.endswith('.bin') or fname.startswith('log') or
                 fname in ('chi.dat', 'xmu.dat', 'misc.dat')):
-                os.unlink(os.path.join(folder, fname))
-
-
-
-
+                os.unlink(unixpath(os.path.join(folder, fname)))
 
 
 
@@ -508,10 +504,10 @@ class CIFFrame(wx.Frame):
             dirname = f'{cc.formula_title}_cif{cc.ams_id:d}'
         else:
             dirname = f'{cc.mineral.name}_cif{cc.ams_id:d}'
-        dirname = os.path.join(self.feff_folder, dirname)
+        dirname = unixpath(os.path.join(self.feff_folder, dirname))
         if not os.path.exists(dirname):
             os.makedirs(dirname, mode=493)
-        fname = os.path.join(dirname, 'feff.inp')
+        fname = unixpath(os.path.join(dirname, 'feff.inp'))
 
         wildcard = 'Feff Inut files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileSave(self, message='Save Feff File',
