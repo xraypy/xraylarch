@@ -49,7 +49,7 @@ chik    = '\u03c7(k)'
 chirmag = '|\u03c7(R)|'
 chirre  = 'Re[\u03c7(R)]'
 chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
-wavelet = 'EXAFS wavelet'
+# wavelet = 'EXAFS wavelet'
 noplot  = '<no plot>'
 
 PlotOne_Choices = [chirmag, chik, chirre, chirmr]
@@ -69,7 +69,7 @@ MIN_CORREL = 0.10
 
 COMMANDS = {}
 COMMANDS['feffit_params_init'] = """# create feffit parameters
-_feffit_params = param_group(S02=param(1.0, min=0, vary=True),
+_feffit_params = param_group(s02=param(1.0, min=0, vary=True),
                              e0=param(0, min=-25, max=25, vary=True))
 _paths = {}
 
@@ -161,7 +161,6 @@ class FeffitParamsPanel(wx.Panel):
                 pwids.minval.SetValue(par.min)
                 pwids.maxval.SetValue(par.max)
             else:
-                print("Add Param ", pname, par, hasattr(par, '_is_pathparam'))
                 if not hasattr(par, '_is_pathparam'):
                     pwids = ParameterWidgets(self.panel, par,
                                              name_size=100,
@@ -221,7 +220,7 @@ class FeffPathPanel(wx.Panel):
         self.feffdat_file = feffdat_file
         self.fullpath = fullpath
 
-        reff = float(reff)
+        self.reff = reff = float(reff)
         degen = float(degen)
         self.geom = geom
         self._larch = _larch
@@ -239,7 +238,7 @@ class FeffPathPanel(wx.Panel):
             wids[name+'_val'] = SimpleText(panel, '', size=(150, -1))
 
         make_parwid('label', user_label)
-        make_parwid('amp',  f'{degen:.1f} * S02')
+        make_parwid('amp',  f'{degen:.1f} * s02')
         make_parwid('e0',  'e0')
         make_parwid('delr',  delr)
         make_parwid('sigma2',  sigma2)
@@ -286,6 +285,7 @@ class FeffPathPanel(wx.Panel):
         opts= dict(value=1.e-3, minval=None, maxval=None)
         if name == 'sigma2':
             opts['minval'] = 0
+            opts['value'] = np.sqrt(self.reff)/200.0
         elif name == 'amp':
             opts['value'] = 1
         self.feffit_panel.update_params_for_expr(expr, **opts)
@@ -365,16 +365,16 @@ class FeffitPanel(TaskPanel):
         wids['plot_paths'] = Check(pan, default=True, label='Plot Each Path'
                                    , size=(125, -1))
         wids['plotone_op'] = Choice(pan, choices=PlotOne_Choices,
-                                    action=self.onPlotModel, size=(125, -1))
+                                    action=self.onPlot, size=(125, -1))
         
         wids['plotalt_op'] = Choice(pan, choices=PlotAlt_Choices,
-                                    action=self.onPlotModel, size=(125, -1))
+                                    action=self.onPlot, size=(125, -1))
         
         wids['plot_voffset'] = FloatSpin(pan, value=0, digits=2, increment=0.25,
-                                         action=self.onPlotModel)
+                                         action=self.onPlot)
 
         wids['plot_current']  = Button(pan,'Plot Current Model',
-                                     action=self.onPlotModel,  size=(125, -1))
+                                     action=self.onPlot,  size=(125, -1))
         wids['do_fit']       = Button(pan, 'Fit Current Group',
                                       action=self.onFitModel,  size=(125, -1))
         wids['do_fit'].Disable()
@@ -452,7 +452,6 @@ class FeffitPanel(TaskPanel):
         return conf
 
     def fill_form(self, dat):
-        print("Fill Form ", dat, type(dat))
         if isinstance(dat, Group):
             if not hasattr(dat, 'chi'):
                 self.xasmain.process_exafs(dat)
@@ -476,13 +475,13 @@ class FeffitPanel(TaskPanel):
         wids = self.wids
         form_opts['kmin'] = wids['ffit_kmin'].GetValue()
         form_opts['kmax'] = wids['ffit_kmax'].GetValue()
-        form_opts['dk'] = wids['ffit_dk'].GetValue()
+        form_opts['dk']   = wids['ffit_dk'].GetValue()
         form_opts['rmin'] = wids['ffit_rmin'].GetValue()
         form_opts['rmax'] = wids['ffit_rmax'].GetValue()
         form_opts['kwstring'] = KWeight_Choices[wids['ffit_kweight'].GetStringSelection()]
         form_opts['fitspace'] = FitSpace_Choices[wids['ffit_fitspace'].GetStringSelection()]
         
-        form_opts['kwindow'] = wids['ffit_kwindow'].GetStringSelection()
+        form_opts['kwindow']    = wids['ffit_kwindow'].GetStringSelection()
         form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
         form_opts['plotone_op'] = wids['plotone_op'].GetStringSelection()
         form_opts['plotalt_op'] = wids['plotalt_op'].GetStringSelection()
@@ -508,26 +507,66 @@ class FeffitPanel(TaskPanel):
                 if wids.vary is not None:
                     wids.vary.SetStringSelection(varstr)
 
-    def onPlotModel(self, evt=None):
-        dgroup = self.controller.get_group()
-        self.build_fitmodel(dgroup)
-        self.onPlot(show_init=True)
 
-    def onPlot(self, evt=None, baseline_only=False, show_init=False):
+    def onPlot(self, evt=None):
         opts = self.read_form()
-        dgroup = self.controller.get_group()
-        print("onPLOT " , dgroup, opts)
+        try:        
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group()
+        except:
+            gname  = dgroup = None
+            
+        self.build_fitmodel(dgroup)
+
+        plot1 = opts['plotone_op']
+        plot2 = opts['plotalt_op']        
+        cmds = []
         
-#         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-# 
-#         cmd = "plot_prepeaks_fit"
-#         args = ['{gname}']
-#         if baseline_only:
-#             cmd = "plot_prepeaks_baseline"
-#         else:
-#             args.append("show_init=%s" % (show_init))
-#         cmd = "%s(%s)" % (cmd, ', '.join(args))
-#         self.larch_eval(cmd.format(**opts))
+        ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'],
+                      dk=opts['dk'],  window=opts['kwindow'])
+        if ',' in opts['kwstring']:
+            kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
+        else:
+            kw = int(opts['kwstring'])
+            
+        ftargs['kweight'] = kw
+        ftcmd = "xftf({pathgroup:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
+
+        cmds.append(ftcmd.format(pathgroup='_pathsum', **ftargs))
+                  
+        if opts['plot_paths']:
+            for path in self.pathlist:
+                cmds.append(f"path2chi({path:s}, paramgroup=_feffit_params)")
+                cmds.append(ftcmd.format(pathgroup=path, **ftargs))
+
+            self.larch_eval('\n'.join(cmds))
+        cmds = []
+        for i, plot in enumerate((plot1, plot2)):
+            pcmd = 'plot_chir'
+            pextra = f', win={i+1:d}, title="sum of paths"'
+            if plot == chik:
+                pcmd = 'plot_chik'
+                pextra += f', kweight={kw:d}, show_window=False'
+            elif plot == chirre:
+                pextra += ', show_mag=False, show_real=True'
+            elif plot == chirmr:
+                pextra += ', show_mag=True, show_real=True'
+            if plot == noplot:
+                continue
+            if dgroup is not None:
+                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, new=True)")
+                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, new=False)")                
+            else:
+                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, new=True)")
+            if opts['plot_paths']:
+                voff = opts['plot_voffset']
+                for i, path in enumerate(self.pathlist):
+                    plabel = path.replace('_paths', '').replace('[', '').replace(']', '')
+                    cmds.append(f"{pcmd}({path}, label={plabel:s}{pextra}, offset={i*voff}, new=False)")                        
+
+        self.larch_eval('\n'.join(cmds))
+              
 
     def add_path(self, feffdat_file,  feffresult):
         pathinfo = None
@@ -538,13 +577,15 @@ class FeffitPanel(TaskPanel):
                 pathinfo = path
                 break
         atoms = [s.strip() for s in pathinfo.geom.split('>')]
+        atoms.pop(0)
         atoms.pop()
-        atoms[0] = atoms[0].replace('[', '').replace(']', '')
-        title = '>'.join(atoms)
-        i = 0
-        while title in self.paths_data:
-            i +=1
-            title = ('>'.join(atoms)) + '_%d' % i
+        title = '>'.join(atoms) + "%.2f" % (0.01*round(100*pathinfo.reff))
+        if title in self.paths_data:
+            btitle = title
+            i = -1
+            while title in self.paths_data:
+                i += 1
+                title = btitle + '_%s' % string.ascii_lowercase[i]
 
         self.paths_data[title] = (feffdat_file, feffresult.folder,
                                   feffresult.absorber, feffresult.edge,
@@ -591,16 +632,13 @@ class FeffitPanel(TaskPanel):
             if isinstance(node, ast.Name):
                 sym = node.id
                 if sym not in symtable:                
-                    setattr(pargroup, sym, param(value, min=minval,
-                                                 max=maxval, vary=True))
+                    #setattr(pargroup, sym, param(value, min=minval,
+                    #                             max=maxval, vary=True))
                     s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
-                    print(' -update> ', s)
-
-                    # self.larch_eval(s)
-                    
-                    
+                    self.larch_eval(s)
+                                        
         pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        print("Updated param group, now: ", dir(pargroup))
+
         # should walk through all parameters and expressions
         # and make sure to set par.vary=False for unused symbols
         self.params_panel.update()
@@ -725,14 +763,15 @@ class FeffitPanel(TaskPanel):
 
         pathlist = []
         for title, pathdata in self.paths_data.items():
-            pathlist.append(f"_paths['{title:s}']")
-
-            pdat = {'title': title, 'fullpath': pathdata[0]}
+            pdat = {'title': title, 'fullpath': pathdata[0], 'use':True}
             pdat.update(path_pages[title].get_expressions())
-            cmds.append(COMMANDS['add_path'].format(**pdat))            
-
-        pathlist = '[%s]' % (', '.join(pathlist))
-        cmds.append(COMMANDS['pathlist'].format(pathlist=pathlist))
+            if pdat['use']:
+                cmds.append(COMMANDS['add_path'].format(**pdat))
+                pathlist.append(f"_paths['{title:s}']")                
+        self.pathlist = pathlist
+        
+        paths_string = '[%s]' % (', '.join(pathlist))
+        cmds.append(COMMANDS['pathlist'].format(pathlist=paths_string))
         cmds.append(COMMANDS['ff2chi'])
         self.larch_eval("\n".join(cmds))
 
