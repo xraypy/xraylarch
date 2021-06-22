@@ -15,7 +15,7 @@ from importlib.metadata import version, PackageNotFoundError
 try:
     __version__ = version("xraylarch")
 except PackageNotFoundError:
-    # package is not installedzaA
+    # package is not installed
     __version__ = __release_version__
 
 import requests

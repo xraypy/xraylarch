@@ -15,8 +15,6 @@ try:
 except ImportError:
     HAS_PACKAGING = True
 
-HAS_CONDA = os.path.exists(os.path.join(sys.prefix, 'conda-meta'))
-
 cmdline_args = sys.argv[1:]
 INSTALL = len(cmdline_args)> 0 and (cmdline_args[0] == 'install')
 DEVELOP = len(cmdline_args)> 0 and (cmdline_args[0] == 'develop')
@@ -40,20 +38,20 @@ except (ImportError, AttributeError):
 
 
 #          required,  module name, import name, min version, description
-modules = ((True, 'numpy', 'numpy', '1.12', 'basic scientific python'),
-           (True, 'scipy', 'scipy', '1.2', 'basic scientific python'),
+modules = ((True, 'numpy', 'numpy', '1.18', 'basic scientific python'),
+           (True, 'scipy', 'scipy', '1.5', 'basic scientific python'),
            (True, 'matplotlib', 'matplotlib', '3.0', 'basic scientific python'),
            (True, 'h5py', 'h5py', '2.8', 'basic scientific python'),
            (True, 'pillow', 'PIL', '7.0', 'basic scientific python'),
-           (True, 'sqlalchemy', 'sqlalchemy', '0.9', 'basic python'),
+           (True, 'sqlalchemy', 'sqlalchemy', '1.0', 'basic python'),
            (True, 'pyyaml', 'yaml', '5.0', 'basic python'),
            (True, 'requests', 'requests', '0.2', 'basic python'),
            (True, 'scikit-image', 'skimage', '0.17', 'scientific python'),
            (True, 'scikit-learn', 'sklearn', '0.23', 'scientific python'),
-           (True, 'lmfit', 'lmfit', '1.0', 'scientific python'),
-           (True, 'asteval', 'asteval', '0.9.17', 'scientific python'),
+           (True, 'lmfit', 'lmfit', '1.0.2', 'scientific python'),
+           (True, 'asteval', 'asteval', '0.9.22', 'scientific python'),
            (True, 'uncertainties', 'uncertainties', '3.0', 'scientific python'),
-           (True, 'xraydb', 'xraydb', '4.4.5', 'scientific python'),
+           (True, 'xraydb', 'xraydb', '4.4.6', 'scientific python'),
            # (False, 'dioptas', 'dioptas', '0.4', 'XRD Display and Integraton'),
            (False, 'tomopy', 'tomopy', '1.4', 'Tomographic reconstructions'),
            (False, 'silx', 'silx', '0.12', 'Spec File reading, XRD'),
