@@ -95,6 +95,13 @@ def _get_title(dgroup, title=None):
     for attr in ('title', 'plot_title', 'filename', 'name', '__name__'):
         t = getattr(dgroup, attr, None)
         if t is not None:
+            if attr == 'filename':
+                folder, file = os.path.split(t)
+                if folder == '':
+                    t = file
+                else:
+                    top, folder = os.path.split(folder)
+                    t = '/'.join((folder, file))
             return t
         #endif
         if data_group is not None:
@@ -400,7 +407,8 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
     if label is None:
         label = 'chi'
     #endif
-    title = _get_title(dgroup, title=title)
+    if new:
+        title = _get_title(dgroup, title=title)
     _plot(dgroup.k, chi+offset, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=title,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
@@ -445,7 +453,8 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
     """
 
     kweight = dgroup.xftf_details.call_args['kweight']
-    title = _get_title(dgroup, title=title)
+    if new:
+        title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, show_legend=True, linewidth=3, title=title,
                 zorder=20, xmax=rmax, xlabel=plotlabels.r, new=new,
@@ -520,7 +529,9 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
     if label is None:
         label = 'chi(q) (filtered)'
     #endif
-    title = _get_title(dgroup, title=title)
+    if new:
+        title = _get_title(dgroup, title=title)
+
     _plot(dgroup.k, chiq+offset, xlabel=plotlabels.k,
          ylabel=plotlabels.chikw.format(kweight), title=title,
          label=label, zorder=20, new=new, xmax=kmax, **opts)
