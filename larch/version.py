@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2021-Jun-12'
-__release_version__ = '0.9.52'
+__date__    = '2021-Jul-1'
+__release_version__ = '0.9.53'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
 
 
