@@ -70,7 +70,7 @@ MIN_CORREL = 0.10
 COMMANDS = {}
 COMMANDS['feffit_params_init'] = """# create feffit parameters
 _feffit_params = param_group(s02=param(1.0, min=0, vary=True),
-                             e0=param(0, min=-25, max=25, vary=True))
+                             e0=param(0.1, min=-25, max=25, vary=True))
 _paths = {}
 
 """
@@ -96,14 +96,237 @@ _feffit_result = feffit(_feffit_params, _feffit_dataset)
 
 """
 
-defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
 
-def get_xlims(x, xmin, xmax):
-    xeps = min(np.diff(x))/ 5.
-    i1 = index_of(x, xmin + xeps)
-    i2 = index_of(x, xmax + xeps) + 1
-    return i1, i2
+class ParametersModel(dv.DataViewIndexListModel):
+    def __init__(self, paramgroup, selected=None):
+        dv.DataViewIndexListModel.__init__(self, 0)
+        self.data = []
+        if selected is None:
+            selected = []
+        self.selected = selected
 
+        self.paramgroup = paramgroup
+        self.read_data()
+
+    def set_data(self, paramgroup, selected=None):
+        self.paramgroup = paramgroup
+        if selected is not None:
+            self.selected = selected
+        self.read_data()
+
+    def read_data(self):
+        self.data = []
+        if self.paramgroup is None:
+            self.data.append(['param name', False, 'vary', '0.0'])
+        else:
+            for pname, par in group2params(self.paramgroup).items():
+                ptype = 'vary' if par.vary else 'fixed'
+                try:
+                    value = str(par.value)
+                except:
+                    value = 'INVALID  '
+                if par.expr is not None:
+                    ptype = 'constraint'
+                    value = "%s := %s" % (value, par.expr)
+                sel = pname in self.selected
+                self.data.append([pname, sel, ptype, value])
+        self.Reset(len(self.data))
+
+    def select_all(self, value=True):
+        self.selected = []
+        for irow, row in enumerate(self.data):
+            self.SetValueByRow(value, irow, 1)
+            if value:
+                self.selected.append(row[0])
+
+    def select_none(self):
+        self.select_all(value=False)
+
+    def GetColumnType(self, col):
+        return "bool" if col == 2 else "string"
+
+    def GetValueByRow(self, row, col):
+        return self.data[row][col]
+
+    def SetValueByRow(self, value, row, col):
+        self.data[row][col] = value
+        return True
+
+    def GetColumnCount(self):
+        return len(self.data[0])
+
+    def GetCount(self):
+        return len(self.data)
+
+    def GetAttrByRow(self, row, col, attr):
+        """set row/col attributes (color, etc)"""
+        ptype = self.data[row][2]
+        if ptype == 'vary':
+            attr.SetColour('#000')
+        elif ptype == 'fixed':
+            attr.SetColour('#A11')
+        else:
+            attr.SetColour('#11A')
+        return True
+
+class EditParamsFrame(wx.Frame):
+    """ edit parameters"""
+    def __init__(self, parent=None, feffit_panel=None,
+                 paramgroup=None, selected=None, _larch=None):
+        wx.Frame.__init__(self, None, -1,
+                          'Edit Feffit Parameters',
+                          style=FRAMESTYLE, size=(550, 300))
+
+        self.parent = parent
+        self.feffit_panel = feffit_panel
+        self.paramgroup = paramgroup
+        self.larch = _larch
+
+        spanel = scrolled.ScrolledPanel(self, size=(500, 275))
+        spanel.SetBackgroundColour('#EEEEEE')
+
+        self.dvc = dv.DataViewCtrl(spanel, style=DVSTYLE)
+        self.SetMinSize((500, 250))
+
+        self.model = ParametersModel(paramgroup, selected)
+        self.dvc.AssociateModel(self.model)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.dvc, 1, LEFT|wx.ALL|wx.GROW)
+        pack(spanel, sizer)
+
+        spanel.SetupScrolling()
+
+        toppan = GridPanel(self, ncols=4, pad=1, itemstyle=LEFT)
+
+        bkws = dict(size=(200, -1))
+        toppan.Add(Button(toppan, "Select All",    action=self.onSelAll, size=(175, -1)))
+        toppan.Add(Button(toppan, "Select None",             action=self.onSelNone, size=(175, -1)))
+        toppan.Add(Button(toppan, "Select Unused Variables", action=self.onSelUnused, size=(200, -1)))
+        toppan.Add(Button(toppan, "Remove Selected",   action=self.onRemove, size=(175,-1)), newrow=True)
+        toppan.Add(Button(toppan, "'Fix' Selected",    action=self.onFix, size=(175, -1)))
+        toppan.Add(Button(toppan, "Force Refresh",     action=self.onRefresh, size=(200, -1)))
+        npan = wx.Panel(self)
+        nsiz = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.par_name = wx.TextCtrl(npan, value='<name>', size=(125, -1))
+        self.par_expr = wx.TextCtrl(npan, value='<expression or value>', size=(250, -1))
+        nsiz.Add(SimpleText(npan, "Add Parameter:"), 0)
+        nsiz.Add(self.par_name, 0)
+        nsiz.Add(self.par_expr, 1, wx.GROW|wx.ALL)
+        nsiz.Add(Button(npan, label='Add', action=self.onAddParam), 0)
+        pack(npan, nsiz)
+
+        toppan.Add(npan, dcol=4, newrow=True)
+        toppan.Add(HLine(toppan, size=(500, 2)), dcol=5, newrow=True)
+        toppan.pack()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(toppan, 0, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 1)
+        pack(self, mainsizer)
+
+        columns = [('Parameter',   150, 'text'),
+                   ('Select',       75, 'bool'),
+                   ('Type',         75, 'text'),
+                   ('Value',       200, 'text')]
+
+        for icol, dat in enumerate(columns):
+             label, width, dtype = dat
+             method = self.dvc.AppendTextColumn
+             mode = dv.DATAVIEW_CELL_EDITABLE
+             if dtype == 'bool':
+                 method = self.dvc.AppendToggleColumn
+                 mode = dv.DATAVIEW_CELL_ACTIVATABLE
+             method(label, icol, width=width, mode=mode)
+             c = self.dvc.Columns[icol]
+             c.Alignment = c.Renderer.Alignment = wx.ALIGN_LEFT
+             c.SetSortable(False)
+
+        self.dvc.EnsureVisible(self.model.GetItem(0))
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+
+        self.Show()
+        self.Raise()
+        wx.CallAfter(self.onSelUnused)
+
+    def onSelAll(self, event=None):
+        self.model.select_all()
+        self.model.read_data()
+
+    def onSelNone(self, event=None):
+        self.model.select_none()
+        self.model.read_data()
+
+    def onSelUnused(self, event=None):
+        curr_syms = self.feffit_panel.get_used_params()
+        unused = []
+        for pname, par in group2params(self.paramgroup).items():
+            if pname not in curr_syms and par.vary:
+                unused.append(pname)
+        self.model.set_data(self.paramgroup, selected=unused)
+
+    def onRemove(self, event=None):
+        out = []
+        for pname, sel, ptype, val in self.model.data:
+            if sel:
+                out.append(pname)
+        nout = len(out)
+
+        msg = f"Remove {nout:d} Parameters? \n This is not easy to undo!"
+        dlg = wx.MessageDialog(self, msg, 'Warning', wx.YES | wx.NO )
+        if (wx.ID_YES == dlg.ShowModal()):
+            for pname, sel, ptype, val in self.model.data:
+                if sel:
+                    out.append(pname)
+                    if hasattr(self.paramgroup, pname):
+                        delattr(self.paramgroup, pname)
+
+            self.model.set_data(self.paramgroup, selected=None)
+            self.model.read_data()
+            self.feffit_panel.get_pathpage('parameters').Rebuild()
+        dlg.Destroy()
+
+
+
+    def onFix(self, event=None):
+        for pname, sel, ptype, val in self.model.data:
+            if sel and ptype == 'vary':
+                par = getattr(self.paramgroup, pname, None)
+                if par is not None and par.vary:
+                    par.vary = False
+        self.model.read_data()
+        self.feffit_panel.get_pathpage('parameters').Rebuild()
+
+
+    def onAddParam(self, event=None):
+        par_name = self.par_name.GetValue()
+        par_expr = self.par_expr.GetValue()
+
+        try:
+            val = float(par_expr)
+            ptype = 'vary'
+        except:
+            val = par_expr
+            ptype = 'expr'
+
+        if ptype == 'vary':
+            cmd = f"_feffit_params.{par_name} = param({val}, vary=True)"
+        else:
+            cmd = f"_feffit_params.{par_name} = param(expr='{val}')"
+
+        self.feffit_panel.larch_eval(cmd)
+        self.onRefresh()
+
+    def onRefresh(self, event=None):
+        self.paramgroup = getattr(self.feffit_panel.larch.symtable, '_feffit_params')
+        self.model.set_data(self.paramgroup)
+        self.model.read_data()
+        self.feffit_panel.get_pathpage('parameters').Rebuild()
+
+
+    def onClose(self, event=None):
+        self.Destroy()
 
 
 class FeffitParamsPanel(wx.Panel):
@@ -120,11 +343,8 @@ class FeffitParamsPanel(wx.Panel):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
 
         panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
-        panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),
-                  dcol=2)
-        self.fix_unused = Check(panel, default=True,
-                                 label="'Fix' unused variables for fit", size=(200, -1))
-        panel.Add(self.fix_unused, dcol=4)
+        panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
+        panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"),
@@ -144,6 +364,15 @@ class FeffitParamsPanel(wx.Panel):
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(spanel, 1, wx.GROW|wx.ALL, 2)
         pack(self, mainsizer)
+
+    def Rebuild(self, event=None):
+        for pname, parwid in self.parwids.items():
+            for x in parwid.widgets:
+                x.Destroy()
+        self.panel.irow = 1
+        self.parwids = {}
+        self.update()
+
 
     def update(self):
         pargroup = getattr(self.larch.symtable, '_feffit_params', None)
@@ -182,7 +411,9 @@ class FeffitParamsPanel(wx.Panel):
 
     def onEditParams(self, event=None):
         pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        print('edit params ' , pargroup)
+        self.feffit_panel.show_subframe('edit_params', EditParamsFrame,
+                                        paramgroup=pargroup,
+                                        feffit_panel=self.feffit_panel)
 
 
     def RemoveParams(self, event=None, name=None):
@@ -229,8 +460,6 @@ class FeffPathPanel(wx.Panel):
         self._larch = _larch
 
         self.wids = wids = {}
-        delr = 'delr' if npath == 1 else f'delr_{npath:d}'
-        sigma2  = 'sigma2' if npath == 1 else f'sigma2_{npath:d}'
 
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
@@ -243,8 +472,8 @@ class FeffPathPanel(wx.Panel):
         make_parwid('label', user_label)
         make_parwid('amp',  f'{degen:.1f} * s02')
         make_parwid('e0',  'e0')
-        make_parwid('delr',  delr)
-        make_parwid('sigma2',  sigma2)
+        make_parwid('delr',  f'delr_{title}')
+        make_parwid('sigma2',  f'sigma2_{title}')
         make_parwid('c3',  '')
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
@@ -321,8 +550,7 @@ class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='fefft_config',
-                           title='Feff Fitting of EXAFS Paths',
-                           config=defaults, **kws)
+                           title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
 
     def onPanelExposed(self, **kws):
@@ -576,7 +804,7 @@ class FeffitPanel(TaskPanel):
             if plot == noplot:
                 continue
             if dgroup is not None:
-                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='sum of path', new=True)")
+                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='sum of paths', new=True)")
                 cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, show_win={with_win}, new=True)")
             else:
                 cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, title='sum of paths', show_window={with_win}, new=True)")
@@ -600,7 +828,7 @@ class FeffitPanel(TaskPanel):
         atoms = [s.strip() for s in pathinfo.geom.split('>')]
         atoms.pop(0)
         atoms.pop()
-        title = '>'.join(atoms) + "%.2f" % (0.01*round(100*pathinfo.reff))
+        title = '_'.join(atoms) + "%d" % (round(100*pathinfo.reff))
         if title in self.paths_data:
             btitle = title
             i = -1
@@ -734,13 +962,13 @@ class FeffitPanel(TaskPanel):
         i2 = index_of(x, opts['emax'] + en_eps) + 1
         return i1, i2
 
-
     def get_pathpage(self, name):
         "get nb page for a Path by name"
         name = name.lower().strip()
-        for page in self.paths_nb.pagelist:
-            if name in page.__class__.__name__.lower().strip():
-                return page
+        for i in range(self.paths_nb.GetPageCount()):
+            text = self.paths_nb.GetPageText(i).strip().lower()
+            if name in text:
+                return self.paths_nb.GetPage(i)
 
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
@@ -778,28 +1006,26 @@ class FeffitPanel(TaskPanel):
         self.larch_eval("\n".join(cmds))
 
 
-    def find_unused_params(self, action='fix'):
+    def get_used_params(self, action='fix'):
         used_syms = []
         path_pages = {}
         for i in range(self.paths_nb.GetPageCount()):
             text = self.paths_nb.GetPageText(i).strip()
             path_pages[text] = self.paths_nb.GetPage(i)
-
         for title in self.paths_data:
             if title not in path_pages:
                 continue
             exprs = path_pages[title].get_expressions()
-            exprs.pop('use')
-            exprs.pop('label')
-
-            for expr in exprs:
+            for ename, expr in exprs.items():
+                if ename in ('label', 'use'):
+                    continue
                 for node in ast.walk(ast.parse(expr)):
                     if isinstance(node, ast.Name):
                         sym = node.id
                         if sym not in used_syms:
                             used_syms.append(sym)
 
-        print("current symbols: ",  used_syms)
+        return used_syms
 
 
 #
