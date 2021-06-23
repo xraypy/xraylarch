@@ -87,6 +87,11 @@ class ParameterGroup(Group):
             self.__params__._asteval.symtable[name] = val
         self.__dict__[name] = val
 
+    def __delattr__(self, name):
+        self.__dict__.pop(name)
+        if name in self.__params__:
+            self.__params__.pop(name)
+
     def __add(self, name, value=None, vary=True, min=-np.inf, max=np.inf,
               expr=None, stderr=None, correl=None, brute_step=None):
         if expr is None and isinstance(value, str):
