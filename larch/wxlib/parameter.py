@@ -63,6 +63,7 @@ class ParameterWidgets(object):
 
         self.parent = parent
         self.param = param
+        self.widgets = []
         self._saved_expr = ''
         if (prefix is not None and
             not self.param.name.startswith(prefix)):
@@ -73,10 +74,17 @@ class ParameterWidgets(object):
 
         # set vary_choice from param attributes
         vary_choice = PAR_VAR
+        value = None
         if param.expr not in (None, 'None', ''):
             vary_choice = PAR_CON
-        elif not param.vary:
-            vary_choice = PAR_FIX
+            try:
+                value = param.value
+            except:
+                value = -np.Inf
+
+        else:
+            value = param.value
+            vary_choice = PAR_VAR if param.vary else PAR_FIX
 
         if 'name' in widgets:
             name = param.name
@@ -86,15 +94,16 @@ class ParameterWidgets(object):
                 name_size = min(50, len(param.name)*10)
             self.name = wx.StaticText(parent, label=name,
                                       size=(name_size, -1))
-
+            self.widgets.append(self.name)
         if 'value' in widgets:
-            self.value = FloatCtrl(parent, value=param.value,
+            self.value = FloatCtrl(parent, value=value,
                                    minval=param.min,
                                    maxval=param.max,
                                    action=self.onValue,
                                    act_on_losefocus=True,
                                    gformat=True,
                                    size=(float_size, -1))
+            self.widgets.append(self.value)
 
         if 'minval' in widgets:
             minval = param.min
@@ -105,6 +114,7 @@ class ParameterWidgets(object):
                                     size=(minmax_size, -1),
                                     act_on_losefocus=True,
                                     action=self.onMinval)
+            self.widgets.append(self.minval)
             self.minval.Enable(vary_choice==PAR_VAR)
 
         if 'maxval' in widgets:
@@ -116,12 +126,14 @@ class ParameterWidgets(object):
                                     size=(minmax_size, -1),
                                     act_on_losefocus=True,
                                     action=self.onMaxval)
+            self.widgets.append(self.maxval)
             self.maxval.Enable(vary_choice==PAR_VAR)
 
         if 'vary' in widgets:
             self.vary = Choice(parent, size=(90, -1),
                                choices=VARY_CHOICES,
                                action=self.onVaryChoice)
+            self.widgets.append(self.vary)
             self.vary.SetStringSelection(vary_choice)
 
         if 'expr' in widgets:
@@ -131,10 +143,22 @@ class ParameterWidgets(object):
             self._saved_expr = expr
             self.expr = wx.TextCtrl(parent, -1, value=expr,
                                       size=(expr_size, -1))
+            self.widgets.append(self.expr)
             self.expr.Enable(vary_choice==PAR_CON)
             self.expr.Bind(wx.EVT_CHAR, self.onExprChar)
             self.expr.Bind(wx.EVT_KILL_FOCUS, self.onExprKillFocus)
             SetTip(self.expr, 'Enter constraint expression')
+
+            if param.expr not in (None, 'None', ''):
+                try:
+                    ast.parse(param.expr)
+                    bgcol, fgcol = 'white', 'black'
+                except SyntaxError:
+                    bgcol, fgcol = 'white', '#AA0000'
+
+                self.expr.SetForegroundColour(fgcol)
+                self.expr.SetBackgroundColour(bgcol)
+
 
         if 'stderr' in widgets:
             stderr = param.stderr
@@ -142,6 +166,7 @@ class ParameterWidgets(object):
                 stderr = ''
             self.stderr = wx.StaticText(parent, label=stderr,
                                         size=(stderr_size, -1))
+            self.widgets.append(self.expr)
 
         if 'minval' in widgets or 'maxval' in widgets:
             minval = param.min
@@ -157,6 +182,7 @@ class ParameterWidgets(object):
             self.bounds = Choice(parent, size=(90, -1),
                                  choices=BOUNDS_CHOICES,
                                  action=self.onBOUNDSChoice)
+            self.widgets.append(self.bounds)
             self.bounds.SetStringSelection(bounds_choice)
 
     def onBOUNDSChoice(self, evt=None):
@@ -198,7 +224,7 @@ class ParameterWidgets(object):
             self.param.expr = value
             bgcol, fgcol = 'white', 'black'
         except SyntaxError:
-            bgcol, fgcol = 'red', 'yellow'
+            bgcol, fgcol = 'white', '#AA0000'
 
         self.expr.SetForegroundColour(fgcol)
         self.expr.SetBackgroundColour(bgcol)
