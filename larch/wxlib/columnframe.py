@@ -339,13 +339,15 @@ class ColumnDataFileFrame(wx.Frame) :
 
         if self.workgroup.datatype is None:
             self.workgroup.datatype = 'raw'
+            en_units = 'not energy'
             for arrlab in arr_labels[:4]:
                 if 'ener' in arrlab.lower():
+                    en_units = 'eV'
                     self.workgroup.datatype = 'xas'
 
         self.read_ok_cb = read_ok_cb
         self.array_sel = dict(xarr=None, yarr1=None, yarr2=None, yop='/',
-                              ypop='', monod=3.1355316, en_units='eV',
+                              ypop='', monod=3.1355316, en_units=en_units,
                               yerror='constant', yerr_val=1, yerr_arr=None)
         if last_array_sel is not None:
             self.array_sel.update(last_array_sel)
@@ -809,12 +811,13 @@ class ColumnDataFileFrame(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :]
-        eguess =  guess_energy_units(workgroup.xdat)
-        if eguess.startswith('eV'):
-            self.en_units.SetStringSelection('eV')
-        elif eguess.startswith('keV'):
-            self.en_units.SetStringSelection('keV')
+            workgroup.xdat = 1.0*rdata[ix, :] 
+        if self.datatype.GetStringSelection().strip().lower() != 'raw':           
+            eguess =  guess_energy_units(workgroup.xdat)
+            if eguess.startswith('eV'):
+                self.en_units.SetStringSelection('eV')
+            elif eguess.startswith('keV'):
+                self.en_units.SetStringSelection('keV')
 
     def onUpdate(self, value=None, evt=None):
         """column selections changed calc xdat and ydat"""
@@ -840,6 +843,10 @@ class ColumnDataFileFrame(wx.Frame) :
             workgroup.xdat = 1.0*rdata[ix, :]
             exprs['xdat'] = '%%s.data[%i, : ]' % ix
 
+        workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
+        if workgroup.datatype == 'raw':
+            self.en_units.SetStringSelection('not energy')
+            
         xlabel = xname
         en_units = self.en_units.GetStringSelection()
         if en_units.startswith('deg'):
@@ -850,7 +857,6 @@ class ColumnDataFileFrame(wx.Frame) :
             workgroup.xdat *= 1000.0
             xlabel = xname + ' (eV)'
 
-        workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
 
         def pre_op(opwid, arr):
             opstr = opwid.GetStringSelection().strip()
