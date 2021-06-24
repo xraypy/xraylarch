@@ -18,6 +18,7 @@ Plotting macros for XAFS data sets and fits
  ---------------- -----------------------------------------------------
 """
 
+import os
 from numpy import gradient, ndarray, diff, where, arange, argmin
 from larch import Group
 from larch.math import (index_of, index_nearest, interp)
