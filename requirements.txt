@@ -22,7 +22,7 @@ lmfit>=1.0.2
 uncertainties>=3.1
 pyshortcuts>=1.7.2
 xraydb>=4.4
-silx>=0.12
+silx>=0.15.2
 hdf5plugin
 numdifftools
 psutil
