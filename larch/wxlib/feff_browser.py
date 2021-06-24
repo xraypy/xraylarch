@@ -163,7 +163,7 @@ class FeffResultsPanel(wx.Panel):
 
         sizer = wx.GridBagSizer(1, 1)
 
-        bkws = dict(size=(160, -1))
+        bkws = dict(size=(175, -1))
         btn_header = Button(panel, "Show Full Header", action=self.onShowHeader, **bkws)
         btn_feffinp = Button(panel, "Show Feff.inp",   action=self.onShowFeffInp, **bkws)
 
@@ -307,7 +307,7 @@ class FeffResultsPanel(wx.Panel):
             if data[5]:
                 self.path_importer(unixpath(os.path.join(folder, data[0])),
                                    self.feffresult)
-                
+
         self.onSelNone()
         # print(' on import xasmain = ', self.xasmain)
         if self.xasmain is not None:

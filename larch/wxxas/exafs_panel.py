@@ -73,7 +73,7 @@ xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
 
 
 defaults = dict(e0=-1.0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=0,
-                bkg_clamphi=1, bkg_kweight=1, fft_kmin=2.5, fft_kmax=None,
+                bkg_clamphi=1, bkg_kweight=2, fft_kmin=2.5, fft_kmax=None,
                 fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
                 fft_rmin=1, fft_rmax=6, fft_dr=0.25,
                 fft_rwindow='Hanning')
@@ -160,8 +160,8 @@ class EXAFSPanel(TaskPanel):
         wids['fft_dr'] = FloatSpin(panel, value=0.5,  **opts)
 
         opts.update({'increment': 1, 'digits': 1, 'max_val': 5})
-        wids['bkg_kweight'] = FloatSpin(panel, value=1, **opts)
-        wids['fft_kweight'] = FloatSpin(panel, value=1, **opts)
+        wids['bkg_kweight'] = FloatSpin(panel, value=2, **opts)
+        wids['fft_kweight'] = FloatSpin(panel, value=2, **opts)
 
         opts = dict(choices=CLAMPLIST, size=(80, -1), action=self.onProcess)
         wids['bkg_clamplo'] = Choice(panel, **opts)
