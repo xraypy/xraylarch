@@ -712,7 +712,7 @@ class SpecfileImporter(wx.Frame) :
         """ build arrays according to selection """
         scanlist = []
         for s in self.scanlist.GetCheckedStrings():
-            words = [s.strip() for s in s.split(':')]
+            words = [s.strip() for s in s.split('|')]
             scanlist.append(words[0])
         if len(scanlist) == 0:
             cancel = Popup(self, """No scans selected.
@@ -1003,7 +1003,10 @@ class SpecfileImporter(wx.Frame) :
         popts = dict(marker='o', markersize=4, linewidth=1.5,
                      title=fname, ylabel=ylabel, xlabel=xlabel,
                      label="%s: %s" % (fname, workgroup.plot_ylabel))
-        self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+        try:
+            self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+        except:
+            pass
 
 
     def plot_messages(self, msg, panel=1):
