@@ -97,6 +97,10 @@ _feffit_result = feffit(_feffit_params, _feffit_dataset)
 """
 
 
+defaults = dict(fitspace='r', kweight=2, kmin=2, kmax=None, dk=4, kwindow='kaiser',
+                rmin=1, rmax=4)
+
+
 class ParametersModel(dv.DataViewIndexListModel):
     def __init__(self, paramgroup, selected=None):
         dv.DataViewIndexListModel.__init__(self, 0)
@@ -549,12 +553,15 @@ class FeffitResultFrame(wx.Frame):
 class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='fefft_config',
+                           configname='feffit_config',
+                           config=defaults,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
+        dgroup = self.controller.get_group()
+        print('feffit panel exposed ' , dgroup)
         try:
             pargroup = getattr(self.larch.symtable, '_feffit_params', None)
             if pargroup is None:
@@ -570,6 +577,17 @@ class FeffitPanel(TaskPanel):
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
+
+    def process(self, dgroup=None, **kws):
+        print("Feffit Process ", dgroup)
+        if dgroup is not None:
+            self.dgroup = dgroup
+        conf = self.read_form()
+        conf.update(kws)
+        if not 'fft_kwindow' in conf:
+            return
+
+
 
     def build_display(self):
         self.paths_nb = flatnotebook(self, {})
@@ -615,14 +633,14 @@ class FeffitPanel(TaskPanel):
                                          action=self.onPlot)
 
         wids['plot_current']  = Button(pan,'Plot Current Model',
-                                     action=self.onPlot,  size=(125, -1))
+                                     action=self.onPlot,  size=(175, -1))
         wids['do_fit']       = Button(pan, 'Fit Current Group',
-                                      action=self.onFitModel,  size=(125, -1))
+                                      action=self.onFitModel,  size=(157, -1))
         wids['do_fit'].Disable()
 
-        wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
-                                   action=self.onFitSelected,  size=(125, -1))
-        wids['do_fit_sel'].Disable()
+#         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
+#                                    action=self.onFitSelected,  size=(125, -1))
+#         wids['do_fit_sel'].Disable()
 
         def add_text(text, dcol=1, newrow=True):
             pan.Add(SimpleText(pan, text), dcol=dcol, newrow=newrow)
@@ -664,8 +682,8 @@ class FeffitPanel(TaskPanel):
         add_text('Vertical offset: ', newrow=False)
         pan.Add(wids['plot_voffset'], dcol=1)
 
-        pan.Add(wids['do_fit'], dcol=2, newrow=True)
-        pan.Add(wids['do_fit_sel'], dcol=2)
+        pan.Add(wids['do_fit'], dcol=3, newrow=True)
+        #        pan.Add(wids['do_fit_sel'], dcol=2)
         pan.Add((5, 5), newrow=True)
 
         pan.Add(HLine(self, size=(600, 2)), dcol=6, newrow=True)
@@ -675,44 +693,56 @@ class FeffitPanel(TaskPanel):
         sizer.Add(pan, 0, LEFT, 3)
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
-
         pack(self, sizer)
 
     def get_config(self, dgroup=None):
-        """get processing configuration for a group"""
+        """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
+        if dgroup is None:
+            return self.get_defaultconfig()
 
-        conf = getattr(dgroup, 'feffit_config', {})
-        if 'kmin' not in conf:
-            conf = defaults
+        conf = getattr(dgroup, self.configname, None)
+        if conf is None:
+            # initial reading: start with default then take Athena Project values
+            conf = self.get_defaultconfig()
 
-        dgroup.feffit_config = conf
-        if not hasattr(dgroup, 'feffit'):
-            dgroup.feffit = Group()
+            kmax = conf.get('kmax', None)
+            if kmax is None:
+                econf =geattr(dgroup, 'exafs_config', {}) # from EXAFS Panel
+                if hasattr(dgroup.fft_params, 'kw'):
+                    conf[f'kweight'] = getattr(dgroup.fft_params, 'kw')
+                for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
+                            'kwindow', 'fft_rmin', 'fft_rmax'):
+                    val = econf.get(key, None)
+                    tkey = key.replace('fft_', '')
+                    if val is not None and tkey in conf:
+                        conf[tkey] = val
 
+            setattr(dgroup, self.configname, conf)
         return conf
 
+
     def fill_form(self, dat):
+        print("fill form ", dat, type(dat))
         if isinstance(dat, Group):
             if not hasattr(dat, 'chi'):
                 self.xasmain.process_exafs(dat)
-            if hasattr(dat, 'feffit'):
-                self.wids['ffit_kmin'].SetValue(dat.feffit.kmin)
-                self.wids['ffit_kmax'].SetValue(dat.feffit.kmax)
-                self.wids['ffit_rmin'].SetValue(dat.feffit.rmin)
-                self.wids['ffit_rmax'].SetValue(dat.feffit.rmax)
-                self.wids['ffit_dk'].SetValue(dat.feffit.dk)
+            if hasattr(dat, 'feffit_config'):
+                print(dat.feffit_config)
+                self.wids['kmin'].SetValue(dat.feffit_config.kmin)
+                self.wids['kmax'].SetValue(dat.feffit_config.kmax)
+                self.wids['rmin'].SetValue(dat.feffit_config.rmin)
+                self.wids['rmax'].SetValue(dat.feffit_config.rmax)
+                self.wids['dk'].SetValue(dat.feffit_config.dk)
         elif isinstance(dat, dict):
-            # self.wids['ppeak_e0'].SetValue(dat['e0'])
-            self.wids['ppeak_emin'].SetValue(dat['emin'])
-            self.wids['ppeak_emax'].SetValue(dat['emax'])
-            self.wids['ppeak_elo'].SetValue(dat['elo'])
-            self.wids['ppeak_ehi'].SetValue(dat['ehi'])
+            print(" fill from dict")
 
     def read_form(self):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
+        print("feffit read form")
+
         form_opts = {'datagroup': dgroup}
         wids = self.wids
         form_opts['kmin'] = wids['ffit_kmin'].GetValue()
@@ -805,7 +835,7 @@ class FeffitPanel(TaskPanel):
                 continue
             if dgroup is not None:
                 cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='sum of paths', new=True)")
-                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, show_win={with_win}, new=True)")
+                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, show_window={with_win}, new=True)")
             else:
                 cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, title='sum of paths', show_window={with_win}, new=True)")
             if opts['plot_paths']:
