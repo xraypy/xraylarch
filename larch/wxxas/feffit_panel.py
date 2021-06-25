@@ -23,6 +23,7 @@ from larch import Group, site_config
 from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
+from larch.utils.strutils import fix_varname
 from larch.io.export_modelresult import export_modelresult
 
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -89,8 +90,7 @@ COMMANDS['pathlist'] = "_pathlist  = {pathlist:s}"
 COMMANDS['ff2chi']   = "_pathsum = ff2chi(_pathlist, paramgroup=_feffit_params)"
 
 COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
-_feffit_dataset  = feffit_dataset(data={groupname:s}, transform=_feffit_trans,
-                                  pathlist=_feffit_trans)
+_feffit_dataset = feffit_dataset(data={groupname:s}, transform=_feffit_trans, pathlist=_pathlist)
 _feffit_result = feffit(_feffit_params, _feffit_dataset)
 
 """
@@ -751,8 +751,14 @@ class FeffitPanel(TaskPanel):
 
     def read_form(self):
         "read for, returning dict of values"
-        dgroup = self.controller.get_group()
-        form_opts = {'datagroup': dgroup}
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group()
+        except:
+            gname  = fname = dgroup = None
+
+        form_opts = {'datagroup': dgroup, 'groupname': gname}
         wids = self.wids
         form_opts['kmin'] = wids['ffit_kmin'].GetValue()
         form_opts['kmax'] = wids['ffit_kmax'].GetValue()
@@ -816,7 +822,7 @@ class FeffitPanel(TaskPanel):
 
         ftargs['kweight'] = kw
         xftfcmd = "xftf({grp:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
-        xftrcmd = "xftr({gpp:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='hanning')"
+        xftrcmd = "xftr({grp:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='hanning')"
 
         if dgroup is not None:
             cmds.append(xftfcmd.format(grp=gname, **ftargs))
@@ -879,7 +885,7 @@ class FeffitPanel(TaskPanel):
         self.paths_data[title] = (feffdat_file, feffresult.folder,
                                   feffresult.absorber, feffresult.edge,
                                   pathinfo)
-        user_label = f'{title:s}, Reff={pathinfo.reff:.4f}'
+        user_label = fix_varname(f'{title:s}')
         pathpanel = FeffPathPanel(parent=self.paths_nb, title=title,
                                   npath=len(self.paths_data),
                                   user_label=user_label,
@@ -1013,7 +1019,7 @@ class FeffitPanel(TaskPanel):
     def build_fitmodel(self, groupname=None):
         """ use fit components to build model"""
         paths = []
-        cmds = ["## set up feffit "]
+        cmds = ["### set up feffit "]
         pargroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pargroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
@@ -1043,6 +1049,7 @@ class FeffitPanel(TaskPanel):
         paths_string = '[%s]' % (', '.join(pathlist))
         cmds.append(COMMANDS['pathlist'].format(pathlist=paths_string))
         cmds.append(COMMANDS['ff2chi'])
+        cmds.append("###")
         self.larch_eval("\n".join(cmds))
 
 
@@ -1137,14 +1144,21 @@ class FeffitPanel(TaskPanel):
 
 
     def onFitModel(self, event=None):
-        dgroup = self.controller.get_group()
-        if dgroup is None:
-            return
-        print("FIT MODEL ")
-
         opts = self.read_form()
-        dgroup = self.controller.get_group()
-        opts['group'] = opts['gname']
+
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group()
+        except:
+            gname  = fname = dgroup = None
+
+        self.build_fitmodel(dgroup)
+
+        self.larch_eval(COMMANDS['do_feffit'].format(**opts))
+
+
+
 #         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 #
 #         ppeaks = dgroup.prepeaks
