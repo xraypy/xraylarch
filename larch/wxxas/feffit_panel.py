@@ -463,12 +463,12 @@ class FeffPathPanel(wx.Panel):
         self.wids = wids = {}
 
         def SLabel(label, size=(80, -1), **kws):
-            return  SimpleText(panel, label, size=size, style=wx.ALIGN_LEFT, **kws)
+            return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
         def make_parwid(name, expr):
             wids[name] = TextCtrl(panel, expr, size=(250, -1),
                                   action=partial(self.onExpression, name=name))
-            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1))
+            wids[name+'_val'] = SimpleText(panel, '= ', size=(150, -1), style=LEFT)
 
         make_parwid('label', user_label)
         make_parwid('amp',  f'{degen:.1f} * s02')
@@ -905,6 +905,9 @@ class FeffitPanel(TaskPanel):
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
+        ipage, pagepanel = self.xasmain.get_nbpage('feffit')
+        self.xasmain.nb.SetSelection(ipage)
+        self.xasmain.Raise()
 
     def update_params_for_expr(self, expr=None, value=1.e-3,
                                minval=None, maxval=None):

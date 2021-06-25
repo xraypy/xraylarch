@@ -217,10 +217,11 @@ class XASFrame(wx.Frame):
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
+        out = (1, self.nb.GetCurrentPage())
         for i, page in enumerate(self.nb.pagelist):
             if name in page.__class__.__name__.lower():
-                return i, page
-        return (1, self.nb.GetCurrentPage())
+                out = (i, page)
+        return out
 
     def onNBChanged(self, event=None):
         is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')[1]

@@ -356,8 +356,8 @@ class FeffResultsFrame(wx.Frame):
         display0 = wx.Display(0)
         client_area = display0.ClientArea
         xmin, ymin, xmax, ymax = client_area
-        xpos = int((xmax-xmin)*0.12) + xmin
-        ypos = int((ymax-ymin)*0.13) + ymin
+        xpos = int((xmax-xmin)*0.15) + xmin
+        ypos = int((ymax-ymin)*0.20) + ymin
         self.SetPosition((xpos, ypos))
 
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
