@@ -14,7 +14,7 @@ from lmfit import Parameters, Parameter, Minimizer, fit_report
 from lmfit.printfuncs import gformat as gformat
 
 from larch import Group, isNamedClass
-
+from larch.utils.strutils import fix_varname
 from ..math import index_of, realimag, complex_phase
 from ..fitting import (correlated_values, eval_stderr,
                        group2params, params2group, isParameter)
@@ -22,7 +22,8 @@ from ..fitting import (correlated_values, eval_stderr,
 from .xafsutils import set_xafsGroup
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .sigma2_models import sigma2_correldebye, sigma2_debye
-from .feffdat import PATHPAR_FMT, FeffPathGroup, ff2chi
+from .feffdat import FeffPathGroup, ff2chi, get_pathpar_name
+
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -589,15 +590,14 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         for nam, obj in result.params.items():
             eval_stderr(obj, uvars,  result.var_names, result.params)
 
-        # 3. evaluate path params, save stderr
+        # 3. evaluate path_ params, save stderr
         for ds in datasets:
-            for p in ds.pathlist:
+            for i, p in enumerate(ds.pathlist):
                 p.store_feffdat()
                 for pname in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = p.params[PATHPAR_FMT % (pname, p.label)]
+                    obj = p.params[get_pathpar_name(pname, p.label)]
                     eval_stderr(obj, uvars,  result.var_names, result.params)
-
         # restore saved parameters again
         for vname in result.var_names:
             # setattr(params, vname, vsave[vname])

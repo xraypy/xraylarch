@@ -159,8 +159,16 @@ class FeffDatFile(Group):
 
 
 PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
-PATHPAR_FMT = "%s__%s"
+PATHPAR_FMT = "%s_path%s"
 
+
+def get_pathpar_name(pname, label, i=1):
+    label = fix_varname('x' + label)[1:]
+    label = label.replace('_', ' ').split()[0]
+    if len(label) < 0: label = f'{i:d}'
+    return fix_varname(PATHPAR_FMT % (pname, label))
+    
+            
 class FeffPathGroup(Group):
     def __init__(self, filename=None, label=None, s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
@@ -266,7 +274,9 @@ class FeffPathGroup(Group):
             if isinstance(val, str):
                 attr = 'expr'
             kws =  {'vary': False, attr: val}
-            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            parname = get_pathpar_name(pname, self.label)
+
+            
             self.params.add(parname, **kws)
             self.params[parname].is_pathparam = True
 
@@ -299,7 +309,7 @@ class FeffPathGroup(Group):
         out = []
         for pname in PATH_PARS:
             val = kws.get(pname, None)
-            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            parname = get_pathpar_name(pname, self.label)
             if val is None:
                 val = self.params[parname]._getval()
             out.append(val)
@@ -316,7 +326,7 @@ class FeffPathGroup(Group):
         pathpars = {}
         for pname in ('degen', 's02', 'e0', 'deltar',
                       'sigma2', 'third', 'fourth', 'ei'):
-            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            parname = get_pathpar_name(pname, self.label)            
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
 
@@ -337,10 +347,10 @@ class FeffPathGroup(Group):
         for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
             val = strval = getattr(self, pname, 0)
-            parname = fix_varname(PATHPAR_FMT % (pname, self.label))
+            parname = get_pathpar_name(pname, self.label)
             std = None
             if pname == 'r':
-                parname = fix_varname(PATHPAR_FMT % ('deltar', self.label))
+                parname = get_pathpar_name('deltar', self.label)
                 par = self.params.get(parname, None)
                 val = par.value + self._feffdat.reff
                 strval = 'reff + ' + getattr(self, 'deltar', 0)
