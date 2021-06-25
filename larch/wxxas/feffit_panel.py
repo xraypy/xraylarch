@@ -41,7 +41,7 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 KWeight_Choices = {'1': '1', '2': '2', '3': '3',
                    '2 and 3': '[2, 3]',
                    '1, 2, and 3':  '[2, 1, 3]'}
-FitSpace_Choices = {'R space': 'R', 'k space': 'k', 'wavelet': 'w'}
+FitSpace_Choices = {'R space': 'r', 'k space':'k', 'wavelet': 'w'}
 FitPlot_Choices = {'K and R space': 'k+r', 'R space only': 'r'}
 
 
@@ -54,7 +54,6 @@ noplot  = '<no plot>'
 
 PlotOne_Choices = [chirmag, chik, chirre, chirmr]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
-
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
@@ -96,10 +95,8 @@ _feffit_result = feffit(_feffit_params, _feffit_dataset)
 
 """
 
-
-defaults = dict(fitspace='r', kweight=2, kmin=2, kmax=None, dk=4, kwindow='kaiser',
-                rmin=1, rmax=4)
-
+default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4,
+                      kwindow=FTWINDOWS[0], rmin=1, rmax=4)
 
 class ParametersModel(dv.DataViewIndexListModel):
     def __init__(self, paramgroup, selected=None):
@@ -554,14 +551,13 @@ class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='feffit_config',
-                           config=defaults,
+                           config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
         dgroup = self.controller.get_group()
-        print('feffit panel exposed ' , dgroup)
         try:
             pargroup = getattr(self.larch.symtable, '_feffit_params', None)
             if pargroup is None:
@@ -577,16 +573,6 @@ class FeffitPanel(TaskPanel):
             self.fill_form(dgroup)
         except:
             pass # print(" Cannot Fill prepeak panel from group ")
-
-    def process(self, dgroup=None, **kws):
-        print("Feffit Process ", dgroup)
-        if dgroup is not None:
-            self.dgroup = dgroup
-        conf = self.read_form()
-        conf.update(kws)
-        if not 'fft_kwindow' in conf:
-            return
-
 
 
     def build_display(self):
@@ -634,9 +620,9 @@ class FeffitPanel(TaskPanel):
 
         wids['plot_current']  = Button(pan,'Plot Current Model',
                                      action=self.onPlot,  size=(175, -1))
-        wids['do_fit']       = Button(pan, 'Fit Current Group',
-                                      action=self.onFitModel,  size=(157, -1))
-        wids['do_fit'].Disable()
+        wids['do_fit']       = Button(pan, 'Fit Data to Model',
+                                      action=self.onFitModel,  size=(175, -1))
+        # wids['do_fit'].Disable()
 
 #         wids['do_fit_sel']= Button(pan, 'Fit Selected Groups',
 #                                    action=self.onFitSelected,  size=(125, -1))
@@ -698,9 +684,11 @@ class FeffitPanel(TaskPanel):
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
         if dgroup is None:
-            dgroup = self.controller.get_group()
+             dgroup = self.controller.get_group()
         if dgroup is None:
-            return self.get_defaultconfig()
+             return self.get_defaultconfig()
+        if not hasattr(dgroup, 'chi'):
+             self.xasmain.process_exafs(dgroup)
 
         conf = getattr(dgroup, self.configname, None)
         if conf is None:
@@ -709,13 +697,19 @@ class FeffitPanel(TaskPanel):
 
             kmax = conf.get('kmax', None)
             if kmax is None:
-                econf =geattr(dgroup, 'exafs_config', {}) # from EXAFS Panel
+                econf = getattr(dgroup, 'exafs_config', {}) # from EXAFS Panel
                 if hasattr(dgroup.fft_params, 'kw'):
-                    conf[f'kweight'] = getattr(dgroup.fft_params, 'kw')
+                    conf[f'kwstring'] = str(getattr(dgroup.fft_params, 'kw'))
+                if hasattr(dgroup.fft_params, 'kweight'):
+                    conf[f'kwstring'] = str(getattr(dgroup.fft_params, 'kweight'))
+
                 for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
-                            'kwindow', 'fft_rmin', 'fft_rmax'):
+                            'kwindow', 'fft_rmin', 'fft_rmax','fft_kweight'):
                     val = econf.get(key, None)
                     tkey = key.replace('fft_', '')
+                    if key == 'fft_kweight':
+                        val = str(int(val))
+                        tkey = 'kwstring'
                     if val is not None and tkey in conf:
                         conf[tkey] = val
 
@@ -723,26 +717,41 @@ class FeffitPanel(TaskPanel):
         return conf
 
 
+    def process(self, dgroup=None, **kws):
+        if dgroup is not None:
+            self.dgroup = dgroup
+        if dgroup is None:
+            return
+
+        conf = self.get_config(dgroup=dgroup)
+        conf.update(kws)
+        conf = self.read_form()
+
+
     def fill_form(self, dat):
-        print("fill form ", dat, type(dat))
         if isinstance(dat, Group):
-            if not hasattr(dat, 'chi'):
-                self.xasmain.process_exafs(dat)
-            if hasattr(dat, 'feffit_config'):
-                print(dat.feffit_config)
-                self.wids['kmin'].SetValue(dat.feffit_config.kmin)
-                self.wids['kmax'].SetValue(dat.feffit_config.kmax)
-                self.wids['rmin'].SetValue(dat.feffit_config.rmin)
-                self.wids['rmax'].SetValue(dat.feffit_config.rmax)
-                self.wids['dk'].SetValue(dat.feffit_config.dk)
+            conf = self.get_config(dat)
+            self.wids['ffit_kmin'].SetValue(conf['kmin'])
+            self.wids['ffit_kmax'].SetValue(conf['kmax'])
+            self.wids['ffit_rmin'].SetValue(conf['rmin'])
+            self.wids['ffit_rmax'].SetValue(conf['rmax'])
+            self.wids['ffit_dk'].SetValue(conf['dk'])
+            self.wids['ffit_kwindow'].SetStringSelection(conf['kwindow'])
+
+            for key, val in FitSpace_Choices.items():
+                if conf['fitspace'] == val:
+                    self.wids['ffit_fitspace'].SetStringSelection(key)
+
+            for key, val in KWeight_Choices.items():
+                if conf['kwstring'] == val:
+                    self.wids['ffit_kweight'].SetStringSelection(key)
+
         elif isinstance(dat, dict):
-            print(" fill from dict")
+            print(" fill from dict?")
 
     def read_form(self):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
-        print("feffit read form")
-
         form_opts = {'datagroup': dgroup}
         wids = self.wids
         form_opts['kmin'] = wids['ffit_kmin'].GetValue()
@@ -788,7 +797,7 @@ class FeffitPanel(TaskPanel):
             gname = self.controller.file_groups[fname]
             dgroup = self.controller.get_group()
         except:
-            gname  = dgroup = None
+            gname  = fname = dgroup = None
 
         self.build_fitmodel(dgroup)
 
@@ -806,20 +815,21 @@ class FeffitPanel(TaskPanel):
             kw = int(opts['kwstring'])
 
         ftargs['kweight'] = kw
-        xftfcmd = "xftf({pathgroup:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
+        xftfcmd = "xftf({grp:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, kweight={kweight:.3f}, window='{window:s}')"
+        xftrcmd = "xftr({gpp:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='hanning')"
 
-        xftrcmd = "xftr({pathgroup:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='hanning')"
-        cmds.append(xftfcmd.format(pathgroup='_pathsum', **ftargs))
-        cmds.append(xftrcmd.format(pathgroup='_pathsum', **ftargs))
+        if dgroup is not None:
+            cmds.append(xftfcmd.format(grp=gname, **ftargs))
+        cmds.append(xftfcmd.format(grp='_pathsum', **ftargs))
+        cmds.append(xftrcmd.format(grp='_pathsum', **ftargs))
 
         if opts['plot_paths']:
             for path in self.pathlist:
                 cmds.append(f"path2chi({path:s}, paramgroup=_feffit_params)")
-                cmds.append(xftfcmd.format(pathgroup=path, **ftargs))
+                cmds.append(xftfcmd.format(grp=path, **ftargs))
 
         self.larch_eval('\n'.join(cmds))
         with_win = opts['plot_ftwindow']
-
         cmds = []
         for i, plot in enumerate((plot1, plot2)):
             pcmd = 'plot_chir'
@@ -834,15 +844,15 @@ class FeffitPanel(TaskPanel):
             if plot == noplot:
                 continue
             if dgroup is not None:
-                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='sum of paths', new=True)")
-                cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, show_window={with_win}, new=True)")
+                cmds.append(f"{pcmd}({gname}, label='data'{pextra}, title='{fname}', show_window={with_win}, new=True)")
+                cmds.append(f"{pcmd}(_pathsum, label='model'{pextra}, show_window=False, new=False)")
             else:
                 cmds.append(f"{pcmd}(_pathsum, label='Path sum'{pextra}, title='sum of paths', show_window={with_win}, new=True)")
             if opts['plot_paths']:
                 voff = opts['plot_voffset']
                 for i, path in enumerate(self.pathlist):
                     plabel = path.replace('_paths', '').replace('[', '').replace(']', '')
-                    cmds.append(f"{pcmd}({path}, label={plabel:s}{pextra}, offset={i*voff}, show_window=False, new=False)")
+                    cmds.append(f"{pcmd}({path}, label={plabel:s}{pextra}, offset={(i+1)*voff}, show_window=False, new=False)")
 
         self.larch_eval('\n'.join(cmds))
 
@@ -1130,55 +1140,55 @@ class FeffitPanel(TaskPanel):
         dgroup = self.controller.get_group()
         if dgroup is None:
             return
-        opts = self.read_form()
-        self.build_fitmodel(dgroup.groupname)
+        print("FIT MODEL ")
 
+        opts = self.read_form()
         dgroup = self.controller.get_group()
         opts['group'] = opts['gname']
-        self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-
-        ppeaks = dgroup.prepeaks
-
-        # add bkg_component to saved user options
-        bkg_comps = []
-        for label, comp in self.fit_components.items():
-            if comp.bkgbox.IsChecked():
-                bkg_comps.append(label)
-        opts['bkg_components'] = bkg_comps
-
-        imin, imax = self.get_xranges(dgroup.xdat)
-
-        cmds = ["## do peak fit: "]
-
-        yerr_type = 'set_yerr_const'
-        yerr = getattr(dgroup, 'yerr', None)
-        if yerr is None:
-            if hasattr(dgroup, 'norm_std'):
-                cmds.append("{group}.yerr = {group}.norm_std")
-                yerr_type = 'set_yerr_array'
-            elif hasattr(dgroup, 'mu_std'):
-                cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
-                yerr_type = 'set_yerr_array'
-            else:
-                cmds.append("{group}.yerr = 1")
-        elif isinstance(dgroup.yerr, np.ndarray):
-                yerr_type = 'set_yerr_array'
-
-
-        cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
-
-        cmd = '\n'.join(cmds)
-        self.larch_eval(cmd.format(group=dgroup.groupname,
-                                   imin=imin, imax=imax,
-                                   user_opts=repr(opts)))
-
-        self.autosave_modelresult(self.larch_get("peakresult"))
-
-        self.onPlot()
-        self.show_subframe('prepeak_result', PrePeakFitResultFrame,
-                                  datagroup=dgroup, peakframe=self)
-        self.subframes['prepeak_result'].add_results(dgroup, form=opts,
-                                                     larch_eval=self.larch_eval)
+#         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+#
+#         ppeaks = dgroup.prepeaks
+#
+#         # add bkg_component to saved user options
+#         bkg_comps = []
+#         for label, comp in self.fit_components.items():
+#             if comp.bkgbox.IsChecked():
+#                 bkg_comps.append(label)
+#         opts['bkg_components'] = bkg_comps
+#
+#         imin, imax = self.get_xranges(dgroup.xdat)
+#
+#         cmds = ["## do peak fit: "]
+#
+#         yerr_type = 'set_yerr_const'
+#         yerr = getattr(dgroup, 'yerr', None)
+#         if yerr is None:
+#             if hasattr(dgroup, 'norm_std'):
+#                 cmds.append("{group}.yerr = {group}.norm_std")
+#                 yerr_type = 'set_yerr_array'
+#             elif hasattr(dgroup, 'mu_std'):
+#                 cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
+#                 yerr_type = 'set_yerr_array'
+#             else:
+#                 cmds.append("{group}.yerr = 1")
+#         elif isinstance(dgroup.yerr, np.ndarray):
+#                 yerr_type = 'set_yerr_array'
+#
+#
+#         cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
+#
+#         cmd = '\n'.join(cmds)
+#         self.larch_eval(cmd.format(group=dgroup.groupname,
+#                                    imin=imin, imax=imax,
+#                                    user_opts=repr(opts)))
+#
+#         self.autosave_modelresult(self.larch_get("peakresult"))
+#
+#         self.onPlot()
+#         self.show_subframe('prepeak_result', PrePeakFitResultFrame,
+#                                   datagroup=dgroup, peakframe=self)
+#         self.subframes['prepeak_result'].add_results(dgroup, form=opts,
+#                                                      larch_eval=self.larch_eval)
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
