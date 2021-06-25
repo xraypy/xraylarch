@@ -87,8 +87,13 @@ from a Command Window or Terminal.
 LATEST_MESSAGE = """Larch version {local_version:s} is up to date."""
 
 def check_larchversion():
+    local_version = __release_version__
+
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    req = requests.get(VERSION_URL, verify=False, timeout=5)
+    try:
+        req = requests.get(VERSION_URL, verify=False, timeout=3)
+    except:
+        return VersionStatus(False, local_version, 'unknown', 'offline')
     remote_version = '0.9.001'
     if req.status_code == 200:
         try:
@@ -99,7 +104,6 @@ def check_larchversion():
                     break
         except:
             pass
-    local_version = __release_version__
     update_available = ver_parse(remote_version) > ver_parse(local_version)
     message = UPDATE_MESSAGE if update_available else LATEST_MESSAGE
     message = message.format(remote_version=remote_version,
