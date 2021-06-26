@@ -234,9 +234,9 @@ class FeffitDataSet(Group):
             paths = pathlist
 
         if isinstance(paths, dict):
-            self.paths = {key: copy(path) for key, path in pathlist.items()}
+            self.paths = {key: copy(path) for key, path in paths.items()}
         elif isinstance(paths, (list, tuple)):
-            self.paths = {path.label: copy(path) for path in pathlist}
+            self.paths = {path.label: copy(path) for path in paths}
         else:
             self.paths = {}
 
