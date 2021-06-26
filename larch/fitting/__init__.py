@@ -19,7 +19,7 @@ from uncertainties import ufloat, correlated_values
 from ..symboltable import Group, isgroup
 
 def isParameter(x):
-    return (isinstance(x, Parameter) or
+    return (isinstance(x, Parameter) or isinstance(x, lmfitParameter) or 
             x.__class__.__name__ == 'Parameter')
 
 def param_value(val):
@@ -70,7 +70,7 @@ class ParameterGroup(Group):
         return '<Param Group {:s}>'.format(self.__name__)
 
     def __setattr__(self, name, val):
-        if isinstance(val, lmfitParameter):
+        if isParameter(val): 
             if val.name != name:
                 # allow 'a=Parameter(2, ..)' to mean Parameter(name='a', value=2, ...)
                 nval = None
@@ -202,9 +202,12 @@ def params2group(params, paramgroup):
     """fill Parameter objects in paramgroup with
     values from lmfit.Parameters
     """
+    _params = getattr(paramgroup, '__params__', None)
     for name, param in params.items():
         this = getattr(paramgroup, name, None)
         if isParameter(this):
+            if _params is not None:
+                _params[name] = this
             for attr in ('value', 'vary', 'stderr', 'min', 'max', 'expr',
                          'name', 'correl', 'brute_step', 'user_data'):
                 setattr(this, attr, getattr(param, attr, None))

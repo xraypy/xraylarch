@@ -16,7 +16,7 @@ from lmfit.printfuncs import gformat as gformat
 from larch import Group, isNamedClass
 from larch.utils.strutils import fix_varname
 from ..math import index_of, realimag, complex_phase
-from ..fitting import (correlated_values, eval_stderr,
+from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
                        group2params, params2group, isParameter)
 
 from .xafsutils import set_xafsGroup
@@ -530,16 +530,17 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         chir_im      imaginary part of chi(R).
     """
 
-
-    def _resid(params, datasets=None, paramgroup=None, **kwargs):
+    work_paramgroup = deepcopy(paramgroup)
+    params = group2params(work_paramgroup)
+    
+    def _resid(params, datasets=None, pargroup=None, **kwargs):
         """ this is the residual function"""
-        params2group(params, paramgroup)
-        return concatenate([d._residual(paramgroup) for d in datasets])
+        params2group(params, pargroup)
+        return concatenate([d._residual(pargroup) for d in datasets])
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
 
-    params = group2params(paramgroup)
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
             print( "feffit needs a list of FeffitDataSets")
@@ -547,14 +548,13 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         ds.prepare_fit(params=params)
 
     fit = Minimizer(_resid, params,
-                    fcn_kws=dict(datasets=datasets,
-                                 paramgroup=paramgroup),
+                    fcn_kws=dict(datasets=datasets, pargroup=work_paramgroup),
                     scale_covar=True, **kws)
 
     result = fit.leastsq()
+    params2group(result.params, work_paramgroup)
 
-    params2group(result.params, paramgroup)
-    dat = concatenate([d._residual(paramgroup, data_only=True) for d in datasets])
+    dat = concatenate([d._residual(work_paramgroup, data_only=True) for d in datasets])
 
     n_idp = 0
     for ds in datasets:
@@ -620,13 +620,14 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
             _larch.error = []
 
     # reset the parameters group with the newly updated uncertainties
-    params2group(result.params, paramgroup)
+    params2group(result.params, work_paramgroup)
 
     # here we create outputs arrays for chi(k), chi(r):
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = Group(name='feffit results', datasets=datasets,
+                paramgroup=work_paramgroup, 
                 fitter=fit, fit_details=result, chi_square=chi_square,
                 n_independent=n_idp, chi_reduced=chi_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
