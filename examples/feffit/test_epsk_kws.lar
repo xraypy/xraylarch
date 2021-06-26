@@ -14,10 +14,10 @@ test_kweights = (2, 0,  (3, 2, 1))
 test_fitspace = ('k', 'r', 'q')
 
 
-fitparams = group(amp=guess(1.0),
-                  de0=guess(0.1),
-                  ss2=guess(0.002),
-                  delr=guess(0.))
+fitparams = param_group(amp=guess(1.0),
+                        de0=guess(0.1),
+                        ss2=guess(0.002),
+                        delr=guess(0.))
 
 path1 = feffpath('feffcu01.dat', s02 = 'amp', e0 = 'de0',
                  sigma2 = 'ss2', deltar = 'delr')
