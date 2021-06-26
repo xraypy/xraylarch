@@ -173,7 +173,7 @@ class ParametersModel(dv.DataViewIndexListModel):
 class EditParamsFrame(wx.Frame):
     """ edit parameters"""
     def __init__(self, parent=None, feffit_panel=None,
-                 paramgroup=None, selected=None, _larch=None):
+                 paramgroup=None, selected=None):
         wx.Frame.__init__(self, None, -1,
                           'Edit Feffit Parameters',
                           style=FRAMESTYLE, size=(550, 300))
@@ -181,7 +181,6 @@ class EditParamsFrame(wx.Frame):
         self.parent = parent
         self.feffit_panel = feffit_panel
         self.paramgroup = paramgroup
-        self.larch = _larch
 
         spanel = scrolled.ScrolledPanel(self, size=(500, 275))
         spanel.SetBackgroundColour('#EEEEEE')
@@ -320,7 +319,7 @@ class EditParamsFrame(wx.Frame):
         self.onRefresh()
 
     def onRefresh(self, event=None):
-        self.paramgroup = getattr(self.feffit_panel.larch.symtable, '_feffit_params')
+        self.paramgroup = self.feffit_panel.get_paramgroup()
         self.model.set_data(self.paramgroup)
         self.model.read_data()
         self.feffit_panel.get_pathpage('parameters').Rebuild()
@@ -331,9 +330,8 @@ class EditParamsFrame(wx.Frame):
 
 
 class FeffitParamsPanel(wx.Panel):
-    def __init__(self, parent=None, _larch=None, feffit_panel=None, **kws):
+    def __init__(self, parent=None, feffit_panel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
-        self.larch = _larch
         self.feffit_panel = feffit_panel
         self.parwids = {}
         spanel = scrolled.ScrolledPanel(self)
@@ -376,11 +374,8 @@ class FeffitParamsPanel(wx.Panel):
 
 
     def update(self):
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        if pargroup is None:
-            self.feffit_panel.larch_eval(COMMANDS['feffit_params_init'])
-            pargroup = getattr(self.larch.symtable, '_feffit_params')
-
+        pargroup = self.feffit_panel.get_paramgroup()
+        
         params = group2params(pargroup)
         for pname, par in params.items():
             if pname in self.parwids:
@@ -411,7 +406,7 @@ class FeffitParamsPanel(wx.Panel):
         self.panel.Update()
 
     def onEditParams(self, event=None):
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
+        pargroup = self.feffit_panel.get_paramgroup()
         self.feffit_panel.show_subframe('edit_params', EditParamsFrame,
                                         paramgroup=pargroup,
                                         feffit_panel=self.feffit_panel)
@@ -420,9 +415,7 @@ class FeffitParamsPanel(wx.Panel):
     def RemoveParams(self, event=None, name=None):
         if name is None:
             return
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        if pargroup is None:
-            return
+        pargroup = self.feffit_panel.get_paramgroup()
 
         if hasattr(pargroup, name):
             delattr(pargroup, name)
@@ -458,7 +451,6 @@ class FeffPathPanel(wx.Panel):
         self.reff = reff = float(reff)
         degen = float(degen)
         self.geom = geom
-        self._larch = _larch
 
         self.wids = wids = {}
 
@@ -468,7 +460,7 @@ class FeffPathPanel(wx.Panel):
         def make_parwid(name, expr):
             wids[name] = TextCtrl(panel, expr, size=(250, -1),
                                   action=partial(self.onExpression, name=name))
-            wids[name+'_val'] = SimpleText(panel, '= ', size=(150, -1), style=LEFT)
+            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
 
         make_parwid('label', user_label)
         make_parwid('amp',  f'{degen:.1f} * s02')
@@ -490,7 +482,7 @@ class FeffPathPanel(wx.Panel):
         panel.Add(SLabel(title2, size=(375, -1)),
                   dcol=3, style=wx.ALIGN_LEFT, newrow=True)
 
-        panel.AddMany((SLabel('Label'),     wids['label']),                  newrow=True)
+        panel.AddMany((SLabel('Label'),     wids['label'], wids['label_val']),  newrow=True)
         panel.AddMany((SLabel('Amplitude'), wids['amp'],    wids['amp_val']), newrow=True)
         panel.AddMany((SLabel('E0 '),       wids['e0'],     wids['e0_val']),  newrow=True)
         panel.AddMany((SLabel('Delta R'),   wids['delr'],   wids['delr_val']), newrow=True)
@@ -523,6 +515,7 @@ class FeffPathPanel(wx.Panel):
             opts['value'] = 1
         self.feffit_panel.update_params_for_expr(expr, **opts)
 
+        
     def onRemovePath(self, event=None):
         msg = f"Delete Path {self.title:s}?"
         dlg = wx.MessageDialog(self, msg, 'Warning', wx.YES | wx.NO )
@@ -534,7 +527,15 @@ class FeffPathPanel(wx.Panel):
                     path_nb.DeletePage(i)
         dlg.Destroy()
 
-
+    def update_values(self):
+        pargroup = self.feffit_panel.get_paramgroup()
+        _eval = pargroup.__params__._asteval
+        for par in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
+            expr = self.wids[par].GetValue().strip()
+            if len(expr) > 0:
+                value = _eval.eval(expr)
+                self.wids[par + '_val'].SetLabel(f'= {value}')
+        
 
 class FeffitResultFrame(wx.Frame):
     config_sect = 'feffit'
@@ -559,11 +560,7 @@ class FeffitPanel(TaskPanel):
         # called when notebook is selected
         dgroup = self.controller.get_group()
         try:
-            pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-            if pargroup is None:
-                self.larch_eval(COMMANDS['feffit_params_init'])
-                pargroup = getattr(self.larch.symtable, '_feffit_params')
-
+            pargroup = self.get_paramgroup()
             self.params_panel.update()
             fname = self.controller.filelist.GetStringSelection()
             gname = self.controller.file_groups[fname]
@@ -576,10 +573,10 @@ class FeffitPanel(TaskPanel):
 
 
     def build_display(self):
-        self.paths_nb = flatnotebook(self, {})
+        self.paths_nb = flatnotebook(self, {},
+                                     on_change=self.onPathsNBChanged)
 
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
-                                              _larch=self.larch,
                                               feffit_panel=self)
 
         self.paths_nb.AddPage(self.params_panel, ' Parameters ', True)
@@ -680,6 +677,12 @@ class FeffitPanel(TaskPanel):
         sizer.Add((10, 10), 0, LEFT, 3)
         sizer.Add(self.paths_nb,  1, LEFT|wx.GROW, 5)
         pack(self, sizer)
+
+    def onPathsNBChanged(self, event=None):
+        updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
+        if callable(updater):
+            updater()
+        
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
@@ -894,10 +897,11 @@ class FeffitPanel(TaskPanel):
                                   absorber=feffresult.absorber,
                                   edge=feffresult.edge, reff=pathinfo.reff,
                                   degen=pathinfo.degeneracy,
-                                  geom=pathinfo.geom, _larch=self.larch,
+                                  geom=pathinfo.geom, 
                                   feffit_panel=self)
 
-        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True,
+                              )
 
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             pathpanel.onExpression(name=pname)
@@ -909,17 +913,19 @@ class FeffitPanel(TaskPanel):
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
 
+    def get_paramgroup(self):
+        pgroup = getattr(self.larch.symtable, '_feffit_params', None)
+        if pgroup is None:
+            self.larch_eval(COMMANDS['feffit_params_init'])
+            pgroup = getattr(self.larch.symtable, '_feffit_params')
+        return pgroup
+
     def update_params_for_expr(self, expr=None, value=1.e-3,
                                minval=None, maxval=None):
         if expr is None:
             return
-
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        if pargroup is None:
-            self.larch_eval(COMMANDS['feffit_params_init'])
-            pargroup = getattr(self.larch.symtable, '_feffit_params')
-
-        symtable =  pargroup.__params__._asteval.symtable
+        pargroup = self.get_paramgroup()
+        symtable = pargroup.__params__._asteval.symtable
         extras= ''
         if minval is not None:
             extras = f', min={minval}'
@@ -930,18 +936,16 @@ class FeffitPanel(TaskPanel):
             if isinstance(node, ast.Name):
                 sym = node.id
                 if sym not in symtable:
-                    #setattr(pargroup, sym, param(value, min=minval,
-                    #                             max=maxval, vary=True))
                     s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
                     self.larch_eval(s)
 
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-
-        # should walk through all parameters and expressions
-        # and make sure to set par.vary=False for unused symbols
         self.params_panel.update()
 
-
+        for i in range(self.paths_nb.GetPageCount()):
+            updater = getattr(self.paths_nb.GetPage(i), 'update_values', None)
+            if callable(updater):
+                updater()
+                        
 
     def onLoadFitResult(self, event=None):
         dlg = wx.FileDialog(self, message="Load Saved Pre-edge Model",
@@ -1023,11 +1027,7 @@ class FeffitPanel(TaskPanel):
         """ use fit components to build model"""
         paths = []
         cmds = ["### set up feffit "]
-        pargroup = getattr(self.larch.symtable, '_feffit_params', None)
-        if pargroup is None:
-            self.larch_eval(COMMANDS['feffit_params_init'])
-            pargroup = getattr(self.larch.symtable, '_feffit_params')
-
+        pargroup = self.get_paramgroup()
 
         opts = self.read_form()
         cmds.append(COMMANDS['feffit_trans'].format(**opts))
