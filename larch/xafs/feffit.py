@@ -225,16 +225,26 @@ class TransformGroup(Group):
         return (out*self._cauchymask)[self._cauchyslice]
 
 class FeffitDataSet(Group):
-    def __init__(self, data=None, pathlist=None, transform=None,
-                 epsilon_k=None, _larch=None, **kws):
+    def __init__(self, data=None, paths=None, transform=None,
+                 epsilon_k=None, _larch=None, pathlist=None, **kws):
         self._larch = _larch
         Group.__init__(self, **kws)
 
-        self.pathlist = pathlist
+        if paths is None and pathlist is not None:  # legacy
+            paths = pathlist
+
+        if isinstance(paths, dict):
+            self.paths = {key: copy(path) for key, path in pathlist.items()}
+        elif isinstance(paths, (list, tuple)):
+            self.paths = {path.label: copy(path) for path in pathlist}
+        else:
+            self.paths = {}
 
         self.data = data
         if transform is None:
             transform = TransformGroup()
+        else:
+            trasform = copy(transform)
         self.transform = transform
         if epsilon_k is not None:
             self.data.epsilon_k = epsilon_k
@@ -249,14 +259,14 @@ class FeffitDataSet(Group):
 
     def __copy__(self):
         return FeffitDataSet(data=copy(self.data),
-                             pathlist=self.pathlist[:],
-                             transform=copy(self.transform),
+                             paths=self.paths,
+                             transform=self.transform,
                              _larch=self._larch)
 
     def __deepcopy__(self, memo):
         return FeffitDataSet(data=deepcopy(self.data),
-                             pathlist=self.pathlist[:],
-                             transform=deepcopy(self.transform),
+                             paths=self.paths,
+                             transform=self.transform,
                              _larch=self._larch)
 
     def prepare_fit(self, params):
@@ -288,9 +298,9 @@ class FeffitDataSet(Group):
                 eps_k = np.sqrt(_dchi**2 + self.epsilon_k**2)
                 self.set_epsilon_k(eps_k)
 
-        # for each path in the pathlist, setup the Path Parameters
+        # for each path in the list of paths, setup the Path Parameters
         # to use the current Parameters namespace
-        for path in self.pathlist:
+        for label, path in self.paths.items():
             path.create_path_params(params=params)
             if path.spline_coefs is None:
                 path.create_spline_coefs()
@@ -368,14 +378,14 @@ class FeffitDataSet(Group):
     def _residual(self, paramgroup, data_only=False, **kws):
         """return the residual for this data set
         residual = self.transform.apply(data_chi - model_chi)
-        where model_chi is the result of ff2chi(pathlist)
+        where model_chi is the result of ff2chi(paths)
         """
         if not isNamedClass(self.transform, TransformGroup):
             return
         if not self.__prepared:
             self.prepare_fit()
 
-        ff2chi(self.pathlist, paramgroup=paramgroup, k=self.model.k,
+        ff2chi(self.paths, paramgroup=paramgroup, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
         eps_k = self.epsilon_k
@@ -437,18 +447,20 @@ class FeffitDataSet(Group):
         xft(self.__chi,   group=self.data,  rmax_out=rmax_out)
         xft(self.model.chi, group=self.model, rmax_out=rmax_out)
         if path_outputs:
-            for p in self.pathlist:
+            for p in self.paths.values():
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
-def feffit_dataset(data=None, pathlist=None, transform=None,
-                   epsilon_k=None, _larch=None):
+def feffit_dataset(data=None, paths=None, transform=None,
+                   epsilon_k=None, pathlist=None, _larch=None):
     """create a Feffit Dataset group.
 
      Parameters:
      ------------
       data:      group containing experimental EXAFS (needs arrays 'k' and 'chi').
-      pathlist:  list of FeffPath groups, as created from feffpath()
+      paths:     dict of {label: FeffPathGroup}, using FeffPathGroup created by feffpath()
       transform: Feffit Transform group.
+      pathlist:  list of FeffPathGroup [deprecated - use 'paths']
+
       epsilon_k: Uncertainty in data (either single value or array of
                  same length as data.k)
 
@@ -458,8 +470,8 @@ def feffit_dataset(data=None, pathlist=None, transform=None,
 
 
     """
-    return FeffitDataSet(data=data, pathlist=pathlist,
-                         transform=transform, _larch=_larch)
+    return FeffitDataSet(data=data, paths=paths, transform=transform,
+                         pathlist=pathlist, _larch=_larch)
 
 def feffit_transform(_larch=None, **kws):
     """create a feffit transform group
@@ -570,9 +582,9 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     if covar is not None:
         err_scale = (result.nfree / (n_idp - result.nvarys))
         for name in result.var_names:
-            p = result.params[name]
-            if isParameter(p) and p.vary:
-                p.stderr *= sqrt(err_scale)
+            par = result.params[name]
+            if isParameter(par) and par.vary:
+                par.stderr *= sqrt(err_scale)
 
         # next, propagate uncertainties to constraints and path parameters.
         result.covar *= err_scale
@@ -592,11 +604,11 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
         # 3. evaluate path_ params, save stderr
         for ds in datasets:
-            for i, p in enumerate(ds.pathlist):
-                p.store_feffdat()
+            for label, path in ds.paths.items():
+                path.store_feffdat()
                 for pname in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = p.params[get_pathpar_name(pname, p.label)]
+                    obj = path.params[get_pathpar_name(pname, path.label)]
                     eval_stderr(obj, uvars,  result.var_names, result.params)
         # restore saved parameters again
         for vname in result.var_names:
@@ -652,7 +664,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
 
     path_labels = []
     for ds in datasets:
-        path_labels.extend([p.label for p in ds.pathlist])
+        path_labels.extend(list(ds.paths.keys()))
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
     varformat  = '   %12s = %s +/-%s   (init= %s)'
@@ -704,7 +716,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         if tr.dk2 is not None:
             kwin = "%s, %.3f" % (kwin, tr.dk2)
         out.append(kwin)
-        pathfiles = [p.filename for p in ds.pathlist]
+        pathfiles = [p.filename for p in ds.paths.values()]
         out.append('   paths used in fit  = %s' % (repr(pathfiles)))
         out.append('   k-weight           = %s' % kweigh)
         out.append('   epsilon_k          = %s'  % eps_k)
@@ -766,7 +778,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         for ids, ds in enumerate(datasets):
             if len(datasets) > 1:
                 out.append(' dataset %i:' % (ids+1))
-            for p in ds.pathlist:
-                out.append('%s\n' % p.report())
+            for label, path in ds.paths.items():
+                out.append('%s\n' % path.report())
     out.append('='*len(topline))
     return '\n'.join(out)

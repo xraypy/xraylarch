@@ -8,7 +8,7 @@ reading and dealing with Feff.data files in larch:
 returns a Feff Group -- a special variation of a Group -- for
 the path represented by the feffNNNN.dat
 
-  group  = ff2chi(pathlist)
+  group  = ff2chi(paths)
 
 creates a group that contains the chi(k) for the sum of paths.
 """
@@ -16,7 +16,7 @@ import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
-from lmfit.printfuncs import gformat
+from lmfit.printfuncs import gformat 
 
 from xraydb import atomic_mass, atomic_symbol
 
@@ -28,7 +28,6 @@ from .xafsutils import ETOK, set_xafsGroup
 from .sigma2_models import add_sigma2funcs
 
 SMALL_ENERGY = 1.e-6
-
 
 class FeffDatFile(Group):
     def __init__(self, filename,  **kws):
@@ -467,13 +466,13 @@ def path2chi(path, paramgroup=None, **kws):
     path.create_path_params(params=params)
     path._calc_chi(**kws)
 
-def ff2chi(pathlist, group=None, paramgroup=None, 
-            k=None, kmax=None, kstep=0.05, _larch=None, **kws):
+def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
+            kstep=0.05, _larch=None, **kws):
     """sum chi(k) for a list of FeffPath Groups.
 
     Parameters:
     ------------
-      pathlist:    a list of FeffPath Groups
+      paths:       a list of FeffPath Groups or dict of {label: FeffPathGroups}
       paramgroup:  a Parameter Group for calculating Path Parameters [None]
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
@@ -483,11 +482,18 @@ def ff2chi(pathlist, group=None, paramgroup=None,
        group contain arrays for k and chi
 
     This essentially calls path2chi() for each of the paths in the
-    pathlist and writes the resulting arrays to group.k and group.chi.
+    `paths` and writes the resulting arrays to group.k and group.chi.
 
     """
     params = group2params(paramgroup)
 
+    if isinstance(paths, (list, tuple)):
+        pathlist = paths
+    elif isinstance(paths, dict):
+        pathlist = list(paths.values())
+    else:
+        raise ValueErrror('paths must be list, tuple, or dict')
+    
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
             print('%s is not a valid Feff Path' % path)
