@@ -27,16 +27,15 @@ from larch.fitting import group2params, isParameter, param_value
 from .xafsutils import ETOK, set_xafsGroup
 from .sigma2_models import add_sigma2funcs
 
-SMALL = 1.e-6
+SMALL_ENERGY = 1.e-6
 
 
 class FeffDatFile(Group):
-    def __init__(self, filename=None,  **kws):
+    def __init__(self, filename,  **kws):
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        if filename is not None:
-            self.__read(filename)
+        self._read(filename)
 
     def __repr__(self):
         if self.filename is not None:
@@ -74,9 +73,10 @@ class FeffDatFile(Group):
     @rmass.setter
     def rmass(self, val):     pass
 
-    def __read(self, filename):
+    def _read(self, filename):
         try:
-            lines = open(filename, 'r').readlines()
+            with open(filename, 'r') as fh:
+                lines = fh.readlines()
         except:
             print( 'Error reading file %s ' % filename)
             return
@@ -170,7 +170,7 @@ def get_pathpar_name(pname, label, i=1):
     
             
 class FeffPathGroup(Group):
-    def __init__(self, filename=None, label=None, s02=None, degen=None,
+    def __init__(self, filename, label=None, s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
                  fourth=None, _larch=None, **kws):
 
@@ -181,15 +181,13 @@ class FeffPathGroup(Group):
         self.params = None
         self.label = label
         self.spline_coefs = None
-        def_degen = 1
 
-        self._feffdat = None
-        if filename is not None:
-            self._feffdat = FeffDatFile(filename=filename)
-            self.geom  = self._feffdat.geom
-            def_degen  = self._feffdat.degen
-            if self.label is None:
-                self.label = self.__geom2label()
+        self._feffdat = FeffDatFile(filename=filename)
+        self.geom  = self._feffdat.geom
+        def_degen  = self._feffdat.degen
+
+        self.hashkey = self.__geom2label()
+        self.label = label if label is not None else self.hashkey
 
         self.degen = def_degen if degen  is None else degen
         self.s02    = 1.0      if s02    is None else s02
@@ -207,13 +205,9 @@ class FeffPathGroup(Group):
 
     def __geom2label(self):
         """generate label by hashing path geometry"""
-        rep = []
-        if self.geom is not None:
-            for atom in self.geom:
-                rep.extend(atom)
-        if self._feffdat is not None:
-            rep.append(self._feffdat.degen)
-            rep.append(self._feffdat.reff)
+        rep = [self._feffdat.degen, self._feffdat.reff]
+        for atom in self.geom:
+            rep.extend(atom)
 
         for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
             rep.append(getattr(self, attr, '_'))
@@ -251,10 +245,8 @@ class FeffPathGroup(Group):
     def rmass(self, val):  pass
 
     def __repr__(self):
-        if self.filename is not None:
-            return '<FeffPath Group %s>' % self.filename
-        return '<FeffPath Group (empty)>'
-
+        return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}>'
+    
     def create_path_params(self, params=None):
         """
         create Path Parameters within the current lmfit.Parameters namespace
@@ -406,9 +398,9 @@ class FeffPathGroup(Group):
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         en = k*k - e0*ETOK
-        if min(abs(en)) < SMALL:
+        if min(abs(en)) < SMALL_ENERGY:
             try:
-                en[np.where(abs(en) < 2*SMALL)] = SMALL
+                en[np.where(abs(en) < 1.5*SMALL_ENERGY)] = SMALL_ENERGY
             except ValueError:
                 pass
         # q is the e0-shifted wavenumber
