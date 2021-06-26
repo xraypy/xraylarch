@@ -16,7 +16,7 @@ import numpy as np
 from copy import deepcopy
 from scipy.interpolate import UnivariateSpline
 from lmfit import Parameters, Parameter
-from lmfit.printfuncs import gformat 
+from lmfit.printfuncs import gformat
 
 from xraydb import atomic_mass, atomic_symbol
 
@@ -166,8 +166,8 @@ def get_pathpar_name(pname, label, i=1):
     label = label.replace('_', ' ').split()[0]
     if len(label) < 0: label = f'{i:d}'
     return fix_varname(PATHPAR_FMT % (pname, label))
-    
-            
+
+
 class FeffPathGroup(Group):
     def __init__(self, filename, label=None, s02=None, degen=None,
                  e0=None, ei=None, deltar=None, sigma2=None, third=None,
@@ -245,7 +245,7 @@ class FeffPathGroup(Group):
 
     def __repr__(self):
         return f'<FeffPath Group label={self.label:s}, filename={self.filename:s}>'
-    
+
     def create_path_params(self, params=None):
         """
         create Path Parameters within the current lmfit.Parameters namespace
@@ -267,7 +267,7 @@ class FeffPathGroup(Group):
             kws =  {'vary': False, attr: val}
             parname = get_pathpar_name(pname, self.label)
 
-            
+
             self.params.add(parname, **kws)
             self.params[parname].is_pathparam = True
 
@@ -317,7 +317,7 @@ class FeffPathGroup(Group):
         pathpars = {}
         for pname in ('degen', 's02', 'e0', 'deltar',
                       'sigma2', 'third', 'fourth', 'ei'):
-            parname = get_pathpar_name(pname, self.label)            
+            parname = get_pathpar_name(pname, self.label)
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
 
@@ -371,6 +371,13 @@ class FeffPathGroup(Group):
             out.append(svalue)
         return '\n'.join(out)
 
+    def calc_chi_from_params(self, params, **kws):
+        "calculate chi(k) from Parameters, ParameterGroup, and/or kws for path parameters"
+        if isinstance(params, Parameters):
+            self.create_path_params(params=params)
+        else:
+            self.create_path_params(params=group2params(params))
+        self._calc_chi(**kws)
 
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
@@ -449,6 +456,7 @@ def path2chi(path, paramgroup=None, **kws):
     Parameters:
     ------------
       path:        a FeffPath Group
+      params:      lmfit Parameters or larch ParameterGroup
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
       k:           explicit array of k values to calculate chi.
@@ -458,13 +466,11 @@ def path2chi(path, paramgroup=None, **kws):
       None - outputs are written to path group
 
     """
-    params = group2params(paramgroup)
-
     if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
-    path.create_path_params(params=params)
-    path._calc_chi(**kws)
+    path.calc_chi_from_params(paramgroup, **kws)
+
 
 def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
             kstep=0.05, _larch=None, **kws):
@@ -493,7 +499,7 @@ def ff2chi(paths, group=None, paramgroup=None, k=None, kmax=None,
         pathlist = list(paths.values())
     else:
         raise ValueErrror('paths must be list, tuple, or dict')
-    
+
     for path in pathlist:
         if not isNamedClass(path, FeffPathGroup):
             print('%s is not a valid Feff Path' % path)
