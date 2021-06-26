@@ -1,6 +1,7 @@
 import time
 import os
 import ast
+from sys import exc_info
 import numpy as np
 np.seterr(all='ignore')
 
@@ -533,9 +534,14 @@ class FeffPathPanel(wx.Panel):
         for par in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             expr = self.wids[par].GetValue().strip()
             if len(expr) > 0:
-                value = _eval.eval(expr)
-                self.wids[par + '_val'].SetLabel(f'= {value}')
-        
+                try:
+                    value = _eval.eval(expr, show_errors=False, raise_errors=False)
+                    self.wids[par + '_val'].SetLabel(f'= {value}')
+                except:
+                    self.feffit_panel.update_params_for_expr(expr)                    
+                    value = _eval.eval(expr, show_errors=False, raise_errors=False)
+                    self.wids[par + '_val'].SetLabel(f'= {value}')
+            
 
 class FeffitResultFrame(wx.Frame):
     config_sect = 'feffit'
@@ -902,7 +908,6 @@ class FeffitPanel(TaskPanel):
 
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True,
                               )
-
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             pathpanel.onExpression(name=pname)
 
@@ -941,10 +946,10 @@ class FeffitPanel(TaskPanel):
 
         self.params_panel.update()
 
-        for i in range(self.paths_nb.GetPageCount()):
-            updater = getattr(self.paths_nb.GetPage(i), 'update_values', None)
-            if callable(updater):
-                updater()
+        #for i in range(self.paths_nb.GetPageCount()):
+        #    updater = getattr(self.paths_nb.GetPage(i), 'update_values', None)
+        #    if callable(updater):
+        #        updater()
                         
 
     def onLoadFitResult(self, event=None):
