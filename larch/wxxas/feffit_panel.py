@@ -824,26 +824,34 @@ class FeffitPanel(TaskPanel):
                 if par.expr is not None:
                     varstr = 'constrain'
                 if wids.vary is not None:
-                    wids.vary.SetStringSelection(varstr)
+                   wids.vary.SetStringSelection(varstr)
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_ff2chi_paths', pathsum_name='_pathsum',
                build_fitmodel=True):
+
         opts = self.read_form(dgroup)
         fname = opts['filename']
         gname = opts['groupname']
+        dgroup = opts['datagroup']
+        
 
         if build_fitmodel:
             self.build_fitmodel(dgroup)
 
-        paths = getattr(self.larch.symtable, paths_name, None)
-        if paths is None:
-            paths = getattr(self.larch.symtable, '_ff2chi_paths', {})
+        pathsum = None
+        if self.larch.symtable.has_symbol(pathsum_name):
+            pathsum = self.larch.symtable.get_symbol(pathsum_name)
+            
+        paths = {}
+        if self.larch.symtable.has_symbol(paths_name):
+            paths = self.larch.symtable.get_symbol(paths_name)
 
         plot1 = opts['plotone_op']
         plot2 = opts['plotalt_op']
         cmds = []
 
+       
         if ',' in opts['kwstring']:
             kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
         else:
@@ -853,8 +861,7 @@ class FeffitPanel(TaskPanel):
                       kwindow=opts['kwindow'], kweight=kw,
                       rmin=opts['rmin'], rmax=opts['rmax'],
                       dr=opts.get('dr', 0.1), rwindow='hanning')
-
-        pathsum = getattr(self.larch.symtable, pathsum_name, None)
+        
         if pathsum is not None:
             cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
         if dgroup is not None:
@@ -917,8 +924,8 @@ class FeffitPanel(TaskPanel):
                 title = btitle + '_%s' % string.ascii_lowercase[i]
 
         self.paths_data[title] = (feffdat_file, feffresult.folder,
-                                  feffresult.absorber, feffresult.edge,
-                                  pathinfo)
+                                  feffresult.absorber, feffresult.edge, pathinfo)
+        
         user_label = fix_varname(f'{title:s}')
         pathpanel = FeffPathPanel(parent=self.paths_nb, title=title,
                                   npath=len(self.paths_data),
@@ -1111,11 +1118,15 @@ class FeffitPanel(TaskPanel):
         fopts = dict(groupname=opts['groupname'], trans='_feffit_trans',
                      paths='_ff2chi_paths', params='_feffit_params')
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
+              
+        self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
+                    pargroup_name='_feffit_result.paramgroup',
+                    paths_name='_feffit_dataset.paths',
+                    pathsum_name='_feffit_dataset.model')
+        
 
-        self.onPlot()
-
-
-
+        print("Now add fit to dataset histort, show results panel")
+        
 #         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 #
 #         ppeaks = dgroup.prepeaks
