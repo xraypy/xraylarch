@@ -563,7 +563,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     # here we rescale chi-square and reduced chi-square to n_idp
     npts =  len(result.residual)
     chi_square  = result.chisqr * n_idp*1.0 / npts
-    chi_reduced = chi_square/(n_idp*1.0 - result.nvarys)
+    chi2_reduced = chi_square/(n_idp*1.0 - result.nvarys)
     rfactor = (result.residual**2).sum() / (dat**2).sum()
     # calculate 'aic', 'bic' rescaled to n_idp
     # note that neg2_loglikel is -2*log(likelihood)
@@ -629,7 +629,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     out = Group(name='feffit results', datasets=datasets,
                 paramgroup=work_paramgroup, 
                 fitter=fit, fit_details=result, chi_square=chi_square,
-                n_independent=n_idp, chi_reduced=chi_reduced,
+                n_independent=n_idp, chi2_reduced=chi2_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
 
     for attr in ('params', 'nvarys', 'nfree', 'ndata', 'var_names', 'nfev',
@@ -677,7 +677,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
                                                    result.ndata))
     out.append('   n_independent      =  %.3f'  % (result.n_independent))
     out.append('   chi_square         = %s'  % gformat(result.chi_square))
-    out.append('   reduced chi_square = %s'  % gformat(result.chi_reduced))
+    out.append('   reduced chi_square = %s'  % gformat(result.chi2_reduced))
     out.append('   r-factor           = %s'  % gformat(result.rfactor))
     out.append('   Akaike info crit   = %s'  % gformat(result.aic))
     out.append('   Bayesian info crit = %s'  % gformat(result.bic))
