@@ -170,6 +170,7 @@ class EXAFSPanel(TaskPanel):
         wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
                                      action=self.onProcess, size=(125, -1))
 
+
         wids['fft_rwindow'] = Choice(panel, choices=list(FTWINDOWS),
                                      action=self.onProcess, size=(125, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
@@ -427,6 +428,8 @@ class EXAFSPanel(TaskPanel):
         self.skip_process = skip_save
         if as_copy:
             conf = copy.deepcopy(conf)
+        if dgroup is not None:
+            setattr(dgroup, self.configname, conf)            
         return conf
 
 
