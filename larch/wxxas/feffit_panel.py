@@ -71,22 +71,47 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 MIN_CORREL = 0.10
 
 COMMANDS = {}
+COMMANDS['feffit_top'] = """## saved {ctime}
+## commmands to reproduce Feffit
+## to use from python, uncomment these lines:
+#from larch.xafs import feffit, feffit_dataset, feffit_transform, feffit_report
+#from larch.xafs import pre_edge, autobk, xftf, xftr, ff2chi, feffpath
+#from larch.fitting import  param_group, param
+#from larch.io import read_ascii, read_athena, read_xdi, read_specfile
+#  for interactive plotting, use:
+#from larch.wxlib.xafsplots import *
+#from wxmplot.interactive import get_wxapp
+#wxapp = get_wxapp()  # <- needed for plotting to work from python
+"""
+
+COMMANDS['data_source'] = """# you will need to add how the data chi(k) gets built:
+## data group = {groupname}
+## from source = {filename}
+## some processing steps for this group (comment out as needed):
+"""
+
 COMMANDS['xft'] =  """# ffts on group {groupname:s}
 xftf({groupname:s}, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f}, window='{kwindow:s}', kweight={kweight:.3f})
 xftr({groupname:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwindow:s}')
 """
 
-COMMANDS['feffit_params_init'] = """# create feffit parameters
+COMMANDS['feffit_params_init'] = """# create feffit Parameter Group to hold fit parameters
 _feffit_params = param_group(s02=param(1.0, min=0, vary=True),
                              e0=param(0.1, min=-25, max=25, vary=True))
 """
  
-COMMANDS['feffit_trans'] = """
+COMMANDS['feffit_trans'] = """# define Fourier transform and fitting space
 _feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, kw={kwstring:s},
                       window='{kwindow:s}', fitspace='{fitspace:s}', rmin={rmin:.3f}, rmax={rmax:.3f})
 """
 
-COMMANDS['paths_init'] = "_paths = {}"
+COMMANDS['paths_init'] = """# make sure a dictionary for Feff Paths exists
+try:
+    npaths = len(_paths.keys())
+except:
+    _paths = {}
+#endtry
+"""
 
 COMMANDS['add_path'] = """
 _paths['{title:s}'] = feffpath('{fullpath:s}',
@@ -95,7 +120,7 @@ _paths['{title:s}'] = feffpath('{fullpath:s}',
                   deltar='{delr:s}', sigma2='{sigma2:s}', c3='{c3:s}')
 """
 
-COMMANDS['ff2chi']   = """# make dict paths, sum them using a group of parameters
+COMMANDS['ff2chi']   = """# make dict of paths, sum them using a group of parameters
 _ff2chi_paths  = {paths:s}
 if len(_ff2chi_paths) > 0:
     _pathsum = ff2chi(_ff2chi_paths, paramgroup={params:s})
@@ -393,9 +418,13 @@ class FeffitParamsPanel(wx.Panel):
         self.parwids = {}
         self.update()
 
+    def set_init_values(self, params):
+        for pname, par in params.items():
+            if pname in self.parwids:
+                self.parwids[pname].value.SetValue(par.value)
+        
     def update(self):
         pargroup = self.feffit_panel.get_paramgroup()
-
         params = group2params(pargroup)
         for pname, par in params.items():
             if pname in self.parwids:
@@ -642,7 +671,7 @@ class FeffitPanel(TaskPanel):
         wids['ffit_fitspace'] = Choice(pan, choices=list(FitSpace_Choices.keys()),
                                        size=(125, -1))
 
-        wids['plot_paths'] = Check(pan, default=True, label='Plot Each Path'
+        wids['plot_paths'] = Check(pan, default=False, label='Plot Each Path'
                                    , size=(125, -1), action=self.onPlot)
         wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows'
                                    , size=(125, -1), action=self.onPlot)
@@ -839,8 +868,8 @@ class FeffitPanel(TaskPanel):
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_ff2chi_paths', pathsum_name='_pathsum',
-               plot_window=None, plot_paths=None, plotone_op=None,
-               build_fitmodel=True):
+               plot_ftwindow=None, plot_paths=None, plot_voffset=None,
+               plotone_op=None, plotalt_op=None, build_fitmodel=True):
 
         opts = self.read_form(dgroup)
         fname = opts['filename']
@@ -858,32 +887,36 @@ class FeffitPanel(TaskPanel):
         if self.larch.symtable.has_symbol(paths_name):
             paths = self.larch.symtable.get_symbol(paths_name)
 
-            
-        if plot_window is not None:
-            opts['plot_window'] = plot_window
+        if plot_ftwindow is not None: opts['plot_ftwindow'] = plot_ftwindow
+        if plot_paths is not None:    opts['plot_paths'] = plot_paths
+        if plot_voffset is not None:  opts['plot_voffset'] = plot_voffset
+        if plotone_op is not None:    opts['plotone_op'] = plotone_op
+        if plotalt_op is not None:    opts['plotalt_op'] = plotalt_op
 
         plot1 = opts['plotone_op']
         plot2 = opts['plotalt_op']
         cmds = []
-       
-        if ',' in opts['kwstring']:
-            kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
-        else:
-            kw = int(opts['kwstring'])
 
-        ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'], dk=opts['dk'],
-                      kwindow=opts['kwindow'], kweight=kw,
-                      rmin=opts['rmin'], rmax=opts['rmax'],
-                      dr=opts.get('dr', 0.1), rwindow='hanning')
-        
-        if pathsum is not None:
-            cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
-        if dgroup is not None:
-            cmds.append(COMMANDS['xft'].format(groupname=gname, **ftargs))
-        if opts['plot_paths']:
-            cmds.append(COMMANDS['path2chi'].format(paths_name=paths_name,
-                                                    pargroup_name=pargroup_name,
-                                                    **ftargs))
+
+        if build_fitmodel:
+            if ',' in opts['kwstring']:
+                kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
+            else:
+                kw = int(opts['kwstring'])
+
+            ftargs = dict(kmin=opts['kmin'], kmax=opts['kmax'], dk=opts['dk'],
+                          kwindow=opts['kwindow'], kweight=kw,
+                          rmin=opts['rmin'], rmax=opts['rmax'],
+                          dr=opts.get('dr', 0.1), rwindow='hanning')
+
+            if pathsum is not None:
+                cmds.append(COMMANDS['xft'].format(groupname=pathsum_name, **ftargs))
+            if dgroup is not None:
+                cmds.append(COMMANDS['xft'].format(groupname=gname, **ftargs))
+            if opts['plot_paths']:
+                cmds.append(COMMANDS['path2chi'].format(paths_name=paths_name,
+                                                        pargroup_name=pargroup_name,
+                                                        **ftargs))
 
         self.larch_eval('\n'.join(cmds))
         with_win = opts['plot_ftwindow']
@@ -1090,11 +1123,12 @@ class FeffitPanel(TaskPanel):
             text = self.paths_nb.GetPageText(i).strip()
             path_pages[text] = self.paths_nb.GetPage(i)
 
+        cmds.append(COMMANDS['paths_init'])
+        
         paths_list = []
         for title, pathdata in self.paths_data.items():
             if title not in path_pages:
                 continue
-
             pdat = {'title': title, 'fullpath': pathdata[0], 'use':True}
             pdat.update(path_pages[title].get_expressions())
             if pdat['use']:
@@ -1130,14 +1164,32 @@ class FeffitPanel(TaskPanel):
 
 
     def onFitModel(self, event=None, dgroup=None):
-        self.command_hist = self.params_panel.generate_script()
+                
+        session_history = self.get_session_history()
+        nstart = len(session_history)
         
+        script = [COMMANDS['feffit_top'].format(ctime=time.ctime())]
+
         opts = self.build_fitmodel(dgroup)
         dgroup = opts['datagroup']
         fopts = dict(groupname=opts['groupname'],
                      trans='_feffit_trans',
                      paths='_ff2chi_paths',
                      params='_feffit_params')
+
+        groupname = opts['groupname']
+        filename = opts['filename']
+                      
+        script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
+        for cmd in session_history:
+            if groupname in cmd or filename in cmd or 'athena' in cmd:
+                for cline in cmd.split('\n'):
+                    script.append(f"#{cline}")
+
+        script.append("## end of data reading and preparation")            
+
+        script.extend(self.params_panel.generate_script())
+
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
               
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
@@ -1145,9 +1197,13 @@ class FeffitPanel(TaskPanel):
                     paths_name='_feffit_dataset.paths',
                     pathsum_name='_feffit_dataset.model')
 
-        dgroup.feffit_history[0].commands = [c for c in self.command_hist]
-        print("Now add fit to dataset history, show results panel")
-        self.autosave_script()
+        script.extend(self.get_session_history()[nstart:])
+        script.extend(["print(feffit_report(_feffit_result))",
+                       "#end of autosaved feffit script" , ""])
+        dgroup.feffit_history[0].commands = script
+                              
+        sname = self.autosave_script('\n'.join(script))
+        self.write_message("wrote feffit script to '%s'" % sname)
 
         self.show_subframe('feffit_result', FeffitResultFrame,
                            datagroup=dgroup, feffit_panel=self)
@@ -1156,8 +1212,12 @@ class FeffitPanel(TaskPanel):
     def update_start_values(self, params):
         """fill parameters with best fit values"""
         print("update staring values")
+        self.params_panel.set_init_values(params)
+        for i in range(self.paths_nb.GetPageCount()):
+            if 'parameters' in self.paths_nb.GetPageText(i).strip().lower():
+                self.paths_nb.SetSelection(i)
 
-    def autosave_script(self, fname='feffit_script.lar'):
+    def autosave_script(self, text, fname='feffit_script.lar'):
         """autosave model result to user larch folder"""
         confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
         if not os.path.exists(confdir):
@@ -1173,10 +1233,8 @@ class FeffitPanel(TaskPanel):
             backup = os.path.join(confdir, 'feffit_script_BAK.lar')
             shutil.copy(fullname, backup)
         with open(fullname, 'w')as fh:
-            fh.write('# saved %s\n' % (time.ctime()))
-            fh.write('\n'.join(self.command_hist))
-            fh.write('')
-        print("wrote script to ", fullname)
+            fh.write(text)
+        return fullname
         
 
 ###############
@@ -1187,7 +1245,7 @@ class FeffitResultFrame(wx.Frame):
                   **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
                           style=FRAMESTYLE, size=(900, 700), **kws)
-        self.feffit_panel = fefffit_panel
+        self.feffit_panel = feffit_panel
         self.datagroup = datagroup
         self.fit_history = getattr(datagroup, 'fit_history', [])
         self.parent = parent
@@ -1235,27 +1293,39 @@ class FeffitResultFrame(wx.Frame):
                                         minsize=(350, -1),
                                         colour=self.colors.title, style=LEFT)
 
-        opts = dict(default=False, size=(200, -1), action=self.onPlot)
-        wids['plot_rspace'] = Check(panel, label='Plot R-space', **opts)
-        wids['plot_kspace'] = Check(panel, label='Plot k-space', **opts)
-        self.plot_choice = Button(panel, 'Plot This Fit',
-                                  size=(125, -1), action=self.onPlot)
+        wids['plot_paths'] = Check(panel, default=False, label='Plot Each Path'
+                                   , size=(125, -1), action=self.onPlot)
+        wids['plot_ftwindows'] = Check(panel, default=False, label='Plot FT Windows'
+                                   , size=(125, -1), action=self.onPlot)
+        wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
+                                    action=self.onPlot, size=(125, -1))
+
+        wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
+                                    action=self.onPlot, size=(125, -1))
+
+        wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,
+                                         action=self.onPlot)
+
+        wids['plot_current']  = Button(panel,'Plot Current Model',
+                                     action=self.onPlot,  size=(175, -1))
+
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
 
         irow += 1
-        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
-                                        size=(750, 50), style=LEFT)
-        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
+        sizer.Add(wids['plot_current'],     (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plotone_op'],       (irow, 1), (1, 1), LEFT)
+        sizer.Add(wids['plot_paths'],       (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_ftwindows'],   (irow, 3), (1, 1), LEFT)        
 
         irow += 1
-        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['plot_kspace'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['plot_rspace'], (irow, 3), (1, 1), LEFT)
-
+        sizer.Add(SimpleText(panel, 'Add Second Plot:', style=LEFT), (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plotalt_op'],                                (irow, 1), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, 'Vertical offset:', style=LEFT), (irow, 2), (1, 1), LEFT)
+        sizer.Add(wids['plot_voffset'],                              (irow, 3), (1, 1), LEFT)        
+        
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
@@ -1371,6 +1441,29 @@ class FeffitResultFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def onPlot(self, event=None):
+        print("onPlot")
+
+        plot_ftwindow = self.wids['plot_ftwindows'].IsChecked()
+        plot_paths   = self.wids['plot_paths'].IsChecked()
+        plotone_op   = self.wids['plotone_op'].GetStringSelection()
+        plotalt_op   = self.wids['plotalt_op'].GetStringSelection()
+        plot_voffset = self.wids['plot_voffset'].GetValue()
+        
+        result = self.get_fitresult()
+        dataset = result.datasets[0]
+                                  
+        self.feffit_panel.onPlot(dgroup=dataset.data, build_fitmodel=False,
+                                 pargroup_name=result.paramsgroup,
+                                 paths_name=dataset.paths,
+                                 pathsum_name=dataset.model,
+                                 plot_paths=plot_paths,
+                                 plot_ftwindow=plot_ftwindow,
+                                 plotone_op=plotone_op,
+                                 plotalt_op=plotalt_op,
+                                 plot_voffset=plot_voffset)
+
+        
     def onSaveFitCSV(self, event=None):
         print("SAVE CSV")
         
@@ -1477,19 +1570,12 @@ class FeffitResultFrame(wx.Frame):
     def get_fitresult(self, nfit=None):
         if nfit is None:
             nfit = self.nfit
-        self.fit_history = getattr(self.datagroup.feffit, 'fit_history', [])
+        self.fit_history = getattr(self.datagroup, 'feffit_history', [])
         self.nfit = max(0, nfit)
         if self.nfit > len(self.fit_history):
             self.nfit = 0
         return self.fit_history[self.nfit]
 
-    def onPlot(self, event=None):
-        show_paths = self.wids['show_path'].IsChecked()
-        fitspace   = self.wids['plot_space'].IsChecked()
-        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
-        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
-
-        self.peakframe.larch_eval(cmd)
 
     def onSelectFit(self, evt=None):
         if self.wids['stats'] is None:
@@ -1545,7 +1631,7 @@ class FeffitResultFrame(wx.Frame):
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
-        self.peakframe.update_start_values(result.params)
+        self.feffit_panel.update_start_values(result.params)
 
     def ShowDataSet(self, evt=None):
         dataset = evt.GetString()
@@ -1568,15 +1654,15 @@ class FeffitResultFrame(wx.Frame):
             self.larch_eval = larch_eval
 
         datagroup = self.datagroup
-        self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
+        self.fit_history = getattr(self.datagroup, 'feffit_history', [])
 
         cur = self.get_fitresult()
         wids = self.wids
         wids['stats'].DeleteAllItems()
-        for i, res in enumerate(self.peakfit_history):
+        for i, res in enumerate(self.fit_history):
             args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
-                val = getattr(res.result, attr)
+            for attr in ('ndata', 'nvarys', 'chi_square', 'chi2_reduced', 'aic', 'bic'):
+                val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
@@ -1587,22 +1673,7 @@ class FeffitResultFrame(wx.Frame):
         self.show_fitresult(nfit=0)
 
     def get_model_desc(self, model):
-        model_repr = model._reprstring(long=True)
-        for word in ('Model(', ',', '(', ')', '+'):
-            model_repr = model_repr.replace(word, ' ')
-        words = []
-        mname, imodel = '', 0
-        for word in model_repr.split():
-            if word.startswith('prefix'):
-                words.append("%sModel(%s)" % (mname.title(), word))
-            else:
-                mname = word
-                if imodel > 0:
-                    delim = '+' if imodel % 2 == 1 else '+\n'
-                    words.append(delim)
-                imodel += 1
-        return ''.join(words)
-
+        return ''
 
     def show_fitresult(self, nfit=0, datagroup=None):
         if datagroup is not None:
@@ -1611,7 +1682,6 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
-        wids['model_desc'].SetLabel(self.get_model_desc(result.model))
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for param in reversed(result.params.values()):
