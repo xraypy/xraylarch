@@ -1,6 +1,7 @@
 import time
 import os
 import ast
+import shutil
 from sys import exc_info
 import numpy as np
 np.seterr(all='ignore')
@@ -37,6 +38,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
+
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -77,13 +79,15 @@ xftr({groupname:s}, rmin={rmin:.3f}, rmax={rmax:.3f}, dr={dr:.3f}, window='{rwin
 COMMANDS['feffit_params_init'] = """# create feffit parameters
 _feffit_params = param_group(s02=param(1.0, min=0, vary=True),
                              e0=param(0.1, min=-25, max=25, vary=True))
-_paths = {}
-
 """
+ 
 COMMANDS['feffit_trans'] = """
 _feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, kw={kwstring:s},
                       window='{kwindow:s}', fitspace='{fitspace:s}', rmin={rmin:.3f}, rmax={rmax:.3f})
 """
+
+COMMANDS['paths_init'] = "_paths = {}"
+
 COMMANDS['add_path'] = """
 _paths['{title:s}'] = feffpath('{fullpath:s}',
                   label='{label:s}', degen=1,
@@ -102,10 +106,11 @@ COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
 _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s}, paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
 
+if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
+{groupname:s}.feffit_history.insert(0, _feffit_result)
 """
 
 COMMANDS['path2chi'] = """# generate chi(k) and chi(R) for each path
-
 for label, path in {paths_name:s}.items():
      path.calc_chi_from_params({pargroup_name:s})
      xftf(path, kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.3f},
@@ -113,8 +118,7 @@ for label, path in {paths_name:s}.items():
 #endfor
 """
 
-default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4,
-                      kwindow=FTWINDOWS[0], rmin=1, rmax=4)
+default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4, kwindow=FTWINDOWS[0], rmin=1, rmax=4)
 
 class ParametersModel(dv.DataViewIndexListModel):
     def __init__(self, paramgroup, selected=None):
@@ -305,8 +309,6 @@ class EditParamsFrame(wx.Frame):
             self.feffit_panel.get_pathpage('parameters').Rebuild()
         dlg.Destroy()
 
-
-
     def onFix(self, event=None):
         for pname, sel, ptype, val in self.model.data:
             if sel and ptype == 'vary':
@@ -362,6 +364,7 @@ class FeffitParamsPanel(wx.Panel):
         panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
         panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
         panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
+        # panel.Add(Button(panel, 'Force Refresh', action=self.generate_script),         dcol=3)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"),
@@ -389,7 +392,6 @@ class FeffitParamsPanel(wx.Panel):
         self.panel.irow = 1
         self.parwids = {}
         self.update()
-
 
     def update(self):
         pargroup = self.feffit_panel.get_paramgroup()
@@ -429,7 +431,6 @@ class FeffitParamsPanel(wx.Panel):
                                         paramgroup=pargroup,
                                         feffit_panel=self.feffit_panel)
 
-
     def RemoveParams(self, event=None, name=None):
         if name is None:
             return
@@ -448,6 +449,29 @@ class FeffitParamsPanel(wx.Panel):
             pwids.expr.Destroy()
             pwids.remover.Destroy()
 
+    def generate_script(self, event=None):
+        s = []
+        s.append(COMMANDS['feffit_params_init'])
+        for name, pwids in self.parwids.items():
+            param = pwids.param
+            args = [f'{param.value}']
+            minval = pwids.minval.GetValue()
+            if np.isfinite(minval):
+                args.append(f'min={minval}')
+            maxval = pwids.maxval.GetValue()
+            if np.isfinite(maxval):
+                args.append(f'max={maxval}') 
+            if param.expr is not None:
+                args.append(f"expr='{param.expr}'")
+            elif param.vary:
+                args.append(f'vary=True')
+            else:
+                args.append(f'vary=False')
+            args = ', '.join(args)
+            cmd = f'_feffit_params.{name} = param({args})'
+            s.append(cmd)
+        return s
+        
 
 
 class FeffPathPanel(wx.Panel):
@@ -529,6 +553,9 @@ class FeffPathPanel(wx.Panel):
         if name == 'sigma2':
             opts['minval'] = 0
             opts['value'] = np.sqrt(self.reff)/200.0
+        elif name == 'delr':
+            opts['minval'] = -0.5
+            opts['maxval'] =  0.5            
         elif name == 'amp':
             opts['value'] = 1
         self.feffit_panel.update_params_for_expr(expr, **opts)
@@ -547,28 +574,18 @@ class FeffPathPanel(wx.Panel):
 
     def update_values(self):
         pargroup = self.feffit_panel.get_paramgroup()
-        _eval = pargroup.__params__._asteval
+        _eval = pargroup.__params__._asteval            
         for par in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             expr = self.wids[par].GetValue().strip()
             if len(expr) > 0:
                 try:
                     value = _eval.eval(expr, show_errors=False, raise_errors=False)
-                    self.wids[par + '_val'].SetLabel(f'= {value}')
+                    if value is not None:
+                        value = gformat(value)
+                        self.wids[par + '_val'].SetLabel(f'= {value}')
                 except:
                     self.feffit_panel.update_params_for_expr(expr)
-                    value = _eval.eval(expr, show_errors=False, raise_errors=False)
-                    self.wids[par + '_val'].SetLabel(f'= {value}')
-
-
-class FeffitResultFrame(wx.Frame):
-    config_sect = 'feffit'
-    def __init__(self, parent=None, peakframe=None, datagroup=None, **kws):
-        wx.Frame.__init__(self, None, -1, title='Feffit Results',
-                          style=FRAMESTYLE, size=(900, 700), **kws)
-        self.peakframe = peakframe
-        self.datagroup = datagroup
-        feffit = getattr(datagroup, 'feffit', None)
-        self.fit_history = getattr(feffit, 'fit_history', [])
+            
 
 
 class FeffitPanel(TaskPanel):
@@ -715,29 +732,27 @@ class FeffitPanel(TaskPanel):
              return self.get_defaultconfig()
         if not hasattr(dgroup, 'chi'):
              self.xasmain.process_exafs(dgroup)
-
         conf = getattr(dgroup, self.configname, None)
         if conf is None:
             # initial reading: start with default then take Athena Project values
             conf = self.get_defaultconfig()
+            if hasattr(dgroup, 'fft_params'):
+                afft_pars = getattr(dgroup, 'fft_params')
+                if hasattr(afft_pars, 'kw'):
+                    conf['kwstring'] = str(getattr(afft_pars, 'kw'))
+                if hasattr(afft_pars, 'kweight'):
+                    conf['kwstring'] = str(getattr(afft_pars, 'kweight'))
 
-            kmax = conf.get('kmax', None)
-            if kmax is None:
-                econf = getattr(dgroup, 'exafs_config', {}) # from EXAFS Panel
-                if hasattr(dgroup.fft_params, 'kw'):
-                    conf[f'kwstring'] = str(getattr(dgroup.fft_params, 'kw'))
-                if hasattr(dgroup.fft_params, 'kweight'):
-                    conf[f'kwstring'] = str(getattr(dgroup.fft_params, 'kweight'))
-
-                for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
-                            'kwindow', 'fft_rmin', 'fft_rmax','fft_kweight'):
-                    val = econf.get(key, None)
-                    tkey = key.replace('fft_', '')
-                    if key == 'fft_kweight':
-                        val = str(int(val))
-                        tkey = 'kwstring'
-                    if val is not None and tkey in conf:
-                        conf[tkey] = val
+            econf = getattr(dgroup, 'exafs_config', {})
+            for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
+                        'fft_rmin', 'fft_rmax','fft_kweight'):
+                val = econf.get(key, None)
+                tkey = key.replace('fft_', '')
+                if key == 'fft_kweight':
+                    val = str(int(val))
+                    tkey = 'kwstring'
+                if val is not None and tkey in conf:
+                    conf[tkey] = val
 
             setattr(dgroup, self.configname, conf)
         return conf
@@ -755,25 +770,21 @@ class FeffitPanel(TaskPanel):
 
 
     def fill_form(self, dat):
-        if isinstance(dat, Group):
-            conf = self.get_config(dat)
-            self.wids['ffit_kmin'].SetValue(conf['kmin'])
-            self.wids['ffit_kmax'].SetValue(conf['kmax'])
-            self.wids['ffit_rmin'].SetValue(conf['rmin'])
-            self.wids['ffit_rmax'].SetValue(conf['rmax'])
-            self.wids['ffit_dk'].SetValue(conf['dk'])
-            self.wids['ffit_kwindow'].SetStringSelection(conf['kwindow'])
-
-            for key, val in FitSpace_Choices.items():
-                if conf['fitspace'] == val:
-                    self.wids['ffit_fitspace'].SetStringSelection(key)
-
-            for key, val in KWeight_Choices.items():
-                if conf['kwstring'] == val:
-                    self.wids['ffit_kweight'].SetStringSelection(key)
-
-        elif isinstance(dat, dict):
-            print(" fill from dict?")
+        conf = self.get_config(dat)
+        self.wids['ffit_kmin'].SetValue(conf['kmin'])
+        self.wids['ffit_kmax'].SetValue(conf['kmax'])
+        self.wids['ffit_rmin'].SetValue(conf['rmin'])
+        self.wids['ffit_rmax'].SetValue(conf['rmax'])
+        self.wids['ffit_dk'].SetValue(conf['dk'])
+        self.wids['ffit_kwindow'].SetStringSelection(conf['kwindow'])
+        
+        for key, val in FitSpace_Choices.items():
+            if conf['fitspace'] == val:
+                self.wids['ffit_fitspace'].SetStringSelection(key)
+                
+        for key, val in KWeight_Choices.items():
+            if conf['kwstring'] == val:
+                self.wids['ffit_kweight'].SetStringSelection(key)
 
     def read_form(self, dgroup=None):
         "read for, returning dict of values"
@@ -828,13 +839,13 @@ class FeffitPanel(TaskPanel):
 
     def onPlot(self, evt=None, dgroup=None, pargroup_name='_feffit_params',
                paths_name='_ff2chi_paths', pathsum_name='_pathsum',
+               plot_window=None, plot_paths=None, plotone_op=None,
                build_fitmodel=True):
 
         opts = self.read_form(dgroup)
         fname = opts['filename']
         gname = opts['groupname']
         dgroup = opts['datagroup']
-        
 
         if build_fitmodel:
             self.build_fitmodel(dgroup)
@@ -847,10 +858,13 @@ class FeffitPanel(TaskPanel):
         if self.larch.symtable.has_symbol(paths_name):
             paths = self.larch.symtable.get_symbol(paths_name)
 
+            
+        if plot_window is not None:
+            opts['plot_window'] = plot_window
+
         plot1 = opts['plotone_op']
         plot2 = opts['plotalt_op']
         cmds = []
-
        
         if ',' in opts['kwstring']:
             kw = int(opts['kwstring'].replace('[','').replace(']','').split(',')[0])
@@ -955,6 +969,8 @@ class FeffitPanel(TaskPanel):
         if pgroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
             pgroup = getattr(self.larch.symtable, '_feffit_params')
+        if not hasattr(self.larch.symtable, '_paths'):
+            self.larch_eval(COMMANDS['paths_init'])
         return pgroup
 
     def update_params_for_expr(self, expr=None, value=1.e-3,
@@ -1114,77 +1130,34 @@ class FeffitPanel(TaskPanel):
 
 
     def onFitModel(self, event=None, dgroup=None):
+        self.command_hist = self.params_panel.generate_script()
+        
         opts = self.build_fitmodel(dgroup)
-        fopts = dict(groupname=opts['groupname'], trans='_feffit_trans',
-                     paths='_ff2chi_paths', params='_feffit_params')
+        dgroup = opts['datagroup']
+        fopts = dict(groupname=opts['groupname'],
+                     trans='_feffit_trans',
+                     paths='_ff2chi_paths',
+                     params='_feffit_params')
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
               
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
                     pargroup_name='_feffit_result.paramgroup',
                     paths_name='_feffit_dataset.paths',
                     pathsum_name='_feffit_dataset.model')
-        
 
-        print("Now add fit to dataset histort, show results panel")
-        
-#         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
-#
-#         ppeaks = dgroup.prepeaks
-#
-#         # add bkg_component to saved user options
-#         bkg_comps = []
-#         for label, comp in self.fit_components.items():
-#             if comp.bkgbox.IsChecked():
-#                 bkg_comps.append(label)
-#         opts['bkg_components'] = bkg_comps
-#
-#         imin, imax = self.get_xranges(dgroup.xdat)
-#
-#         cmds = ["## do peak fit: "]
-#
-#         yerr_type = 'set_yerr_const'
-#         yerr = getattr(dgroup, 'yerr', None)
-#         if yerr is None:
-#             if hasattr(dgroup, 'norm_std'):
-#                 cmds.append("{group}.yerr = {group}.norm_std")
-#                 yerr_type = 'set_yerr_array'
-#             elif hasattr(dgroup, 'mu_std'):
-#                 cmds.append("{group}.yerr = {group}.mu_std/(1.e-15+{group}.edge_step)")
-#                 yerr_type = 'set_yerr_array'
-#             else:
-#                 cmds.append("{group}.yerr = 1")
-#         elif isinstance(dgroup.yerr, np.ndarray):
-#                 yerr_type = 'set_yerr_array'
-#
-#
-#         cmds.extend([COMMANDS[yerr_type], COMMANDS['dofit']])
-#
-#         cmd = '\n'.join(cmds)
-#         self.larch_eval(cmd.format(group=dgroup.groupname,
-#                                    imin=imin, imax=imax,
-#                                    user_opts=repr(opts)))
-#
-#         self.autosave_modelresult(self.larch_get("peakresult"))
-#
-#         self.onPlot()
-#         self.show_subframe('prepeak_result', PrePeakFitResultFrame,
-#                                   datagroup=dgroup, peakframe=self)
-#         self.subframes['prepeak_result'].add_results(dgroup, form=opts,
-#                                                      larch_eval=self.larch_eval)
+        dgroup.feffit_history[0].commands = [c for c in self.command_hist]
+        print("Now add fit to dataset history, show results panel")
+        self.autosave_script()
 
+        self.show_subframe('feffit_result', FeffitResultFrame,
+                           datagroup=dgroup, feffit_panel=self)
+        self.subframes['feffit_result'].add_results(dgroup, form=opts)
+        
     def update_start_values(self, params):
         """fill parameters with best fit values"""
-        allparwids = {}
-        for comp in self.fit_components.values():
-            if comp.usebox is not None and comp.usebox.IsChecked():
-                for name, parwids in comp.parwids.items():
-                    allparwids[name] = parwids
+        print("update staring values")
 
-        for pname, par in params.items():
-            if pname in allparwids:
-                allparwids[pname].value.SetValue(par.value)
-
-    def autosave_modelresult(self, result, fname=None):
+    def autosave_script(self, fname='feffit_script.lar'):
         """autosave model result to user larch folder"""
         confdir = os.path.join(site_config.user_larchdir, 'xas_viewer')
         if not os.path.exists(confdir):
@@ -1194,5 +1167,471 @@ class FeffitPanel(TaskPanel):
                 print("Warning: cannot create XAS_Viewer user folder")
                 return
         if fname is None:
-            fname = 'autosave.fitmodel'
-        save_modelresult(result, os.path.join(confdir, fname))
+            fname = 'feffit_script.lar'
+        fullname = os.path.join(confdir, fname)
+        if os.path.exists(fullname):
+            backup = os.path.join(confdir, 'feffit_script_BAK.lar')
+            shutil.copy(fullname, backup)
+        with open(fullname, 'w')as fh:
+            fh.write('# saved %s\n' % (time.ctime()))
+            fh.write('\n'.join(self.command_hist))
+            fh.write('')
+        print("wrote script to ", fullname)
+        
+
+###############
+
+class FeffitResultFrame(wx.Frame):
+    configname='feffit_config'
+    def __init__(self, parent=None, feffit_panel=None, datagroup=None,
+                  **kws):
+        wx.Frame.__init__(self, None, -1, title='Feffit Results',
+                          style=FRAMESTYLE, size=(900, 700), **kws)
+        self.feffit_panel = fefffit_panel
+        self.datagroup = datagroup
+        self.fit_history = getattr(datagroup, 'fit_history', [])
+        self.parent = parent
+        self.datasets = {}
+        self.form = {}
+        self.larch_eval = feffit_panel.larch_eval
+        self.nfit = 0
+        self.createMenus()
+        self.build()
+
+    def createMenus(self):
+        self.menubar = wx.MenuBar()
+        fmenu = wx.Menu()
+        m = {}
+        MenuItem(self, fmenu, "Save Fit to text file",
+                 "Save data arrays and parameters to a text file",
+                 self.onSaveFitCSV)
+        MenuItem(self, fmenu, "Save script for this fit",
+                 "Save feffit script for this dataset",
+                 self.onSaveFitCommand)
+        self.menubar.Append(fmenu, "&File")
+        self.SetMenuBar(self.menubar)
+
+    def build(self):
+        sizer = wx.GridBagSizer(2, 2)
+        sizer.SetVGap(2)
+        sizer.SetHGap(2)
+
+        splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(200)
+
+        self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
+                                           size=(250, -1))
+        panel = scrolled.ScrolledPanel(splitter)
+
+        panel.SetMinSize((775, 575))
+        self.colors = GUIColors()
+
+        # title row
+        self.wids = wids = {}
+        title = SimpleText(panel, 'Feffit Results', font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LEFT)
+
+        wids['data_title'] = SimpleText(panel, '< > ', font=Font(FONTSIZE+2),
+                                        minsize=(350, -1),
+                                        colour=self.colors.title, style=LEFT)
+
+        opts = dict(default=False, size=(200, -1), action=self.onPlot)
+        wids['plot_rspace'] = Check(panel, label='Plot R-space', **opts)
+        wids['plot_kspace'] = Check(panel, label='Plot k-space', **opts)
+        self.plot_choice = Button(panel, 'Plot This Fit',
+                                  size=(125, -1), action=self.onPlot)
+
+        irow = 0
+        sizer.Add(title,              (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
+
+        irow += 1
+        wids['model_desc'] = SimpleText(panel, '<Model>', font=Font(FONTSIZE+1),
+                                        size=(750, 50), style=LEFT)
+        sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
+
+        irow += 1
+        # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
+        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plot_kspace'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(wids['plot_rspace'], (irow, 3), (1, 1), LEFT)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LEFT)
+        subtitle = SimpleText(panel, '  (Fit #01 is most recent)',
+                              font=Font(FONTSIZE+1),  style=LEFT)
+
+        sizer.Add(title, (irow, 0), (1, 1), LEFT)
+        sizer.Add(subtitle, (irow, 1), (1, 1), LEFT)
+
+        sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
+        sview.AppendTextColumn(' Fit#',  width=75)
+        sview.AppendTextColumn(' N_data', width=75)
+        sview.AppendTextColumn(' N_vary', width=75)
+        sview.AppendTextColumn('\u03c7\u00B2', width=110)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
+        sview.AppendTextColumn('Akaike Info', width=110)
+        sview.AppendTextColumn('Bayesian Info', width=110)
+
+        for col in range(sview.ColumnCount):
+            this = sview.Columns[col]
+            this.Sortable = True
+            this.Alignment = wx.ALIGN_RIGHT if col > 0 else wx.ALIGN_LEFT
+            this.Renderer.Alignment = this.Alignment
+
+        sview.SetMinSize((700, 125))
+
+        irow += 1
+        sizer.Add(sview, (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LEFT)
+        sizer.Add(title, (irow, 0), (1, 1), LEFT)
+
+        self.wids['copy_params'] = Button(panel, 'Update Model with these values',
+                                          size=(250, -1), action=self.onCopyParams)
+
+        sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
+
+        pview = self.wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        self.wids['paramsdata'] = []
+        pview.AppendTextColumn('Parameter',         width=150)
+        pview.AppendTextColumn('Best-Fit Value',    width=125)
+        pview.AppendTextColumn('Standard Error',    width=125)
+        pview.AppendTextColumn('Info ',             width=300)
+
+        for col in range(4):
+            this = pview.Columns[col]
+            this.Sortable = False
+            this.Alignment = wx.ALIGN_RIGHT if col in (1, 2) else wx.ALIGN_LEFT
+            this.Renderer.Alignment = this.Alignment
+
+        pview.SetMinSize((700, 200))
+        pview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectParameter)
+
+        irow += 1
+        sizer.Add(pview, (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        title = SimpleText(panel, '[[Correlations]]',  font=Font(FONTSIZE+2),
+                           colour=self.colors.title, style=LEFT)
+
+        self.wids['all_correl'] = Button(panel, 'Show All',
+                                          size=(100, -1), action=self.onAllCorrel)
+
+        self.wids['min_correl'] = FloatSpin(panel, value=MIN_CORREL,
+                                            min_val=0, size=(100, -1),
+                                            digits=3, increment=0.1)
+
+        ctitle = SimpleText(panel, 'minimum correlation: ')
+        sizer.Add(title,  (irow, 0), (1, 1), LEFT)
+        sizer.Add(ctitle, (irow, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['min_correl'], (irow, 2), (1, 1), LEFT)
+        sizer.Add(self.wids['all_correl'], (irow, 3), (1, 1), LEFT)
+
+        cview = self.wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+
+        cview.AppendTextColumn('Parameter 1',    width=150)
+        cview.AppendTextColumn('Parameter 2',    width=150)
+        cview.AppendTextColumn('Correlation',    width=150)
+
+        for col in (0, 1, 2):
+            this = cview.Columns[col]
+            this.Sortable = False
+            align = wx.ALIGN_LEFT
+            if col == 2:
+                align = wx.ALIGN_RIGHT
+            this.Alignment = this.Renderer.Alignment = align
+        cview.SetMinSize((475, 200))
+
+        irow += 1
+        sizer.Add(cview, (irow, 0), (1, 5), LEFT)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        splitter.SplitVertically(self.datalistbox, panel, 1)
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
+
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+    def onSaveFitCSV(self, event=None):
+        print("SAVE CSV")
+        
+    def onSaveFitCommand(self, event=None):
+        print("SAVE Commands")
+
+
+    def onSaveAllStats(self, evt=None):
+        "Save Parameters and Statistics to CSV"
+        # get first dataset to extract fit parameter names
+        fnames = self.datalistbox.GetItems()
+        if len(fnames) == 0:
+            return
+
+        deffile = "FeffitResults.csv"
+        wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
+        path = FileSave(self, 'Save Parameter and Statistics for Feff Fits',
+                        default_file=deffile, wildcard=wcards)
+        if path is None:
+            return
+        if os.path.exists(path):
+            if wx.ID_YES != Popup(self,
+                                  "Overwrite existing Statistics File?",
+                                  "Overwrite existing file?", style=wx.YES_NO):
+                return
+
+        dgroup = self.datasets[fnames[0]]
+        param_names = list(reversed(dgroup.fit_history[0].params.keys()))
+        user_opts = ppeaks_tmpl.user_options
+        model_desc = self.get_model_desc(ppeaks_tmpl.fit_history[0].model).replace('\n', ' ')
+        out = ['# Feffit Report %s' % time.ctime(),
+               '# Fitted Array name: %s' %  user_opts['array_name'],
+               '# Model form: %s' % model_desc,
+               '# Baseline form: %s' % user_opts['baseline_form'],
+               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
+               '#--------------------']
+
+        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
+                 'n_varys', 'chi-square', 'reduced_chi-square',
+                 'akaike_info', 'bayesian_info']
+
+        for pname in param_names:
+            labels.append(pname)
+            labels.append(pname+'_stderr')
+        out.append('# %s' % (', '.join(labels)))
+        for name, dgroup in self.datasets.items():
+            result = dgroup.feffit_history[0]
+            label = dgroup.filename
+            if len(label) < 25:
+                label = (label + ' '*25)[:25]
+            dat = [label, dgroup.groupname,
+                   '%d' % result.ndata, '%d' % result.nvarys]
+            for attr in ('chisqr', 'redchi', 'aic', 'bic'):
+                dat.append(gformat(getattr(result, attr), 11))
+            for pname in param_names:
+                val = stderr = 0
+                if pname in result.params:
+                    par = result.params[pname]
+                    dat.append(gformat(par.value, 11))
+                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
+                    dat.append(stderr)
+            out.append(', '.join(dat))
+        out.append('')
+
+        with open(path, 'w') as fh:
+            fh.write('\n'.join(out))
+
+
+    def onSaveFitResult(self, event=None):
+        deffile = self.datagroup.filename.replace('.', '_') + 'peak.modl'
+        sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
+                           wildcard=ModelWcards)
+        if sfile is not None:
+            result = self.get_fitresult()
+            save_modelresult(result, sfile)
+
+    def onExportFitResult(self, event=None):
+        dgroup = self.datagroup
+        deffile = dgroup.filename.replace('.', '_') + '.xdi'
+        wcards = 'All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
+
+        result = self.get_fitresult()
+        if outfile is not None:
+            i1, i2 = get_xlims(dgroup.xdat,
+                               result.user_options['emin'],
+                               result.user_options['emax'])
+            x = dgroup.xdat[i1:i2]
+            y = dgroup.ydat[i1:i2]
+            yerr = None
+            if hasattr(dgroup, 'yerr'):
+                yerr = 1.0*dgroup.yerr
+                if not isinstance(yerr, np.ndarray):
+                    yerr = yerr * np.ones(len(y))
+                else:
+                    yerr = yerr[i1:i2]
+
+            export_modelresult(result, filename=outfile,
+                               datafile=dgroup.filename, ydata=y,
+                               yerr=yerr, x=x)
+
+
+    def get_fitresult(self, nfit=None):
+        if nfit is None:
+            nfit = self.nfit
+        self.fit_history = getattr(self.datagroup.feffit, 'fit_history', [])
+        self.nfit = max(0, nfit)
+        if self.nfit > len(self.fit_history):
+            self.nfit = 0
+        return self.fit_history[self.nfit]
+
+    def onPlot(self, event=None):
+        show_paths = self.wids['show_path'].IsChecked()
+        fitspace   = self.wids['plot_space'].IsChecked()
+        cmd = "plot_prepeaks_fit(%s, nfit=%i, show_residual=%s, subtract_baseline=%s)"
+        cmd = cmd % (self.datagroup.groupname, self.nfit, show_resid, sub_bline)
+
+        self.peakframe.larch_eval(cmd)
+
+    def onSelectFit(self, evt=None):
+        if self.wids['stats'] is None:
+            return
+        item = self.wids['stats'].GetSelectedRow()
+        if item > -1:
+            self.show_fitresult(nfit=item)
+
+    def onSelectParameter(self, evt=None):
+        if self.wids['params'] is None:
+            return
+        if not self.wids['params'].HasSelection():
+            return
+        item = self.wids['params'].GetSelectedRow()
+        pname = self.wids['paramsdata'][item]
+
+        cormin= self.wids['min_correl'].GetValue()
+        self.wids['correl'].DeleteAllItems()
+
+        result = self.get_fitresult()
+        this = result.params[pname]
+        if this.correl is not None:
+            sort_correl = sorted(this.correl.items(), key=lambda it: abs(it[1]))
+            for name, corval in reversed(sort_correl):
+                if abs(corval) > cormin:
+                    self.wids['correl'].AppendItem((pname, name, "% .4f" % corval))
+
+    def onAllCorrel(self, evt=None):
+        result = self.get_fitresult()
+        params = result.params
+        parnames = list(params.keys())
+
+        cormin= self.wids['min_correl'].GetValue()
+        correls = {}
+        for i, name in enumerate(parnames):
+            par = params[name]
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                for name2 in parnames[i+1:]:
+                    if (name != name2 and name2 in par.correl and
+                            abs(par.correl[name2]) > cormin):
+                        correls["%s$$%s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+
+        self.wids['correl'].DeleteAllItems()
+
+        for namepair, corval in sort_correl:
+            name1, name2 = namepair.split('$$')
+            self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
+
+    def onCopyParams(self, evt=None):
+        result = self.get_fitresult()
+        self.peakframe.update_start_values(result.params)
+
+    def ShowDataSet(self, evt=None):
+        dataset = evt.GetString()
+        group = self.datasets.get(evt.GetString(), None)
+        if group is not None:
+            self.show_results(datagroup=group)
+
+    def add_results(self, dgroup, form=None, larch_eval=None, show=True):
+        name = dgroup.filename
+        if name not in self.datalistbox.GetItems():
+            self.datalistbox.Append(name)
+        self.datasets[name] = dgroup
+        if show:
+            self.show_results(datagroup=dgroup, form=form, larch_eval=larch_eval)
+
+    def show_results(self, datagroup=None, form=None, larch_eval=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+        if larch_eval is not None:
+            self.larch_eval = larch_eval
+
+        datagroup = self.datagroup
+        self.peakfit_history = getattr(self.datagroup.prepeaks, 'fit_history', [])
+
+        cur = self.get_fitresult()
+        wids = self.wids
+        wids['stats'].DeleteAllItems()
+        for i, res in enumerate(self.peakfit_history):
+            args = ['%2.2d' % (i+1)]
+            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
+                val = getattr(res.result, attr)
+                if isinstance(val, int):
+                    val = '%d' % val
+                else:
+                    val = gformat(val, 10)
+                args.append(val)
+            wids['stats'].AppendItem(tuple(args))
+        wids['data_title'].SetLabel(self.datagroup.filename)
+        self.show_fitresult(nfit=0)
+
+    def get_model_desc(self, model):
+        model_repr = model._reprstring(long=True)
+        for word in ('Model(', ',', '(', ')', '+'):
+            model_repr = model_repr.replace(word, ' ')
+        words = []
+        mname, imodel = '', 0
+        for word in model_repr.split():
+            if word.startswith('prefix'):
+                words.append("%sModel(%s)" % (mname.title(), word))
+            else:
+                mname = word
+                if imodel > 0:
+                    delim = '+' if imodel % 2 == 1 else '+\n'
+                    words.append(delim)
+                imodel += 1
+        return ''.join(words)
+
+
+    def show_fitresult(self, nfit=0, datagroup=None):
+        if datagroup is not None:
+            self.datagroup = datagroup
+
+        result = self.get_fitresult(nfit=nfit)
+        wids = self.wids
+        wids['data_title'].SetLabel(self.datagroup.filename)
+        wids['model_desc'].SetLabel(self.get_model_desc(result.model))
+        wids['params'].DeleteAllItems()
+        wids['paramsdata'] = []
+        for param in reversed(result.params.values()):
+            pname = param.name
+            try:
+                val = gformat(param.value, 10)
+            except (TypeError, ValueError):
+                val = ' ??? '
+            serr = ' N/A '
+            if param.stderr is not None:
+                serr = gformat(param.stderr, 10)
+            extra = ' '
+            if param.expr is not None:
+                extra = '= %s ' % param.expr
+            elif not param.vary:
+                extra = '(fixed)'
+            elif param.init_value is not None:
+                extra = '(init=%s)' % gformat(param.init_value, 10)
+
+            wids['params'].AppendItem((pname, val, serr, extra))
+            wids['paramsdata'].append(pname)
+        self.Refresh()
+
