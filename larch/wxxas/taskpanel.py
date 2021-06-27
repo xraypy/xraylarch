@@ -141,6 +141,7 @@ class TaskPanel(wx.Panel):
             self.set_defaultconfig(config)
         self.wids = {}
         self.subframes = {}
+        self.command_hist = []
         self.SetFont(Font(FONTSIZE))
         self.titleopts = dict(font=Font(FONTSIZE+2),
                               colour='#AA0000', style=LEFT)
@@ -178,6 +179,7 @@ class TaskPanel(wx.Panel):
 
     def larch_eval(self, cmd):
         """eval"""
+        self.command_hist.append(cmd)
         self.controller.larch.eval(cmd)
 
     def larch_get(self, sym):
