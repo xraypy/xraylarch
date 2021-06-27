@@ -453,7 +453,11 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
          r, chir_mag, chir_im, chir_re, kweight, filename
     """
 
-    kweight = dgroup.xftf_details.call_args['kweight']
+    try:
+        kweight = dgroup.xftf_details.call_args['kweight']
+    except:
+        kweight = 0
+
     if new:
         title = _get_title(dgroup, title=title)
 
