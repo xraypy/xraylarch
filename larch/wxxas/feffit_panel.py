@@ -502,7 +502,6 @@ class FeffitParamsPanel(wx.Panel):
         return s
 
 
-
 class FeffPathPanel(wx.Panel):
     """Feff Path """
     def __init__(self, parent=None, feffdat_file=None, dirname=None,
@@ -528,10 +527,11 @@ class FeffPathPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
-        def make_parwid(name, expr):
+        def make_parwid(name, expr, val=''):
             wids[name] = TextCtrl(panel, expr, size=(250, -1),
                                   action=partial(self.onExpression, name=name))
-            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
+            wids[name].UseBackgroundColour()
+            wids[name+'_val'] = SimpleText(panel, val, size=(150, -1), style=LEFT)
 
         make_parwid('label', user_label)
         make_parwid('amp',  f'{degen:.1f} * s02')
@@ -587,7 +587,26 @@ class FeffPathPanel(wx.Panel):
             opts['maxval'] =  0.5
         elif name == 'amp':
             opts['value'] = 1
-        self.feffit_panel.update_params_for_expr(expr, **opts)
+        result = self.feffit_panel.update_params_for_expr(expr, **opts)
+        if result:
+            pargroup = self.feffit_panel.get_paramgroup()
+            _eval = pargroup.__params__._asteval
+            try:
+                value = _eval.eval(expr, show_errors=False, raise_errors=False)
+                if value is not None:
+                    value = gformat(value)
+                    self.wids[name + '_val'].SetLabel(f'= {value}')
+            except:
+                result = False
+
+        if result:
+            bgcol, fgcol = 'white', 'black'
+        else:
+            bgcol, fgcol = '#AAAA4488', '#AA0000'
+        self.wids[name].SetForegroundColour(fgcol)
+        self.wids[name].SetBackgroundColour(bgcol)
+        self.wids[name].SetOwnBackgroundColour(bgcol)
+        
 
 
     def onRemovePath(self, event=None):
@@ -979,11 +998,12 @@ class FeffitPanel(TaskPanel):
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 
-        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True,
-                              )
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
             pathpanel.onExpression(name=pname)
 
+        time.sleep(0.01)
+        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+        
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
@@ -1012,19 +1032,19 @@ class FeffitPanel(TaskPanel):
         if maxval is not None:
             extras = f'{extras}, max={maxval}'
 
-        for node in ast.walk(ast.parse(expr)):
-            if isinstance(node, ast.Name):
-                sym = node.id
-                if sym not in symtable:
-                    s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
-                    self.larch_eval(s)
+        try:
+            for node in ast.walk(ast.parse(expr)):
+                if isinstance(node, ast.Name):
+                    sym = node.id
+                    if sym not in symtable:
+                        s = f'_feffit_params.{sym:s} = param({value:.4f}, vary=True{extras:s})'
+                        self.larch_eval(s)
+            result = True
+        except:
+            result = False
 
         self.params_panel.update()
-
-        #for i in range(self.paths_nb.GetPageCount()):
-        #    updater = getattr(self.paths_nb.GetPage(i), 'update_values', None)
-        #    if callable(updater):
-        #        updater()
+        return result
 
 
     def onLoadFitResult(self, event=None):
