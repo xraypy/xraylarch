@@ -17,13 +17,6 @@ import re
 import os
 import cmath
 
-HAS_CifFile = False
-try:
-    import CifFile
-    HAS_CifFile = True
-except ImportError:
-    pass
-
 ##########################################################################
 # FUNCTIONS
 
