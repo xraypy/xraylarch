@@ -174,6 +174,7 @@ class LarchWxShell(object):
             except ValueError:
                 pass
             self.SetPrompt(self._larch.input.complete)
+            return ret
 
 class LarchPanel(wx.Panel):
     """Larch Input/Output Panel + Data Viewer as a wx.Panel,
