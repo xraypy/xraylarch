@@ -269,8 +269,10 @@ class FeffResultsPanel(wx.Panel):
 
     def onShowHeader(self, event=None):
         if self.feffresult is not None:
-            self.show_report(self.feffresult.header, title=f'Header for {self.feffresult.folder:s}')
-
+            self.show_report(self.feffresult.header,
+                             title=f'Header for {self.feffresult.folder:s}',
+                             default_filename=f'{self.feffresult.folder:s}_header.txt')
+            
     def onShowFeffInp(self, event=None):
         if self.feffresult is not None:
             text = None
@@ -285,20 +287,24 @@ class FeffResultsPanel(wx.Panel):
                     with open(fname, 'r') as fh:
                         text = fh.read()
             if text is not None:
-                self.show_report(text, title=f'Feff.inp for {self.feffresult.folder:s}')
+                self.show_report(text, title=f'Feff.inp for {self.feffresult.folder:s}',
+                                 default_filename=f'{self.feffresult.folder:s}_feff.inp',
+                                 wildcard='Input Files (*.inp)|*.inp')
 
-    def show_report(self, text, title=None):
-        if title is None and self.feffresult is not None:
-            title = self.feffresult.folder
-        if self.report_frame is None:
-            self.report_frame = ReportFrame(parent=self, text=text,
-                                            title=title)
-        else:
-            try:
-                self.report_frame.set_text(text)
-                self.report_frame.SetTitle(title)
-            except:
-                self.report_frame = ReportFrame(parent=self, text=text, title=title)
+    def show_report(self, text, title='Text', default_filename='out.txt', wildcard=None):
+        if wildcard is None:
+            wildcard='Text Files (*.txt)|*.txt'            
+        try:
+            self.report_frame.set_text(text)
+            self.report_frame.SetTitle(title)
+            self.report_frame.default_filename = default_filename
+            self.report_frame.wildcard = wildcard
+        except:
+            self.report_frame = ReportFrame(parent=self,
+                                            text=text, title=title,
+                                            default_filename=default_filename,
+                                            wildcard=wildcard)                                                
+
 
     def onImportPath(self, event=None):
         folder  = self.feffresult.folder
