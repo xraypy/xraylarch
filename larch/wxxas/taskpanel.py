@@ -180,12 +180,14 @@ class TaskPanel(wx.Panel):
     def larch_eval(self, cmd):
         """eval"""
         self.command_hist.append(cmd)
-        self.controller.larch.eval(cmd)
+        return self.controller.larch.eval(cmd)
+
+    def _plain_larch_eval(self, cmd):
+        return self.controller.larch._larch.eval(cmd)
 
     def get_session_history(self):
         """return full session history"""
         return self.controller.larch.input.hist_buff
-
 
     def larch_get(self, sym):
         """get value from larch symbol table"""
