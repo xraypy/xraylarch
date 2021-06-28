@@ -2454,8 +2454,7 @@ class XRDCIF(object):
 
     def read_ciftext(self, ciftext, verbose=False):
         if not HAS_CifFile:
-            print('Missing required package(s) for this function:')
-            print('Have CifFile? %r' % HAS_CifFile)
+            print('must install pycifrw to extract structure factors')
             return
 
         cf = CifFile.ReadCif(StringIO(ciftext))
@@ -2688,6 +2687,15 @@ class XRDCIF(object):
 
 
     def structure_factors(self, wavelength=None, energy=None, qmin=0.2, qmax=10.2):
+        if not HAS_CifFile:
+            z = np.zeros(2, dtype=np.float64)
+            o = np.ones(2, dtype=np.float64)
+            return StructureFactor(q=z, intensity=z, hkl=z, d=z, f2hkl=z,
+                                   twotheta=z, degen=z, lorentz=o,
+                                   wavelength=o, energy=o)
+
+
+
         if energy is not None:
             wavelength = lambda_from_E(energy, E_units='eV')
         if wavelength is None:
@@ -2704,28 +2712,28 @@ class XRDCIF(object):
         ii, jj = qhkl < qmax, qhkl > qmin
         ii = jj*ii
         # pre-calculate form factors
-        f0vals = {}        
+        f0vals = {}
         f1vals, f2vals = {}, {}
         for el in self.atom.label:
             f0vals[el] = f0(el, np.array(qhkl/(4*PI)))
             f1vals[el] = f1_chantler(el, energy)
-            f2vals[el] = f2_chantler(el, energy)            
+            f2vals[el] = f2_chantler(el, energy)
 
         for i, hkl in enumerate(hkls):
             if not ii[i]:
                 continue
             fhkl = 0.0
-            for el in self.atom.label: 
+            for el in self.atom.label:
                 fval = f0vals[el][i] + f1vals[el] - 1j*f2vals[el]
                 for uvw in self.elem_uvw[el]:
-                    # (hu+kv+lw)                        
+                    # (hu+kv+lw)
                     hukvlw = hkl[0]*uvw[0] + hkl[1]*uvw[1] + hkl[2]*uvw[2]
                     fhkl += fval*np.exp(2*1j*PI*hukvlw)
             f2hkl[i] = (fhkl*fhkl.conjugate()).real
 
         ## removes zero value structure factors
         ii = ii*(f2hkl > 1.e-4)
-        
+
         # push q values to large ints to better find duplicates
         qhkl   = [int(round(_q*1.e7)) for _q in qhkl[ii]]
         hkl    = hkls[ii]
@@ -2741,13 +2749,13 @@ class XRDCIF(object):
                 degen.append(1)
                 f2work.append(f2hkl[i])
                 hklwork.append(hkl[i])
-        
+
         qorder = np.argsort(qwork)
         qhkl  = np.array(qwork, dtype=np.float64)[qorder]/1.e7
         degen = np.array(degen)[qorder]
         f2hkl = np.array(f2work)[qorder]
         hkl   = abs(np.array(hklwork)[qorder])
-        
+
         twotheta = twth_from_q(qhkl, wavelength)
         if np.any(np.isnan(twotheta)):
             nan_mask = np.where(np.isfinite(twotheta))
@@ -2759,7 +2767,7 @@ class XRDCIF(object):
 
         dhkl  = d_from_q(qhkl)
         lap_corr = self.correction_factor(twotheta)
-        
+
         ihkl = degen * f2hkl * lap_corr
         if self.volume is not None:
             ihkl *= wavelength**3 / float(self.volume)
@@ -2768,7 +2776,7 @@ class XRDCIF(object):
                                f2hkl=f2hkl, twotheta=twotheta, degen=degen,
                                lorentz=lap_corr, wavelength=wavelength,
                                energy=energy)
-        
+
     def correction_factor(self, twth):
         ## calculates Lorentz and Polarization corrections
         twth = PI*twth/180
@@ -2815,6 +2823,5 @@ def create_xrdcif(filename=None, text=None):
     if text is None and filename is not None and os.path.exists(filename):
         with open(filename, 'r') as fh:
             text = fh.read()
-            
-    return XRDCIF(text=text)
 
+    return XRDCIF(text=text)
