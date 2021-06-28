@@ -58,7 +58,8 @@ if [ -d $prefix ] ; then
 fi
 
 ## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy scipy matplotlib scikit-image scikit-learn"
+cforge_pkgs="numpy scipy matplotlib scikit-image scikit-learn pymatgen pycifrw"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch"
 
 if [ $uname == 'MacOSX' ] ; then
     cforge_pkgs="$cforge_pkgs python.app"
@@ -112,8 +113,8 @@ $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs | tee -
 
 ## pip install of dependencies and Larch
 echo "##Installing xraylarch and dependencies from PyPI"  | tee -a $logfile
-echo "#> $prefix/bin/pip install xraylarch"| tee -a $logfile
-$prefix/bin/pip install xraylarch | tee -a $logfile
+echo "#> $prefix/bin/pip install $pip_pkgs"| tee -a $logfile
+$prefix/bin/pip install $pip_pkgs | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"

@@ -22,10 +22,10 @@ call %prefix%\condabin\conda activate base
 call %prefix%\condabin\conda config --set auto_activate_base true
 
 echo ## Installing wxpython and tomopy from conda-forge
-call %prefix%\condabin\conda install -yc conda-forge wxpython tomopy
+call %prefix%\condabin\conda install -yc conda-forge wxpython tomopy scipy matplotlib scikit-image scikit-learn pymatgen pycifrw
 
 echo ## Installing xraylarch and dependencies from PyPI
-call %prefix%\Scripts\pip install xraylarch
+call %prefix%\Scripts\pip install wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch
 
 echo ## Creating desktop shortcuts
 call %prefix%\Scripts\larch -m
