@@ -115,6 +115,7 @@ class XASFrame(wx.Frame):
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
         self.paths2read = []
+        self.current_filename = filename        
 
         title = "Larch XAS GUI: XAS Visualization and Analysis"
 
@@ -145,13 +146,23 @@ class XASFrame(wx.Frame):
         statusbar_fields = [" ", "initializing...."]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-            self.current_filename = filename
         self.Show()
         if version_info is not None:
             if version_info.update_available:
                 self.onCheckforUpdates()
-        if filename is not None:
-            wx.CallAfter(self.onRead, filename)
+
+        self.controller.init_larch()
+        plotframe = self.controller.get_display(stacked=False)
+        xpos, ypos = self.GetPosition()
+        xsiz, ysiz = self.GetSize()
+        plotframe.SetPosition((xpos+xsiz+5, ypos))
+        plotframe.SetSize((600, 650))
+
+        self.Raise()        
+        self.statusbar.SetStatusText('ready', 1)
+        if self.current_filename is not None:
+            wx.CallAfter(self.onRead, self.current_filename)        
+
 
     def createMainPanel(self):
         display0 = wx.Display(0)
@@ -206,7 +217,7 @@ class XASFrame(wx.Frame):
         pack(panel, sizer)
 
         splitter.SplitVertically(leftpanel, panel, 1)
-        wx.CallAfter(self.init_larch)
+
 
     def process_normalization(self, dgroup):
         self.get_nbpage('xasnorm')[1].process(dgroup, noskip=True)
@@ -239,20 +250,8 @@ class XASFrame(wx.Frame):
     def onSelNone(self, event=None):
         self.controller.filelist.select_none()
 
-    def init_larch(self):
-        self.SetStatusText('initializing Larch', 1)
-        self.title.SetLabel('')
-
+    def init_larch(self, filename=None):
         self.controller.init_larch()
-
-        plotframe = self.controller.get_display(stacked=False)
-        xpos, ypos = self.GetPosition()
-        xsiz, ysiz = self.GetSize()
-        plotframe.SetPosition((xpos+xsiz+5, ypos))
-        plotframe.SetSize((600, 650))
-
-        self.SetStatusText('ready', 1)
-        self.Raise()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
