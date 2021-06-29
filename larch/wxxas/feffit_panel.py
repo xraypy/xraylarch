@@ -56,7 +56,7 @@ chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
 # wavelet = 'EXAFS wavelet'
 noplot  = '<no plot>'
 
-PlotOne_Choices = [chirmag, chik, chirre, chirmr]
+PlotOne_Choices = [chik, chirmag, chirre, chirmr]
 PlotAlt_Choices = [noplot] + PlotOne_Choices
 
 FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
@@ -596,7 +596,7 @@ class FeffPathPanel(wx.Panel):
             try:
                 value = _eval.eval(expr, show_errors=False, raise_errors=False)
                 if value is not None:
-                    value = gformat(value)
+                    value = gformat(value, 11)
                     self.wids[name + '_val'].SetLabel(f'= {value}')
             except:
                 result = False
@@ -630,7 +630,7 @@ class FeffPathPanel(wx.Panel):
                 try:
                     value = _eval.eval(expr, show_errors=False, raise_errors=False)
                     if value is not None:
-                        value = gformat(value)
+                        value = gformat(value, 10)
                         self.wids[par + '_val'].SetLabel(f'= {value}')
                 except:
                     self.feffit_panel.update_params_for_expr(expr)
@@ -697,7 +697,7 @@ class FeffitPanel(TaskPanel):
                                    , size=(125, -1), action=self.onPlot)
         wids['plotone_op'] = Choice(pan, choices=PlotOne_Choices,
                                     action=self.onPlot, size=(125, -1))
-
+        wids['plotone_op'].SetSelection(1)
         wids['plotalt_op'] = Choice(pan, choices=PlotAlt_Choices,
                                     action=self.onPlot, size=(125, -1))
 
@@ -1195,7 +1195,7 @@ class FeffitPanel(TaskPanel):
         groupname = opts['groupname']
         filename = opts['filename']
 
-        script.append("######################################")       
+        script.append("######################################")
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
         for cmd in session_history:
             if groupname in cmd or filename in cmd or 'athena' in cmd:
@@ -1262,6 +1262,12 @@ class FeffitResultFrame(wx.Frame):
                   **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
                           style=FRAMESTYLE, size=(850, 700), **kws)
+
+        self.outforms = {'chik': 'chi(k), no k-weight',
+                         'chikw': 'chi(k), k-weighted',
+                         'chir_mag': '|chi(R)|',
+                         'chir_re': 'Real[chi(R)]'}
+
         self.feffit_panel = feffit_panel
         self.datagroup = datagroup
         self.fit_history = getattr(datagroup, 'fit_history', [])
@@ -1278,22 +1284,12 @@ class FeffitResultFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
         m = {}
-        MenuItem(self, fmenu, "Save Fit: chi(k), no k-weight",
-                 "Save data, model, path arrays as chi(k)",
-                 partial(self.onSaveFit, form='chik'))
+        for key, desc in self.outforms.items():
+            MenuItem(self, fmenu,
+                     f"Save Fit: {desc}",
+                     f"Save data, model, path arrays as {desc}",
+                     partial(self.onSaveFit, form=key))
 
-        MenuItem(self, fmenu, "Save Fit: chi(k), k-weighted",
-                 "Save data, model, path arrays as k-weighted chi(k)",
-                 partial(self.onSaveFit, form='chikw'))
-
-        MenuItem(self, fmenu, "Save Fit: |chi(R)|",
-                 "Save data, model, path arrays as |chi(R)|",
-                 partial(self.onSaveFit, form='chir_mag'))
-
-        MenuItem(self, fmenu, "Save Fit: Re[chi(R)]",
-                 "Save data, model, path arrays as Re[chi(R)]",
-                 partial(self.onSaveFit, form='chir_re'))
-        
         fmenu.AppendSeparator()
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
@@ -1328,7 +1324,7 @@ class FeffitResultFrame(wx.Frame):
                                    , size=(125, -1), action=self.onPlot)
         wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
                                     action=self.onPlot, size=(125, -1))
-
+        wids['plotone_op'].SetSelection(1)
         wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
                                     action=self.onPlot, size=(125, -1))
 
@@ -1342,7 +1338,6 @@ class FeffitResultFrame(wx.Frame):
                                         action=self.onShowPathParams, size=(175, -1))
         wids['show_script']  = Button(panel,'Show Feffit Script',
                                         action=self.onShowScript, size=(175, -1))
-
 
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
@@ -1553,7 +1548,9 @@ class FeffitResultFrame(wx.Frame):
 
     def onSaveFit(self, evt=None, form='chikw'):
         "Save arrays to text file"
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}_{form}.txt'
+        fname = f'{self.datagroup.filename}_fit{(1+self.nfit):d}_{form}'
+        fname = fname.replace('.', '_')
+        fname = fname + '.txt'
 
         wildcard = 'Text Files (*.txt)|*.txt|All files (*.*)|*.*'
         savefile = FileSave(self, 'Save Fit Model (%s)' % form,
@@ -1563,17 +1560,17 @@ class FeffitResultFrame(wx.Frame):
             return
 
         result = self.get_fitresult()
-        text  = feffit_report(result)
-        
-        buff = [f'# Results for {self.datagroup.filename} fit #{1+self.nfit:d}']
-        
+        text = feffit_report(result)
+        desc = self.outforms[form]
+        buff = [f'# Results for {self.datagroup.filename} fit #{1+self.nfit:d}: {desc}']
+
         for line in text.split('\n'):
             buff.append('# %s' % line)
         buff.append('## ')
         buff.append('#' + '---'*25)
 
         ds0 = result.datasets[0]
-        
+
         xname = 'k' if form.startswith('chik') else 'r'
         yname = 'chi' if form.startswith('chik') else form
         kw = 0
@@ -1586,24 +1583,24 @@ class FeffitResultFrame(wx.Frame):
         ymodel = getattr(ds0.model, yname) * xarr**kw
         out    = [xarr, ydata, ymodel]
 
-        array_names = [xname, 'data', 'model']
+        array_names = [xname, 'expdata', 'model']
         for pname, pgroup in ds0.paths.items():
-            array_names.append(f'path_{pname}')
+            array_names.append(f'feffpath_{pname}')
             out.append(getattr(pgroup, yname)[:nx] * xarr**kw)
-            
+
         col_labels = []
         for a in array_names:
-            if len(a) < 11:
-                a = (a + ' '*11)[:11]
+            if len(a) < 13:
+                a = (a + ' '*13)[:13]
             col_labels.append(a)
 
         buff.append('# ' + '  '.join(col_labels))
 
         for i in range(nx):
-            words = [gformat(x[i]) for x in out]
-            buff.append('  '.join(words))
+            words = [gformat(x[i], 12) for x in out]
+            buff.append('   '.join(words))
         buff.append('')
-        
+
 
         with open(savefile, 'w') as fh:
             fh.write('\n'.join(buff))
@@ -1714,8 +1711,6 @@ class FeffitResultFrame(wx.Frame):
         wids['data_title'].SetLabel(self.datagroup.filename)
         self.show_fitresult(nfit=0)
 
-    def get_model_desc(self, model):
-        return ''
 
     def show_fitresult(self, nfit=0, datagroup=None):
         if datagroup is not None:
