@@ -1306,18 +1306,18 @@ class MapViewerFrame(wx.Frame):
         if not isinstance(parent, LarchFrame):
             self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
 
-        self.larch_buffer.Show()
-        self.larch_buffer.Raise()
+        # self.larch_buffer.Show()
+        # self.larch_buffer.Raise()
         self.larch = self.larch_buffer.larchshell
-        self.larch_buffer.Hide()
+        # self.larch_buffer.Hide()
 
         self.xrfdisplay = None
         self.xrddisplay1D = None
         self.xrddisplay2D = None
 
         self.watch_files = False
-        self.file_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
+        # self.file_timer = wx.Timer(self)
+        # self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
 
         self.files_in_progress = []
 
@@ -1342,6 +1342,7 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_done = True
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
+
         read_workdir('gsemap.dat')
 
         w0, h0 = self.GetSize()
@@ -1380,6 +1381,14 @@ class MapViewerFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
         pack(self, sizer)
+        fico = os.path.join(icondir, XRF_ICON_FILE)
+        try:
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+           pass
+
+        
+        self.Raise()
         wx.CallAfter(self.init_larch)
 
     def createNBPanels(self, parent):
@@ -1693,15 +1702,6 @@ class MapViewerFrame(wx.Frame):
     def init_larch(self):
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
-        self.title.SetLabel('')
-        fico = os.path.join(icondir, XRF_ICON_FILE)
-        try:
-            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        except:
-            pass
-
-        self.Raise()
-        self.onFolderSelect()
         if ESCAN_CRED is not None:
             self.move_callback = self.onMoveToPixel
             try:
@@ -1714,6 +1714,7 @@ class MapViewerFrame(wx.Frame):
                 etype, emsg, tb = sys.exc_info()
                 print('Could not connect to ScanDB: %s' % (emsg))
                 self.scandb = self.instdb = None
+        wx.CallAfter(self.onFolderSelect)
 
     def ShowFile(self, evt=None, filename=None,  process_file=True, **kws):
         if filename is None and evt is not None:
@@ -1755,9 +1756,9 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, fmenu, 'Show Larch Buffer\tCtrl+L', 'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W', 'Watch HDF5 Files', kind=wx.ITEM_CHECK)
-        fmenu.Check(cmenu.Id, self.watch_files) ## False
-        self.Bind(wx.EVT_MENU, self.onWatchFiles, id=cmenu.Id)
+        # cmenu = fmenu.Append(-1, '&Watch HDF5 Files\tCtrl+W', 'Watch HDF5 Files', kind=wx.ITEM_CHECK)
+        # fmenu.Check(cmenu.Id, self.watch_files) ## False
+        # self.Bind(wx.EVT_MENU, self.onWatchFiles, id=cmenu.Id)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, '&Quit\tCtrl+Q',
