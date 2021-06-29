@@ -13,7 +13,6 @@ class ReportFrame(wx.Frame):
         self.wildcard = wildcard
         wx.Frame.__init__(self, parent, size=size, style=FRAMESTYLE, **kws)
         self.SetTitle(title)
-
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
 
@@ -25,7 +24,8 @@ class ReportFrame(wx.Frame):
         
         self.report = RichTextCtrl(self,size=size, style=wx.VSCROLL)
         self.report.SetEditable(False)
-        self.report.SetFont(Font(FONTSIZE+1))
+        self.report.SetFont(wx.Font(FONTSIZE+1,  wx.MODERN, wx.NORMAL, wx.BOLD))
+        
         self.report.SetMinSize((500, 500))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
