@@ -78,10 +78,12 @@ COMMANDS['feffit_top'] = """## saved {ctime}
 #from larch.xafs import pre_edge, autobk, xftf, xftr, ff2chi, feffpath
 #from larch.fitting import  param_group, param
 #from larch.io import read_ascii, read_athena, read_xdi, read_specfile
-#  for interactive plotting, use:
-#from larch.wxlib.xafsplots import *
+#
+####  for interactive plotting from python (but not the Larch shell!) use:
+#from larch.wxlib.xafsplots import plot_chik, plot_chir
 #from wxmplot.interactive import get_wxapp
 #wxapp = get_wxapp()  # <- needed for plotting to work from python
+####
 """
 
 COMMANDS['data_source'] = """# you will need to add how the data chi(k) gets built:
@@ -606,7 +608,6 @@ class FeffPathPanel(wx.Panel):
         self.wids[name].SetForegroundColour(fgcol)
         self.wids[name].SetBackgroundColour(bgcol)
         self.wids[name].SetOwnBackgroundColour(bgcol)
-        
 
 
     def onRemovePath(self, event=None):
@@ -1003,7 +1004,7 @@ class FeffitPanel(TaskPanel):
 
         time.sleep(0.01)
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
-        
+
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
         self.SetSize((sx, sy))
@@ -1194,6 +1195,7 @@ class FeffitPanel(TaskPanel):
         groupname = opts['groupname']
         filename = opts['filename']
 
+        script.append("######################################")       
         script.append(COMMANDS['data_source'].format(groupname=groupname, filename=filename))
         for cmd in session_history:
             if groupname in cmd or filename in cmd or 'athena' in cmd:
@@ -1201,6 +1203,7 @@ class FeffitPanel(TaskPanel):
                     script.append(f"#{cline}")
 
         script.append("## end of data reading and preparation")
+        script.append("######################################")
 
         script.extend(self.params_panel.generate_script())
 
@@ -1275,12 +1278,23 @@ class FeffitResultFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
         m = {}
-        MenuItem(self, fmenu, "Save Fit to text file",
-                 "Save data arrays and parameters to a text file",
-                 self.onSaveFitCSV)
-        MenuItem(self, fmenu, "Save script for this fit",
-                 "Save feffit script for this dataset",
-                 self.onSaveFitCommand)
+        MenuItem(self, fmenu, "Save Fit: chi(k), no k-weight",
+                 "Save data, model, path arrays as chi(k)",
+                 partial(self.onSaveFit, form='chik'))
+
+        MenuItem(self, fmenu, "Save Fit: chi(k), k-weighted",
+                 "Save data, model, path arrays as k-weighted chi(k)",
+                 partial(self.onSaveFit, form='chikw'))
+
+        MenuItem(self, fmenu, "Save Fit: |chi(R)|",
+                 "Save data, model, path arrays as |chi(R)|",
+                 partial(self.onSaveFit, form='chir_mag'))
+
+        MenuItem(self, fmenu, "Save Fit: Re[chi(R)]",
+                 "Save data, model, path arrays as Re[chi(R)]",
+                 partial(self.onSaveFit, form='chir_re'))
+        
+        fmenu.AppendSeparator()
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
 
@@ -1467,7 +1481,7 @@ class FeffitResultFrame(wx.Frame):
     def show_report(self, text, title='Text', default_filename='out.txt',
                     wildcard=None):
         if wildcard is None:
-            wildcard='Text Files (*.txt)|*.txt'            
+            wildcard='Text Files (*.txt)|*.txt'
         try:
             self.report_frame.set_text(text)
             self.report_frame.SetTitle(title)
@@ -1477,24 +1491,24 @@ class FeffitResultFrame(wx.Frame):
             self.report_frame = ReportFrame(parent=self.parent,
                                             text=text, title=title,
                                             default_filename=default_filename,
-                                            wildcard=wildcard)                                                
+                                            wildcard=wildcard)
 
 
     def onShowPathParams(self, event=None):
         result = self.get_fitresult()
         text  = feffit_report(result)
         title = f'Report for {self.datagroup.filename} fit #{1+self.nfit:d}'
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.txt'        
+        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.txt'
         self.show_report(text, title=title, default_filename=fname)
 
     def onShowScript(self, event=None):
         result = self.get_fitresult()
         text  = '\n'.join(result.commands)
         title = f'Script for {self.datagroup.filename} fit #{1+self.nfit:d}'
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.lar'                
+        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.lar'
         self.show_report(text, title=title, default_filename=fname,
-                         wildcard='Larch/Python Script (*.lar)|*.lar')                         
-        
+                         wildcard='Larch/Python Script (*.lar)|*.lar')
+
     def onPlot(self, event=None):
         opts = {'build_fitmodel': False}
         for key, meth in (('plot_ftwindows', 'IsChecked'),
@@ -1517,18 +1531,17 @@ class FeffitResultFrame(wx.Frame):
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
-        opts['kwstring'] = "%s" % getattr(trans, 'kweight')            
+        opts['kwstring'] = "%s" % getattr(trans, 'kweight')
         opts['kwindow']  = getattr(trans, 'window')
 
         self.feffit_panel.onPlot(**opts)
 
-    def onSaveFitCSV(self, event=None):
-        print("SAVE CSV")
 
     def onSaveFitCommand(self, event=None):
-        wildcard = 'Larch/Python Script (*.lar)|*.lar|All files (*.*)|*.*'        
+        wildcard = 'Larch/Python Script (*.lar)|*.lar|All files (*.*)|*.*'
         result = self.get_fitresult()
         fname = f'{self.datagroup.filename}_fit{self.nfit:d}.lar'
+
         path = FileSave(self, message='Save text to file',
                         wildcard=wildcard, default_file=fname)
         if path is not None:
@@ -1538,100 +1551,63 @@ class FeffitResultFrame(wx.Frame):
                 fh.write('')
 
 
-    def onSaveAllStats(self, evt=None):
-        "Save Parameters and Statistics to CSV"
-        # get first dataset to extract fit parameter names
-        fnames = self.datalistbox.GetItems()
-        if len(fnames) == 0:
+    def onSaveFit(self, evt=None, form='chikw'):
+        "Save arrays to text file"
+        fname = f'{self.datagroup.filename}_fit{self.nfit:d}_{form}.txt'
+
+        wildcard = 'Text Files (*.txt)|*.txt|All files (*.*)|*.*'
+        savefile = FileSave(self, 'Save Fit Model (%s)' % form,
+                            default_file=fname,
+                            wildcard=wildcard)
+        if savefile is None:
             return
-
-        deffile = "FeffitResults.csv"
-        wcards  = 'CVS Files (*.csv)|*.csv|All files (*.*)|*.*'
-        path = FileSave(self, 'Save Parameter and Statistics for Feff Fits',
-                        default_file=deffile, wildcard=wcards)
-        if path is None:
-            return
-        if os.path.exists(path):
-            if wx.ID_YES != Popup(self,
-                                  "Overwrite existing Statistics File?",
-                                  "Overwrite existing file?", style=wx.YES_NO):
-                return
-
-        dgroup = self.datasets[fnames[0]]
-        param_names = list(reversed(dgroup.fit_history[0].params.keys()))
-        user_opts = ppeaks_tmpl.user_options
-        model_desc = self.get_model_desc(ppeaks_tmpl.fit_history[0].model).replace('\n', ' ')
-        out = ['# Feffit Report %s' % time.ctime(),
-               '# Fitted Array name: %s' %  user_opts['array_name'],
-               '# Model form: %s' % model_desc,
-               '# Baseline form: %s' % user_opts['baseline_form'],
-               '# Energy fit range: [%f, %f]' % (user_opts['emin'], user_opts['emax']),
-               '#--------------------']
-
-        labels = [('Data Set' + ' '*25)[:25], 'Group name', 'n_data',
-                 'n_varys', 'chi-square', 'reduced_chi-square',
-                 'akaike_info', 'bayesian_info']
-
-        for pname in param_names:
-            labels.append(pname)
-            labels.append(pname+'_stderr')
-        out.append('# %s' % (', '.join(labels)))
-        for name, dgroup in self.datasets.items():
-            result = dgroup.feffit_history[0]
-            label = dgroup.filename
-            if len(label) < 25:
-                label = (label + ' '*25)[:25]
-            dat = [label, dgroup.groupname,
-                   '%d' % result.ndata, '%d' % result.nvarys]
-            for attr in ('chisqr', 'redchi', 'aic', 'bic'):
-                dat.append(gformat(getattr(result, attr), 11))
-            for pname in param_names:
-                val = stderr = 0
-                if pname in result.params:
-                    par = result.params[pname]
-                    dat.append(gformat(par.value, 11))
-                    stderr = gformat(par.stderr, 11) if par.stderr is not None else 'nan'
-                    dat.append(stderr)
-            out.append(', '.join(dat))
-        out.append('')
-
-        with open(path, 'w') as fh:
-            fh.write('\n'.join(out))
-
-
-    def onSaveFitResult(self, event=None):
-        deffile = self.datagroup.filename.replace('.', '_') + 'peak.modl'
-        sfile = FileSave(self, 'Save Fit Model', default_file=deffile,
-                           wildcard=ModelWcards)
-        if sfile is not None:
-            result = self.get_fitresult()
-            save_modelresult(result, sfile)
-
-    def onExportFitResult(self, event=None):
-        dgroup = self.datagroup
-        deffile = dgroup.filename.replace('.', '_') + '.xdi'
-        wcards = 'All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Export Fit Result', default_file=deffile)
 
         result = self.get_fitresult()
-        if outfile is not None:
-            i1, i2 = get_xlims(dgroup.xdat,
-                               result.user_options['emin'],
-                               result.user_options['emax'])
-            x = dgroup.xdat[i1:i2]
-            y = dgroup.ydat[i1:i2]
-            yerr = None
-            if hasattr(dgroup, 'yerr'):
-                yerr = 1.0*dgroup.yerr
-                if not isinstance(yerr, np.ndarray):
-                    yerr = yerr * np.ones(len(y))
-                else:
-                    yerr = yerr[i1:i2]
+        text  = feffit_report(result)
+        
+        buff = [f'# Results for {self.datagroup.filename} fit #{1+self.nfit:d}']
+        
+        for line in text.split('\n'):
+            buff.append('# %s' % line)
+        buff.append('## ')
+        buff.append('#' + '---'*25)
 
-            export_modelresult(result, filename=outfile,
-                               datafile=dgroup.filename, ydata=y,
-                               yerr=yerr, x=x)
+        ds0 = result.datasets[0]
+        
+        xname = 'k' if form.startswith('chik') else 'r'
+        yname = 'chi' if form.startswith('chik') else form
+        kw = 0
+        if form == 'chikw':
+            kw = ds0.transform.kweight
+
+        xarr   = getattr(ds0.data, xname)
+        nx     = len(xarr)
+        ydata  = getattr(ds0.data, yname) * xarr**kw
+        ymodel = getattr(ds0.model, yname) * xarr**kw
+        out    = [xarr, ydata, ymodel]
+
+        array_names = [xname, 'data', 'model']
+        for pname, pgroup in ds0.paths.items():
+            array_names.append('path_{pname}')
+            out.append(getattr(pgroup, yname)[:nx] * xarr**kw)
+            
+        col_labels = []
+        for a in array_names:
+            if len(a) < 13:
+                a = (a + ' '*13)[:13]
+            col_labels.append(a)
+
+        buff.append('#' + ' '.join(col_labels))
+
+        for i in range(nx):
+            words = [gformat(x[i]) for x in out]
+            print(i, words)
+            buff.append(' '.join(words))
+        buff.append('')
+        
+
+        with open(savefile, 'w') as fh:
+            fh.write('\n'.join(buff))
 
 
     def get_fitresult(self, nfit=None):
