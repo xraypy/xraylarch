@@ -214,13 +214,13 @@ class FeffPathGroup(Group):
         return "p%s" % (b32hash(s)[:8].lower())
 
     def __copy__(self):
-        return FeffPathGroup(filename=self.filename,
+        return FeffPathGroup(filename=self.filename, label=self.label,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
                              third=self.third, fourth=self.fourth)
 
     def __deepcopy__(self, memo):
-        return FeffPathGroup(filename=self.filename,
+        return FeffPathGroup(filename=self.filename, label=self.label,
                              s02=self.s02, degen=self.degen, e0=self.e0,
                              ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
                              third=self.third, fourth=self.fourth)
@@ -251,7 +251,7 @@ class FeffPathGroup(Group):
         create Path Parameters within the current lmfit.Parameters namespace
         """
         if params is not None:
-            self.params = deepcopy(params)
+           self.params = deepcopy(params)
         if self.params is None:
             self.params = Parameters()
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
@@ -321,9 +321,10 @@ class FeffPathGroup(Group):
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
 
-        geomlabel  = '     atom      x        y        z       ipot'
-        geomformat = '    %4s      % .4f, % .4f, % .4f  %i'
-        out = ['   Path %s, Feff.dat file = %s' % (self.label, self.filename)]
+        out = [f" = Path '{self.label}' = ",
+               f'    feffdat file = {self.filename}']
+        geomlabel  = '    geometry  atom      x        y        z      ipot'
+        geomformat = '            %4s      % .4f, % .4f, % .4f  %i'
         out.append(geomlabel)
 
         for atsym, iz, ipot, amass, x, y, z in self.geom:
