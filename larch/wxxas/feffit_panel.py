@@ -1588,21 +1588,20 @@ class FeffitResultFrame(wx.Frame):
 
         array_names = [xname, 'data', 'model']
         for pname, pgroup in ds0.paths.items():
-            array_names.append('path_{pname}')
+            array_names.append(f'path_{pname}')
             out.append(getattr(pgroup, yname)[:nx] * xarr**kw)
             
         col_labels = []
         for a in array_names:
-            if len(a) < 13:
-                a = (a + ' '*13)[:13]
+            if len(a) < 11:
+                a = (a + ' '*11)[:11]
             col_labels.append(a)
 
-        buff.append('#' + ' '.join(col_labels))
+        buff.append('# ' + '  '.join(col_labels))
 
         for i in range(nx):
             words = [gformat(x[i]) for x in out]
-            print(i, words)
-            buff.append(' '.join(words))
+            buff.append('  '.join(words))
         buff.append('')
         
 
