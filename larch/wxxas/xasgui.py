@@ -681,14 +681,25 @@ class XASFrame(wx.Frame):
             except Exception:
                 pass
 
-        for name, wid in self.subframes.items():
+        def destroy(wid):
             if hasattr(wid, 'Destroy'):
                 try:
                     wid.Destroy()
                 except Exception:
                     pass
-        time.sleep(0.05)
+                time.sleep(0.01)
+            
+        for name, wid in self.subframes.items():
+            destroy(wid)
 
+        for i in range(self.nb.GetPageCount()):
+            nbpage = self.nb.GetPage(i)
+            if hasattr(nbpage, 'subframes'):
+                for name, wid in nbpage.subframes.items():
+                    destroy(wid)
+                    
+                
+        time.sleep(0.05)
         self.Destroy()
 
     def show_subframe(self, name, frameclass, **opts):

@@ -293,7 +293,8 @@ class FeffResultsPanel(wx.Panel):
 
     def show_report(self, text, title='Text', default_filename='out.txt', wildcard=None):
         if wildcard is None:
-            wildcard='Text Files (*.txt)|*.txt'            
+            wildcard='Text Files (*.txt)|*.txt'
+        default_filename = os.path.split(default_filename)[1]
         try:
             self.report_frame.set_text(text)
             self.report_frame.SetTitle(title)

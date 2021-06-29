@@ -7,7 +7,7 @@ from . import FONTSIZE, MenuItem, FileSave
 class ReportFrame(wx.Frame):
     """basic frame for displaying a text report -- should be improved!
     """
-    def __init__(self, parent=None, text=None, size=(550, 600),
+    def __init__(self, parent=None, text=None, size=(725, 600),
                  title='Report', default_filename='out.txt', wildcard='*.txt', **kws):
         self.default_filename = default_filename
         self.wildcard = wildcard
