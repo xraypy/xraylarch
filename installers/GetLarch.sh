@@ -10,8 +10,20 @@ if [ $uname == Darwin ]; then
     uname=MacOSX
 fi
 
-condafile=Miniconda3-latest-$uname-x86_64.sh
+
+condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
+condafile="Miniforge3-$uname-x86_64.sh"
+
 logfile=GetLarch.log
+
+
+## set list of conda packages to install from conda-forge
+cforge_pkgs="numpy=>1.18 scipy=>1.6 matplotlib=>3.3 scikit-image scikit-learn pymatgen pycifrw"
+
+## set list of pip packages to install from pypi
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch"
+
+unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
 with_wx=1
 with_tomopy=1
@@ -57,9 +69,6 @@ if [ -d $prefix ] ; then
    exit 0
 fi
 
-## set list of conda packages to install from conda-forge
-cforge_pkgs="numpy scipy matplotlib scikit-image scikit-learn pymatgen pycifrw"
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch"
 
 if [ $uname == 'MacOSX' ] ; then
     cforge_pkgs="$cforge_pkgs python.app"
@@ -86,8 +95,8 @@ echo "##############  " | tee -a $logfile
 ## download miniconda installer if needed
 if [ ! -f $condafile ] ; then
     echo "## Downloading Miniconda installer for $uname" | tee -a $logfile
-    echo "#>  /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O " | tee -a $logfile
-    /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile -O | tee -a $logfile
+    echo "#>  /usr/bin/curl -L $condaurl/miniconda/$condafile -O " | tee -a $logfile
+    /usr/bin/curl -L $condaurl/$condafile -O | tee -a $logfile
 fi
 
 # install and update miniconda
@@ -95,7 +104,6 @@ echo "##  Installing Miniconda for $uname to $prefix" | tee -a $logfile
 echo "#>  sh ./$condafile -b -p $prefix " | tee -a $logfile
 sh ./$condafile -b -p $prefix | tee -a $logfile
 
-unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX
 
 echo "##  Running conda updates"  | tee -a $logfile
 echo "#>  $prefix/bin/conda clean -y --all " | tee -a $logfile
