@@ -148,20 +148,26 @@ for label, path in {paths_name:s}.items():
 default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4, kwindow=FTWINDOWS[0], rmin=1, rmax=4)
 
 class ParametersModel(dv.DataViewIndexListModel):
-    def __init__(self, paramgroup, selected=None):
+    def __init__(self, paramgroup, selected=None, pathkeys=None):
         dv.DataViewIndexListModel.__init__(self, 0)
         self.data = []
         if selected is None:
             selected = []
         self.selected = selected
 
+        if pathkeys is None:
+            pathkeys = []
+        self.pathkeys = pathkeys
+
         self.paramgroup = paramgroup
         self.read_data()
 
-    def set_data(self, paramgroup, selected=None):
+    def set_data(self, paramgroup, selected=None, pathkeys=None):
         self.paramgroup = paramgroup
         if selected is not None:
             self.selected = selected
+        if pathkeys is not None:
+            self.pathkeys = pathkeys
         self.read_data()
 
     def read_data(self):
@@ -170,6 +176,8 @@ class ParametersModel(dv.DataViewIndexListModel):
             self.data.append(['param name', False, 'vary', '0.0'])
         else:
             for pname, par in group2params(self.paramgroup).items():
+                if any([pname.endswith('_%s' % phash) for phash in self.pathkeys]):
+                    continue
                 ptype = 'vary' if par.vary else 'fixed'
                 try:
                     value = str(par.value)
@@ -313,7 +321,8 @@ class EditParamsFrame(wx.Frame):
         for pname, par in group2params(self.paramgroup).items():
             if pname not in curr_syms and par.vary:
                 unused.append(pname)
-        self.model.set_data(self.paramgroup, selected=unused)
+        self.model.set_data(self.paramgroup, selected=unused,
+                            pathkeys=self.feffit_panel.get_pathkeys())
 
     def onRemove(self, event=None):
         out = []
@@ -331,7 +340,8 @@ class EditParamsFrame(wx.Frame):
                     if hasattr(self.paramgroup, pname):
                         delattr(self.paramgroup, pname)
 
-            self.model.set_data(self.paramgroup, selected=None)
+            self.model.set_data(self.paramgroup, selected=None,
+                                pathkeys=self.feffit_panel.get_pathkeys())                                
             self.model.read_data()
             self.feffit_panel.get_pathpage('parameters').Rebuild()
         dlg.Destroy()
@@ -367,7 +377,8 @@ class EditParamsFrame(wx.Frame):
 
     def onRefresh(self, event=None):
         self.paramgroup = self.feffit_panel.get_paramgroup()
-        self.model.set_data(self.paramgroup)
+        self.model.set_data(self.paramgroup, 
+                            pathkeys=self.feffit_panel.get_pathkeys())
         self.model.read_data()
         self.feffit_panel.get_pathpage('parameters').Rebuild()
 
@@ -426,8 +437,11 @@ class FeffitParamsPanel(wx.Panel):
 
     def update(self):
         pargroup = self.feffit_panel.get_paramgroup()
+        hashkeys = self.feffit_panel.get_pathkeys()
         params = group2params(pargroup)
         for pname, par in params.items():
+            if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
+                continue            
             if pname in self.parwids:
                 pwids = self.parwids[pname]
                 varstr = 'vary' if par.vary else 'fix'
@@ -663,7 +677,6 @@ class FeffitPanel(TaskPanel):
     def build_display(self):
         self.paths_nb = flatnotebook(self, {},
                                      on_change=self.onPathsNBChanged)
-
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
 
@@ -1011,6 +1024,10 @@ class FeffitPanel(TaskPanel):
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
 
+    def get_pathkeys(self):
+        _paths = getattr(self.larch.symtable, '_paths', {})
+        return [p.hashkey for p in _paths.values()]
+        
     def get_paramgroup(self):
         pgroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pgroup is None:
@@ -1716,12 +1733,20 @@ class FeffitResultFrame(wx.Frame):
             self.datagroup = datagroup
 
         result = self.get_fitresult(nfit=nfit)
+
+        path_hashkeys = []
+        for ds in result.datasets:
+            path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
+        
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
         for param in reversed(result.params.values()):
             pname = param.name
+            if any([pname.endswith('_%s' % phash) for phash in path_hashkeys]):
+                continue
+
             try:
                 val = gformat(param.value, 10)
             except (TypeError, ValueError):
