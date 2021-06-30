@@ -391,7 +391,6 @@ class FeffitParamsPanel(wx.Panel):
         panel.Add(SLabel("Feffit Parameters ", colour='#0000AA', size=(200, -1)), dcol=2)
         panel.Add(Button(panel, 'Edit Parameters', action=self.onEditParams),  dcol=2)
         panel.Add(Button(panel, 'Force Refresh', action=self.Rebuild),         dcol=3)
-        # panel.Add(Button(panel, 'Force Refresh', action=self.generate_script),         dcol=3)
 
         panel.Add(SLabel("Parameter "), style=wx.ALIGN_LEFT,  newrow=True)
         panel.AddMany((SLabel(" Value"),
@@ -1129,6 +1128,7 @@ class FeffitPanel(TaskPanel):
         paths = []
         cmds = ["### set up feffit "]
         pargroup = self.get_paramgroup()
+        cmds.extend(self.params_panel.generate_script())
 
         opts = self.read_form()
         cmds.append(COMMANDS['feffit_trans'].format(**opts))
@@ -1179,7 +1179,6 @@ class FeffitPanel(TaskPanel):
 
 
     def onFitModel(self, event=None, dgroup=None):
-
         session_history = self.get_session_history()
         nstart = len(session_history)
 
@@ -1205,9 +1204,9 @@ class FeffitPanel(TaskPanel):
         script.append("## end of data reading and preparation")
         script.append("######################################")
 
-        script.extend(self.params_panel.generate_script())
 
         self.larch_eval(COMMANDS['do_feffit'].format(**fopts))
+
 
         self.onPlot(dgroup=opts['datagroup'], build_fitmodel=False,
                     pargroup_name='_feffit_result.paramgroup',
