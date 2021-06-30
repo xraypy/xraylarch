@@ -251,7 +251,7 @@ class FeffPathGroup(Group):
         create Path Parameters within the current lmfit.Parameters namespace
         """
         if params is not None:
-           self.params = deepcopy(params)
+           self.params = params
         if self.params is None:
             self.params = Parameters()
         if self.params._asteval.symtable.get('sigma2_debye', None) is None:
