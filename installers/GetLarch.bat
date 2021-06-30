@@ -1,8 +1,9 @@
 @echo off
 
+
 set prefix=%USERPROFILE%\xraylarch
 
-set condaurl=https://github.com/conda-forge/miniforge/releases/latest/download
+set condaurl=https://github.com/conda-forge/miniforge/releases/download/4.10.2-0/
 set condafile=Miniforge3-Windows-x86_64.exe
 
 if not exist %~dp0%condafile% (
