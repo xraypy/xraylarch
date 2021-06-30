@@ -158,15 +158,6 @@ class FeffDatFile(Group):
 
 
 PATH_PARS = ('degen', 's02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth')
-PATHPAR_FMT = "%s_path%s"
-
-
-def get_pathpar_name(pname, label, i=1):
-    label = fix_varname('x' + label)[1:]
-    label = label.replace('_', ' ').split()[0]
-    if len(label) < 0: label = f'{i:d}'
-    return fix_varname(PATHPAR_FMT % (pname, label))
-
 
 class FeffPathGroup(Group):
     def __init__(self, filename, label=None, s02=None, degen=None,
@@ -211,7 +202,13 @@ class FeffPathGroup(Group):
         for attr in ('s02', 'e0', 'ei', 'deltar', 'sigma2', 'third', 'fourth'):
             rep.append(getattr(self, attr, '_'))
         s = "|".join([str(i) for i in rep])
-        return "p%s" % (b32hash(s)[:8].lower())
+        return "p%s" % (b32hash(s)[:10].lower())
+
+    def pathpar_name(self, parname):
+        """
+        get internal name of lmfit Parameter for a path paramter, using Path's hashkey
+        """
+        return f'{parname}_{self.hashkey}'
 
     def __copy__(self):
         return FeffPathGroup(filename=self.filename, label=self.label,
@@ -265,9 +262,7 @@ class FeffPathGroup(Group):
             if isinstance(val, str):
                 attr = 'expr'
             kws =  {'vary': False, attr: val}
-            parname = get_pathpar_name(pname, self.label)
-
-
+            parname = self.pathpar_name(pname)
             self.params.add(parname, **kws)
             self.params[parname].is_pathparam = True
 
@@ -300,7 +295,7 @@ class FeffPathGroup(Group):
         out = []
         for pname in PATH_PARS:
             val = kws.get(pname, None)
-            parname = get_pathpar_name(pname, self.label)
+            parname = self.pathpar_name(pname)
             if val is None:
                 val = self.params[parname]._getval()
             out.append(val)
@@ -317,7 +312,7 @@ class FeffPathGroup(Group):
         pathpars = {}
         for pname in ('degen', 's02', 'e0', 'deltar',
                       'sigma2', 'third', 'fourth', 'ei'):
-            parname = get_pathpar_name(pname, self.label)
+            parname = self.pathpar_name(pname)
             if parname in self.params:
                 pathpars[pname] = (self.params[parname].value, self.params[parname].stderr)
 
@@ -339,10 +334,10 @@ class FeffPathGroup(Group):
         for pname in ('degen', 's02', 'e0', 'r',
                       'deltar', 'sigma2', 'third', 'fourth', 'ei'):
             val = strval = getattr(self, pname, 0)
-            parname = get_pathpar_name(pname, self.label)
+            parname = self.pathpar_name(pname)
             std = None
             if pname == 'r':
-                parname = get_pathpar_name('deltar', self.label)
+                parname = self.pathpar_name('deltar')
                 par = self.params.get(parname, None)
                 val = par.value + self._feffdat.reff
                 strval = 'reff + ' + getattr(self, 'deltar', 0)
