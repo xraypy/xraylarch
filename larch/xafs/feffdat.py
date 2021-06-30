@@ -360,7 +360,7 @@ class FeffPathGroup(Group):
 
             svalue = "     {:7s}= {:s}".format(pname, svalue)
             if isinstance(strval, str):
-                svalue = "{:s}  '{:s}'".format(svalue, strval)
+                svalue = "{:s}  := '{:s}'".format(svalue, strval)
 
             if val == 0 and pname in ('third', 'fourth', 'ei'):
                 continue
