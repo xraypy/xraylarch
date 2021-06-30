@@ -6,10 +6,10 @@ if [ xx$PREFIX == 'xx' ]; then
 fi
 
 # force install of packages that have install problems
-$PREFIX/bin/conda install --force-reinstall -yc conda-forge python.app wxpython tomopy pymatgen
+$PREFIX/bin/conda install --force-reinstall -yc conda-forge python.app wxpython tomopy pymatgen pycifrw
 
 # use pip to install some known-safe-for-pip packages
-$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
+$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary pyFAI numdifftools
 
 
 # fix pythonw on MacOSX

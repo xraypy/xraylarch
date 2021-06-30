@@ -2,14 +2,17 @@
 
 set prefix=%USERPROFILE%\xraylarch
 
-set condafile=Miniconda3-latest-Windows-x86_64.exe
+set condaurl=https://github.com/conda-forge/miniforge/releases/latest/download
+set condafile=Miniforge3-Windows-x86_64.exe
 
 if not exist %~dp0%condafile% (
     echo ## Downloading Miniconda from https://repo.anaconda.com/miniconda/, please wait...
-    bitsadmin /transfer getminiconda /download /priority normal https://repo.anaconda.com/miniconda/%condafile% %~dp0%condafile%
+    bitsadmin /transfer getminiconda /download /priority normal %condaurl%/%condafile% %~dp0%condafile%
 )
 
 echo ## Installing miniconda environment to %prefix%, please wait...
+
+unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
 %~dp0%condafile% /InstallationType=JustMe /RegisterPython=0 /S /D=%prefix%
 

@@ -97,10 +97,7 @@ class XRFDisplayFrame(wx.Frame):
             self.larch_buffer = parent
             if not isinstance(parent, LarchFrame):
                 self.larch_buffer = LarchFrame(_larch=self.larch,
-                                               is_standalone=False)
-                self.larch_buffer.Show()
-                self.larch_buffer.Raise()
-                self.larch_buffer.Hide()
+                                               is_standalone=False, with_raise=False)
                 self.subframes['larchframe'] = self.larch_buffer
             self.larch = self.larch_buffer.larchshell
         self.init_larch()

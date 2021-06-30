@@ -121,10 +121,8 @@ class XASFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
+            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False, with_raise=False)
 
-        # self.larch_buffer.Show()
-        # self.larch_buffer.Raise()
         self.larch = self.larch_buffer.larchshell
         self.larch.symtable._sys.xas_viewer = Group()
 
@@ -138,7 +136,6 @@ class XASFrame(wx.Frame):
         self.SetSize(XASVIEW_SIZE)
 
         self.SetFont(Font(FONTSIZE))
-        # self.larch_buffer.Hide()
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)

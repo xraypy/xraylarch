@@ -9,10 +9,10 @@ echo " THIS IS POST INSTALL LINUX  PREFIX " $PREFIX
 # force install of packages from conda-forge
 echo "### $PREFIX/bin/conda install -yc conda-forge wxpython tomopy "
 
-$PREFIX/bin/conda install --force-reinstall -yc conda-forge  wxpython tomopy pymatgen
+$PREFIX/bin/conda install --force-reinstall -yc conda-forge  wxpython tomopy pymatgen pycifrw
 
 # use pip to install some known-safe-for-pip packages
-$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary PyCIFRW pyFAI numdifftools
+$PREFIX/bin/pip install xraylarch pyepics epicsapps psycopg2-binary pyFAI numdifftools
 
 # make desktop icons
 $PREFIX/bin/python $PREFIX/bin/larch -m

@@ -1304,20 +1304,15 @@ class MapViewerFrame(wx.Frame):
 
         self.larch_buffer = parent
         if not isinstance(parent, LarchFrame):
-            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False)
+            self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False, with_raise=False)
 
-        # self.larch_buffer.Show()
-        # self.larch_buffer.Raise()
         self.larch = self.larch_buffer.larchshell
-        # self.larch_buffer.Hide()
 
         self.xrfdisplay = None
         self.xrddisplay1D = None
         self.xrddisplay2D = None
 
         self.watch_files = False
-        # self.file_timer = wx.Timer(self)
-        # self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
 
         self.files_in_progress = []
 

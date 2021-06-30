@@ -22,7 +22,7 @@ from ..fitting import (correlated_values, eval_stderr, ParameterGroup,
 from .xafsutils import set_xafsGroup
 from .xafsft import xftf_fast, xftr_fast, ftwindow
 from .sigma2_models import sigma2_correldebye, sigma2_debye
-from .feffdat import FeffPathGroup, ff2chi, get_pathpar_name
+from .feffdat import FeffPathGroup, ff2chi
 
 
 class TransformGroup(Group):
@@ -532,7 +532,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     work_paramgroup = deepcopy(paramgroup)
     params = group2params(work_paramgroup)
-    
+
     def _resid(params, datasets=None, pargroup=None, **kwargs):
         """ this is the residual function"""
         params2group(params, pargroup)
@@ -608,7 +608,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
                 path.store_feffdat()
                 for pname in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = path.params[get_pathpar_name(pname, path.label)]
+                    obj = path.params[path.pathpar_name(pname)]
                     eval_stderr(obj, uvars,  result.var_names, result.params)
         # restore saved parameters again
         for vname in result.var_names:
@@ -627,7 +627,7 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = Group(name='feffit results', datasets=datasets,
-                paramgroup=work_paramgroup, 
+                paramgroup=work_paramgroup,
                 fitter=fit, fit_details=result, chi_square=chi_square,
                 n_independent=n_idp, chi2_reduced=chi2_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
@@ -663,9 +663,9 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
         print( 'must pass output of feffit()!')
         return
 
-    path_labels = []
+    path_hashkeys = []
     for ds in datasets:
-        path_labels.extend(list(ds.paths.keys()))
+        path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
     varformat  = '   %12s = %s +/-%s   (init= %s)'
@@ -727,7 +727,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True, _larch=None):
     out.append(' ')
     out.append(header % 'Variables')
     for name, par in params.items():
-        if any([name.endswith('__%s' % p_lab) for p_lab in path_labels]):
+        if any([name.endswith('_%s' % phash) for phash in path_hashkeys]):
             continue
         if len(name) < 14:
             name = (name + ' '*14)[:14]

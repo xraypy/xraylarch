@@ -258,7 +258,7 @@ class LarchPanel(wx.Panel):
 class LarchFrame(wx.Frame):
     def __init__(self, parent=None, _larch=None, is_standalone=True,
                  historyfile='history_larchgui.lar', with_inspection=False,
-                 exit_on_close=False, **kwds):
+                 exit_on_close=False, with_raise=True, **kwds):
 
         self.is_standalone = is_standalone
         self.with_inspection = with_inspection
@@ -303,9 +303,13 @@ class LarchFrame(wx.Frame):
         if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
 
-        self.Refresh()
+        if with_raise:
+            self.Raise()
+
+    def Raise(self):
         self.SetStatusText("Ready", 0)
-        self.Raise()
+        self.Refresh()
+        wx.Frame.Raise(self)
 
     def BuildMenus(self):
         menuBar = wx.MenuBar()
@@ -555,7 +559,7 @@ class LarchFrame(wx.Frame):
                 pass
 
 
-class LarchApp(wx.App):
+class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     "simple app to wrap LarchFrame"
     def __init__(self, **kws):
         wx.App.__init__(self, **kws)
