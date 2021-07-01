@@ -1338,7 +1338,8 @@ class FeffitResultFrame(wx.Frame):
                                            size=(250, -1))
         panel = scrolled.ScrolledPanel(splitter)
 
-        panel.SetMinSize((775, 575))
+        panel.SetMinSize((600, 575))
+        panel.SetSize((850, 575))
         self.colors = GUIColors()
 
         # title row
@@ -1404,13 +1405,14 @@ class FeffitResultFrame(wx.Frame):
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit#',  width=75)
-        sview.AppendTextColumn(' N_data', width=75)
-        sview.AppendTextColumn(' N_vary', width=75)
-        sview.AppendTextColumn('\u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' Fit#',   width=65)
+        sview.AppendTextColumn(' N_data', width=65)
+        sview.AppendTextColumn(' N_vary', width=65)
+        sview.AppendTextColumn(' N_idp',  width=75)
+        sview.AppendTextColumn('\u03c7\u00B2', width=85)
         sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
-        sview.AppendTextColumn('Akaike Info', width=110)
-        sview.AppendTextColumn('Bayesian Info', width=110)
+        sview.AppendTextColumn('Akaike Info', width=95)
+        sview.AppendTextColumn('Bayesian Info', width=95)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -1732,12 +1734,13 @@ class FeffitResultFrame(wx.Frame):
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
             args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'chi_square', 'chi2_reduced', 'aic', 'bic'):
+            for attr in ('ndata', 'nvarys', 'n_independent', 'chi_square',
+                         'chi2_reduced', 'aic', 'bic'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
-                    val = gformat(val, 10)
+                    val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
