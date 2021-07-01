@@ -2,6 +2,7 @@ import time
 import os
 import ast
 import shutil
+import string
 from sys import exc_info
 import numpy as np
 np.seterr(all='ignore')
@@ -29,7 +30,7 @@ from larch.utils.strutils import fix_varname
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, TextCtrl,
+                         SetTip, GridPanel, get_icon, SimpleText, 
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FileSave, FileOpen, flatnotebook,
@@ -541,13 +542,14 @@ class FeffPathPanel(wx.Panel):
         self.geom = geom
 
         self.wids = wids = {}
-
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
         def make_parwid(name, expr, val=''):
-            wids[name] = TextCtrl(panel, expr, size=(250, -1),
-                                  action=partial(self.onExpression, name=name))
+            wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
+                                     value=expr, style=wx.TE_PROCESS_ENTER)
+            wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
+
             wids[name].UseBackgroundColour()
             wids[name+'_val'] = SimpleText(panel, val, size=(150, -1), style=LEFT)
 
@@ -587,6 +589,13 @@ class FeffPathPanel(wx.Panel):
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
 
+    def enable_lose_focus(self):
+        for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
+            self.wids[name].Bind(wx.EVT_KILL_FOCUS, partial(self.onExpression, name=name))
+
+    def set_userlabel(self, label):
+        self.wids['label'].SetValue(label)        
+        
     def get_expressions(self):
         out = {'use': self.wids['use'].IsChecked()}
         for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
@@ -596,8 +605,13 @@ class FeffPathPanel(wx.Panel):
         return out
 
     def onExpression(self, event=None, name=None):
-        if name in (None, 'label'):
+        if name is None:
             return
+        expr = self.wids[name].GetValue()
+        if name == 'label':
+            time.sleep(0.001)
+            return
+        
         expr = self.wids[name].GetValue().strip()
         if len(expr) < 1:
             return
@@ -1023,11 +1037,13 @@ class FeffitPanel(TaskPanel):
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 
-        for pname  in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
-            pathpanel.onExpression(name=pname)
-
         time.sleep(0.01)
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+
+        for pname  in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
+            pathpanel.onExpression(name=pname)
+        pathpanel.set_userlabel(user_label)
+
 
         pdat = {'title': title, 'fullpath': feffdat_file, 'use':True}
         pdat.update(pathpanel.get_expressions())
@@ -1039,6 +1055,8 @@ class FeffitPanel(TaskPanel):
         ipage, pagepanel = self.xasmain.get_nbpage('feffit')
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
+        wx.CallAfter(pathpanel.enable_lose_focus)
+        
 
     def get_pathkeys(self):
         _paths = getattr(self.larch.symtable, '_paths', {})
