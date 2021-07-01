@@ -685,8 +685,8 @@ class FeffitPanel(TaskPanel):
                            config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
-        self.path_timer  = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onPathTimer, self.path_timer)
+        self.timers = {'paths': wx.Timer(self)}
+        self.Bind(wx.EVT_TIMER, self.onPathTimer, self.timers['paths'])
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -825,7 +825,7 @@ class FeffitPanel(TaskPanel):
                 wids = getattr(page, 'wids', {})
                 if 'label' in wids:
                     wids['label'].SetValue(page.user_label)
-        self.path_timer.Stop()
+        self.timers['paths'].Stop()
 
 
     def get_config(self, dgroup=None):
@@ -1069,7 +1069,7 @@ class FeffitPanel(TaskPanel):
         ipage, pagepanel = self.xasmain.get_nbpage('feffit')
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
-        self.path_timer.Start(1000)
+        self.timers['paths'].Start(1000)
 
     def get_pathkeys(self):
         _paths = getattr(self.larch.symtable, '_paths', {})

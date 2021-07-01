@@ -691,9 +691,14 @@ class XASFrame(wx.Frame):
 
         for i in range(self.nb.GetPageCount()):
             nbpage = self.nb.GetPage(i)
+            timers = getattr(nbpage, 'timers')
+            for t in timers.values():
+                t.Stop()
+            
             if hasattr(nbpage, 'subframes'):
                 for name, wid in nbpage.subframes.items():
                     destroy(wid)
+
                     
                 
         time.sleep(0.05)

@@ -140,6 +140,7 @@ class TaskPanel(wx.Panel):
         if config is not None:
             self.set_defaultconfig(config)
         self.wids = {}
+        self.timers = {}
         self.subframes = {}
         self.command_hist = []
         self.SetFont(Font(FONTSIZE))
