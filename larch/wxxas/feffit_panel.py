@@ -30,7 +30,7 @@ from larch.utils.strutils import fix_varname
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, 
+                         SetTip, GridPanel, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FileSave, FileOpen, flatnotebook,
@@ -386,7 +386,6 @@ class EditParamsFrame(wx.Frame):
         self.model.read_data()
         self.feffit_panel.get_pathpage('parameters').Rebuild()
 
-
     def onClose(self, event=None):
         self.Destroy()
 
@@ -530,7 +529,9 @@ class FeffPathPanel(wx.Panel):
 
         self.parent = parent
         self.title = title
+        self.user_label = user_label
         self.feffit_panel = feffit_panel
+        self.losefocus_active = False
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -545,21 +546,17 @@ class FeffPathPanel(wx.Panel):
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
-        def make_parwid(name, expr, val=''):
-            wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
-                                     value=expr, style=wx.TE_PROCESS_ENTER)
-            wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
+        for name, expr in (('label', user_label),
+                           ('amp',  f'{degen:.1f} * s02'),
+                           ('e0',  'e0'),
+                           ('delr',  f'delr_{title}'),
+                           ('sigma2',  f'sigma2_{title}'),
+                           ('third',  ''),
+                           ('ei',  '')):
+            self.wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
+                                          value=expr, style=wx.TE_PROCESS_ENTER)
+            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
 
-            wids[name].UseBackgroundColour()
-            wids[name+'_val'] = SimpleText(panel, val, size=(150, -1), style=LEFT)
-
-        make_parwid('label', user_label)
-        make_parwid('amp',  f'{degen:.1f} * s02')
-        make_parwid('e0',  'e0')
-        make_parwid('delr',  f'delr_{title}')
-        make_parwid('sigma2',  f'sigma2_{title}')
-        make_parwid('third',  '')
-        make_parwid('ei',  '')
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
                              action=self.onRemovePath)
@@ -589,13 +586,17 @@ class FeffPathPanel(wx.Panel):
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
 
-    def enable_lose_focus(self):
+    def enable_losefocus(self):
+        # print("enable losefocus")
         for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
+            self.wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
             self.wids[name].Bind(wx.EVT_KILL_FOCUS, partial(self.onExpression, name=name))
+        self.losefocus_active = True
+        self.wids['label'].SetValue(self.user_label)
 
     def set_userlabel(self, label):
-        self.wids['label'].SetValue(label)        
-        
+        self.wids['label'].SetValue(label)
+
     def get_expressions(self):
         out = {'use': self.wids['use'].IsChecked()}
         for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
@@ -611,7 +612,7 @@ class FeffPathPanel(wx.Panel):
         if name == 'label':
             time.sleep(0.001)
             return
-        
+
         expr = self.wids[name].GetValue().strip()
         if len(expr) < 1:
             return
@@ -643,11 +644,13 @@ class FeffPathPanel(wx.Panel):
         self.wids[name].SetForegroundColour(fgcol)
         self.wids[name].SetBackgroundColour(bgcol)
         self.wids[name].SetOwnBackgroundColour(bgcol)
+        if event is not None:
+            event.Skip()
+
 
     def onPlotFeffDat(self, event=None):
         cmd = f"plot_feffdat(_paths['{self.title}'], title='Feff data for path {self.title}')"
         self.feffit_panel.larch_eval(cmd)
-
 
     def onRemovePath(self, event=None):
         msg = f"Delete Path {self.title:s}?"
@@ -675,7 +678,6 @@ class FeffPathPanel(wx.Panel):
                     self.feffit_panel.update_params_for_expr(expr)
 
 
-
 class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
@@ -683,6 +685,8 @@ class FeffitPanel(TaskPanel):
                            config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
+        self.path_timer  = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onPathTimer, self.path_timer)
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -701,8 +705,7 @@ class FeffitPanel(TaskPanel):
 
 
     def build_display(self):
-        self.paths_nb = flatnotebook(self, {},
-                                     on_change=self.onPathsNBChanged)
+        self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged)
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
 
@@ -809,6 +812,20 @@ class FeffitPanel(TaskPanel):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
         if callable(updater):
             updater()
+
+    def onPathTimer(self, event=None):
+        for i in range(self.paths_nb.GetPageCount()):
+            text = self.paths_nb.GetPageText(i).strip().lower()
+            page = self.paths_nb.GetPage(i)
+            if not text.lower().startswith('param'):
+                losefocus_active = getattr(page, 'losefocus_active', True)
+                losefocus_method = getattr(page, 'enable_losefocus', None)
+                if not losefocus_active and callable(losefocus_method):
+                    losefocus_method()
+                wids = getattr(page, 'wids', {})
+                if 'label' in wids:
+                    wids['label'].SetValue(page.user_label)
+        self.path_timer.Stop()
 
 
     def get_config(self, dgroup=None):
@@ -1037,13 +1054,10 @@ class FeffitPanel(TaskPanel):
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 
-        time.sleep(0.01)
         self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
 
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             pathpanel.onExpression(name=pname)
-        pathpanel.set_userlabel(user_label)
-
 
         pdat = {'title': title, 'fullpath': feffdat_file, 'use':True}
         pdat.update(pathpanel.get_expressions())
@@ -1055,8 +1069,7 @@ class FeffitPanel(TaskPanel):
         ipage, pagepanel = self.xasmain.get_nbpage('feffit')
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
-        wx.CallAfter(pathpanel.enable_lose_focus)
-        
+        self.path_timer.Start(1000)
 
     def get_pathkeys(self):
         _paths = getattr(self.larch.symtable, '_paths', {})
@@ -1278,7 +1291,6 @@ class FeffitPanel(TaskPanel):
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
-        print("update staring values")
         self.params_panel.set_init_values(params)
         for i in range(self.paths_nb.GetPageCount()):
             if 'parameters' in self.paths_nb.GetPageText(i).strip().lower():
