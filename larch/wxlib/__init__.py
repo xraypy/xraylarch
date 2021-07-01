@@ -37,11 +37,12 @@ if HAS_WXPYTHON:
     from . import larchfilling
     from . import readlinetextctrl
 
+
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check,
                          MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
-                         FRAMESTYLE, hms, DateTimeCtrl, Button,
+                         FRAMESTYLE, hms, DateTimeCtrl, Button, TextCtrl,
                          ToggleButton, BitmapButton, Choice, YesNo,
-                         SimpleText, TextCtrl, LabeledTextCtrl, HyperText,
+                         SimpleText, LabeledTextCtrl, HyperText,
                          get_icon, GUIColors, OkCancel,
                          FileOpen, FileSave, SelectWorkdir, fix_filename,
                          SavedParameterDialog, FileCheckList,
@@ -193,3 +194,7 @@ else:
                                        xrf_plot=nullfunc,
                                        xrf_oplot=nullfunc,
                                        fit_plot=nullfunc)
+
+
+
+    

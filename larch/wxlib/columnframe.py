@@ -246,10 +246,11 @@ class EditColumnFrame(wx.Frame) :
             cind = SimpleText(panel, label='  %i ' % (i+1))
             cold = SimpleText(panel, label=' %s ' % name)
             cret = SimpleText(panel, label=fix_varname(name), size=(150, -1))
-            cnew = wx.TextCtrl(panel,  value=name, size=(150, -1))
+            cnew = wx.TextCtrl(panel, value=name, size=(150, -1),
+                               style=wx.TE_PROCESS_ENTER)
 
+            cnew.Bind(wx.EVT_TEXT_ENTER, partial(self.update, index=i))
             cnew.Bind(wx.EVT_KILL_FOCUS, partial(self.update, index=i))
-            cnew.Bind(wx.EVT_CHAR, partial(self.update_char, index=i))
 
             arr = group.data[i,:]
             info_str = " [ %8g : %8g ] " % (arr.min(), arr.max())
@@ -303,7 +304,7 @@ class EditColumnFrame(wx.Frame) :
     def update_char(self, evt=None, index=-1):
         if evt.GetKeyCode() == wx.WXK_RETURN:
             self.update(evt=evt, index=index)
-        evt.Skip()
+        # evt.Skip()
 
     def onOK(self, evt=None):
         group = self.group

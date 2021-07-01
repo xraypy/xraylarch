@@ -156,7 +156,7 @@ class PeriodicTablePanel(wx.Panel):
                         newlabel = xlabel
                 if newlabel is not None:
                     self.onclick(label=newlabel)
-        event.Skip()
+        # event.Skip()
 
     def on_clear_all(self, event=None):
         for wid in list(self.ctrls.values()) + list(self.wids.values()):
@@ -246,18 +246,10 @@ class PeriodicTablePanel(wx.Panel):
 
         sizer.SetEmptyCellSize((2, 2))
         self.Bind(wx.EVT_KEY_UP, self.onKey)
-        #self.Bind(wx.EVT_SET_FOCUS, self.onGetFocus)
-        #self.Bind(wx.EVT_KILL_FOCUS, self.onLoseFocus)
         self.SetSizer(sizer)
         ix, iy = self.GetBestSize()
         self.SetSize((ix+2, iy+2))
         sizer.Fit(self)
-
-    def onLoseFocus(self, event=None):
-        event.Skip()
-
-    def onGetFocus(self, event=None):
-        event.Skip()
 
     def set_subtitle(self, label, index=0):
         if index not in (0, 1): index = 0

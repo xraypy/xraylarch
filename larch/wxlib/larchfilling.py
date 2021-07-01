@@ -418,7 +418,7 @@ class Filling(wx.SplitterWindow):
             self.tree.SelectItem(self.tree.root)
             self.tree.display()
 
-        self.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnChanged)
+        # self.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGED, self.OnChanged)
 
     def SetRootObject(self, rootObject=None):
         self.tree.setRootObject(rootObject)
