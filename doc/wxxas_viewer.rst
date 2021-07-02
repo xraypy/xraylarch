@@ -10,23 +10,33 @@
 XASViewer
 =======================
 
-The XASViewer GUI uses Larch to read and display XAFS spectra.  This
-application is still in active development, with more features planned with
-special emphasis on helping users with XANES analysis.  Current features
-(as of July, 2018, Larch version 0.9.40) include:
+The XASViewer GUI uses Larch for visualization, and analysis of XAFS data.
+This application is still in active development, with more features planned
+with special emphasis on helping users with XANES analysis.  Current
+features (as of July, 2021, Larch version 0.9.53) include:
 
-   * read XAFS spectra from simple data column files or Athena Project Files.
+   * read XAFS spectra from simple data column files.
+   * read XAFS spectra from Athena Project Files.
+   * read XAFS spectro from ESRF Spec/BLISS HDF5 files.
    * XAFS pre-edge removal and normalization.
-   * visualization of normalization steps.
-   * data merging
-   * data de-glitching, and energy recalibration
+   * visualization of normalization steps, polynomial or MBACK algorithms.
+   * data merging.
+   * data de-glitching, and energy recalibration.
    * data smoothing, rebinning, and deconvolution.
    * over-absorption corrections (for XANES)
    * linear combination analysis of spectra.
+   * principal component analysis.
+   * regression of XANES spectra with a predicting external variable.
    * pre-edge peak fitting.
    * saving of data to Athena Project files.
    * saving of data to CSV files.
-
+   * EXAFS background spline removal.
+   * Fourier transforms from k to R and R to filtered-k space, and wavelet transforms.
+   * Browser for CIF files from American Mineralogist Crystal Structure Database.
+   * Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l. 
+   * Run Feff6 or Feff8, saving and browsing EXAFS Paths from these Feff runs.
+   * Feff Fitting of single EXAFS spectra for a sum of Feff paths.
+     
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
 and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the main
 window for the XAS Viewer program.  The left-hand portion contains a list
@@ -61,19 +71,19 @@ and EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
 :ref:`xasviewer_exafs_fft`).
 
 There are a few important general notes to mention about XAS Viewer before
-going into more detail about how to use it.  First, XAS Viewer is somewhat
-new, and in active development.  If you find problems with it or unexpected
-or missing functionality, please let us know.  Second, XAS Viewer has many
-features, functionality, and concepts in common with Athena and
-Sixpack. This is intentional, as we intend XAS Viewer to be a useful
-alternative to these applications, possibly with new or better features but
-also without requiring too much relearning of concepts or workflow.  As an
-important example of this compatibility, XAS Viewer can read in and import
-data from Athena Project files, and can save these project files as well,
-so that if you have lots of data organized with Athena Project Files, you
-can use XAS Viewer and Athena on the same datasets.  This aim for
-compatibility also means that if you find features to be missing or
-different from how Athena or Sixpack work, let us know.
+going into more detail about how to use it.  First, XAS Viewer is still in
+active development.  If you find problems with it or unexpected or missing
+functionality, please let us know.  Second, XAS Viewer has many features,
+functionality, and concepts in common with Athena and Sixpack. This is
+intentional, as we intend XAS Viewer to be a useful alternative to these
+applications, possibly with new or better features but also without
+requiring too much relearning of concepts or workflow.  As an important
+example of this compatibility, XAS Viewer can read in and import data from
+Athena Project files, and can save these project files as well, so that if
+you have lots of data organized with Athena Project Files, you can use XAS
+Viewer and Athena on the same datasets.  This aim for compatibility also
+means that if you find features to be missing or different from how Athena
+or Sixpack work, let us know.
 
 As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
