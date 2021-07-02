@@ -55,42 +55,45 @@
  
 [[Paths]]
  dataset 1:
-   Path pfh2ced6i, Feff.dat file = feff0001.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu       0.0000, -1.8016,  1.8016  1
+ = Path 'p4iqpjuhrj3' = 
+    feffdat file = feff0001.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653479 +/- 0.03032465  'amp'
-     e0     =  5.37307015 +/- 0.61379584  'del_e0'
-     r      =  2.54762772 +/- 0.00265956  'reff + dr_off + 10*alpha*reff'
-     deltar = -1.7228e-04 +/- 0.00265956  'dr_off + 10*alpha*reff'
-     sigma2 =  0.00327499 +/- 1.1358e-04  'sigma2_eins(10, theta)'
+     n*s02  =  0.87653479 +/- 0.03032465  := 'amp'
+     e0     =  5.37307015 +/- 0.61379584  := 'del_e0'
+     r      =  2.54762772 +/- 0.00265956  := 'reff + dr_off + 10*alpha*reff'
+     deltar = -1.7228e-04 +/- 0.00265956  := 'dr_off + 10*alpha*reff'
+     sigma2 =  0.00327499 +/- 1.1358e-04  := 'sigma2_eins(10, theta)'
 
  dataset 2:
-   Path pfh2ced6i, Feff.dat file = feff0001.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu       0.0000, -1.8016,  1.8016  1
+ = Path 'p4iqpjuhrj3' = 
+    feffdat file = feff0001.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653479 +/- 0.03032465  'amp'
-     e0     =  5.37307015 +/- 0.61379584  'del_e0'
-     r      =  2.54816503 +/- 0.00252238  'reff + dr_off + 50*alpha*reff'
-     deltar =  3.6503e-04 +/- 0.00252238  'dr_off + 50*alpha*reff'
-     sigma2 =  0.00333747 +/- 1.2595e-04  'sigma2_eins(50, theta)'
+     n*s02  =  0.87653479 +/- 0.03032465  := 'amp'
+     e0     =  5.37307015 +/- 0.61379584  := 'del_e0'
+     r      =  2.54816503 +/- 0.00252238  := 'reff + dr_off + 50*alpha*reff'
+     deltar =  3.6503e-04 +/- 0.00252238  := 'dr_off + 50*alpha*reff'
+     sigma2 =  0.00333747 +/- 1.2595e-04  := 'sigma2_eins(50, theta)'
 
  dataset 3:
-   Path pfh2ced6i, Feff.dat file = feff0001.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu       0.0000, -1.8016,  1.8016  1
+ = Path 'p4iqpjuhrj3' = 
+    feffdat file = feff0001.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.87653479 +/- 0.03032465  'amp'
-     e0     =  5.37307015 +/- 0.61379584  'del_e0'
-     r      =  2.54950830 +/- 0.00293660  'reff + dr_off + 150*alpha*reff'
-     deltar =  0.00170830 +/- 0.00293660  'dr_off + 150*alpha*reff'
-     sigma2 =  0.00503100 +/- 2.9449e-04  'sigma2_eins(150, theta)'
+     n*s02  =  0.87653479 +/- 0.03032465  := 'amp'
+     e0     =  5.37307015 +/- 0.61379584  := 'del_e0'
+     r      =  2.54950830 +/- 0.00293660  := 'reff + dr_off + 150*alpha*reff'
+     deltar =  0.00170830 +/- 0.00293660  := 'dr_off + 150*alpha*reff'
+     sigma2 =  0.00503100 +/- 2.9449e-04  := 'sigma2_eins(150, theta)'
 
 =======================================================

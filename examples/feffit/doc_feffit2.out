@@ -20,71 +20,74 @@
    n_independent      = 19.717
  
 [[Variables]]
-   amp            =  0.89972612 +/- 0.03479583   (init=  1.00000000)
-   del_e0         =  5.70426056 +/- 0.81972906   (init=  3.00000000)
+   alpha          =  0.00281138 +/- 0.00298005   (init=  0.00000000)
+   amp            =  0.89972612 +/- 0.03479584   (init=  1.00000000)
    c3_1           =  1.4440e-04 +/- 8.2197e-05   (init=  0.00200000)
+   del_e0         =  5.70426128 +/- 0.81972967   (init=  3.00000000)
    sig2_1         =  0.00868052 +/- 2.8389e-04   (init=  0.00200000)
    sig2_2         =  0.01310463 +/- 0.00113582   (init=  0.00200000)
    sig2_3         =  0.00632924 +/- 0.00309013   (init=  0.00200000)
-   alpha          =  0.00281138 +/- 0.00298005   (init=  0.00000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
-   c3_1, alpha          =  0.952
-   del_e0, alpha        =  0.950
+   alpha, c3_1          =  0.952
+   alpha, del_e0        =  0.950
    amp, sig2_1          =  0.929
-   del_e0, c3_1         =  0.837
+   c3_1, del_e0         =  0.837
    amp, sig2_2          =  0.298
    sig2_1, sig2_2       =  0.276
    sig2_1, sig2_3       =  0.213
    amp, sig2_3          =  0.213
    c3_1, sig2_3         = -0.189
-   amp, alpha           =  0.185
-   sig2_1, alpha        =  0.172
+   alpha, amp           =  0.185
+   alpha, sig2_1        =  0.172
    c3_1, sig2_2         =  0.168
-   sig2_2, alpha        =  0.152
-   sig2_3, alpha        = -0.148
+   alpha, sig2_2        =  0.152
+   alpha, sig2_3        = -0.148
    amp, del_e0          =  0.148
    amp, c3_1            =  0.145
    del_e0, sig2_1       =  0.143
    c3_1, sig2_1         =  0.124
  
 [[Paths]]
-   Path pfh2ced6i, Feff.dat file = feff0001.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu       0.0000, -1.8016,  1.8016  1
+ = Path 'p4iqpjuhrj3' = 
+    feffdat file = feff0001.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       0.0000, -1.8016,  1.8016  1
      reff   =  2.54780000
      degen  =  12.0000000
-     n*s02  =  0.89972612 +/- 0.03479583  'amp'
-     e0     =  5.70426056 +/- 0.81972905  'del_e0'
-     r      =  2.55496284 +/- 0.01138916  'reff + alpha*reff'
-     deltar =  0.00716284 +/- 0.01138916  'alpha*reff'
-     sigma2 =  0.00868052 +/- 2.8389e-04  'sig2_1'
-     third  =  1.4440e-04 +/- 8.2197e-05  'c3_1'
+     n*s02  =  0.89972612 +/- 0.03479584  := 'amp'
+     e0     =  5.70426128 +/- 0.81972967  := 'del_e0'
+     r      =  2.55496284 +/- 0.01138917  := 'reff + alpha*reff'
+     deltar =  0.00716284 +/- 0.01138917  := 'alpha*reff'
+     sigma2 =  0.00868052 +/- 2.8389e-04  := 'sig2_1'
+     third  =  1.4440e-04 +/- 8.2197e-05  := 'c3_1'
 
-   Path pe3tkyh7w, Feff.dat file = feff0002.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu      -3.6032,  0.0000,  0.0000  1
+ = Path 'pr7fwtxt6xa' = 
+    feffdat file = feff0002.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu      -3.6032,  0.0000,  0.0000  1
      reff   =  3.60320000
      degen  =  6.00000000
-     n*s02  =  0.89972612 +/- 0.03479583  'amp'
-     e0     =  5.70426056 +/- 0.81972905  'del_e0'
-     r      =  3.61332997 +/- 0.01138916  'reff + alpha*reff'
-     deltar =  0.01012997 +/- 0.01138916  'alpha*reff'
-     sigma2 =  0.01310463 +/- 0.00113582  'sig2_2'
+     n*s02  =  0.89972612 +/- 0.03479584  := 'amp'
+     e0     =  5.70426128 +/- 0.81972967  := 'del_e0'
+     r      =  3.61332998 +/- 0.01138917  := 'reff + alpha*reff'
+     deltar =  0.01012998 +/- 0.01138917  := 'alpha*reff'
+     sigma2 =  0.01310463 +/- 0.00113582  := 'sig2_2'
 
-   Path pkky2qtk6, Feff.dat file = feff0003.dat
-     atom      x        y        z       ipot
-      Cu       0.0000,  0.0000,  0.0000  0 (absorber)
-      Cu       1.8016, -1.8016,  0.0000  1
-      Cu       1.8016,  0.0000, -1.8016  1
+ = Path 'puogd354c3e' = 
+    feffdat file = feff0003.dat
+    geometry  atom      x        y        z      ipot
+              Cu       0.0000,  0.0000,  0.0000  0 (absorber)
+              Cu       1.8016, -1.8016,  0.0000  1
+              Cu       1.8016,  0.0000, -1.8016  1
      reff   =  3.82180000
      degen  =  48.0000000
-     n*s02  =  0.89972612 +/- 0.03479583  'amp'
-     e0     =  5.70426056 +/- 0.81972905  'del_e0'
-     r      =  3.83254454 +/- 0.01138916  'reff + alpha*reff'
-     deltar =  0.01074454 +/- 0.01138916  'alpha*reff'
-     sigma2 =  0.00632924 +/- 0.00309013  'sig2_3'
+     n*s02  =  0.89972612 +/- 0.03479584  := 'amp'
+     e0     =  5.70426128 +/- 0.81972967  := 'del_e0'
+     r      =  3.83254455 +/- 0.01138917  := 'reff + alpha*reff'
+     deltar =  0.01074455 +/- 0.01138917  := 'alpha*reff'
+     sigma2 =  0.00632924 +/- 0.00309013  := 'sig2_3'
 
 =======================================================
