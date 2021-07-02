@@ -13,7 +13,10 @@ if not exist %~dp0%condafile% (
 
 echo ## Installing miniconda environment to %prefix%, please wait...
 
-unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
+set CONDA_EXE=
+set CONDA_PYTHON_EXE=
+set CONDA_PREFIX=
+set PROJ_LIB=
 
 %~dp0%condafile% /InstallationType=JustMe /RegisterPython=0 /S /D=%prefix%
 
