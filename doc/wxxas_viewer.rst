@@ -1,4 +1,4 @@
-.. _lmfit:    http://lmfit.github.io/lmfit-py
+.. _lmfit:    https://lmfit.github.io/lmfit-py
 
 
 .. |pin| image:: _images/pin_icon.png

@@ -325,7 +325,7 @@ happening at the `Larch Repository (github.com)`_.  There, you will find
 the latest source code and pages for submit bug reports.  To install from
 source, you can either clone this repository with::
 
-   git clone http://github.com/xraypy/xraylarch.git
+   git clone https://github.com/xraypy/xraylarch.git
 
 or download and unpack the latest release of the source code package at
 `source code`_ and then do::

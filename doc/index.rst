@@ -6,7 +6,7 @@
 .. _h5py: https://code.google.com/p/h5py/
 .. _Demeter: https://bruceravel.github.io/demeter/
 .. _Dioptas: https://github.com/Dioptas/Dioptas
-.. _Feff Project: http://feff.phys.washington.edu/
+.. _Feff Project: https://feff.phys.washington.edu/
 
 =====================================
 Larch

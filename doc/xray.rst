@@ -31,7 +31,7 @@ on the work of Cromer and Liberman :cite:`Cromer_Liberman`, using the
 implementation of Brennan and Cowan :cite:`Brennan_Cowan`.  In addition,
 values for absorption cross-sections and anomalous X-ray scattering factors
 from Chantler :cite:`Chantler` (as from
-http://www.nist.gov/pml/data/ffast/index.cfm) are available.  Except for
+https://www.nist.gov/pml/data/ffast/index.cfm) are available.  Except for
 the anomalous cross-section data from Cromer and Liberman (which is
 implemented using the Fortran routine by Brennan and Cowan with slight
 modifications), the data is accessed through a portable SQLite3 database

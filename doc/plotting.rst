@@ -461,7 +461,7 @@ use of *raw strings* is recommended in this context, so that one uses::
 Note that this does not actually use TeX (so you don't need TeX installed),
 and the rendering is done by the matplotlib library.  For further details
 about using TeX for markup, including a list of symbols, commands to change
-fonts, and examples, can be found at http://matplotlib.org/users/mathtext.html
+fonts, and examples, can be found at https://matplotlib.org/users/mathtext.html
 
 When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the
@@ -535,7 +535,7 @@ and as a contour plot, with a different color table:
 Advanced Plotting: using matplotlib
 ======================================
 
-.. _matplotlib: http://matplotlib.org/
+.. _matplotlib: https://matplotlib.org/
 
 So far, this chapter has shown how to make simple plots and images.
 One of the main goals of Larch is to not only make the simple tasks very

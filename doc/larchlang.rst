@@ -41,7 +41,7 @@ This shared syntax is intentional, so that as you learn Larch, you will
 also be learning Python, which can be used to extend Larch.  Alternatively,
 knowledge of Python will make Larch easy to learn.  For further details on
 Python, including tutorials, see the Python documentation at
-http://python.org/
+https://python.org/
 
 If you are familar with Python and want to use the `larch` module from
 Python, skip ahead to :ref:`programming_chapter`.

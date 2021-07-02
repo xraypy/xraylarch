@@ -268,7 +268,7 @@ it is available with the function :func:`reset_fiteval`:
 working with uncertainties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _uncertainties: http://packages.python.org/uncertainties/
+.. _uncertainties: https://packages.python.org/uncertainties/
 
 After a fit, each Parameter that was actually varied in the fit should be
 assigned information about the uncertainty in the fitted value as well as

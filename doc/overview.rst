@@ -2,10 +2,10 @@
 Larch: Motivation and Overview
 ==================================================
 
-.. _scipy: http://scipy.org/
-.. _numpy: http://numpy.scipy.org/
-.. _h5py: http://code.google.com/p/h5py/
-.. _matplotlib: http://matplotlib.org/
+.. _scipy: https://scipy.org/
+.. _numpy: https://numpy.scipy.org/
+.. _h5py: https://code.google.com/p/h5py/
+.. _matplotlib: https://matplotlib.org/
 
 
 Larch brings together data processing routines for synchrotron X-ray
