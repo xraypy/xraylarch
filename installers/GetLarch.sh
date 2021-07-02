@@ -1,7 +1,7 @@
 #!/bin/sh
 ##
 ## script to install Larch on Linux or MacOS
-## using a Miniconda environment and all required packages
+## using a Miniforge environment and all required packages
 
 prefix=$HOME/xraylarch
 
