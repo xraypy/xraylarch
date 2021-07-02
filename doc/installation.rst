@@ -17,10 +17,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-06-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-06-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-06-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-06_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
@@ -141,7 +141,7 @@ Linux Notes
 For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
 move to the download folder (typically `$HOME/Downloads`) and run::
 
-    ~> bash ./xraylarch-0.9.51-Linux-x86_64.sh
+    ~> bash ./xraylarch-2021-07-Linux-x86_64.sh
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
@@ -160,28 +160,31 @@ Using Installation Scripts `GetLarch.sh` and `GetLarch.bat`
 
 The scripts `GetLarch.sh` (for Linux and MacOSX) and `GetLarch.bat` in the
 `installers` folder of the source distribution (see `Larch Installer
-Scripts`_) will download and install `Miniconda Python` and use that as the
-basis of an installation that will be essentially identical to the
-environment installed by the binary installers.  You can read these scripts
-and modify them for your needs (or maybe suggest ways we could maintain
-that for others to use too).  In simple bash, that might look like this:
+Scripts`_) will download and install `Miniforge Python` which uses Anaconda
+Python and the `conda-forge` channel as the basis of an installation that
+will be essentially identical to the environment installed by the binary
+installers.  You can read these scripts and modify them for your needs (or
+maybe suggest ways we could maintain that for others to use too).  In
+simple bash, that might look like this:
 
 .. code:: bash
 
     #!/usr/bin/sh
     prefix=$HOME/xraylarch
-    condafile=Miniconda3-latest-$uname-x86_64.sh
-    condaforge_pkgs="wxpython tomopy"
+    condaurl="https://github.com/conda-forge/miniforge/releases/latest/download"
+    condafile="Miniforge3-$uname-x86_64.sh"
+    condaforge_pkgs="numpy=>1.18 scipy=>1.6 matplotlib=>3.3 scikit-image scikit-learn pymatgen pycifrw wxpython tomopy"    
     uname=`uname`
     if [ $uname == Darwin ]; then
         uname=MacOSX
-        condaforge_pkgs="wxpython tomopy python.app"
+        condaforge_pkgs="$condaforge_pkgs python.app"
     fi
-    /usr/bin/curl https://repo.anaconda.com/miniconda/$condafile
+    /usr/bin/curl $condaurl/$condafile
+    unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB   
     sh ./$condafile -b -p $prefix
     $prefix/bin/conda update -y --all
     $prefix/bin/conda install --force-reinstall -yc conda-forge $condaforge_pkgs
-    $prefix/bin/pip install xraylarch
+    $prefix/bin/pip install wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch
 
 Note that this script will install several extra packages that are not
 strictly necessary for using Larch, but do add some useful and/or
@@ -268,10 +271,10 @@ robust package manager called *conda* that makes it easy to update the
 packages it manages, including Larch.
 
 Start by installing the latest version of Anaconda Python from the
-`Anaconda Downloads`_ site.  Python 3.7 or Python 3.8 is recommended.
-Larch should work with Python 3.6, but will no longer work with Python 2.7.
-You can also download and install Miniconda from `Miniconda Downloads` as a
-starting distribution.
+`Anaconda Downloads`_ site.  Python 3.8 or Python 3.9 is recommended.
+Larch should work with Python 3.7 and Python 3.6 (to be clear, it will not
+work with Python 2.7).  You can also download and install Miniconda from
+`Miniconda Downloads` as a starting distribution.
 
 Once Anaconda or Miniconda Python is installed, you can open a Terminal (on
 Linux or Mac OSX) or the Anaconda prompt (on Windows) and type::
@@ -325,7 +328,7 @@ source, you can either clone this repository with::
    git clone http://github.com/xraypy/xraylarch.git
 
 or download and unpack the latest release of the source code package at
-`source code (tar.gz)`_ and then do::
+`source code`_ and then do::
 
     python setup.py install
 
@@ -365,9 +368,9 @@ The source kit includes sources for documentation in the `docs` folder
 and several examples (including all those shown in this documentation)
 in the `examples` folder.
 
-These are also available separately in the zip file at `Larch Docs and
-Examples`_ that contains a `doc` folder with this full documentation,
-and an `examples` folder with all of the Larch examples.
+These are also available separately in the zip file at `Docs and Examples`_
+that contains a `doc` folder with this full documentation, and an
+`examples` folder with all of the Larch examples.
 
 
 Citing Larch
