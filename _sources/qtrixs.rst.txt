@@ -1,5 +1,5 @@
-.. _SILX: http://www.silx.org
-.. _IPython: http://ipython.org/
+.. _SILX: https://www.silx.org
+.. _IPython: https://ipython.org/
 
 .. _qtrixs-chapter:
 

@@ -14,13 +14,13 @@ functions for data handling.
 .. module:: _io
    :synopsis: Basic Input/Output Functions
 
-.. _scipy:   http://scipy.org/
-.. _h5py:    http://code.google.com/p/h5py/
-.. _pyepics: http://pyepics.github.com/pyepics/
+.. _scipy:   https://scipy.org/
+.. _h5py:    https://code.google.com/p/h5py/
+.. _pyepics: https://pyepics.github.com/pyepics/
 .. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
-.. _spec:    http://www.certif.com/content/spec
+.. _spec:    https://www.certif.com/content/spec
 .. _bliss:   https://bliss.gitlab-pages.esrf.fr/bliss/master/
-.. _silx:    http://www.silx.org/
+.. _silx:    https://www.silx.org/
 
 Simple ASCII Column Files
 ============================

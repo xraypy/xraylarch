@@ -295,8 +295,8 @@ large features near the edge.
       group.mback_params:  Group of parameters for the minimization
 
     References:
-      * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
-      * Chantler: http://dx.doi.org/10.1063/1.555974
+      * MBACK (Weng, Waldo, Penner-Hahn): https://dx.doi.org/10.1086/303711
+      * Chantler: https://dx.doi.org/10.1063/1.555974
 
 
     :param energy:   1-d array of x-ray energies, in eV

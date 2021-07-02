@@ -4,7 +4,7 @@
 XAFS: Wavelet Transforms for XAFS
 ==============================================
 
-.. _Wavelet transforms: http://en.wikipedia.org/wiki/Wavelet_transform
+.. _Wavelet transforms: https://en.wikipedia.org/wiki/Wavelet_transform
 
 `Wavelet transforms`_ extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,

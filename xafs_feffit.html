@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.52 documentation</title>
+    <title>13.8. XAFS: Fitting XAFS to Feff Paths &#8212; xraylarch 0.9.53 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -740,27 +740,28 @@ commands.</p>
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
    <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.89518900</span> <span class="o">+/-</span> <span class="mf">0.03763412</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.00000000</span><span class="p">)</span>
    <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">4.35776878</span> <span class="o">+/-</span> <span class="mf">0.51134943</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
-   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.00866969</span> <span class="o">+/-</span> <span class="mf">3.0784e-04</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
    <span class="n">del_r</span>          <span class="o">=</span> <span class="o">-</span><span class="mf">0.00601665</span> <span class="o">+/-</span> <span class="mf">0.00261332</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
+   <span class="n">sig2</span>           <span class="o">=</span>  <span class="mf">0.00866969</span> <span class="o">+/-</span> <span class="mf">3.0784e-04</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2</span>            <span class="o">=</span>  <span class="mf">0.928</span>
    <span class="n">del_e0</span><span class="p">,</span> <span class="n">del_r</span>        <span class="o">=</span>  <span class="mf">0.920</span>
-   <span class="n">sig2</span><span class="p">,</span> <span class="n">del_r</span>          <span class="o">=</span>  <span class="mf">0.159</span>
+   <span class="n">del_r</span><span class="p">,</span> <span class="n">sig2</span>          <span class="o">=</span>  <span class="mf">0.159</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">del_r</span>           <span class="o">=</span>  <span class="mf">0.137</span>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
-   <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feffcu01</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p4iqpjuhrj3&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feffcu01</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89518900</span> <span class="o">+/-</span> <span class="mf">0.03763412</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">4.35776878</span> <span class="o">+/-</span> <span class="mf">0.51134943</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54178335</span> <span class="o">+/-</span> <span class="mf">0.00261332</span>  <span class="s1">&#39;reff + del_r&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.00601665</span> <span class="o">+/-</span> <span class="mf">0.00261332</span>  <span class="s1">&#39;del_r&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00866969</span> <span class="o">+/-</span> <span class="mf">3.0784e-04</span>  <span class="s1">&#39;sig2&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89518900</span> <span class="o">+/-</span> <span class="mf">0.03763412</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">4.35776878</span> <span class="o">+/-</span> <span class="mf">0.51134943</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54178335</span> <span class="o">+/-</span> <span class="mf">0.00261332</span>  <span class="o">:=</span> <span class="s1">&#39;reff + del_r&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.00601665</span> <span class="o">+/-</span> <span class="mf">0.00261332</span>  <span class="o">:=</span> <span class="s1">&#39;del_r&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00866969</span> <span class="o">+/-</span> <span class="mf">3.0784e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sig2&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
@@ -934,72 +935,75 @@ vary independently for each path.</p>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">19.717</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479583</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.00000000</span><span class="p">)</span>
-   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.70426056</span> <span class="o">+/-</span> <span class="mf">0.81972906</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">3.00000000</span><span class="p">)</span>
+   <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.00281138</span> <span class="o">+/-</span> <span class="mf">0.00298005</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
+   <span class="n">amp</span>            <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479584</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">1.00000000</span><span class="p">)</span>
    <span class="n">c3_1</span>           <span class="o">=</span>  <span class="mf">1.4440e-04</span> <span class="o">+/-</span> <span class="mf">8.2197e-05</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00200000</span><span class="p">)</span>
+   <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">5.70426128</span> <span class="o">+/-</span> <span class="mf">0.81972967</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">3.00000000</span><span class="p">)</span>
    <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.00868052</span> <span class="o">+/-</span> <span class="mf">2.8389e-04</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00200000</span><span class="p">)</span>
    <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.01310463</span> <span class="o">+/-</span> <span class="mf">0.00113582</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00200000</span><span class="p">)</span>
    <span class="n">sig2_3</span>         <span class="o">=</span>  <span class="mf">0.00632924</span> <span class="o">+/-</span> <span class="mf">0.00309013</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00200000</span><span class="p">)</span>
-   <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.00281138</span> <span class="o">+/-</span> <span class="mf">0.00298005</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.00000000</span><span class="p">)</span>
  
 <span class="p">[[</span><span class="n">Correlations</span><span class="p">]]</span>    <span class="p">(</span><span class="n">unreported</span> <span class="n">correlations</span> <span class="n">are</span> <span class="o">&lt;</span>  <span class="mf">0.100</span><span class="p">)</span>
-   <span class="n">c3_1</span><span class="p">,</span> <span class="n">alpha</span>          <span class="o">=</span>  <span class="mf">0.952</span>
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">alpha</span>        <span class="o">=</span>  <span class="mf">0.950</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">c3_1</span>          <span class="o">=</span>  <span class="mf">0.952</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">del_e0</span>        <span class="o">=</span>  <span class="mf">0.950</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_1</span>          <span class="o">=</span>  <span class="mf">0.929</span>
-   <span class="n">del_e0</span><span class="p">,</span> <span class="n">c3_1</span>         <span class="o">=</span>  <span class="mf">0.837</span>
+   <span class="n">c3_1</span><span class="p">,</span> <span class="n">del_e0</span>         <span class="o">=</span>  <span class="mf">0.837</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_2</span>          <span class="o">=</span>  <span class="mf">0.298</span>
    <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_2</span>       <span class="o">=</span>  <span class="mf">0.276</span>
    <span class="n">sig2_1</span><span class="p">,</span> <span class="n">sig2_3</span>       <span class="o">=</span>  <span class="mf">0.213</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">sig2_3</span>          <span class="o">=</span>  <span class="mf">0.213</span>
    <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_3</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.189</span>
-   <span class="n">amp</span><span class="p">,</span> <span class="n">alpha</span>           <span class="o">=</span>  <span class="mf">0.185</span>
-   <span class="n">sig2_1</span><span class="p">,</span> <span class="n">alpha</span>        <span class="o">=</span>  <span class="mf">0.172</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">amp</span>           <span class="o">=</span>  <span class="mf">0.185</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_1</span>        <span class="o">=</span>  <span class="mf">0.172</span>
    <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.168</span>
-   <span class="n">sig2_2</span><span class="p">,</span> <span class="n">alpha</span>        <span class="o">=</span>  <span class="mf">0.152</span>
-   <span class="n">sig2_3</span><span class="p">,</span> <span class="n">alpha</span>        <span class="o">=</span> <span class="o">-</span><span class="mf">0.148</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_2</span>        <span class="o">=</span>  <span class="mf">0.152</span>
+   <span class="n">alpha</span><span class="p">,</span> <span class="n">sig2_3</span>        <span class="o">=</span> <span class="o">-</span><span class="mf">0.148</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">del_e0</span>          <span class="o">=</span>  <span class="mf">0.148</span>
    <span class="n">amp</span><span class="p">,</span> <span class="n">c3_1</span>            <span class="o">=</span>  <span class="mf">0.145</span>
    <span class="n">del_e0</span><span class="p">,</span> <span class="n">sig2_1</span>       <span class="o">=</span>  <span class="mf">0.143</span>
    <span class="n">c3_1</span><span class="p">,</span> <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.124</span>
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
-   <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p4iqpjuhrj3&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479583</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426056</span> <span class="o">+/-</span> <span class="mf">0.81972905</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.55496284</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.00716284</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00868052</span> <span class="o">+/-</span> <span class="mf">2.8389e-04</span>  <span class="s1">&#39;sig2_1&#39;</span>
-     <span class="n">third</span>  <span class="o">=</span>  <span class="mf">1.4440e-04</span> <span class="o">+/-</span> <span class="mf">8.2197e-05</span>  <span class="s1">&#39;c3_1&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479584</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426128</span> <span class="o">+/-</span> <span class="mf">0.81972967</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.55496284</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.00716284</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00868052</span> <span class="o">+/-</span> <span class="mf">2.8389e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sig2_1&#39;</span>
+     <span class="n">third</span>  <span class="o">=</span>  <span class="mf">1.4440e-04</span> <span class="o">+/-</span> <span class="mf">8.2197e-05</span>  <span class="o">:=</span> <span class="s1">&#39;c3_1&#39;</span>
 
-   <span class="n">Path</span> <span class="n">pe3tkyh7w</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0002</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>      <span class="o">-</span><span class="mf">3.6032</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;pr7fwtxt6xa&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0002</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>      <span class="o">-</span><span class="mf">3.6032</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">3.60320000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">6.00000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479583</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426056</span> <span class="o">+/-</span> <span class="mf">0.81972905</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.61332997</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.01012997</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.01310463</span> <span class="o">+/-</span> <span class="mf">0.00113582</span>  <span class="s1">&#39;sig2_2&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479584</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426128</span> <span class="o">+/-</span> <span class="mf">0.81972967</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.61332998</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.01012998</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.01310463</span> <span class="o">+/-</span> <span class="mf">0.00113582</span>  <span class="o">:=</span> <span class="s1">&#39;sig2_2&#39;</span>
 
-   <span class="n">Path</span> <span class="n">pkky2qtk6</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0003</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
-      <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;puogd354c3e&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0003</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">1</span>
+              <span class="n">Cu</span>       <span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">3.82180000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">48.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479583</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426056</span> <span class="o">+/-</span> <span class="mf">0.81972905</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.83254454</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;reff + alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.01074454</span> <span class="o">+/-</span> <span class="mf">0.01138916</span>  <span class="s1">&#39;alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00632924</span> <span class="o">+/-</span> <span class="mf">0.00309013</span>  <span class="s1">&#39;sig2_3&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.89972612</span> <span class="o">+/-</span> <span class="mf">0.03479584</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.70426128</span> <span class="o">+/-</span> <span class="mf">0.81972967</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">3.83254455</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;reff + alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.01074455</span> <span class="o">+/-</span> <span class="mf">0.01138917</span>  <span class="o">:=</span> <span class="s1">&#39;alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00632924</span> <span class="o">+/-</span> <span class="mf">0.00309013</span>  <span class="o">:=</span> <span class="s1">&#39;sig2_3&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
@@ -1179,43 +1183,46 @@ of <span class="math notranslate nohighlight">\(R\)</span>. The output for this 
  
 <span class="p">[[</span><span class="n">Paths</span><span class="p">]]</span>
  <span class="n">dataset</span> <span class="mi">1</span><span class="p">:</span>
-   <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p4iqpjuhrj3&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54762772</span> <span class="o">+/-</span> <span class="mf">0.00265956</span>  <span class="s1">&#39;reff + dr_off + 10*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.7228e-04</span> <span class="o">+/-</span> <span class="mf">0.00265956</span>  <span class="s1">&#39;dr_off + 10*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00327499</span> <span class="o">+/-</span> <span class="mf">1.1358e-04</span>  <span class="s1">&#39;sigma2_eins(10, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54762772</span> <span class="o">+/-</span> <span class="mf">0.00265956</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 10*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.7228e-04</span> <span class="o">+/-</span> <span class="mf">0.00265956</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 10*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00327499</span> <span class="o">+/-</span> <span class="mf">1.1358e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(10, theta)&#39;</span>
 
  <span class="n">dataset</span> <span class="mi">2</span><span class="p">:</span>
-   <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p4iqpjuhrj3&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54816503</span> <span class="o">+/-</span> <span class="mf">0.00252238</span>  <span class="s1">&#39;reff + dr_off + 50*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">3.6503e-04</span> <span class="o">+/-</span> <span class="mf">0.00252238</span>  <span class="s1">&#39;dr_off + 50*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00333747</span> <span class="o">+/-</span> <span class="mf">1.2595e-04</span>  <span class="s1">&#39;sigma2_eins(50, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54816503</span> <span class="o">+/-</span> <span class="mf">0.00252238</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 50*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">3.6503e-04</span> <span class="o">+/-</span> <span class="mf">0.00252238</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 50*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00333747</span> <span class="o">+/-</span> <span class="mf">1.2595e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(50, theta)&#39;</span>
 
  <span class="n">dataset</span> <span class="mi">3</span><span class="p">:</span>
-   <span class="n">Path</span> <span class="n">pfh2ced6i</span><span class="p">,</span> <span class="n">Feff</span><span class="o">.</span><span class="n">dat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
-     <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>       <span class="n">ipot</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
-      <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
+ <span class="o">=</span> <span class="n">Path</span> <span class="s1">&#39;p4iqpjuhrj3&#39;</span> <span class="o">=</span> 
+    <span class="n">feffdat</span> <span class="n">file</span> <span class="o">=</span> <span class="n">feff0001</span><span class="o">.</span><span class="n">dat</span>
+    <span class="n">geometry</span>  <span class="n">atom</span>      <span class="n">x</span>        <span class="n">y</span>        <span class="n">z</span>      <span class="n">ipot</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span><span class="p">,</span>  <span class="mf">0.0000</span>  <span class="mi">0</span> <span class="p">(</span><span class="n">absorber</span><span class="p">)</span>
+              <span class="n">Cu</span>       <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.8016</span><span class="p">,</span>  <span class="mf">1.8016</span>  <span class="mi">1</span>
      <span class="n">reff</span>   <span class="o">=</span>  <span class="mf">2.54780000</span>
      <span class="n">degen</span>  <span class="o">=</span>  <span class="mf">12.0000000</span>
-     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="s1">&#39;amp&#39;</span>
-     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="s1">&#39;del_e0&#39;</span>
-     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54950830</span> <span class="o">+/-</span> <span class="mf">0.00293660</span>  <span class="s1">&#39;reff + dr_off + 150*alpha*reff&#39;</span>
-     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.00170830</span> <span class="o">+/-</span> <span class="mf">0.00293660</span>  <span class="s1">&#39;dr_off + 150*alpha*reff&#39;</span>
-     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00503100</span> <span class="o">+/-</span> <span class="mf">2.9449e-04</span>  <span class="s1">&#39;sigma2_eins(150, theta)&#39;</span>
+     <span class="n">n</span><span class="o">*</span><span class="n">s02</span>  <span class="o">=</span>  <span class="mf">0.87653479</span> <span class="o">+/-</span> <span class="mf">0.03032465</span>  <span class="o">:=</span> <span class="s1">&#39;amp&#39;</span>
+     <span class="n">e0</span>     <span class="o">=</span>  <span class="mf">5.37307015</span> <span class="o">+/-</span> <span class="mf">0.61379584</span>  <span class="o">:=</span> <span class="s1">&#39;del_e0&#39;</span>
+     <span class="n">r</span>      <span class="o">=</span>  <span class="mf">2.54950830</span> <span class="o">+/-</span> <span class="mf">0.00293660</span>  <span class="o">:=</span> <span class="s1">&#39;reff + dr_off + 150*alpha*reff&#39;</span>
+     <span class="n">deltar</span> <span class="o">=</span>  <span class="mf">0.00170830</span> <span class="o">+/-</span> <span class="mf">0.00293660</span>  <span class="o">:=</span> <span class="s1">&#39;dr_off + 150*alpha*reff&#39;</span>
+     <span class="n">sigma2</span> <span class="o">=</span>  <span class="mf">0.00503100</span> <span class="o">+/-</span> <span class="mf">2.9449e-04</span>  <span class="o">:=</span> <span class="s1">&#39;sigma2_eins(150, theta)&#39;</span>
 
 <span class="o">=======================================================</span>
 </pre></div>
@@ -1586,11 +1593,11 @@ and uncertainties for the varied parameters are quite close for the fit in
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.88534251</span> <span class="o">+/-</span> <span class="mf">2.53504653</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.47416477</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.02895807</span> <span class="o">+/-</span> <span class="mf">0.03166399</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.02936638</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.04464510</span> <span class="o">+/-</span> <span class="mf">0.02472676</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.04782343</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.00571269</span> <span class="o">+/-</span> <span class="mf">2.42580354</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.41282687</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">12.4888765</span> <span class="o">+/-</span> <span class="mf">4.99196565</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">11.1724782</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.88533829</span> <span class="o">+/-</span> <span class="mf">2.53504624</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.47416477</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.02895803</span> <span class="o">+/-</span> <span class="mf">0.03166399</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.02936638</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.04464514</span> <span class="o">+/-</span> <span class="mf">0.02472676</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.04782343</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.00571212</span> <span class="o">+/-</span> <span class="mf">2.42580368</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.41282687</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">12.4888769</span> <span class="o">+/-</span> <span class="mf">4.99196574</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">11.1724782</span><span class="p">)</span>
    <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.01050234</span> <span class="o">+/-</span> <span class="mf">0.00775791</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.01202039</span><span class="p">)</span>
    <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.01351759</span> <span class="o">+/-</span> <span class="mf">0.00424825</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.01253566</span><span class="p">)</span>
  
@@ -1639,11 +1646,11 @@ transform. This gives:</p>
    <span class="n">n_independent</span>      <span class="o">=</span> <span class="mf">17.106</span>
  
 <span class="p">[[</span><span class="n">Variables</span><span class="p">]]</span>
-   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.92545814</span> <span class="o">+/-</span> <span class="mf">0.83152199</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.47416477</span><span class="p">)</span>
-   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.03047453</span> <span class="o">+/-</span> <span class="mf">0.00885745</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.02936638</span><span class="p">)</span>
-   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.04446616</span> <span class="o">+/-</span> <span class="mf">0.00694360</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.04782343</span><span class="p">)</span>
-   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.92594223</span> <span class="o">+/-</span> <span class="mf">1.26597566</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.41282687</span><span class="p">)</span>
-   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.9103083</span> <span class="o">+/-</span> <span class="mf">1.22109825</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">11.1724782</span><span class="p">)</span>
+   <span class="n">de0</span>            <span class="o">=</span> <span class="o">-</span><span class="mf">1.92545934</span> <span class="o">+/-</span> <span class="mf">0.83152233</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.47416477</span><span class="p">)</span>
+   <span class="n">delr_1</span>         <span class="o">=</span> <span class="o">-</span><span class="mf">0.03047454</span> <span class="o">+/-</span> <span class="mf">0.00885745</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span> <span class="o">-</span><span class="mf">0.02936638</span><span class="p">)</span>
+   <span class="n">delr_2</span>         <span class="o">=</span>  <span class="mf">0.04446615</span> <span class="o">+/-</span> <span class="mf">0.00694360</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.04782343</span><span class="p">)</span>
+   <span class="n">n1</span>             <span class="o">=</span>  <span class="mf">5.92594271</span> <span class="o">+/-</span> <span class="mf">1.26597580</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">5.41282687</span><span class="p">)</span>
+   <span class="n">n2</span>             <span class="o">=</span>  <span class="mf">11.9103084</span> <span class="o">+/-</span> <span class="mf">1.22109823</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">11.1724782</span><span class="p">)</span>
    <span class="n">sig2_1</span>         <span class="o">=</span>  <span class="mf">0.01312034</span> <span class="o">+/-</span> <span class="mf">0.00290677</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.01202039</span><span class="p">)</span>
    <span class="n">sig2_2</span>         <span class="o">=</span>  <span class="mf">0.01313601</span> <span class="o">+/-</span> <span class="mf">0.00101922</span>   <span class="p">(</span><span class="n">init</span><span class="o">=</span>  <span class="mf">0.01253566</span><span class="p">)</span>
  
@@ -2091,7 +2098,7 @@ powerful, and give increased confidence in the refined structure.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

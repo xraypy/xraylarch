@@ -4,8 +4,8 @@
 GSECARS Mapviewr
 ==========================
 
-.. _wxmplot:  http://newville.github.io/wxmplot
-.. _matplotlib: http://matplotlib.org/
+.. _wxmplot:  https://newville.github.io/wxmplot
+.. _matplotlib: https://matplotlib.org/
 
 
 The GSECARS Mapviewer is one of the main GUI applications of Larch,

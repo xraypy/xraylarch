@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>2. Getting Started with Larch &#8212; xraylarch 0.9.52 documentation</title>
+    <title>2. Getting Started with Larch &#8212; xraylarch 0.9.53 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -15,6 +15,7 @@
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -74,7 +75,7 @@
   <ul>
 <li><a class="reference internal" href="#">2. Getting Started with Larch</a><ul>
 <li><a class="reference internal" href="#first-install-larch">2.1. First, install Larch</a></li>
-<li><a class="reference internal" href="#second-use-athena-xas-viewer-and-or-gse-mapviewer">2.2. Second, use Athena, XAS Viewer and/or GSE MapViewer</a></li>
+<li><a class="reference internal" href="#second-use-xas-viewer-and-or-gse-mapviewer">2.2. Second, use XAS Viewer and/or GSE MapViewer</a></li>
 <li><a class="reference internal" href="#third-start-scripting-with-larch-and-or-python">2.3. Third, start scripting with Larch and/or Python</a></li>
 </ul>
 </li>
@@ -136,21 +137,36 @@ for your operating system listed in the <a class="reference internal" href="inst
 and want to use Larch as a library see <a class="reference internal" href="installation.html#install-chapter"><span class="std std-ref">Downloading and Installation</span></a> for other ways to install Larch into your existing
 Python environment.</p>
 </section>
-<section id="second-use-athena-xas-viewer-and-or-gse-mapviewer">
-<h2><span class="section-number">2.2. </span>Second, use Athena, XAS Viewer and/or GSE MapViewer<a class="headerlink" href="#second-use-athena-xas-viewer-and-or-gse-mapviewer" title="Permalink to this headline">¶</a></h2>
-<p>If you are mostly interested in using Larch as a backend for the Athena and
-Artemis programs for XAFS Analysis, just install Larch and the latest
-version of Demeter, and Demeter should find and use Larch for EXAFS
-Analysis, replacing the older Ifeffit library and its many limitations.</p>
-<p>Even using Larch instead of Ifeffit, Athena still has some limitations for
-XAFS Analysis, and development and support for it has declined in recent
-years.  You may be interested in the XAS Viewer program for XAFS processing
-and visualization.  At this writing, <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a>
-is nearly a complete replacement for Athena, with several improvements in
-graphics and handling of large data sets.  XAS Viewer is especially aimed
-at XANES Analysis, and so includes robust tools for peak-fitting, and
-machine-learning methods such as Principal Component Analysis, Partial
-Least Squares and LASSO regression.</p>
+<section id="second-use-xas-viewer-and-or-gse-mapviewer">
+<h2><span class="section-number">2.2. </span>Second, use XAS Viewer and/or GSE MapViewer<a class="headerlink" href="#second-use-xas-viewer-and-or-gse-mapviewer" title="Permalink to this headline">¶</a></h2>
+<p>For working with XAS data, you may be interested in the XAS Viewer program
+for XAFS processing and visualization.  At this writing, <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a> includes a “nearly complete” set of tools for analyziing
+XAS data, including XANES and EXAFS data processing, visualizaition, and
+analysis.  Some instructional videos for using XAS Viewer are at
+<a class="reference external" href="https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be">Larch For XAFS Analysis (youtube.com)</a>.</p>
+<p>XAS Viewer is nearly a complete replacement for Athena, but with several
+improvements in graphics, handling of large data sets, and some
+improvements in XAFS data processing too.  For XANES analysis, XAS Viewer
+includes robust tools for peak-fitting, and machine-learning methods such
+as Principal Component Analysis, Partial Least Squares and LASSO
+regression.</p>
+<p>With version 0.9.53, XAS Viewer also provides graphical user interface
+tools for running Feff and doing Fitting of Feff Paths to EXAFS
+<span class="math notranslate nohighlight">\($\chi(k)\)</span> spectra.  These tools include a form for browsing CIF
+Structures from the American Mineralogist Crystal Structure Database (which
+included with Larch), creating Feff6 or Feff8l inputs, running Feff6 or
+Feff8l for EXAFS path calculations, and organinizing the results.  There is
+also a page in the XAS Viewer for building a sum-of-paths model for an
+EXAFS spectrum, working with and constraining Path Parameters, running
+“Feff fits” and browsing the results. XAS Viewer always saves the full of
+history of commands it runs as code that can be modified or re-run in
+batch.  For “Feff fitting” in particular, a fitting script can be saved for
+any fit and run either in the Larch macro language or (with uncommenting of
+some <cite>import</cite> statements`) run as a Python program.</p>
+<p>Larch can also be used as a backend for the Athena and Artemis programs for
+XAFS Analysis, just install Larch and the latest version of Demeter, and
+Demeter should find and use Larch for EXAFS Analysis, replacing the older
+Ifeffit library and its many limitations.</p>
 <p>If you are a user of the GSECARS microprobe beamline or have XRF Mapping
 data from a compatible beamline (XFM at NSLS-II, maybe others), you’ll want
 to start using the <a class="reference internal" href="wxmap_viewer.html#mapviewer-app"><span class="std std-ref">GSE Mapviewer</span></a> program for
@@ -171,6 +187,10 @@ can build and remember more complex analyses.  The combination of the high
 level commands of Larch and the interactive command-line GUI for
 exploratory data analysis are a great way to get started in writing your
 own scripts and building up more sophisticated programs.</p>
+<p>The <a class="reference internal" href="wxxas_viewer.html#xasviewer-app"><span class="std std-ref">XAS Viewer</span></a> application can assist you get
+started with this, as it keeps a history of all commands it executes that
+can be saved and re-run or modified to run in the Larch macro language or
+(with including the appropriate <cite>import</cite> statements) as a Python program.</p>
 </section>
 </section>
 
@@ -204,7 +224,7 @@ own scripts and building up more sophisticated programs.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

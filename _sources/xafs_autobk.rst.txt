@@ -169,7 +169,7 @@ bkg}`.
 
 This leads to the second question of how flexible to make the spline is
 answered from basic signal processing through the `Nyquist-Shannon sampling
-theorem <http://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem>`_,
+theorem <https://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem>`_,
 which tells us how many adjustable parameters to use for our spline:
 
 .. math::

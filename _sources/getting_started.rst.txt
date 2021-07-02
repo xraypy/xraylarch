@@ -1,3 +1,5 @@
+
+.. _`Larch For XAFS Analysis (youtube.com)`:   https://youtube.com/playlist?list=PLgNIl_xwV_vK4V6CmrsEsahNCAsjt8_Be
 ==================================================
 Getting Started with Larch
 ==================================================
@@ -31,23 +33,43 @@ and want to use Larch as a library see :ref:`Downloading and Installation
 Python environment.
 
 
-Second, use Athena, XAS Viewer and/or GSE MapViewer
+Second, use XAS Viewer and/or GSE MapViewer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are mostly interested in using Larch as a backend for the Athena and
-Artemis programs for XAFS Analysis, just install Larch and the latest
-version of Demeter, and Demeter should find and use Larch for EXAFS
-Analysis, replacing the older Ifeffit library and its many limitations.
+For working with XAS data, you may be interested in the XAS Viewer program
+for XAFS processing and visualization.  At this writing, :ref:`XAS Viewer
+<xasviewer_app>` includes a "nearly complete" set of tools for analyziing
+XAS data, including XANES and EXAFS data processing, visualizaition, and
+analysis.  Some instructional videos for using XAS Viewer are at
+`Larch For XAFS Analysis (youtube.com)`_.
 
-Even using Larch instead of Ifeffit, Athena still has some limitations for
-XAFS Analysis, and development and support for it has declined in recent
-years.  You may be interested in the XAS Viewer program for XAFS processing
-and visualization.  At this writing, :ref:`XAS Viewer <xasviewer_app>`
-is nearly a complete replacement for Athena, with several improvements in
-graphics and handling of large data sets.  XAS Viewer is especially aimed
-at XANES Analysis, and so includes robust tools for peak-fitting, and
-machine-learning methods such as Principal Component Analysis, Partial
-Least Squares and LASSO regression.
+
+
+XAS Viewer is nearly a complete replacement for Athena, but with several
+improvements in graphics, handling of large data sets, and some
+improvements in XAFS data processing too.  For XANES analysis, XAS Viewer
+includes robust tools for peak-fitting, and machine-learning methods such
+as Principal Component Analysis, Partial Least Squares and LASSO
+regression.  
+
+With version 0.9.53, XAS Viewer also provides graphical user interface
+tools for running Feff and doing Fitting of Feff Paths to EXAFS
+:math:`$\chi(k)` spectra.  These tools include a form for browsing CIF
+Structures from the American Mineralogist Crystal Structure Database (which
+included with Larch), creating Feff6 or Feff8l inputs, running Feff6 or
+Feff8l for EXAFS path calculations, and organinizing the results.  There is
+also a page in the XAS Viewer for building a sum-of-paths model for an
+EXAFS spectrum, working with and constraining Path Parameters, running
+"Feff fits" and browsing the results. XAS Viewer always saves the full of
+history of commands it runs as code that can be modified or re-run in
+batch.  For "Feff fitting" in particular, a fitting script can be saved for
+any fit and run either in the Larch macro language or (with uncommenting of
+some `import` statements`) run as a Python program. 
+
+Larch can also be used as a backend for the Athena and Artemis programs for
+XAFS Analysis, just install Larch and the latest version of Demeter, and
+Demeter should find and use Larch for EXAFS Analysis, replacing the older
+Ifeffit library and its many limitations.
 
 If you are a user of the GSECARS microprobe beamline or have XRF Mapping
 data from a compatible beamline (XFM at NSLS-II, maybe others), you'll want
@@ -72,4 +94,11 @@ can build and remember more complex analyses.  The combination of the high
 level commands of Larch and the interactive command-line GUI for
 exploratory data analysis are a great way to get started in writing your
 own scripts and building up more sophisticated programs.
+
+The :ref:`XAS Viewer <xasviewer_app>` application can assist you get
+started with this, as it keeps a history of all commands it executes that
+can be saved and re-run or modified to run in the Larch macro language or
+(with including the appropriate `import` statements) as a Python program.
+
+
 

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>5. XASViewer &#8212; xraylarch 0.9.52 documentation</title>
+    <title>5. XASViewer &#8212; xraylarch 0.9.53 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -119,23 +119,33 @@
             
   <section id="xasviewer">
 <span id="xasviewer-app"></span><h1><span class="section-number">5. </span>XASViewer<a class="headerlink" href="#xasviewer" title="Permalink to this headline">¶</a></h1>
-<p>The XASViewer GUI uses Larch to read and display XAFS spectra.  This
-application is still in active development, with more features planned with
-special emphasis on helping users with XANES analysis.  Current features
-(as of July, 2018, Larch version 0.9.40) include:</p>
+<p>The XASViewer GUI uses Larch for visualization, and analysis of XAFS data.
+This application is still in active development, with more features planned
+with special emphasis on helping users with XANES analysis.  Current
+features (as of July, 2021, Larch version 0.9.53) include:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>read XAFS spectra from simple data column files or Athena Project Files.</p></li>
+<li><p>read XAFS spectra from simple data column files.</p></li>
+<li><p>read XAFS spectra from Athena Project Files.</p></li>
+<li><p>read XAFS spectro from ESRF Spec/BLISS HDF5 files.</p></li>
 <li><p>XAFS pre-edge removal and normalization.</p></li>
-<li><p>visualization of normalization steps.</p></li>
-<li><p>data merging</p></li>
-<li><p>data de-glitching, and energy recalibration</p></li>
+<li><p>visualization of normalization steps, polynomial or MBACK algorithms.</p></li>
+<li><p>data merging.</p></li>
+<li><p>data de-glitching, and energy recalibration.</p></li>
 <li><p>data smoothing, rebinning, and deconvolution.</p></li>
 <li><p>over-absorption corrections (for XANES)</p></li>
 <li><p>linear combination analysis of spectra.</p></li>
+<li><p>principal component analysis.</p></li>
+<li><p>regression of XANES spectra with a predicting external variable.</p></li>
 <li><p>pre-edge peak fitting.</p></li>
 <li><p>saving of data to Athena Project files.</p></li>
 <li><p>saving of data to CSV files.</p></li>
+<li><p>EXAFS background spline removal.</p></li>
+<li><p>Fourier transforms from k to R and R to filtered-k space, and wavelet transforms.</p></li>
+<li><p>Browser for CIF files from American Mineralogist Crystal Structure Database.</p></li>
+<li><p>Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l.</p></li>
+<li><p>Run Feff6 or Feff8, saving and browsing EXAFS Paths from these Feff runs.</p></li>
+<li><p>Feff Fitting of single EXAFS spectra for a sum of Feff paths.</p></li>
 </ul>
 </div></blockquote>
 <p>The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
@@ -167,19 +177,19 @@ Advanced Linear Regression (<span class="xref std std-ref">xasviewer_regression<
 and EXAFS Analysis (<a class="reference internal" href="#xasviewer-exafs-bkg"><span class="std std-ref">EXAFS Processing: Background Subtraction</span></a> and
 <a class="reference internal" href="#xasviewer-exafs-fft"><span class="std std-ref">EXAFS Processing:  Fourier Transforms</span></a>).</p>
 <p>There are a few important general notes to mention about XAS Viewer before
-going into more detail about how to use it.  First, XAS Viewer is somewhat
-new, and in active development.  If you find problems with it or unexpected
-or missing functionality, please let us know.  Second, XAS Viewer has many
-features, functionality, and concepts in common with Athena and
-Sixpack. This is intentional, as we intend XAS Viewer to be a useful
-alternative to these applications, possibly with new or better features but
-also without requiring too much relearning of concepts or workflow.  As an
-important example of this compatibility, XAS Viewer can read in and import
-data from Athena Project files, and can save these project files as well,
-so that if you have lots of data organized with Athena Project Files, you
-can use XAS Viewer and Athena on the same datasets.  This aim for
-compatibility also means that if you find features to be missing or
-different from how Athena or Sixpack work, let us know.</p>
+going into more detail about how to use it.  First, XAS Viewer is still in
+active development.  If you find problems with it or unexpected or missing
+functionality, please let us know.  Second, XAS Viewer has many features,
+functionality, and concepts in common with Athena and Sixpack. This is
+intentional, as we intend XAS Viewer to be a useful alternative to these
+applications, possibly with new or better features but also without
+requiring too much relearning of concepts or workflow.  As an important
+example of this compatibility, XAS Viewer can read in and import data from
+Athena Project files, and can save these project files as well, so that if
+you have lots of data organized with Athena Project Files, you can use XAS
+Viewer and Athena on the same datasets.  This aim for compatibility also
+means that if you find features to be missing or different from how Athena
+or Sixpack work, let us know.</p>
 <p>As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
 complex analysis, batch processing, and scripting of analysis tasks.  To do
@@ -344,7 +354,7 @@ MBACK-calculation for normalization.</p>
 <span id="xasviewer-peakfit"></span><h2><span class="section-number">5.4. </span>Pre-edge peak fitting<a class="headerlink" href="#pre-edge-peak-fitting" title="Permalink to this headline">¶</a></h2>
 <p>The “Pre-edge Peak Fit” tab (show in <a class="reference internal" href="#fig-xasviewer-3a"><span class="std std-numref">Figure 5.4.1</span></a>) provides a
 form for fitting pre-edge peaks to line shapes such as Gaussian, Lorentzian,
-or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a>
+or Voigt functions.  This provides an easy-to-use wrapper around <a class="reference external" href="https://lmfit.github.io/lmfit-py">lmfit</a>
 and the <a class="reference internal" href="fitting_minimize.html#minimize" title="minimize"><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize()</span></code></a> function for curve-fitting with the ability to
 constrain fitting Parameters.</p>
 <p>Fitting of pre-edge peaks with this panel is a two step process.</p>
@@ -507,7 +517,7 @@ plot as shown in <a class="reference internal" href="#fig-xasviewer-7a"><span cl
 </div><p id="fig_xasviewer_7">As mentioned above, fit results can be saved in two different ways, using
 the “PreEdge Peaks” menu.  First, the model to set up the fit can be saved
 to a <cite>.modl</cite> file and then re-read later and used for other fits. This
-model file can also be read in and used with the <a class="reference external" href="http://lmfit.github.io/lmfit-py">lmfit</a> python module for
+model file can also be read in and used with the <a class="reference external" href="https://lmfit.github.io/lmfit-py">lmfit</a> python module for
 complete scripting control.  Secondly, a fit can be <em>exported</em> to an ASCII
 file that will include the text of the fit report and columns including
 data, best-fit, and each of the components of the model.</p>
@@ -609,7 +619,7 @@ the results of PCA to ask:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

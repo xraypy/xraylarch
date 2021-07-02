@@ -19,7 +19,7 @@ scalar or array, depending on the input ``x``.
 .. function:: gaussian(x, amplitude=1, center=0, sigma=1)
 
     a Gaussian or normal distribution function (see
-    http://en.wikipedia.org/wiki/Normal_distribution), with three
+    https://en.wikipedia.org/wiki/Normal_distribution), with three
     Parameters: ``amplitude``, ``center``, and ``sigma``.
 
     .. math::
@@ -36,7 +36,7 @@ scalar or array, depending on the input ``x``.
 .. function:: lorentzian(x, amplitude=1, center=0, sigma=1)
 
     A Lorentzian or Cauchy-Lorentz distribution function (see
-    http://en.wikipedia.org/wiki/Cauchy_distribution), with three
+    https://en.wikipedia.org/wiki/Cauchy_distribution), with three
     Parameters: ``amplitude``, ``center``, and ``sigma``.
 
     .. math::
@@ -52,7 +52,7 @@ scalar or array, depending on the input ``x``.
 .. function:: voigt(x, amplitude=1, center=0, sigma=1, gamma=None)
 
     A Voigt distribution function (see
-    http://en.wikipedia.org/wiki/Voigt_profile), with four Parameters:
+    https://en.wikipedia.org/wiki/Voigt_profile), with four Parameters:
     ``amplitude``, ``center``, ``sigma``, and ``gamma`` defined as:
 
 
@@ -99,7 +99,7 @@ scalar or array, depending on the input ``x``.
 
 
     A Pearson VII distribution function (see
-    http://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution),
+    https://en.wikipedia.org/wiki/Pearson_distribution#The_Pearson_type_VII_distribution),
     with four parameers: ``amplitude`` (:math:`A`), ``center``
     (:math:`\mu`), ``sigma`` (:math:`\sigma`), and ``exponent`` (:math:`m`)
     in
@@ -116,7 +116,7 @@ scalar or array, depending on the input ``x``.
 .. function:: students_t(x, amplitude=1, center=0, sigma=1)
 
     A Student's t distribution function (see
-    http://en.wikipedia.org/wiki/Student%27s_t-distribution), with three
+    https://en.wikipedia.org/wiki/Student%27s_t-distribution), with three
     Parameters: ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`) and
     ``sigma`` (:math:`\sigma`) in
 
@@ -133,7 +133,7 @@ scalar or array, depending on the input ``x``.
 .. function:: breit_wigner(x, amplitude=1, center=0, sigma=1, q=1)
 
     A Breit-Wigner-Fano distribution function (see
-    http://en.wikipedia.org/wiki/Fano_resonance>), with four Parameters:
+    https://en.wikipedia.org/wiki/Fano_resonance>), with four Parameters:
     ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`), ``sigma``
     (:math:`\sigma`), and ``q`` (:math:`q`) in
 
@@ -144,7 +144,7 @@ scalar or array, depending on the input ``x``.
 .. function:: lognormal(x, cen=0, sigma=1)
 
     A Log-normal distribution function (see
-    http://en.wikipedia.org/wiki/Lognormal), with three Parameters
+    https://en.wikipedia.org/wiki/Lognormal), with three Parameters
     ``amplitude`` (:math:`A`), ``center`` (:math:`\mu`) and ``sigma``
     (:math:`\sigma`) in
 

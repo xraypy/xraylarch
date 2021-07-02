@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.52 documentation</title>
+    <title>13.9. XAFS: Computing anomalous scattering factors from XAFS data &#8212; xraylarch 0.9.53 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -134,14 +134,14 @@ ReflEXAFS).</p>
 described in <span id="id3">[<a class="reference internal" href="bibliography.html#id75" title="J. O. Cross, M. Newville, J. J. Rehr, L. B. Sorensen, C. E. Bouldin, G. Watson, T. Gouder, G. H. Lander, and M. I. Bell. Inclusion of local structure effects in theoretical x-ray resonant scattering amplitudes using ab initio x-ray-absorption spectra calculations. Phys. Rev. B, 58:11215–11225, Nov 1998. doi:10.1103/PhysRevB.58.11215.">Cross et al. (1998)</a>]</span>.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
 data and the tabulated <span class="math notranslate nohighlight">\(f''(E)\)</span>) Kramers-Kronig transform.  This
-algorithm is described in <span id="id4">[<a class="reference internal" href="bibliography.html#id76" title="Koji Ohta and Hatsuo Ishida. Comparison among several numerical integration methods for kramers-kronig transformation. Appl. Spectrosc., 42(6):952–957, Aug 1988. URL: http://as.osa.org/abstract.cfm?URI=as-42-6-952.">Ohta and Ishida (1988)</a>]</span>.  This implementation
+algorithm is described in <span id="id4">[<a class="reference internal" href="bibliography.html#id76" title="Koji Ohta and Hatsuo Ishida. Comparison among several numerical integration methods for kramers-kronig transformation. Appl. Spectrosc., 42(6):952–957, Aug 1988. URL: https://as.osa.org/abstract.cfm?URI=as-42-6-952.">Ohta and Ishida (1988)</a>]</span>.  This implementation
 casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast – not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.</p>
 <p>The input <span class="math notranslate nohighlight">\(\mu(E)\)</span> data are first matched to the tabulated
 <span class="math notranslate nohighlight">\(f''(E)\)</span> using the MBACK algorithm of <span id="id5">[<a class="reference internal" href="bibliography.html#id28" title="Tsu-Chien Weng, Geoffrey S. Waldo, and James E. Penner-Hahn. A method for normalization of X-ray absorption spectra. Journal of Synchrotron Radiation, 12(4):506–510, Jul 2005. doi:10.1107/S0909049504034193.">Weng, Waldo, and Penner-Hahn (2005)</a>]</span> with an
-option of using the modification proposed by <span id="id6">[<a class="reference internal" href="bibliography.html#id29" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: http://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.
+option of using the modification proposed by <span id="id6">[<a class="reference internal" href="bibliography.html#id29" title="Julia C. Lee, Jingen Xiang, Bruce Ravel, Jeffrey Kortright, and Kathryn Flanagan. Condensed matter astrophysics: a prescription for determining the species-specific composition and quantity of interstellar dust using x-rays. The Astrophysical Journal, 702(2):970, 2009. URL: https://stacks.iop.org/0004-637X/702/i=2/a=970, doi:0004-637X/702/i=2/a=970.">Lee et al. (2009)</a>]</span>.
 This scales the measured <span class="math notranslate nohighlight">\(\mu(E)\)</span> to the size of the tabulated
 function and adjusts the overall slope of the data to best match the
 tabulated value.  This is seen at the top of Figure
@@ -339,7 +339,7 @@ algorithm would be more appropriate for L edge data.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>
