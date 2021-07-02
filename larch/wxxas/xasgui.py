@@ -140,7 +140,7 @@ class XASFrame(wx.Frame):
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
         self.statusbar.SetStatusWidths([-3, -1])
-        statusbar_fields = [" ", "initializing...."]
+        statusbar_fields = [" ", "ready"]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         self.Show()
@@ -201,7 +201,7 @@ class XASFrame(wx.Frame):
         panel = wx.Panel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.title = SimpleText(panel, 'initializing...', size=(300, -1))
+        self.title = SimpleText(panel, ' ', size=(300, -1))
         self.title.SetFont(Font(FONTSIZE+2))
 
         ir = 0
@@ -691,9 +691,14 @@ class XASFrame(wx.Frame):
 
         for i in range(self.nb.GetPageCount()):
             nbpage = self.nb.GetPage(i)
+            timers = getattr(nbpage, 'timers')
+            for t in timers.values():
+                t.Stop()
+            
             if hasattr(nbpage, 'subframes'):
                 for name, wid in nbpage.subframes.items():
                     destroy(wid)
+
                     
                 
         time.sleep(0.05)

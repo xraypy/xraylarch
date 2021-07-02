@@ -37,11 +37,12 @@ if HAS_WXPYTHON:
     from . import larchfilling
     from . import readlinetextctrl
 
+
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check,
                          MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
-                         FRAMESTYLE, hms, DateTimeCtrl, Button,
+                         FRAMESTYLE, hms, DateTimeCtrl, Button, TextCtrl,
                          ToggleButton, BitmapButton, Choice, YesNo,
-                         SimpleText, TextCtrl, LabeledTextCtrl, HyperText,
+                         SimpleText, LabeledTextCtrl, HyperText,
                          get_icon, GUIColors, OkCancel,
                          FileOpen, FileSave, SelectWorkdir, fix_filename,
                          SavedParameterDialog, FileCheckList,
@@ -65,7 +66,7 @@ if HAS_WXPYTHON:
 
     from .cif_browser import CIFFrame
 
-    
+
     _larch_builtins = {'_sys.wx': dict(gcd=gcd,
                                        databrowser=databrowser,
                                        filepromspt=fileprompt,
@@ -118,6 +119,7 @@ if HAS_WXPYTHON:
                                     plot_path_r=xafsplots.plot_path_r,
                                     plot_paths_k=xafsplots.plot_paths_k,
                                     plot_paths_r=xafsplots.plot_paths_r,
+                                    plot_feffdat=xafsplots.plot_feffdat,
                                     plot_diffkk=xafsplots.plot_diffkk,
                                     plot_prepeaks_fit=xafsplots.plot_prepeaks_fit,
                                     plot_prepeaks_baseline=xafsplots.plot_prepeaks_baseline,
@@ -192,3 +194,7 @@ else:
                                        xrf_plot=nullfunc,
                                        xrf_oplot=nullfunc,
                                        fit_plot=nullfunc)
+
+
+
+    

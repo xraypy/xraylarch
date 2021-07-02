@@ -142,11 +142,12 @@ class ParameterWidgets(object):
                 expr = ''
             self._saved_expr = expr
             self.expr = wx.TextCtrl(parent, -1, value=expr,
-                                      size=(expr_size, -1))
+                                    size=(expr_size, -1),
+                                    style=wx.TE_PROCESS_ENTER)
             self.widgets.append(self.expr)
             self.expr.Enable(vary_choice==PAR_CON)
-            self.expr.Bind(wx.EVT_CHAR, self.onExprChar)
-            self.expr.Bind(wx.EVT_KILL_FOCUS, self.onExprKillFocus)
+            self.expr.Bind(wx.EVT_TEXT_ENTER, self.onExpr)
+            self.expr.Bind(wx.EVT_KILL_FOCUS, self.onExpr)
             SetTip(self.expr, 'Enter constraint expression')
 
             if param.expr not in (None, 'None', ''):
@@ -205,16 +206,6 @@ class ParameterWidgets(object):
     def onValue(self, evt=None, value=None):
         if value is not None:
             self.param.value = value
-
-    def onExprChar(self, evt=None):
-        key = evt.GetKeyCode()
-        if key == wx.WXK_RETURN:
-            self.onExpr(value=self.expr.GetValue())
-        evt.Skip()
-
-    def onExprKillFocus(self, evt=None):
-        self.onExpr(value=self.expr.GetValue())
-        evt.Skip()
 
     def onExpr(self, evt=None, value=None):
         if value is None and evt is not None:

@@ -564,8 +564,8 @@ class EXAFSPanel(TaskPanel):
         self.larch_eval(cmd.format(**conf))
         self.last_plot = 'one'
         self.parent.SetFocus()
-        if evt is not None:
-            evt.Skip()
+        # if evt is not None:
+        #     evt.Skip()
 
     def onPlotSel(self, evt=None):
         if self.skip_plotting:
@@ -596,5 +596,5 @@ class EXAFSPanel(TaskPanel):
         self.larch_eval("redraw(win=1, show_legend=True)")
         self.last_plot = 'selected'
         self.parent.SetFocus()
-        if evt is not None:
-            evt.Skip()
+        # if evt is not None:
+        #    evt.Skip()

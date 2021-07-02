@@ -25,7 +25,7 @@ from larch.xafs import feff8l, feff6l
 from larch.utils.paths import unixpath
 from larch.site_config import user_larchdir
 
-from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, TextCtrl,
+from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, 
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, GUIColors, CEN, LEFT, FRAMESTYLE,
@@ -116,7 +116,7 @@ class CIFFrame(wx.Frame):
 
         minlab = SimpleText(panel, ' Mineral Name: ')
         minhint= SimpleText(panel, ' example: hem* ')
-        wids['mineral'] = TextCtrl(panel, value='',   size=(250, -1))
+        wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1))
 
         authlab = SimpleText(panel, ' Author Name: ')
         wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1))

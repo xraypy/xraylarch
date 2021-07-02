@@ -2,6 +2,7 @@ import time
 import os
 import ast
 import shutil
+import string
 from sys import exc_info
 import numpy as np
 np.seterr(all='ignore')
@@ -29,7 +30,7 @@ from larch.utils.strutils import fix_varname
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
-                         SetTip, GridPanel, get_icon, SimpleText, TextCtrl,
+                         SetTip, GridPanel, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, RIGHT, LEFT, FRAMESTYLE, Font,
                          FONTSIZE, FileSave, FileOpen, flatnotebook,
@@ -119,7 +120,8 @@ COMMANDS['add_path'] = """
 _paths['{title:s}'] = feffpath('{fullpath:s}',
                   label='{label:s}', degen=1,
                   s02='{amp:s}',     e0='{e0:s}',
-                  deltar='{delr:s}', sigma2='{sigma2:s}', c3='{c3:s}')
+                  deltar='{delr:s}', sigma2='{sigma2:s}',
+                  third='{third:s}', ei='{ei:s}')
 """
 
 COMMANDS['ff2chi']   = """# make dict of paths, sum them using a group of parameters
@@ -144,6 +146,8 @@ for label, path in {paths_name:s}.items():
          window='{kwindow:s}', kweight={kweight:.3f})
 #endfor
 """
+
+
 
 default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4, kwindow=FTWINDOWS[0], rmin=1, rmax=4)
 
@@ -341,7 +345,7 @@ class EditParamsFrame(wx.Frame):
                         delattr(self.paramgroup, pname)
 
             self.model.set_data(self.paramgroup, selected=None,
-                                pathkeys=self.feffit_panel.get_pathkeys())                                
+                                pathkeys=self.feffit_panel.get_pathkeys())
             self.model.read_data()
             self.feffit_panel.get_pathpage('parameters').Rebuild()
         dlg.Destroy()
@@ -377,11 +381,10 @@ class EditParamsFrame(wx.Frame):
 
     def onRefresh(self, event=None):
         self.paramgroup = self.feffit_panel.get_paramgroup()
-        self.model.set_data(self.paramgroup, 
+        self.model.set_data(self.paramgroup,
                             pathkeys=self.feffit_panel.get_pathkeys())
         self.model.read_data()
         self.feffit_panel.get_pathpage('parameters').Rebuild()
-
 
     def onClose(self, event=None):
         self.Destroy()
@@ -441,7 +444,7 @@ class FeffitParamsPanel(wx.Panel):
         params = group2params(pargroup)
         for pname, par in params.items():
             if any([pname.endswith('_%s' % phash) for phash in hashkeys]):
-                continue            
+                continue
             if pname in self.parwids:
                 pwids = self.parwids[pname]
                 varstr = 'vary' if par.vary else 'fix'
@@ -526,7 +529,9 @@ class FeffPathPanel(wx.Panel):
 
         self.parent = parent
         self.title = title
+        self.user_label = user_label
         self.feffit_panel = feffit_panel
+        self.losefocus_active = False
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -538,25 +543,25 @@ class FeffPathPanel(wx.Panel):
         self.geom = geom
 
         self.wids = wids = {}
-
         def SLabel(label, size=(80, -1), **kws):
             return  SimpleText(panel, label, size=size, style=LEFT, **kws)
 
-        def make_parwid(name, expr, val=''):
-            wids[name] = TextCtrl(panel, expr, size=(250, -1),
-                                  action=partial(self.onExpression, name=name))
-            wids[name].UseBackgroundColour()
-            wids[name+'_val'] = SimpleText(panel, val, size=(150, -1), style=LEFT)
+        for name, expr in (('label', user_label),
+                           ('amp',  f'{degen:.1f} * s02'),
+                           ('e0',  'e0'),
+                           ('delr',  f'delr_{title}'),
+                           ('sigma2',  f'sigma2_{title}'),
+                           ('third',  ''),
+                           ('ei',  '')):
+            self.wids[name] = wx.TextCtrl(panel, -1, size=(250, -1),
+                                          value=expr, style=wx.TE_PROCESS_ENTER)
+            wids[name+'_val'] = SimpleText(panel, '', size=(150, -1), style=LEFT)
 
-        make_parwid('label', user_label)
-        make_parwid('amp',  f'{degen:.1f} * s02')
-        make_parwid('e0',  'e0')
-        make_parwid('delr',  f'delr_{title}')
-        make_parwid('sigma2',  f'sigma2_{title}')
-        make_parwid('c3',  '')
         wids['use'] = Check(panel, default=True, label='Use in Fit?', size=(100, -1))
         wids['del'] = Button(panel, 'Remove This Path', size=(150, -1),
                              action=self.onRemovePath)
+        wids['plot_feffdat'] = Button(panel, 'Plot F(k)', size=(150, -1),
+                             action=self.onPlotFeffDat)
 
         title1 = f'{dirname:s}: {feffdat_file:s}  {absorber:s} {edge:s} edge'
         title2 = f'Reff={reff:.4f},  Degen={degen:.1f}   {geom:s}'
@@ -567,29 +572,47 @@ class FeffPathPanel(wx.Panel):
         panel.Add(wids['del'])
         panel.Add(SLabel(title2, size=(375, -1)),
                   dcol=3, style=wx.ALIGN_LEFT, newrow=True)
+        panel.Add(wids['plot_feffdat'])
 
         panel.AddMany((SLabel('Label'),     wids['label'], wids['label_val']),  newrow=True)
         panel.AddMany((SLabel('Amplitude'), wids['amp'],    wids['amp_val']), newrow=True)
         panel.AddMany((SLabel('E0 '),       wids['e0'],     wids['e0_val']),  newrow=True)
         panel.AddMany((SLabel('Delta R'),   wids['delr'],   wids['delr_val']), newrow=True)
         panel.AddMany((SLabel('sigma2'),    wids['sigma2'], wids['sigma2_val']), newrow=True)
-        panel.AddMany((SLabel('C3'),        wids['c3'],     wids['c3_val']),   newrow=True)
+        panel.AddMany((SLabel('third'),     wids['third'],  wids['third_val']),   newrow=True)
+        panel.AddMany((SLabel('Eimag'),     wids['ei'],  wids['ei_val']),   newrow=True)
         panel.pack()
         sizer= wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
 
+    def enable_losefocus(self):
+        # print("enable losefocus")
+        for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
+            self.wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
+            self.wids[name].Bind(wx.EVT_KILL_FOCUS, partial(self.onExpression, name=name))
+        self.losefocus_active = True
+        self.wids['label'].SetValue(self.user_label)
+
+    def set_userlabel(self, label):
+        self.wids['label'].SetValue(label)
+
     def get_expressions(self):
         out = {'use': self.wids['use'].IsChecked()}
-        for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'c3'):
+        for key in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             val = self.wids[key].GetValue().strip()
             if len(val) == 0: val = '0'
             out[key] = val
         return out
 
     def onExpression(self, event=None, name=None):
-        if name in (None, 'label'):
+        if name is None:
             return
+        expr = self.wids[name].GetValue()
+        if name == 'label':
+            time.sleep(0.001)
+            return
+
         expr = self.wids[name].GetValue().strip()
         if len(expr) < 1:
             return
@@ -621,7 +644,13 @@ class FeffPathPanel(wx.Panel):
         self.wids[name].SetForegroundColour(fgcol)
         self.wids[name].SetBackgroundColour(bgcol)
         self.wids[name].SetOwnBackgroundColour(bgcol)
+        if event is not None:
+            event.Skip()
 
+
+    def onPlotFeffDat(self, event=None):
+        cmd = f"plot_feffdat(_paths['{self.title}'], title='Feff data for path {self.title}')"
+        self.feffit_panel.larch_eval(cmd)
 
     def onRemovePath(self, event=None):
         msg = f"Delete Path {self.title:s}?"
@@ -637,7 +666,7 @@ class FeffPathPanel(wx.Panel):
     def update_values(self):
         pargroup = self.feffit_panel.get_paramgroup()
         _eval = pargroup.__params__._asteval
-        for par in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
+        for par in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             expr = self.wids[par].GetValue().strip()
             if len(expr) > 0:
                 try:
@@ -649,7 +678,6 @@ class FeffPathPanel(wx.Panel):
                     self.feffit_panel.update_params_for_expr(expr)
 
 
-
 class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
@@ -657,6 +685,8 @@ class FeffitPanel(TaskPanel):
                            config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
+        self.timers = {'paths': wx.Timer(self)}
+        self.Bind(wx.EVT_TIMER, self.onPathTimer, self.timers['paths'])
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -675,8 +705,7 @@ class FeffitPanel(TaskPanel):
 
 
     def build_display(self):
-        self.paths_nb = flatnotebook(self, {},
-                                     on_change=self.onPathsNBChanged)
+        self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged)
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
 
@@ -783,6 +812,20 @@ class FeffitPanel(TaskPanel):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
         if callable(updater):
             updater()
+
+    def onPathTimer(self, event=None):
+        for i in range(self.paths_nb.GetPageCount()):
+            text = self.paths_nb.GetPageText(i).strip().lower()
+            page = self.paths_nb.GetPage(i)
+            if not text.lower().startswith('param'):
+                losefocus_active = getattr(page, 'losefocus_active', True)
+                losefocus_method = getattr(page, 'enable_losefocus', None)
+                if not losefocus_active and callable(losefocus_method):
+                    losefocus_method()
+                wids = getattr(page, 'wids', {})
+                if 'label' in wids:
+                    wids['label'].SetValue(page.user_label)
+        self.timers['paths'].Stop()
 
 
     def get_config(self, dgroup=None):
@@ -1011,11 +1054,14 @@ class FeffitPanel(TaskPanel):
                                   geom=pathinfo.geom,
                                   feffit_panel=self)
 
-        for pname  in ('amp', 'e0', 'delr', 'sigma2', 'c3'):
+        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+
+        for pname  in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             pathpanel.onExpression(name=pname)
 
-        time.sleep(0.01)
-        self.paths_nb.AddPage(pathpanel, f' {title:s} ', True)
+        pdat = {'title': title, 'fullpath': feffdat_file, 'use':True}
+        pdat.update(pathpanel.get_expressions())
+        self.larch_eval(COMMANDS['add_path'].format(**pdat))
 
         sx,sy = self.GetSize()
         self.SetSize((sx, sy+1))
@@ -1023,11 +1069,12 @@ class FeffitPanel(TaskPanel):
         ipage, pagepanel = self.xasmain.get_nbpage('feffit')
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
+        self.timers['paths'].Start(1000)
 
     def get_pathkeys(self):
         _paths = getattr(self.larch.symtable, '_paths', {})
         return [p.hashkey for p in _paths.values()]
-        
+
     def get_paramgroup(self):
         pgroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pgroup is None:
@@ -1244,7 +1291,6 @@ class FeffitPanel(TaskPanel):
 
     def update_start_values(self, params):
         """fill parameters with best fit values"""
-        print("update staring values")
         self.params_panel.set_init_values(params)
         for i in range(self.paths_nb.GetPageCount()):
             if 'parameters' in self.paths_nb.GetPageText(i).strip().lower():
@@ -1322,7 +1368,8 @@ class FeffitResultFrame(wx.Frame):
                                            size=(250, -1))
         panel = scrolled.ScrolledPanel(splitter)
 
-        panel.SetMinSize((775, 575))
+        panel.SetMinSize((600, 575))
+        panel.SetSize((850, 575))
         self.colors = GUIColors()
 
         # title row
@@ -1388,13 +1435,14 @@ class FeffitResultFrame(wx.Frame):
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit#',  width=75)
-        sview.AppendTextColumn(' N_data', width=75)
-        sview.AppendTextColumn(' N_vary', width=75)
-        sview.AppendTextColumn('\u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' Fit#',   width=65)
+        sview.AppendTextColumn(' N_data', width=65)
+        sview.AppendTextColumn(' N_vary', width=65)
+        sview.AppendTextColumn(' N_idp',  width=75)
+        sview.AppendTextColumn('\u03c7\u00B2', width=85)
         sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
-        sview.AppendTextColumn('Akaike Info', width=110)
-        sview.AppendTextColumn('Bayesian Info', width=110)
+        sview.AppendTextColumn('Akaike Info', width=95)
+        sview.AppendTextColumn('Bayesian Info', width=95)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -1716,12 +1764,13 @@ class FeffitResultFrame(wx.Frame):
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
             args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'chi_square', 'chi2_reduced', 'aic', 'bic'):
+            for attr in ('ndata', 'nvarys', 'n_independent', 'chi_square',
+                         'chi2_reduced', 'aic', 'bic'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val
                 else:
-                    val = gformat(val, 10)
+                    val = gformat(val, 9)
                 args.append(val)
             wids['stats'].AppendItem(tuple(args))
         wids['data_title'].SetLabel(self.datagroup.filename)
@@ -1737,7 +1786,7 @@ class FeffitResultFrame(wx.Frame):
         path_hashkeys = []
         for ds in result.datasets:
             path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
-        
+
         wids = self.wids
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['params'].DeleteAllItems()

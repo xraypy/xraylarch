@@ -176,7 +176,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
      emin       min energy to show, absolute or relative to E0 [None, start of data]
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
-     title      string for plot titlel [None, may use filename if available]
+     title      string for plot title [None, may use filename if available]
      new        bool whether to start a new plot [True]
      delay_draw bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
@@ -269,7 +269,7 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
-     title       string for plot titlel [None, may use filename if available]
+     title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
@@ -335,7 +335,7 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
      emin        min energy to show, absolute or relative to E0 [-25]
      emax        max energy to show, absolute or relative to E0 [None, end of data]
      label       string for label [``None``: 'mu']
-     title       string for plot titlel [None, may use filename if available]
+     title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
@@ -383,7 +383,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      show_window  bool whether to also plot k-window [True]
      scale_window bool whether to scale k-window to max |chi(k)| [True]
      label        string for label [``None`` to use 'chi']
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
@@ -440,7 +440,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_imag    bool whether to plot Im[chi(R)] [False]
      show_window  bool whether to R-windw for back FT (will be scaled) [False]
      label        string for label [``None`` to use 'chir']
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      rmax         max R to show [None, end of data]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
@@ -510,7 +510,7 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
      kmax         max k to show [None, end of data]
      show_chik    bool whether to also plot k-weighted chi(k) [False]
      label        string for label [``None`` to use 'chi']
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
@@ -563,7 +563,7 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
      show_mag     bool whether to plot wavelet magnitude [True]
      show_real    bool whether to plot real part of wavelet [False]
      show_imag    bool whether to plot imaginary part of wavelet [False]
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      rmax         max R to show [None, end of data]
      kmax         max k to show [None, end of data]
      kweight      k-weight to use to construct wavelet [None, take from group]
@@ -613,7 +613,7 @@ def plot_chifit(dataset, kmin=0, kmax=None, kweight=None, rmax=None,
      show_mag     bool whether to plot |chidr(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
      offset       vertical offset to use for y-array [0]
@@ -773,7 +773,7 @@ def plot_paths_k(dataset, offset=-1, kmin=0, kmax=None, title=None,
      kmax         max k to show [None, end of data]
      offset       vertical offset to use for paths for plot [-1]
      new          bool whether to start a new plot [True]
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      win          integer plot window to use [1]
      delay_draw   bool whether to delay draw until more traces are added [False]
      kws          additional keyword arguments are passed to plot()
@@ -816,7 +816,7 @@ def plot_paths_r(dataset, offset=-0.25, rmax=None, show_mag=True,
      show_mag     bool whether to plot |chi(R)| [True]
      show_real    bool whether to plot Re[chi(R)] [False]
      show_imag    bool whether to plot Im[chi(R)] [False]
-     title        string for plot titlel [None, may use filename if available]
+     title        string for plot title [None, may use filename if available]
      new          bool whether to start a new plot [True]
      delay_draw   bool whether to delay draw until more traces are added [False]
      win          integer plot window to use [1]
@@ -1150,7 +1150,7 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      show_e0     bool whether to show E0 [False]
      label       string for label [``None``: 'mu']
-     title       string for plot titlel [None, may use filename if available]
+     title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
@@ -1186,4 +1186,47 @@ def plot_diffkk(dgroup, emin=None, emax=None, new=True, label=None,
             zorder = zorder - 3
 
     redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+#enddef
+
+def plot_feffdat(feffpath, with_phase=True, title=None,
+                 new=True, delay_draw=False, win=1, _larch=None):
+    """
+    plot_feffdat(feffpath, with_phase=True, title=None, new=True, win=1):
+
+    Plot Feff's magnitude and phase as a function of k for a FeffPath
+
+    Arguments
+    ----------
+     feffpath    feff path as read by feffpath()
+     with_pase   whether to plot phase(k) as well as magnitude [True]
+     title       string for plot title [None, may use filename if available]
+     new         bool whether to start a new plot [True]
+     delay_draw  bool whether to delay draw until more traces are added [False]
+     win         integer plot window to use [1]
+
+    Notes
+    -----
+     1. The input data group must have the following attributes:
+         energy, mu, bkg, norm, e0, pre_edge, edge_step, filename
+    """
+    if hasattr(feffpath, '_feffdat'):
+        fdat = feffpath._feffdat
+    else:
+        raise ValueError("must pass in a Feff path as from feffpath()")
+    #endif
+
+    _plot(fdat.k, fdat.mag_feff, xlabel=plotlabels.k,
+          ylabel='|F(k)|', title=title, label='magnitude', zorder=20,
+          new=new, win=win, show_legend=True,
+          delay_draw=delay_draw, linewidth=3, _larch=_larch)
+
+    if with_phase:
+        _plot(fdat.k, fdat.pha_feff, xlabel=plotlabels.k,
+              y2label='Phase(k)', title=title, label='phase', side='right',
+              zorder=10, new=False, win=win, show_legend=True,
+              delay_draw=delay_draw, linewidth=3, _larch=_larch)
+    #endif
+
+    if delay_draw:
+        redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
 #enddef
