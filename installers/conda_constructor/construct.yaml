@@ -2,9 +2,9 @@ name:  xraylarch
 version: 2021-07
 
 channels:
+    - https://conda.anaconda.org/conda-forge/
     - https://repo.continuum.io/pkgs/main
     - https://repo.continuum.io/pkgs/msys2 [win]
-    - https://conda.anaconda.org/conda-forge/
 
 installer_type: pkg [osx]
 welcome_image: larch_3cones.png
@@ -51,3 +51,9 @@ specs:
     - pywin32          # [win64]
     - console_shortcut # [win64]
     - powershell_shortcut # [win64]
+    - python.app       # [osx]
+    - wxpython
+    - tomopy
+    - pymatgen
+    - pycifrw
+    - numdifftools
