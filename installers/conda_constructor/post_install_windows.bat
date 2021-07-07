@@ -2,7 +2,7 @@
 REM # install wxpython and tomopy from conda-forge
 
 REM # use pip to install some known-safe-for-pip packages
-%PREFIX%\Scripts\pip.exe install xraylarch wxmplot wxutils pyepics epicsapps psycopg2-binary pyfai
+%PREFIX%\Scripts\pip.exe install xraylarch wxmplot wxutils pyepics epicsapps psycopg2-binary 
 
 REM # make desktop icons
 %PREFIX%\Scripts\larch.exe -m
