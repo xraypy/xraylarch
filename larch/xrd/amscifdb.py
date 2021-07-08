@@ -489,8 +489,19 @@ class AMSCIFDB():
         cif = CifParser(filename)
         cifkey = list(cif._cif.data.keys())[0]
         dat = cif._cif.data[cifkey].data
-        formula = dat['_chemical_formula_sum']
-        compound  = dat.get('_chemical_compound_source', '<missing>')
+        formula = None
+        for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
+            if formname in dat:
+                formula = dat[formname]
+
+        if formula is None:
+            raise ValueError(f'Cannot read chemical formula from file {filename:s}')
+
+        compound = '<missing>'
+        for compname in ('_chemical_compound_source', '_chemical_name_systematic'):
+            if compname in dat:
+                compound = dat[compname]
+
 
         # get spacegroup and symmetry
         sgroup_name = dat['_symmetry_space_group_name_H-M']
@@ -516,19 +527,19 @@ class AMSCIFDB():
         min_name = dat.get('_chemical_name_mineral', '<missing>')
         mineral = self._get_tablerow('minerals', min_name)
 
-        pubs = self.get_publications(journalname=dat['_journal_name_full'],
-                                    year=dat['_journal_year'],
-                                    volume=dat['_journal_volume'],
-                                    page_first=dat['_journal_page_first'],
-                                    page_last=dat['_journal_page_last'])
+        pubs = self.get_publications(journalname=dat.get('_journal_name_full', 'nojournal'),
+                                    year=dat.get('_journal_year', 00),
+                                    volume=dat.get('_journal_volume', ''),
+                                    page_first=dat.get('_journal_page_first', ''),
+                                    page_last=dat.get('_journal_page_last', ''))
 
         if pubs is None:
-            pub = self.add_publication(dat['_journal_name_full'],
-                                       dat['_journal_year'],
-                                       dat['_publ_author_name'],
-                                       volume=dat['_journal_volume'],
-                                       page_first=dat['_journal_page_first'],
-                                       page_last=dat['_journal_page_last'])
+            pub = self.add_publication(dat.get('_journal_name_full', 'nojournal'),
+                                       dat.get('_journal_year', 00),
+                                       dat.get('_publ_author_name', ['noauthor']),
+                                       volume=dat.get('_journal_volume', ''),
+                                       page_first=dat.get('_journal_page_first', ''),
+                                       page_last=dat.get('_journal_page_last', ''))
         else:
             pub = pubs[0]
 
@@ -558,7 +569,7 @@ class AMSCIFDB():
         self.add_cifdata(cif_id, mineral.id, pub.id, sgroup.id,
                          formula=formula, compound=compound,
                          formula_title=dat.get('_amcsd_formula_title', '<missing>'),
-                         pub_title=dat['_publ_section_title'],
+                         pub_title=dat.get('_publ_section_title', '<missing>'),
                          atoms_sites=json.dumps(dat['_atom_site_label']),
                          atoms_x=put_optarray(dat, '_atom_site_fract_x'),
                          atoms_y=put_optarray(dat, '_atom_site_fract_y'),
@@ -716,7 +727,7 @@ class AMSCIFDB():
         if mineral_name is None:
             mineral_name = ''
         mineral_name = mineral_name.strip()
-            
+
         if mineral_name not in (None, '') and ('*' in mineral_name or
                                                '^' in mineral_name or
                                                '$' in mineral_name):
@@ -796,7 +807,7 @@ class AMSCIFDB():
                     try:
                         min_wt = min([float(x) for x in occ])
                     except:
-                        min_wt = 0                            
+                        min_wt = 0
                     if min_wt > 0.96:
                         good.append(cif_id)
             matches = good
