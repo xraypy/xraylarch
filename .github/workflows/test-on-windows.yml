@@ -12,28 +12,18 @@ jobs:
         python-version: ['3.7', '3.8', '3.9']
     steps:
     - uses: actions/checkout@v2
-    - name: Install Miniforge Python
+    - name: update miniconda
       run: |
         printenv
-        set prefix=%USERPROFILE%\xraylarch
-        set condaurl=https://github.com/conda-forge/miniforge/releases/download/4.10.2-0/
-        set condafile=Miniforge3-Windows-x86_64.exe
-        set CONDA_EXE=
-        set CONDA_PYTHON_EXE=
-        set CONDA_PREFIX=
-        set PROJ_LIB=
-        bitsadmin /transfer getminiconda /download /priority normal %condaurl%/%condafile% %~dp0%condafile%
-        %~dp0%condafile% /InstallationType=JustMe /RegisterPython=0 /S /D=%prefix%
-
-        set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
-
-        call %prefix%\condabin\conda update -n base -yc defaults --all
-        call %prefix%\condabin\conda activate base
-        call %prefix%\condabin\conda config --set auto_activate_base true
-
+        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
+        call %CONDA%\condabin\conda update -n base -yc defaults --all
+        call %CONDA%\condabin\conda activate base
+        call %CONDA%\condabin\conda config --set auto_activate_base true
+        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
     - name: Install conda and dependencies
       run: |
         printenv
+        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
