@@ -21,7 +21,7 @@ post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.9.5
+    - python==3.8.10
     - conda
     - openssl
     - setuptools
@@ -57,3 +57,5 @@ specs:
     - pymatgen
     - pycifrw
     - numdifftools
+    - pyfai
+    
