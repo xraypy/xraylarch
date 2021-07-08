@@ -12,16 +12,28 @@ jobs:
         python-version: ['3.7', '3.8', '3.9']
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Add conda to system path
+    - name: Install Miniforge Python
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
+	printenv
+        set prefix=%USERPROFILE%\xraylarch
+        set condaurl=https://github.com/conda-forge/miniforge/releases/download/4.10.2-0/
+        set condafile=Miniforge3-Windows-x86_64.exe
+        set CONDA_EXE=
+        set CONDA_PYTHON_EXE=
+        set CONDA_PREFIX=
+        set PROJ_LIB=
+        bitsadmin /transfer getminiconda /download /priority normal %condaurl%/%condafile% %~dp0%condafile%
+        %~dp0%condafile% /InstallationType=JustMe /RegisterPython=0 /S /D=%prefix%
+
+        set PATH=%prefix%;%prefix%\bin;%prefix%\condabin;%prefix%\Scripts;%PATH%
+
+        call %prefix%\condabin\conda update -n base -yc defaults --all
+        call %prefix%\condabin\conda activate base
+        call %prefix%\condabin\conda config --set auto_activate_base true
+
     - name: Install conda and dependencies
       run: |
+        printenv
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
