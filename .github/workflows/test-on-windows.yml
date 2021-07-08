@@ -15,15 +15,14 @@ jobs:
     - name: update miniconda
       run: |
         printenv
-        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
+        set PATH=$CONDA/bin:$CONDA/condabin:$CONDA/Scripts:$PATH
         call %CONDA%\condabin\conda update -n base -yc defaults --all
         call %CONDA%\condabin\conda activate base
         call %CONDA%\condabin\conda config --set auto_activate_base true
-        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
+
     - name: Install conda and dependencies
       run: |
         printenv
-        PATH=%CONDA%/bin:%CONDA%/condabin:%CONDA%/Scripts:%PATH%
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
