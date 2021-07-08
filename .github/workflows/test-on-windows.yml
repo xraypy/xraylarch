@@ -16,9 +16,9 @@ jobs:
       run: |
         printenv
         set PATH=$CONDA/bin:$CONDA/condabin:$CONDA/Scripts:$PATH
-        call %CONDA%\condabin\conda update -n base -yc defaults --all
-        call %CONDA%\condabin\conda activate base
-        call %CONDA%\condabin\conda config --set auto_activate_base true
+	conda update -n base -yc defaults --all
+	conda activate base
+        conda config --set auto_activate_base true
 
     - name: Install conda and dependencies
       run: |
