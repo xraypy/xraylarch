@@ -16,14 +16,10 @@ jobs:
       run: |
         set PATH=$CONDA/bin:$CONDA/condabin:$CONDA/Scripts:$PATH
         printenv
-        $CONDA\condabin\conda update -n base -yc defaults --all
-        $CONDA\condabin\conda activate base
-        $CONDA\condabin\conda config --set auto_activate_base true
-
     - name: Install conda and dependencies
       run: |
-        echo 'PATH ', $PATH	
-        $CONDA\condabin\conda config --set always_yes yes --set changeps1 no
+        printenv 
+        conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
         conda info -a
