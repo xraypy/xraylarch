@@ -1032,6 +1032,8 @@ class FeffitPanel(TaskPanel):
         atoms.pop(0)
         atoms.pop()
         title = '_'.join(atoms) + "%d" % (round(100*pathinfo.reff))
+        for c in ',.[](){}<>+=-?/\\&%$#@!|:;"\'':
+            title = title.replace(c, '')
         if title in self.paths_data:
             btitle = title
             i = -1
