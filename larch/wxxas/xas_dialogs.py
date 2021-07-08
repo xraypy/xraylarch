@@ -553,7 +553,7 @@ class RebinDataDialog(wx.Dialog):
         ngroup.mu     = ngroup.ydat = ydat
 
         ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
-        self.parent.process_normalization(dgroup)
+        self.parent.process_normalization(ngroup)
         self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
