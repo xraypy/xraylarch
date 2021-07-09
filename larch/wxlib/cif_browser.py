@@ -23,6 +23,7 @@ import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.utils.paths import unixpath
+from larch.utils.strutils import fix_filename
 from larch.site_config import user_larchdir
 
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, 
@@ -346,9 +347,7 @@ class CIFFrame(wx.Frame):
         for cif in all_cifs:
             try:
                 label = cif.formula.replace(' ', '')
-                mineral = cif.mineral.name
-                if mineral == '<missing>':
-                    mineral = cif.formula_title
+                mineral = cif.get_mineralname()
                 year = cif.publication.year
                 journal= cif.publication.journalname
                 label = f'{label}: {mineral}, {year} {journal}'
@@ -427,10 +426,7 @@ class CIFFrame(wx.Frame):
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
-        mineral = cc.mineral.name
-        if mineral == '<missing>':
-            mineral = cc.formula_title
-
+        mineral = cc.get_mineralname()
         folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
         folder = unixpath(os.path.join(self.feff_folder, folder))
 
@@ -479,8 +475,6 @@ class CIFFrame(wx.Frame):
                 fname in ('chi.dat', 'xmu.dat', 'misc.dat')):
                 os.unlink(unixpath(os.path.join(folder, fname)))
 
-
-
     def feff_output(self, text):
         out = self.wids['feffout_text']
         ix, p = self.get_nbpage('Feff Output')
@@ -500,15 +494,8 @@ class CIFFrame(wx.Frame):
         if len(fefftext) < 20:
             return
         cc = self.current_cif
-        if cc.mineral.name == '<missing>':
-            dirname = f'{cc.formula_title}_cif{cc.ams_id:d}'
-        else:
-            dirname = f'{cc.mineral.name}_cif{cc.ams_id:d}'
-        dirname = unixpath(os.path.join(self.feff_folder, dirname))
-        if not os.path.exists(dirname):
-            os.makedirs(dirname, mode=493)
-        fname = unixpath(os.path.join(dirname, 'feff.inp'))
-
+        minname = cc.get_mineralname()
+        fname = f'{minname}_cif{cc.ams_id:d}_feff.inp'
         wildcard = 'Feff Inut files (*.inp)|*.inp|All files (*.*)|*.*'
         path = FileSave(self, message='Save Feff File',
                         wildcard=wildcard,
@@ -523,10 +510,8 @@ class CIFFrame(wx.Frame):
         if self.current_cif is None:
             return
         cc = self.current_cif
-        if cc.mineral.name == '<missing>':
-            fname = f'{cc.formula_title}_cif{cc.ams_id:d}.cif'
-        else:
-            fname = f'{cc.mineral.name}_cif{cc.ams_id:d}.cif'
+        minname = cc.get_mineralname()
+        fname = f'{minname}_cif{cc.ams_id:d}.cif'
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
         path = FileSave(self, message='Save CIF File',
                         wildcard=wildcard,
@@ -612,7 +597,7 @@ class CIFFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save CIF File\tCtrl+S",
                  "Save CIF File",  self.onExportCIF)
 
-        MenuItem(self, fmenu, "Save &Feff6 File\tCtrl+F",
+        MenuItem(self, fmenu, "Save &Feff Inp File\tCtrl+F",
                  "Save Feff6 File",  self.onExportFeff)
 
         fmenu.AppendSeparator()
