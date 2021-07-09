@@ -267,11 +267,13 @@ class EditParamsFrame(wx.Frame):
         toppan.Add(Button(toppan, "Remove Selected",   action=self.onRemove, size=(175,-1)), newrow=True)
         toppan.Add(Button(toppan, "'Fix' Selected",    action=self.onFix, size=(175, -1)))
         toppan.Add(Button(toppan, "Force Refresh",     action=self.onRefresh, size=(200, -1)))
-        npan = wx.Panel(self)
+        npan = wx.Panel(toppan)
         nsiz = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.par_name = wx.TextCtrl(npan, value='<name>', size=(125, -1))
-        self.par_expr = wx.TextCtrl(npan, value='<expression or value>', size=(250, -1))
+        self.par_name = wx.TextCtrl(npan, -1, value='par_name', size=(125, -1),
+                                    style=wx.TE_PROCESS_ENTER)
+        self.par_expr = wx.TextCtrl(npan, -1, value='<expression or value>', size=(250, -1),
+                                    style=wx.TE_PROCESS_ENTER)
         nsiz.Add(SimpleText(npan, "Add Parameter:"), 0)
         nsiz.Add(self.par_name, 0)
         nsiz.Add(self.par_expr, 1, wx.GROW|wx.ALL)
