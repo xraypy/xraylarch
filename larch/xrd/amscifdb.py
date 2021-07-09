@@ -128,6 +128,15 @@ class CifStructure():
             return '<CifStructure empty>'
         return f'<CifStructure, ams_id={self.ams_id:d}, formula={self.formula:s}>'
 
+    def get_mineralname(self):
+        minname = self.mineral.name
+        if minname == '<missing>':
+            minname =self.formula_title
+        if minname == '<missing>':
+            minname = 'missing'
+        return minname
+
+        
     @property
     def ciftext(self):
         if self._ciftext is not None:
