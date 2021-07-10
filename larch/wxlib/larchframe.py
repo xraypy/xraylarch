@@ -131,8 +131,8 @@ class LarchWxShell(object):
             self.output.WriteText(text)
             pos1 = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, self.textstyle)
-            self.output.EmulateKeyPress(wx.KeyEvent())
-            self.input.SetFocus()
+            # self.output.EmulateKeyPress(wx.KeyEvent())
+            # self.input.SetFocus()
 
     def flush(self, *args):
         self.output.Refresh()
@@ -339,10 +339,9 @@ class LarchFrame(wx.Frame):
         fico = os.path.join(larch.site_config.icondir, ICON_FILE)
         if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-
+        self.mainpanel.write_banner()
         if with_raise:
             self.Raise()
-        wx.CallAfter(self.mainpanel.write_banner)
 
     def Raise(self):
         self.SetStatusText("Ready", 0)
