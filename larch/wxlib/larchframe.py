@@ -278,9 +278,10 @@ class LarchPanel(wx.Panel):
         self.objtree.onRefresh()
 
     def AddToHistory(self, text=''):
-        if len(text.strip()) > 0:
-            self.hist_buff.append(text)
-            self.hist_mark = len(self.hist_buff)
+        for tline in text.split('\n'):
+            if len(tline.strip()) > 0:
+                self.hist_buff.append(tline)
+                self.hist_mark = len(self.hist_buff)
 
     def onText(self, event=None):
         text =  event.GetString()
