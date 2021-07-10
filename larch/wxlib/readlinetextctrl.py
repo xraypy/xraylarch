@@ -11,10 +11,10 @@ DEFAULT_HISTORYFILE = '.wxlarch_hist'
 MAX_HISTORY = 5000
 
 class ReadlineTextCtrl(wx.TextCtrl):
-    def __init__(self, parent=None, id=-1, value='', size=(400,-1),
+    def __init__(self, parent=None, value='', size=(400,-1),
                  historyfile=None,
                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER, **kws):
-        wx.TextCtrl.__init__(self, parent, id, value=value,
+        wx.TextCtrl.__init__(self, parent, -1, value=value,
                              size=size, style=style, **kws)
 
         self._val = value
