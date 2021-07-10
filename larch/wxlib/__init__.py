@@ -14,7 +14,6 @@ fileprompt       launch file browser to select files.
 
 import platform
 import os
-import locale
 
 HAS_WXPYTHON = False
 try:
@@ -29,7 +28,6 @@ _larch_builtins = {}
 FONTSIZE = 9
 if platform.system() == 'Windows':
     FONTSIZE = 10
-    locale.setlocale(locale.LC_ALL, 'C')
 
 if platform.system() == 'Darwin':
     FONTSIZE = 12

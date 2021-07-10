@@ -1,5 +1,6 @@
 import os
 import sys
+import locale
 import numpy
 import time
 from argparse import ArgumentParser
@@ -50,6 +51,11 @@ def use_mpl_wxagg():
         except ImportError:
             pass
     return False
+
+def set_locale():
+    """set locale to 'C' for these applications, 
+    may need some improvement!!"""
+    locale.setlocale(locale.LC_ALL, 'C')
 
 def fix_darwin_shebang(script):
     """
@@ -146,6 +152,7 @@ def make_cli(description='run larch program', filedesc='data file'):
 # entry points:
 def run_gse_mapviewer():
     """Mapviewer"""
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
@@ -158,6 +165,7 @@ def run_gse_mapviewer():
 
 def run_gse_dtcorrect():
     """GSE DT Correct """
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
@@ -166,6 +174,7 @@ def run_gse_dtcorrect():
 
 def run_xas_viewer():
     """XAS Viewer """
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     vinfo = check_larchversion()
@@ -175,6 +184,7 @@ def run_xas_viewer():
 
 def run_xrfdisplay():
     """ XRF Display"""
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
@@ -185,6 +195,7 @@ def run_xrfdisplay():
 
 def run_xrfdisplay_epics():
     """XRF Display for Epics Detectors"""
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
@@ -193,12 +204,14 @@ def run_xrfdisplay_epics():
 
 def run_xrd1d_viewer():
     """XRD Display for 1D patternss"""
+    set_locale()
     use_mpl_wxagg()
     from larch.wxxrd import XRD1DViewer
     XRD1DViewer().MainLoop()
 
 def run_xrd2d_viewer():
     """XRD Display for 2D patternss"""
+    set_locale()
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
@@ -299,6 +312,7 @@ def run_larch():
 
     # run wx Larch GUI
     elif args.wxgui:
+        set_locale()        
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
         install_extras(extras_epics)
@@ -309,6 +323,7 @@ def run_larch():
     # run wx Larch CLI
     else:
         if with_wx:
+            set_locale()            
             use_mpl_wxagg()
             install_extras(extras_wxgraph)
         install_extras(extras_epics)
