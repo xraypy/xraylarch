@@ -206,10 +206,10 @@ class LarchPanel(wx.Panel):
 
         ipanel = wx.Panel(self, -1)
 
-        self.prompt = wx.StaticText(ipanel, -1, 'Larch>', size=(65,-1),
+        self.prompt = wx.StaticText(ipanel, label='Larch>', size=(65,-1),
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
-        self.input = ReadlineTextCtrl(ipanel, -1,  '', size=(525,-1),
+        self.input = ReadlineTextCtrl(ipanel, value='', size=(525,-1),
                                       historyfile=historyfile,
                                       style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
@@ -237,13 +237,16 @@ class LarchPanel(wx.Panel):
                                        input  = self.input)
 
         self.objtree.SetRootObject(self.larchshell.symtable)
+        root = self.objtree.tree.GetRootItem()
+        self.objtree.tree.Expand(root)
+
+    def write_banner(self):
+        print(' larchshell banner ')
         self.larchshell.set_textstyle('text2')
         self.larchshell.write(make_banner([wx]))
         self.larchshell.write("\n  \n")
         self.larchshell.set_textstyle('text')
-        root = self.objtree.tree.GetRootItem()
-        self.objtree.tree.Expand(root)
-
+        
     def update(self):
         self.objtree.onRefresh()
 
@@ -305,6 +308,7 @@ class LarchFrame(wx.Frame):
 
         if with_raise:
             self.Raise()
+        wx.CallAfter(self.mainpanel.write_banner)
 
     def Raise(self):
         self.SetStatusText("Ready", 0)
