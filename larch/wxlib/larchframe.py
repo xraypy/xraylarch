@@ -131,9 +131,9 @@ class LarchWxShell(object):
             self.output.WriteText(text)
             pos1 = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, self.textstyle)
-            # self.output.EmulateKeyPress(wx.KeyEvent())
-            # self.input.SetFocus()
-
+            self.output.SetInsertionPoint(pos1)
+            self.output.Refresh()
+            
     def flush(self, *args):
         self.output.Refresh()
         self.needs_flush = False
