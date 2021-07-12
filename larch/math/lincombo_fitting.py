@@ -84,7 +84,7 @@ def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.in
 
 def lincombo_fit(group, components, weights=None, minvals=None,
                  maxvals=None, arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                 sum_to_one=True):
+                 sum_to_one=True, vary_e0=False):
 
     """perform linear combination fitting for a group
 
@@ -99,6 +99,7 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     xmin        x-value for start of fit range [-inf]
     xmax        x-value for end of fit range [+inf]
     sum_to_one  bool, whether to force weights to sum to 1.0 [True]
+    vary_e0     bool, whether to vary e0 for data in fit [False]
 
     Returns
     -------
@@ -134,14 +135,20 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     if maxvals in (None, [None]*ncomps):
         maxvals = np.inf * np.ones(ncomps)
 
-    def lincombo_resid(params, data, ycomps):
+    def lincombo_resid(params, xdata, ydata, ycomps):
         npts, ncomps = ycomps.shape
-        sum = np.zeros(npts)
+        if params['e0_shift'].vary:
+            y = interp(xdata, ydata, xdata+params['e0_shift'].value, kind='cubic')
+        else:
+            y = ydata*1.0
+        resid = -y
         for i in range(ncomps):
-            sum += ycomps[:, i] * params['c%i' % i].value
-        return sum-data
+            resid += ycomps[:, i] * params['c%i' % i].value
+        return resid
 
     params = lmfit.Parameters()
+    e0_val = 0.01 if vary_e0 else 0.
+    params.add('e0_shift', value=e0_val, vary=vary_e0)
     for i in range(ncomps):
         params.add('c%i' % i, value=weights[i], min=minvals[i], max=maxvals[i])
 
@@ -152,11 +159,12 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     expr = ['c%i' % i for i in range(ncomps)]
     params.add('total', expr='+'.join(expr))
 
-    result = lmfit.minimize(lincombo_resid, params, args=(ydat, ycomps))
+    result = lmfit.minimize(lincombo_resid, params, args=(xdat, ydat, ycomps))
 
     # gather results
     weights, weights_lstsq = OrderedDict(), OrderedDict()
     params, fcomps = OrderedDict(), OrderedDict()
+    params['e0_shift'] = copy.deepcopy(result.params['e0_shift'])
     for i in range(ncomps):
         label = get_label(components[i])
         weights[label] = result.params['c%i' % i].value
@@ -168,14 +176,20 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     if 'total' in result.params:
         params['total'] = copy.deepcopy(result.params['total'])
 
-    yfit = ydat + lincombo_resid(result.params, ydat, ycomps)
+    npts, ncomps = ycomps.shape
+    yfit = np.zeros(npts)
+    for i in range(ncomps):
+        yfit += ycomps[:, i] * result.params['c%i' % i].value
+    if params['e0_shift'].vary:
+        yfit = interp(xdat+params['e0_shift'].value, yfit, xdat, kind='cubic')
+
     return Group(result=result, chisqr=result.chisqr, redchi=result.redchi,
                  params=params, weights=weights, weights_lstsq=weights_lstsq,
                  xdata=xdat, ydata=ydat, yfit=yfit, ycomps=fcomps)
 
 def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
                     arrayname='norm', xmin=-np.inf, xmax=np.inf,
-                    max_ncomps=None, sum_to_one=True):
+                    max_ncomps=None, sum_to_one=True, vary_e0=False):
     """perform linear combination fittings for a group with all combinations
     of 2 or more of the components given
 
@@ -191,6 +205,7 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
       xmax        x-value for end of fit range [+inf]
       sum_to_one  bool, whether to force weights to sum to 1.0 [True]
       max_ncomps  int or None: max number of components to use [None -> all]
+      vary_e0     bool, whether to vary e0 for data in fit [False]
 
     Returns
     -------
@@ -234,7 +249,7 @@ def lincombo_fitall(group, components, weights=None, minvals=None, maxvals=None,
 
             o = lincombo_fit(group, comps, weights=_wts, arrayname=arrayname,
                              minvals=_min, maxvals=_max, xmin=xmin, xmax=xmax,
-                             sum_to_one=sum_to_one)
+                             sum_to_one=sum_to_one, vary_e0=vary_e0)
             all.append(o)
     # sort outputs by reduced chi-square
     return sorted(all, key=lambda x: x.redchi)
