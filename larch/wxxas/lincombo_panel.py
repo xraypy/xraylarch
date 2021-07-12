@@ -44,7 +44,7 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 defaults = dict(elo=-5.e5, ehi=5.e5, elo_rel=-40, ehi_rel=110,
                 fitspace=norm, all_combos=True, sum_to_one=True,
-                show_e0=False, show_fitrange=True)
+                vary_e0=False, show_e0=False, show_fitrange=True)
 
 MAX_COMPONENTS = 20
 
@@ -209,12 +209,12 @@ class LinComboResultFrame(wx.Frame):
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitStat)
         sview.AppendTextColumn(' Fit #', width=50)
-        sview.AppendTextColumn(' N_vary', width=50)
-        sview.AppendTextColumn(' N_eval', width=60)
-        sview.AppendTextColumn(' \u03c7\u00B2', width=110)
-        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=110)
+        sview.AppendTextColumn(' N_vary', width=70)
+        sview.AppendTextColumn(' N_eval', width=70)
+        sview.AppendTextColumn(' \u03c7\u00B2', width=100)
+        sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=100)
+        sview.AppendTextColumn(' R Factor', width=110)
         sview.AppendTextColumn(' Akaike Info', width=110)
-        sview.AppendTextColumn(' Bayesian Info', width=110)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -305,7 +305,7 @@ class LinComboResultFrame(wx.Frame):
 
         for i, res in enumerate(results):
             args = ['%2.2d' % (i+1)]
-            for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'aic', 'bic'):
+            for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'rfactor', 'aic'):
                 val = getattr(res.result, attr)
                 if isinstance(val, int):
                     val = '%d' % val
@@ -320,6 +320,7 @@ class LinComboResultFrame(wx.Frame):
         wview = self.wids['weights'] = dv.DataViewListCtrl(wpan, style=DVSTYLE)
         wview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFitParam)
         wview.AppendTextColumn(' Fit #', width=50)
+        wview.AppendTextColumn(' E shift', width=75)
 
         for i, cname in enumerate(form['comp_names']):
             wview.AppendTextColumn(cname, width=100)
@@ -334,7 +335,7 @@ class LinComboResultFrame(wx.Frame):
             this.Alignment = this.Renderer.Alignment = align
 
         for i, res in enumerate(results):
-            args = ['%2.2d' % (i+1)]
+            args = ['%2.2d' % (i+1), "%.4f" % res.params['e0_shift'].value]
             for cname in form['comp_names'] + ['total']:
                 val = '--'
                 if cname in res.params:
@@ -636,6 +637,7 @@ class LinearComboPanel(TaskPanel):
 
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
+        wids['vary_e0'] = Check(panel, label='Allow data to shift energy in fit?', default=False)
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
         max_ncomps = self.add_floatspin('max_ncomps', value=10, digits=0, increment=1,
@@ -659,6 +661,7 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['fit_group'], dcol=2)
         panel.Add(wids['fit_selected'], dcol=3)
         add_text('Fit Options: ')
+        panel.Add(wids['vary_e0'], dcol=2)
         panel.Add(wids['sum_to_one'], dcol=2)
         panel.Add((10, 10), dcol=1, newrow=True)
         panel.Add(wids['all_combos'], dcol=2)
@@ -772,7 +775,7 @@ class LinearComboPanel(TaskPanel):
 
         for attr in ('fitspace', ): # 'plotchoice'):
             opts[attr] = wids[attr].GetStringSelection()
-        for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
+        for attr in ('all_combos', 'vary_e0', 'sum_to_one', 'show_fitrange'):
             opts[attr] = wids[attr].GetValue()
 
         for attr, wid in wids.items():
@@ -844,7 +847,7 @@ class LinearComboPanel(TaskPanel):
 result = {func:s}({gname:s}, [{comps:s}],
             xmin={elo:.4f}, xmax={ehi:.4f},
             arrayname='{arrayname:s}',
-            sum_to_one={sum_to_one},
+            sum_to_one={sum_to_one}, vary_e0={vary_e0},
             weights=[{weights:s}],
             minvals=[{minvals:s}],
             maxvals=[{maxvals:s}],
