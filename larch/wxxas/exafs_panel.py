@@ -491,16 +491,22 @@ class EXAFSPanel(TaskPanel):
             return
         self.last_process_time = time.time()
         self.skip_process = True
-        self.process(dgroup=self.dgroup)
+        self.process(dgroup=self.dgroup, read_form=True)
         self.skip_process = False
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         plotter()
 
-    def process(self, dgroup=None, **kws):
+    def process(self, dgroup=None, read_form=True, **kws):
+        conf = {}
         if dgroup is not None:
             self.dgroup = dgroup
+            conf = getattr(dgroup, self.configname, None)
+            if conf is None:
+                conf = self.get_config(dgroup=dgroup)
 
-        conf = self.read_form()
+        if read_form:
+            conf.update(self.read_form())
+            
         conf.update(kws)
         if not 'fft_kwindow' in conf:
             return
@@ -585,7 +591,8 @@ class EXAFSPanel(TaskPanel):
                 conf['group'] = dgroup.groupname
                 conf['label'] = dgroup.filename
                 conf['offset'] = offset * i
-                self.process(dgroup=dgroup)
+                if not hasattr(dgroup, 'chir_mag'):
+                    self.process(dgroup=dgroup, read_form=False)
 
                 extra = """, offset={offset:.3f}, win=1, delay_draw=True,
     label='{label:s}', new={new:s})"""
