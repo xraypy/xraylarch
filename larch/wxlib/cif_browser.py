@@ -536,6 +536,22 @@ class CIFFrame(wx.Frame):
                 message = "Error reading CIF File: %s\n" % path
                 r = Popup(self, message, title)
 
+
+    def onImportFeff(self, event=None):
+        wildcard = 'Feff input files (*.inp)|*.inp|All files (*.*)|*.*'
+        path = FileOpen(self, message='Open Feff Input File',
+                        wildcard=wildcard,
+                        default_file='feff.inp')
+        if path is not None:
+            fefftext = None
+            with open(path, 'r') as fh:
+                fefftext = fh.read()
+            if fefftext is not None:
+                self.wids['feff_text'].SetValue(fefftext)
+                self.wids['run_feff'].Enable()
+                i, p = self.get_nbpage('Feff Input')
+                self.nb.SetSelection(i)            
+
     def onFeffFolder(self, eventa=None):
         "prompt for Feff Folder"
         dlg = wx.DirDialog(self, 'Select Main Folder for Feff Calculations',
@@ -596,6 +612,9 @@ class CIFFrame(wx.Frame):
 
         MenuItem(self, fmenu, "&Save CIF File\tCtrl+S",
                  "Save CIF File",  self.onExportCIF)
+
+        MenuItem(self, fmenu, "Open Feff Input File",
+                 "Open Feff input File",  self.onImportFeff)        
 
         MenuItem(self, fmenu, "Save &Feff Inp File\tCtrl+F",
                  "Save Feff6 File",  self.onExportFeff)
