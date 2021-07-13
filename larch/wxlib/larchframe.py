@@ -50,9 +50,6 @@ class LarchWxShell(object):
             self._larch.run_init_scripts()
         self.writer  = self._larch.writer
         self.symtable = self._larch.symtable
-        # if self.output is not None:
-        #    self.encoding = sys.stdout.encoding
-        #    sys.stdout = self
 
         self.objtree = wxparent.objtree
 
@@ -160,7 +157,7 @@ class LarchWxShell(object):
             return
         else:
             if add_history:
-                self.input.AddToHistory(text)
+                self.parent.AddToHistory(text)
                 self.write("%s\n" % text)
             ret = self._larch.eval(text, add_history=add_history)
             if self._larch.error:
@@ -210,12 +207,21 @@ class LarchPanel(wx.Panel):
         self.prompt = wx.StaticText(ipanel, label='Larch>', size=(65,-1),
                                     style=wx.ALIGN_CENTER|wx.ALIGN_RIGHT)
 
-        self.input = ReadlineTextCtrl(ipanel, value='', size=(525, -1),
-                                      historyfile=historyfile,
-                                      style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
+        self.input = wx.TextCtrl(ipanel, value='', size=(525,-1),
+                                 style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
 
+        # self.input = ReadlineTextCtrl(ipanel, value='', size=(525, -1),
+        #                               historyfile=historyfile,
+        #                              style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
+        if sys.platform == 'darwin':
+            self.input.Bind(wx.EVT_KEY_UP,  self.onChar)
+        else:
+            self.input.Bind(wx.EVT_CHAR,  self.onChar)
 
+        self.hist_buff = []
+        self.hist_mark = 0
+        
         isizer = wx.BoxSizer(wx.HORIZONTAL)
         isizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
         isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.EXPAND)
@@ -257,6 +263,40 @@ class LarchPanel(wx.Panel):
         else:
             wx.CallAfter(self.larchshell.eval, text)
 
+    def onChar(self, event=None):
+        key = event.GetKeyCode()
+        entry  = self.input.GetValue().strip()
+        pos = self.input.GetSelection()
+        ctrl = event.ControlDown()
+
+        # really, the order here is important:
+        # 1. return sends to ValidateEntry
+        if key == wx.WXK_RETURN and len(entry) > 0:
+            pass
+        if key == wx.WXK_UP:
+            self.hist_mark = max(0, self.hist_mark-1)
+            try:
+                self.input.SetValue(self.hist_buff[self.hist_mark])
+                self.input.SetInsertionPointEnd()
+            except:
+                pass
+        elif key == wx.WXK_DOWN:
+            self.hist_mark += 1
+            if self.hist_mark >= len(self.hist_buff):
+                self.input.SetValue('')
+            else:
+                self.input.SetValue(self.hist_buff[self.hist_mark])
+                self.input.SetInsertionPointEnd()
+        event.Skip()
+
+    def AddToHistory(self, text=''):
+        for tline in text.split('\n'):
+            if len(tline.strip()) > 0:
+                self.hist_buff.append(tline)
+                self.hist_mark = len(self.hist_buff)
+        
+
+            
 class LarchFrame(wx.Frame):
     def __init__(self, parent=None, _larch=None, is_standalone=True,
                  historyfile='history_larchgui.lar', with_inspection=False,
@@ -496,6 +536,7 @@ class LarchFrame(wx.Frame):
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
 
+       
     def onText(self, event=None):
         text =  event.GetString()
         self.larchshell.write("%s\n" % text)
@@ -503,7 +544,7 @@ class LarchFrame(wx.Frame):
         if text.lower() in ('quit', 'exit'):
             self.onExit()
         else:
-            self.input.AddToHistory(text)
+            self.panel.AddToHistory(text)
             wx.CallAfter(self.larchshell.eval, text)
 
 
