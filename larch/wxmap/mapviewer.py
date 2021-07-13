@@ -1263,7 +1263,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
                 _xrd = xrmfile.get_xrd2d_area(aname, **kwargs)
             except:
                 _xrd = None
-            print("Got XRD ", _xrd)
             if _xrd is None:
                 print("no 2D XRD Data")
                 return
