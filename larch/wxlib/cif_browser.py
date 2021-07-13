@@ -23,10 +23,10 @@ import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.utils.paths import unixpath
-from larch.utils.strutils import fix_filename
+from larch.utils.strutils import fix_filename, unique_name
 from larch.site_config import user_larchdir
 
-from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox, 
+from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          FloatCtrl, SetTip, get_icon, SimpleText, pack,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, GUIColors, CEN, LEFT, FRAMESTYLE,
@@ -76,6 +76,11 @@ class CIFFrame(wx.Frame):
         if not os.path.exists(path):
             os.makedirs(path, mode=493)
         self.feff_folder = path
+        self.runs_list = []
+        for fname in os.listdir(self.feff_folder):
+            full = os.path.join(self.feff_folder, fname)
+            if os.path.isdir(full):
+                self.runs_list.append(fname)
 
         self.statusbar = self.CreateStatusBar(2, style=wx.STB_DEFAULT_STYLE)
         self.statusbar.SetStatusWidths([-3, -1])
@@ -129,7 +134,6 @@ class CIFFrame(wx.Frame):
         elemhint= SimpleText(panel, ' example: O, Fe, Si ')
 
         wids['contains_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
-
         exelemlab = SimpleText(panel, ' Exclude Elements: ')
         wids['excludes_elements'] = wx.TextCtrl(panel, value='', size=(250, -1))
         wids['excludes_elements'].Enable()
@@ -143,6 +147,9 @@ class CIFFrame(wx.Frame):
         wids['search']   = Button(panel, 'Search for CIFs',  action=self.onSearch)
         # wids['get_feff'] = Button(panel, 'Get Feff Input', action=self.onGetFeff)
         # wids['get_feff'].Disable()
+
+        folderlab = SimpleText(panel, ' Feff Folder: ')
+        wids['run_folder'] = wx.TextCtrl(panel, value='calc1', size=(250, -1))
 
         wids['run_feff'] = Button(panel, ' Run Feff ',
                                   action=self.onRunFeff)
@@ -226,6 +233,9 @@ class CIFFrame(wx.Frame):
         sizer.Add(wids['feffvers'],     (ir, 3), (1, 1), LEFT, 3)
         sizer.Add(wids['run_feff'],     (ir, 5), (1, 1), LEFT, 3)
 
+        ir += 1
+        sizer.Add(folderlab,             (ir, 0), (1, 1), LEFT, 3)
+        sizer.Add(wids['run_folder'],    (ir, 1), (1, 4), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
@@ -398,7 +408,7 @@ class CIFFrame(wx.Frame):
         self.onGetFeff()
 
     def onGetFeff(self, event=None):
-        cif   = self.current_cif
+        cif  = self.current_cif
         if cif is None:
             return
         edge  = self.wids['edge'].GetStringSelection()
@@ -406,29 +416,36 @@ class CIFFrame(wx.Frame):
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
         csize = self.wids['cluster_size'].GetValue()
+        mineral = cif.get_mineralname()
+        folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
+        folder = unique_name(folder, self.runs_list)
 
         fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
                                     absorber_site=asite, version8=version8)
 
+        self.wids['run_folder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)
         self.wids['run_feff'].Enable()
         i, p = self.get_nbpage('Feff Input')
         self.nb.SetSelection(i)
 
     def onRunFeff(self, event=None):
-        if self.current_cif is None:
-            return
         fefftext = self.wids['feff_text'].GetValue()
-        if len(fefftext) < 20:
+        if len(fefftext) < 100 or 'ATOMS' not in fefftext:
             return
-        cc = self.current_cif
-        edge  = self.wids['edge'].GetStringSelection()
+        # cc = self.current_cif
+        # edge  = self.wids['edge'].GetStringSelection()
+        # catom = self.wids['central_atom'].GetStringSelection()
+        # asite = int(self.wids['site'].GetStringSelection())
+        # mineral = cc.get_mineralname()
+        # folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
+        # folder = unixpath(os.path.join(self.feff_folder, folder))
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
-        catom = self.wids['central_atom'].GetStringSelection()
-        asite = int(self.wids['site'].GetStringSelection())
-        mineral = cc.get_mineralname()
-        folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cc.ams_id:d}'
-        folder = unixpath(os.path.join(self.feff_folder, folder))
+
+        fname = self.wids['run_folder'].GetValue()
+        fname = unique_name(fname, self.runs_list)
+        self.runs_list.append(fname)
+        folder = unixpath(os.path.join(self.feff_folder, fname))
 
         if not os.path.exists(folder):
             os.makedirs(folder, mode=493)
@@ -436,11 +453,10 @@ class CIFFrame(wx.Frame):
         self.nb.SetSelection(ix)
 
         self.folder = folder
-
         out = self.wids['feffout_text']
         out.Clear()
         out.SetInsertionPoint(0)
-        out.WriteText(f'########\n###\n# Run Feff at {folder:s}\n')
+        out.WriteText(f'########\n###\n# Run Feff in folder: {folder:s}\n')
         out.SetInsertionPoint(out.GetLastPosition())
         out.WriteText('###\n########\n')
         out.SetInsertionPoint(out.GetLastPosition())
@@ -544,13 +560,17 @@ class CIFFrame(wx.Frame):
                         default_file='feff.inp')
         if path is not None:
             fefftext = None
+            _, fname = os.path.split(path)
+            fname = fname.replace('.inp', '_run')
+            fname = unique_name(fname, self.runs_list)
             with open(path, 'r') as fh:
                 fefftext = fh.read()
             if fefftext is not None:
                 self.wids['feff_text'].SetValue(fefftext)
+                self.wids['run_folder'].SetValue(fname)
                 self.wids['run_feff'].Enable()
                 i, p = self.get_nbpage('Feff Input')
-                self.nb.SetSelection(i)            
+                self.nb.SetSelection(i)
 
     def onFeffFolder(self, eventa=None):
         "prompt for Feff Folder"
@@ -614,7 +634,7 @@ class CIFFrame(wx.Frame):
                  "Save CIF File",  self.onExportCIF)
 
         MenuItem(self, fmenu, "Open Feff Input File",
-                 "Open Feff input File",  self.onImportFeff)        
+                 "Open Feff input File",  self.onImportFeff)
 
         MenuItem(self, fmenu, "Save &Feff Inp File\tCtrl+F",
                  "Save Feff6 File",  self.onExportFeff)
