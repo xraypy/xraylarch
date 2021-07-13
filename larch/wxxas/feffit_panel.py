@@ -26,7 +26,7 @@ from larch import Group, site_config
 from larch.math import index_of
 from larch.fitting import group2params, param
 from larch.utils.jsonutils import encode4js, decode4js
-from larch.utils.strutils import fix_varname
+from larch.utils.strutils import fix_varname, fix_filename
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
@@ -134,8 +134,8 @@ if len(_ff2chi_paths) > 0:
 COMMANDS['do_feffit'] = """# build feffit dataset, run feffit
 _feffit_dataset = feffit_dataset(data={groupname:s}, transform={trans:s}, paths={paths:s})
 _feffit_result = feffit({params}, _feffit_dataset)
-
 if not hasattr({groupname:s}, 'feffit_history'): {groupname}.feffit_history = []
+_feffit_result.label = 'Fit %i' % (1+len({groupname}.feffit_history))
 {groupname:s}.feffit_history.insert(0, _feffit_result)
 """
 
@@ -1327,7 +1327,7 @@ class FeffitResultFrame(wx.Frame):
     def __init__(self, parent=None, feffit_panel=None, datagroup=None,
                   **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
-                          style=FRAMESTYLE, size=(850, 700), **kws)
+                          style=FRAMESTYLE, size=(900, 700), **kws)
 
         self.outforms = {'chik': 'chi(k), no k-weight',
                          'chikw': 'chi(k), k-weighted',
@@ -1406,6 +1406,10 @@ class FeffitResultFrame(wx.Frame):
         wids['show_script']  = Button(panel,'Show Feffit Script',
                                         action=self.onShowScript, size=(175, -1))
 
+        wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
+        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1), action=self.onUpdateLabel)        
+   
+        
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
@@ -1431,7 +1435,7 @@ class FeffitResultFrame(wx.Frame):
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LEFT)
-        subtitle = SimpleText(panel, '  (Fit #01 is most recent)',
+        subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
@@ -1439,14 +1443,15 @@ class FeffitResultFrame(wx.Frame):
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit#',   width=65)
-        sview.AppendTextColumn(' N_data', width=65)
-        sview.AppendTextColumn(' N_vary', width=65)
-        sview.AppendTextColumn(' N_idp',  width=75)
-        sview.AppendTextColumn('\u03c7\u00B2', width=85)
-        sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
+        sview.AppendTextColumn(' Label', width=120)
+        sview.AppendTextColumn('N_paths', width=75)
+        sview.AppendTextColumn('N_vary', width=70)
+        sview.AppendTextColumn('N_idp',  width=70)
+        sview.AppendTextColumn('\u03c7\u00B2', width=80)
+        sview.AppendTextColumn('reduced \u03c7\u00B2', width=90)
+        sview.AppendTextColumn('R Factor', width=90)
         sview.AppendTextColumn('Akaike Info', width=95)
-        sview.AppendTextColumn('Bayesian Info', width=95)
+
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -1463,12 +1468,21 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
+        sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
+
+
+        irow += 1
+        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
+
+        irow += 1
         title = SimpleText(panel, '[[Variables]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LEFT)
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         self.wids['copy_params'] = Button(panel, 'Update Model with these values',
-                                          size=(250, -1), action=self.onCopyParams)
+                                          size=(225, -1), action=self.onCopyParams)
 
         sizer.Add(self.wids['copy_params'], (irow, 1), (1, 3), LEFT)
 
@@ -1559,18 +1573,29 @@ class FeffitResultFrame(wx.Frame):
 
     def onShowPathParams(self, event=None):
         result = self.get_fitresult()
-        text  = feffit_report(result)
-        title = f'Report for {self.datagroup.filename} fit #{1+self.nfit:d}'
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.txt'
+        text = f'# Feffit Report for {self.datagroup.filename} fit "{result.label}"\n'
+        text = text + feffit_report(result)
+        title = f'Report for {self.datagroup.filename} fit "{result.label}"'
+        fname = fix_filename(f'{self.datagroup.filename}_{result.label}.txt')
         self.show_report(text, title=title, default_filename=fname)
 
     def onShowScript(self, event=None):
         result = self.get_fitresult()
-        text  = '\n'.join(result.commands)
-        title = f'Script for {self.datagroup.filename} fit #{1+self.nfit:d}'
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.lar'
+        text = [f'# Feffit Script for {self.datagroup.filename} fit "{result.label}"']                
+        text.extend(result.commands)
+        text = '\n'.join(text)
+        title = f'Script for {self.datagroup.filename} fit "{result.label}"'
+        fname = fix_filename(f'{self.datagroup.filename}_{result.label}.lar')
         self.show_report(text, title=title, default_filename=fname,
                          wildcard='Larch/Python Script (*.lar)|*.lar')
+
+    def onUpdateLabel(self, event=None):
+        result = self.get_fitresult()
+        item = self.wids['stats'].GetSelectedRow()
+        
+        result.label = self.wids['fit_label'].GetValue()
+        
+        self.show_results()
 
     def onPlot(self, event=None):
         opts = {'build_fitmodel': False}
@@ -1586,11 +1611,12 @@ class FeffitResultFrame(wx.Frame):
         trans  = result.datasets[0].transform
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
+        opts['label'] = f'{result_name.label}'
         opts['pargroup_name'] = f'{result_name}.paramgroup'
         opts['paths_name']    = f'{result_name}.datasets[0].paths'
         opts['pathsum_name']  = f'{result_name}.datasets[0].model'
         opts['dgroup']  = dgroup
-        opts['title'] = f'{self.datagroup.filename} fit #{self.nfit:d}'
+        opts['title'] = f'{self.datagroup.filename} "{result.label}"'
 
         for attr in ('kmin', 'kmax', 'dk', 'rmin', 'rmax', 'fitspace'):
             opts[attr] = getattr(trans, attr)
@@ -1603,7 +1629,7 @@ class FeffitResultFrame(wx.Frame):
     def onSaveFitCommand(self, event=None):
         wildcard = 'Larch/Python Script (*.lar)|*.lar|All files (*.*)|*.*'
         result = self.get_fitresult()
-        fname = f'{self.datagroup.filename}_fit{self.nfit:d}.lar'
+        fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}.lar')
 
         path = FileSave(self, message='Save text to file',
                         wildcard=wildcard, default_file=fname)
@@ -1616,7 +1642,9 @@ class FeffitResultFrame(wx.Frame):
 
     def onSaveFit(self, evt=None, form='chikw'):
         "Save arrays to text file"
-        fname = f'{self.datagroup.filename}_fit{(1+self.nfit):d}_{form}'
+        result = self.get_fitresult()
+        
+        fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}_{form}')
         fname = fname.replace('.', '_')
         fname = fname + '.txt'
 
@@ -1630,7 +1658,7 @@ class FeffitResultFrame(wx.Frame):
         result = self.get_fitresult()
         text = feffit_report(result)
         desc = self.outforms[form]
-        buff = [f'# Results for {self.datagroup.filename} fit #{1+self.nfit:d}: {desc}']
+        buff = [f'# Results for {self.datagroup.filename} "{result.label}": {desc}']
 
         for line in text.split('\n'):
             buff.append('# %s' % line)
@@ -1767,9 +1795,9 @@ class FeffitResultFrame(wx.Frame):
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.fit_history):
-            args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'n_independent', 'chi_square',
-                         'chi2_reduced', 'aic', 'bic'):
+            args = [res.label, "%.d" % (len(res.datasets[0].paths))]
+            for attr in ('nvarys', 'n_independent', 'chi_square',
+                         'chi2_reduced', 'rfactor', 'aic'):
                 val = getattr(res, attr)
                 if isinstance(val, int):
                     val = '%d' % val
@@ -1792,6 +1820,7 @@ class FeffitResultFrame(wx.Frame):
             path_hashkeys.extend([p.hashkey for p in ds.paths.values()])
 
         wids = self.wids
+        wids['fit_label'].SetValue(result.label)
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['params'].DeleteAllItems()
         wids['paramsdata'] = []
