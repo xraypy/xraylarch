@@ -188,7 +188,9 @@ class TaskPanel(wx.Panel):
 
     def get_session_history(self):
         """return full session history"""
-        return self.controller.larch.parent.hist_buff
+        larch = self.controller.larch
+        return getattr(larch.input, 'hist_buff',
+                       getattr(larch.parent, 'hist_buff', []))
 
     def larch_get(self, sym):
         """get value from larch symbol table"""
