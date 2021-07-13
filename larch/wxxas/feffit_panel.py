@@ -1407,7 +1407,8 @@ class FeffitResultFrame(wx.Frame):
                                         action=self.onShowScript, size=(175, -1))
 
         wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
-        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1), action=self.onUpdateLabel)        
+        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
+                                   action=self.onUpdateLabel)        
    
         
         irow = 0
@@ -1431,6 +1432,12 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(wids['show_script'],   (irow, 1), (1, 1), LEFT)
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
+
+        irow += 1
+        sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
+        
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
@@ -1463,15 +1470,6 @@ class FeffitResultFrame(wx.Frame):
 
         irow += 1
         sizer.Add(sview, (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
-
-        irow += 1
-        sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
-        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
-        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
-
 
         irow += 1
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
@@ -1592,9 +1590,7 @@ class FeffitResultFrame(wx.Frame):
     def onUpdateLabel(self, event=None):
         result = self.get_fitresult()
         item = self.wids['stats'].GetSelectedRow()
-        
         result.label = self.wids['fit_label'].GetValue()
-        
         self.show_results()
 
     def onPlot(self, event=None):

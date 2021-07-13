@@ -135,6 +135,7 @@ peakresult.ycomps   = peakmodel.eval_components(params=peakresult.params, x={gro
 peakresult.init_fit = {group}.prepeaks.init_fit[:]
 peakresult.init_ycomps = peakmodel.eval_components(params=peakpars, x={group}.prepeaks.energy)
 peakresult.user_options = {user_opts:s}
+peakresult.label = 'Fit %i' % (1+len({group}.prepeaks.fit_history))
 {group}.prepeaks.fit_history.insert(0, peakresult)"""
 
 defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
@@ -211,6 +212,10 @@ class PrePeakFitResultFrame(wx.Frame):
         self.plot_choice = Button(panel, 'Plot This Fit',
                                   size=(125, -1), action=self.onPlot)
 
+        wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
+        wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
+                                   action=self.onUpdateLabel)
+        
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
@@ -230,9 +235,14 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(HLine(panel, size=(650, 3)), (irow, 0), (1, 5), LEFT)
 
         irow += 1
+        sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
+        sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
+
+        irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
                            colour=self.colors.title, style=LEFT)
-        subtitle = SimpleText(panel, '  (Fit #01 is most recent)',
+        subtitle = SimpleText(panel, ' (most recent fit is at the top)',
                               font=Font(FONTSIZE+1),  style=LEFT)
 
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
@@ -240,13 +250,12 @@ class PrePeakFitResultFrame(wx.Frame):
 
         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
-        sview.AppendTextColumn(' Fit#',  width=75)
+        sview.AppendTextColumn(' Label',  width=120)
         sview.AppendTextColumn(' N_data', width=75)
         sview.AppendTextColumn(' N_vary', width=75)
         sview.AppendTextColumn('\u03c7\u00B2', width=110)
         sview.AppendTextColumn('reduced \u03c7\u00B2', width=110)
         sview.AppendTextColumn('Akaike Info', width=110)
-        sview.AppendTextColumn('Bayesian Info', width=110)
 
         for col in range(sview.ColumnCount):
             this = sview.Columns[col]
@@ -340,6 +349,12 @@ class PrePeakFitResultFrame(wx.Frame):
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+    def onUpdateLabel(self, event=None):
+        result = self.get_fitresult()
+        item = self.wids['stats'].GetSelectedRow()
+        result.label = self.wids['fit_label'].GetValue()
+        self.show_results()
 
 
     def onSaveAllStats(self, evt=None):
@@ -538,8 +553,9 @@ class PrePeakFitResultFrame(wx.Frame):
         wids = self.wids
         wids['stats'].DeleteAllItems()
         for i, res in enumerate(self.peakfit_history):
-            args = ['%2.2d' % (i+1)]
-            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic', 'bic'):
+            # '%2.2d' % (i+1)
+            args = [res.label]
+            for attr in ('ndata', 'nvarys', 'chisqr', 'redchi', 'aic'):
                 val = getattr(res.result, attr)
                 if isinstance(val, int):
                     val = '%d' % val
@@ -574,6 +590,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
+        wids['fit_label'].SetValue(result.label)        
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['model_desc'].SetLabel(self.get_model_desc(result.model))
         wids['params'].DeleteAllItems()
