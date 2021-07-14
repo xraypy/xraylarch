@@ -2676,6 +2676,7 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
 
     def OnInit(self):
+        self.ResetLocale()
         self.Init()
         self.createApp()
         if self.with_inspect:

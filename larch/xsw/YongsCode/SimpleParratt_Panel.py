@@ -395,6 +395,7 @@ class Plot(wx.Dialog):
 
 class MyApp(wx.App):
     def OnInit(self):
+        self.ResetLocale()
         dlg = Plot(None, -1, 'panel.py')
         dlg.Show(True)
         dlg.Centre()

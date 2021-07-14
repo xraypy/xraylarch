@@ -1398,6 +1398,7 @@ class XRD2DViewer(wx.App):
         self.SetTopWindow(frame)
 
     def OnInit(self):
+        self.ResetLocale()
         self.createApp()
         return True
 

@@ -601,6 +601,7 @@ class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         wx.App.__init__(self, **kws)
 
     def OnInit(self):
+        self.ResetLocale()
         frame = LarchFrame(exit_on_close=True, with_inspection=False)
         frame.Show()
         self.SetTopWindow(frame)

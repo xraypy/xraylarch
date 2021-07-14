@@ -532,6 +532,7 @@ class FillingFrame(wx.Frame):
 class App(wx.App):
     """PyFilling standalone application."""
     def OnInit(self):
+        self.ResetLocale()
         wx.InitAllImageHandlers()
         self.fillingFrame = FillingFrame()
         self.fillingFrame.Show(True)
