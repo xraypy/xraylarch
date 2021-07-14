@@ -1390,6 +1390,7 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         wx.App.__init__(self)
 
     def OnInit(self):
+        self.ResetLocale()
         self.Init()
         frame = XRFDisplayFrame(filename=self.filename)
         frame.Show()

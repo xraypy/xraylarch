@@ -2,7 +2,7 @@
 environment:
   matrix:
     - PYTHON_VERSION: "3.8"
-      MINICONDA: "C:\\Miniconda36-x64"
+      MINICONDA: "C:\\Miniconda38-x64"
 
 install:
     - "%MINICONDA%\\Scripts\\activate.bat"

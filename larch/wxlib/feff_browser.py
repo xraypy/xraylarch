@@ -555,6 +555,7 @@ class Viewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.SetTopWindow(frame)
 
     def OnInit(self):
+        self.ResetLocale()
         self.createApp()
         return True
 

@@ -486,6 +486,7 @@ class TestApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         wx.App.__init__(self)
 
     def OnInit(self):
+        self.ResetLocale()
         self.Init()
         frame = TestFrame()
         frame.Show()
