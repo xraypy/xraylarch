@@ -13,7 +13,7 @@ from .version import make_banner
 from .inputText import InputText
 from .larchlib import StdWriter
 from .utils import uname
-
+from .wxlib import LarchWxApp
 HAS_READLINE = False
 try:
     import readline
@@ -59,7 +59,9 @@ class shell(cmd.Cmd):
         if with_wx and HAS_WXPYTHON:
             symtable = self.larch.symtable
 
-            app = wx.App(redirect=False, clearSigInt=False)
+            app = LarchWxApp(redirect=False, clearSigInt=False)
+            print("app: ", app)
+            
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
             symtable.set_symbol('_sys.wx.parent', None)

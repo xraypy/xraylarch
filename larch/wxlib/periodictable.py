@@ -272,18 +272,3 @@ class PTableFrame(wx.Frame):
     def onElement(self, elem=None, event=None):
         print( 'Element Selected:  ', elem)
 
-class PTableApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
-        wx.App.__init__(self)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.Init()
-        frame = PTableFrame() #
-        frame.Show()
-        self.SetTopWindow(frame)
-        self.ShowInspectionTool()
-        return True
-
-if __name__ == "__main__":
-    PTableApp().MainLoop()

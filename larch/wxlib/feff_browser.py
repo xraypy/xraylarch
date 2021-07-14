@@ -14,7 +14,8 @@ from larch.utils import unixpath
 from larch.wxlib import (GridPanel, GUIColors, Button, pack, SimpleText,
                          FileOpen, FileSave, Font, LEFT, FRAMESTYLE,
                          FONTSIZE, MenuItem, EditableListBox, OkCancel,
-                         FileCheckList, Choice, HLine, ReportFrame, Popup)
+                         FileCheckList, Choice, HLine, ReportFrame, Popup,
+                         LarchWxApp)
 
 from larch.xafs import get_feff_pathinfo
 from larch.xray import atomic_symbols
@@ -542,23 +543,16 @@ class FeffResultsFrame(wx.Frame):
         self.Destroy()
 
 
-class Viewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, dat,  **kws):
+class FeffResultsBrowserApp(LarchWxApp):
+    def __init__(self, dat=None,  **kws):
         self.dat = dat
-        wx.App.__init__(self, **kws)
-
-    def run(self):
-        self.MainLoop()
+        LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
         frame = FeffResultsFrame(feffresult=self.dat)
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
 
 if __name__ == '__main__':
-    dat = None # get_feff_pathinfo('/Users/Newville/.larch/feff/Cu1_K_Cuprite_cif9326')
-    Viewer(dat).MainLoop()
+    dat = None 
+    FeffResultsBrowserApp(dat).MainLoop()

@@ -28,7 +28,7 @@ import larch
 from larch import Group
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
-
+from larch.wxlib import LarchWxApp
 from larch.io import tifffile, nativepath
 from larch.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
                        calc_cake,twth_from_q,twth_from_d,
@@ -1388,20 +1388,15 @@ class XRDImg(Group):
         self.maxval = int(maxval)
 
 
-class XRD2DViewer(wx.App):
-    def __init__(self):
-        wx.App.__init__(self)
+class XRD2DViewer(LarchWxApp):
+    def __init__(self, **kws):
+        LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
         frame = XRD2DViewerFrame()
         frame.Show()
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
-
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
 
 import larch
 from larch.site_config import icondir
-from larch.wxlib import PeriodicTablePanel
+from larch.wxlib import PeriodicTablePanel, LarchWxApp
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
                                     FILE_WILDCARDS)
 
@@ -693,21 +693,35 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.onStop()
         XRFDisplayFrame.onExit(self)
 
-class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
-        self.kws = kws
-        wx.App.__init__(self)
+class EpicsXRFApp(LarchWxApp):
+    def __init__(self, _larch=None, prefix=None,
+                 det_type='ME-4', ioc_type='Xspress3', nmca=4,
+                 size=(725, 580), environ_file=None, scandb_conn=None,
+                 title='Epics XRF Display', output_title='XRF', **kws):
+        self.prefix = prefix
+        self.det_type = det_type
+        self.ioc_type = ioc_type
+        self.nmca = nmca
+        self.size = size
+        self.environ_file = environ_file
+        self.scandb_conn = scandb_conn
+        self.title = title
+        self.output_title = output.title
+        LarchWxApp.__init__(self, _larch=_larch, **kws)
 
-    def OnInit(self):
-        self.ResetLocale()
-        self.Init()
-        frame = EpicsXRFDisplayFrame(**self.kws) #
+    def createApp(self):
+        frame = EpicsXRFDisplayFrame(prefix=self.prefix,
+                                     det_type=self.det_type,
+                                     ioc_type=self.ioc_type,
+                                     nmca=self.nmca, size=self.size,
+                                     environ_file=self.environ_file,
+                                     scandb_conn=self.scandb_conn,
+                                     title=self.title,
+                                     output_title=self.output.title,
+                                     _larch=self._larch)
         frame.Show()
         self.SetTopWindow(frame)
         return True
 
 if __name__ == "__main__":
-    # e = EpicsXRFApp(prefix='QX4:', det_type='ME-4',
-    #                amp_type='xspress3', nmca=4)
-
     EpicsXRFApp().MainLoop()

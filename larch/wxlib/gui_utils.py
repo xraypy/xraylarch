@@ -9,12 +9,52 @@ except:
 
 import time
 import os
+import locale
 
 from ..larchlib import ensuremod
 from .larchfilling import Filling
 
-
 DEF_CHOICES = [('All Files', '*.*')]
+
+class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    """wrapper for wx apps, with the following arguments and features:
+
+    _larch (None or Interpreter):   instance of Larch Interpreter [None]
+    version_info (None or string):  larch version to check for updates [None]
+    with_inspect (bool):            use wx inspection tool for debugging [False]
+    with_c_locale (bool):           whether to force C locale [True]
+
+    """
+    def __init__(self, _larch=None, version_info=None, with_inspect=False,
+                 with_c_locale=True, **kws):
+        self._larch = _larch
+        self.version_info = version_info
+        self.with_inspect = with_inspect
+        self.with_c_locale = with_c_locale
+        wx.App.__init__(self, **kws)
+
+    def OnInit(self):
+        self.createApp()
+        if self.with_inspect:
+            self.ShowInspectionTool()
+        return True
+
+    def createApp(self):
+        return True
+    
+    def InitLocale(self):
+        """over-ride wxPython default initial locale"""
+        if self.with_c_locale:
+            self._initial_locale = None
+            locale.setlocale(locale.LC_ALL, 'C')
+        else:
+            lang, enc = locale.getdefaultlocale()
+            self._initial_locale = wx.Locale(lang, lang[:2], lang)
+            locale.setlocale(locale.LC_ALL, lang)
+
+    def run(self):
+        self.MainLoop()
+
 
 def SafeWxCall(fcn):
     """decorator to wrap function in a wx.CallAfter() so that

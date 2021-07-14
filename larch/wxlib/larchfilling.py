@@ -528,13 +528,3 @@ class FillingFrame(wx.Frame):
         # Override so that status messages go to the status bar.
         self.filling.tree.setStatusText = self.SetStatusText
 
-
-class App(wx.App):
-    """PyFilling standalone application."""
-    def OnInit(self):
-        self.ResetLocale()
-        wx.InitAllImageHandlers()
-        self.fillingFrame = FillingFrame()
-        self.fillingFrame.Show(True)
-        self.SetTopWindow(self.fillingFrame)
-        return True

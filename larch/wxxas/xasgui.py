@@ -36,7 +36,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          HLine, FileSave, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog,
-                         CIFFrame, FeffResultsFrame)
+                         CIFFrame, FeffResultsFrame, LarchWxApp)
 
 from larch.fitting import fit_report
 from larch.site_config import icondir
@@ -945,25 +945,15 @@ class XASFrame(wx.Frame):
         return thisgroup
 
 
-class XASViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, filename=None, description='Larch XAS Viewer',
-                 version_info=None,  **kws):
+class XASViewer(LarchWxApp):
+    def __init__(self, filename=None, **kws):
         self.filename = filename
-        self.description = description
-        self.version_info = version_info
-        wx.App.__init__(self, **kws)
-
-    def run(self):
-        self.MainLoop()
+        LarchWxApp.__init__(self, **kws)
 
     def createApp(self):
         frame = XASFrame(filename=self.filename,
                          version_info=self.version_info)
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
 
 def xas_viewer(**kws):

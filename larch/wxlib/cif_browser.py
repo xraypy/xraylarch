@@ -31,7 +31,7 @@ from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
                          Button, Popup, HLine, FileSave, FileOpen, Choice,
                          Check, MenuItem, GUIColors, CEN, LEFT, FRAMESTYLE,
                          Font, FONTSIZE, flatnotebook, LarchUpdaterDialog,
-                         PeriodicTablePanel, FeffResultsPanel)
+                         PeriodicTablePanel, FeffResultsPanel, LarchWxApp)
 
 
 from larch.xrd import CifStructure, get_amscifdb, find_cifs, get_cif
@@ -655,25 +655,15 @@ class CIFFrame(wx.Frame):
         self.Destroy()
 
 
-class CIFViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, filename=None, description='Larch CIF Browser / Feff Runner',
-                 version_info=None,  **kws):
+class CIFViewer(LarchWxApp):
+    def __init__(self, filename=None, version_info=None,  **kws):
         self.filename = filename
-        self.description = description
-        self.version_info = version_info
-        wx.App.__init__(self, **kws)
-
-    def run(self):
-        self.MainLoop()
+        LarchWxApp.__init__(self, version_info=version_info, **kws)
 
     def createApp(self):
         frame = CIFFrame(filename=self.filename,
                          version_info=self.version_info)
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
 
 def cif_viewer(**kws):
@@ -681,3 +671,4 @@ def cif_viewer(**kws):
 
 if __name__ == '__main__':
     CIFViewer().MainLoop()
+x

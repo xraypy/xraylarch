@@ -22,14 +22,16 @@ except ImportError:
     pass
 
 import larch
-from ..larchlib import read_workdir, save_workdir
+from larch.larchlib import read_workdir, save_workdir
 
-from ..io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
+from larch.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
                    is_GSEXDI, AthenaProject, new_filename, increment_filename)
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
                      CEN, LEFT, FRAMESTYLE, Font)
+
+from larch.wxlib import LarchWxApp
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.1*,*.dat,*.xdi)|*.0*;*.1*;*.dat;*.xdi|All files (*)|*"
@@ -195,22 +197,14 @@ class DTCorrectFrame(wx.Frame):
         self.Destroy()
 
 
-class DTViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class DTViewer(LarchWxApp):
     def __init__(self, _larch=None, **kws):
-        self._larch = _larch
-        wx.App.__init__(self, **kws)
-
-    def run(self):
-        self.MainLoop()
+        LarchWxApp.__init__(self, _larch=_larch, **kws)
 
     def createApp(self):
         frame = DTCorrectFrame(_larch=self._larch)
         frame.Show()
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
 
 def dtcorrect(wxparent=None, _larch=None,  **kws):

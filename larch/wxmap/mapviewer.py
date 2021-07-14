@@ -42,7 +42,7 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          FloatCtrl, Font, pack, Popup, Button, MenuItem,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
-                         HLine, OkCancel, LEFT, LarchUpdaterDialog)
+                         HLine, OkCancel, LEFT, LarchUpdaterDialog, LarchWxApp)
 from larch.utils.strutils import bytes2str, version_ge
 from larch.io import nativepath
 from larch.site_config import icondir
@@ -2657,15 +2657,15 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].Clear()
             self.XRDInfo[i].SetValue(str(path))
 
-class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+        
+class MapViewer(LarchWxApp):
     def __init__(self, use_scandb=False, _larch=None, filename=None,
                  version_info=None, with_inspect=False, **kws):
-        self._larch = _larch
-        self.version_info = version_info
         self.filename = filename
         self.use_scandb = use_scandb
-        self.with_inspect = with_inspect
-        wx.App.__init__(self, **kws)
+        LarchWxApp.__init__(self, _larch=_larch,
+                            version_info=version_info,
+                            with_inspect=with_inspect, **kws)
 
     def createApp(self):
         frame = MapViewerFrame(use_scandb=self.use_scandb,
@@ -2673,14 +2673,8 @@ class MapViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
                                version_info=self.version_info,
                                _larch=self._larch)
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.Init()
-        self.createApp()
-        if self.with_inspect:
-            self.ShowInspectionTool()
         return True
+
 
 def mapviewer(use_scandb=False, filename=None, _larch=None,
               with_inspect=False, **kws):

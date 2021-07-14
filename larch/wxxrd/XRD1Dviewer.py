@@ -29,7 +29,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils import nativepath
-from larch.wxlib import PeriodicTablePanel, Choice
+from larch.wxlib import PeriodicTablePanel, Choice, LarchWxApp
 
 from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
                        match_database, d_from_q,twth_from_q,q_from_twth,
@@ -3944,20 +3944,15 @@ class XRDSymmetrySearch(wx.Dialog):
     def formatFloat(self,event):
         event.GetEventObject().SetValue('%0.3f' % float(event.GetString()))
 
-class XRD1DViewer(wx.App):
+class XRD1DViewer(LarchWxApp):
     def __init__(self, **kws):
-        wx.App.__init__(self)
+        LarchWxApp.__init__(self)
 
     def createApp(self):
         frame = XRD1DViewerFrame()
         frame.Show()
         self.SetTopWindow(frame)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.createApp()
         return True
-
 
 if __name__ == '__main__':
     XRD1DViewer().MainLoop()

@@ -309,12 +309,3 @@ class Plot(wx.Dialog):
                 self.Destroy()
 # -------------------------------------------------------------------------------------------------------
 
-class MyApp(wx.App):
-       def OnInit(self):
-                 self.ResetLocale()
-                 dlg = Plot(None, -1, 'fluo_panel.py')
-                 dlg.Show(True)
-                 dlg.Centre()
-                 return True
-app = MyApp(0)
-app.MainLoop()

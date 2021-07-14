@@ -12,6 +12,7 @@ import larch
 
 from wxutils import (MenuItem, Font, Button, Choice)
 
+from .gui_utils import LarchWxApp
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from .columnframe import ColumnDataFileFrame
@@ -601,15 +602,13 @@ class LarchFrame(wx.Frame):
             except:
                 pass
 
-
-class LarchApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class LarchApp(LarchWxApp):
     "simple app to wrap LarchFrame"
     def __init__(self, **kws):
-        wx.App.__init__(self, **kws)
+        LarchWxApp.__init__(self, **kws)
 
-    def OnInit(self):
-        self.ResetLocale()
-        frame = LarchFrame(exit_on_close=True, with_inspection=False)
+    def createApp(self):
+        frame = LarchFrame(exit_on_close=True, with_inspection=self.with_inspect)
         frame.Show()
         self.SetTopWindow(frame)
         return True

@@ -38,6 +38,7 @@ from ..io import GSEMCA_File
 from ..site_config import icondir
 from ..interpreter import Interpreter
 
+from .gui_utils import LarchWxApp
 from .larchframe import LarchFrame
 from .periodictable import PeriodicTablePanel
 
@@ -1384,14 +1385,12 @@ class XRFDisplayFrame(wx.Frame):
             except:
                 return
 
-class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class XRFApp(LarchWxApp):
     def __init__(self, filename=None, **kws):
         self.filename = filename
-        wx.App.__init__(self)
+        LarchWxApp.__init__(self, **kws)
 
-    def OnInit(self):
-        self.ResetLocale()
-        self.Init()
+    def createApp(self):
         frame = XRFDisplayFrame(filename=self.filename)
         frame.Show()
         self.SetTopWindow(frame)

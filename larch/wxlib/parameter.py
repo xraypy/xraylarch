@@ -481,17 +481,3 @@ class TestFrame(wx.Frame):
     def onExit(self, evt=None):
         self.Destroy()
 
-class TestApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
-        wx.App.__init__(self)
-
-    def OnInit(self):
-        self.ResetLocale()
-        self.Init()
-        frame = TestFrame()
-        frame.Show()
-        self.SetTopWindow(frame)
-        return True
-
-if __name__ == "__main__":
-    TestApp().MainLoop()
