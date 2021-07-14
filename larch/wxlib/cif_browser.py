@@ -671,4 +671,4 @@ def cif_viewer(**kws):
 
 if __name__ == '__main__':
     CIFViewer().MainLoop()
-x
+
