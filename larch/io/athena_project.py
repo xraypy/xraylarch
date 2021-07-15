@@ -555,9 +555,11 @@ class AthenaProject(object):
             if sname is not None:
                 signal = athena_array(group, sname)
 
-        hashkey = make_hashkey()
-        while hashkey in self.groups:
+        hashkey = getattr(group, 'athena_id', None)
+        if hashkey is None or hashkey in self.groups:
             hashkey = make_hashkey()
+            while hashkey in self.groups:
+                hashkey = make_hashkey()
 
         # fill in data from pre-edge subtraction
         if not (hasattr(group, 'e0') and hasattr(group, 'edge_step')):
