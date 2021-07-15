@@ -80,7 +80,8 @@ defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 norm_method='polynomial', edge='K', atsym='?',
                 nvict=0, nnorm=None, scale=1,
                 plotone_op='Normalized \u03BC(E)',
-                plotsel_op='Normalized \u03BC(E)')
+                plotsel_op='Normalized \u03BC(E)',
+                energy_ref=None)
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -125,6 +126,9 @@ class XASNormPanel(TaskPanel):
         sx.Add(self.wids['showe0'], 0, LEFT, 4)
         pack(e0panel, sx)
 
+
+        self.wids['energy_ref'] = Choice(panel, choices=['None'],
+                                        action=self.onEnergyRef, size=(200, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -213,6 +217,10 @@ class XASNormPanel(TaskPanel):
         panel.Add(self.wids['edge'], dcol=3)
         panel.Add(CopyBtn('atsym'), dcol=1, style=RIGHT)
 
+        add_text('Energy Reference Group: ')
+        panel.Add(self.wids['energy_ref'], dcol=4)
+        panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
+
         add_text('E0 : ')
         panel.Add(xas_e0)
         panel.Add(e0panel, dcol=3)
@@ -249,13 +257,14 @@ class XASNormPanel(TaskPanel):
         panel.Add(SimpleText(panel, 'Polynomial Type:'), newrow=True)
         panel.Add(self.wids['nnorm'], dcol=4)
 
-
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
         panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
+
+
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.pack()
 
@@ -288,6 +297,11 @@ class XASNormPanel(TaskPanel):
             conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
+        conf['energy_ref'] = getattr(dgroup,'energy_ref', conf['energy_ref'])
+
+        if conf['energy_ref'] in (None, 'None'):
+            conf['energy_ref'] = dgroup.groupname
+
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
             atsym, edge = guess_edge(dgroup.e0)
             conf['atsym'] = atsym
@@ -303,7 +317,6 @@ class XASNormPanel(TaskPanel):
     def fill_form(self, dgroup):
         """fill in form from a data group"""
         opts = self.get_config(dgroup)
-
         self.skip_process = True
         if is_xasgroup(dgroup):
             self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
@@ -311,6 +324,14 @@ class XASNormPanel(TaskPanel):
 
             self.plotone_op.SetStringSelection(opts['plotone_op'])
             self.plotsel_op.SetStringSelection(opts['plotsel_op'])
+            groupnames = list(self.controller.file_groups.keys())
+            self.wids['energy_ref'].SetChoices(groupnames)
+
+            eref = opts.get('energy_ref', dgroup.groupname)
+            for key, val in self.controller.file_groups.items():
+                if eref in (val, key):
+                    self.wids['energy_ref'].SetStringSelection(key)
+
             self.wids['e0'].SetValue(opts['e0'])
             edge_step = opts.get('edge_step', None)
             if edge_step is None:
@@ -397,6 +418,7 @@ class XASNormPanel(TaskPanel):
         form_opts['edge'] = self.wids['edge'].GetStringSelection().title()
         form_opts['atsym'] = self.wids['atsym'].GetStringSelection().title()
         form_opts['scale'] = self.wids['scale'].GetValue()
+        form_opts['energy_ref'] = self.wids['energy_ref'].GetStringSelection()
         return form_opts
 
     def onNormMethod(self, evt=None):
@@ -426,6 +448,13 @@ class XASNormPanel(TaskPanel):
 
     def onFreezeGroup(self, evt=None):
         self._set_frozen(evt.IsChecked())
+
+    def onEnergyRef(self, evt=None):
+        dgroup = self.controller.get_group()
+        eref = self.wids['energy_ref'].GetStringSelection()
+        gname = self.controller.file_groups[eref]
+        dgroup.xasnorm_config['energy_ref'] = gname
+        self.update_config({'energy_ref': gname}, dgroup=dgroup)
 
     def onPlotEither(self, evt=None):
         if self.last_plot_type == 'multi':
@@ -515,15 +544,6 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
-                # try:
-                #    norm2 = max(grp.energy) - grp.e0
-                #     norm1 = 5.0*int(norm2/15.0)
-                #    nnorm = 2
-                #    if (norm2-norm1 < 350): nnorm = 1
-                #    if (norm2-norm1 < 50): nnorm = 0
-                # except:
-                #    nnorm = 1
-                # opts['nnorm'] = nnorm
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
                 self.process(grp, noskip=True)
@@ -558,7 +578,8 @@ class XASNormPanel(TaskPanel):
             copy_attrs('atsym', 'edge')
         elif name == 'xas_norm':
             copy_attrs('norm_method', 'nnorm', 'norm1', 'norm2')
-
+        elif name == 'energy_ref':
+            copy_attrs('energy_ref')
         for checked in self.controller.filelist.GetCheckedStrings():
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
@@ -665,6 +686,14 @@ class XASNormPanel(TaskPanel):
 
         form = self.read_form()
         form['group'] = dgroup.groupname
+
+        groupnames = list(self.controller.file_groups.keys())
+        self.wids['energy_ref'].SetChoices(groupnames)
+
+        eref = conf.get('energy_ref', dgroup.groupname)
+        for key, val in self.controller.file_groups.items():
+            if eref in (val, key):
+                self.wids['energy_ref'].SetStringSelection(key)
 
         if not is_xasgroup(dgroup):
             self.skip_process = False
