@@ -254,6 +254,10 @@ overwriting current arrays''')
                                            self.dgroup.filename + '_eshift',
                                            size=(250, -1))
 
+        wids['sharedref_msg'] = wx.StaticText(panel, label="1 groups share an energy reference")
+        select_sharedref = Button(panel, 'Select Groups with shared reference',
+                                  size=(250, -1),  action=self.on_select_sharedrefs)
+
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
 
@@ -280,6 +284,12 @@ overwriting current arrays''')
         panel.Add(wids['eshift'], dcol=2)
         add_text(' eV', newrow=False)
 
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
+        panel.Add((10, 10), newrow=True)
+        panel.Add(wids['sharedref_msg'], dcol=3)
+        panel.Add((10, 10), newrow=True)
+        panel.Add(select_sharedref, dcol=3)
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
         panel.Add(apply_one, newrow=True)
         panel.Add(apply_sel, dcol=4)
 
@@ -289,6 +299,7 @@ overwriting current arrays''')
                   newrow=True)
         panel.pack()
         self.plot_results()
+        wx.CallAfter(self.get_groups_shared_energyrefs)
 
     def onDone(self, event=None):
         self.Destroy()
@@ -298,9 +309,45 @@ overwriting current arrays''')
         if opt in self.wids:
             self.wids[opt].SetValue(_x)
 
+    def get_groups_shared_energyrefs(self, dgroup=None):
+        if dgroup is None:
+            dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        sharedrefs = [dgroup.filename]
+        try:
+            eref = dgroup.xasnorm_config.get('energy_ref', None)
+        except:
+            eref = None
+        if eref is None:
+            eref = dgroup.groupname
+        for key, val in self.controller.file_groups.items():
+            if dgroup.groupname == val:
+                continue
+            g = self.controller.get_group(val)
+            try:
+                geref = g.xasnorm_config.get('energy_ref', None)
+            except:
+                geref = None
+            if geref == eref:
+                sharedrefs.append(key)
+        self.wids['sharedref_msg'].SetLabel(f"{len(sharedrefs):d} groups share an energy reference")
+        return sharedrefs
+
+    def on_select_sharedrefs(self, event=None):
+        dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
+        others =  self.get_groups_shared_energyrefs(dgroup)
+        flist = self.controller.filelist
+        current = list(flist.GetCheckedStrings())
+        if dgroup.filename not in current:
+            current.append(dgroup.filename)
+        for o in others:
+            if o not in current:
+                current.append(o)
+        flist.SetCheckedStrings(current)
+
     def on_groupchoice(self, event=None):
         dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
         self.dgroup = dgroup
+        others = self.get_groups_shared_energyrefs(dgroup)
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_eshift')
         self.wids['e0_old'].SetValue(dgroup.e0)
         e0_new = dgroup.e0 + self.wids['eshift'].GetValue()
@@ -373,7 +420,7 @@ overwriting current arrays''')
     def on_saveas(self, event=None):
         wids = self.wids
         fname = wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetValue()
+        new_fname = wids['save_as_name'].GetV<alue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
         eshift = self.wids['eshift'].GetValue()
