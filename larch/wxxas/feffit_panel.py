@@ -1607,7 +1607,7 @@ class FeffitResultFrame(wx.Frame):
         trans  = result.datasets[0].transform
 
         result_name  = f'{self.datagroup.groupname}.feffit_history[{self.nfit}]'
-        opts['label'] = f'{result_name.label}'
+        opts['label'] = f'{result_name}.label'
         opts['pargroup_name'] = f'{result_name}.paramgroup'
         opts['paths_name']    = f'{result_name}.datasets[0].paths'
         opts['pathsum_name']  = f'{result_name}.datasets[0].model'
