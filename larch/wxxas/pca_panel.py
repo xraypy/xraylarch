@@ -330,7 +330,7 @@ class PCAPanel(TaskPanel):
         for gname in groups:
             grp = self.controller.get_group(gname)
             if not hasattr(grp, 'norm'):
-                self.parent.nb.pagelist[0].process(grp)
+                self.xasmain.process_normalization(grp)
 
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
