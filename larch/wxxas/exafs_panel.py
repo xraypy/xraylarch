@@ -429,7 +429,7 @@ class EXAFSPanel(TaskPanel):
         if as_copy:
             conf = copy.deepcopy(conf)
         if dgroup is not None:
-            setattr(dgroup, self.configname, conf)            
+            setattr(dgroup, self.configname, conf)
         return conf
 
 
@@ -506,10 +506,18 @@ class EXAFSPanel(TaskPanel):
 
         if read_form:
             conf.update(self.read_form())
-            
+
         conf.update(kws)
-        if not 'fft_kwindow' in conf:
+        if dgroup is None or 'fft_kwindow' not in conf:
             return
+
+        if 'group' not in conf:
+            conf['group'] = dgroup.groupname
+
+        try:
+            txt = autobk_cmd.format(**conf)
+        except:
+            conf.update(self.read_form())
 
         bkgpars = []
         # print(" EXAFS Process #1 e0= ", conf.get('e0', -10.))
@@ -520,8 +528,6 @@ class EXAFSPanel(TaskPanel):
                 val = -1.0
             bkgpars.append("%.3f" % val)
         bkgpars = ':'.join(bkgpars)
-        # print(" EXAFS Process #2 : ", bkgpars, self.dgroup.groupname,
-        #       bkgpars == self.last_process_bkg.get(self.dgroup.groupname, ''))
 
         if bkgpars != self.last_process_bkg.get(self.dgroup.groupname, ''):
             self.larch_eval(autobk_cmd.format(**conf))
@@ -533,9 +539,6 @@ class EXAFSPanel(TaskPanel):
                      'fft_rmin', 'fft_rmax', 'fft_dr'):
             fftpars.append("%.3f" % conf.get(attr, 0.0))
         fftpars = ':'.join(fftpars)
-
-        # print(" EXAFS Process #3 : ", fftpars, self.dgroup.groupname,
-        #       fftpars == self.last_process_fft.get(self.dgroup.groupname, ''))
         if fftpars != self.last_process_fft.get(self.dgroup.groupname, ''):
             self.larch_eval(xftf_cmd.format(**conf))
             self.larch_eval(xftr_cmd.format(**conf))
