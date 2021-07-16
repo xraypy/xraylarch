@@ -706,7 +706,7 @@ class EpicsXRFApp(LarchWxApp):
         self.environ_file = environ_file
         self.scandb_conn = scandb_conn
         self.title = title
-        self.output_title = output.title
+        self.output_title = output_title
         LarchWxApp.__init__(self, _larch=_larch, **kws)
 
     def createApp(self):
@@ -717,7 +717,7 @@ class EpicsXRFApp(LarchWxApp):
                                      environ_file=self.environ_file,
                                      scandb_conn=self.scandb_conn,
                                      title=self.title,
-                                     output_title=self.output.title,
+                                     output_title=self.output_title,
                                      _larch=self._larch)
         frame.Show()
         self.SetTopWindow(frame)
