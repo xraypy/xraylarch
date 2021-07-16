@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-__date__    = '2021-Jul-1'
-__release_version__ = '0.9.53'
+__date__    = '2021-Jul-16'
+__release_version__ = '0.9.54'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
-
 
 import sys
 import numpy
