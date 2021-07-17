@@ -1,0 +1,39 @@
+name: Test with Windows-latest
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix:
+        python-version: ['3.8']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Add miniconda to system path
+      run: |
+        set PATH=%CONDA%;%CONDA%\\condabin;%CONDA%\\Scripts;%PATH%
+	printenv
+	%CONDA%\\Scripts\\activate.bat
+	printenv
+    - name: Install conda and dependencies
+      run: |
+        conda config --set always_yes yes --set changeps1 no
+        conda config --add channels conda-forge
+        conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
+        conda info -a
+        conda list
+    - name: Install xraylarch
+      run: |
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils
+        python setup.py install
+    - name: Run test suite
+      run: |
+        cd tests
+        pytest
