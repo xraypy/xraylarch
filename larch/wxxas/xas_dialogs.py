@@ -420,7 +420,7 @@ overwriting current arrays''')
     def on_saveas(self, event=None):
         wids = self.wids
         fname = wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetV<alue()
+        new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
         eshift = self.wids['eshift'].GetValue()
