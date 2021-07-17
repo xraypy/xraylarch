@@ -13,17 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Add miniconda to system path
-      run: |
-        set PATH=%CONDA%;%CONDA%\\condabin;%CONDA%\\Scripts;%PATH%
-        printenv
-        %CONDA%\\Scripts\\activate.bat
-        printenv
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
     - name: Install conda and dependencies
       run: |
+        printenv
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
         conda install python=${{ matrix.python-vesion }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython
