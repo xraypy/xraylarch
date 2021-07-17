@@ -1,4 +1,4 @@
-name: Test with Windows-latest
+name: Test with Windows 
 
 on: [push]
 
@@ -19,9 +19,9 @@ jobs:
     - name: Add miniconda to system path
       run: |
         set PATH=%CONDA%;%CONDA%\\condabin;%CONDA%\\Scripts;%PATH%
-	printenv
-	%CONDA%\\Scripts\\activate.bat
-	printenv
+        printenv
+        %CONDA%\\Scripts\\activate.bat
+        printenv
     - name: Install conda and dependencies
       run: |
         conda config --set always_yes yes --set changeps1 no
