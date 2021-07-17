@@ -4,9 +4,6 @@ Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 .. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-with-conda.yml/badge.svg
    :target: https://github.com/xraypy/xraylarch/actions/workflows/test-with-conda.yml
 	    
-.. image:: https://ci.appveyor.com/api/projects/status/weagcmcq6lfclit9
-   :target: https://ci.appveyor.com/project/newville/xraylarch
-
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
 .. _matplotlib: https://matplotlib.org/
