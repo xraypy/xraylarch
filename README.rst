@@ -3,13 +3,15 @@ Larch:  Data Analysis Tools for X-ray Spectroscopy and More
 
 .. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-with-conda.yml/badge.svg
    :target: https://github.com/xraypy/xraylarch/actions/workflows/test-with-conda.yml
+
+.. image::  https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml/badge.svg
+   :target: https://github.com/xraypy/xraylarch/actions/workflows/test-windows.yml
 	    
 .. _scipy: https://scipy.org/
 .. _numpy: https://numpy.scipy.org/
 .. _matplotlib: https://matplotlib.org/
 .. _h5py: https://code.google.com/p/h5py/
 .. _Demeter: https://bruceravel.github.io/demeter/
-.. _Dioptas: https://github.com/Dioptas/Dioptas
 
 * Documentation: http://xraypy.github.io/xraylarch
 * Code: http://github.com/xraypy/xraylarch
@@ -56,8 +58,7 @@ Larch Applications
 
 These applications installed with Larch, in addition to a basic Python
 library. Here, GUI = Graphical User Interface, CLI = Command Line
-Interface, and `beta` indicates a work in progress.  The `Dioptas`_ program
-is written and maintained by Clemens Prescher, and included with Larch.
+Interface, and `beta` indicates a work in progress.
 
 
 +-------------------+------------+---------------------------------------------------------+
@@ -68,13 +69,12 @@ is written and maintained by Clemens Prescher, and included with Larch.
 | Larch GUI         | GUI        | enhanced command-line interface with data browser       |
 +-------------------+------------+---------------------------------------------------------+
 | XAS Viewer        | GUI        | XAFS Processing and Analysis: XANES pre-edge peak       |
-|                   |            | fitting, linear analysis, PCA/LASSO, EXAFS extraction   |
+|                   |            | fitting, linear analysis, PCA/LASSO, EXAFS processing,  |
+|                   |            | Running Feff, fitting EXAFS data to Feff paths.         |
 +-------------------+------------+---------------------------------------------------------+
 | GSE Map Viewer    | GUI        | XRF Map Viewer for GSECARS X-ray microprobe data.       |
 +-------------------+------------+---------------------------------------------------------+
 | XRF Display       | GUI        | Display and analyze XRF Spectra.                        |
-+-------------------+------------+---------------------------------------------------------+
-| Dioptas           | GUI        | Display XRD images, calibrate to XRD patterns.          |
 +-------------------+------------+---------------------------------------------------------+
 | feff6l            | CLI        | Feff 6 EXAFS calculations                               |
 +-------------------+------------+---------------------------------------------------------+
