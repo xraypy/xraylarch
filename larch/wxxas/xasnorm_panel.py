@@ -78,10 +78,7 @@ Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
                 norm_method='polynomial', edge='K', atsym='?',
-                nvict=0, nnorm=None, scale=1,
-                plotone_op='Normalized \u03BC(E)',
-                plotsel_op='Normalized \u03BC(E)',
-                energy_ref=None)
+                nvict=0, nnorm=None, scale=1, energy_ref=None)
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -190,8 +187,6 @@ class XASNormPanel(TaskPanel):
         panel.Add(SimpleText(panel, 'XAS Pre-edge subtraction and Normalization',
                              size=(350, -1), **self.titleopts), style=LEFT, dcol=4)
 
-        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
-                  style=RIGHT, dcol=2)
 
         panel.Add(plot_sel, newrow=True)
         panel.Add(self.plotsel_op, dcol=3)
@@ -201,11 +196,13 @@ class XASNormPanel(TaskPanel):
         panel.Add(plot_one, newrow=True)
         panel.Add(self.plotone_op, dcol=3)
         panel.Add(self.plot_erange, dcol=1)
-        panel.Add(CopyBtn('plotone_op'), dcol=1, style=RIGHT)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data Scale:')
         panel.Add(scale, dcol=2)
+        panel.Add(SimpleText(panel, 'Copy to Selected Groups:'),
+                  style=RIGHT, dcol=3)
+
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('XAS Data:')
@@ -319,11 +316,13 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
         if is_xasgroup(dgroup):
-            self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
-            self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
+            if self.plotone_op.GetCount() != len(PlotOne_Choices.keys()):
+                self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
+                self.plotone_op.SetSelection(1)
+            if self.plotsel_op.GetCount() != len(PlotSel_Choices.keys()):
+                self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
+                self.plotsel_op.SetSelection(1)
 
-            self.plotone_op.SetStringSelection(opts['plotone_op'])
-            self.plotsel_op.SetStringSelection(opts['plotsel_op'])
             groupnames = list(self.controller.file_groups.keys())
             self.wids['energy_ref'].SetChoices(groupnames)
 
@@ -365,7 +364,7 @@ class XASNormPanel(TaskPanel):
 
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
-            self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
+
             self.wids['scale'].SetValue(opts['scale'])
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
                          'atsym', 'step', 'norm_method'):
@@ -566,9 +565,7 @@ class XASNormPanel(TaskPanel):
         def copy_attrs(*args):
             for a in args:
                 opts[a] = conf[a]
-        if name == 'plotone_op':
-            copy_attrs('plotone_op')
-        elif name == 'xas_e0':
+        if name == 'xas_e0':
             copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
             copy_attrs('edge_step', 'auto_step')
