@@ -425,10 +425,26 @@ to standardize the format of XAFS data files (see `xdi`_.)
    read an XDI data file into a Larch group.
 
 
+ 
+Reading Spec/BLISS files via `silx.io.open`
+============================================
+
+Spec ASCII files (see `spec`_) and BLISS HDF5 files (see `bliss`_) are read via
+the `silx.io.open` module (see `silx`_).
+
+.. function:: read_specfile(filename, scan=None)
+
+   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
+    
+
+   
 Saving and Restoring Larch Groups
 =========================================
 
-It is often useful to save groups of data and be able to open them again
+WARNNG: these routines will often not save everything and use is
+deprecated.  Save data a scripts to reproduce analysis steps!
+
+It can be often useful to save groups of data and be able to open them again
 later.  The :func:`save` / :func:`restore` mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.
 
@@ -450,15 +466,3 @@ groups and data structures can be saved and restored.
     groups in the save file will be returned (in the order in which they
     were saved).  If ``group`` is an existing Larch group, the groups in
     the save file will be put inside that group, and will not be returned.
-
-
-Reading Spec/BLISS files via `silx.io.open`
-============================================
-
-Spec ASCII files (see `spec`_) and BLISS HDF5 files (see `bliss`_) are read via
-the `silx.io.open` module (see `silx`_).
-
-.. function:: read_specfile(filename, scan=None)
-
-   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
-    
