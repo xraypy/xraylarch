@@ -50,9 +50,9 @@ detailed selecting of data sets.
 
 .. _fig_xasviewer_1:
 
-.. figure:: _images/XASViewer_norm_panel.png
-    :target: _images/XASViewer_norm_panel.png
-    :width: 55%
+.. figure:: _images/XASViewer_main.png
+    :target: _images/XASViewer_main.png
+    :width: 85%
     :align: center
 
     XASViewer showing the File/Group list on the left-hand side and the
@@ -67,8 +67,8 @@ peaks (:ref:`xasviewer_peakfit`), Linear Combination Analysis
 (:ref:`xasviewer_lincombo`),
 Principal Component Analysis (:ref:`xasviewer_pca`),
 Advanced Linear Regression (:ref:`xasviewer_regression`),
-and EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
-:ref:`xasviewer_exafs_fft`).
+EXAFS Analysis (:ref:`xasviewer_exafs_bkg` and
+:ref:`xasviewer_exafs_fft`), and Feff fitting (:ref:`xasviewer_feffit`).
 
 There are a few important general notes to mention about XAS Viewer before
 going into more detail about how to use it.  First, XAS Viewer is still in
@@ -76,26 +76,27 @@ active development.  If you find problems with it or unexpected or missing
 functionality, please let us know.  Second, XAS Viewer has many features,
 functionality, and concepts in common with Athena and Sixpack. This is
 intentional, as we intend XAS Viewer to be a useful alternative to these
-applications, possibly with new or better features but also without
-requiring too much relearning of concepts or workflow.  As an important
-example of this compatibility, XAS Viewer can read in and import data from
-Athena Project files, and can save these project files as well, so that if
-you have lots of data organized with Athena Project Files, you can use XAS
-Viewer and Athena on the same datasets.  This aim for compatibility also
-means that if you find features to be missing or different from how Athena
-or Sixpack work, let us know.
+applications, possibly with new or better features but also without losing
+too many features or requiring too much relearning of concepts or workflow.
+As an important example of this compatibility, XAS Viewer can read in and
+import data from Athena Project files, and can save these project files as
+well, so that if you have lots of data organized with Athena Project Files,
+you can use XAS Viewer and Athena on the same datasets.  If you find
+features to be missing or different from how Athena or Sixpack work, let us
+know.
 
 As a GUI, XAS Viewer is intended to make data processing analysis easy and
 intuitive. As a Larch application it is also intended to enable more
 complex analysis, batch processing, and scripting of analysis tasks.  To do
 this, essentially all the real processing work, including most of the
-plotting of data, in XAS Viewer is done through the Larch Buffer (as shown
-in :ref:`larchgui_app`) which records the commands that it executes.  If,
+plotting of data, is done in XAS Viewer through the Larch Buffer (as shown
+in :ref:`larchgui_app`) which records the commands as it executes them.  If,
 at any point you want to know exactly what XAS Viewer is "really doing",
 you can open the Larch Buffer and see the commands being executed.  You can
 also copy the code from the Larch buffer to reproduce the analysis steps,
 or modify into procedures for batch processing with the Larch scripting
-language or with Python.
+language or with Python.  Essentially all of the data used in XAS Viewer is
+available from the Larch buffer.
 
 XAS Viewer will display many different datasets as 2-d line plots.  As with
 all such plots made with Larch (see :ref:`plotting-chapter`), these are
@@ -152,7 +153,7 @@ exported to Athena Project files, or to CSV files.
 
 .. figure:: _images/AthenaImporter.png
     :target: _images/AthenaImporter.png
-    :width: 100%
+    :width: 60%
     :align: center
 
     Athena Project importer.
@@ -169,6 +170,9 @@ described in Chapter :ref:`data-io_chapter`.  Currently, this form is
 somewhat limited in being able to process all data formats, but should be
 useful for many data sets.  If you have trouble reading in your data with
 XAS Viewer, contact us and we will try to help.
+
+In addition, ASCII or HDF5 data files from Spec/Bliss format can also be
+read in, selecting multiple scans from a single data file.
 
 .. _xasviewer_dialogs:
 
@@ -195,7 +199,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_calibrate_dialog.png
     :target: _images/XASViewer_calibrate_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     Energy calibration dialog.
@@ -204,7 +208,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_deglitch_dialog.png
     :target: _images/XASViewer_deglitch_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     De-glitching dialog
@@ -213,7 +217,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_smooth_dialog.png
     :target: _images/XASViewer_smooth_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     Energy smoothing dialog.
@@ -222,7 +226,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_deconvolve_dialog.png
     :target: _images/XASViewer_deconvolve_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     Deconvolution dialog.
@@ -231,7 +235,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_rebin_dialog.png
     :target: _images/XASViewer_rebin_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     Energy re-binning dialog.
@@ -240,7 +244,7 @@ Screenshots of some of these dialogs are shown in the images below.
 
 .. figure:: _images/XASViewer_overabsorption_dialog.png
     :target: _images/XASViewer_overabsorption_dialog.png
-    :width: 100%
+    :width: 50%
     :align: center
 
     Over-absorption correction dialog
@@ -345,7 +349,7 @@ transferred to any of the bounds energy using the corresponding pin icon
 
 .. figure:: _images/XASViewer_prepeaks_baseline_form.png
     :target: _images/XASViewer_prepeaks_baseline_form.png
-    :width: 100%
+    :width: 70%
     :align: center
 
     Pre-edge peak Panel of XASViewer, showing how select regions of
@@ -602,7 +606,50 @@ Linear Combination Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Linear Combination Analysis is useful for modeling a XANES spectrum as a
-combination of other spectra.
+combination of other spectra.  In this approach, one asserts that an
+unknown spectrum should be a linear combination of spectra of
+well-characterized samples or "standards".  With the results from a
+spectral fit, one can then conclude what fraction of atomic environments
+correspond to those of each standard.  For this to work well, the XANES
+data needs to be normalized consistently.
+
+To use this in XAS Viewer, one selects a set of spectra for the "standards"
+and "builds a model" from the selected groups for the standards, and then
+fits one or more spectra from unknown samples to get the fractional weight
+for each sample.  Options include:
+
+   * allowing a single energy shift between unknown spectrum and the set
+     of standards.
+   * trying all combination of standards.
+   * forcing all weights to add to 1.0
+
+.. _fig_xasviewer_9a:
+
+.. figure:: _images/XASViewer_LCF_main.png
+    :target: _images/XASViewer_LCF_main.png
+    :width: 75%
+    :align: center
+
+    Linear Combination Fitting, main panel
+
+.. _fig_xasviewer_9b:
+
+.. figure:: _images/XASViewer_LCF_plot.png
+    :target: _images/XASViewer_LCF_plot.png
+    :width: 75%
+    :align: center
+
+    Linear Combination Fitting, plot of result
+
+.. _fig_xasviewer_9c:
+
+.. figure:: _images/XASViewer_LCF_results.png
+    :target: _images/XASViewer_LCF_results.png
+    :width: 75%
+    :align: center
+
+    Linear Combination Fitting, results panel
+
 
 .. _xasviewer_pca:
 
@@ -627,6 +674,53 @@ the results of PCA to ask::
 
     is this *other* spectrum made up of the same components as make up my collection?
 
+    
+.. _fig_xasviewer_10a:
+
+.. figure:: _images/XASViewer_PCAmain_page.png
+    :target: _images/XASViewer_PCAmain_page.png
+    :width: 75%
+    :align: center
+
+    Principal Component Analysis, main panel
+
+.. _fig_xasviewer_10b:
+
+.. figure:: _images/XASViewer_PCA_compplot.png
+    :target: _images/XASViewer_PCA_compplot.png
+    :width: 75%
+    :align: center
+
+    Principal Component Analysis, Plot of spectral components.
+
+.. _fig_xasviewer_10c:
+
+.. figure:: _images/XASViewer_PCA_screeplot.png
+    :target: _images/XASViewer_PCA_screeplot.png
+    :width: 75%
+    :align: center
+
+    Principal Component Analysis, Plot of IND statistic and scree-like plot
+    of the importance of each component.
+    
+
+.. _fig_xasviewer_10d:
+
+.. figure:: _images/XASViewer_PCA_targetplot.png
+    :target: _images/XASViewer_PCA_targetplot.png
+    :width: 75%
+    :align: center
+
+    Principal Component Analysis, Plot of target transformation -- using
+    components to best match an unknown spectra.
+        
+    
+.. _xasviewer_regression:
+
+
+Linear Regression with LASSO and PLS to predict external variable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 .. _xasviewer_exafs_bkg:
@@ -640,3 +734,9 @@ EXAFS Processing: Background Subtraction
 
 EXAFS Processing:  Fourier Transforms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. _xasviewer_feffit:
+
+Fitting EXAFS data to Feff Paths
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -218,7 +218,7 @@ method of that project file.  The group is expected to have array names of
 
    A representation of an Athena Project File
 
-.. method:: add_group(group, signal=None)
+.. method:: AthenaProject.add_group(group, signal=None)
 
    add a group of XAFS data to an Athena Project
 
@@ -228,13 +228,13 @@ method of that project file.  The group is expected to have array names of
    if `signal` is not specified, it will be chosen as `mu`, `mutrans`, or
    `mufluor` (in that order).
 
-.. method:: save(use_gzip=True)
+.. method:: AthenaProject.save(use_gzip=True)
 
    save project to file
 
    :param use_gzip:  bool, whether to use gzip compression for file.
 
-.. method:: read(filename=None, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
+.. method:: AthenaProject.read(filename=None, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
 
    read from project.
 
@@ -250,7 +250,7 @@ the notes there apply here as well. An important difference is that for
 this method the data is retained in the `groups` attribute which is a
 Python list of groups for each group in the Athena Project.
 
-.. method:: as_group()
+.. method:: AthenaProject.as_group()
 
      Return the Athena Project `groups` attribute (as read by
      :meth:`read`) to a larch Group of groups.
