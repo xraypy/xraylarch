@@ -1,10 +1,10 @@
-name: Test with Windows, Miniconda
+name: Test with Ubuntu, Miniconda
 
 on: [push]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
       fail-fast: false
