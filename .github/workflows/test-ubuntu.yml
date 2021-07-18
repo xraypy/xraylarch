@@ -1,23 +1,26 @@
-name: Test with Ubuntu, Miniconda
+name: Test with Conda on Ubuntu, Alternate
 
 on: [push]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8']
+        python-version: ['3.8']
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python from Miniconda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-    - name: Install conda dependencies
+        python-version: ${{ matrix.python-version }}
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install conda and dependencies
       run: |
         printenv
         conda config --set always_yes yes --set changeps1 no
@@ -25,7 +28,7 @@ jobs:
         conda install python=${{ matrix.python-version }} numpy scipy matplotlib h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython importlib_metadata
         conda info -a
         conda list
-    - name: Install xraylarch and other dependencies with pip
+    - name: Install xraylarch
       run: |
         printenv
         pip install wxmplot wxutils
