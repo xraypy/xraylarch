@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.54 documentation</title>
+    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.55 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -86,8 +86,8 @@
 <li><a class="reference internal" href="#working-with-epics-channel-access">10.6. Working with Epics Channel Access</a></li>
 <li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">10.7. Reading Scan Data from APS Beamlines</a></li>
 <li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">10.8. Reading XAFS Data Interchange (XDI) Files</a></li>
-<li><a class="reference internal" href="#saving-and-restoring-larch-groups">10.9. Saving and Restoring Larch Groups</a></li>
-<li><a class="reference internal" href="#reading-spec-bliss-files-via-silx-io-open">10.10. Reading Spec/BLISS files via <cite>silx.io.open</cite></a></li>
+<li><a class="reference internal" href="#reading-spec-bliss-files-via-silx-io-open">10.9. Reading Spec/BLISS files via <cite>silx.io.open</cite></a></li>
+<li><a class="reference internal" href="#saving-and-restoring-larch-groups">10.10. Saving and Restoring Larch Groups</a></li>
 </ul>
 </li>
 </ul>
@@ -307,7 +307,7 @@ Project would be:</p>
 <section id="creating-and-writing-to-athena-project-files">
 <h3><span class="section-number">10.2.2. </span>Creating and Writing to Athena Project Files<a class="headerlink" href="#creating-and-writing-to-athena-project-files" title="Permalink to this headline">¶</a></h3>
 <p>You can create an Athena Project File with <a class="reference internal" href="#io.create_athena" title="_io.create_athena"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_athena()</span></code></a> and then
-add a group of XAFS data to that pct with the <a class="reference internal" href="#io.add_group" title="_io.add_group"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code></a>
+add a group of XAFS data to that pct with the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add_group()</span></code>
 method of that project file.  The group is expected to have array names of
 <cite>energy</cite> and <cite>i0</cite>, and one of <cite>mu</cite>, <cite>mutrans</cite>, or <cite>mufluor</cite>.</p>
 <dl class="py function">
@@ -331,8 +331,8 @@ reading and writing.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="io.add_group">
-<span id="_io.add_group"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">add_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.add_group" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="io.AthenaProject.add_group">
+<span id="_io.AthenaProject.add_group"></span><span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">add_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.AthenaProject.add_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>add a group of XAFS data to an Athena Project</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -347,8 +347,8 @@ reading and writing.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="io.save">
-<span id="_io.save"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gzip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.save" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="io.AthenaProject.save">
+<span id="_io.AthenaProject.save"></span><span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_gzip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.AthenaProject.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>save project to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -358,8 +358,8 @@ reading and writing.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="io.read">
-<span id="_io.read"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="io.AthenaProject.read">
+<span id="_io.AthenaProject.read"></span><span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_preedge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_bkg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_hashkey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.AthenaProject.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>read from project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -380,10 +380,10 @@ the notes there apply here as well. An important difference is that for
 this method the data is retained in the <cite>groups</cite> attribute which is a
 Python list of groups for each group in the Athena Project.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="io.as_group">
-<span id="_io.as_group"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">as_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#io.as_group" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="io.AthenaProject.as_group">
+<span id="_io.AthenaProject.as_group"></span><span class="sig-prename descclassname"><span class="pre">AthenaProject.</span></span><span class="sig-name descname"><span class="pre">as_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#io.AthenaProject.as_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Athena Project <cite>groups</cite> attribute (as read by
-<a class="reference internal" href="#io.read" title="_io.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
+<a class="reference internal" href="#io.AthenaProject.read" title="_io.AthenaProject.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a>) to a larch Group of groups.</p>
 </dd></dl>
 
 <p>As an example creating and saving an Athena Project file:</p>
@@ -578,10 +578,23 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 </dd></dl>
 
 </section>
+<section id="reading-spec-bliss-files-via-silx-io-open">
+<h2><span class="section-number">10.9. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Permalink to this headline">¶</a></h2>
+<p>Spec ASCII files (see <a class="reference external" href="https://www.certif.com/content/spec">spec</a>) and BLISS HDF5 files (see <a class="reference external" href="https://bliss.gitlab-pages.esrf.fr/bliss/master/">bliss</a>) are read via
+the <cite>silx.io.open</cite> module (see <a class="reference external" href="https://www.silx.org/">silx</a>).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="io.read_specfile">
+<span id="_io.read_specfile"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read_specfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read_specfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Larch group for a given scan number. If <cite>scan=None</cite> the first scan is returned.</p>
+</dd></dl>
+
+</section>
 <section id="saving-and-restoring-larch-groups">
-<h2><span class="section-number">10.9. </span>Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
-<p>It is often useful to save groups of data and be able to open them again
-later.  The <a class="reference internal" href="#id0" title="_io.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#io.restore" title="_io.restore"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore()</span></code></a> mechanism here allows you to
+<h2><span class="section-number">10.10. </span>Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
+<p>WARNNG: these routines will often not save everything and use is
+deprecated.  Save data a scripts to reproduce analysis steps!</p>
+<p>It can be often useful to save groups of data and be able to open them again
+later.  The <a class="reference internal" href="#io.save" title="_io.save"><code class="xref py py-func docutils literal notranslate"><span class="pre">save()</span></code></a> / <a class="reference internal" href="#io.restore" title="_io.restore"><code class="xref py py-func docutils literal notranslate"><span class="pre">restore()</span></code></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
 <p>Some precautions should be kept in mind, as not all Larch data is easily
 transferrable.  Most importantly, Python functions cannot be saved to any
@@ -590,8 +603,8 @@ not as big of a problem as you might expect: you want to save <strong>data</stro
 the functions will be present in the later session.  All the built-in Larch
 groups and data structures can be saved and restored.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_groups</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="io.save">
+<span id="_io.save"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_of_groups</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>save a set of Larch groups and data into an HDF5 file.</p>
 </dd></dl>
 
@@ -602,17 +615,6 @@ groups and data structures can be saved and restored.</p>
 groups in the save file will be returned (in the order in which they
 were saved).  If <code class="docutils literal notranslate"><span class="pre">group</span></code> is an existing Larch group, the groups in
 the save file will be put inside that group, and will not be returned.</p>
-</dd></dl>
-
-</section>
-<section id="reading-spec-bliss-files-via-silx-io-open">
-<h2><span class="section-number">10.10. </span>Reading Spec/BLISS files via <cite>silx.io.open</cite><a class="headerlink" href="#reading-spec-bliss-files-via-silx-io-open" title="Permalink to this headline">¶</a></h2>
-<p>Spec ASCII files (see <a class="reference external" href="https://www.certif.com/content/spec">spec</a>) and BLISS HDF5 files (see <a class="reference external" href="https://bliss.gitlab-pages.esrf.fr/bliss/master/">bliss</a>) are read via
-the <cite>silx.io.open</cite> module (see <a class="reference external" href="https://www.silx.org/">silx</a>).</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="io.read_specfile">
-<span id="_io.read_specfile"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read_specfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read_specfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a Larch group for a given scan number. If <cite>scan=None</cite> the first scan is returned.</p>
 </dd></dl>
 
 </section>
