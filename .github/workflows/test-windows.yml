@@ -22,13 +22,14 @@ jobs:
         printenv
         conda config --set always_yes yes --set changeps1 no
         conda config --add channels conda-forge
-        conda install python=${{ matrix.python-version }} numpy=>1.20 scipy=>1.5 matplotlib=>3.0 h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython importlib_metadata
+        conda install python=${{ matrix.python-version }} numpy scipy matplotlib h5py pip setuptools pyparsing pytest pytest-cov coverage scikit-learn cython pillow pandas sqlalchemy psutil pyyaml psycopg2-binary numdifftools emcee pymatgen tomopy wxpython importlib_metadata
         conda info -a
         conda list
     - name: Install xraylarch and other dependencies with pip
       run: |
-        pip install wxmplot wxutils 
-        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb 
+        printenv
+        pip install wxmplot wxutils
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb
         python setup.py install
     - name: Run test suite
       run: |
