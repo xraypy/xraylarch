@@ -316,10 +316,10 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
         if is_xasgroup(dgroup):
-            if self.plotone_op.GetCount != len(PlotOne_Choices.keys()):
+            if self.plotone_op.GetCount() != len(PlotOne_Choices.keys()):
                 self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
                 self.plotone_op.SetSelection(1)
-            if self.plotsel_op.GetCount != len(PlotSel_Choices.keys()):
+            if self.plotsel_op.GetCount() != len(PlotSel_Choices.keys()):
                 self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
                 self.plotsel_op.SetSelection(1)
 
