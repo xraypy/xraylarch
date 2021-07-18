@@ -319,11 +319,6 @@ class XASNormPanel(TaskPanel):
         opts = self.get_config(dgroup)
         self.skip_process = True
         if is_xasgroup(dgroup):
-            self.plotone_op.SetChoices(list(PlotOne_Choices.keys()))
-            self.plotsel_op.SetChoices(list(PlotSel_Choices.keys()))
-
-            self.plotone_op.SetStringSelection(opts['plotone_op'])
-            self.plotsel_op.SetStringSelection(opts['plotsel_op'])
             groupnames = list(self.controller.file_groups.keys())
             self.wids['energy_ref'].SetChoices(groupnames)
 
