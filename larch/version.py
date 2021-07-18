@@ -10,7 +10,10 @@ import matplotlib
 import lmfit
 from collections import OrderedDict, namedtuple
 from packaging.version import parse as ver_parse
-from importlib.metadata import version, PackageNotFoundError
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except:
+    from importlib_metadata import version, PackageNotFoundError    
 try:
     __version__ = version("xraylarch")
 except PackageNotFoundError:
