@@ -27,3 +27,4 @@ hdf5plugin
 numdifftools
 psutil
 pymatgen
+importlib_metadata

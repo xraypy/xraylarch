@@ -218,7 +218,7 @@ method of that project file.  The group is expected to have array names of
 
    A representation of an Athena Project File
 
-.. method:: add_group(group, signal=None)
+.. method:: AthenaProject.add_group(group, signal=None)
 
    add a group of XAFS data to an Athena Project
 
@@ -228,13 +228,13 @@ method of that project file.  The group is expected to have array names of
    if `signal` is not specified, it will be chosen as `mu`, `mutrans`, or
    `mufluor` (in that order).
 
-.. method:: save(use_gzip=True)
+.. method:: AthenaProject.save(use_gzip=True)
 
    save project to file
 
    :param use_gzip:  bool, whether to use gzip compression for file.
 
-.. method:: read(filename=None, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
+.. method:: AthenaProject.read(filename=None, match=None, do_preedge=True, do_bkg=True, do_fft=True, use_hashkey=False)
 
    read from project.
 
@@ -250,7 +250,7 @@ the notes there apply here as well. An important difference is that for
 this method the data is retained in the `groups` attribute which is a
 Python list of groups for each group in the Athena Project.
 
-.. method:: as_group()
+.. method:: AthenaProject.as_group()
 
      Return the Athena Project `groups` attribute (as read by
      :meth:`read`) to a larch Group of groups.
@@ -425,10 +425,26 @@ to standardize the format of XAFS data files (see `xdi`_.)
    read an XDI data file into a Larch group.
 
 
+ 
+Reading Spec/BLISS files via `silx.io.open`
+============================================
+
+Spec ASCII files (see `spec`_) and BLISS HDF5 files (see `bliss`_) are read via
+the `silx.io.open` module (see `silx`_).
+
+.. function:: read_specfile(filename, scan=None)
+
+   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
+    
+
+   
 Saving and Restoring Larch Groups
 =========================================
 
-It is often useful to save groups of data and be able to open them again
+WARNNG: these routines will often not save everything and use is
+deprecated.  Save data a scripts to reproduce analysis steps!
+
+It can be often useful to save groups of data and be able to open them again
 later.  The :func:`save` / :func:`restore` mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.
 
@@ -450,15 +466,3 @@ groups and data structures can be saved and restored.
     groups in the save file will be returned (in the order in which they
     were saved).  If ``group`` is an existing Larch group, the groups in
     the save file will be put inside that group, and will not be returned.
-
-
-Reading Spec/BLISS files via `silx.io.open`
-============================================
-
-Spec ASCII files (see `spec`_) and BLISS HDF5 files (see `bliss`_) are read via
-the `silx.io.open` module (see `silx`_).
-
-.. function:: read_specfile(filename, scan=None)
-
-   Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
-    

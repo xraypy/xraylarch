@@ -43,9 +43,6 @@ knowledge of Python will make Larch easy to learn.  For further details on
 Python, including tutorials, see the Python documentation at
 https://python.org/
 
-If you are familar with Python and want to use the `larch` module from
-Python, skip ahead to :ref:`programming_chapter`.
-
 Contents:
 
 .. toctree::
