@@ -140,7 +140,7 @@ class Epics_Xspress3(object):
         counterpv.clear_callbacks()
         counterpv.add_callback(self.onRealTime)
         for imca in range(1, self.nmca+1):
-            self._xsp3.PV(self.mca_array_name % imca)
+            self._xsp3.PV(self.mca_array_name % imca, auto_monitor=False)
         time.sleep(0.001)
         self.connected = True
         self.mcas = self._xsp3.mcas
