@@ -364,6 +364,7 @@ class XASNormPanel(TaskPanel):
 
         else:
             self.plotone_op.SetChoices(list(PlotOne_Choices_nonxas.keys()))
+            self.plotsel_op.SetChoices(list(PlotSel_Choices_nonxas.keys()))
 
             self.wids['scale'].SetValue(opts['scale'])
             for attr in ('pre1', 'pre2', 'norm1', 'norm2', 'nnorm', 'edge',
