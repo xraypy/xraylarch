@@ -281,7 +281,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.needs_newplot=True
         else:
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
-
+        time.sleep(0.05)
+        # print(" Got detector ")
+        # for name, p in self.det._xsp3._pvs.items():
+        #    print(p, p._auto_monitor)
+            
     def show_mca(self, init=False):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
@@ -500,7 +504,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.timer_counter = 0
         self.mca_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.UpdateData, self.mca_timer)
-        self.mca_timer.Start(100)
+        self.mca_timer.Start(250)
         return pane
 
     def UpdateData(self, event=None, force=False):
