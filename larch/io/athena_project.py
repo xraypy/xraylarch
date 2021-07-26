@@ -31,42 +31,7 @@ def parse_arglist(text):
     txt = text.split('=', 1)[1].strip()
     if txt.endswith(';'):
         txt = txt[:-1]
-    for beg, end in (('[', ']'), ('(', ')'), ('{', '}')):
-        if txt.startswith(beg) and txt.endswith(end):
-            txt = txt[1:-1]
-    txt = txt.translate(alist2json)
-
-    words = []
-    i0 = 0
-    inparen1 = False
-    inparen2 = False
-
-    def get_word(x):
-        w = x
-        for d in ('"', "'"):
-            if w.startswith(d) and w.endswith(d):
-                w = w[1:-1]
-        return w
-
-    for i in range(len(txt)):
-        c = txt[i]
-        if inparen1:
-            if c == "'":
-                inparen1 = False
-            continue
-        elif inparen2:
-            if c == '"':
-                inparen2 = False
-            continue
-        if c == ',':
-            words.append(get_word(txt[i0:i]))
-            i0 = i+1
-        elif c == '"':
-            inparen2 = True
-        elif c == "'":
-            inparen1 = True
-    words.append(get_word(txt[i0:]))
-    return words
+    return json.loads(txt.translate(alist2json))
 
 
 def asfloat(x):
