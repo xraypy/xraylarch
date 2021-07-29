@@ -60,7 +60,6 @@ class shell(cmd.Cmd):
             symtable = self.larch.symtable
 
             app = LarchWxApp(redirect=False, clearSigInt=False)
-            print("app: ", app)
             
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
