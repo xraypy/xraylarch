@@ -6,6 +6,7 @@ import numpy as np
 from larch.larchlib import get_dll
 
 import scipy.constants as consts
+from scipy.special import gamma
 
 # EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]
@@ -14,6 +15,51 @@ import scipy.constants as consts
 EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
+
+def gnxas(r0, sigma, beta, path=None):
+    """calculate GNXAS amplitude for values of r0, sigma, beta for a feffpath
+
+    amplitude = gnxas(r0, sigma, beta, path)
+
+    Parameters:
+    -----------
+      r0       peak R0 value (in Ang)
+      sigma    variance (approximately sqrt(sigma^2)  Ang
+      beta     asymmetry factor (unitless)
+      path     feff path or None   [None]
+
+    Notes:
+    ------
+        For reff = reff of the provided path:
+             q = 4. / beta**2
+             alpha = q + (2*(reff-r0))/(beta*sigma)
+             gr = max(0,  2*n*exp(-alpha)*alpha**(q-1)/(sigma*abs(beta)*gamma(q)))
+
+    """
+    feffpath = path._feffdat
+    if feffpath is None:
+        return 0.
+
+    reff = feffpath.reff
+    if abs(beta) < 1.e-15:
+        beta = 1.e-15
+    q = 4.0/beta**2
+    x = (reff-r0) * beta / (2*sigma)
+    alpha = q *(1+x)
+    try:
+        amp = np.exp(-alpha) * alpha**(q-1)
+    except:
+        amp = 0.0
+
+    out = 2*amp/(sigma*abs(beta)*gamma(q))
+    if isinstance(out, np.ndarray):
+        out[np.where(out<0)] = 0
+        out[np.where(np.isnan(out))] = 0
+        out[np.where(np.isinf(out))] = 0
+    else:
+        out = max(0, out)
+    return out
+
 
 
 def sigma2_eins(t, theta, path):
@@ -53,7 +99,7 @@ def sigma2_debye(t, theta, path):
     -----------
       t        sample temperature (in K)
       theta    Debye temperature (in K)
-      path     FeffPath to calculate sigma2 for 
+      path     FeffPath to calculate sigma2 for
     """
     feffpath = path._feffdat
     if feffpath is None:
@@ -330,6 +376,25 @@ def sigma2_debye(t, theta):
 
     return sigma2_correldebye(natoms, tempk, thetad, rnorm,
                               atomx, atomy, atomz, atomm)
+
+
+def gnxas(r0, sigma, beta):
+    if feffpath is None:
+        return 0.
+    r = feffpath.reff
+    if abs(beta) < 1.e-15:
+        beta = 1.e-15
+    q = 4. / beta**2
+    alpha = q + (2*(r-r0)) / (beta*sigma)
+    try:
+        a2q = alpha**(q-1)
+    except:
+        a2q = 1.e100
+
+    print('> ', reff, alpha, q)
+
+    return max(0, 2*exp(-alpha)*a2q/(sigma*abs(beta)*gamma(q)))
+
 """
 def add_sigma2funcs(params):
     """set sigma2funcs into Parameters' asteval"""
@@ -337,4 +402,5 @@ def add_sigma2funcs(params):
     f_eval.symtable['EINS_FACTOR'] = EINS_FACTOR
     f_eval.symtable['sigma2_correldebye'] = sigma2_correldebye
     f_eval.symtable['feffpath'] = None
+    f_eval.symtable['gamma'] = gamma
     f_eval(_sigma2_funcs)
