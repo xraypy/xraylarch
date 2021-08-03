@@ -44,7 +44,7 @@ from .cauchy_wavelet import cauchy_wavelet
 from .deconvolve import xas_convolve, xas_deconvolve
 from .estimate_noise import estimate_noise
 from .rebin_xafs import rebin_xafs, sort_xafs
-from .sigma2_models import sigma2_eins, sigma2_debye, sigma2_correldebye
+from .sigma2_models import sigma2_eins, sigma2_debye, sigma2_correldebye, gnxas
 
 
 def _larch_init(_larch):
@@ -73,6 +73,7 @@ _larch_builtins = {'_xafs': dict(autobk=autobk, etok=etok, ktoe=ktoe,
                                  estimate_noise=estimate_noise,
                                  rebin_xafs=rebin_xafs,
                                  sort_xafs=sort_xafs,
+                                 gnxas=gnxas,
                                  sigma2_eins=sigma2_eins,
                                  sigma2_debye=sigma2_debye, feffit=feffit,
                                  feffit_dataset=feffit_dataset,
