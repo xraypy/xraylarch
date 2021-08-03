@@ -574,11 +574,12 @@ def Make_CallArgs(skipped_args):
                 if k in call_args:
                     call_args.pop(k)
 
-            details_name = '%s_details' % fcn.__name__
-            if not hasattr(groupx, details_name):
-                setattr(groupx, details_name, Group())
-            setattr(getattr(groupx, details_name),
-                    'call_args', call_args)
+            if groupx is not None:
+                details_name = '%s_details' % fcn.__name__
+                if not hasattr(groupx, details_name):
+                    setattr(groupx, details_name, Group())
+                setattr(getattr(groupx, details_name),
+                        'call_args', call_args)
             return result
         wrapper.__doc__ = fcn.__doc__
         wrapper.__name__ = fcn.__name__
