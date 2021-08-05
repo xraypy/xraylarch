@@ -209,7 +209,10 @@ class ParameterWidgets(object):
 
     def onExpr(self, evt=None, value=None):
         if value is None and evt is not None:
-            value = evt.GetString()
+            if hasattr(evt, 'GetString'):
+                value = evt.GetString()
+            else:
+                value = self.expr.GetValue()
         try:
             ast.parse(value)
             self.param.expr = value
@@ -480,4 +483,3 @@ class TestFrame(wx.Frame):
 
     def onExit(self, evt=None):
         self.Destroy()
-
