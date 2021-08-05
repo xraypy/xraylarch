@@ -13,6 +13,7 @@ except:
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.io.fileutils import gformat
+from larch.utils.strutils import fix_varname
 
 
 def get_atom_map(structure):
@@ -174,7 +175,6 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     if extra_titles is not None:
         for etitle in extra_titles[:]:
-
             if not etitle.startswith('TITLE '):
                 etitle = 'TITLE ' + etitle
             out_text.append(etitle)
@@ -185,12 +185,13 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     out_text.append('* crystallographics sites: note that these sites may not be unique!')
     out_text.append(f'*     using absorber at site {1+absorber_index:d} in the list below')
-    out_text.append(f'*     selected as "absorber=\'{absorber:s}\', absorber_site={absorber_site:d}" ')
+    out_text.append(f'*     selected as absorber="{absorber:s}", absorber_site={absorber_site:d}')
     out_text.append('* index   X        Y        Z      species')
     for i, site in enumerate(cstruct):
         fc = site.frac_coords
+        species_string = fix_varname(site.species_string.strip())
         marker = '  <- absorber' if  (i == absorber_index) else ''
-        out_text.append(f'* {i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}  {site.species_string:s} {marker:s}')
+        out_text.append(f'* {i+1:3d}   {fc[0]:.6f} {fc[1]:.6f} {fc[2]:.6f}  {species_string:s} {marker:s}')
 
     out_text.extend(['* ', '', ''])
 
@@ -202,9 +203,9 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         out_text.append('EXAFS   20.0')
         out_text.append(f'RPATH   {cluster_size:.2f}')
         out_text.append('*SCF    5.0')
-        
+
     else:
-        edge_index = {'K': 1, 'L1': 2, 'L2': 3, 'L3': 4}[edge]        
+        edge_index = {'K': 1, 'L1': 2, 'L2': 3, 'L3': 4}[edge]
         out_text.append(f'HOLE    {edge_index:d}  1.0  * {edge_comment:s} (2nd number is S02)')
         out_text.append('CONTROL 1 1 1 0 * phase, paths, feff, chi')
         out_text.append('PRINT   1 0 0 0')
