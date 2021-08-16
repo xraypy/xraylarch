@@ -25,12 +25,6 @@ try:
 except ImportError:
     pass
 
-WIN_BASERUNNER = """@ECHO OFF
-call %~dp0%activate base
-%~dp0%*
-
-"""
-
 def install_extras(package_set):
     all_packages = set([pkg.key for pkg in pkg_resources.working_set])
     missing = package_set - all_packages
@@ -102,19 +96,8 @@ class LarchApp:
                 ticon = "{:s}.{:s}".format(icon, ext)
                 if os.path.exists(ticon):
                     icon = ticon
-
-        if HAS_CONDA and uname == 'win':
-            baserunner = os.path.join(self.bindir, 'baserunner.bat')
-            script = "%s %s" % (baserunner, self.script)
-            if not os.path.exists(baserunner) or os.stat(baserunner).st_size < 10:
-                fh = open(baserunner, 'w')
-                fh.write(WIN_BASERUNNER)
-                fh.close()
-                time.sleep(0.5)
-
         make_shortcut(script, name=self.name, icon=icon,
                       terminal=self.terminal, folder='Larch')
-
         if HAS_CONDA and uname == 'darwin':
             try:
                 fix_darwin_shebang(script)
