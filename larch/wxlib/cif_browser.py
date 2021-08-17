@@ -22,6 +22,7 @@ from xraydb.chemparser import chemparse
 import larch
 from larch import Group
 from larch.xafs import feff8l, feff6l
+from larch.xrd.cif2feff import cif_sites
 from larch.utils.paths import unixpath
 from larch.utils.strutils import fix_filename, unique_name
 from larch.site_config import user_larchdir
@@ -122,7 +123,10 @@ class CIFFrame(wx.Frame):
 
         minlab = SimpleText(panel, ' Mineral Name: ')
         minhint= SimpleText(panel, ' example: hem* ')
-        wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1))
+        wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1),
+                                      style=wx.TE_PROCESS_ENTER)
+
+        wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         authlab = SimpleText(panel, ' Author Name: ')
         wids['author'] = wx.TextCtrl(panel, value='',   size=(250, -1))
@@ -389,7 +393,7 @@ class CIFFrame(wx.Frame):
         self.wids['central_atom'].Select(0)
 
         el0 = list(elems.keys())[0]
-        sites = [a for a in cif.atoms_sites if a.startswith(el0)]
+        sites = cif_sites(cif.ciftext, absorber=el0)
         sites = ['%d' % (i+1) for i in range(len(sites))]
         self.wids['site'].Clear()
         self.wids['site'].AppendItems(sites)
@@ -399,8 +403,7 @@ class CIFFrame(wx.Frame):
 
 
     def onCentralAtom(self, event=None):
-        elem = event.GetString()
-        sites = [a for a in self.current_cif.atoms_sites if a.startswith(elem)]
+        sites = cif_sites(cif.ciftext, absorber=event.GetString())
         sites = ['%d' % (i+1) for i in range(len(sites))]
         self.wids['site'].Clear()
         self.wids['site'].AppendItems(sites)
@@ -671,4 +674,3 @@ def cif_viewer(**kws):
 
 if __name__ == '__main__':
     CIFViewer().MainLoop()
-
