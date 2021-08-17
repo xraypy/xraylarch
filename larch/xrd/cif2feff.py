@@ -48,7 +48,7 @@ def read_cif_structure(ciftext):
     if not HAS_PYMATGEN:
         raise ImportError('pymatgen required')
     try:
-        cifstructs = CifParser(StringIO(ciftext))
+        cifstructs = CifParser(StringIO(ciftext), site_tolerance=5.e-4)
         parse_ok = True
         file_found = True
     except:
@@ -57,7 +57,7 @@ def read_cif_structure(ciftext):
         if os.path.exists(ciftext):
             file_found = True
             try:
-                cifstructs = CifParser(ciftext)
+                cifstructs = CifParser(ciftext, site_tolerance=5.e-4)
                 parse_ok = True
             except:
                 parse_ok = False
@@ -74,10 +74,16 @@ def read_cif_structure(ciftext):
             raise ValueError('invalid text of CIF file')
     return cstruct
 
-def cif_sites(ciftext):
+def cif_sites(ciftext, absorber=None):
     "return list of sites for the structure"
     cstruct = read_cif_structure(ciftext)
-    return cstruct.sites
+    out = cstruct.sites
+    if absorber is not None:
+        out = []
+        for site in cstruct.sites:
+            if site.species_string.lower() == absorber.lower():
+                out.append(site)
+    return out
 
 def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
                 site_index=None, extra_titles=None, version8=True):
