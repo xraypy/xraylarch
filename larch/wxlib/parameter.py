@@ -187,7 +187,7 @@ class ParameterWidgets(object):
             self.bounds.SetStringSelection(bounds_choice)
 
     def onBOUNDSChoice(self, evt=None):
-        bounds = str(evt.GetString().lower())
+        bounds = str(self.bounds.GetStringSelection().lower())
         if bounds == BOUNDS_custom:
             pass
         elif bounds == BOUNDS_none:
@@ -208,11 +208,10 @@ class ParameterWidgets(object):
             self.param.value = value
 
     def onExpr(self, evt=None, value=None):
-        if value is None and evt is not None:
-            if hasattr(evt, 'GetString'):
-                value = evt.GetString()
-            else:
-                value = self.expr.GetValue()
+        if value is None:
+            value = self.expr.GetValue()
+            # if hasattr(evt, 'GetString'):
+            #     value = evt.GetString()
         try:
             ast.parse(value)
             self.param.expr = value
@@ -242,7 +241,6 @@ class ParameterWidgets(object):
                 self.bounds.SetStringSelection(BOUNDS_custom)
 
     def onMaxval(self, evt=None, value=None):
-        # print "onMaxval " , value, self.value, self.value
         if value in (None, 'None', ''):
             value = np.inf
         if self.value is not None:
@@ -264,7 +262,8 @@ class ParameterWidgets(object):
     def onVaryChoice(self, evt=None):
         if self.vary is None:
             return
-        vary = str(evt.GetString().lower())
+
+        vary = str(self.vary.GetStringSelection().lower())
         self.param.vary = (vary==PAR_VAR)
         if ((vary == PAR_VAR or vary == PAR_FIX) and
             self.param.expr not in (None, 'None', '')):
@@ -359,10 +358,8 @@ class ParameterDialog(wx.Dialog):
         self.SetSize((bsize[0]+10, bsize[1]+10))
 
     def onVaryChoice(self, evt=None):
-        if evt is not None:
-            vary = evt.GetString()
-        else:
-            vary = self.wids.vary.GetStringSelection()
+
+        vary = self.wids.vary.GetStringSelection()
         if vary == PAR_CON:
             self.wids.val.Disable()
             self.wids.expr.Enable()
@@ -416,7 +413,7 @@ class ParameterPanel(wx.Panel):
         pack(self, sizer)
 
     def onVaryChoice(self, evt=None):
-        vary = evt.GetString()
+        vary = self.wids.vary.GetStringSelection() # evt.GetString()
         self.param.vary = (vary == PAR_VAR)
         if vary == PAR_CON:
             self.wids.val.Disable()
