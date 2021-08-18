@@ -136,7 +136,7 @@ class CifStructure():
             minname = 'missing'
         return minname
 
-        
+
     @property
     def ciftext(self):
         if self._ciftext is not None:
@@ -502,6 +502,14 @@ class AMSCIFDB():
         for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
             if formname in dat:
                 formula = dat[formname]
+        if formula is None and '_atom_site_type_symbol' in dat:
+            comps = {}
+            complist = dat['_atom_site_type_symbol']
+            for c in complist:
+                if c not in comps:
+                    nx = complist.count(c)
+                    comps[c] = '%s%d' % (c, nx) if nx != 1 else c
+            formula = ''.join(comps.values())
 
         if formula is None:
             raise ValueError(f'Cannot read chemical formula from file {filename:s}')
@@ -598,7 +606,7 @@ class AMSCIFDB():
                          alpha=dat['_cell_angle_alpha'],
                          beta=dat['_cell_angle_beta'],
                          gamma=dat['_cell_angle_gamma'],
-                         cell_volume=dat['_cell_volume'],
+                         cell_volume=dat.get('_cell_volume', -1),
                          crystal_density=density,
                          url=url)
         return cif_id
