@@ -52,12 +52,18 @@ from .site_config import show_site_config
 from . import builtins
 from .inputText import InputText
 from .interpreter import Interpreter
-from . import larchlib, utils, version, site_config, apps
+from . import larchlib, utils, version, site_config
 
 from . import fitting, math, io
 from .fitting import Parameter, isParameter, param_value
 
-from . import shell
+try:
+    from . import apps
+    from . import shell
+except ImportError as e:
+    logger.warning(
+        "Larchs apps and shell are not supported due to missing dependencies: {}".format(e)
+    )
 
 logger.level = logging.INFO
 
