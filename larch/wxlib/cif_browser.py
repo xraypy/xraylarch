@@ -403,6 +403,9 @@ class CIFFrame(wx.Frame):
 
 
     def onCentralAtom(self, event=None):
+        cif  = self.current_cif
+        if cif is None:
+            return
         sites = cif_sites(cif.ciftext, absorber=event.GetString())
         sites = ['%d' % (i+1) for i in range(len(sites))]
         self.wids['site'].Clear()
@@ -539,7 +542,6 @@ class CIFFrame(wx.Frame):
             with open(path, 'w') as fh:
                 fh.write(cc.ciftext)
             self.write_message("Wrote CIF file %s" % path, 0)
-
 
     def onImportCIF(self, event=None):
         wildcard = 'CIF files (*.cif)|*.cif|All files (*.*)|*.*'
