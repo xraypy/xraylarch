@@ -20,9 +20,11 @@ Plotting macros for XAFS data sets and fits
 
 import os
 from numpy import gradient, ndarray, diff, where, arange, argmin
+from matplotlib.ticker import FuncFormatter
+
 from larch import Group
 from larch.math import (index_of, index_nearest, interp)
-from larch.xafs import cauchy_wavelet
+from larch.xafs import cauchy_wavelet, etok, ktoe
 
 try:
     import wx
@@ -68,6 +70,7 @@ def chirlab(kweight, show_mag=True, show_real=False, show_imag=False):
 plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    r       = r'$R \rm\,(\AA)$',
                    energy  = r'$E\rm\,(eV)$',
+                   ewithk  = r'$E\rm\,(eV)$' + '\n' + r'$[k \rm\,(\AA^{-1})]$',
                    mu      = r'$\mu(E)$',
                    norm    = r'normalized $\mu(E)$',
                    flat    = r'flattened $\mu(E)$',
@@ -77,6 +80,7 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    d2mude  = r'$d^2\mu(E)/dE^2$',
                    d2normde= r'$d^2\mu_{\rm norm}(E)/dE^2$',
                    chie    = r'$\chi(E)$',
+                   chiew   = r'$E^{{{0:g}}}\chi(E) \rm\,(eV^{{-{0:g}}})$',
                    chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
                    chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
                    chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
@@ -322,8 +326,9 @@ def plot_bkg(dgroup, norm=True, emin=None, emax=None, show_e0=False,
     redraw(win=win, xmin=emin, xmax=emax, ymin=ymin, ymax=ymax, _larch=_larch)
 #enddef
 
-def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
-              new=True, delay_draw=False, offset=0, win=1, _larch=None):
+def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
+              eweight=0, show_k=True, new=True, delay_draw=False,
+              offset=0, win=1, _larch=None):
     """
     plot_chie(dgroup, emin=None, emax=None, label=None, new=True, win=1):
 
@@ -337,6 +342,8 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
      label       string for label [``None``: 'mu']
      title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
+     eweight     energy weightingn for energies>e0  [0]
+     show_k      bool whether to show k values   [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
      win         integer plot window to use [1]
@@ -353,17 +360,45 @@ def plot_chie(dgroup, emin=-25, emax=None, label=None, title=None,
     else:
         raise ValueError("XAFS data group has no array for mu")
     #endif
+    e0   = dgroup.e0
+    chie = (mu - dgroup.bkg)
+    ylabel = plotlabels.chie
+    if abs(eweight) > 1.e-2:
+        chie *= (dgroup.energy-e0)**(eweight)
+        ylabel = plotlabels.chiew.format(eweight)
 
-    chie = mu - dgroup.bkg
+    xlabel = plotlabels.ewithk if show_k else plotlabels.energy
+
     emin, emax = _get_erange(dgroup, emin, emax)
+    if emin is not None:
+        emin = emin - e0
+    if emax is not None:
+        emax = emax - e0
+
+
     title = _get_title(dgroup, title=title)
 
-    _plot(dgroup.energy, chie+offset, xlabel=plotlabels.energy,
-          ylabel=plotlabels.chie, title=title, label=label, zorder=20,
-          new=new, xmin=emin, xmax=emax, win=win, show_legend=True,
-          delay_draw=delay_draw, linewidth=3, _larch=_larch)
-    if delay_draw:
+    def ek_formatter(x, pos):
+        ex = float(x)
+        if ex < 0:
+            s = ''
+        else:
+            s = '\n[%.1f]' % (etok(ex))
+        return r"%1.4g%s" % (x, s)
+
+    _plot(dgroup.energy-e0, chie+offset, xlabel=xlabel, ylabel=ylabel,
+          title=title, label=label, zorder=20, new=new, xmin=emin,
+          xmax=emax, win=win, show_legend=True, delay_draw=delay_draw,
+          linewidth=3, _larch=_larch)
+
+    if show_k:
+        disp = _getDisplay(win=win, _larch=_larch)
+        axes = disp.panel.axes
+        axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
+
+    if not delay_draw:
         redraw(win=win, xmin=emin, xmax=emax, _larch=_larch)
+
 #enddef
 
 def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
@@ -571,11 +606,11 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
 
     Notes
     -----
-     The wavelet will be performed 
+     The wavelet will be performed
     """
     if kweight is None:
         kweight = dgroup.xftf_details.call_args['kweight']
-        
+
     title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, title=title, x=dgroup.k, y=dgroup.r, xmax=kmax,
@@ -586,7 +621,7 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
     if show_mag:
         _imshow(dgroup.wcauchy_mag, **opts)
     elif show_real:
-        _imshow(dgroup.wcauchy_real, **opts)        
+        _imshow(dgroup.wcauchy_real, **opts)
     elif show_imag:
         _imshow(dgroup.wcauchy_imag, **opts)
     #endif
