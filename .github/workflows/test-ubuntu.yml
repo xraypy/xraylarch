@@ -15,6 +15,11 @@ jobs:
         shell: bash -l {0}
     steps:
     - uses: actions/checkout@v2
+    - name: Install X system libraries for 3.7
+      if: ${{ matrix.python-version == '3.7'}}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxxf86vm1 libgtk2.0 libgtk2.0-dev
     - name: Set up Python from Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
