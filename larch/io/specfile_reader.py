@@ -623,13 +623,15 @@ class DataSourceSpecH5(object):
             self._logger.error(f"'{mot}' not found in available motors: {mots}")
             return None
 
-    def get_scan(self, scan=None):
+    def get_scan(self, scan=None, datatype=None):
         """Get Larch group for the current scan
 
         Parameters
         ----------
         scan  : str, int, or None
              scan address 
+        datatype : str
+            type of data, e.g. 'raw', 'xas'
 
         Returns
         -------
@@ -660,7 +662,7 @@ class DataSourceSpecH5(object):
             __name__=f"{file_type} file: {filename}, scan: {scan_name}",
             path=path,
             filename=filename,
-            datatype=None,
+            datatype=datatype,
             array_labels=array_labels,
             motor_names=motor_names,
             axis=axis,
