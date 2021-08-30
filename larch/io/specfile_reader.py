@@ -574,7 +574,7 @@ class DataSourceSpecH5(object):
             self._logger.info(f"using the first counter: '{_axisout}'")
         return _axisout
 
-    def get_array(self, cnt):
+    def get_array(self, cnt=0):
         """Get array of a given counter
 
         Parameters
@@ -595,9 +595,9 @@ class DataSourceSpecH5(object):
             sel_cnt = f"{self._cnts_url}/{cnt}"
             return copy.deepcopy(sg[sel_cnt][()])
         else:
-            self._logger.error(f"'{cnt}' not found in available counters: {cnts}")
-            sel_cnt = f"{self._cnts_url}/{cnts[0]}"
-            return np.zeros_like(sg[sel_cnt][()])
+            errmsg = f"'{cnt}' not found in available counters: {cnts}"
+            self._logger.error(errmsg)
+            raise ValueError(errmsg)
 
     def get_motor_position(self, mot):
         """Get motor position
