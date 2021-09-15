@@ -16,7 +16,7 @@ from lmfit.model import (save_modelresult, load_modelresult,
                              save_model, load_model)
 
 import lmfit.models as lm_models
-from lmfit.printfuncs import gformat, CORREL_HEAD
+from lmfit.printfuncs import gformat
 
 from larch import Group, site_config
 from larch.math import index_of
@@ -215,7 +215,7 @@ class PrePeakFitResultFrame(wx.Frame):
         wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
         wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
                                    action=self.onUpdateLabel)
-        
+
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
@@ -590,7 +590,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
         result = self.get_fitresult(nfit=nfit)
         wids = self.wids
-        wids['fit_label'].SetValue(result.label)        
+        wids['fit_label'].SetValue(result.label)
         wids['data_title'].SetLabel(self.datagroup.filename)
         wids['model_desc'].SetLabel(self.get_model_desc(result.model))
         wids['params'].DeleteAllItems()
