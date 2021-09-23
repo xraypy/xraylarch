@@ -115,7 +115,7 @@ class XASFrame(wx.Frame):
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
         self.paths2read = []
-        self.current_filename = filename        
+        self.current_filename = filename
 
         title = "Larch XAS GUI: XAS Visualization and Analysis"
 
@@ -155,10 +155,10 @@ class XASFrame(wx.Frame):
         plotframe.SetPosition((xpos+xsiz+5, ypos))
         plotframe.SetSize((600, 650))
 
-        self.Raise()        
+        self.Raise()
         self.statusbar.SetStatusText('ready', 1)
         if self.current_filename is not None:
-            wx.CallAfter(self.onRead, self.current_filename)        
+            wx.CallAfter(self.onRead, self.current_filename)
 
 
     def createMainPanel(self):
@@ -314,7 +314,8 @@ class XASFrame(wx.Frame):
                  self.onExportAthena)
 
         MenuItem(self, fmenu, "Export Selected Groups to CSV",
-                 "Export Selected Groups to CSV",  self.onExportCSV)
+                 "Export Selected Groups to CSV",
+                 self.onExportCSV)
 
         fmenu.AppendSeparator()
 
@@ -425,22 +426,44 @@ class XASFrame(wx.Frame):
     def onExportCSV(self, evt=None):
         filenames = self.controller.filelist.GetCheckedStrings()
         if len(filenames) < 1:
-             Popup(self, "No files selected to export to CSV",
-                   "No files selected")
-             return
+            Popup(self, "No files selected to export to CSV",
+                  "No files selected")
+            return
+
+        deffile = "%s_%i.csv" % (filenames[0], len(filenames))
 
         dlg = ExportCSVDialog(self, filenames)
         res = dlg.GetResponse()
+
         dlg.Destroy()
-        if res.ok:
-            savegroups = [self.controller.filename2group(res.master)]
-            for fname in filenames:
-                dgroup = self.controller.filename2group(fname)
-                if dgroup not in savegroups:
-                    savegroups.append(dgroup)
-            groups2csv(savegroups, res.filename, x='energy', y=res.yarray,
-                       _larch=self.larch)
-            self.write_message("Exported CSV file %s" % (res.filename))
+        if not res.ok:
+            return
+
+        deffile = f"{filenames[0]:s}_{len(filenames):d}.prj"
+        wcards  = 'CSV Files (*.csv)|*.csv|All files (*.*)|*.*'
+
+        outfile = FileSave(self, 'Save Groups to CSV File',
+                           default_file=deffile, wildcard=wcards)
+
+        if outfile is None:
+            return
+        if os.path.exists(outfile):
+            if wx.ID_YES != Popup(self,
+                                  "Overwrite existing Project File?",
+                                  "Overwrite existing file?", style=wx.YES_NO):
+                return
+
+
+        savegroups = [self.controller.filename2group(res.master)]
+        for fname in filenames:
+            dgroup = self.controller.filename2group(fname)
+            if dgroup not in savegroups:
+                savegroups.append(dgroup)
+
+
+        groups2csv(savegroups, outfile, x='energy', y=res.yarray,
+                   _larch=self.larch)
+        self.write_message(f"Exported CSV file {outfile:s}")
 
     def onExportAthena(self, evt=None):
         groups = []
@@ -685,7 +708,7 @@ class XASFrame(wx.Frame):
                 except Exception:
                     pass
                 time.sleep(0.01)
-            
+
         for name, wid in self.subframes.items():
             destroy(wid)
 
@@ -694,13 +717,13 @@ class XASFrame(wx.Frame):
             timers = getattr(nbpage, 'timers')
             for t in timers.values():
                 t.Stop()
-            
+
             if hasattr(nbpage, 'subframes'):
                 for name, wid in nbpage.subframes.items():
                     destroy(wid)
 
-                    
-                
+
+
         time.sleep(0.05)
         self.Destroy()
 
