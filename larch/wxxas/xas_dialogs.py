@@ -1460,37 +1460,28 @@ class ExportCSVDialog(wx.Dialog):
                          'flattened mu(E)': 'flat',
                          'd mu(E) / dE': 'dmude'}
 
-        default_fname = 'Data.csv'
-        if len(groupnames) > 0:
-            default_fname = "%s_%i.csv" % (groupnames[0], len(groupnames))
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
-        self.ofile_name   = wx.TextCtrl(panel, -1, default_fname,  size=(200, -1))
-
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
         panel.Add(SimpleText(panel, 'Array to Export: '), newrow=True)
         panel.Add(self.yarray_name)
-        panel.Add(SimpleText(panel, 'File Name: '), newrow=True)
-        panel.Add(self.ofile_name)
-
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
-        response = namedtuple('ExportCSVResponse', ('ok', 'master', 'yarray', 'filename'))
+        response = namedtuple('ExportCSVResponse', ('ok', 'master', 'yarray'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
             master = self.master_group.GetStringSelection()
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
-            fname  = self.ofile_name.GetValue()
             ok = True
-        return response(ok, master, yarray, fname)
+        return response(ok, master, yarray)
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
