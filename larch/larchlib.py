@@ -334,6 +334,7 @@ class Procedure(object):
         stable.set_frame((lgroup, self.modgroup))
         retval = None
         self._larch.retval = None
+        self._larch._calldepth += 1
         self._larch.debug = True
         for node in self.body:
             self._larch.run(node, fname=self.__file__, func=self,
@@ -345,6 +346,7 @@ class Procedure(object):
                 if retval is ReturnedNone: retval = None
                 break
         stable.restore_frame()
+        self._larch._calldepth -= 1
         self._larch.debug = False
         self._larch.retval = None
         del lgroup
