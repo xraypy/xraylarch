@@ -27,7 +27,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText, pack,
                          Button, HLine, Choice, Check, MenuItem, GUIColors,
                          CEN, RIGHT, LEFT, FRAMESTYLE, Font, FONTSIZE,
-                         FileSave, FileOpen, flatnotebook,
+                         FileSave, FileOpen, flatnotebook, Popup,
                          EditableListBox)
 
 from larch.wxlib.parameter import ParameterWidgets
