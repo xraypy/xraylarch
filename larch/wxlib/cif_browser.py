@@ -125,7 +125,6 @@ class CIFFrame(wx.Frame):
         minhint= SimpleText(panel, ' example: hem* ')
         wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1),
                                       style=wx.TE_PROCESS_ENTER)
-
         wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         authlab = SimpleText(panel, ' Author Name: ')
@@ -333,12 +332,12 @@ class CIFFrame(wx.Frame):
         if len(contains_elements) < 1:
             contains_elements = None
         else:
-            contains_elements = [a.strip() for a in contains_elements.split(',')]
+            contains_elements = [a.strip().title() for a in contains_elements.split(',')]
         excludes_elements = self.wids['excludes_elements'].GetValue().strip()
         if len(excludes_elements) < 1:
             excludes_elements = None
         else:
-            excludes_elements = [a.strip() for a in excludes_elements.split(',')]
+            excludes_elements = [a.strip().title() for a in excludes_elements.split(',')]
         strict_contains = self.wids['strict_contains'].IsChecked()
         full_occupancy = self.wids['full_occupancy'].IsChecked()
         all_cifs = find_cifs(mineral_name=mineral_name,
