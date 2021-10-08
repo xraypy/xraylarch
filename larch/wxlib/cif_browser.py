@@ -24,7 +24,7 @@ from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.xrd.cif2feff import cif_sites
 from larch.utils.paths import unixpath
-from larch.utils.strutils import fix_filename, unique_name
+from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
 
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
@@ -468,7 +468,7 @@ class CIFFrame(wx.Frame):
 
         fname = unixpath(os.path.join(folder, 'feff.inp'))
         with open(fname, 'w') as fh:
-            fh.write(fefftext)
+            fh.write(strict_ascii(fefftext))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
         # feffexe, folder=dirname, message_writer=self.feff_output)
