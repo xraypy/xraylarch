@@ -439,7 +439,7 @@ class XASFrame(wx.Frame):
         if not res.ok:
             return
 
-        deffile = f"{filenames[0]:s}_{len(filenames):d}.prj"
+        deffile = f"{filenames[0]:s}_{len(filenames):d}.csv"
         wcards  = 'CSV Files (*.csv)|*.csv|All files (*.*)|*.*'
 
         outfile = FileSave(self, 'Save Groups to CSV File',
@@ -449,10 +449,9 @@ class XASFrame(wx.Frame):
             return
         if os.path.exists(outfile):
             if wx.ID_YES != Popup(self,
-                                  "Overwrite existing Project File?",
+                                  "Overwrite existing CSV File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
-
 
         savegroups = [self.controller.filename2group(res.master)]
         for fname in filenames:
@@ -462,7 +461,7 @@ class XASFrame(wx.Frame):
 
 
         groups2csv(savegroups, outfile, x='energy', y=res.yarray,
-                   _larch=self.larch)
+                   delim=res.delim, _larch=self.larch)
         self.write_message(f"Exported CSV file {outfile:s}")
 
     def onExportAthena(self, evt=None):

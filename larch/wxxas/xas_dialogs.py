@@ -1460,28 +1460,39 @@ class ExportCSVDialog(wx.Dialog):
                          'flattened mu(E)': 'flat',
                          'd mu(E) / dE': 'dmude'}
 
+        self.delchoices = {'comma': ',',
+                           'space': ' ',
+                           'tab': '\t'}
+
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
+        self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
+
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
         panel.Add(SimpleText(panel, 'Array to Export: '), newrow=True)
         panel.Add(self.yarray_name)
+
+        panel.Add(SimpleText(panel, 'Delimeter for File: '), newrow=True)
+        panel.Add(self.del_name)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
-        response = namedtuple('ExportCSVResponse', ('ok', 'master', 'yarray'))
+        response = namedtuple('ExportCSVResponse',
+                              ('ok', 'master', 'yarray', 'delim'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
             master = self.master_group.GetStringSelection()
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
+            delim  = self.delchoices[self.del_name.GetStringSelection()]
             ok = True
-        return response(ok, master, yarray)
+        return response(ok, master, yarray, delim)
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""
