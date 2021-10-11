@@ -69,7 +69,6 @@ class LarchWxShell(object):
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
             sfont = style.GetFont()
-
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
 
         self.SetPrompt(True)
@@ -130,8 +129,8 @@ class LarchWxShell(object):
             pos1 = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, self.textstyle)
             self.output.SetInsertionPoint(pos1)
-            self.output.Refresh()
-            self.input.SetFocus()
+        self.output.Refresh()
+        wx.CallAfter(self.input.SetFocus)
 
     def flush(self, *args):
         self.output.Refresh()
@@ -211,9 +210,6 @@ class LarchPanel(wx.Panel):
         self.input = wx.TextCtrl(ipanel, value='', size=(525,-1),
                                  style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
 
-        # self.input = ReadlineTextCtrl(ipanel, value='', size=(525, -1),
-        #                               historyfile=historyfile,
-        #                              style=wx.TE_LEFT|wx.TE_PROCESS_ENTER)
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
         if sys.platform == 'darwin':
             self.input.Bind(wx.EVT_KEY_UP,  self.onChar)
@@ -222,7 +218,7 @@ class LarchPanel(wx.Panel):
 
         self.hist_buff = []
         self.hist_mark = 0
-        
+
         isizer = wx.BoxSizer(wx.HORIZONTAL)
         isizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
         isizer.Add(self.input,   1, wx.ALIGN_LEFT|wx.EXPAND)
@@ -266,6 +262,7 @@ class LarchPanel(wx.Panel):
 
     def onChar(self, event=None):
         key = event.GetKeyCode()
+
         entry  = self.input.GetValue().strip()
         pos = self.input.GetSelection()
         ctrl = event.ControlDown()
@@ -276,28 +273,29 @@ class LarchPanel(wx.Panel):
             pass
         if key == wx.WXK_UP:
             self.hist_mark = max(0, self.hist_mark-1)
-            try:
-                self.input.SetValue(self.hist_buff[self.hist_mark])
-                self.input.SetInsertionPointEnd()
-            except:
-                pass
+            wx.CallAfter(self.set_input_text, self.hist_buff[self.hist_mark])
         elif key == wx.WXK_DOWN:
             self.hist_mark += 1
             if self.hist_mark >= len(self.hist_buff):
                 self.input.SetValue('')
             else:
-                self.input.SetValue(self.hist_buff[self.hist_mark])
-                self.input.SetInsertionPointEnd()
+                wx.CallAfter(self.set_input_text, self.hist_buff[self.hist_mark])
         event.Skip()
+
+    def set_input_text(self, text):
+        self.input.SetValue(text)
+        self.input.SetFocus()
+        self.input.SetInsertionPointEnd()
+
 
     def AddToHistory(self, text=''):
         for tline in text.split('\n'):
             if len(tline.strip()) > 0:
                 self.hist_buff.append(tline)
                 self.hist_mark = len(self.hist_buff)
-        
 
-            
+
+
 class LarchFrame(wx.Frame):
     def __init__(self, parent=None, _larch=None, is_standalone=True,
                  historyfile='history_larchgui.lar', with_inspection=False,
@@ -537,7 +535,7 @@ class LarchFrame(wx.Frame):
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
 
-       
+
     def onText(self, event=None):
         text =  event.GetString()
         self.larchshell.write("%s\n" % text)
