@@ -33,10 +33,10 @@ features (as of July, 2021, Larch version 0.9.53) include:
    * EXAFS background spline removal.
    * Fourier transforms from k to R and R to filtered-k space, and wavelet transforms.
    * Browser for CIF files from American Mineralogist Crystal Structure Database.
-   * Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l. 
+   * Convert CIF files (from AMCSDB or external file) to feff.inp for Feff6/Feff8l.
    * Run Feff6 or Feff8, saving and browsing EXAFS Paths from these Feff runs.
    * Feff Fitting of single EXAFS spectra for a sum of Feff paths.
-     
+
 The XAS Viewer GUI includes a simple form for basic pre-edge subtraction,
 and normalization of XAFS spectra. :numref:`fig_xasviewer_1` shows the main
 window for the XAS Viewer program.  The left-hand portion contains a list
@@ -50,8 +50,8 @@ detailed selecting of data sets.
 
 .. _fig_xasviewer_1:
 
-.. figure:: _images/XASViewer_main.png
-    :target: _images/XASViewer_main.png
+.. figure:: _images/XASViewer_Main.png
+    :target: _images/XASViewer_Main.png
     :width: 85%
     :align: center
 
@@ -674,7 +674,7 @@ the results of PCA to ask::
 
     is this *other* spectrum made up of the same components as make up my collection?
 
-    
+
 .. _fig_xasviewer_10a:
 
 .. figure:: _images/XASViewer_PCAmain_page.png
@@ -702,7 +702,7 @@ the results of PCA to ask::
 
     Principal Component Analysis, Plot of IND statistic and scree-like plot
     of the importance of each component.
-    
+
 
 .. _fig_xasviewer_10d:
 
@@ -713,8 +713,8 @@ the results of PCA to ask::
 
     Principal Component Analysis, Plot of target transformation -- using
     components to best match an unknown spectra.
-        
-    
+
+
 .. _xasviewer_regression:
 
 
