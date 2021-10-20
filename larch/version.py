@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-__date__    = '2021-Jul-17'
-__release_version__ = '0.9.55'
+__date__    = '2021-Oct-20'
+__release_version__ = '0.9.56'
 __authors__ = "M. Newville, M. Koker, B. Ravel, and others"
 
 import sys
@@ -13,7 +13,7 @@ from packaging.version import parse as ver_parse
 try:
     from importlib.metadata import version, PackageNotFoundError
 except:
-    from importlib_metadata import version, PackageNotFoundError    
+    from importlib_metadata import version, PackageNotFoundError
 try:
     __version__ = version("xraylarch")
 except PackageNotFoundError:
