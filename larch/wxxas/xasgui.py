@@ -377,7 +377,7 @@ class XASFrame(wx.Frame):
                  "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
-        MenuItem(self, data_menu, "Add and Subtract Sepctra",
+        MenuItem(self, data_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
         MenuItem(self, ppeak_menu, "Load Pre-edge Peak Model",
