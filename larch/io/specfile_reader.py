@@ -177,7 +177,7 @@ class DataSourceSpecH5(object):
         fname : str
             path string of a file that can be read by silx.io.open() [None]
         logger : logging.getLogger() instance
-            [None -> sloth.utils.logging.getLogger()]
+            [None -> larch.utils.logging.getLogger()]
         urls_fmt : str
             how the data are organized in the HDF5 container
             'silx' : default
@@ -729,7 +729,14 @@ class DataSourceSpecH5(object):
         ax_label = ax_name or self.get_scan_axis()
         ax_data = self.get_array(ax_label)
         if to_energy is not None:
-            from sloth.utils.bragg import ang2kev
+            try:
+                from sloth.utils.bragg import ang2kev
+            except ImportError:
+                def ang2kev(theta, d):
+                    from larch.utils.physical_constants import PLANCK_HC
+                    theta = np.deg2rad(theta)
+                    wlen = 2 * d * np.sin(theta)
+                    return (PLANCK_HC / wlen) / 1000.
 
             bragg_ax = to_energy["bragg_ax"]
             bragg_ax_type = to_energy["bragg_ax_type"]
@@ -776,7 +783,7 @@ class DataSourceSpecH5(object):
                 "cps": bool,  #: multiply back to np.average(monitor)
             }
         deglitch : dict
-            Controls :func:`sloth.math.deglitch.remove_spikes_medfilt1d` [None]
+            Controls :func:`larch.math.deglitch.remove_spikes_medfilt1d` [None]
         norm : dict
             Controls the normalization by given method
 
