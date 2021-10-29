@@ -13,7 +13,7 @@ Requirements
 """
 
 __author__ = ["Mauro Rovezzi", "Matt Newville"]
-__version__ = "larch_0.9.52"
+__version__ = "larch_0.9.57"
 
 import os
 import copy
@@ -30,6 +30,8 @@ from silx.io.convert import write_to_h5, _is_commonh5_group
 # from larch.math.utils import savitzky_golay
 from larch import Group
 from larch.utils.strutils import bytes2str
+from larch.math.normalization import norm1D
+from larch.math.deglitch import remove_spikes_medfilt1d
 
 #: Python 3.8+ compatibility
 try:
@@ -691,6 +693,159 @@ class DataSourceSpecH5(object):
                 array_labels.pop(ipop)
         out.data = np.array(data)
         return out
+
+    def get_axis_data(self, ax_name=None, to_energy=None):
+        """Get data for the scan axis
+
+        Description
+        -----------
+        This method returns the data (=label and array) for a given axis of the
+        selected scan. It is primarily targeted to a "scanning" axis, but any
+        counter can be used. It is possible to control common conversions, like
+        Bragg angle to energy.
+
+        Parameters
+        ----------
+        ax_name : str or None
+
+        to_energy : dict
+            Controls the conversion of the signal to energy [None]
+
+            .. note:: Bragg angle assumed in mrad, output in eV
+
+            {
+                "bragg_ax": "str",  #: name of counter used for Bragg angale
+                "bragg_ax_type": "str",  #: 'motor' or 'counter'
+                "bragg_enc_units": float, #: units to convert encoder to deg (bragg_ax should contain 'enc')
+            }
+
+        Returns
+        -------
+        label, data
+        """
+        if (ax_name is not None) and (ax_name not in self.get_counters()):
+            self._logger.error("%s not a counter", ax_name)
+            return None, None
+        ax_label = ax_name or self.get_scan_axis()
+        ax_data = self.get_array(ax_label)
+        if to_energy is not None:
+            from sloth.utils.bragg import ang2kev
+
+            bragg_ax = to_energy["bragg_ax"]
+            bragg_ax_type = to_energy["bragg_ax_type"]
+            bragg_d = to_energy["bragg_d"]
+            if bragg_ax_type == "counter":
+                bragg_deg = self.get_array(bragg_ax).mean()
+            elif bragg_ax_type == "motor":
+                bragg_deg = self.get_value(bragg_ax)
+            else:
+                self._logger.error("wrong 'bragg_ax_type' (motor or counter?)")
+            if "enc" in bragg_ax:
+                bragg_deg = (np.abs(bragg_deg) / to_energy["bragg_enc_units"]) * 360
+            ax_abs_deg = bragg_deg + np.rad2deg(ax_data) / 1000.0
+            ax_abs_ev = ang2kev(ax_abs_deg, bragg_d) * 1000.0
+            ax_data = ax_abs_ev
+            ax_label += "_abs_ev"
+            self._logger.debug("Converted axis %s", ax_label)
+            xmin = ax_data.min()
+            xmax = ax_data.max()
+            self._logger.info("%s range: [%.3f, %.3f]", ax_label, xmin, xmax)
+        return ax_label, ax_data
+
+    def get_signal_data(self, sig_name, mon=None, deglitch=None, norm=None):
+        """Get data for the signal counter
+
+        Description
+        -----------
+        This method returns the data (=label and array) for a given signal of the
+        selected scan. It is possible to control normalization and/or deglitching.
+
+        Order followed in the basic processing:
+            - raw data
+            - divide by monitor signal (+ multiply back by average)
+            - deglitch
+            - norm
+
+        Parameters
+        ----------
+        sig_name : str
+        mon : dict
+            Controls the normalization of the signal by a monitor signal [None]
+            {
+                "monitor": "str",  #: name of counter used for normalization
+                "cps": bool,  #: multiply back to np.average(monitor)
+            }
+        deglitch : dict
+            Controls :func:`sloth.math.deglitch.remove_spikes_medfilt1d` [None]
+        norm : dict
+            Controls the normalization by given method
+
+        Returns
+        -------
+        label, data
+        """
+        #: get raw data
+        sig_data = self.get_array(sig_name)
+        sig_label = sig_name
+        #: (opt) divide by monitor signal + multiply back by average
+        if mon is not None:
+            if isinstance(mon, str):
+                mon = dict(monitor=mon, cps=False)
+            mon_name = mon["monitor"]
+            mon_data = self.get_array(mon_name)
+            sig_data /= mon_data
+            sig_label += f"_mon({mon_name})"
+            if mon["cps"]:
+                sig_data *= np.average(mon_data)  #: put back in counts
+                sig_label += "_cps"
+        #: (opt) deglitch
+        if deglitch is not None:
+            sig_data = remove_spikes_medfilt1d(sig_data, **deglitch)
+            sig_label += "_dgl"
+        #: (opt) normalization
+        if norm is not None:
+
+            norm_meth = norm["method"]
+            sig_data = norm1D(sig_data, norm=norm_meth, logger=self._logger)
+            if norm_meth is not None:
+                sig_label += f"_norm({norm_meth})"
+        self._logger.info("Loaded signal: %s", sig_label)
+        return sig_label, sig_data
+
+    def get_curve(
+        self,
+        sig_name,
+        ax_name=None,
+        to_energy=None,
+        mon=None,
+        deglitch=None,
+        norm=None,
+        **kws,
+    ):
+        """Get XY data (=curve) for current scan
+
+        Parameters
+        ----------
+        *args, **kws -> self.get_axis_data() and self.get_signal_data()
+
+        Returns
+        -------
+        [ax_data, sig_data, label, attrs] : list of [array, array, str, dict]
+
+        """
+        ax_label, ax_data = self.get_axis_data(ax_name=ax_name, to_energy=to_energy)
+        sig_label, sig_data = self.get_signal_data(
+            sig_name, mon=mon, deglitch=deglitch, norm=norm
+        )
+        label = f"S{self._scan_n}_X({ax_label})_Y{sig_label}"
+        attrs = dict(
+            xlabel=ax_label,
+            ylabel=sig_label,
+            label=label,
+            ax_label=ax_label,
+            sig_label=sig_label,
+        )
+        return [ax_data, sig_data, label, attrs]
 
     # =================== #
     #: WRITE DATA METHODS
