@@ -105,7 +105,7 @@ def get_rixs_bm16(
     data_dir = os.path.join(os.sep, *sfn.split("/")[1:-1])
     if out_dir is None:
         out_dir = data_dir
-    ds = DataSourceSpecH5(sfn, logger=_logger)
+    ds = DataSourceSpecH5(sfn, logger=_logger, verbose=False)
 
     logobj = np.genfromtxt(rixs_logfn, delimiter=",", comments="#")
     scans = logobj[:, 0]  # list of scan numers
@@ -113,6 +113,7 @@ def get_rixs_bm16(
 
     _counter = 0
     for scan, estep in zip(scans, enes):
+        scan = int(scan)
         try:
             ds.set_scan(scan)
             escan, sig, lab, attrs = ds.get_curve(counter_signal)
