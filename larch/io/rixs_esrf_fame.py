@@ -153,6 +153,7 @@ def get_rixs_bm16(
     }
 
     if save_rixs:
+        fnstr = sfn.split("/")[-1].split(".")[0]
         fnout = "{0}_rixs.h5".format(fnstr)
         dicttoh5(outdict, os.path.join(out_dir, fnout))
         _logger.info("RIXS saved to {0}".format(fnout))
