@@ -4,10 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.57 - 2021-MM-DD]
+
+
+
+## [0.9.56 - 2021-10-20]
+
+[Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-October/010319.html)
+
+## [0.9.55 - 2021-07-19]
+
+[Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-July/010261.html)
+
+### Fixed
+
+ - Larch's GUI applications on non-US Windows 10 machines.
+ - There was a serious bug (possibly since Larch 0.9.52) for using wxPython applications with Python>=3.8 and wxPython>=4.1.0.
+ - Fixes for turning CIF structures into Feff inputs and running Feff:
+    - more external CIF files from Crystallography Open Database and Materials Project can be converted to Feff.inp.
+    - external Feff.inp files can be loaded and run.
+    - the name of the folder created for any Feff calculation can be renamed before running Feff.
+ - Fixed a bug on the EXAFS / background subtraction panel on "copied groups" to ensure that processing parameters (kweight, rbkg, etc) are kept separate.
+
+### Changed
+
+ - the plot selection choice in the XAS normalization panel for "one group" and "selected groups" are no longer reset each time a data set is selected.
+
+### Added
+
+ - A reference spectrum can now be set for any XAFS spectrum.
+ - For linear combination fitting, a single energy shift can be varied during the fit, shifting the unknown data to match the combination of a (presumably aligned) set of standards.
+ - For pre-edge peak fitting and Feff Path fitting, entries in the "fit history" can have user-specified labels which can be more meaningful than the default "Fit #1", "Fit #2", etc.
+ - testing is now done only with Github Actions, not with the appveyor service.
+
 ## [0.9.53 - 2021-07-02]
 
+[Release message](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-July/010251.html)
 
-## Fixed
+### Fixed
 
 - XAS viewer
   - fixed various bugs in Spec/BLISS files importer -- silx version 0.15.2 is now required.
