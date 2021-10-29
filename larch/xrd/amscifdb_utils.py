@@ -54,11 +54,17 @@ def encode_farray(dat):
     work = []
     for d in dat:
         if d == '?':
-            work.append(2) # out-of-bounds
+            work.append(2) # out-of-bounds as '?'
+        elif d == '.':
+            work.append(3) # out-of-bounds as '.'
         else:
             if '(' in d or '(' in d:
                 d = d.replace(')', ' : ').replace('(', ' : ')
                 d = d.split(':')[0].strip()
+            try:
+                fval = float(d)
+            except ValueError:
+                d  = '0'
             work.append(d)
     x = (farray_scale*np.array([float(x) for x in work])).round()
     return b64encode(x.astype(np.int32).tobytes()).decode('ascii')
@@ -72,6 +78,8 @@ def decode_farray(dat):
     for a in arr:
         if (abs(a-2.0) < 1.e-5):
             out.append('?')
+        elif (abs(a-3.0) < 1.e-5):
+            out.append('.')
         else:
             out.append(f"{a:f}")
     return out

@@ -33,6 +33,11 @@ ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
 
 EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 
+DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'raw',
+                  'Normalized \u03BC(E)': 'norm',
+                  '\u03c7(E)': 'chi',
+                  'k^2*\u03c7(E)': 'echi'}
+
 
 class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
@@ -996,6 +1001,7 @@ class DeglitchDialog(wx.Dialog):
     def __init__(self, parent, controller, **kws):
         self.parent = parent
         self.controller = controller
+        self.wids = {}
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
@@ -1014,7 +1020,7 @@ class DeglitchDialog(wx.Dialog):
                            title="Select Points to Remove")
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=4, itemstyle=LEFT)
-        self.wids = wids = {}
+        wids = self.wids
 
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
@@ -1057,12 +1063,16 @@ clear undo history''')
 
         floatopts = dict(precision=2, minval=xmin, maxval=xmax, size=(125, -1))
 
-        self.wid_xlast = FloatCtrl(panel, value=lastx, **floatopts)
-        self.wid_range1 = FloatCtrl(panel, value=lastx, **floatopts)
-        self.wid_range2 = FloatCtrl(panel, value=lastx+1, **floatopts)
+        wids['xlast'] = FloatCtrl(panel, value=lastx, **floatopts)
+        wids['range1'] = FloatCtrl(panel, value=lastx, **floatopts)
+        wids['range2'] = FloatCtrl(panel, value=lastx+1, **floatopts)
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
                                     size=(90, -1), action=self.on_rangechoice)
+
+        wids['plotopts'] = Choice(panel, choices=list(DEGLITCH_PLOTS.keys()),
+                                  size=(175, -1),
+                                  action=self.on_plotchoice)
 
         def add_text(text, dcol=1, newrow=True):
             panel.Add(SimpleText(panel, text), dcol=dcol, newrow=newrow)
@@ -1071,18 +1081,21 @@ clear undo history''')
         panel.Add(wids['grouplist'], dcol=5)
 
         add_text('Single Energy : ', dcol=2)
-        panel.Add(self.wid_xlast)
+        panel.Add(wids['xlast'])
         panel.Add(bb_xlast)
         panel.Add(br_xlast)
 
+        add_text('Plot Data as:  ', dcol=2)
+        panel.Add(wids['plotopts'], dcol=5)
+
         add_text('Energy Range : ')
         panel.Add(self.choice_range)
-        panel.Add(self.wid_range1)
+        panel.Add(wids['range1'])
         panel.Add(bb_range1)
         panel.Add(br_range)
 
         panel.Add((10, 10), dcol=2, newrow=True)
-        panel.Add(self.wid_range2)
+        panel.Add(wids['range2'])
         panel.Add(bb_range2)
 
         panel.Add(wids['apply'], dcol=2, newrow=True)
@@ -1100,9 +1113,8 @@ clear undo history''')
         self.Destroy()
 
     def on_saveas(self, event=None):
-        wids = self.wids
-        fname = wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetValue()
+        fname = self.wids['grouplist'].GetStringSelection()
+        new_fname = self.wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
         xdat, ydat = self.data[-1]
         ngroup.energy = ngroup.xdat = xdat
@@ -1111,6 +1123,10 @@ clear undo history''')
         self.parent.onNewGroup(ngroup)
 
     def reset_data_history(self):
+        xdat, ydat = self.get_xydata()
+        self.data = [(xdat, ydat)]
+
+    def get_xydata(self):
         xdat = self.dgroup.xdat[:]
         if hasattr(self.dgroup, 'energy'):
             xdat = self.dgroup.energy[:]
@@ -1118,7 +1134,32 @@ clear undo history''')
         ydat = self.dgroup.ydat[:]
         if hasattr(self.dgroup, 'mu'):
             ydat = self.dgroup.mu[:]
-        self.data = [(xdat, ydat)]
+
+    def get_xydata(self):
+        if hasattr(self.dgroup, 'energy'):
+            xdat = self.dgroup.energy[:]
+        else:
+            xdat = self.dgroup.xdat[:]
+
+        plottype = 'norm'
+        if 'plotopts' in self.wids:
+            plotstr = self.wids['plotopts'].GetStringSelection()
+            plottype = DEGLITCH_PLOTS[plotstr]
+
+        ydat = self.dgroup.ydat[:]
+        if plottype == 'raw' and hasattr(self.dgroup, 'mu'):
+            ydat = self.dgroup.mu[:]
+        elif plottype == 'norm':
+            if not hasattr(self.dgroup, 'norm'):
+                self.parent.process_normalization(dgroup)
+            ydat = self.dgroup.norm[:]
+        elif plottype in ('chi', 'echi'):
+            if not hasattr(self.dgroup, 'chie'):
+                self.parent.process_exafs(dgroup)
+            ydat = self.dgroup.chie[:]
+            if plottype == 'echi':
+                ydat = self.dgroup.chie[:] * xdat
+        return (xdat, ydat)
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -1128,29 +1169,36 @@ clear undo history''')
 
     def on_rangechoice(self, event=None):
         if self.choice_range.GetStringSelection() == 'between':
-            self.wid_range2.Enable()
+            self.wids['range2'].Enable()
+
+    def on_plotchoice(self, event=None):
+        plotstr = self.wids['plotopts'].GetStringSelection()
+        plottype = DEGLITCH_PLOTS[plotstr]
+        print("deglitch plot choice ", plotstr, ' --> ', plottype)
+        self.reset_data_history()
+        self.plot_results()
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
         if opt == 'x':
-            self.wid_xlast.SetValue(_x)
+            self.wids['xlast'].SetValue(_x)
         elif opt == 'range1':
-            self.wid_range1.SetValue(_x)
+            self.wids['range1'].SetValue(_x)
         elif opt == 'range2':
-            self.wid_range2.SetValue(_x)
+            self.wids['range2'].SetValue(_x)
 
     def on_remove(self, event=None, opt=None):
         xwork, ywork = self.data[-1]
         if opt == 'x':
-            bad = index_nearest(xwork, self.wid_xlast.GetValue())
+            bad = index_nearest(xwork, self.wids['xlast'].GetValue())
         elif opt == 'range':
             rchoice = self.choice_range.GetStringSelection().lower()
-            x1 = index_nearest(xwork, self.wid_range1.GetValue())
+            x1 = index_nearest(xwork, self.wids['range1'].GetValue())
             x2 = None
             if rchoice == 'below':
                 x2, x1 = x1, x2
             elif rchoice == 'between':
-                x2 = index_nearest(xwork, self.wid_range2.GetValue())
+                x2 = index_nearest(xwork, self.wids['range2'].GetValue())
                 if x1 > x2:
                     x1, x2 = x2, x1
             bad = slice(x1, x2, None)
@@ -1177,11 +1225,18 @@ clear undo history''')
         xnew, ynew = self.data[-1]
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
+        xmin, xmax, ymin, ymax = ppanel.get_viewlimits()
 
+        plotstr = self.wids['plotopts'].GetStringSelection()
+        plottype = DEGLITCH_PLOTS[plotstr]
         opts = {}
+
         if self.controller.plot_erange is not None:
-            opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
-            opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+            print("PLOT ERANGE ? " , self.controller.plot_erange)
+            # opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
+            # opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
+            # opts['ymin'] = None
+            # opts['ymax'] = None
         ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
                     linewidth=3, title='De-glitching:\n %s' % fname,
                     label='current', xlabel=plotlabels.energy,
@@ -1189,9 +1244,14 @@ clear undo history''')
 
         if len(self.data) > 1:
             xold, yold = self.data[0]
-            ppanel.oplot(xold, yold, zorder=10, delay_draw=False,
+            ppanel.oplot(xold, yold, zorder=10, delay_draw=True,
                          marker='o', markersize=4, linewidth=2.0,
                          label='original', show_legend=True, **opts)
+
+        ax = ppanel.fig.get_axes()[0]
+        zlims = {ax: [xmin, xmax, ymin, ymax]}
+        ppanel.conf.zoom_lims.append(zlims)
+        ppanel.set_viewlimits()
         ppanel.canvas.draw()
         self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
 
@@ -1460,37 +1520,39 @@ class ExportCSVDialog(wx.Dialog):
                          'flattened mu(E)': 'flat',
                          'd mu(E) / dE': 'dmude'}
 
-        default_fname = 'Data.csv'
-        if len(groupnames) > 0:
-            default_fname = "%s_%i.csv" % (groupnames[0], len(groupnames))
+        self.delchoices = {'comma': ',',
+                           'space': ' ',
+                           'tab': '\t'}
+
 
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.master_group = Choice(panel, choices=groupnames, size=(200, -1))
         self.yarray_name  = Choice(panel, choices=list(self.ychoices.keys()), size=(200, -1))
-        self.ofile_name   = wx.TextCtrl(panel, -1, default_fname,  size=(200, -1))
+        self.del_name     = Choice(panel, choices=list(self.delchoices.keys()), size=(200, -1))
 
         panel.Add(SimpleText(panel, 'Group for Energy Array: '), newrow=True)
         panel.Add(self.master_group)
 
         panel.Add(SimpleText(panel, 'Array to Export: '), newrow=True)
         panel.Add(self.yarray_name)
-        panel.Add(SimpleText(panel, 'File Name: '), newrow=True)
-        panel.Add(self.ofile_name)
 
+        panel.Add(SimpleText(panel, 'Delimeter for File: '), newrow=True)
+        panel.Add(self.del_name)
         panel.Add(OkCancel(panel), dcol=2, newrow=True)
         panel.pack()
 
     def GetResponse(self, master=None, gname=None, ynorm=True):
         self.Raise()
-        response = namedtuple('ExportCSVResponse', ('ok', 'master', 'yarray', 'filename'))
+        response = namedtuple('ExportCSVResponse',
+                              ('ok', 'master', 'yarray', 'delim'))
         ok = False
         if self.ShowModal() == wx.ID_OK:
             master = self.master_group.GetStringSelection()
             yarray = self.ychoices[self.yarray_name.GetStringSelection()]
-            fname  = self.ofile_name.GetValue()
+            delim  = self.delchoices[self.del_name.GetStringSelection()]
             ok = True
-        return response(ok, master, yarray, fname)
+        return response(ok, master, yarray, delim)
 
 class QuitDialog(wx.Dialog):
     """dialog for quitting, prompting to save project"""

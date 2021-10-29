@@ -13,7 +13,7 @@ except:
 
 from xraydb import atomic_symbol, atomic_number, xray_edge
 from larch.io.fileutils import gformat
-from larch.utils.strutils import fix_varname
+from larch.utils.strutils import fix_varname, strict_ascii
 
 
 def get_atom_map(structure):
@@ -253,4 +253,4 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     out_text.append('')
     out_text.append('* END')
     out_text.append('')
-    return '\n'.join(out_text)
+    return strict_ascii('\n'.join(out_text))

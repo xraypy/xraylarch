@@ -334,6 +334,7 @@ class Procedure(object):
         stable.set_frame((lgroup, self.modgroup))
         retval = None
         self._larch.retval = None
+        self._larch._calldepth += 1
         self._larch.debug = True
         for node in self.body:
             self._larch.run(node, fname=self.__file__, func=self,
@@ -345,6 +346,7 @@ class Procedure(object):
                 if retval is ReturnedNone: retval = None
                 break
         stable.restore_frame()
+        self._larch._calldepth -= 1
         self._larch.debug = False
         self._larch.retval = None
         del lgroup
@@ -454,7 +456,10 @@ def read_config(conffile):
     if out is not None:
         if not HAS_YAML:
             raise RuntimeError('yaml is not available')
-        out = yaml.load(out)
+        try:
+            out = yaml.load(out, Loader=yaml.Loader)
+        except:
+            pass
     return out
 
 def save_config(conffile, config):
@@ -465,9 +470,12 @@ def save_config(conffile, config):
     cfile = os.path.join(user_larchdir, conffile)
     if not HAS_YAML:
         raise RuntimeError('yaml is not available')
-    out = yaml.dump(config)
-    with open(cfile, 'w') as fh:
-        fh.write(out)
+    try:
+        out = yaml.dump(config, default_flow_style=None)
+        with open(cfile, 'w') as fh:
+            fh.write(out)
+    except:
+        pass
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):

@@ -16,12 +16,19 @@ def bytes2str(s):
     elif isinstance(s, bytes):
         return s.decode(sys.stdout.encoding)
     return str(s, sys.stdout.encoding)
+
 def str2bytes(s):
     'string to byte conversion'
     if isinstance(s, bytes):
         return s
     return bytes(s, sys.stdout.encoding)
 
+
+def strict_ascii(s, replacement='_'):
+    """for string to be truly ASCII with all characters below 128"""
+
+    t = bytes(s, 'UTF-8')
+    return ''.join([chr(a) if a < 128 else replacement for a in t])
 
 RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
                   'def', 'del', 'elif', 'else', 'eval', 'except', 'exec',

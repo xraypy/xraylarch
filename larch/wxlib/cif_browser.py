@@ -24,7 +24,7 @@ from larch import Group
 from larch.xafs import feff8l, feff6l
 from larch.xrd.cif2feff import cif_sites
 from larch.utils.paths import unixpath
-from larch.utils.strutils import fix_filename, unique_name
+from larch.utils.strutils import fix_filename, unique_name, strict_ascii
 from larch.site_config import user_larchdir
 
 from larch.wxlib import (LarchFrame, FloatSpin, EditableListBox,
@@ -125,7 +125,6 @@ class CIFFrame(wx.Frame):
         minhint= SimpleText(panel, ' example: hem* ')
         wids['mineral'] = wx.TextCtrl(panel, value='',   size=(250, -1),
                                       style=wx.TE_PROCESS_ENTER)
-
         wids['mineral'].Bind(wx.EVT_TEXT_ENTER, self.onSearch)
 
         authlab = SimpleText(panel, ' Author Name: ')
@@ -333,12 +332,12 @@ class CIFFrame(wx.Frame):
         if len(contains_elements) < 1:
             contains_elements = None
         else:
-            contains_elements = [a.strip() for a in contains_elements.split(',')]
+            contains_elements = [a.strip().title() for a in contains_elements.split(',')]
         excludes_elements = self.wids['excludes_elements'].GetValue().strip()
         if len(excludes_elements) < 1:
             excludes_elements = None
         else:
-            excludes_elements = [a.strip() for a in excludes_elements.split(',')]
+            excludes_elements = [a.strip().title() for a in excludes_elements.split(',')]
         strict_contains = self.wids['strict_contains'].IsChecked()
         full_occupancy = self.wids['full_occupancy'].IsChecked()
         all_cifs = find_cifs(mineral_name=mineral_name,
@@ -469,7 +468,7 @@ class CIFFrame(wx.Frame):
 
         fname = unixpath(os.path.join(folder, 'feff.inp'))
         with open(fname, 'w') as fh:
-            fh.write(fefftext)
+            fh.write(strict_ascii(fefftext))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
         # feffexe, folder=dirname, message_writer=self.feff_output)

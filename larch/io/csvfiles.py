@@ -19,7 +19,7 @@ from larch.utils.strutils import bytes2str, fix_varname
 
 maketrans = str.maketrans
 
-def groups2csv(grouplist, filename,
+def groups2csv(grouplist, filename, delim=',',
                x='energy', y='norm', _larch=None):
     """save data from a list of groups to a CSV file
 
@@ -45,9 +45,14 @@ def groups2csv(grouplist, filename,
     columns = [x0, getattr(grouplist[0], y)]
     labels = [x, get_label(grouplist[0]) ]
 
+    delim = delim.strip() + ' '
+    buff = ["# %d files saved %s" % (len(grouplist), time.ctime()),
+            "# saving x array='%s', y array='%s'" % (x, y),
+            "# %s: %s" % (labels[1], grouplist[0].filename)]
     for g in grouplist[1:]:
-
-        labels.append(get_label(g))
+        label = get_label(g)
+        buff.append("# %s: %s" % (label, g.filename))
+        labels.append(label)
         _x = getattr(g, x)
         _y = getattr(g, y)
 
@@ -56,9 +61,10 @@ def groups2csv(grouplist, filename,
         else:
             columns.append(_y)
 
-    buff = ["# %s" % ', '.join(labels)]
+    buff.append("#------------------------------------------")
+    buff.append("# %s" % delim.join(labels))
     for i in range(npts):
-        buff.append(', '.join(["%.6f" % s[i] for s in columns]))
+        buff.append(delim.join(["%.6f" % s[i] for s in columns]))
 
     buff.append('')
     with open(filename, 'w') as fh:

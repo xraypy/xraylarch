@@ -20,7 +20,7 @@ from lmfit.model import (save_modelresult, load_modelresult,
                              save_model, load_model)
 
 import lmfit.models as lm_models
-from lmfit.printfuncs import gformat, CORREL_HEAD
+from lmfit.printfuncs import gformat
 
 from larch import Group, site_config
 from larch.math import index_of
@@ -1408,9 +1408,9 @@ class FeffitResultFrame(wx.Frame):
 
         wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
         wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
-                                   action=self.onUpdateLabel)        
-   
-        
+                                   action=self.onUpdateLabel)
+
+
         irow = 0
         sizer.Add(title,              (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['data_title'], (irow, 1), (1, 3), LEFT)
@@ -1437,7 +1437,7 @@ class FeffitResultFrame(wx.Frame):
         sizer.Add(SimpleText(panel, 'Fit Label:', style=LEFT), (irow, 0), (1, 1), LEFT)
         sizer.Add(wids['fit_label'], (irow, 1), (1, 2), LEFT)
         sizer.Add(wids['set_label'], (irow, 3), (1, 1), LEFT)
-        
+
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]',  font=Font(FONTSIZE+2),
@@ -1579,7 +1579,7 @@ class FeffitResultFrame(wx.Frame):
 
     def onShowScript(self, event=None):
         result = self.get_fitresult()
-        text = [f'# Feffit Script for {self.datagroup.filename} fit "{result.label}"']                
+        text = [f'# Feffit Script for {self.datagroup.filename} fit "{result.label}"']
         text.extend(result.commands)
         text = '\n'.join(text)
         title = f'Script for {self.datagroup.filename} fit "{result.label}"'
@@ -1639,7 +1639,7 @@ class FeffitResultFrame(wx.Frame):
     def onSaveFit(self, evt=None, form='chikw'):
         "Save arrays to text file"
         result = self.get_fitresult()
-        
+
         fname = fix_filename(f'{self.datagroup.filename}_{result.label:s}_{form}')
         fname = fname.replace('.', '_')
         fname = fname + '.txt'
