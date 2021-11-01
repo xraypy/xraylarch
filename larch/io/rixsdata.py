@@ -84,7 +84,7 @@ class RixsData(object):
         if not ('writer_version' in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
-        if not (_tostr(rxdict['writer_version']) == '1.5'):
+        if not ('1.5' in _tostr(rxdict['writer_version'])):
             self._logger.warning('Data format not understood')
             return
         rxdict['sample_name'] = _tostr(rxdict['sample_name'])
