@@ -10,7 +10,8 @@ from silx.io.dictdump import (dicttoh5, h5todict)
 
 from larch.math.gridxyz import gridxyz
 from larch.utils.logging import getLogger
-_logger = getLogger('rixsdata')  #: module logger
+
+_logger = getLogger(__name__)  #: module logger
 
 
 def _tostr(arr):
