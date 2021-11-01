@@ -93,7 +93,7 @@ def get_rixs_13ide(sample_name, scan_name, rixs_no='001', data_dir='.',
 
     """
     _writer = 'get_rixs_13ide'
-    _writer_version = '1.5'  #: used for reading back in RixsData.load_from_h5()
+    _writer_version = "1.5.1"  #: used for reading back in RixsData.load_from_h5()
     _writer_timestamp = '{0:04d}-{1:02d}-{2:02d}_{3:02d}{4:02d}'.format(*time.localtime())
 
     if out_dir is None:
