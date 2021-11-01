@@ -15,7 +15,10 @@ _logger = getLogger('rixsdata')  #: module logger
 
 def _tostr(arr):
     """Numpy array to string"""
-    return arr.tostring().decode()
+    try:
+        return arr.tostring().decode()
+    except Exception:
+        return arr
 
 
 class RixsData(object):
