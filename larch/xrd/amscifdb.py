@@ -498,6 +498,7 @@ class AMSCIFDB():
         cif = CifParser(filename)
         cifkey = list(cif._cif.data.keys())[0]
         dat = cif._cif.data[cifkey].data
+
         formula = None
         for formname in ('_chemical_formula_sum', '_chemical_formula_moiety'):
             if formname in dat:
@@ -521,7 +522,12 @@ class AMSCIFDB():
 
 
         # get spacegroup and symmetry
-        sgroup_name = dat['_symmetry_space_group_name_H-M']
+        sgroup_name = dat.get('_symmetry_space_group_name_H-M', None)
+        if sgroup_name is None:
+            for key, val in dat.items():
+                if 'space_group' in key and 'H-M' in key:
+                    sgroup_name = val
+
         symm_xyz = dat.get('_space_group_symop_operation_xyz', None)
         if symm_xyz is None:
             symm_xyz = dat.get('_symmetry_equiv_pos_as_xyz', None)

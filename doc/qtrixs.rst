@@ -29,7 +29,7 @@ HDF5 file, following a simple format
 (c.f. :func:`larch.io.rixs_aps_gsecars.get_rixs_13ide`). After that,
 reading in the `RixsData` object is as simple as::
 
-    from larch.qtrixs.rixsdata import RixsData
+    from larch.io.rixsdata import RixsData
     my_rixs1 = RixsData()
     my_rixs1.load_from_h5('filename_rixs.h5')
 
