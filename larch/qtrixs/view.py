@@ -8,7 +8,7 @@ from silx.gui import qt
 
 from larch.qtlib.view import TreeView
 
-from .rixsdata import RixsData
+from larch.io.rixsdata import RixsData
 from .items import RixsItem
 
 
