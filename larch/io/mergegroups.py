@@ -5,11 +5,10 @@ merge groups, interpolating if necessary
 import os
 import numpy as np
 from larch import Group
-from larch.math import interp, index_of
+from larch.math import interp, index_of, remove_dups
 
 def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
-                 kind='cubic', trim=True, calc_yerr=True, _larch=None):
-
+                 kind='cubic', trim=True, calc_yerr=True):
     """merge arrays from a list of groups.
 
     Arguments
@@ -30,7 +29,7 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     if master is None:
         master = grouplist[0]
 
-    xout = getattr(master, xarray)
+    xout = remove_dups(getattr(master, xarray))
     xmins = [min(xout)]
     xmaxs = [max(xout)]
     yvals = []
@@ -59,4 +58,12 @@ def merge_groups(grouplist, master=None, xarray='energy', yarray='mu',
     setattr(grp, xarray, xout)
     setattr(grp, yarray, yave)
     setattr(grp, yarray + '_std', ystd)
+
+    if kind == 'cubic':
+        y0 = getattr(master, yarray)
+        # if the derivative gets much worse, use linear interpolation
+        if max(np.diff(yave)) > 50*max(np.diff(y0)):
+            grp = merge_groups(grouplist, master=master, xarray=xarray,
+                               yarray=yarray, trim=trim,
+                               calc_yerr=calc_yerr, kind='linear')
     return grp
