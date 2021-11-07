@@ -10,12 +10,16 @@ from silx.io.dictdump import (dicttoh5, h5todict)
 
 from larch.math.gridxyz import gridxyz
 from larch.utils.logging import getLogger
-_logger = getLogger('rixsdata')  #: module logger
+
+_logger = getLogger(__name__)  #: module logger
 
 
 def _tostr(arr):
     """Numpy array to string"""
-    return arr.tostring().decode()
+    try:
+        return arr.tostring().decode()
+    except Exception:
+        return arr
 
 
 class RixsData(object):
@@ -60,7 +64,7 @@ class RixsData(object):
         rxdict : dict
             Minimal required structure
             {
-             'writer_version': '1.5',
+             'writer_version': '1.5.x',
              'sample_name': str,
              '_x': 1D array,
              '_y': 1D array,
@@ -81,12 +85,30 @@ class RixsData(object):
         if not ('writer_version' in rxdict.keys()):
             self._logger.error("Key 'writer_version' not found")
             return
-        if not (_tostr(rxdict['writer_version']) == '1.5'):
+        if not ('1.5' in _tostr(rxdict['writer_version'])):
             self._logger.warning('Data format not understood')
             return
         rxdict['sample_name'] = _tostr(rxdict['sample_name'])
         self.load_from_dict(rxdict)
         self._logger.info("RIXS map loaded from file: {0}".format(fname))
+
+    def load_from_ascii(self, fname, **kws):
+        """load data from a 3 columns ASCII file assuming the format:
+        
+        e_in(eV), e_out(eV), signal
+
+        """
+
+        try:
+            self.dat = np.loadtxt(fname)
+            self._logger.info('Loaded {0}'.format(fname))
+        except Exception:
+            self._logger.error('Cannot load from {0}'.format(fname))
+            return
+
+        self._x = self.dat[:, 0]
+        self._y = self.dat[:, 1]
+        self._z = self.dat[:, 2]
 
     def save_to_h5(self, fname):
         """Dump dictionary representation to HDF5 file"""
