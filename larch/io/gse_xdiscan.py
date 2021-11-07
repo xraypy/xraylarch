@@ -68,8 +68,8 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
         except AttributeError:
             ctime = 1.0
 
-    is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
-    group.with_xspress3 = is_xspress3
+    is_old_xsp3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
+
     dtc_taus = XSPRESS3_TAUS
     if (_larch is not None and
         _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus')):
@@ -113,7 +113,7 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
         if icr is None:
             icr = 1.0*ocr
             dtc_mode = 'none'
-            if is_xspress3:
+            if is_old_xsp3:
                 tau = dtc_taus[i]
                 icr = estimate_icr(ocr*1.00, tau, niter=7)
                 dtc_mode = 'saved_taus'
