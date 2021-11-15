@@ -1381,7 +1381,7 @@ class MapViewerFrame(wx.Frame):
         except:
            pass
 
-        
+
         self.Raise()
         wx.CallAfter(self.init_larch)
 
@@ -2093,6 +2093,9 @@ class MapViewerFrame(wx.Frame):
         if xrmfile.dimension is None and isGSEXRM_MapFolder(self.folder):
             xrmfile.read_master()
 
+        # print("PROCESS_FILE!!", xrmfile.folder_has_newdata(), self.h5convert_done,
+        #      filename in self.files_in_progress)
+
         if (xrmfile.folder_has_newdata() and self.h5convert_done
             and filename not in self.files_in_progress):
 
@@ -2114,6 +2117,7 @@ class MapViewerFrame(wx.Frame):
             on_complete()
 
     def updateTimer(self, row=None, maxrow=None, filename=None, status=None):
+        # print("== UPDATE TIMER ", row, maxrow, filename, status)
         if row      is not None: self.h5convert_irow  = row
         if maxrow   is not None: self.h5convert_nrow  = maxrow
         if filename is not None: self.h5convert_fname = filename
@@ -2124,10 +2128,10 @@ class MapViewerFrame(wx.Frame):
         wx.CallAfter(self.message, msg)
 
     def onTimer(self, event=None):
-        fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        # self.message('processing %s:  row %i of %i' % (fname, irow, nrow))
-        # print("process timer ", self.h5convert_done, irow)
         if self.h5convert_done:
+            # print("h5convert done, stopping timer")
+            fname = self.h5convert_fname
+            irow, nrow = self.h5convert_irow, self.h5convert_nrow
             self.htimer.Stop()
             self.h5convert_thread.join()
             self.files_in_progress = []
@@ -2657,7 +2661,7 @@ class OpenMapFolder(wx.Dialog):
             self.XRDInfo[i].Clear()
             self.XRDInfo[i].SetValue(str(path))
 
-        
+
 class MapViewer(LarchWxApp):
     def __init__(self, use_scandb=False, _larch=None, filename=None,
                  version_info=None, with_inspect=False, **kws):
