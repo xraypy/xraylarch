@@ -733,7 +733,7 @@ class GSEXRM_MapFile(object):
             self.add_rowdata(row, callback=callback)
 
         if flush or complete:
-            print("Flush, ", irow, self.last_row, flush, complete)
+            # print("Flush, ", irow, self.last_row, flush, complete)
             self.resize_arrays(self.last_row+1, force_shrink=True)
             self.h5root.flush()
             if self._pixeltime is None:
