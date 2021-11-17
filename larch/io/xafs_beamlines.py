@@ -89,8 +89,6 @@ class GenericBeamlineData:
         return len(self.headerlines) > 1
 
     def get_array_labels(self, ncolumns=None):
-        if len(self.headerlines) < 2:
-            return None
 
         lastline = self.headerlines[-1].strip()
         for cchars in ('#L', '#C', '#', 'C'):
@@ -98,7 +96,10 @@ class GenericBeamlineData:
                 lastline = lastline[len(cchars):]
         for badchar in ',#@%&"\'':
             lastline = lastline.replace(badchar, ' ')
-        return self._set_labels(lastline.split(), ncolumns=ncolumns)
+        if len(self.headerlines) < 2:
+            return self._set_labels(lastline.split(" "), ncolumns=ncolumns)
+        else:
+            return self._set_labels(lastline.split(), ncolumns=ncolumns)
 
     def _set_labels(self, labels, ncolumns=None):
         """
