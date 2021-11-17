@@ -97,7 +97,10 @@ class GenericBeamlineData:
         for badchar in ',#@%&"\'':
             lastline = lastline.replace(badchar, ' ')
         if len(self.headerlines) < 2:
-            return self._set_labels(lastline.split(" "), ncolumns=ncolumns)
+            try:
+                return self._set_labels(lastline.split(" "), ncolumns=ncolumns)
+            except Exception:
+                return None
         else:
             return self._set_labels(lastline.split(), ncolumns=ncolumns)
 
