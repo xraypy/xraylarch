@@ -25,7 +25,6 @@ TINY = 1.e-7
 MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
 COMMENTCHARS = '#;%*!$'
 
-
 def look_for_nans(path):
     """
     look for Nans and Infs in an ascii data file
@@ -227,18 +226,17 @@ def read_ascii(filename, labels=None, simple_labels=False,
     if os.stat(filename).st_size > MAX_FILESIZE:
         raise OSError("File '%s' too big for read_ascii()" % filename)
 
-    with open(filename, 'r') as fh:
-        text = fh.read()
-
-    text = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+    with open(filename, 'rb') as fh:
+        text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+    lines = text.split('\n')
 
     ncol = None
     data, footers, headers = [], [], []
 
-    text.reverse()
+    lines.reverse()
     section = 'FOOTER'
 
-    for line in text:
+    for line in lines:
         line = line.strip()
         if len(line) < 1:
             continue
