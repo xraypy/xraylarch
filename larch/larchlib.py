@@ -7,6 +7,7 @@ import sys, os, time
 import ast
 import numpy as np
 import traceback
+import yaml
 import inspect
 from collections import OrderedDict
 import ctypes
@@ -32,12 +33,6 @@ try:
 except ImportError:
     HAS_TERMCOLOR = False
 
-HAS_YAML = False
-try:
-    import yaml
-    HAS_YAML = True
-except ImportError:
-    HAS_YAML = False
 
 class LarchPluginException(Exception):
     """Exception with Larch Plugin"""
@@ -454,12 +449,13 @@ def read_config(conffile):
         with open(cfile, 'r') as fh:
             out = fh.read()
     if out is not None:
-        if not HAS_YAML:
-            raise RuntimeError('yaml is not available')
         try:
-            out = yaml.load(out, Loader=yaml.Loader)
+            out = yaml.safe_load(out)
         except:
-            pass
+            try:
+                out = yaml.load(out, Loader=yaml.Loader)
+            except:
+                pass
     return out
 
 def save_config(conffile, config):
@@ -468,14 +464,12 @@ def save_config(conffile, config):
 
     """
     cfile = os.path.join(user_larchdir, conffile)
-    if not HAS_YAML:
-        raise RuntimeError('yaml is not available')
     try:
         out = yaml.dump(config, default_flow_style=None)
         with open(cfile, 'w') as fh:
             fh.write(out)
     except:
-        pass
+        print(f"Could not save configuration file '{conffile:s}'")
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):
