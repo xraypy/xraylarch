@@ -12,7 +12,8 @@ numpy>=1.18
 matplotlib>=3.0
 sqlalchemy>=1.0
 h5py>=2.8
-pillow
+pillow>=8.3.2
+imageio
 peakutils
 requests
 scikit-image

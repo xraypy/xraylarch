@@ -35,17 +35,16 @@ jobs:
         conda info -a
         conda install "numpy=>1.20" "scipy=>1.5" "matplotlib=>3.0" scikit-learn pandas
         conda install pyparsing pytest pytest-cov coverage
-        conda install h5py pillow  sqlalchemy psutil pyyaml
-        conda install psycopg2-binary numdifftools emcee
+        conda install h5py pillow>=8.3.2 imageio sqlalchemy psutil pyyaml
+        conda install psycopg2-binary numdifftools emcee cython
         #conda install tomopy
         conda install wxpython
         conda install pymatgen
-        conda install cython
         conda info -a
         conda list
     - name: Install xraylarch and other dependencies with pip
       run: |
-        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils
+        pip install lmfit peakutils pyepics pyshortcuts termcolor sphinx dill pycifrw xraydb wxmplot wxutils fabio silx imageio
         python setup.py install
     - name: Run test suite
       run: |
