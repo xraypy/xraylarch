@@ -709,11 +709,13 @@ class GSEXRM_MapFile(object):
         self.last_row = -1
         self.add_map_config(self.mapconf)
 
-        self.process_row(0, flush=True, callback=callback, nrows_expected=len(self.rowdata))
+        self.process_row(0, flush=True, callback=None,
+                         nrows_expected=len(self.rowdata))
 
         self.status = GSEXRM_FileStatus.hasdata
 
-    def process_row(self, irow, flush=False, offset=None, callback=None, nrows_expected=None):
+    def process_row(self, irow, flush=False, complete=False, offset=None,
+                    nrows_expected=None, callback=None):
         row = self.read_rowdata(irow, offset=offset)
         if irow == 0:
             nmca, nchan = 0, 2048
@@ -730,14 +732,16 @@ class GSEXRM_MapFile(object):
         if row.read_ok:
             self.add_rowdata(row, callback=callback)
 
-        # print("process row ", self.last_row, flush, callable(callback), callback)
-        if flush:
+        if flush or complete:
+            # print("Flush, ", irow, self.last_row, flush, complete)
             self.resize_arrays(self.last_row+1, force_shrink=True)
             self.h5root.flush()
             if self._pixeltime is None:
                 self.calc_pixeltime()
             if callable(callback):
-                callback(filename=self.filename, status='complete')
+                status = 'complete' if complete else 'flush'
+                callback(filename=self.filename, status=status)
+
 
     def process(self, maxrow=None, force=False, callback=None, offset=None,
                 force_no_dtc=False, all_mcas=None):
@@ -763,9 +767,13 @@ class GSEXRM_MapFile(object):
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
-                flush = nrows-irow<=1  or (irow % 50 == 0)
-                self.process_row(irow, flush=flush, offset=offset, callback=callback)
+                flush = irow < 2 or (irow % 64 == 0)
+                complete = irow >= nrows-1
+                self.process_row(irow, flush=flush, offset=offset,
+                                 complete=complete, callback=callback)
                 irow  = irow + 1
+            if callable(callback):
+                callback(filename=self.filename, status='complete')
 
 
     def set_roidata(self, row_start=0, row_end=None):

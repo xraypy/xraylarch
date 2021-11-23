@@ -549,10 +549,11 @@ class ColumnDataFileFrame(wx.Frame) :
     def read_column_file(self, path):
         """read column file, generally as initial read"""
         parent, filename = os.path.split(path)
-        with open(path, 'r') as fh:
-            lines = fh.readlines()
-
+        with open(path, 'rb') as fh:
+            text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+        lines = text.split('\n')
         text = ''.join(lines)
+
         line1 = lines[0].lower()
 
         reader = 'read_ascii'
@@ -812,8 +813,8 @@ class ColumnDataFileFrame(wx.Frame) :
         if xname.startswith('_index') or ix >= ncol:
             workgroup.xdat = 1.0*np.arange(npts)
         else:
-            workgroup.xdat = 1.0*rdata[ix, :] 
-        if self.datatype.GetStringSelection().strip().lower() != 'raw':           
+            workgroup.xdat = 1.0*rdata[ix, :]
+        if self.datatype.GetStringSelection().strip().lower() != 'raw':
             eguess =  guess_energy_units(workgroup.xdat)
             if eguess.startswith('eV'):
                 self.en_units.SetStringSelection('eV')
@@ -847,7 +848,7 @@ class ColumnDataFileFrame(wx.Frame) :
         workgroup.datatype = self.datatype.GetStringSelection().strip().lower()
         if workgroup.datatype == 'raw':
             self.en_units.SetStringSelection('not energy')
-            
+
         xlabel = xname
         en_units = self.en_units.GetStringSelection()
         if en_units.startswith('deg'):
