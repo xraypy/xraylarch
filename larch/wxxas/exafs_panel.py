@@ -496,7 +496,7 @@ class EXAFSPanel(TaskPanel):
         plotter = self.onPlotSel if self.last_plot=='selected' else self.onPlotOne
         plotter()
 
-    def process(self, dgroup=None, read_form=True, **kws):
+    def process(self, dgroup=None, read_form=True, force=False, **kws):
         conf = {}
         if dgroup is not None:
             self.dgroup = dgroup
@@ -511,8 +511,8 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None or 'fft_kwindow' not in conf:
             return
 
-        if 'group' not in conf:
-            conf['group'] = dgroup.groupname
+        # if 'group' not in conf:
+        conf['group'] = dgroup.groupname
 
         try:
             txt = autobk_cmd.format(**conf)
@@ -520,7 +520,6 @@ class EXAFSPanel(TaskPanel):
             conf.update(self.read_form())
 
         bkgpars = []
-        # print(" EXAFS Process #1 e0= ", conf.get('e0', -10.))
         for attr in ('e0', 'rbkg', 'bkg_kmin', 'bkg_kmax',
                      'bkg_kweight', 'bkg_clamplo', 'bkg_clamphi'):
             val = conf.get(attr, 0.0)
@@ -528,8 +527,8 @@ class EXAFSPanel(TaskPanel):
                 val = -1.0
             bkgpars.append("%.3f" % val)
         bkgpars = ':'.join(bkgpars)
-
-        if bkgpars != self.last_process_bkg.get(self.dgroup.groupname, ''):
+        lastpars = self.last_process_bkg.get(self.dgroup.groupname, '')
+        if force or (bkgpars != lastpars):
             self.larch_eval(autobk_cmd.format(**conf))
             self.last_process_bkg[self.dgroup.groupname] = bkgpars
             self.last_process_fft[self.dgroup.groupname] = ''
