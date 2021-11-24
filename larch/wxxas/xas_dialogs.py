@@ -1,4 +1,5 @@
 import os
+import copy
 from collections import namedtuple
 from functools import partial
 import numpy as np
@@ -33,10 +34,10 @@ ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
 
 EDGE_LIST = ('K', 'L3', 'L2', 'L1', 'M5', 'M4', 'M3')
 
-DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'raw',
+DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'mu',
                   'Normalized \u03BC(E)': 'norm',
-                  '\u03c7(E)': 'chi',
-                  'k^2*\u03c7(E)': 'echi'}
+                  '\u03c7(E)': 'chie',
+                  '\u03c7(E)*(E-E_0)': 'chiew'}
 
 
 class OverAbsorptionDialog(wx.Dialog):
@@ -707,7 +708,7 @@ class SmoothDataDialog(wx.Dialog):
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
 
-        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetStringSelection(self.dgroup.filename)
         SetTip(wids['grouplist'], 'select a new group, clear undo history')
 
         smooth_ops = ('None', 'Boxcar', 'Savitzky-Golay', 'Convolution')
@@ -1006,7 +1007,7 @@ class DeglitchDialog(wx.Dialog):
         groupnames = list(self.controller.file_groups.keys())
 
         self.reset_data_history()
-        xdat, ydat = self.data[-1]
+        xdat, ydat = self.data
 
         xrange = (max(xdat) - min(xdat))
         xmax = int(max(xdat) + xrange/5.0)
@@ -1025,7 +1026,7 @@ class DeglitchDialog(wx.Dialog):
         wids['grouplist'] = Choice(panel, choices=groupnames, size=(250, -1),
                                 action=self.on_groupchoice)
 
-        wids['grouplist'].SetStringSelection(self.dgroup.groupname)
+        wids['grouplist'].SetStringSelection(self.dgroup.filename)
         SetTip(wids['grouplist'], 'select a new group, clear undo history')
 
         bb_xlast = BitmapButton(panel, get_icon('pin'),
@@ -1116,49 +1117,40 @@ clear undo history''')
         fname = self.wids['grouplist'].GetStringSelection()
         new_fname = self.wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.data[-1]
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
-        self.parent.process_normalization(ngroup)
+        xdat, ydat = self.get_xydata(datatype='mu')
+        xmask = self.xmasks[-1]
+        ngroup.energy = ngroup.xdat = xdat[xmask]
+        ngroup.mu     = ngroup.ydat = ydat[xmask]
         self.parent.onNewGroup(ngroup)
+        self.parent.process_normalization(ngroup, force=True)
+        self.parent.process_exafs(ngroup, force=True)
 
     def reset_data_history(self):
-        xdat, ydat = self.get_xydata()
-        self.data = [(xdat, ydat)]
+        plottype = 'mu'
+        if 'plotopts' in self.wids:
+            plotstr = self.wids['plotopts'].GetStringSelection()
+            plottype = DEGLITCH_PLOTS[plotstr]
+        self.data = self.get_xydata(datatype=plottype)
+        self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool)]
 
-    def get_xydata(self):
-        xdat = self.dgroup.xdat[:]
-        if hasattr(self.dgroup, 'energy'):
-            xdat = self.dgroup.energy[:]
-
-        ydat = self.dgroup.ydat[:]
-        if hasattr(self.dgroup, 'mu'):
-            ydat = self.dgroup.mu[:]
-
-    def get_xydata(self):
+    def get_xydata(self, datatype='mu'):
         if hasattr(self.dgroup, 'energy'):
             xdat = self.dgroup.energy[:]
         else:
             xdat = self.dgroup.xdat[:]
-
-        plottype = 'norm'
-        if 'plotopts' in self.wids:
-            plotstr = self.wids['plotopts'].GetStringSelection()
-            plottype = DEGLITCH_PLOTS[plotstr]
-
         ydat = self.dgroup.ydat[:]
-        if plottype == 'raw' and hasattr(self.dgroup, 'mu'):
+        if datatype == 'mu' and hasattr(self.dgroup, 'mu'):
             ydat = self.dgroup.mu[:]
-        elif plottype == 'norm':
+        elif datatype == 'norm':
             if not hasattr(self.dgroup, 'norm'):
                 self.parent.process_normalization(dgroup)
             ydat = self.dgroup.norm[:]
-        elif plottype in ('chi', 'echi'):
+        elif datatype in ('chie', 'chiew'):
             if not hasattr(self.dgroup, 'chie'):
-                self.parent.process_exafs(dgroup)
+                self.parent.process_exafs(self.dgroup)
             ydat = self.dgroup.chie[:]
-            if plottype == 'echi':
-                ydat = self.dgroup.chie[:] * xdat
+            if datatype == 'chiew':
+                ydat = self.dgroup.chie[:] * (xdat-self.dgroup.e0)
         return (xdat, ydat)
 
     def on_groupchoice(self, event=None):
@@ -1174,8 +1166,7 @@ clear undo history''')
     def on_plotchoice(self, event=None):
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
-        print("deglitch plot choice ", plotstr, ' --> ', plottype)
-        self.reset_data_history()
+        self.data = self.get_xydata(datatype=plottype)
         self.plot_results()
 
     def on_select(self, event=None, opt=None):
@@ -1188,9 +1179,11 @@ clear undo history''')
             self.wids['range2'].SetValue(_x)
 
     def on_remove(self, event=None, opt=None):
-        xwork, ywork = self.data[-1]
+        xwork, ywork = self.data
+        mask = copy.deepcopy(self.xmasks[-1])
         if opt == 'x':
             bad = index_nearest(xwork, self.wids['xlast'].GetValue())
+            mask[bad] = False
         elif opt == 'range':
             rchoice = self.choice_range.GetStringSelection().lower()
             x1 = index_nearest(xwork, self.wids['range1'].GetValue())
@@ -1201,59 +1194,69 @@ clear undo history''')
                 x2 = index_nearest(xwork, self.wids['range2'].GetValue())
                 if x1 > x2:
                     x1, x2 = x2, x1
-            bad = slice(x1, x2, None)
-
-        self.data.append((np.delete(xwork, bad), np.delete(ywork, bad)))
+            mask[x1:x2] = False
+        self.xmasks.append(mask)
         self.plot_results()
 
     def on_undo(self, event=None):
-        if len(self.data) > 1:
-            self.data.pop()
-            self.plot_results()
+        if len(self.xmasks) == 1:
+            self.xmasks = [np.ones(len(self.data[0]), dtype=np.bool)]
+        else:
+            self.xmasks.pop()
+        self.plot_results()
 
     def on_apply(self, event=None):
-        xdat, ydat = self.data[-1]
+        xdat, ydat = self.get_xydata(datatype='raw')
+        mask = self.xmasks[-1]
         dgroup = self.dgroup
-        dgroup.energy = dgroup.xdat = xdat
-        dgroup.mu     = dgroup.ydat = ydat
+        dgroup.energy = dgroup.xdat = xdat[mask]
+        dgroup.mu     = dgroup.ydat = ydat[mask]
         self.reset_data_history()
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
-        xnew, ynew = self.data[-1]
+
+        xdat, ydat = self.data
+        xmin = min(xdat) - 0.025*(max(xdat) - min(xdat))
+        xmax = max(xdat) + 0.025*(max(xdat) - min(xdat))
+        ymin = min(ydat) - 0.025*(max(ydat) - min(ydat))
+        ymax = max(ydat) + 0.025*(max(ydat) - min(ydat))
+
         dgroup = self.dgroup
         path, fname = os.path.split(dgroup.filename)
-        xmin, xmax, ymin, ymax = ppanel.get_viewlimits()
 
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
-        opts = {}
+        if plottype in ('chie', 'chiew'):
+            xmin = self.dgroup.e0
+        opts = dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
 
-        if self.controller.plot_erange is not None:
-            print("PLOT ERANGE ? " , self.controller.plot_erange)
-            # opts['xmin'] = dgroup.e0 + self.controller.plot_erange[0]
-            # opts['xmax'] = dgroup.e0 + self.controller.plot_erange[1]
-            # opts['ymin'] = None
-            # opts['ymax'] = None
-        ppanel.plot(xnew, ynew, zorder=20, delay_draw=True, marker=None,
+        ylabel =  {'mu': plotlabels.mu,
+                   'norm': plotlabels.norm,
+                   'chie':  plotlabels.chie,
+                   'chiew': plotlabels.chiew.format(1),
+                   }.get(plottype, plotlabels.mu)
+
+
+        ppanel.plot(xdat, ydat, zorder=10, marker=None,
                     linewidth=3, title='De-glitching:\n %s' % fname,
-                    label='current', xlabel=plotlabels.energy,
-                    ylabel=plotlabels.mu, **opts)
+                    label='original', xlabel=plotlabels.energy,
+                    ylabel=ylabel, **opts)
 
-        if len(self.data) > 1:
-            xold, yold = self.data[0]
-            ppanel.oplot(xold, yold, zorder=10, delay_draw=True,
+        if len(self.xmasks) > 1:
+            mask = self.xmasks[-1]
+            ppanel.oplot(xdat[mask], ydat[mask], zorder=20,
                          marker='o', markersize=4, linewidth=2.0,
-                         label='original', show_legend=True, **opts)
+                         label='current', show_legend=True, **opts)
 
-        ax = ppanel.fig.get_axes()[0]
-        zlims = {ax: [xmin, xmax, ymin, ymax]}
-        ppanel.conf.zoom_lims.append(zlims)
-        ppanel.set_viewlimits()
-        ppanel.canvas.draw()
-        self.history_message.SetLabel('%i items in history' % (len(self.data)-1))
+        #ax = ppanel.fig.get_axes()[0]
+        # zlims = {ax: [xmin, xmax, ymin, ymax]}
+        # # ppanel.conf.zoom_lims.append(zlims)
+        # ppanel.set_viewlimits()
+        # ppanel.canvas.draw()
+        self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
