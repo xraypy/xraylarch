@@ -216,11 +216,11 @@ class XASFrame(wx.Frame):
         splitter.SplitVertically(leftpanel, panel, 1)
 
 
-    def process_normalization(self, dgroup):
-        self.get_nbpage('xasnorm')[1].process(dgroup, noskip=True)
+    def process_normalization(self, dgroup, force=True):
+        self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
 
-    def process_exafs(self, dgroup):
-        self.get_nbpage('exafs')[1].process(dgroup)
+    def process_exafs(self, dgroup, force=True):
+        self.get_nbpage('exafs')[1].process(dgroup, force=force)
 
     def get_nbpage(self, name):
         "get nb page by name"
@@ -377,7 +377,7 @@ class XASFrame(wx.Frame):
                  "Correct Over-absorption",
                  self.onCorrectOverAbsorptionData)
 
-        MenuItem(self, data_menu, "Add and Subtract Sepctra",
+        MenuItem(self, data_menu, "Add and Subtract Spectra",
                  "Calculations of Spectra",  self.onSpectraCalc)
 
         MenuItem(self, ppeak_menu, "Load Pre-edge Peak Model",

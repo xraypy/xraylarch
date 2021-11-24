@@ -546,7 +546,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
-                self.process(grp, noskip=True)
+                self.process(grp, force=True)
 
 
     def onSaveConfigBtn(self, evt=None):
@@ -584,7 +584,7 @@ class XASNormPanel(TaskPanel):
             if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
                 self.fill_form(grp)
-                self.process(grp, noskip=True)
+                self.process(grp, force=True)
 
     def onSet_XASE0(self, evt=None, value=None):
         "handle setting auto e0 / show e0"
@@ -669,10 +669,10 @@ class XASNormPanel(TaskPanel):
         self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
         self.larch_eval("{group:s}.d2normde={group:s}.d2mude/{group:s}.edge_step".format(**form))
 
-    def process(self, dgroup=None, force_mback=False, noskip=False, **kws):
+    def process(self, dgroup=None, force_mback=False, force=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
-        if self.skip_process and not noskip:
+        if self.skip_process and not force:
             return
         if dgroup is None:
             dgroup = self.controller.get_group()
@@ -902,7 +902,7 @@ class XASNormPanel(TaskPanel):
             needs_proc = needs_proc or (not hasattr(dgroup, attr))
 
         if needs_proc:
-            self.process(dgroup=dgroup, noskip=True)
+            self.process(dgroup=dgroup, force=True)
 
         y4e0 = dgroup.ydat = getattr(dgroup, dgroup.plot_yarrays[0][0], dgroup.mu)
         dgroup.plot_extras = []
@@ -1006,7 +1006,7 @@ class XASNormPanel(TaskPanel):
             if yaname in ('dnormde', 'd2normde') and not hasattr(dgroup, yaname):
                 self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
-                self.process(dgroup=dgroup, noskip=True, force_mback=True)
+                self.process(dgroup=dgroup, force=True, force_mback=True)
 
             plotcmd(dgroup.xdat, getattr(dgroup, yaname)+yoff, **popts)
             plotcmd = ppanel.oplot
