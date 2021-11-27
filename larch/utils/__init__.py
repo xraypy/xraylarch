@@ -33,7 +33,7 @@ def copy_group(group, _larch=None):
 
     class NoCopy:
         c = 'no copy'
-        
+
     for attr in dir(group):
         val = NoCopy
         try:
@@ -43,7 +43,7 @@ def copy_group(group, _larch=None):
                 val = copy.copy(getattr(group, attr))
             except:
                 val = NoCopy
-        
+
         if val != NoCopy:
             setattr(out, attr, val)
     return out
@@ -71,14 +71,16 @@ def copy_xafs_group(group, _larch=None):
         if do_copy:
             setattr(out, attr, val)
     return out
-   
 
-def isotime(t=None, with_tzone=False):
+
+def isotime(t=None, with_tzone=False, filename=False):
     if t is None:
         t = time.time()
     sout = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
     if with_tzone:
         sout = "%s-%2.2i:00" % (sout, time.timezone/3600)
+    if filename:
+        sout = sout.replace(' ', '_').replace(':', '')
     return sout
 
 def json_dump(data, filename):
