@@ -214,9 +214,7 @@ class XASFrame(wx.Frame):
                                on_change=self.onNBChanged)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)
-
         splitter.SplitVertically(leftpanel, panel, 1)
-
 
     def process_normalization(self, dgroup, force=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
@@ -227,18 +225,13 @@ class XASFrame(wx.Frame):
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
-        out = (1, self.nb.GetCurrentPage())
+        out = (0, self.nb.GetCurrentPage())
         for i, page in enumerate(self.nb.pagelist):
             if name in page.__class__.__name__.lower():
                 out = (i, page)
         return out
 
     def onNBChanged(self, event=None):
-        is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')[1]
-        for imenu, menudat in enumerate(self.menubar.GetMenus()):
-            if 'pre-edge' in menudat[1].lower():
-                self.menubar.EnableTop(imenu, is_prepeak)
-
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
@@ -394,7 +387,6 @@ class XASFrame(wx.Frame):
         self.menubar.Append(data_menu, "Data")
         self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
 
-
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
         MenuItem(self, feff_menu, "Browse Feff Calculations",
@@ -409,7 +401,6 @@ class XASFrame(wx.Frame):
                  self.onCheckforUpdates)
 
         self.menubar.Append(hmenu, '&Help')
-        # self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -667,9 +658,9 @@ class XASFrame(wx.Frame):
         DeconvolutionDialog(self, self.controller).Show()
 
     def onPrePeakLoad(self, event=None):
-        thispage = self.nb.GetCurrentPage()
-        if 'prepeak' in thispage.__class__.__name__.lower():
-            thispage.onLoadFitResult()
+        idx, peakpage = self.get_nbpage('prepeak')
+        self.nb.SetSelection(idx)
+        peakpage.onLoadFitResult()
 
     def onConfigDataFitting(self, event=None):
         pass
@@ -677,7 +668,6 @@ class XASFrame(wx.Frame):
     def showInspectionTool(self, event=None):
         app = wx.GetApp()
         app.ShowInspectionTool()
-
 
     def onAbout(self, event=None):
         info = AboutDialogInfo()
@@ -899,7 +889,7 @@ class XASFrame(wx.Frame):
             gname = self.controller.file_groups[labels[0]]
             self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
-
+        self.last_project_file = path
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   array_sel=None, overwrite=False):
@@ -1005,7 +995,6 @@ class XASViewer(LarchWxApp):
 
 def xas_viewer(**kws):
     XASViewer(**kws)
-
 
 if __name__ == "__main__":
     import argparse
