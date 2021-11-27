@@ -25,6 +25,7 @@ WX_DEBUG = False
 import larch
 from larch import Group
 from larch.math import index_of
+from larch.utils import isotime
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring)
 
@@ -114,6 +115,7 @@ class XASFrame(wx.Frame):
 
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
+        self.last_project_file = None
         self.paths2read = []
         self.current_filename = filename
 
@@ -309,9 +311,12 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save Project\tCtrl+S",
                  "Save Session to Project File",  self.onSaveProject)
 
-        MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
-                 "Export Selected Groups to Athena Project",
-                 self.onExportAthena)
+        MenuItem(self, fmenu, "&Save Project As...",
+                 "Save Session to a new Project File",  self.onSaveAsProject)
+
+        MenuItem(self, fmenu, "Export Selected Groups to Project File",
+                 "Export Selected Groups to Project File",
+                 self.onExportProject)
 
         MenuItem(self, fmenu, "Export Selected Groups to CSV",
                  "Export Selected Groups to CSV",
@@ -464,50 +469,70 @@ class XASFrame(wx.Frame):
                    delim=res.delim, _larch=self.larch)
         self.write_message(f"Exported CSV file {outfile:s}")
 
-    def onExportAthena(self, evt=None):
+    def onExportProject(self, evt=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
             groups.append(self.controller.file_groups[str(checked)])
 
         if len(groups) < 1:
-             Popup(self, "No files selected to export to Athena",
+             Popup(self, "No files selected to export to Project",
                    "No files selected")
              return
-        self.save_athena_project(groups[0], groups, prompt=True)
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups)
+
+    def get_projectfile(self):
+        prjfile = self.last_project_file
+        prompt = False
+        if prjfile is None:
+            tstamp = isotime(filename=True)[:15]
+            prjfile = f"{tstamp:s}.prj"
+            prompt = True
+        return prompt, prjfile
 
     def onSaveProject(self, evt=None):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
-            Popup(self, "No files selected to export to Athena",
-                  "No files selected")
+            Popup(self, "No files to export to Project", "No files to export")
             return
-        self.save_athena_project(groups[0], groups, prompt=True)
 
-    def save_athena_project(self, filename, grouplist, prompt=True):
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups, prompt=prompt,
+                                 warn_overwrite=False)
+
+    def onSaveAsProject(self, evt=None):
+        groups = self.controller.filelist.GetItems()
+        if len(groups) < 1:
+            Popup(self, "No files to export to Project", "No files to export")
+            return
+
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups)
+
+    def save_athena_project(self, filename, grouplist, prompt=True,
+                            warn_overwrite=True):
         if len(grouplist) < 1:
             return
         savegroups = [self.controller.get_group(gname) for gname in grouplist]
+        if prompt:
+            wcards  = 'Project Files (*.prj)|*.prj|All files (*.*)|*.*'
+            filename = FileSave(self, 'Save Groups to Project File',
+                                default_file=filename, wildcard=wcards)
+            if filename is None:
+                return
 
-        deffile = "%s_%i.prj" % (filename, len(grouplist))
-        wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Save Groups to Athena Project File',
-                           default_file=deffile, wildcard=wcards)
-
-        if outfile is None:
-            return
-        if os.path.exists(outfile):
+        if os.path.exists(filename) and warn_overwrite:
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        aprj = AthenaProject(filename=outfile, _larch=self.larch)
+        aprj = AthenaProject(filename=filename, _larch=self.larch)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp)
-
         aprj.save(use_gzip=True)
-        self.write_message("Saved project file %s" % (outfile))
+        self.write_message("Saved project file %s" % (filename))
+        self.last_project_file = filename
 
     def onConfigDataProcessing(self, event=None):
         pass
