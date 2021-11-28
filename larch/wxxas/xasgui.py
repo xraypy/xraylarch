@@ -25,6 +25,7 @@ WX_DEBUG = False
 import larch
 from larch import Group
 from larch.math import index_of
+from larch.utils import isotime
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring)
 
@@ -114,6 +115,7 @@ class XASFrame(wx.Frame):
 
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
+        self.last_project_file = None
         self.paths2read = []
         self.current_filename = filename
 
@@ -212,9 +214,7 @@ class XASFrame(wx.Frame):
                                on_change=self.onNBChanged)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)
-
         splitter.SplitVertically(leftpanel, panel, 1)
-
 
     def process_normalization(self, dgroup, force=True):
         self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
@@ -225,18 +225,13 @@ class XASFrame(wx.Frame):
     def get_nbpage(self, name):
         "get nb page by name"
         name = name.lower()
-        out = (1, self.nb.GetCurrentPage())
+        out = (0, self.nb.GetCurrentPage())
         for i, page in enumerate(self.nb.pagelist):
             if name in page.__class__.__name__.lower():
                 out = (i, page)
         return out
 
     def onNBChanged(self, event=None):
-        is_prepeak = self.nb.GetCurrentPage() is self.get_nbpage('prepeak')[1]
-        for imenu, menudat in enumerate(self.menubar.GetMenus()):
-            if 'pre-edge' in menudat[1].lower():
-                self.menubar.EnableTop(imenu, is_prepeak)
-
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
@@ -309,9 +304,12 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save Project\tCtrl+S",
                  "Save Session to Project File",  self.onSaveProject)
 
-        MenuItem(self, fmenu, "Export Selected Groups to Athena Project",
-                 "Export Selected Groups to Athena Project",
-                 self.onExportAthena)
+        MenuItem(self, fmenu, "&Save Project As...",
+                 "Save Session to a new Project File",  self.onSaveAsProject)
+
+        MenuItem(self, fmenu, "Export Selected Groups to Project File",
+                 "Export Selected Groups to Project File",
+                 self.onExportProject)
 
         MenuItem(self, fmenu, "Export Selected Groups to CSV",
                  "Export Selected Groups to CSV",
@@ -389,7 +387,6 @@ class XASFrame(wx.Frame):
         self.menubar.Append(data_menu, "Data")
         self.menubar.Append(ppeak_menu, "Pre-edge Peaks")
 
-
         MenuItem(self, feff_menu, "Browse CIF Structures, Run Feff",
                  "Browse CIF Structure, run Feff", self.onCIFBrowse)
         MenuItem(self, feff_menu, "Browse Feff Calculations",
@@ -404,7 +401,6 @@ class XASFrame(wx.Frame):
                  self.onCheckforUpdates)
 
         self.menubar.Append(hmenu, '&Help')
-        # self.menubar.Append(ppeak_menu, "PreEdgePeaks")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
 
@@ -464,50 +460,70 @@ class XASFrame(wx.Frame):
                    delim=res.delim, _larch=self.larch)
         self.write_message(f"Exported CSV file {outfile:s}")
 
-    def onExportAthena(self, evt=None):
+    def onExportProject(self, evt=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
             groups.append(self.controller.file_groups[str(checked)])
 
         if len(groups) < 1:
-             Popup(self, "No files selected to export to Athena",
+             Popup(self, "No files selected to export to Project",
                    "No files selected")
              return
-        self.save_athena_project(groups[0], groups, prompt=True)
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups)
+
+    def get_projectfile(self):
+        prjfile = self.last_project_file
+        prompt = False
+        if prjfile is None:
+            tstamp = isotime(filename=True)[:15]
+            prjfile = f"{tstamp:s}.prj"
+            prompt = True
+        return prompt, prjfile
 
     def onSaveProject(self, evt=None):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
-            Popup(self, "No files selected to export to Athena",
-                  "No files selected")
+            Popup(self, "No files to export to Project", "No files to export")
             return
-        self.save_athena_project(groups[0], groups, prompt=True)
 
-    def save_athena_project(self, filename, grouplist, prompt=True):
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups, prompt=prompt,
+                                 warn_overwrite=False)
+
+    def onSaveAsProject(self, evt=None):
+        groups = self.controller.filelist.GetItems()
+        if len(groups) < 1:
+            Popup(self, "No files to export to Project", "No files to export")
+            return
+
+        prompt, prjfile = self.get_projectfile()
+        self.save_athena_project(prjfile, groups)
+
+    def save_athena_project(self, filename, grouplist, prompt=True,
+                            warn_overwrite=True):
         if len(grouplist) < 1:
             return
         savegroups = [self.controller.get_group(gname) for gname in grouplist]
+        if prompt:
+            wcards  = 'Project Files (*.prj)|*.prj|All files (*.*)|*.*'
+            filename = FileSave(self, 'Save Groups to Project File',
+                                default_file=filename, wildcard=wcards)
+            if filename is None:
+                return
 
-        deffile = "%s_%i.prj" % (filename, len(grouplist))
-        wcards  = 'Athena Projects (*.prj)|*.prj|All files (*.*)|*.*'
-
-        outfile = FileSave(self, 'Save Groups to Athena Project File',
-                           default_file=deffile, wildcard=wcards)
-
-        if outfile is None:
-            return
-        if os.path.exists(outfile):
+        if os.path.exists(filename) and warn_overwrite:
             if wx.ID_YES != Popup(self,
                                   "Overwrite existing Project File?",
                                   "Overwrite existing file?", style=wx.YES_NO):
                 return
 
-        aprj = AthenaProject(filename=outfile, _larch=self.larch)
+        aprj = AthenaProject(filename=filename, _larch=self.larch)
         for label, grp in zip(grouplist, savegroups):
             aprj.add_group(grp)
-
         aprj.save(use_gzip=True)
-        self.write_message("Saved project file %s" % (outfile))
+        self.write_message("Saved project file %s" % (filename))
+        self.last_project_file = filename
 
     def onConfigDataProcessing(self, event=None):
         pass
@@ -642,9 +658,9 @@ class XASFrame(wx.Frame):
         DeconvolutionDialog(self, self.controller).Show()
 
     def onPrePeakLoad(self, event=None):
-        thispage = self.nb.GetCurrentPage()
-        if 'prepeak' in thispage.__class__.__name__.lower():
-            thispage.onLoadFitResult()
+        idx, peakpage = self.get_nbpage('prepeak')
+        self.nb.SetSelection(idx)
+        peakpage.onLoadFitResult()
 
     def onConfigDataFitting(self, event=None):
         pass
@@ -652,7 +668,6 @@ class XASFrame(wx.Frame):
     def showInspectionTool(self, event=None):
         app = wx.GetApp()
         app.ShowInspectionTool()
-
 
     def onAbout(self, event=None):
         info = AboutDialogInfo()
@@ -874,7 +889,7 @@ class XASFrame(wx.Frame):
             gname = self.controller.file_groups[labels[0]]
             self.ShowFile(groupname=gname, process=True, plot=True)
         self.write_message("read %d datasets from %s" % (len(namelist), path))
-
+        self.last_project_file = path
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   array_sel=None, overwrite=False):
@@ -980,7 +995,6 @@ class XASViewer(LarchWxApp):
 
 def xas_viewer(**kws):
     XASViewer(**kws)
-
 
 if __name__ == "__main__":
     import argparse
