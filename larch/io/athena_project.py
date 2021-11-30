@@ -5,6 +5,7 @@ Code to read and write Athena Project files
 """
 
 import os
+import io
 import sys
 import time
 import json
@@ -20,9 +21,12 @@ from larch import Group
 from larch import __version__ as larch_version
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
 from xraydb import guess_edge
+import asteval
+
+hexopen = '\\x{'
+hexclose = '}'
 
 alist2json = str.maketrans("();'\n", "[] \" ")
-
 
 def plarray2json(text):
     return json.loads(text.split('=', 1)[1].strip().translate(alist2json))
@@ -269,7 +273,133 @@ def clean_fft_params(grp):
     return grp
 
 
+def text2list(text):
+    key, txt = [a.strip() for a in text.split('=', 1)]
+    if txt.endswith('\n'):
+        txt = txt[:-1]
+    if txt.endswith(';'):
+        txt = txt[:-1]
+    txt = txt.replace('=>', ':').replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+    # re-cast unicode stored by perl (\x{e34} -> 0xe4)
+    if hexopen in txt:
+        w = []
+        k = 0
+        for i in range(len(txt)-3):
+            if txt[i:i+3] == hexopen:
+                j = txt[i:i+8].find(hexclose)
+                if j > 0:
+                    w.extend((txt[k:i], chr(int('0x' + txt[i+3:i+j], base=16))))
+                    k = i+j+1
+        w.append(txt[k:])
+        txt = ''.join(w)
+    return txt
+
+
 def parse_perlathena(text, filename):
+    """
+    parse old athena file format to Group of Groups
+    """
+    aout = io.StringIO()
+    aeval = asteval.Interpreter(minimal=True, writer=aout, err_writer=aout)
+
+    lines = text.split('\n')
+    athenagroups = []
+    raw = {'name':''}
+    vline = lines.pop(0)
+    if  "Athena project file -- " not in vline:
+        raise ValueError("%s '%s': invalid Athena File" % (ERR_MSG, filename))
+    major, minor, fix = '0', '0', '0'
+    if 'Demeter' in vline:
+        try:
+            vs = vline.split("Athena project file -- Demeter version")[1]
+            major, minor, fix = vs.split('.')
+        except:
+            raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
+    else:
+        try:
+            vs = vline.split("Athena project file -- Athena version")[1]
+            major, minor, fix = vs.split('.')
+        except:
+            raise ValueError("%s '%s': cannot read version" % (ERR_MSG, filename))
+
+    header = [vline]
+    journal = ['']
+    is_header = True
+    ix = 0
+    for t in lines:
+        ix += 1
+        if t.startswith('#') or len(t) < 2 or 'undef' in t:
+            if is_header:
+                header.append(t)
+            continue
+        is_header = False
+        key = t.split(' ')[0].strip()
+        key = key.replace('$', '').replace('@', '').replace('%', '').strip()
+        if key == 'old_group':
+            raw['name'] = aeval(text2list(t))
+        elif key == '[record]':
+            athenagroups.append(raw)
+            raw = {'name':''}
+        elif key == 'journal':
+            journal = aeval(text2list(t))
+            if len(aeval.error) > 0:
+                print(f" warning: could not read journal from '{filename:s}'")
+                journal = ['']
+        elif key == 'args':
+            raw['args'] = aeval(text2list(t))
+        elif key == 'xdi':
+            raw['xdi'] = t
+        elif key in ('x', 'y', 'i0', 'signal', 'stddev'):
+            raw[key] = np.array([float(x) for x in aeval(text2list(t))])
+        elif key in ('1;', 'indicator', 'lcf_data', 'plot_features'):
+            pass
+        else:
+            print(" do not know what to do with key '%s' at '%s'" % (key, raw['name']))
+
+    out = Group()
+    out.__doc__ = """XAFS Data from Athena Project File %s""" % (filename)
+    out.journal = '\n'.join(journal)
+    out.group_names = []
+    out.header = '\n'.join(header)
+    for dat in athenagroups:
+        label = dat.get('name', 'unknown')
+        this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
+                     bkg_params=Group(),
+                     fft_params=Group(),
+                     athena_params=Group())
+        if 'i0' in dat:
+            this.i0 = dat['i0']
+        if 'signal' in dat:
+            this.signal = dat['signal']
+        if 'stddev' in dat:
+            this.stddev = dat['stddev']
+        if 'args' in dat:
+            for i in range(len(dat['args'])//2):
+                key = dat['args'][2*i]
+                val = dat['args'][2*i+1]
+                if key.startswith('bkg_'):
+                    setattr(this.bkg_params, key[4:], asfloat(val))
+                elif key.startswith('fft_'):
+                    setattr(this.fft_params, key[4:], asfloat(val))
+                elif key == 'label':
+                    label = this.label = val
+                elif key in ('valence', 'lasso_yvalue',
+                             'epsk', 'epsr', 'importance'):
+                    setattr(this, key, asfloat(val))
+                elif key in ('atsym', 'edge', 'provenance'):
+                    setattr(this, key, val)
+                else:
+                    setattr(this.athena_params, key, asfloat(val))
+        this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, dat['name'])
+        name = fix_varname(label)
+        if name.startswith('_'):
+            name = 'd' + name
+        setattr(out, name, this)
+        out.group_names.append(name)
+    return out
+
+
+def parse_perlathena_old(text, filename):
     """
     parse old athena file format to Group of Groups
     """
@@ -578,7 +708,6 @@ class AthenaProject(object):
         buff.extend(["", "@journal = {};", "", "1;", "", "",
                      "# Local Variables:", "# truncate-lines: t",
                      "# End:", ""])
-
         fopen =open
         if use_gzip:
             fopen = GzipFile
@@ -641,14 +770,14 @@ class AthenaProject(object):
 
         # decode JSON or Perl format
         data = None
-        try:
-            data = parse_jsonathena(text, self.filename)
-        except Exception:
-            #  try as perl format
+        if  '____header' in text[:500]:
             try:
-                data = parse_perlathena(text, self.filename)
+                data = parse_jsonathena(text, self.filename)
             except Exception:
-                print("Not perl-athena ", sys.exc_info())
+                pass
+
+        if data is None:
+            data = parse_perlathena(text, self.filename)
 
         if data is None:
             raise ValueError("cannot read file '%s' as Athena Project File" % (self.filename))
