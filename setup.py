@@ -155,8 +155,7 @@ if INSTALL:
 
 # now we have all the data files, so we can run setup
 setup(name = 'xraylarch',
-      use_scm_version={'write_to': 'larch/version.py',
-                       'version_scheme': 'post-release'},
+      use_scm_version={'version_scheme': 'post-release'},
       setup_requires=['setuptools_scm'],
       # version = __version__,
       author = 'Matthew Newville and the X-rayLarch Development Team',
