@@ -1,8 +1,6 @@
 from larch.io import read_athena
 from glob import glob
 
-filelist = glob('*.prj')
-
 passed = 0
 for fname in sorted(glob('*.prj')):
     print("### ", fname)
