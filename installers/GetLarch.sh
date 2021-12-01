@@ -21,12 +21,15 @@ logfile=GetLarch.log
 cforge_pkgs="numpy=>1.18 scipy=>1.6 matplotlib=>3.3 scikit-image scikit-learn pymatgen pycifrw"
 
 ## set list of pip packages to install from pypi
-pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai xraylarch"
+pip_pkgs="wxmplot wxutils lmfit asteval pyshortcuts pyfai"
 
 unset CONDA_EXE CONDA_PYTHON_EXE CONDA_PREFIX PROJ_LIB
 
+
 with_wx=1
 with_tomopy=1
+use_devel=0
+
 ## get command line options
 for opt ; do
   option=''
@@ -44,6 +47,7 @@ for opt ; do
     prefix)        prefix=$optarg ;;
     with-tomopy)   with_tomopy=1 ;;
     no-tomopy)     with_tomopy=0 ;;
+    devel)         use_devel=1 ;;
     with-wx)       with_wx=1 ;;
     no-wx)         with_wx=0 ;;
     -h | h | -help | --help | help) cat<<EOF
@@ -52,6 +56,7 @@ Options:
   --prefix=PREFIX             base directory for installation [$prefix]
   --with-wx  / --no-wx        include / omit wxPython from Anaconda Python [with]
   --with-tomopy / --no-tompy  include / omit tomopy from Anaconda Python   [with]
+  --devel                     install development branch of xraylarch instead of latest release [no]
 EOF
     exit 0
     ;;
@@ -80,6 +85,11 @@ fi
 
 if [ $with_tomopy == 1 ]; then
     cforge_pkgs="$cforge_pkgs tomopy"
+fi
+
+larchurl='xraylarch'
+if [ $use_devel == 1 ]; then
+    larchurl='git+https://github.com/xraypy/xraylarch.git'
 fi
 
 echo "##############  " | tee $logfile
@@ -120,9 +130,13 @@ echo "#> $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkg
 $prefix/bin/conda install --force-reinstall -yc conda-forge $cforge_pkgs | tee -a $logfile
 
 ## pip install of dependencies and Larch
-echo "##Installing xraylarch and dependencies from PyPI"  | tee -a $logfile
+echo "##Installing dependencies from PyPI"  | tee -a $logfile
 echo "#> $prefix/bin/pip install $pip_pkgs"| tee -a $logfile
 $prefix/bin/pip install $pip_pkgs | tee -a $logfile
+
+echo "##Installing xraylarch as 'pip install $larchurl'"  | tee -a $logfile
+echo "#> $prefix/bin/pip install $larchurl"| tee -a $logfile
+$prefix/bin/pip install $larchurl | tee -a $logfile
 
 ## create desktop shortcuts
 echo "## Creating desktop shortcuts"
