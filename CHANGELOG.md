@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.9.57 - 2021-MM-DD]
+## [0.9.57 - 2021-12-02]
 ### Added
  - Read RIXS files from BM16 at ESRF.
  - Option `--devel` in `GetLarch.sh` to install from source.
@@ -15,11 +15,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - Module `rixsdata` moved from `larch.qtrixs` to `larch.io`
  - Force UTF8 encoding in `read_ascii`
  - xas_viewer
-   - `File->Save` overwrites by default. 
+   - `File->Save` overwrites by default.
+   - Better deglitching dialog, including viewing data as chi(E).
+   - Loading a Peak Model is now allowed at any time.
+   - Default Project filenames are taken from timestamp.
 
 ### Fixed
   - Problem with yaml load in `GetLarch.sh`
-  - Athena files reading created with Demeter v0.9.20/0.9.26
+  - Problem in interpolation with nearly repeated x values
+  - Messages reporting progress when processing XRF Maps
+  - Reading Athena Project files with non-ASCII characters
+
 
 ## [0.9.56 - 2021-10-20]
 [Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-October/010319.html)
@@ -59,7 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - XAS viewer
   - Add GUI Browser for CIF Files from American Mineralogist Crystal Structure Database
   - Code for converting CIF files to feff6/8 input files, GUI form to run Feff, organize results in users .larch/feff folder
-  - Feff Path Browser for import Feff.dat files from .larch/feff 
+  - Feff Path Browser for import Feff.dat files from .larch/feff
   - Feffit Tab added to XAS Viewer for (1 data set) Feff Fitting, with history  of fits, saving of fit script.
   - EXAFS Panel can show chi(q) data.
 
@@ -80,4 +86,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - import multiple scans from a Spec file.
 - There are binary installers for Windows, MacOSX, and Linux.
 - "GetLarch.sh" and "GetLarch.bat" scripts.
-
