@@ -7,9 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.9.57 - 2021-MM-DD]
 ### Added
  - Read RIXS files from BM16 at ESRF.
+ - Option `--devel` in `GetLarch.sh` to install from source.
+ - xas_viewer
+   - `File->Save as`
 
 ### Changed
  - Module `rixsdata` moved from `larch.qtrixs` to `larch.io`
+ - Force UTF8 encoding in `read_ascii`
+ - xas_viewer
+   - `File->Save` overwrites by default. 
+
+### Fixed
+  - Problem with yaml load in `GetLarch.sh`
+  - Athena files reading created with Demeter v0.9.20/0.9.26
 
 ## [0.9.56 - 2021-10-20]
 [Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-October/010319.html)
