@@ -2,7 +2,10 @@
 """
    feffit sums Feff paths to match xafs data
 """
-from collections import Iterable
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 from copy import copy, deepcopy
 from functools import partial
 import numpy as np
