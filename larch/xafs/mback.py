@@ -118,7 +118,6 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     if e0 is None or e0 < energy[1] or e0 > energy[-2]:
         e0 = find_e0(energy, mu, group=group)
 
-    print(e0)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
 
