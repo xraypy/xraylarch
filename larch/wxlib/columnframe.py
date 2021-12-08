@@ -785,6 +785,7 @@ class ColumnDataFileFrame(wx.Frame) :
             workgroup.xdat = 1.0*np.arange(npts)
         else:
             workgroup.xdat = 1.0*rdata[ix, :]
+        self.onUpdate()
 
         self.monod_val.Disable()
         if self.datatype.GetStringSelection().strip().lower() == 'raw':
