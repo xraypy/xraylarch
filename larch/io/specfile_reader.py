@@ -23,7 +23,7 @@ import collections
 import numpy as np
 import h5py
 from silx.io.utils import open as silx_open
-from silx.io.convert import write_to_h5, _is_commonh5_group
+from silx.io.convert import write_to_h5
 
 # from scipy.interpolate import interp1d
 # from scipy.ndimage import map_coordinates
@@ -282,7 +282,7 @@ class DataSourceSpecH5(object):
              scan address
         """
         if scan is not None:
-            self.set_scan(scan)        
+            self.set_scan(scan)
         if self._scangroup is None:
             raise AttributeError(
                 "Group/Scan not selected -> use 'self.set_scan()' first"
@@ -308,7 +308,7 @@ class DataSourceSpecH5(object):
 
     def set_scan(self, scan, scan_idx=1, group_url=None, scan_kws=None):
         """Select a given scan
-        
+
         Parameters
         ----------
         scan : int or str
@@ -631,7 +631,7 @@ class DataSourceSpecH5(object):
         Parameters
         ----------
         scan  : str, int, or None
-             scan address 
+             scan address
         datatype : str
             type of data, e.g. 'raw', 'xas'
 
@@ -927,8 +927,8 @@ class DataSourceSpecH5(object):
                 _scangroup = self._scangroup
                 if _scangroup is None:
                     continue
-                if not _is_commonh5_group(_scangroup):
-                    self._logger.error("scan '%s' is not commonh5 group", scn)
+                if not isinstance(_scangroup, h5py.File):
+                    self._logger.error("scan '%s' is not hdf5 File", scn)
                 if group is not None:
                     _h5path = f"{h5path}{group}/{self._scan_str}/"
                 else:
