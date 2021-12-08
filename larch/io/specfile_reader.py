@@ -927,8 +927,6 @@ class DataSourceSpecH5(object):
                 _scangroup = self._scangroup
                 if _scangroup is None:
                     continue
-                if not isinstance(_scangroup, h5py.File):
-                    self._logger.error("scan '%s' is not hdf5 File", scn)
                 if group is not None:
                     _h5path = f"{h5path}{group}/{self._scan_str}/"
                 else:
