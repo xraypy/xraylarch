@@ -94,7 +94,7 @@ class GenericBeamlineData:
         for cchars in ('#L', '#C', '#', 'C'):
             if lastline.startswith(cchars):
                 lastline = lastline[len(cchars):]
-        for badchar in ',#@%&"\'':
+        for badchar in '\t,#@%&"\'':
             lastline = lastline.replace(badchar, ' ')
         if len(self.headerlines) < 2:
             try:
