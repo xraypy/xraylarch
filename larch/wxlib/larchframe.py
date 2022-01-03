@@ -267,19 +267,17 @@ class LarchPanel(wx.Panel):
         pos = self.input.GetSelection()
         ctrl = event.ControlDown()
 
-        # really, the order here is important:
-        # 1. return sends to ValidateEntry
         if key == wx.WXK_RETURN and len(entry) > 0:
             pass
-        if key == wx.WXK_UP:
-            self.hist_mark = max(0, self.hist_mark-1)
-            wx.CallAfter(self.set_input_text, self.hist_buff[self.hist_mark])
-        elif key == wx.WXK_DOWN:
-            self.hist_mark += 1
-            if self.hist_mark >= len(self.hist_buff):
-                self.input.SetValue('')
+        if key in (wx.WXK_UP, wx.WXK_DOWN):
+            if key == wx.WXK_UP:
+                self.hist_mark = max(0, self.hist_mark-1)
             else:
+                self.hist_mark += 1
+            try:
                 wx.CallAfter(self.set_input_text, self.hist_buff[self.hist_mark])
+            except IndexError:
+                wx.CallAfter(self.set_input_text, '')
         event.Skip()
 
     def set_input_text(self, text):
@@ -293,7 +291,6 @@ class LarchPanel(wx.Panel):
             if len(tline.strip()) > 0:
                 self.hist_buff.append(tline)
                 self.hist_mark = len(self.hist_buff)
-
 
 
 class LarchFrame(wx.Frame):
