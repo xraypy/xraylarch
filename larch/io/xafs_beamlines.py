@@ -35,7 +35,9 @@ def guess_beamline(header=None):
     """
     guess beamline data class used to parse headers from header lines
     """
-    if header is not None and len(header) > 1:
+    if header is None:
+        header = ['']
+    if len(header) > 1:
         line1 = header[0].lower()
         full = '\n'.join(header).lower()
 
@@ -82,15 +84,16 @@ class GenericBeamlineData:
 
     def __init__(self, headerlines=None):
         if headerlines is None:
-            headerlines = []
+            headerlines = ['']
         self.headerlines = list(headerlines)
 
     def beamline_matches(self):
         return len(self.headerlines) > 1
 
     def get_array_labels(self, ncolumns=None):
-
-        lastline = self.headerlines[-1].strip()
+        lastline = "# "
+        if len(self.headerlines) > 1:
+            lastline = self.headerlines[-1].strip()
         for cchars in ('#L', '#C', '#', 'C'):
             if lastline.startswith(cchars):
                 lastline = lastline[len(cchars):]
@@ -104,14 +107,21 @@ class GenericBeamlineData:
         else:
             return self._set_labels(lastline.split(), ncolumns=ncolumns)
 
-    def _set_labels(self, labels, ncolumns=None):
+    def _set_labels(self, inlabels, ncolumns=None):
         """
         final parsing, cleaning, ensuring number of columns is satisfied
         """
-        labels = [fix_varname(word.strip().lower()) for word in labels]
+        labels = []
+        for i, word in enumerate(inlabels):
+            word = word.strip().lower()
+            if len(word) > 0:
+                word = fix_varname(word)
+            else:
+                word = 'col%d' % (i+1)
+            labels.append(word)
         for i, lab in enumerate(labels):
             if lab in labels[:i]:
-                labels[i] = lab + '_col%d' % i
+                labels[i] = lab + '_col%d' % (i+1)
 
         if ncolumns is not None and len(labels) < ncolumns:
             for i in range(len(labels), ncolumns):
@@ -292,7 +302,6 @@ class APSXSD_BeamlineData(GenericBeamlineData):
             elif mode == 'found legend':
                 if len(line) < 2:
                     break
-                # print("Label Line : ", line)
                 if ')' in line:
                     if line.startswith('#'):
                         line = line[1:].strip()

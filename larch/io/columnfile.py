@@ -383,7 +383,7 @@ def set_array_labels(group, labels=None, simple_labels=False,
     # generating array `tlabels` for test labels
     #
     # generate simple column labels, used as backup
-    clabels = ['col%i' % (i+1) for i in range(ncols)]
+    clabels = ['col%d' % (i+1) for i in range(ncols)]
 
     if isinstance(labels, str):
         labels = labels.split()
@@ -481,7 +481,7 @@ def write_ascii(filename, *args, commentchar='#', label=None, header=None,
         buff.append('%s %s' % (com, s))
     buff.append('%s---------------------------------'% com)
     if label is None:
-        label = (' '*13).join(['col%i' % (i+1) for i in range(len(arrays))])
+        label = (' '*13).join(['col%d' % (i+1) for i in range(len(arrays))])
     buff.append('#  %s' % label)
 
     arrays = np.array(arrays)
