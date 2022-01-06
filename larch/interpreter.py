@@ -128,12 +128,14 @@ class Interpreter:
             setattr(builtingroup, sym, __builtins__[sym])
 
         for sym in builtins.from_numpy:
-            try:
-                setattr(mathgroup, sym, getattr(numpy, sym))
-            except AttributeError:
-                pass
-        for fname, sym in list(builtins.numpy_renames.items()):
-            setattr(mathgroup, fname, getattr(numpy, sym))
+            val = getattr(numpy, sym, None)
+            if val is not None:
+                setattr(mathgroup, sym, val)
+
+        for fname, sym in builtins.numpy_renames.items():
+            val = getattr(numpy, sym, None)
+            if val is not None:
+                setattr(mathgroup, fname, val)
 
         for name, value in builtins.constants.items():
             setattr(mathgroup, name, value)
