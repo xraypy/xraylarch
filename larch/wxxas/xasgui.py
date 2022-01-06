@@ -118,7 +118,7 @@ class XASFrame(wx.Frame):
         self.last_project_file = None
         self.paths2read = []
         self.current_filename = filename
-
+        self.extra_sums = None
         title = "Larch XAS GUI: XAS Visualization and Analysis"
 
         self.larch_buffer = parent
@@ -824,7 +824,7 @@ class XASFrame(wx.Frame):
                                last_array_sel = self.last_array_sel_col,
                                read_ok_cb=self.onRead_OK)
 
-    def onReadSpecfile_OK(self, script, path, scanlist, array_sel=None):
+    def onReadSpecfile_OK(self, script, path, scanlist, array_sel=None, extra_sums=None):
         """read groups from a list of scans from a specfile"""
         self.larch.eval("_specfile = specfile('{path:s}')".format(path=path))
         dgroup = None
@@ -852,7 +852,7 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path,
                                           scan=scan))
             dgroup = self.install_group(gname, displayname,
-                                        process=True, plot=False)
+                                        process=True, plot=False, extra_sums=extra_sums)
         cur_panel.skip_plotting = False
 
         if first_group is not None:
@@ -860,7 +860,7 @@ class XASFrame(wx.Frame):
         self.write_message("read %d datasets from %s" % (len(scanlist), path))
 
 
-    def onReadAthenaProject_OK(self, path, namelist):
+    def onReadAthenaProject_OK(self, path, namelist, extra_sums=None):
         """read groups from a list of groups from an athena project file"""
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
@@ -881,7 +881,8 @@ class XASFrame(wx.Frame):
             label = getattr(this, 'label', gname)
             labels.append(label)
             self.larch.eval(script.format(group=gid, prjgroup=gname))
-            dgroup = self.install_group(gid, label, process=True, plot=False)
+            dgroup = self.install_group(gid, label, process=True, plot=False,
+                                        extra_sums=extra_sums)
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
 
@@ -892,7 +893,7 @@ class XASFrame(wx.Frame):
         self.last_project_file = path
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
-                  array_sel=None, overwrite=False):
+                  array_sel=None, overwrite=False, extra_sums=None):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
@@ -912,7 +913,8 @@ class XASFrame(wx.Frame):
         self.larch.eval(script.format(group=groupname, path=path))
         if array_sel is not None:
             self.last_array_sel_col = array_sel
-        self.install_group(groupname, filename, overwrite=overwrite)
+        self.install_group(groupname, filename, overwrite=overwrite,
+                           extra_sums=extra_sums)
 
         # check if rebin is needed
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -952,7 +954,7 @@ class XASFrame(wx.Frame):
             RebinDataDialog(self, self.controller).Show()
 
     def install_group(self, groupname, filename, overwrite=False,
-                      process=True, rebin=False, plot=True):
+                      process=True, rebin=False, plot=True, extra_sums=None):
         """add groupname / filename to list of available data groups"""
 
         try:
@@ -970,6 +972,11 @@ class XASFrame(wx.Frame):
 
         cmds = ["%s.groupname = '%s'" % (groupname, groupname),
                "%s.filename = '%s'" % (groupname, filename)]
+
+        if extra_sums is not None:
+            self.extra_sums = extra_sums
+        if len(self.extra_sums) > 0:
+            print("Add command to do extra_sums " , self.extra_sums)
 
         self.larch.eval('\n'.join(cmds))
 
