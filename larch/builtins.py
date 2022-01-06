@@ -156,7 +156,7 @@ from_numpy = ('ComplexWarning', 'Inf', 'NAN', 'abs', 'absolute', 'add',
 numpy_renames = {'ln':'log', 'asin':'arcsin', 'acos':'arccos',
                  'atan':'arctan', 'atan2':'arctan2', 'atanh':'arctanh',
                  'acosh':'arccosh', 'asinh':'arcsinh', 'npy_save': 'save',
-                 'npy_load': 'load', 'npy_loads': 'loads', 'npy_copy': 'copy'}
+                 'npy_load': 'load', 'npy_copy': 'copy'}
 
 constants = {}
 for pconst_name in ('PLANCK_HC', 'AVOGADRO', 'AMU',
