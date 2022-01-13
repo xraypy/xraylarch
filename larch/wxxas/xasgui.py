@@ -975,7 +975,7 @@ class XASFrame(wx.Frame):
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
-            print("## need to handle extra_sums " , self.extra_sums)
+            # print("## need to handle extra_sums " , self.extra_sums)
 
         self.larch.eval('\n'.join(cmds))
 
