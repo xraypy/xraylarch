@@ -4,6 +4,7 @@ from collections import namedtuple
 from functools import partial
 import numpy as np
 from lmfit import Parameters, minimize
+from matplotlib.ticker import FuncFormatter
 
 import wx
 
@@ -1229,9 +1230,13 @@ clear undo history''')
 
         plotstr = self.wids['plotopts'].GetStringSelection()
         plottype = DEGLITCH_PLOTS[plotstr]
+        xlabel=plotlabels.energy
         if plottype in ('chie', 'chiew'):
             xmin = self.dgroup.e0
-        opts = dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+            xlabel = xlabel=plotlabels.ewithk
+
+        opts = dict(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
+                    xlabel=xlabel, title='De-glitching:\n %s' % fname)
 
         ylabel =  {'mu': plotlabels.mu,
                    'norm': plotlabels.norm,
@@ -1241,8 +1246,8 @@ clear undo history''')
 
 
         ppanel.plot(xdat, ydat, zorder=10, marker=None,
-                    linewidth=3, title='De-glitching:\n %s' % fname,
-                    label='original', xlabel=plotlabels.energy,
+                    linewidth=3,
+                    label='original',
                     ylabel=ylabel, **opts)
 
         if len(self.xmasks) > 1:
@@ -1251,16 +1256,20 @@ clear undo history''')
                          marker='o', markersize=4, linewidth=2.0,
                          label='current', show_legend=True, **opts)
 
-        #ax = ppanel.fig.get_axes()[0]
-        # zlims = {ax: [xmin, xmax, ymin, ymax]}
-        # # ppanel.conf.zoom_lims.append(zlims)
-        # ppanel.set_viewlimits()
-        # ppanel.canvas.draw()
+
+        def ek_formatter(x, pos):
+            ex = float(x) - self.dgroup.e0
+            s = '' if ex < 0 else '\n[%.1f]' % (etok(ex))
+            return r"%1.4g%s" % (x, s)
+
+        if plottype in ('chie', 'chiew'):
+            ppanel.axes.xaxis.set_major_formatter(FuncFormatter(ek_formatter))
+            ppanel.canvas.draw()
+
         self.history_message.SetLabel('%i items in history' % (len(self.xmasks)-1))
 
     def GetResponse(self):
         raise AttributError("use as non-modal dialog!")
-
 
 
 SPECCALC_SETUP = """#From SpectraCalc dialog:
