@@ -29,44 +29,230 @@ Downloading and Installation
 .. _Larch Github Pages: https://github.com/xraypy/xraylarch
 .. _Larch Github Issues: https://github.com/xraypy/xraylarch/issues
 
-The latest release version of Larch is |release|.
+The latest release version of Larch is |release|.  Larch is in active and
+continuing development.  The goal is to release versions every six months,
+but we don't use a strict schedule, and typically release more often than
+that.
+
+There are three ways to install Larch. Which of these is right for you will
+depend on your operating system and your familiarity with the Python
+programming language and environment:
+
+   1. :ref:`install-binary`.  Use these to get started with XAS Viewer or
+      other Larch GUI applications, or if you are not familiar with Python.
+   2. :ref:`install-scripts`. Use these if your comfortable with the
+      command-line or want to customize your installation.
+   3. :ref:`install-conda`. Use this if you already have an Anaconda Python
+      environment that you want to use.
+
+There should not be any difference in the resulting code or packages when
+using these different methods.  One is not "more right" or even "more
+preferred".  In short, use the Binary installer unless you know that you
+want to install into an existing Python environment.  If that doesn't work,
+try the installation script.
+
+.. _install-binary:
+
+Installing from a Binary installers
+=====================================================
+
+.. _installers_table:
+
+**Table of Larch binary installers**
+
+  +---------------------+------------------------+-----------------------------+
+  | Operating System    | Binary Installer File  | Installation Notes          |
+  +=====================+========================+=============================+
+  | Windows (64 bit)    | `Larch for Windows`_   | :ref:`Notes <install-win>`  |
+  +---------------------+------------------------+-----------------------------+
+  | Mac OSX (64 bit)    | `Larch for MacOSX`_    | :ref:`Notes <install-mac>`  |
+  +---------------------+------------------------+-----------------------------+
+  | Linux (64 bit)      | `Larch for Linux`_     | :ref:`Notes <install-lin>`  |
+  +---------------------+------------------------+-----------------------------+
+
+Binary installers for Windows, Mac OSX, and Linux, are available at
+`Larch Binary Installers`_.  These are fairly large (400 to 600 Mb files)
+self-contained files that will install a complete Anaconda Python
+environment with all of libraries needed by Larch.  Normally, this
+installation will create a folder called `xraylarch` in your home folder --
+see platform-specific notes below.
+
 
 .. note::
-   
-   Larch is in active and continuing development. The goal is to release a new
-   version every six months or so, but without specific timelines. **The
-   packaging and installation process also changes rather frequently.** We try
-   to keep the instruction here up-to-date. Your feedback, bug reports, and
-   patience are greatly appreciated.
 
+   There can be no spaces in your username or the path in which Larch is installed.
+
+Installing with these installers should write to files only to folders
+owned by the user account. It should not require administrative privilege and
+should not interfere with any thing else on your system (such as system
+Python).
+
+These installers will also create a folder called `Larch` on your desktop
+that contains links (or shortcuts or Apps) to many of the Larch GUI
+applications listed in :ref:`Table of Larch Applications and Programs
+<larch_app_table>`.  This includes tools for X-ray Absorption spectroscopy,
+X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
+
+.. _install-win:
+
+Windows Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Windows, download the `Larch for Windows`_ binary installer above and run it to
+install Larch.  This will be installed to ``C:\Users\<YourName>\xraylarch`` for most
+individual Windows installations or to
+``C:\Users\<YourName>\AppData\Local\xraylarch`` if your machine is part of a
+Windows Workgroup or Domain.
+
+.. note:   If you get prompted for an administrative password during the installation process, you
+   should make sure you are installing to a folder that is writable by the user.
+
+
+Alternatively you can download the `GetLarch.bat`_ script, and run that by double-clicking
+on it. This will download, install, and configure the Larch package, with a result that
+is nearly identical to the binary installer.
+
+
+.. _install-mac:
+
+MacOS Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+For Mac OS, download the `Larch for MacOSX`_ package installer above and click it to
+install Larch.  There are two important notes:
+
+.. note::
+
+   With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party packages by default.
+   You may need to go into General Settings part of the **Security & Privacy** section of **System
+   Preferences** and explicitly allow this package to be installed. You probably will be prompted for
+   an Administrative password.
+
+.. note::
+
+   You need to explicitly click on "Install only for me" during the installation process.  If you
+   get prompted for an Administrative password by the installer, go back and explicitly choose
+   "Install only for me".
+
+Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
+session (Applications->Utilities->Terminal). This will download, install, and configure
+the Larch package, with a result that is nearly identical to the binary installer.  If you
+run into any problems with permissions or administrative privileges or "unauthorized
+application" with the package installer, running this installer script actually avoids all
+of those issues since your user account will simply be running the commands to write files
+to your home directory.
+
+
+.. _install-lin:
+
+Linux Notes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. warning::
 
-   Larch has a relatively large number of **dependencies** that currently (January
-   2022) are not fully handled by the standard Python package manager `Pip`_.
-   For this reason, we use a `Conda`_ environment for installing them.
+   As of this writing (January, 2022), there are several reports of the
+   binary installation not working on Linux.  We're looking into this.
 
-   The dependencies that are currently not pip-installable are:
+For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
+move to the download folder (typically `$HOME/Downloads`) and run::
 
-   * `pymatgen`: needed for handling CIF files and running FEFF calculations.
-   * `wxpython`: needed for all plotting, graphics and GUI applications.
-   * `tomopy`: needed for reconstructing X-ray fluorescence tomography.
-   * `python.app`: needed (from conda-forge) for any Anaconda-based Python
-     on MacOSX (but no other systems).
-   * `pyepics`, `epicsapps`: needed to interact with Epics control system.
+    ~> bash ./xraylarch-2021-07-Linux-x86_64.sh
 
-   None of these are strictly needed for using Larch as a library for XAFS analysis.
+Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
+actually appear on your desktop depends on the Windowing system used:  they will appear on the
+desktop with KDE and many other systems, but not with Gnome.  Clickable icons should also show up
+in the Applications selection of the "Start Menu" or Applications list.
 
+Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
+session. This will download, install, and configure the Larch package, with a result that
+is nearly identical to the binary installer.
+
+Larch uses a relatively large number of Python packages (**dependencies**),
+and these also evolve.  We try keep up with the latest versions of these
+packages, but changes in those sometimes complicate the installation of
+Larch.  We also try to keep these installation instructions up-to-date, but
+strategies we use may change (slowly, we hope). Your feedback, bug reports,
+and patience are greatly appreciated.
+
+
+
+.. _install-scripts:
+
+Installing with the `GetLarch.sh` and `GetLarch.bat` scripts
+======================================================================
+
+This method is recommended for those who are relatively comfortable using a
+command-line, and is helpful for debugging cases where the binary installer
+may not have worked.  The approach here is basically to run a script that
+follows the steps that the binary installer should follow, but is likely to
+give more useful error messages if something goes wrong.  On Linux and
+MacOS, there are also command-line options.
+
+To install with this method, download and execute one of the following:
+
+   - `GetLarch.sh`_ for Linux and Mac OSX
+   - `GetLarch.bat`_ for Windows
+
+Open a Shell or Terminal, find the location of this script and run that.
+On Windows, that would be launching the `cmd` program, and doing something
+like::
+
+   cd C:\Users\<YOURNAME>\Downloads
+   GetLarch
+
+
+On MacOS on Linux, open a Terminal (from Applications -> Utilities on
+MacOS), and then type::
+
+  cd Downloads
+  sh GetLarch.sh
+
+
+If a script fails, report it to the `Larch Github Issues`_ (including the
+error trace and the `GetLarch.log` file).
+
+The scripts will download and install `Miniforge Python` which uses Anaconda
+Python and the `conda-forge` channel as the basis of an installation that will
+be essentially identical to the environment installed by the binary installers,
+that is, the whole environment is stored in a folder called `xraylarch` in your
+home folder. In case of problems, simply remove this folder to clean the
+installation.
+
+.. note::
+
+   **Optional/expert** You may execute `GetLarch.sh --devel` to install the latest development version instead of the latest release.
+
+You can also read these scripts and modify them for your needs (or maybe suggest ways
+we could maintain that for others to use too).
 
 
 .. _install-conda:
 
-Method 1: install within your existing (Ana)Conda distribution
+Installing into an existing Anaconda Python environment
 ================================================================
 
 The following procedure is recommended for those who are familiar with `Anaconda
-Python`_ / `Conda`_ and have already installed it in their system. Otherwise go
-to :ref:`Method 2 <install-scripts>`.
+Python`_ / `Conda`_ and have already installed it in their system.
+
+
+.. note::
+
+   Some packages that Larch uses are not currently (January 2022) handled
+   by the standard Python package manager `Pip`_.  For this reason, we use
+   a `Conda`_ environment and "conda forge" for installing them.  These
+   packages include:
+
+   * `pymatgen`: needed for handling CIF files and running FEFF calculations.
+   * `wxpython`: needed for all plotting, graphics and GUI applications.
+   * `tomopy`: needed for reconstructing X-ray fluorescence tomography.
+   * `python.app`: needed (from conda-forge) for Anaconda-based Python on MacOS.
+   * `epicsapps`: applications using the Epics control system.
+
+   Most of Larch functionality can be used as a library without these
+   packages installed.
+
+
 
 Within a shell:
 
@@ -145,154 +331,6 @@ work with Python 2.7).  You can also download and install Miniconda from
 `Miniconda Downloads` as a starting distribution.
 
 
-.. _install-scripts:
-
-Method 2: install using the scripts `GetLarch.sh` and `GetLarch.bat`
-======================================================================
-
-This method is recommended for those who do not have `Anaconda Python`_ /
-`Conda`_ already installed in their system and for Linux and Mac OSX users.
-Windows users may opt directly for :ref:`Method 3 <install-binary>`.
-
-Simply download and execute the following scripts:
-   
-   - `GetLarch.sh`_ for Linux and Mac OSX
-   - `GetLarch.bat`_ for Windows
-
-If a script fails, report it to the `Larch Github Issues`_ (including the error
-trace and the `GetLarch.log` file).
-
-The scripts will download and install `Miniforge Python` which uses Anaconda
-Python and the `conda-forge` channel as the basis of an installation that will
-be essentially identical to the environment installed by the binary installers,
-that is, the whole environment is stored in a folder called `xraylarch` in your
-home folder. In case of problems, simply remove this folder to clean the
-installation.
-
-.. note::
-
-   **Optional/expert** You may execute `GetLarch.sh --devel` to install the latest development version instead of the latest release.
-
-You can read these scripts and modify them for your needs (or maybe suggest ways
-we could maintain that for others to use too).
-
-.. _install-binary:
-
-Method 3: single-file installers
-==================================
-
-.. _installers_table:
-
-**Table of Larch binary installers**
-
-  +---------------------+------------------------+-----------------------------+
-  | Operating System    | Binary Installer File  | Installation Notes          |
-  +=====================+========================+=============================+
-  | Windows (64 bit)    | `Larch for Windows`_   | :ref:`Notes <install-win>`  |
-  +---------------------+------------------------+-----------------------------+
-  | Mac OSX (64 bit)    | `Larch for MacOSX`_    | :ref:`Notes <install-mac>`  |
-  +---------------------+------------------------+-----------------------------+
-  | Linux (64 bit)      | `Larch for Linux`_     | :ref:`Notes <install-lin>`  |
-  +---------------------+------------------------+-----------------------------+
-  
-Standalone binary installers for Windows, Mac OSX, and Linux, are available at
-`Larch Binary Installers`_.  These are fairly large (400 to 600 Mb files)
-self-contained files that will install a complete Anaconda Python environment
-with all of libraries needed by Larch.  Normally, this installation will create
-a folder called `xraylarch` in your home folder -- see platform-specific notes
-below.
-
-.. note::
-
-   There can be no spaces in your username or the path in which Larch is installed.
-
-Installing with these installers should write to files only to folders
-owned by the user account. It should not require administrative privilege and
-should not interfere with any thing else on your system (such as system
-Python).
-
-These installers will also create a folder called `Larch` on your desktop
-that contains links (or shortcuts or Apps) to many of the Larch GUI
-applications listed in :ref:`Table of Larch Applications and Programs
-<larch_app_table>`.  This includes tools for X-ray Absorption spectroscopy,
-X-ray fluorescence spectroscopy, and working with X-ray diffraction images.
-
-.. _install-win:
-
-Windows Notes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For Windows, download the `Larch for Windows`_ binary installer above and run it to
-install Larch.  This will be installed to ``C:\Users\<YourName>\xraylarch`` for most
-individual Windows installations or to
-``C:\Users\<YourName>\AppData\Local\xraylarch`` if your machine is part of a
-Windows Workgroup or Domain.
-
-.. note::
-
-   If you get prompted for an administrative password during the installation process, you
-   should make sure you are installing to a folder that is writable by the user.
-
-
-Alternatively you can download the `GetLarch.bat`_ script, and run that by double-clicking
-on it. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer.
-
-
-.. _install-mac:
-
-MacOS Notes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-For Mac OS, download the `Larch for MacOSX`_ package installer above and click it to
-install Larch.  There are two important notes:
-
-.. note::
-
-   With MacOS 10.15 (Catalina), Apple will not install non-signed 3rd party packages by default.
-   You may need to go into General Settings part of the **Security & Privacy** section of **System
-   Preferences** and explicitly allow this package to be installed. You probably will be prompted for
-   an Administrative password.
-
-.. note::
-
-   You need to explicitly click on "Install only for me" during the installation process.  If you
-   get prompted for an Administrative password by the installer, go back and explicitly choose
-   "Install only for me".
-
-Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
-session (Applications->Utilities->Terminal). This will download, install, and configure
-the Larch package, with a result that is nearly identical to the binary installer.  If you
-run into any problems with permissions or adminstrative privileges or "unauthorized
-application" with the package installer, running this installer script actually avoids all
-of those issues since your user account will simply be running the commands to write files
-to your home directory.
-
-
-.. _install-lin:
-
-Linux Notes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. warning::
-
-   Linux binary installation is currently (January 2022) not working.
-
-For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
-move to the download folder (typically `$HOME/Downloads`) and run::
-
-    ~> bash ./xraylarch-2021-07-Linux-x86_64.sh
-
-Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
-actually appear on your desktop depends on the Windowing system used:  they will appear on the
-desktop with KDE and many other systems, but not with Gnome.  Clickable icons should also show up
-in the Applications selection of the "Start Menu" or Applications list.
-
-Alternatively you can download the `GetLarch.sh`_ script, and run that in a Terminal
-session. This will download, install, and configure the Larch package, with a result that
-is nearly identical to the binary installer.
-
 
 Updating a previous installation
 ==================================
@@ -304,23 +342,27 @@ update, even when using Anaconda Python::
 
 
 Larch for developers (source installation)
-============================================
+===============================================
+
 
 For developers, Larch is an open-source project, with active development
 happening at the `Larch Repository (github.com)`_.  There, you will find
-the latest source code and pages for submit bug reports.  To install from
-source, you can either clone this repository with::
+the latest source code and pages for submit bug reports.
+
+To get started, we recommend following the installation instructions for or
+ref:`install-binary`, ref:`install-script`, or ref:`install-conda`.  Then
+to install `Larch` from source, you can clone the source repository with::
 
    git clone https://github.com/xraypy/xraylarch.git
 
-or download and unpack the latest release of the source code package at
-`source code`_ and then do::
+and then install with::
 
     pip install -e .
 
-This will automatically use `pip` to install any requirements and Larch
-itself.  Depending on your platform and version of Python, you may need
-elevated permissions as from `sudo` to install Larch to a system folder.
+This use of `pip` will install any requirements and Larch itself, but those
+should have been installed already when you installed.  Depending on your
+platform and version of Python you are installing to, you may need elevated
+permissions as from `sudo` to install Larch to a system folder.
 
 
 Optional Python Packages
@@ -368,8 +410,8 @@ Conference Series, 430:012007 (2013).  :cite:`larch2013`
 .. raw:: html
 
     <span class="__dimensions_badge_embed__"
-          data-doi="10.1088/1742-6596/430/1/012007"
-          data-style="large_rectangle">
+	  data-doi="10.1088/1742-6596/430/1/012007"
+	  data-style="large_rectangle">
     </span>
 
 
@@ -444,5 +486,3 @@ documentation, and all material associated with Larch are distributed under
 the BSD License:
 
 .. literalinclude:: ../LICENSE
-
-
