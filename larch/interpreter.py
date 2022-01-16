@@ -119,7 +119,7 @@ class Interpreter:
         setattr(mathgroup, 'np', numpy)
 
         # system-specific settings
-        enable_plugins()
+        # enable_plugins()
         site_config.system_settings()
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
@@ -177,8 +177,7 @@ class Interpreter:
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
 
-        if with_plugins: # add all plugins in standard plugins folder
-            print("WARNING: Plugins are deprecated and will be removed in 2022")
+        if False and with_plugins: # add all plugins in standard plugins folder
             plugins_dir = os.path.join(site_config.user_larchdir, 'plugins')
             loaded_plugins = []
             for pname in sorted(os.listdir(plugins_dir)):
@@ -191,7 +190,8 @@ class Interpreter:
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
-        builtins.add_plugin(mod, _larch=self, **kws)
+        print("error: cannot add plugin: " ,mod, kws)
+        # builtins.add_plugin(mod, _larch=self, **kws)
 
     def unimplemented(self, node):
         "unimplemented nodes"

@@ -192,7 +192,7 @@ class SymbolTable(Group):
                                  history_file= site_config.history_file,
                                  init_files  = site_config.init_files,
                                  modules_path= site_config.modules_path,
-                                 plugins_path= site_config.plugins_path,
+                                 # plugins_path= site_config.plugins_path,
                                  user_larchdir= site_config.user_larchdir,
                                  larch_version= site_config.larch_version)
 
@@ -480,7 +480,7 @@ class SymbolTable(Group):
         """Add a plugin: a module that includes a
         registerLarchPlugin function that returns
         larch_group_name, dict_of_symbol/functions
-        """
+
         if not isinstance(plugin, types.ModuleType):
             on_error("%s is not a valid larch plugin" % repr(plugin))
 
@@ -524,6 +524,9 @@ class SymbolTable(Group):
         if plugin_init is not None:
             plugin_init(_larch=self._larch)
         return (groupname, syms)
+        """
+        print("plugins not supported")
+        return (None, None)
 
     def show_group(self, groupname):
         """display group members --- simple version for tests"""
