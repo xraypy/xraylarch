@@ -397,8 +397,8 @@ class cifDB(object):
         if url:
             cifstr = requests.get(ciffile).text
         else:
-            with open(ciffile,'r') as file:
-                cifstr = str(file.read())
+            with open(ciffile,'rb') as file:
+                cifstr = str(file.read().decode('utf-8'))
         cif = create_xrdcif(text=cifstr)
 
         if cif.id_no is None:

@@ -2821,7 +2821,7 @@ def create_xrdcif(filename=None, text=None):
     ciffile
     """
     if text is None and filename is not None and os.path.exists(filename):
-        with open(filename, 'r') as fh:
-            text = fh.read()
+        with open(filename, 'rb') as fh:
+            text = fh.read().decode('utf-8')
 
     return XRDCIF(text=text)

@@ -567,8 +567,8 @@ class CIFFrame(wx.Frame):
             _, fname = os.path.split(path)
             fname = fname.replace('.inp', '_run')
             fname = unique_name(fname, self.runs_list)
-            with open(path, 'r') as fh:
-                fefftext = fh.read()
+            with open(path, 'rb') as fh:
+                fefftext = fh.read().decode('utf-8')
             if fefftext is not None:
                 self.wids['feff_text'].SetValue(fefftext)
                 self.wids['run_folder'].SetValue(fname)

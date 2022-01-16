@@ -246,10 +246,14 @@ class InputText:
         text = None
         try:
             if isinstance(filename, FILETYPE):
-                text = filename.read()
+                if filename.mode == 'r':
+                    text = filename.read()
+                elif filename.mode == 'rb':
+                    text = filename.read().decode('utf-8')
                 filename = filename.name
             else:
-                text = open(filename).read()
+                with open(filename, 'rb') as fh:
+                    text = fh.read().decode('utf-8')
         except:
             errtype, errmsg, errtb = sys.exc_info()
             return (errtype, errmsg)

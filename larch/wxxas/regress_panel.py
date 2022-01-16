@@ -411,8 +411,8 @@ class RegressionPanel(TaskPanel):
         if fname is None:
             return
         self.save_modelfile = os.path.split(fname)[1]
-        with open(fname, 'r') as fh:
-            text = fh.read()
+        with open(fname, 'rb') as fh:
+            text = fh.read().decode('utf-8')
 
         reg_model = pickle.loads(base64.b64decode(bytes(text, 'utf-8')))
         self.controller.symtable.reg_model = reg_model

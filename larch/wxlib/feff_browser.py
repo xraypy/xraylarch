@@ -273,20 +273,20 @@ class FeffResultsPanel(wx.Panel):
             self.show_report(self.feffresult.header,
                              title=f'Header for {self.feffresult.folder:s}',
                              default_filename=f'{self.feffresult.folder:s}_header.txt')
-            
+
     def onShowFeffInp(self, event=None):
         if self.feffresult is not None:
             text = None
             fname = unixpath(os.path.join(self.feffresult.folder, 'feff.inp'))
             if os.path.exists(fname):
-                with open(fname, 'r') as fh:
-                    text = fh.read()
+                with open(fname, 'rb') as fh:
+                    text = fh.read().decode('utf-8')
             else:
                 fname = unixpath(os.path.join(user_larchdir, 'feff',
                                               self.feffresult.folder, 'feff.inp'))
                 if os.path.exists(fname):
-                    with open(fname, 'r') as fh:
-                        text = fh.read()
+                    with open(fname, 'rb') as fh:
+                        text = fh.read().decode('utf-8')
             if text is not None:
                 self.show_report(text, title=f'Feff.inp for {self.feffresult.folder:s}',
                                  default_filename=f'{self.feffresult.folder:s}_feff.inp',
@@ -305,7 +305,7 @@ class FeffResultsPanel(wx.Panel):
             self.report_frame = ReportFrame(parent=self,
                                             text=text, title=title,
                                             default_filename=default_filename,
-                                            wildcard=wildcard)                                                
+                                            wildcard=wildcard)
 
 
     def onImportPath(self, event=None):
@@ -554,5 +554,5 @@ class FeffResultsBrowserApp(LarchWxApp):
         return True
 
 if __name__ == '__main__':
-    dat = None 
+    dat = None
     FeffResultsBrowserApp(dat).MainLoop()

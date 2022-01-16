@@ -97,8 +97,8 @@ def json_load(filename):
     load object from json dump file
     """
     from .jsonutils import decode4js
-    with open(filename, 'r') as fh:
-        data = fh.read()
+    with open(filename, 'rb') as fh:
+        data = fh.read().decode('utf-8')
     return decode4js(json.loads(data))
 
 def _larch_init(_larch):
