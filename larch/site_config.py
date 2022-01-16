@@ -104,8 +104,7 @@ def make_user_larchdirs():
     subdirs = {'matplotlib': 'matplotlib may put files here',
                'dlls':       'put dlls here',
                'feff':       'Feff files and folders here',
-               'modules':    'put custom larch or python modules here',
-               'plugins':    'put custom larch plugins here (deprecated!!)'}
+               'modules':    'put custom larch or python modules here'}
 
     def make_dir(dname):
         if not exists(dname):
@@ -145,13 +144,12 @@ def show_site_config():
   users history_file:   %s
   users startup files:  %s
   modules search path:  %s
-  plugins search path:  %s (deprecated!!)
 ========================
 """ % (larch_release, larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
        user_larchdir,
        history_file, init_files,
-       modules_path, plugins_path))
+       modules_path))
 
 def system_settings():
     """set system-specific Environmental Variables, and make sure

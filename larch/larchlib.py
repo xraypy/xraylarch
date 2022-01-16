@@ -350,10 +350,11 @@ class Procedure(object):
 def enable_plugins():
     """add all available Larch plugin paths
     """
-    if 'larch_plugins' not in sys.modules:
-        import larch
-        sys.modules['larch_plugins'] = larch
-    return sys.modules['larch_plugins']
+    # if 'larch_plugins' not in sys.modules:
+    #     import larch
+    #     sys.modules['larch_plugins'] = larch
+    #return sys.modules['larch_plugins']
+    return False
 
 def add2path(envvar='PATH', dirname='.'):
     """add specified dir to begninng of PATH and
