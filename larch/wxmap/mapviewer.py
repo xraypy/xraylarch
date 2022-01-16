@@ -1395,6 +1395,7 @@ class MapViewerFrame(wx.Frame):
                       TomographyPanel, XRFAnalysisPanel):
             nbpanels[panel.label] = panel
         self.nb = flatnotebook(parent, nbpanels, panelkws={'owner':self},
+                               drag_tabs=False,
                                on_change=self.onNBChanged)
         self.roimap_panel = self.nb.GetPage(0)
         sizer = wx.BoxSizer(wx.VERTICAL)

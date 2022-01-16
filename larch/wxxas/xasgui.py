@@ -211,6 +211,7 @@ class XASFrame(wx.Frame):
         self.nb = flatnotebook(panel, NB_PANELS,
                                panelkws=dict(xasmain=self,
                                              controller=self.controller),
+                               drag_tabs=False,
                                on_change=self.onNBChanged)
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)

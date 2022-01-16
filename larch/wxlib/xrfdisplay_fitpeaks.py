@@ -177,7 +177,7 @@ class FitSpectraFrame(wx.Frame):
         self.panels['Fit Results']        = self.fitresult_page
         self.panels['Composition'] = self.composition_page
 
-        self.nb = flatnotebook(pan, self.panels,
+        self.nb = flatnotebook(pan, self.panels, drag_tabs=False,
                                on_change=self.onNBChanged)
         pan.Add((5, 5), newrow=True)
         pan.Add(self.nb, dcol=5, drow=10, newrow=True)
@@ -271,7 +271,7 @@ class FitSpectraFrame(wx.Frame):
             en = self.mca.incident_energy
             for i in range(escale):
                 en = en * (1 - 1/(1 + (E_MASS*0.001)/en))    # Compton shift at 90 deg
-            
+
             t = name.lower()
             vary_en = 1 if t.startswith('compton') else 0
 
@@ -1194,7 +1194,7 @@ class FitSpectraFrame(wx.Frame):
                         scale = 1.0
                     if nam in ('compton2',):
                         scale /= 5.0
-                        
+
                 paramval = self.xrfmod.params[ampname].value
                 s = "_xrfmodel.params['%s'].value = %.5f" % (ampname, paramval*scale)
                 cmds.append(s)

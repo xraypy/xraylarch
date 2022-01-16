@@ -650,7 +650,7 @@ class PrePeakPanel(TaskPanel):
             pass # print(" Cannot Fill prepeak panel from group ")
 
     def build_display(self):
-        self.mod_nb = flatnotebook(self, {})
+        self.mod_nb = flatnotebook(self, {}, drag_tabs=False)
         pan = self.panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
         self.wids = {}
