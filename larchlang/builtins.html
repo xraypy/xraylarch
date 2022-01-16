@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>9.8. Builtin Functions &#8212; xraylarch 0.9.57 documentation</title>
+    <title>9.8. Builtin Functions &#8212; xraylarch 0.9.58 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/larchdoc.css" />
     
@@ -172,7 +172,7 @@ to <code class="docutils literal notranslate"><span class="pre">group(**dict)</s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="group">
-<span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">key=val</span></em>, <em class="sig-param"><span class="pre">key2=val2</span></em>, <em class="sig-param"><span class="pre">....</span></em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key=val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2=val2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">....</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a group, with optional keyword/value pairs.</p>
 </dd></dl>
 
@@ -228,7 +228,7 @@ pattern.  For example:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="mkdir">
-<span class="sig-name descname"><span class="pre">mkdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">directory_name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">mode=0777</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#mkdir" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mkdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_name</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">mode=0777</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#mkdir" title="Permalink to this definition">¶</a></dt>
 <dd><p>create directory (and any intermediate subdirectories) with the
 specified name.  The <code class="docutils literal notranslate"><span class="pre">mode</span></code> option sets the permission mask to use
 for creating directory (default=0777).</p>
@@ -236,7 +236,7 @@ for creating directory (default=0777).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="more">
-<span class="sig-name descname"><span class="pre">more</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">pagelenghth=32</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">more</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">pagelenghth=32</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
 <dd><p>list file contents, optionally specifying the number of lines to
 show at a time.  By default, the file is shown 32 lines at a time.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s1">&#39;file.txt&#39;</span><span class="p">)</span>
@@ -259,13 +259,13 @@ show at a time.  By default, the file is shown 32 lines at a time.:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">printall=True</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#run" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">printall=True</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#run" title="Permalink to this definition">¶</a></dt>
 <dd><p>execute the larch text in a file as larch code.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">group</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">with_private=False</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#show" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">with_private=False</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#show" title="Permalink to this definition">¶</a></dt>
 <dd><p>display group members. The <code class="docutils literal notranslate"><span class="pre">with_private</span></code> option will show private
 members.</p>
 <p>See Also:  show_tree()</p>
@@ -337,7 +337,7 @@ The class bool is a subclass of the class int, and cannot be subclassed.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="buffer">
-<span class="sig-name descname"><span class="pre">buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">object</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">offset</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">size</span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#buffer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new buffer object which references the given object.
 The buffer will reference a slice of the target object from the
 start of the object (or at the specified offset). The slice will
@@ -405,7 +405,7 @@ If coercion is not possible, raise TypeError.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="complex">
-<span class="sig-name descname"><span class="pre">complex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">real</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">imag</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#complex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">complex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">imag</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#complex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a complex number from a real part and an optional imaginary part.
 This is equivalent to (real + imag*1j) where imag defaults to 0.</p>
 </dd></dl>
@@ -431,7 +431,7 @@ delattr(x, ‘y’) is equivalent to <code class="docutils literal notranslate">
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dict">
-<span class="sig-name descname"><span class="pre">dict</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">mapping</span> <span class="pre">or</span> <span class="pre">iterable</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#dict" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">dict</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">mapping</span> <span class="pre">or</span> <span class="pre">iterable</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a dictionary: dict(key1=val1, key2=val2, ….)</p>
 </dd></dl>
 
@@ -449,7 +449,7 @@ delattr(x, ‘y’) is equivalent to <code class="docutils literal notranslate">
 
 <dl class="py function">
 <dt class="sig sig-object py" id="enumerate">
-<span class="sig-name descname"><span class="pre">enumerate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">iterable</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">start</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#enumerate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">enumerate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#enumerate" title="Permalink to this definition">¶</a></dt>
 <dd><p>iterator for index, value of iterable</p>
 <p>Return an enumerate object.  iterable must be another object that supports
 iteration.  The enumerate object yields pairs containing a count (from
@@ -460,7 +460,7 @@ enumerate is useful for obtaining an indexed list:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">function</span> <span class="pre">or</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">sequence</span></em><span class="sig-paren">)</span><a class="headerlink" href="#filter" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span> <span class="pre">or</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return those items of sequence for which function(item) is true.  If
 function is None, return the items that are true.  If sequence is a tuple
 or string, return the same type, else return a list.</p>
@@ -474,7 +474,7 @@ or string, return the same type, else return a list.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="format">
-<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">value</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">format_spec</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#format" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">format_spec</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns value.__format__(format_spec). format_spec defaults to “”</p>
 </dd></dl>
 
@@ -492,7 +492,7 @@ or string, return the same type, else return a list.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="getattr">
-<span class="sig-name descname"><span class="pre">getattr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">object</span></em>, <em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">default</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#getattr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">getattr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#getattr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a named attribute from an object; getattr(x, ‘y’) is equivalent to x.y.
 When a default argument is given, it is returned when the attribute doesn’t
 exist; without it, an exception is raised in that case.</p>
@@ -527,7 +527,7 @@ simultaneously existing objects.  (Hint: it’s the object’s memory address.)<
 
 <dl class="py function">
 <dt class="sig sig-object py" id="int">
-<span class="sig-name descname"><span class="pre">int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">base</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#int" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string or number to an integer, if possible.  A floating point
 argument will be truncated towards zero (this does not include a string
 representation of a floating point number!)  When converting a string, use
@@ -539,7 +539,7 @@ long object will be returned instead.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="isinstance">
-<span class="sig-name descname"><span class="pre">isinstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">object</span></em>, <em class="sig-param"><span class="pre">class-or-type-or-tuple</span></em><span class="sig-paren">)</span><a class="headerlink" href="#isinstance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">isinstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class-or-type-or-tuple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#isinstance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return whether an object is an instance of a class or of a subclass thereof.
 With a type as second argument, return whether that is the object’s type.
 The form using a tuple, isinstance(x, (A, B, …)), is a shortcut for
@@ -561,7 +561,7 @@ list(iterable) -&gt; new list initialized from iterable’s items</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="map">
-<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">function</span></em>, <em class="sig-param"><span class="pre">sequence</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">sequence</span></em>, <em class="sig-param"><span class="pre">...</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the results of applying the function to the items of
 the argument sequence(s).  If more than one sequence is given, the
 function is called with an argument list consisting of the corresponding
@@ -572,7 +572,7 @@ the items of the sequence (or a list of tuples if more than one sequence).</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="max">
-<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">iterable</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">key=func</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#max" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key=func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#max" title="Permalink to this definition">¶</a></dt>
 <dd><p>max(a, b, c, …[, key=func]) -&gt; value</p>
 <blockquote>
 <div><p>With a single iterable argument, return its largest item.
@@ -582,7 +582,7 @@ With two or more arguments, return the largest argument.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="min">
-<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">iterable</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">key=func</span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">value</span></span></span><a class="headerlink" href="#min" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">key=func</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">value</span></span></span><a class="headerlink" href="#min" title="Permalink to this definition">¶</a></dt>
 <dd><p>min(a, b, c, …[, key=func]) -&gt; value</p>
 <blockquote>
 <div><p>With a single iterable argument, return its smallest item.
@@ -598,7 +598,7 @@ With two or more arguments, return the smallest argument.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="open">
-<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">mode</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">buffering</span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#open" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">buffering</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a file, returning a file object</p>
 <p>The mode can be ‘r’, ‘w’ or ‘a’ for reading (default),
 writing or appending.  The file will be created if it doesn’t exist
@@ -624,14 +624,14 @@ the value for this attribute is one of None (no newline read yet),
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pow">
-<span class="sig-name descname"><span class="pre">pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em>, <em class="sig-param"><span class="pre">y</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">z</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#pow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#pow" title="Permalink to this definition">¶</a></dt>
 <dd><p>With two arguments, equivalent to x**y.  With three arguments,
 equivalent to (x**y) % z, but may be more efficient (e.g. for longs).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="range">
-<span class="sig-name descname"><span class="pre">range</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">start</span></em>, <span class="optional">]</span><em class="sig-param"><span class="pre">stop</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">step</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#range" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">range</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list containing an arithmetic progression of integers.
 range(i, j) returns [i, i+1, i+2, …, j-1]; start (!) defaults to 0.
 When step is given, it specifies the increment (or decrement).
@@ -641,7 +641,7 @@ These are exactly the valid indices for a list of 4 elements.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="raw_input">
-<span class="sig-name descname"><span class="pre">raw_input</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">prompt</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#raw_input" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">raw_input</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#raw_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a string from standard input.  The trailing newline is stripped.
 If the user hits EOF (Unix: Ctl-D, Windows: Ctl-Z+Return), raise EOFError.
 On Unix, GNU readline is used if enabled.  The prompt string, if given,
@@ -650,7 +650,7 @@ is printed without a trailing newline before reading.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="reduce">
-<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">function</span></em>, <em class="sig-param"><span class="pre">sequence</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">initial</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#reduce" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#reduce" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a function of two arguments cumulatively to the items of a sequence,
 from left to right, so as to reduce the sequence to a single value.
 For example, reduce(lambda x, y: x+y, [1, 2, 3, 4, 5]) calculates
@@ -680,7 +680,7 @@ For many primitive object types, eval(repr(object)) == object.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="round">
-<span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">number</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">ndigits</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#round" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">ndigits</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Round a number to a given precision in decimal digits (default 0 digits).
 This always returns a floating point number.  Precision may be negative.</p>
 </dd></dl>
@@ -700,7 +700,7 @@ This always returns a floating point number.  Precision may be negative.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="slice">
-<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">start</span></em>, <span class="optional">]</span><em class="sig-param"><span class="pre">stop</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">step</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#slice" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">stop</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#slice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a slice object.  This is used for extended slicing (e.g. a[0:10:2]).</p>
 </dd></dl>
 
@@ -719,7 +719,7 @@ If the argument is a string, the return value is the same object.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sum">
-<span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">sequence</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">start</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#sum" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the sum of a sequence of numbers (NOT strings) plus the value
 of parameter ‘start’ (which defaults to 0).  When the sequence is
 empty, returns start.</p>
@@ -748,7 +748,7 @@ type(name, bases, dict) -&gt; a new type</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="unicode">
-<span class="sig-name descname"><span class="pre">unicode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">encoding</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">errors</span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#unicode" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">unicode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span></em><span class="optional">]</span><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#unicode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new Unicode object from the given encoded string.
 encoding defaults to the current default string encoding.
 errors can be ‘strict’, ‘replace’ or ‘ignore’ and defaults to ‘strict’.</p>
@@ -796,7 +796,7 @@ in length to the length of the shortest argument sequence.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
     </div>
   </body>
 </html>
