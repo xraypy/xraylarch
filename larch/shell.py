@@ -32,7 +32,7 @@ except ImportError:
 class shell(cmd.Cmd):
     def __init__(self,  completekey='tab', debug=False, quiet=False,
                  stdin=None, stdout=None, banner_msg=None,
-                 maxhist=25000, with_wx=False, with_plugins=True):
+                 maxhist=25000, with_wx=False, with_plugins=False):
 
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
@@ -60,7 +60,7 @@ class shell(cmd.Cmd):
             symtable = self.larch.symtable
 
             app = LarchWxApp(redirect=False, clearSigInt=False)
-            
+
             symtable.set_symbol('_sys.wx.wxapp', app)
             symtable.set_symbol('_sys.wx.force_wxupdate', False)
             symtable.set_symbol('_sys.wx.parent', None)
