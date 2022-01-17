@@ -4,7 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.58 - 2022-01-16]
+
+[Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2022-January/010373.html)
+
+### Added
+ - [xas_viewer] add '-' operator in file reader
+
+### Fixed
+ - bug in `larch.io.specfile_reader` with the upgrade to `silx==1.0.0` ([#332](https://github.com/xraypy/xraylarch/issues/332))
+ - bug with loading deprecated `numpy` functions ([#335](https://github.com/xraypy/xraylarch/issues/335))
+ - installation instructions in documentation ([#333](https://github.com/xraypy/xraylarch/issues/333))
+
+### Removed
+ - deprecated plugins mechanism
+
 ## [0.9.57 - 2021-12-02]
+
+[Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2021-December/010345.html)
+
 ### Added
  - Read RIXS files from BM16 at ESRF.
  - Option `--devel` in `GetLarch.sh` to install from source.
