@@ -79,11 +79,21 @@ def cif_sites(ciftext, absorber=None):
     cstruct = read_cif_structure(ciftext)
     out = cstruct.sites
     if absorber is not None:
+        abname = absorber.lower()
         out = []
         for site in cstruct.sites:
-            if site.species_string.lower() == absorber.lower():
+            species = site.species_string.lower()
+            if ',' in species and ':' in species: # multi-occupancy site
+                for siteocc in species.split(','):
+                    sname, occ = siteocc.split(':')
+                    if sname.strip() == abname:
+                        out.append(site)
+            elif species == abname:
                 out.append(site)
+        if len(out) == 0:
+            out = cstruct.sites[0]
     return out
+
 
 def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
                 site_index=None, extra_titles=None, version8=True):
