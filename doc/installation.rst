@@ -269,6 +269,7 @@ Within a shell:
 
    conda create -y --name xraylarch python==3.8
    conda activate xraylarch
+   conda update --all
 
 3. install main dependencies:
 
