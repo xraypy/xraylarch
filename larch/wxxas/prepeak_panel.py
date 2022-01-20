@@ -43,7 +43,7 @@ ModelChoices = {'other': ('<General Models>', 'Constant', 'Linear',
                 'peaks': ('<Peak Models>', 'Gaussian', 'Lorentzian',
                           'Voigt', 'PseudoVoigt', 'DampedHarmonicOscillator',
                           'Pearson7', 'StudentsT', 'SkewedGaussian',
-                          'Moffat', 'BreitWigner', 'Donaich', 'Lognormal'),
+                          'Moffat', 'BreitWigner', 'Doniach', 'Lognormal'),
                 }
 
 # map of lmfit function name to Model Class
@@ -64,7 +64,7 @@ ModelFuncs = {'constant': 'ConstantModel',
               'dho': 'DampedHarmonicOscillatorModel',
               'expgaussian': 'ExponentialGaussianModel',
               'skewed_gaussian': 'SkewedGaussianModel',
-              'donaich': 'DonaichModel',
+              'doniach': 'DoniachModel',
               'powerlaw': 'PowerLawModel',
               'exponential': 'ExponentialModel',
               'step': 'StepModel',
