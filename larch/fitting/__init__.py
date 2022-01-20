@@ -395,7 +395,7 @@ exports = {'param': param,
 
 for name in ('BreitWignerModel', 'ComplexConstantModel',
              'ConstantModel', 'DampedHarmonicOscillatorModel',
-             'DampedOscillatorModel', 'DonaichModel',
+             'DampedOscillatorModel', 'DoniachModel',
              'ExponentialGaussianModel', 'ExponentialModel',
              'ExpressionModel', 'GaussianModel', 'Interpreter',
              'LinearModel', 'LognormalModel', 'LorentzianModel',
