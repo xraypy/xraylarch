@@ -516,7 +516,9 @@ class AMSCIFDB():
             raise ValueError(f'Cannot read chemical formula from file {filename:s}')
 
         compound = '<missing>'
-        for compname in ('_chemical_compound_source', '_chemical_name_systematic'):
+        for compname in ('_chemical_compound_source',
+                         '_chemical_name_systematic',
+                         '_chemical_name_common'):
             if compname in dat:
                 compound = dat[compname]
 
@@ -547,22 +549,41 @@ class AMSCIFDB():
         if sgroup is None:
             sgroup = self.add_spacegroup(sgroup_name, symm_xyz)
 
-        min_name = dat.get('_chemical_name_mineral', '<missing>')
+        min_name = '<missing>'
+        for mname in ('_chemical_name_mineral',
+                       '_chemical_name_common'):
+            if mname in dat:
+                min_name = dat[mname]
         mineral = self._get_tablerow('minerals', min_name)
 
-        pubs = self.get_publications(journalname=dat.get('_journal_name_full', 'No Journal'),
-                                    year=dat.get('_journal_year', 100),
-                                    volume=dat.get('_journal_volume', '0'),
-                                    page_first=dat.get('_journal_page_first', '-1'),
-                                    page_last=dat.get('_journal_page_last', '-1'))
+        # get publication data (including ISCD style of 'citation' in place of 'journal' )
+        pubdict = dict(journalname=dat.get('_journal_name_full', None),
+                       year=dat.get('_journal_year', None),
+                       volume=dat.get('_journal_volume', None),
+                       page_first=dat.get('_journal_page_first', None),
+                       page_last=dat.get('_journal_page_last', None))
 
+        for key, alt, dval in (('journalname', 'journal_full', 'No Journal'),
+                               ('year', None, -1),
+                               ('volume', 'journal_volume', 0),
+                               ('page_first', None, 0),
+                               ('page_last', None, 0)):
+            if pubdict[key] is None:
+                if alt is None:
+                    alt = key
+                alt = '_citation_%s' % alt
+                pubdict[key] = dat.get(alt, [dval])[0]
+        authors = dat.get('_publ_author_name', None)
+        if authors is None:
+            authors = dat.get('_citation_author_name', ['Anonymous'])
+
+        pubs = self.get_publications(**pubdict)
         if pubs is None:
-            pub = self.add_publication(dat.get('_journal_name_full', 'No Journal'),
-                                       dat.get('_journal_year', 100),
-                                       dat.get('_publ_author_name', ['No Author']),
-                                       volume=dat.get('_journal_volume', '0'),
-                                       page_first=dat.get('_journal_page_first', '-1'),
-                                       page_last=dat.get('_journal_page_last', '-1'))
+            pub = self.add_publication(pubdict['journalname'],
+                                       pubdict['year'], authors,
+                                       volume=pubdict['volume'],
+                                       page_first=pubdict['page_first'],
+                                       page_last=pubdict['page_last'])
         else:
             pub = pubs[0]
 
