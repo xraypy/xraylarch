@@ -15,6 +15,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.agw.flatnotebook as fnb
 from wx.adv import AboutBox, AboutDialogInfo
+from matplotlib.ticker import FuncFormatter
 
 from wxmplot import PlotPanel
 from xraydb.chemparser import chemparse
@@ -250,9 +251,13 @@ class CIFFrame(wx.Frame):
 
         self.feffresults = FeffResultsPanel(rightpanel, _larch=self.larch)
 
-        self.plotpanel = PlotPanel(rightpanel)
+        def _swallow_plot_messages(s, panel=0):
+            pass
+
+        self.plotpanel = PlotPanel(rightpanel, messenger=_swallow_plot_messages)
         self.plotpanel.SetMinSize((250, 250))
         self.plotpanel.onPanelExposed = self.showXRD1D
+
 
         cif_panel = wx.Panel(rightpanel)
         wids['cif_text'] = wx.TextCtrl(cif_panel,
@@ -603,13 +608,23 @@ class CIFFrame(wx.Frame):
         mask = np.where(sfact.intensity>max_/10.0)[0]
         qval = sfact.q[mask]
         ival = sfact.intensity[mask]
-        title = '%s (cif %d)' % (self.cif_label, self.current_cif.ams_id)
-        self.plotpanel.plot(qval, ival, linewidth=0, marker='o', markersize=2,
-                            xlabel=r'$Q \rm\, (\AA^{-1})$',
-                            ylabel='Intensity (arb units)',
-                            title=title, titlefontsize=8)
-        self.plotpanel.axes.bar(qval, ival, 0.05, color='blue')
-        self.plotpanel.canvas.draw()
+        ival = 1000*ival/(1.0*ival.max())
+
+        def qd_formatter(q, pos):
+            qval = float(q)
+            dval = '\n[%.2f]' % (2*np.pi/max(qval, 1.e-6))
+            return r"%.2f%s" % (qval, dval)
+
+        qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d, \rm\,(\AA)]$'
+        title = self.cif_label + '\n' + '(cif %d)' % (self.current_cif.ams_id)
+        ppan = self.plotpanel
+        ppan.plot(qval, ival, linewidth=0, marker='o', markersize=2,
+                  xlabel=qd_label, ylabel='Intensity (arb units)',
+                  title=title, titlefontsize=8)
+
+        ppan.axes.bar(qval, ival, 0.05, color='blue')
+        ppan.axes.xaxis.set_major_formatter(FuncFormatter(qd_formatter))
+        ppan.canvas.draw()
         self.has_xrd1d = True
 
     def onSelAll(self, event=None):
