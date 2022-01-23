@@ -428,7 +428,7 @@ class CIFFrame(wx.Frame):
         csize = self.wids['cluster_size'].GetValue()
         mineral = cif.get_mineralname()
         folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
-        folder = unique_name(folder, self.runs_list)
+        folder = unique_name(fix_filename(folder), self.runs_list)
 
         fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
                                     absorber_site=asite, version8=version8)
@@ -453,7 +453,7 @@ class CIFFrame(wx.Frame):
         version8 = '8' == self.wids['feffvers'].GetStringSelection()
 
         fname = self.wids['run_folder'].GetValue()
-        fname = unique_name(fname, self.runs_list)
+        fname = unique_name(fix_filename(fname), self.runs_list)
         self.runs_list.append(fname)
         folder = unixpath(os.path.join(self.feff_folder, fname))
 
@@ -571,7 +571,7 @@ class CIFFrame(wx.Frame):
             fefftext = None
             _, fname = os.path.split(path)
             fname = fname.replace('.inp', '_run')
-            fname = unique_name(fname, self.runs_list)
+            fname = unique_name(fix_filename(fname), self.runs_list)
             with open(path, 'rb') as fh:
                 fefftext = fh.read().decode('utf-8')
             if fefftext is not None:
@@ -608,18 +608,18 @@ class CIFFrame(wx.Frame):
         mask = np.where(sfact.intensity>max_/10.0)[0]
         qval = sfact.q[mask]
         ival = sfact.intensity[mask]
-        ival = 1000*ival/(1.0*ival.max())
+        ival = ival/(1.0*ival.max())
 
         def qd_formatter(q, pos):
             qval = float(q)
             dval = '\n[%.2f]' % (2*np.pi/max(qval, 1.e-6))
             return r"%.2f%s" % (qval, dval)
 
-        qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d, \rm\,(\AA)]$'
+        qd_label = r'$Q\rm\,(\AA^{-1}) \,\> [d \rm\,(\AA)]$'
         title = self.cif_label + '\n' + '(cif %d)' % (self.current_cif.ams_id)
         ppan = self.plotpanel
         ppan.plot(qval, ival, linewidth=0, marker='o', markersize=2,
-                  xlabel=qd_label, ylabel='Intensity (arb units)',
+                  xlabel=qd_label, ylabel='Relative Intensity',
                   title=title, titlefontsize=8)
 
         ppan.axes.bar(qval, ival, 0.05, color='blue')
