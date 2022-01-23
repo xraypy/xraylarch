@@ -550,19 +550,19 @@ class AMSCIFDB():
         min_name = dat.get('_chemical_name_mineral', '<missing>')
         mineral = self._get_tablerow('minerals', min_name)
 
-        pubs = self.get_publications(journalname=dat.get('_journal_name_full', 'nojournal'),
-                                    year=dat.get('_journal_year', 00),
-                                    volume=dat.get('_journal_volume', ''),
-                                    page_first=dat.get('_journal_page_first', ''),
-                                    page_last=dat.get('_journal_page_last', ''))
+        pubs = self.get_publications(journalname=dat.get('_journal_name_full', 'No Journal'),
+                                    year=dat.get('_journal_year', 100),
+                                    volume=dat.get('_journal_volume', '0'),
+                                    page_first=dat.get('_journal_page_first', '-1'),
+                                    page_last=dat.get('_journal_page_last', '-1'))
 
         if pubs is None:
-            pub = self.add_publication(dat.get('_journal_name_full', 'nojournal'),
-                                       dat.get('_journal_year', 00),
-                                       dat.get('_publ_author_name', ['noauthor']),
-                                       volume=dat.get('_journal_volume', ''),
-                                       page_first=dat.get('_journal_page_first', ''),
-                                       page_last=dat.get('_journal_page_last', ''))
+            pub = self.add_publication(dat.get('_journal_name_full', 'No Journal'),
+                                       dat.get('_journal_year', 100),
+                                       dat.get('_publ_author_name', ['No Author']),
+                                       volume=dat.get('_journal_volume', '0'),
+                                       page_first=dat.get('_journal_page_first', '-1'),
+                                       page_last=dat.get('_journal_page_last', '-1'))
         else:
             pub = pubs[0]
 
