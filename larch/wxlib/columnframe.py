@@ -731,8 +731,7 @@ class ColumnDataFileFrame(wx.Frame) :
     def onOK(self, event=None):
         """ build arrays according to selection """
         user_filename = self.wid_filename.GetValue()
-        if self.wid_groupname is not None:
-            groupname = fix_varname(self.wid_groupname.GetValue())
+        groupname = fix_varname(self.wid_groupname.GetValue())
 
         en_units = self.en_units.GetStringSelection()
         monod    = float(self.monod_val.GetValue())
@@ -797,12 +796,12 @@ class ColumnDataFileFrame(wx.Frame) :
         ref_filename = None
         ref_groupname = None
         if self.has_yref.IsChecked():
-            yrname1  = self.yref1.GetStringSelection().strip()
-            yrname2  = self.yref2.GetStringSelection().strip()
+            yrname1 = self.yref1.GetStringSelection().strip()
+            yrname2 = self.yref2.GetStringSelection().strip()
             iry1    = self.yref1.GetSelection()
             iry2    = self.yref2.GetSelection()
-            yrpop  = self.yrpop.GetStringSelection().strip()
-            yrop   = self.yop.GetStringSelection().strip()
+            yrpop   = self.yrpop.GetStringSelection().strip()
+            yrop    = self.yop.GetStringSelection().strip()
 
             ref_filename = self.wid_reffilename.GetValue()
             ref_groupname = fix_varname(self.wid_refgroupname.GetValue())
@@ -824,6 +823,8 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{refgroup}.mu = {refgroup}.ydat")
             buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
             buff.append("# end reference group")
+        else:
+            buff.append("{group}.energy_ref = '%s'" % (groupname))
 
         script = "\n".join(buff)
 
