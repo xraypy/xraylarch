@@ -101,7 +101,7 @@ class XASNormPanel(TaskPanel):
                                  action=self.onPlotSel, size=(200, -1))
 
         self.plot_erange = Choice(panel, choices=list(Plot_EnergyRanges.keys()),
-                                 action=self.onPlotEither, size=(120, -1))
+                                 action=self.onPlotEither, size=(175, -1))
 
         self.plot_erange.SetSelection(0)
         self.plotone_op.SetSelection(1)
@@ -125,7 +125,7 @@ class XASNormPanel(TaskPanel):
 
 
         self.wids['energy_ref'] = Choice(panel, choices=['None'],
-                                        action=self.onEnergyRef, size=(200, -1))
+                                         action=self.onEnergyRef, size=(275, -1))
 
         self.wids['auto_step'] = Check(panel, default=True, label='auto?',
                                       action=self.onNormMethod)
@@ -163,8 +163,8 @@ class XASNormPanel(TaskPanel):
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
 
-        self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(75, -1))
-        self.wids['edge']   = Choice(panel, choices=EDGES, size=(60, -1))
+        self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(100, -1))
+        self.wids['edge']   = Choice(panel, choices=EDGES, size=(100, -1))
 
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
@@ -195,7 +195,7 @@ class XASNormPanel(TaskPanel):
 
         panel.Add(plot_one, newrow=True)
         panel.Add(self.plotone_op, dcol=3)
-        panel.Add(self.plot_erange, dcol=1)
+        panel.Add(self.plot_erange, dcol=2, style=RIGHT)
 
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         add_text('Non-XAS Data Scale:')
