@@ -818,8 +818,8 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{refgroup}.energy = {refgroup}.xdat")
 
             refexpr = self.expressions['yref'].replace('%s', '{group:s}')
-            buff.append("{group}.reference_group = '%s'" % (ref_groupname))
-            buff.append("{refgroup}.reference_group = None")
+            buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
+            buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.ydat =  %s" % refexpr)
             buff.append("{refgroup}.mu = {refgroup}.ydat")
             buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
