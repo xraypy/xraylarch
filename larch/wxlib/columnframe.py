@@ -21,7 +21,7 @@ from wxutils import (SimpleText, FloatCtrl, GUIColors, Button, Choice,
 import larch
 from larch import Group
 from larch.xafs.xafsutils import guess_energy_units
-from larch.utils.strutils import fix_varname, file2groupname
+from larch.utils.strutils import fix_varname, fix_filename, file2groupname
 from larch.io import look_for_nans
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
 
@@ -428,7 +428,6 @@ class ColumnDataFileFrame(wx.Frame) :
         yerrval_lab = SimpleText(panel, ' Value:')
 
         # yref
-        o = """
         self.has_yref = Check(panel, label='data file includes energy reference data',
                               default=self.array_sel['has_yref'],
                               action=self.onYrefCheck)
@@ -438,8 +437,7 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yrpop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(100, -1))
         self.yrop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(100, -1))
 
-        self.onYrefCheck(has_yref=self.array_sel['has_yref'])
-        """
+
 
         self.ysuf = SimpleText(panel, '')
         self.message = subtitle(' ', colour=wx.Colour(0, 0, 0))
@@ -447,8 +445,8 @@ class ColumnDataFileFrame(wx.Frame) :
 
         self.ypop.SetStringSelection(self.array_sel['ypop'])
         self.yop.SetStringSelection(self.array_sel['yop'])
-        # self.yrpop.SetStringSelection(self.array_sel['yrpop'])
-        # self.yrop.SetStringSelection(self.array_sel['yrop'])
+        self.yrpop.SetStringSelection(self.array_sel['yrpop'])
+        self.yrop.SetStringSelection(self.array_sel['yrop'])
         self.monod_val.SetValue(self.array_sel['monod'])
         self.monod_val.SetAction(self.onUpdate)
         self.monod_val.Enable(self.array_sel['en_units'].startswith('deg'))
@@ -477,8 +475,21 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yarr1.SetSelection(iysel)
         self.yarr2.SetSelection(iy2sel)
         self.yerr_arr.SetSelection(iyesel)
-        # self.yref1.SetSelection(iyr1sel)
-        # self.yref2.SetSelection(iyr2sel)
+        self.yref1.SetSelection(iyr1sel)
+        self.yref2.SetSelection(iyr2sel)
+
+        self.wid_filename = wx.TextCtrl(panel, value=fix_filename(group.filename),
+                                         size=(250, -1))
+        self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
+                                         size=(150, -1))
+        if not edit_groupname:
+            self.wid_groupname.Disable()
+        self.wid_reffilename = wx.TextCtrl(panel, value=fix_filename(group.filename + '_ref'),
+                                         size=(250, -1))
+        self.wid_refgroupname = wx.TextCtrl(panel, value=group.groupname + '_ref',
+                                         size=(150, -1))
+
+        self.onYrefCheck(has_yref=self.array_sel['has_yref'])
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -530,29 +541,29 @@ class ColumnDataFileFrame(wx.Frame) :
         sizer.Add(yerrval_lab,   (ir, 3), (1, 1), RIGHT, 0)
         sizer.Add(self.yerr_val, (ir, 4), (1, 2), LEFT, 0)
 
-#         ir += 2
-#         sizer.Add(subtitle(' Reference [ \u03BC_ref(E) ] Array: '),  (ir, 0), (1, 2), LEFT, 0)
-#         sizer.Add(self.has_yref,   (ir, 2), (1, 2), LEFT, 0)
-#
-#         ir += 1
-#         sizer.Add(refylab,    (ir, 0), (1, 1), LEFT, 0)
-#         sizer.Add(self.yrpop, (ir, 1), (1, 1), LEFT, 0)
-#         sizer.Add(self.yref1, (ir, 2), (1, 1), LEFT, 0)
-#         sizer.Add(self.yrop,  (ir, 3), (1, 1), RIGHT, 0)
-#         sizer.Add(self.yref2, (ir, 4), (1, 2), LEFT, 0)
-
-        self.wid_filename = wx.TextCtrl(panel, value=group.filename,
-                                         size=(250, -1))
-        self.wid_groupname = wx.TextCtrl(panel, value=group.groupname,
-                                         size=(150, -1))
-        if not edit_groupname:
-            self.wid_groupname.Disable()
+        ir += 1
+        sizer.Add(SimpleText(panel, ' Display Name:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_filename,                  (ir, 1), (1, 2), LEFT, 0)
+        sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.wid_groupname,                 (ir, 4), (1, 2), LEFT, 0)
 
         ir += 2
-        sizer.Add(SimpleText(panel, 'Display Name:'), (ir, 0), (1, 1), LEFT, 0)
-        sizer.Add(self.wid_filename,                  (ir, 1), (1, 2), LEFT, 0)
-        sizer.Add(SimpleText(panel, 'Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
-        sizer.Add(self.wid_groupname,                 (ir, 4), (1, 2), LEFT, 0)
+        sizer.Add(subtitle(' Reference [ \u03BC_ref(E) ] Array: '),
+                  (ir, 0), (1, 2), LEFT, 0)
+        sizer.Add(self.has_yref,   (ir, 2), (1, 2), LEFT, 0)
+
+        ir += 1
+        sizer.Add(refylab,    (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.yrpop, (ir, 1), (1, 1), LEFT, 0)
+        sizer.Add(self.yref1, (ir, 2), (1, 1), LEFT, 0)
+        sizer.Add(self.yrop,  (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.yref2, (ir, 4), (1, 2), LEFT, 0)
+
+        ir += 1
+        sizer.Add(SimpleText(panel, ' Reference Name:'), (ir, 0), (1, 1), LEFT, 0)
+        sizer.Add(self.wid_reffilename,               (ir, 1), (1, 2), LEFT, 0)
+        sizer.Add(SimpleText(panel, ' Group Name:'),   (ir, 3), (1, 1), RIGHT, 0)
+        sizer.Add(self.wid_refgroupname,              (ir, 4), (1, 2), LEFT, 0)
         ir +=1
         sizer.Add(self.message,                     (ir, 1), (1, 4), LEFT, 0)
 
@@ -688,7 +699,6 @@ class ColumnDataFileFrame(wx.Frame) :
                            on_ok=self.add_columns)
 
     def add_columns(self, label, selection):
-        print("ADD COL ", label, selection)
         new_labels = self.workgroup.array_labels
         self.set_array_labels(new_labels)
         self.yarr1.SetStringSelection(new_labels[-1])
@@ -725,7 +735,7 @@ class ColumnDataFileFrame(wx.Frame) :
             groupname = fix_varname(self.wid_groupname.GetValue())
 
         en_units = self.en_units.GetStringSelection()
-        dspace   = float(self.monod_val.GetValue())
+        monod    = float(self.monod_val.GetValue())
         xarr     = self.xarr.GetStringSelection()
         yarr1    = self.yarr1.GetStringSelection()
         yarr2    = self.yarr2.GetStringSelection()
@@ -751,6 +761,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 "{group}.path = '{path}'",
                 "{group}.is_frozen = False"]
 
+
         for label, selection in self.extra_sums.items():
             buff.append("{group}.array_labels.append('%s')" % label)
             buff.append("_tmparr = {group}.data[%s, :].sum(axis=0)" % repr(selection))
@@ -764,8 +775,8 @@ class ColumnDataFileFrame(wx.Frame) :
 
         expr = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
-            buff.append(f"mono_dspace = {dspace:.9f}")
-            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*mono_dspace*sin(DEG2RAD*({expr:s})))")
+            buff.append(f"monod = {monod:.9f}")
+            buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({expr:s})))")
         elif en_units.startswith('keV'):
             buff.append(f"{{group}}.xdat = 1000.0*{expr:s}")
         else:
@@ -774,16 +785,46 @@ class ColumnDataFileFrame(wx.Frame) :
         for aname in ('ydat', 'yerr'):
             expr = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
-
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             if self.reader == 'read_gsescan':
-                buff.append("{group}.energy = {group}.x")
-            else:
-                buff.append("{group}.energy = {group}.xdat")
+                buff.append("{group}.xdat = {group}.x")
+            buff.append("{group}.energy = {group}.xdat")
             buff.append("{group}.mu = {group}.ydat")
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
+
+        ref_filename = None
+        ref_groupname = None
+        if self.has_yref.IsChecked():
+            yrname1  = self.yref1.GetStringSelection().strip()
+            yrname2  = self.yref2.GetStringSelection().strip()
+            iry1    = self.yref1.GetSelection()
+            iry2    = self.yref2.GetSelection()
+            yrpop  = self.yrpop.GetStringSelection().strip()
+            yrop   = self.yop.GetStringSelection().strip()
+
+            ref_filename = self.wid_reffilename.GetValue()
+            ref_groupname = fix_varname(self.wid_refgroupname.GetValue())
+
+            buff.append("# reference group")
+            buff.append("{refgroup} = %s" % read_cmd)
+            buff.append("{refgroup}.path = '{path}'")
+            buff.append("{refgroup}.is_frozen = False")
+            buff.append("{refgroup}.datatype = 'xas'")
+            buff.append("{refgroup}.plot_xlabel = 'energy'")
+            buff.append("{refgroup}.plot_ylabel = '%s'" % self.workgroup.yref_label)
+            buff.append("{refgroup}.xdat =1.0*{group}.xdat")
+            buff.append("{refgroup}.energy = {refgroup}.xdat")
+
+            refexpr = self.expressions['yref'].replace('%s', '{group:s}')
+            buff.append("{group}.reference_group = '%s'" % (ref_groupname))
+            buff.append("{refgroup}.reference_group = None")
+            buff.append("{refgroup}.ydat =  %s" % refexpr)
+            buff.append("{refgroup}.mu = {refgroup}.ydat")
+            buff.append("sort_xafs({refgroup}, overwrite=True, fix_repeats=True)")
+            buff.append("# end reference group")
+
         script = "\n".join(buff)
 
         self.array_sel['xarr'] = xarr
@@ -794,12 +835,14 @@ class ColumnDataFileFrame(wx.Frame) :
         self.array_sel['yerror'] = yerr_op
         self.array_sel['yerr_val'] = yerr_val
         self.array_sel['yerr_arr'] = yerr_arr
-        self.array_sel['monod'] = dspace
+        self.array_sel['monod'] = monod
         self.array_sel['en_units'] = en_units
 
         if self.read_ok_cb is not None:
             self.read_ok_cb(script, self.path, groupname=groupname,
                             filename=user_filename,
+                            ref_groupname=ref_groupname,
+                            ref_filename=ref_filename,
                             extra_sums=self.extra_sums,
                             array_sel=self.array_sel)
 
@@ -836,6 +879,9 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yref2.Enable(has_yref)
         self.yrpop.Enable(has_yref)
         self.yrop.Enable(has_yref)
+        self.wid_reffilename.Enable(has_yref)
+        self.wid_refgroupname.Enable(has_yref)
+
 
     def onXSelect(self, evt=None):
         ix  = self.xarr.GetSelection()
@@ -895,8 +941,6 @@ class ColumnDataFileFrame(wx.Frame) :
         xname = self.xarr.GetStringSelection()
 
         exprs = dict(xdat=None, ydat=None, yerr=None, yref=None)
-        has_yref = False # # self.has_yref.IsChecked()
-        # print("ON UPDATE, includes reference? ", has_yref)
 
         ncol, npts = rdata.shape
         workgroup.index = 1.0*np.arange(npts)
@@ -914,9 +958,9 @@ class ColumnDataFileFrame(wx.Frame) :
 
         xlabel = xname
         en_units = self.en_units.GetStringSelection()
+        monod = float(self.monod_val.GetValue())
         if en_units.startswith('deg'):
-            dspace = float(self.monod_val.GetValue())
-            workgroup.xdat = PLANCK_HC/(2*dspace*np.sin(DEG2RAD*workgroup.xdat))
+            workgroup.xdat = PLANCK_HC/(2*monod*np.sin(DEG2RAD*workgroup.xdat))
             xlabel = xname + ' (eV)'
         elif en_units.startswith('keV'):
             workgroup.xdat *= 1000.0
@@ -986,12 +1030,16 @@ class ColumnDataFileFrame(wx.Frame) :
         ysuf, ypop, workgroup.ydat = pre_op(self.ypop, workgroup.ydat)
         self.ysuf.SetLabel(ysuf)
         exprs['ydat'] = '%s%s%s' % (ypop, exprs['ydat'], ysuf)
+        ylabel = '%s%s%s' % (ypop, ylabel,ysuf)
 
+        # error
+        yerr_arr = self.yerr_arr.GetStringSelection()
         yerr_op = self.yerr_op.GetStringSelection().lower()
         exprs['yerr'] = '1'
+        yerr_val = self.yerr_val.GetValue()
         if yerr_op.startswith('const'):
-            yerr = self.yerr_val.GetValue()
-            exprs['yerr'] = '%f' % yerr
+            yerr = yerr_val
+            exprs['yerr'] = '%f' % yerr_val
         elif yerr_op.startswith('array'):
             iyerr = self.yerr_arr.GetSelection()
             yerr = rdata[iyerr, :]
@@ -1000,11 +1048,67 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr = np.sqrt(workgroup.ydat)
             exprs['yerr'] = 'sqrt(%s.ydat)'
 
+        # ref
+        has_yref = self.has_yref.IsChecked()
+        yrname1  = self.yref1.GetStringSelection().strip()
+        yrname2  = self.yref2.GetStringSelection().strip()
+        iry1    = self.yref1.GetSelection()
+        iry2    = self.yref2.GetSelection()
+        yrpop  = self.yrpop.GetStringSelection().strip()
+        yrop   = self.yop.GetStringSelection().strip()
+        yrlabel = ''
+        if has_yref:
+            yrlabel = yrname1
+            if len(yrname2) == 0:
+                yrname2 = '1.0'
+            else:
+                yrlabel = "%s%s%s" % (yrlabel, yrop, yrname2)
+
+            if yrname1 == '0.0':
+                yrarr1 = np.zeros(npts)*1.0
+                yrexpr1 = 'zeros(%i)' % npts
+            elif len(yrname1) == 0 or yrname1 == '1.0' or iry1 >= ncol:
+                yrarr1 = np.ones(npts)*1.0
+                yrexpr1 = 'ones(%i)' % npts
+            else:
+                yrarr1 = rdata[iry1, :]
+                yrexpr1 = '%%s.data[%i, : ]' % iry1
+
+            if yrname2 == '0.0':
+                yrarr2 = np.zeros(npts)*1.0
+                yrexpr2 = '0.0'
+            elif len(yrname2) == 0 or yrname2 == '1.0' or iry2 >= ncol:
+                yrarr2 = np.ones(npts)*1.0
+                yrexpr2 = '1.0'
+            else:
+                yrarr2 = rdata[iry2, :]
+                yrexpr2 = '%%s.data[%i, : ]' % iry2
+
+            workgroup.yref = yrarr1
+            exprs['yref'] = yrexpr1
+            if yrop in ('+', '-', '*', '/'):
+                exprs['yref'] = "%s %s %s" % (yrexpr1, yop, yrexpr2)
+                if yrop == '+':
+                    workgroup.yref = yrarr1.__add__(yrarr2)
+                elif yrop == '-':
+                    workgroup.yref = yrarr1.__sub__(yrarr2)
+                elif yrop == '*':
+                    workgroup.yref = yrarr1.__mul__(yarr2)
+                elif yrop == '/':
+                    workgroup.yref = yrarr1.__truediv__(yrarr2)
+
+            yrsuf, yprop, workgroup.yref = pre_op(self.yrpop, workgroup.yref)
+            exprs['yref'] = '%s%s%s' % (yrpop, exprs['yref'], yrsuf)
+            yrlabel = '%s%s%s' % (yrpop, yrlabel, yrsuf)
+            workgroup.yref_label = yrlabel
 
         self.expressions = exprs
-        self.array_sel = {'xarr': xname,
-                          'ypop': ypop, 'yop': yop,
-                          'yarr1': yname1, 'yarr2': yname2}
+        self.array_sel = dict(xarr=xname, ypop=ypop, yop=yop, yarr1=yname1,
+                              yarr2=yname2, monod=monod, en_units=en_units,
+                              yerror=yerr_op, yerr_val=yerr_val,
+                              yerr_arr=yerr_arr, yrpop=yrpop, yrop=yrop,
+                              yref1=yrname1, yref2=yrname2,
+                              has_yref=has_yref)
 
         try:
             npts = min(len(workgroup.xdat), len(workgroup.ydat))
@@ -1026,6 +1130,7 @@ class ColumnDataFileFrame(wx.Frame) :
         workgroup.npts        = npts
         workgroup.plot_xlabel = xlabel
         workgroup.plot_ylabel = ylabel
+        workgroup.plot_yrlabel = yrlabel
         workgroup.xdat        = np.array(workgroup.xdat[:npts])
         workgroup.ydat        = np.array(workgroup.ydat[:npts])
         workgroup.y           = workgroup.ydat
@@ -1040,9 +1145,15 @@ class ColumnDataFileFrame(wx.Frame) :
         path, fname = os.path.split(workgroup.filename)
         popts = dict(marker='o', markersize=4, linewidth=1.5,
                      title=fname, ylabel=ylabel, xlabel=xlabel,
-                     label="%s: %s" % (fname, workgroup.plot_ylabel))
+                     label=ylabel)
 
         self.plotpanel.plot(workgroup.xdat, workgroup.ydat, **popts)
+        if has_yref:
+            self.plotpanel.oplot(workgroup.xdat, workgroup.yref,
+                                 y2label=yrlabel,
+                                 linewidth=2.0, color='#E08070',
+                                 label=yrlabel, zorder=-40, side='right')
+
 
         for i in range(self.nb.GetPageCount()):
             if 'plot' in self.nb.GetPageText(i).lower():

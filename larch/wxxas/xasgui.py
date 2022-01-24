@@ -257,9 +257,8 @@ class XASFrame(wx.Frame):
                 group = self.controller.file_groups.pop(s)
 
     def ShowFile(self, evt=None, groupname=None, process=True,
-                 plot=True, **kws):
-        filename = None
-        if evt is not None:
+                 filename=None, plot=True, **kws):
+        if filename is None and evt is not None:
             filename = str(evt.GetString())
 
         if groupname is None and filename is not None:
@@ -894,6 +893,7 @@ class XASFrame(wx.Frame):
         self.last_project_file = path
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
+                  ref_groupname=None, ref_filename=None,
                   array_sel=None, overwrite=False, extra_sums=None):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
@@ -911,11 +911,17 @@ class XASFrame(wx.Frame):
         if abort_read:
             return
 
-        self.larch.eval(script.format(group=groupname, path=path))
+        self.larch.eval(script.format(group=groupname, path=path,
+                                      refgroup=ref_groupname))
         if array_sel is not None:
             self.last_array_sel_col = array_sel
         self.install_group(groupname, filename, overwrite=overwrite,
                            extra_sums=extra_sums)
+
+        if ref_groupname is not None:
+            self.install_group(ref_groupname, ref_filename,
+                               overwrite=overwrite,
+                               extra_sums=extra_sums)
 
         # check if rebin is needed
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -946,8 +952,15 @@ class XASFrame(wx.Frame):
             path = path.replace('\\', '/')
             filedir, real_filename = os.path.split(path)
             gname = file2groupname(real_filename, symtable=self.larch.symtable)
-            self.larch.eval(script.format(group=gname, path=path))
+            if ref_groupname is not None:
+                ref_gname = gname + '_ref'
+                ref_fname = real_filename
+
+            self.larch.eval(script.format(group=gname, refgroup=ref_gname,
+                                          path=path))
             self.install_group(gname, real_filename, overwrite=overwrite)
+            if ref_groupname is not None:
+                self.install_group(ref_gname, ref_fname, overwrite=overwrite)
 
         self.write_message("read %s" % (real_filename))
 
@@ -971,6 +984,7 @@ class XASFrame(wx.Frame):
                 filename = "%s_%d" % (fbase, i)
                 i += 1
 
+
         cmds = ["%s.groupname = '%s'" % (groupname, groupname),
                "%s.filename = '%s'" % (groupname, filename)]
 
@@ -984,7 +998,8 @@ class XASFrame(wx.Frame):
         self.controller.file_groups[filename] = groupname
 
         self.nb.SetSelection(0)
-        self.ShowFile(groupname=groupname, process=process, plot=plot)
+        self.ShowFile(groupname=groupname, filename=filename,
+                      process=process, plot=plot)
         self.controller.filelist.SetStringSelection(filename)
         return thisgroup
 
