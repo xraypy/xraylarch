@@ -217,6 +217,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
         out_text.append('CONTROL 1 1 1 1 1 1')
         out_text.append('PRINT   1 0 0 0 0 3')
         out_text.append('EXAFS   20.0')
+        out_text.append('NLEG     6')
         out_text.append(f'RPATH   {cluster_size:.2f}')
         out_text.append('*SCF    5.0')
 
