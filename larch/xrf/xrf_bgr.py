@@ -75,3 +75,4 @@ def xrf_background(energy, counts=None, group=None, width=None, exponent=2, **kw
     if group is not None:
         group.bgr = bgr
         group.bgr_info = dict(width=width, exponent=exponent)
+    return bgr
