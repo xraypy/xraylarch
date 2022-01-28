@@ -47,7 +47,7 @@ def use_mpl_wxagg():
     return False
 
 def set_locale():
-    """set locale to 'C' for these applications, 
+    """set locale to 'C' for these applications,
     may need some improvement!!"""
     locale.setlocale(locale.LC_ALL, 'C')
 
@@ -56,6 +56,7 @@ def fix_darwin_shebang(script):
     fix anaconda python apps on MacOs to launch with pythonw
     """
     pyapp = os.path.join(sys.prefix, 'python.app', 'Contents', 'MacOS', 'python')
+    pyapp = os.path.normpath(pyapp)
     # strip off any arguments:
     script = script.split(' ', 1)[0]
     if not os.path.exists(script):
@@ -88,7 +89,7 @@ class LarchApp:
         self.bindir = os.path.join(sys.prefix, bindir)
 
     def create_shortcut(self):
-        script = os.path.join(self.bindir, self.script)
+        script = os.path.normpath(os.path.join(self.bindir, self.script))
         icon = os.path.join(icondir, self.icon)
         from pyshortcuts import ico_ext
         if isinstance(ico_ext, (list, tuple)):
@@ -295,7 +296,7 @@ def run_larch():
 
     # run wx Larch GUI
     elif args.wxgui:
-        set_locale()        
+        set_locale()
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
         install_extras(extras_epics)
@@ -306,7 +307,7 @@ def run_larch():
     # run wx Larch CLI
     else:
         if with_wx:
-            set_locale()            
+            set_locale()
             use_mpl_wxagg()
             install_extras(extras_wxgraph)
         install_extras(extras_epics)
