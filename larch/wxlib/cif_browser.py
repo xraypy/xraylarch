@@ -262,7 +262,7 @@ class CIFFrame(wx.Frame):
         cif_panel = wx.Panel(rightpanel)
         wids['cif_text'] = wx.TextCtrl(cif_panel,
                                        value='<CIF TEXT>',
-                                       style=wx.TE_MULTILINE|wx.TE_READONLY,
+                                       style=wx.TE_MULTILINE,
                                        size=(300, 350))
         wids['cif_text'].SetFont(Font(FONTSIZE+1))
         cif_sizer = wx.BoxSizer(wx.VERTICAL)
