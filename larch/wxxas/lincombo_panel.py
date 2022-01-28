@@ -31,13 +31,14 @@ np.seterr(all='ignore')
 
 # plot options:
 norm   = 'Normalized \u03bC(E)'
+flatmu  = 'Flattened \u03bC(E)'
 rawmu  = 'Raw \u03bC(E)'
 dmude  = 'd\u03bC(E)/dE'
 chik   = '\u03c7(k)'
 noplot = '<no plot>'
 noname = '<none>'
 
-FitSpace_Choices = [norm, rawmu, dmude, chik]
+FitSpace_Choices = [norm, rawmu, flatmu, dmude, chik]
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -812,6 +813,8 @@ class LinearComboPanel(TaskPanel):
             opts['arrayname'] = 'mu'
         elif opts['fitspace'] == chik:
             opts['arrayname'] = 'chi'
+        elif opts['fitspace'] == flat:
+            opts['arrayname'] = 'flat'
 
         self.skip_process = False
         return opts
