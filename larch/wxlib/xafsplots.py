@@ -383,7 +383,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
         if ex < 0:
             s = ''
         else:
-            s = '\n[%.1f]' % (etok(ex))
+            s = '\n[%.2f]' % (etok(ex))
         return r"%1.4g%s" % (x, s)
 
     _plot(dgroup.energy-e0, chie+offset, xlabel=xlabel, ylabel=ylabel,
