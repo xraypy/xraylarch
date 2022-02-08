@@ -184,6 +184,9 @@ def test_one_line_header(fname='ESRF_BM08_LISA_2021.dat'):
     bldat, labels = _tester(fname)
     assert(labels == ['ebraggenergy', 'i0_eh1', 'i1_eh1', 'mu', 'i1_eh2', 'ir_eh2', 'mu_ref'])
 
+def test_zero_line_header(fname='generic_columns_no_header.dat'):
+    bldat, labels = _tester(fname)
+    assert(labels == ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7'])
 
 if __name__ == '__main__':
     test_apsxsd_new()
@@ -201,3 +204,5 @@ if __name__ == '__main__':
     test_nslsxdac()
     test_clshxma()
     test_kekpf12c()
+    test_one_line_header()
+    test_zero_line_header()
