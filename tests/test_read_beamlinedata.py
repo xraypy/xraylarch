@@ -180,6 +180,11 @@ def test_kekpf12c(fname='PFBL12C_2005.dat'):
     assert(bldat.mono_dspace > 3)
     assert(len(labels) == 5)
 
+def test_one_line_header(fname='ESRF_BM08_LISA_2021.dat'):
+    bldat, labels = _tester(fname)
+    assert(labels == ['ebraggenergy', 'i0_eh1', 'i1_eh1', 'mu', 'i1_eh2', 'ir_eh2', 'mu_ref'])
+
+
 if __name__ == '__main__':
     test_apsxsd_new()
     test_apsxsd_old()
