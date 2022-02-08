@@ -952,14 +952,14 @@ class XASFrame(wx.Frame):
             path = path.replace('\\', '/')
             filedir, real_filename = os.path.split(path)
             gname = file2groupname(real_filename, symtable=self.larch.symtable)
+            ref_gname = ref_fname = None
             if ref_groupname is not None:
                 ref_gname = gname + '_ref'
-                ref_fname = real_filename
-
+                ref_fname = real_filename + '_ref'
             self.larch.eval(script.format(group=gname, refgroup=ref_gname,
                                           path=path))
             self.install_group(gname, real_filename, overwrite=overwrite)
-            if ref_groupname is not None:
+            if ref_gname is not None:
                 self.install_group(ref_gname, ref_fname, overwrite=overwrite)
 
         self.write_message("read %s" % (real_filename))
