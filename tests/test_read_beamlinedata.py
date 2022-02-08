@@ -1,14 +1,17 @@
 import os
 from larch.io import read_ascii, guess_beamline
 
-def _tester(fname):
+def _tester(fname, return_group=False):
     fname = os.path.join('..', 'examples', 'xafsdata', 'beamlines', fname)
     group = read_ascii(fname)
     cls = guess_beamline(group.header)
     bldat = cls(group.header)
     labels = bldat.get_array_labels()
     print(fname, cls.__name__, len(labels), group.data.shape, labels)
-    return bldat, labels
+    if return_group:
+        return bldat, labels, group
+    else:
+        return bldat, labels
 
 def test_apsxsd_new(fname='APS9BM_2019.dat'):
     bldat, labels = _tester(fname)
@@ -185,8 +188,8 @@ def test_one_line_header(fname='ESRF_BM08_LISA_2021.dat'):
     assert(labels == ['ebraggenergy', 'i0_eh1', 'i1_eh1', 'mu', 'i1_eh2', 'ir_eh2', 'mu_ref'])
 
 def test_zero_line_header(fname='generic_columns_no_header.dat'):
-    bldat, labels = _tester(fname)
-    assert(labels == ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7'])
+    bldat, labels, group = _tester(fname, return_group=True)
+    assert(group.array_labels == ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7'])
 
 if __name__ == '__main__':
     test_apsxsd_new()
