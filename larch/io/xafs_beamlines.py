@@ -92,7 +92,7 @@ class GenericBeamlineData:
 
     def get_array_labels(self, ncolumns=None):
         lastline = "# "
-        if len(self.headerlines) > 1:
+        if len(self.headerlines) >= 1:
             lastline = self.headerlines[-1].strip()
         for cchars in ('#L', '#C', '#', 'C'):
             if lastline.startswith(cchars):
