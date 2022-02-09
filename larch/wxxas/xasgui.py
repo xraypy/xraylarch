@@ -865,10 +865,10 @@ class XASFrame(wx.Frame):
         self.larch.eval("_prj = read_athena('{path:s}', do_fft=False, do_bkg=False)".format(path=path))
         dgroup = None
         script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
-
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
         labels = []
+        groups_added = []
         for gname in namelist:
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
@@ -878,11 +878,21 @@ class XASFrame(wx.Frame):
                 while count < 1e7 and self.larch.symtable.has_group(gid):
                     gid = prefix + make_hashkey(length=7)
                     count += 1
-            label = getattr(this, 'label', gname)
+            label = getattr(this, 'label', gname).strip()
             labels.append(label)
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, label, process=True, plot=False,
                                         extra_sums=extra_sums)
+            groups_added.append(gid)
+        for gid in groups_added:
+            rgroup = gid
+            dgroup = self.larch.symtable.get_group(gid)
+            apars = getattr(dgroup, 'athena_params', {})
+            refgroup = getattr(apars, 'reference', None)
+            if refgroup in groups_added:
+                rgroup = self.larch.symtable.get_group(refgroup)
+            dgroup.energy_ref = rgroup
+
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
 
@@ -994,13 +1004,13 @@ class XASFrame(wx.Frame):
 
         self.larch.eval('\n'.join(cmds))
 
-        self.controller.filelist.Append(filename)
+        self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
 
         self.nb.SetSelection(0)
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
-        self.controller.filelist.SetStringSelection(filename)
+        self.controller.filelist.SetStringSelection(filename.strip())
         return thisgroup
 
 
