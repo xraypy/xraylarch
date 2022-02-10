@@ -628,8 +628,10 @@ class ColumnDataFileFrame(wx.Frame) :
             reader = 'read_xdi'
             if 'epics stepscan file' in line1 :
                 reader = 'read_gsexdi'
-        elif ("#s" in line1) or ("#f" in line1):
+        if ("#s" in line1) or ("#f" in line1):
             reader = 'read_specfile'
+        if 'fdmnes' in line1:
+            reader = 'read_fdmnes'
 
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs

@@ -549,6 +549,21 @@ def write_group(filename, group, scalars=None, arrays=None,
                 label=label, header=header, _larch=_larch)
 
 
+def read_fdmnes(filename):
+    """read FDMNES ascii files"""
+    group = read_ascii(filename)
+    group.header_dict = dict(filetype='FDMNES', energy_units='eV')
+    for headline in group.header:
+        if ("E_edge" in headline):
+            if headline.startswith("#"):
+                headline = headline[1:]
+            vals = [float(v) for v in headline.split(" = ")[0].split(" ") if v]
+            vals_names = headline.split(" = ")[1].split(", ")
+            group.header_dict.update(dict(zip(vals_names, vals)))
+    group.name = f'FDMNES file {filename}'
+    group.energy += group.header_dict["E_edge"]
+    return group
+
 def guess_filereader(path):
     """guess function name to use to read a data file based on the file header
 
@@ -577,4 +592,6 @@ def guess_filereader(path):
         reader = 'read_gsexdi'
     if ("#s" in line1) or ("#f" in line1):
         reader = 'read_specfile'
+    if 'fdmnes' in line1:
+        reader = 'read_fdmnes'
     return reader
