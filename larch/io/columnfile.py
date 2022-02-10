@@ -549,27 +549,32 @@ def write_group(filename, group, scalars=None, arrays=None,
                 label=label, header=header, _larch=_larch)
 
 
-def guess_filereader(filename):
-    """guess function name to use to read an ASCII data file based
-    on the file header
+def guess_filereader(path):
+    """guess function name to use to read a data file based on the file header
 
     Arguments
     ---------
-    filename (str)   name of file to be read
+    path (str) : file path to be read
 
     Returns
     -------
-      name of function (as a string) to use to read file
+    name of function (as a string) to use to read file
     """
-    with open(path, 'r') as fh:
-        line1 = fh.readline()
+    parent, filename = os.path.split(path)
+    with open(path, 'rb') as fh:
+        text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+    lines = text.split('\n')
+    text = ''.join(lines)
+
     line1 = lines[0].lower()
 
     reader = 'read_ascii'
+    if 'epics scan' in line1:
+        reader = 'read_gsescan'
     if 'xdi' in line1:
         reader = 'read_xdi'
-        if ('epics stepscan' in line1 or 'gse' in line1):
-            reader = 'read_gsexdi'
-    elif 'epics scan' in line1:
-        reader = 'read_gsescan'
+    if 'epics stepscan file' in line1 :
+        reader = 'read_gsexdi'
+    if ("#s" in line1) or ("#f" in line1):
+        reader = 'read_specfile'
     return reader
