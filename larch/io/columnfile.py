@@ -564,7 +564,7 @@ def read_fdmnes(filename):
     group.energy += group.header_dict["E_edge"]
     return group
 
-def guess_filereader(path):
+def guess_filereader(path, return_text=False):
     """guess function name to use to read a data file based on the file header
 
     Arguments
@@ -574,6 +574,7 @@ def guess_filereader(path):
     Returns
     -------
     name of function (as a string) to use to read file
+    if return_text: text of the read file
     """
     parent, filename = os.path.split(path)
     with open(path, 'rb') as fh:
@@ -594,4 +595,8 @@ def guess_filereader(path):
         reader = 'read_specfile'
     if 'fdmnes' in line1:
         reader = 'read_fdmnes'
-    return reader
+    
+    if return_text:
+        return reader, text
+    else:
+        return reader

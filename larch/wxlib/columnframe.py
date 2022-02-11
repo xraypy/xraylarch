@@ -24,6 +24,7 @@ from larch.xafs.xafsutils import guess_energy_units
 from larch.utils.strutils import fix_varname, fix_filename, file2groupname
 from larch.io import look_for_nans
 from larch.utils.physical_constants import PLANCK_HC, DEG2RAD
+from larch.io.columnfile import guess_filereader
 
 CEN |=  wx.ALL
 FNB_STYLE = fnb.FNB_NO_X_BUTTON|fnb.FNB_SMART_TABS
@@ -614,24 +615,7 @@ class ColumnDataFileFrame(wx.Frame) :
     def read_column_file(self, path):
         """read column file, generally as initial read"""
         parent, filename = os.path.split(path)
-        with open(path, 'rb') as fh:
-            text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
-        lines = text.split('\n')
-        text = ''.join(lines)
-
-        line1 = lines[0].lower()
-
-        reader = 'read_ascii'
-        if 'epics scan' in line1:
-            reader = 'read_gsescan'
-        if 'xdi' in line1:
-            reader = 'read_xdi'
-            if 'epics stepscan file' in line1 :
-                reader = 'read_gsexdi'
-        if ("#s" in line1) or ("#f" in line1):
-            reader = 'read_specfile'
-        if 'fdmnes' in line1:
-            reader = 'read_fdmnes'
+        reader, text = guess_filereader(path, return_text=True)
 
         if reader in ('read_xdi', 'read_gsexdi'):
             # first check for Nans and Infs
