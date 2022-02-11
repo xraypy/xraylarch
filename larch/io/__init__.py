@@ -11,7 +11,7 @@ from .fileutils import (increment_filename, new_filename, new_dirname,
                         asciikeys)
 
 from .columnfile import (read_ascii, write_ascii, write_group, set_array_labels,
-                         guess_filereader, look_for_nans)
+                         guess_filereader, look_for_nans, read_fdmnes)
 from .xdi import read_xdi, XDIFile, XDIFileException
 from .mda import read_mda
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
@@ -92,7 +92,8 @@ __exports__ = dict(increment_filename=increment_filename,
                    netcdf_group=netcdf_group,
                    str2rng=str2rng_larch,
                    read_specfile=read_specfile,
-                   specfile=open_specfile
+                   specfile=open_specfile,
+                   read_fdmnes=read_fdmnes
                    )
 
 _larch_builtins = {'_io':__exports__}

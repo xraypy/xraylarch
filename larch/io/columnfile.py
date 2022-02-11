@@ -549,27 +549,57 @@ def write_group(filename, group, scalars=None, arrays=None,
                 label=label, header=header, _larch=_larch)
 
 
-def guess_filereader(filename):
-    """guess function name to use to read an ASCII data file based
-    on the file header
+def read_fdmnes(filename, **kwargs):
+    """read [FDMNES](http://fdmnes.neel.cnrs.fr/) ascii files"""
+    group = read_ascii(filename, **kwargs)
+    group.header_dict = dict(filetype='FDMNES', energy_units='eV')
+    for headline in group.header:
+        if ("E_edge" in headline):
+            if headline.startswith("#"):
+                headline = headline[1:]
+            vals = [float(v) for v in headline.split(" = ")[0].split(" ") if v]
+            vals_names = headline.split(" = ")[1].split(", ")
+            group.header_dict.update(dict(zip(vals_names, vals)))
+    group.name = f'FDMNES file {filename}'
+    group.energy += group.header_dict["E_edge"]
+    #fix _arrlabel -> arrlabel
+    for ilab, lab in enumerate(group.array_labels):
+        if lab.startswith("_"):
+            fixlab = lab[1:]
+            group.array_labels[ilab] = fixlab
+            delattr(group, lab)
+            setattr(group, fixlab, group.data[ilab])
+    return group
+
+def guess_filereader(path, return_text=False):
+    """guess function name to use to read a data file based on the file header
 
     Arguments
     ---------
-    filename (str)   name of file to be read
+    path (str) : file path to be read
 
     Returns
     -------
-      name of function (as a string) to use to read file
+    name of function (as a string) to use to read file
+    if return_text: text of the read file
     """
-    with open(path, 'r') as fh:
-        line1 = fh.readline()
+    parent, filename = os.path.split(path)
+    with open(path, 'rb') as fh:
+        text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
+    lines = text.split('\n')
     line1 = lines[0].lower()
-
     reader = 'read_ascii'
+    if 'epics scan' in line1:
+        reader = 'read_gsescan'
     if 'xdi' in line1:
         reader = 'read_xdi'
-        if ('epics stepscan' in line1 or 'gse' in line1):
-            reader = 'read_gsexdi'
-    elif 'epics scan' in line1:
-        reader = 'read_gsescan'
-    return reader
+    if 'epics stepscan file' in line1 :
+        reader = 'read_gsexdi'
+    if ("#s" in line1) or ("#f" in line1):
+        reader = 'read_specfile'
+    if 'fdmnes' in line1:
+        reader = 'read_fdmnes'
+    if return_text:
+        return reader, text
+    else:
+        return reader
