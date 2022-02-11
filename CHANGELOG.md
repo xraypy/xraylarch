@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.59 - not relased yet]
+
+[Release announcement]()
+
+### Added
+ - Reading files from [FDMNES](http://fdmnes.neel.cnrs.fr/).
+
+### Fixed
+ - Reading columns names from one line header.
+
+### Removed
+
+
 ## [0.9.58 - 2022-01-16]
 
 [Release announcement](https://millenia.cars.aps.anl.gov/pipermail/ifeffit/2022-January/010373.html)

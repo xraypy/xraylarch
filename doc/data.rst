@@ -49,7 +49,7 @@ information.  For instance::
 This file and others like it can be read with the builtin
 :func:`read_ascii` function.
 
-.. function:: read_ascii(filename, comentchar='#;*%', labels=None)
+.. function:: read_ascii(filename, commentchar='#;*%', labels=None)
 
    opens and read an plaintext data file, returning a new group containing
    the data.
@@ -436,7 +436,18 @@ the `silx.io.open` module (see `silx`_).
 
    Get a Larch group for a given scan number. If `scan=None` the first scan is returned. 
     
+Reading FDMNES output files
+============================
 
+ASCII files from the [FDMNES](http://fdmnes.neel.cnrs.fr/) are read via
+
+.. function:: read_fdmnes(filename)
+
+   Return a Larch group
+
+This function is a simple wrapper on top of `read_ascii`, parsing the header in
+order to shift the energy scale to absolute values, according to the `E_edge`
+variable. The parsed variables are stored in the `group.header_dict` dictionary.
    
 Saving and Restoring Larch Groups
 =========================================

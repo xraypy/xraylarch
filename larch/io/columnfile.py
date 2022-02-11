@@ -550,7 +550,7 @@ def write_group(filename, group, scalars=None, arrays=None,
 
 
 def read_fdmnes(filename, **kwargs):
-    """read (FDMNES)[http://fdmnes.neel.cnrs.fr/] ascii files"""
+    """read [FDMNES](http://fdmnes.neel.cnrs.fr/) ascii files"""
     group = read_ascii(filename, **kwargs)
     group.header_dict = dict(filetype='FDMNES', energy_units='eV')
     for headline in group.header:
