@@ -1,5 +1,5 @@
 import os
-from larch.io import read_ascii, guess_beamline
+from larch.io import read_ascii, guess_beamline, guess_filereader, read_fdmnes
 
 def _tester(fname, return_group=False):
     fname = os.path.join('..', 'examples', 'xafsdata', 'beamlines', fname)
@@ -191,6 +191,14 @@ def test_zero_line_header(fname='generic_columns_no_header.dat'):
     bldat, labels, group = _tester(fname, return_group=True)
     assert(group.array_labels == ['col1', 'col2', 'col3', 'col4', 'col5', 'col6', 'col7'])
 
+def test_fdmnes(fnames=['FDMNES_2022_Mo2C_out.dat', 'FDMNES_2022_Mo2C_out_conv.dat']):
+    for fname in fnames:
+        fname = os.path.join('..', 'examples', 'xafsdata', 'beamlines', fname)
+        assert(guess_filereader(fname) == 'read_fdmnes')
+        group = read_fdmnes(fname)
+        assert(group.array_labels == ['energy', 'xanes'])
+        assert(group.header_dict['E_edge'] == 20000.0)
+
 if __name__ == '__main__':
     test_apsxsd_new()
     test_apsxsd_old()
@@ -209,3 +217,4 @@ if __name__ == '__main__':
     test_kekpf12c()
     test_one_line_header()
     test_zero_line_header()
+    test_fdmnes()
