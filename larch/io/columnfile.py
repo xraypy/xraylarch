@@ -549,9 +549,9 @@ def write_group(filename, group, scalars=None, arrays=None,
                 label=label, header=header, _larch=_larch)
 
 
-def read_fdmnes(filename):
-    """read FDMNES ascii files"""
-    group = read_ascii(filename)
+def read_fdmnes(filename, **kwargs):
+    """read (FDMNES)[http://fdmnes.neel.cnrs.fr/] ascii files"""
+    group = read_ascii(filename, **kwargs)
     group.header_dict = dict(filetype='FDMNES', energy_units='eV')
     for headline in group.header:
         if ("E_edge" in headline):
@@ -587,10 +587,7 @@ def guess_filereader(path, return_text=False):
     with open(path, 'rb') as fh:
         text = fh.read().decode('utf-8').replace('\r\n', '\n').replace('\r', '\n')
     lines = text.split('\n')
-    text = ''.join(lines)
-
     line1 = lines[0].lower()
-
     reader = 'read_ascii'
     if 'epics scan' in line1:
         reader = 'read_gsescan'
@@ -602,7 +599,6 @@ def guess_filereader(path, return_text=False):
         reader = 'read_specfile'
     if 'fdmnes' in line1:
         reader = 'read_fdmnes'
-    
     if return_text:
         return reader, text
     else:

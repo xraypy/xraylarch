@@ -658,7 +658,7 @@ class ColumnDataFileFrame(wx.Frame) :
         group = _larch.symtable.get_symbol(tmpname)
         # _larch.symtable.del_symbol(tmpname)
 
-        group.text = '\n'.join(lines)
+        group.text = text
         group.path = path
         group.filename = filename
         group.groupname = file2groupname(filename,
