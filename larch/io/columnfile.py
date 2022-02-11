@@ -562,6 +562,13 @@ def read_fdmnes(filename):
             group.header_dict.update(dict(zip(vals_names, vals)))
     group.name = f'FDMNES file {filename}'
     group.energy += group.header_dict["E_edge"]
+    #fix _arrlabel -> arrlabel
+    for ilab, lab in enumerate(group.array_labels):
+        if lab.startswith("_"):
+            fixlab = lab[1:]
+            group.array_labels[ilab] = fixlab
+            delattr(group, lab)
+            setattr(group, fixlab, group.data[ilab])
     return group
 
 def guess_filereader(path, return_text=False):
