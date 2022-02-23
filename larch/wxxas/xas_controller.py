@@ -19,14 +19,14 @@ class XASController():
         self.larch = _larch
         if self.larch is None:
             self.larch = larch.Interpreter()
-        self.filelist = None
-        self.file_groups = {}
-        self.fit_opts = {}
-        self.group = None
-        self.plot_erange = None
-        self.groupname = None
-        self.report_frame = None
         self.symtable = self.larch.symtable
+        self.file_groups = self.symtable._xasgroups = {}
+
+        self.filelist = None
+        self.group = None
+        self.groupname = None
+        self.plot_erange = None
+        self.report_frame = None
 
     def init_larch(self):
         _larch = self.larch
