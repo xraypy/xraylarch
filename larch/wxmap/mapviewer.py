@@ -57,7 +57,6 @@ from .mapimageframe import MapImageFrame, CorrelatedMapFrame
 from .mapmathpanel import MapMathPanel
 from .maptomopanel import TomographyPanel
 from .mapxrfpanel import XRFAnalysisPanel
-from .maptomopanel import TomographyPanel
 
 from ..wxxrd import XRD1DViewerFrame, XRD2DViewerFrame
 
