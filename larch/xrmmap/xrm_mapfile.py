@@ -2011,16 +2011,20 @@ class GSEXRM_MapFile(object):
         if hotcols is None:
             hotcols = self.hotcols
         posnames = [bytes2str(n.lower()) for n in self.xrmmap['positions/name']]
+        omega = None
         if axis is not None:
             if axis in posnames or type(axis) == int:
                 omega = self.get_pos(axis, mean=True)
-        elif 'theta' in posnames:
-            omega = self.get_pos('theta', mean=True)
-        elif 'omega' in posnames:
-            omega = self.get_pos('omega', mean=True)
         else:
             omega = None
-
+            for pname in posnames:
+                for aname in ('theta', 'phi', 'omega', 'chi'):
+                    if aname in pname:
+                        omega = self.get_pos(pname, mean=True)
+                        print(f"using positoner '{pname:s}' as rotation axis ")
+                        break
+                if omega is not None:
+                    break
         if hotcols and omega is not None:
            if len(omega) == self.xrmmap[self.get_detname()]['counts'].shape[1]:
                omega = omega[1:-1]
