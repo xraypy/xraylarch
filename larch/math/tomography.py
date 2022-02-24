@@ -42,11 +42,15 @@ def reshape_sinogram(A,x=[],omega=[]):
 
     A = np.array(A)
     if len(x) == len(omega):
-        print('''Cannot reorder sinogram based on length of positional
-                 arrays when same length. Acceptable orders:
-                 sinogram_order = False : sino = [ 2th   , slice, X ]
-                 sinogram_order = True  : sino = [ slice , 2th  , X ]''')
-        return A,False
+        print("Warning: guessing that 2nd axis is omega")
+        # Cannot reorder sinogram based on length of positional
+        #         arrays when same length. Acceptable orders:
+        #         sinogram_order = False : sino = [ 2th   , slice, X ]
+        #         sinogram_order = True  : sino = [ slice , 2th  , X ]''')
+        if len(A.shape) == 2:
+           A = A.reshape(1, A.shape[0], A.shape[1])
+        return A, True
+
     if len(x) < 1 or len(omega) < 1:
         return A,False
     if len(A.shape) != 3:
