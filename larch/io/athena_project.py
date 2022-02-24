@@ -301,7 +301,7 @@ def parse_perlathena(text, filename):
     """
     aout = io.StringIO()
     aeval = asteval.Interpreter(minimal=True, writer=aout, err_writer=aout,
-                                max_statement_length=12 543 000)
+                                max_statement_length=12543000)
 
     lines = text.split('\n')
     athenagroups = []
