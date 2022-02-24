@@ -300,7 +300,8 @@ def parse_perlathena(text, filename):
     parse old athena file format to Group of Groups
     """
     aout = io.StringIO()
-    aeval = asteval.Interpreter(minimal=True, writer=aout, err_writer=aout)
+    aeval = asteval.Interpreter(minimal=True, writer=aout, err_writer=aout,
+                                max_statement_length=12 543 000)
 
     lines = text.split('\n')
     athenagroups = []
@@ -341,10 +342,14 @@ def parse_perlathena(text, filename):
             athenagroups.append(raw)
             raw = {'name':''}
         elif key == 'journal':
-            journal = aeval(text2list(t))
+            try:
+                journal = aeval(text2list(t))
+            except ValueError:
+                pass
             if len(aeval.error) > 0:
-                print(f" warning: could not read journal from '{filename:s}'")
-                journal = ['']
+                print(f" warning: may not read journal from '{filename:s}' completely")
+                journal = text2list(t)
+
         elif key == 'args':
             raw['args'] = aeval(text2list(t))
         elif key == 'xdi':
