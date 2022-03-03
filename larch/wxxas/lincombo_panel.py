@@ -813,7 +813,7 @@ class LinearComboPanel(TaskPanel):
             opts['arrayname'] = 'mu'
         elif opts['fitspace'] == chik:
             opts['arrayname'] = 'chi'
-        elif opts['fitspace'] == flat:
+        elif opts['fitspace'] == flatmu:
             opts['arrayname'] = 'flat'
 
         self.skip_process = False
