@@ -418,7 +418,10 @@ class DataSourceSpecH5(object):
         """
         allscans = []
         for sn in self._sourcefile["/"].keys():
-            sg = self._sourcefile[sn]
+            try:
+                sg = self._sourcefile[sn]
+            except KeyError:
+                continue  # broken HDF5 link
             try:
                 allscans.append(
                     [
