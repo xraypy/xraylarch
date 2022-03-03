@@ -720,8 +720,8 @@ class AthenaProject(object):
         fh.write(str2bytes("\n".join([bytes2str(t) for t in buff])))
         fh.close()
 
-    def read(self, filename=None, match=None, do_preedge=True, do_bkg=True,
-             do_fft=True, use_hashkey=False):
+    def read(self, filename=None, match=None, do_preedge=True, do_bkg=False,
+             do_fft=False, use_hashkey=False):
         """
         read Athena project to group of groups, one for each Athena dataset
         in the project file.  This supports both gzipped and unzipped files
@@ -731,8 +731,8 @@ class AthenaProject(object):
             filename (string): name of Athena Project file
             match (string): pattern to use to limit imported groups (see Note 1)
             do_preedge (bool): whether to do pre-edge subtraction [True]
-            do_bkg (bool): whether to do XAFS background subtraction [True]
-            do_fft (bool): whether to do XAFS Fast Fourier transform [True]
+            do_bkg (bool): whether to do XAFS background subtraction [False]
+            do_fft (bool): whether to do XAFS Fast Fourier transform [False]
             use_hashkey (bool): whether to use Athena's hash key as the
                            group name instead of the Athena label [False]
         Returns:
@@ -753,8 +753,8 @@ class AthenaProject(object):
             1. read in all groups from a project file:
                cr_data = read_athena('My Cr Project.prj')
 
-            2. read in only the "merged" data from a Project, and don't do FFT:
-               zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_fft=False)
+            2. read in only the "merged" data from a Project, do BKG and FFT:
+               zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_bkg=True, do_fft=True)
         """
         if filename is not None:
             self.filename = filename
@@ -877,7 +877,7 @@ class AthenaProject(object):
         return out
 
 
-def read_athena(filename, match=None, do_preedge=True, do_bkg=True, do_fft=True,
+def read_athena(filename, match=None, do_preedge=True, do_bkg=False, do_fft=False,
                 use_hashkey=False,  _larch=None):
     """read athena project file
     returns a Group of Groups, one for each Athena Group in the project file
@@ -886,8 +886,8 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=True, do_fft=True,
         filename (string): name of Athena Project file
         match (string): pattern to use to limit imported groups (see Note 1)
         do_preedge (bool): whether to do pre-edge subtraction [True]
-        do_bkg (bool): whether to do XAFS background subtraction [True]
-        do_fft (bool): whether to do XAFS Fast Fourier transform [True]
+        do_bkg (bool): whether to do XAFS background subtraction [False]
+        do_fft (bool): whether to do XAFS Fast Fourier transform [False]
         use_hashkey (bool): whether to use Athena's hash key as the
                        group name instead of the Athena label [False]
 
@@ -909,8 +909,8 @@ def read_athena(filename, match=None, do_preedge=True, do_bkg=True, do_fft=True,
         1. read in all groups from a project file:
            cr_data = read_athena('My Cr Project.prj')
 
-        2. read in only the "merged" data from a Project, and don't do FFT:
-           zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_fft=False)
+        2. read in only the "merged" data from a Project, and do BKG and FFT:
+           zn_data = read_athena('Zn on Stuff.prj', match='*merge*', do_bkg=True, do_fft=True)
 
     """
     if not os.path.exists(filename):
