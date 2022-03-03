@@ -222,7 +222,8 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         setattr(details, attr, getattr(result, attr, None))
 
     # uncertainties in mu0 and chi: can be fairly slow.
-    if calc_uncertainties:
+    covar = getattr(result, 'covar', None)
+    if calc_uncertainties and covar is not None:
         nchi = len(chi)
         nmue = iemax-ie0 + 1
         redchi = result.redchi
