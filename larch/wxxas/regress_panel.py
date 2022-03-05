@@ -19,7 +19,8 @@ from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen)
 from larch.io import read_csv
-from larch.utils.strutils import fix_varname, get_cwd
+from larch.utils.strutils import fix_varname
+from larch.utils import get_cwd
 
 from .taskpanel import TaskPanel, DataTableGrid
 
