@@ -221,7 +221,7 @@ def fileprompt(mode='open', multi=True, message = None,
         _larch.raise_exception(None, msg='wx not supported')
     if hasattr(parent, 'GetTopWindow'):
         parent = parent.GetTopWindow()
-xfff    timer = wxLarchTimer(parent, _larch)
+    timer = wxLarchTimer(parent, _larch)
     dlg = wx.FileDialog(parent=timer, message=message,
                         defaultDir=get_cwd(),
                         defaultFile=fname,
