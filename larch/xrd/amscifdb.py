@@ -821,7 +821,7 @@ class AMSCIFDB():
             for el in contains_elements:
                 new_matches = []
                 for row in matches:
-                    if el in cif_elems[row]:
+                    if row in cif_elems and el in cif_elems[row]:
                         new_matches.append(row)
                 matches = new_matches
 
