@@ -12,7 +12,7 @@ from .site_config import history_file, show_site_config
 from .version import make_banner
 from .inputText import InputText
 from .larchlib import StdWriter
-from .utils import uname
+from .utils import uname, get_homedir
 from .wxlib import LarchWxApp
 HAS_READLINE = False
 try:
@@ -36,7 +36,7 @@ class shell(cmd.Cmd):
 
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
-        homedir = os.environ.get('HOME', os.getcwd())
+        homedir = get_homedir()
 
         if stdin is not None:
             sys.stdin = stdin

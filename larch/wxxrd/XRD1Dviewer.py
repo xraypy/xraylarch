@@ -28,7 +28,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-from larch.utils import nativepath
+from larch.utils import nativepath, get_cwd
 from larch.wxlib import PeriodicTablePanel, Choice, LarchWxApp
 
 from larch.xrd import (cifDB, SearchCIFdb, QSTEP, QMIN, QMAX, CATEGORIES,
@@ -84,7 +84,7 @@ def loadXYfile(event=None, parent=None, xrdviewer=None):
 
     wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
     dlg = wx.FileDialog(parent, message='Choose 1D XRD data file',
-                        defaultDir=os.getcwd(),
+                        defaultDir=get_cwd(),
                         wildcard=wildcards,
                         style=wx.FD_OPEN|wx.FD_MULTIPLE)
                         #style=wx.FD_OPEN)
@@ -274,7 +274,7 @@ class XRD1DViewerFrame(wx.Frame):
 
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
-        dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
+        dlg = wx.DirDialog(self, 'Select Working Directory:', get_cwd(),
                            style=style)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -466,7 +466,7 @@ class SelectSavingData(wx.Dialog):
         if os.path.exists(self.File.GetValue()):
            dfltDIR = self.File.GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, 'Save file as...',
                            defaultDir=dfltDIR,
@@ -488,7 +488,7 @@ class SelectSavingData(wx.Dialog):
         if os.path.exists(self.Poni.GetValue()):
            dfltDIR = self.Poni.GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, message='Select XRD calibration file',
                             defaultDir=dfltDIR,
@@ -1341,7 +1341,7 @@ class Fitting1DXRD(BasePanel):
     def open_database(self,event=None):
         wildcards = 'AMCSD database file (*.db)|*.db|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose AMCSD database file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -2252,7 +2252,7 @@ class Viewer1DXRD(wx.Panel):
     def saveXYFILE(self,event=None):
         wildcards = 'XRD data file (*.xy)|*.xy|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save data as...',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards,
                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
@@ -2544,7 +2544,7 @@ class SelectCIFData(wx.Dialog):
     def load_file(self,event=None):
         wildcards = 'CIF file (*.cif)|*.cif|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose CIF',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         read = False

@@ -7,7 +7,7 @@ import os
 from silx.gui import qt
 
 from larch.qtlib.view import TreeView
-
+from larch.utils import get_cwd
 from larch.io.rixsdata import RixsData
 from .items import RixsItem
 
@@ -19,7 +19,7 @@ class RixsTreeView(TreeView):
 
     def loadFiles(self):
         paths, _ = qt.QFileDialog.getOpenFileNames(
-            self, 'Select Files to Load', os.getcwd(),
+            self, 'Select Files to Load', get_cwd(),
             'RixsData Files (*rixs.h5)')
 
         if not paths:

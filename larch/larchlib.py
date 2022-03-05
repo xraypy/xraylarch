@@ -16,7 +16,7 @@ import ctypes.util
 from .symboltable import Group, isgroup
 from .site_config import user_larchdir
 from .closure import Closure
-from .utils import uname, bindir
+from .utils import uname, bindir, get_cwd
 
 HAS_TERMCOLOR = False
 try:
@@ -432,7 +432,7 @@ def save_workdir(conffile):
     try:
         w_file = os.path.join(user_larchdir, conffile)
         fh = open(w_file, 'w')
-        fh.write("%s\n" % os.getcwd())
+        fh.write("%s\n" % get_cwd())
         fh.close()
     except:
         pass

@@ -25,7 +25,7 @@ WX_DEBUG = False
 import larch
 from larch import Group
 from larch.math import index_of
-from larch.utils import isotime
+from larch.utils import isotime, get_cwd
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring)
 
@@ -776,7 +776,7 @@ class XASFrame(wx.Frame):
 
     def onReadDialog(self, event=None):
         dlg = wx.FileDialog(self, message="Read Data File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_MULTIPLE)
         self.paths2read = []

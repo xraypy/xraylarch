@@ -11,6 +11,7 @@ import os
 import sys
 from copy import copy, deepcopy
 from glob import glob
+from .paths import get_cwd
 
 def _copy(obj):
     """copy an object"""
@@ -59,7 +60,7 @@ def _ls(directory='.'):
 
 def _cwd():
     "return current working directory"
-    ret = os.getcwd()
+    ret = get_cwd()
     if sys.platform == 'win32':
         ret = ret.replace('\\','/')
     return ret
@@ -70,7 +71,7 @@ def _cd(name):
     if name:
         os.chdir(name)
 
-    ret = os.getcwd()
+    ret = get_cwd()
     if sys.platform == 'win32':
         ret = ret.replace('\\','/')
     return ret

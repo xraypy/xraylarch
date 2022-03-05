@@ -50,7 +50,7 @@ if HAS_WXPYTHON:
                          FileOpen, FileSave, SelectWorkdir, fix_filename,
                          SavedParameterDialog, FileCheckList,
                          FileDropTarget, GridPanel, RowPanel, make_steps,
-                         set_float, FloatCtrl)
+                         set_float, FloatCtrl, EditableListBox)
 
     from .floats import NumericCombo, FloatSpin, FloatSpinWithPin
 
@@ -61,9 +61,8 @@ if HAS_WXPYTHON:
     from .athena_importer import AthenaImporter
     from .specfile_importer import SpecfileImporter
     from .reportframe import ReportFrame
-    from .gui_utils import (gcd, databrowser, fileprompt, wx_update,
-                            EditableListBox, LarchWxApp)
-    
+    from .gui_utils import gcd, databrowser, fileprompt, wx_update, LarchWxApp
+
     from .larch_updater import LarchUpdaterDialog
     from .parameter import ParameterWidgets, ParameterPanel
     from .periodictable import PeriodicTablePanel
@@ -199,7 +198,3 @@ else:
                                        xrf_plot=nullfunc,
                                        xrf_oplot=nullfunc,
                                        fit_plot=nullfunc)
-
-
-
-    

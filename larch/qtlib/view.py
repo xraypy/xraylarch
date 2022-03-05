@@ -14,6 +14,7 @@ from .items import (ExperimentItem,
                     FileItem,
                     ScanItem)
 
+from larch.utils import get_cwd
 from larch.utils.logging import getLogger
 _logger = getLogger('larch.qtlib.view')
 
@@ -132,7 +133,7 @@ class TreeView(qt.QTreeView):
 
     def loadFiles(self):
         paths, _ = qt.QFileDialog.getOpenFileNames(
-            self, 'Select Files to Load', os.getcwd(),
+            self, 'Select Files to Load', get_cwd(),
             'Data Files (*.spec *.hdf5);; All Files (*)')
 
         if not paths:

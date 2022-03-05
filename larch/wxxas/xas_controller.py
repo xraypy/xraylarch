@@ -4,7 +4,7 @@ import numpy as np
 
 import larch
 from larch.larchlib import read_config, save_config
-from larch.utils import group2dict, unique_name, fix_varname
+from larch.utils import group2dict, unique_name, fix_varname, get_cwd
 from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
 PLOTWIN_SIZE = (550, 550)
@@ -51,7 +51,7 @@ class XASController():
     def make_default_config(self):
         """ default config, probably called on first run of program"""
         config = {'chdir_on_fileopen': True,
-                  'workdir': os.getcwd()}
+                  'workdir': get_cwd()}
         return config
 
     def get_config(self, key, default=None):
@@ -66,7 +66,7 @@ class XASController():
         save_config(self.config_file, conf)
 
     def set_workdir(self):
-        self.larch.symtable._sys.xas_viewer.workdir = os.getcwd()
+        self.larch.symtable._sys.xas_viewer.workdir=get_cwd()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
@@ -222,7 +222,7 @@ class XASController():
             popts['xmax'] = viewlims[1]
             popts['ymin'] = viewlims[2]
             popts['ymax'] = viewlims[3]
-           
+
 
         popts['xlabel'] = dgroup.plot_xlabel
         popts['ylabel'] = dgroup.plot_ylabel
@@ -266,4 +266,3 @@ class XASController():
                     popts.update(opts)
                     axes.axvline(x, **popts)
         ppanel.canvas.draw()
-

@@ -13,7 +13,7 @@ from wxmplot.imagepanel import ImagePanel
 from .ImageControlsFrame import ImageToolboxFrame
 
 from larch.io import tifffile
-
+from larch.utils import get_cwd
 # HAS_pyFAI = False
 # try:
 #     import pyFAI
@@ -159,7 +159,7 @@ class MaskToolsPopup(wx.Frame):
     def loadIMAGE(self,event=None):
         wildcards = 'XRD image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD image',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False

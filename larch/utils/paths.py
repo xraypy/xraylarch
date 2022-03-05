@@ -1,6 +1,7 @@
 import sys
 import os
 import platform
+
 HAS_PWD = True
 try:
     import pwd
@@ -71,3 +72,18 @@ def get_homedir():
     if homedir is None:
         homedir = os.path.abspath('.')
     return nativepath(homedir)
+
+def get_cwd():
+    """get current working directory
+    Note: os.getcwd() can fail with permission error.
+
+    when that happens, this changes to the users `HOME` directory
+    and returns that directory so that it always returns an existing
+    and readable directory.
+    """
+    try:
+        return os.getcwd()
+    except:
+        home = get_homedir()
+        os.chdir(home)
+        return home

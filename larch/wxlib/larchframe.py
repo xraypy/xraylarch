@@ -23,6 +23,7 @@ from larch.io import (read_ascii, read_xdi, read_gsexdi,
                       gsescan_group, fix_varname,
                       is_athena_project, AthenaProject)
 from larch.version import make_banner
+from larch.utils import get_cwd
 
 FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
@@ -438,7 +439,7 @@ class LarchFrame(wx.Frame):
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open Data File',
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
         path = None
@@ -546,13 +547,13 @@ class LarchFrame(wx.Frame):
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
-                           defaultPath = os.getcwd(),
+                           defaultPath = get_cwd(),
                            style = wx.DD_DEFAULT_STYLE)
 
         if dlg.ShowModal() == wx.ID_OK:
             os.chdir(dlg.GetPath())
         dlg.Destroy()
-        return os.getcwd()
+        return get_cwd()
 
     def onAbout(self, event=None):
         about_msg =  """LarchGui:

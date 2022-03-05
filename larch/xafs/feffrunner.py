@@ -10,7 +10,7 @@ from optparse import OptionParser
 from subprocess import Popen, PIPE
 
 from larch import Group, isNamedClass
-from larch.utils import isotime, bytes2str, uname, bindir
+from larch.utils import isotime, bytes2str, uname, bindir, get_cwd
 
 def find_exe(exename):
     if uname == 'win' and not exename.endswith('.exe'):
@@ -104,7 +104,7 @@ class FeffRunner(Group):
             raise Exception("no feff.inp file was specified")
 
         savefile = '.save_.inp'
-        here = abspath(os.getcwd())
+        here = abspath(get_cwd())
         os.chdir(abspath(self.folder))
 
         feffinp_dir, feffinp_file = os.path.split(self.feffinp)
@@ -274,7 +274,7 @@ Examples:
     if len(args) == 0:
         args = ['.']
 
-    curdir = abspath(os.getcwd())
+    curdir = abspath(get_cwd())
     for arg in args:
         if os.path.isfile(arg):
             feff6l(feffinp=arg)

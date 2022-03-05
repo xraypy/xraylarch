@@ -15,6 +15,7 @@ from ..wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                      FloatCtrl, Font, pack, Popup, Button, MenuItem,
                      Choice, Check, GridPanel, FileSave, FileOpen, HLine)
 from ..utils.strutils import bytes2str, version_ge, fix_varname
+from ..utils import get_cwd
 
 from ..xrmmap import GSEXRM_MapFile, GSEXRM_FileStatus, h5str, ensure_subgroup
 
@@ -122,7 +123,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         FILE_WILDCARDS = "XRF Model Files(*.xrfmodel)|*.xrfmodel|All files (*.*)|*.*"
 
         dlg = wx.FileDialog(self, message="Read XRF Model File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN)
         path = None

@@ -23,7 +23,7 @@ except ImportError:
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
-
+from larch.utils import get_cwd
 from larch.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
                    is_GSEXDI, AthenaProject, new_filename, increment_filename)
 
@@ -78,7 +78,7 @@ class DTCorrectFrame(wx.Frame):
     def onBrowse(self, event=None):
         dlg = wx.FileDialog(parent=self,
                         message='Select Files',
-                        defaultDir=os.getcwd(),
+                        defaultDir=get_cwd(),
                         wildcard =FILE_WILDCARDS,
                         style=wx.FD_OPEN|wx.FD_MULTIPLE|wx.FD_CHANGE_DIR)
 

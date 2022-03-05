@@ -44,6 +44,7 @@ from larch.wxlib import (LarchPanel, LarchFrame, EditableListBox, SimpleText,
                          Choice, Check, GridPanel, FileSave, HLine, flatnotebook,
                          HLine, OkCancel, LEFT, LarchUpdaterDialog, LarchWxApp)
 from larch.utils.strutils import bytes2str, version_ge
+from larch.utils import get_cwd
 from larch.io import nativepath
 from larch.site_config import icondir
 
@@ -1062,7 +1063,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
     def onImport(self, event=None):
         wildcards = 'Area Files (*_Areas.npz)|*_Areas.npz|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Read Areas File',
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=wildcards, style=wx.FD_OPEN)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -1240,7 +1241,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             if save:
                 wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
                 dlg = wx.FileDialog(self, 'Save file as...',
-                                   defaultDir=os.getcwd(),
+                                   defaultDir=get_cwd(),
                                    defaultFile='%s.xy' % stem,
                                    wildcard=wildcards,
                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -1271,7 +1272,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             wildcards = '2D XRD file (*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
             fname = xrmfile.filename + '_' + aname
             dlg = wx.FileDialog(self, 'Save file as...',
-                                defaultDir=os.getcwd(),
+                                defaultDir=get_cwd(),
                                 defaultFile='%s.tiff' % fname,
                                 wildcard=wildcards,
                                 style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -1797,7 +1798,7 @@ class MapViewerFrame(wx.Frame):
 
     def onFolderSelect(self, evt=None):
         dlg = wx.DirDialog(self, 'Select Working Directory:',
-                           os.getcwd(),
+                           get_cwd(),
                            style=wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -1883,7 +1884,7 @@ class MapViewerFrame(wx.Frame):
             return
 
         dlg = wx.FileDialog(self, message='Read XRM Map File',
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN|wx.FD_MULTIPLE)
         path, read = None, False
@@ -1916,7 +1917,7 @@ class MapViewerFrame(wx.Frame):
             return
 
         dlg = wx.DirDialog(self, message='Read XRM Map Folder',
-                           defaultPath=os.getcwd(),
+                           defaultPath=get_cwd(),
                            style=wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -2012,7 +2013,7 @@ class MapViewerFrame(wx.Frame):
             read = False
             wildcards = '1D-XRD ROI file (*.dat)|*.dat|All files (*.*)|*.*'
             dlg = wx.FileDialog(self, message='Select 1D-XRD ROI file',
-                               defaultDir=os.getcwd(),
+                               defaultDir=get_cwd(),
                                wildcard=wildcards,
                                style=wx.FD_OPEN)
 
@@ -2225,7 +2226,7 @@ class OpenPoniFile(wx.Dialog):
         if os.path.exists(self.PoniInfo[1].GetValue()):
            dfltDIR = self.PoniInfo[1].GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, message='Select XRD calibration file',
                            defaultDir=dfltDIR,
@@ -2646,7 +2647,7 @@ class OpenMapFolder(wx.Dialog):
         if os.path.exists(self.XRDInfo[i].GetValue()):
            dfltDIR = self.XRDInfo[i].GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, message='Select %s' % wldcd.split(' (')[0],
                            defaultDir=dfltDIR,

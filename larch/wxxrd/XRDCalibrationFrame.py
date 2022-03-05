@@ -11,7 +11,7 @@ import wx
 from wxmplot.imagepanel import ImagePanel
 from larch.io import tifffile
 from larch.xrd import lambda_from_E, E_from_lambda
-
+from larch.utils import get_cwd
 from .ImageControlsFrame import ImageToolboxFrame
 
 
@@ -295,7 +295,7 @@ class CalibrationPopup(wx.Frame):
         if os.path.exists(self.entr_calimg.GetValue()):
            dfltDIR = self.entr_calimg.GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=dfltDIR,
@@ -434,7 +434,7 @@ class CalibrationPopup(wx.Frame):
 
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -635,7 +635,7 @@ class CalXRD(wx.Dialog):
         if os.path.exists(self.calFil.GetValue()):
            dfltDIR = self.calFil.GetValue()
         else:
-           dfltDIR = os.getcwd()
+           dfltDIR = get_cwd()
 
         dlg = wx.FileDialog(self, message='Choose XRD calibration file',
                            defaultDir=dfltDIR,

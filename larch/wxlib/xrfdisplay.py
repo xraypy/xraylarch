@@ -33,7 +33,7 @@ from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      CEN, LEFT, RIGHT)
 
 from ..math import index_of
-from ..utils import bytes2str, debugtime
+from ..utils import bytes2str, debugtime, get_cwd
 from ..io import GSEMCA_File
 from ..site_config import icondir
 from ..interpreter import Interpreter
@@ -279,7 +279,7 @@ class XRFDisplayFrame(wx.Frame):
                         output_title='test.xrf',
                         messenger=self.write_message)
         pan.SetSize((650, 350))
-        
+
         pan.conf.grid_color='#E5E5C0'
         pan.conf.show_grid = False
         pan.conf.canvas.figure.set_facecolor('#FCFCFE')
@@ -1274,7 +1274,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
@@ -1367,7 +1367,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def onReadFile(self, event=None):
         dlg = wx.FileDialog(self, message="Read MCA File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.FD_OPEN)
         path, re1ad = None, False

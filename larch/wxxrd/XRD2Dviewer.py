@@ -28,6 +28,7 @@ import larch
 from larch import Group
 from larch.larchlib import read_workdir, save_workdir
 from larch.utils.strutils import bytes2str
+from larch.utils import get_cwd
 from larch.wxlib import LarchWxApp
 from larch.io import tifffile, nativepath
 from larch.xrd import (integrate_xrd,E_from_lambda,xrd1d,read_lambda,
@@ -286,7 +287,7 @@ class XRD2DViewerFrame(wx.Frame):
     def loadIMAGE(self,event=None):
         wildcards = '2DXRD image files (*.*)|*.*|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose 2D XRD image',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = '', False
@@ -637,7 +638,7 @@ class XRD2DViewerFrame(wx.Frame):
     def saveIMAGE(self,event=None,raw=False):
         wildcards = 'XRD image (*.tiff)|*.tiff|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, 'Save image as...',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards,
                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
@@ -679,7 +680,7 @@ class XRD2DViewerFrame(wx.Frame):
             if save:
                 wildcards = '1D XRD file (*.xy)|*.xy|All files (*.*)|*.*'
                 dlg = wx.FileDialog(self, 'Save file as...',
-                                   defaultDir=os.getcwd(),
+                                   defaultDir=get_cwd(),
                                    wildcard=wildcards,
                                    style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
                 if dlg.ShowModal() == wx.ID_OK:
@@ -795,7 +796,7 @@ class XRD2DViewerFrame(wx.Frame):
 
         wildcards = 'pyFAI calibration file (*.poni)|*.poni|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI calibration file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -822,7 +823,7 @@ class XRD2DViewerFrame(wx.Frame):
 
         wildcards = 'XRD background image (*.edf,*.tif,*.tiff)|*.tif;*.tiff;*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose XRD background image',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -847,7 +848,7 @@ class XRD2DViewerFrame(wx.Frame):
 
         wildcards = 'pyFAI mask file (*.edf)|*.edf|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Choose pyFAI mask file',
-                           defaultDir=os.getcwd(),
+                           defaultDir=get_cwd(),
                            wildcard=wildcards, style=wx.FD_OPEN)
 
         path, read = None, False
@@ -903,7 +904,7 @@ class XRD2DViewerFrame(wx.Frame):
 #### MENU FUNCTIONS
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
-        dlg = wx.DirDialog(self, 'Select Working Directory:', os.getcwd(),
+        dlg = wx.DirDialog(self, 'Select Working Directory:', get_cwd(),
                            style=style)
 
         if dlg.ShowModal() == wx.ID_OK:

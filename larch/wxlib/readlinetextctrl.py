@@ -54,13 +54,11 @@ class ReadlineTextCtrl(wx.TextCtrl):
 
     def onKillFocus(self, event=None):
         self.__GetMark()
-        # if event is not None:
-        #    event.Skip()
+
 
     def onSetFocus(self, event=None):
         self.__SetMark()
-        # if event is not None:
-        #    event.Skip()
+
 
     def onChar(self, event):
         """ on Character event"""
@@ -148,8 +146,6 @@ class ReadlineTextCtrl(wx.TextCtrl):
         elif ctrl:
             pass
         self.Refresh()
-        #if do_skip:
-        #    event.Skip()
         return
 
     def AddToHistory(self, text=''):

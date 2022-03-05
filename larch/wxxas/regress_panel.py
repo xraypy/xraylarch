@@ -19,7 +19,7 @@ from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
                          NumericCombo, CEN, LEFT, Font, FileSave, FileOpen)
 from larch.io import read_csv
-from larch.utils.strutils import fix_varname
+from larch.utils.strutils import fix_varname, get_cwd
 
 from .taskpanel import TaskPanel, DataTableGrid
 
@@ -381,7 +381,7 @@ class RegressionPanel(TaskPanel):
             return
 
         dlg = wx.FileDialog(self, message="Save Regression Model",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             defaultFile=self.save_modelfile,
                             wildcard=MODEL_WILDCARDS,
                             style=wx.FD_SAVE)
@@ -401,7 +401,7 @@ class RegressionPanel(TaskPanel):
 
     def onLoadModel(self, event=None):
         dlg = wx.FileDialog(self, message="Load Regression Model",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=MODEL_WILDCARDS, style=wx.FD_OPEN)
 
         fname = None
@@ -422,7 +422,7 @@ class RegressionPanel(TaskPanel):
 
     def onLoadCSV(self, event=None):
         dlg = wx.FileDialog(self, message="Load CSV Data File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=CSV_WILDCARDS, style=wx.FD_OPEN)
 
         fname = None

@@ -47,6 +47,7 @@ from larch.site_config import icondir
 from larch.wxlib import PeriodicTablePanel, LarchWxApp
 from larch.wxlib.xrfdisplay import (XRFDisplayFrame, XRFCalibrationFrame,
                                     FILE_WILDCARDS)
+from larch.utils import get_cwd
 
 ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 try:
@@ -207,7 +208,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             basedir = basedir[len(fileroot):]
         fullpath = os.path.join(fileroot, basedir)
         fullpath = fullpath.replace('\\', '/').replace('//', '/')
-        curdir = os.getcwd()
+        curdir = get_cwd()
         try:
             os.chdir(fullpath)
         except:
@@ -285,7 +286,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         # print(" Got detector ")
         # for name, p in self.det._xsp3._pvs.items():
         #    print(p, p._auto_monitor)
-            
+
     def show_mca(self, init=False):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
@@ -319,7 +320,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSaveROIs(self, event=None, **kws):
         dlg = wx.FileDialog(self, message="Save ROI File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=ROI_WILDCARD,
                             style = wx.FD_SAVE|wx.FD_CHANGE_DIR)
 
@@ -330,7 +331,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onRestoreROIs(self, event=None, **kws):
         dlg = wx.FileDialog(self, message="Read ROI File",
-                            defaultDir=os.getcwd(),
+                            defaultDir=get_cwd(),
                             wildcard=ROI_WILDCARD,
                             style = wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
@@ -382,7 +383,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def create_detbuttons(self, pane):
         btnpanel = wx.Panel(pane, name='buttons')
-        btnsizer = wx.GridBagSizer(1, 1)        
+        btnsizer = wx.GridBagSizer(1, 1)
         btns = {}
         sx = 30
         sy = int(sx/2)
@@ -393,41 +394,41 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['det%i' % i] = b
             btns[i] = b
         dtype = self.det_type.lower().replace('-', '').replace(' ', '').replace('_', '')
-           
+
         if dtype.startswith('sxd7') and self.nmca == 7:
             btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[4],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[4],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[5],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)            
-            btnsizer.Add(btns[3],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[3],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[7],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[6],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (0, 4), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[2],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[2],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[1],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (5, 4), (1, 2), wx.ALIGN_LEFT, 1)
         elif dtype.startswith('me7') and self.nmca == 7:
-            btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)            
-            btnsizer.Add(btns[7],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add((sx, sy), (0, 0), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[7],  (1, 0), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[6],  (3, 0), (2, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)                        
-            btnsizer.Add(btns[2],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add((sx, sy), (5, 0), (1, 2), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[2],  (0, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[1],  (2, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[5],  (4, 2), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (0, 4), (1, 2), wx.ALIGN_LEFT, 1)
-            btnsizer.Add(btns[3],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[3],  (1, 4), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[4],  (3, 4), (2, 2), wx.ALIGN_LEFT, 1)
             btnsizer.Add((sx, sy), (5, 4), (1, 2), wx.ALIGN_LEFT, 1)
         elif dtype.startswith('me4') and self.nmca == 4:
-            btnsizer.Add(btns[1],  (0, 0), (1, 1), wx.ALIGN_LEFT, 1)            
-            btnsizer.Add(btns[2],  (1, 0), (1, 1), wx.ALIGN_LEFT, 1)            
-            btnsizer.Add(btns[3],  (1, 1), (1, 1), wx.ALIGN_LEFT, 1)            
+            btnsizer.Add(btns[1],  (0, 0), (1, 1), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[2],  (1, 0), (1, 1), wx.ALIGN_LEFT, 1)
+            btnsizer.Add(btns[3],  (1, 1), (1, 1), wx.ALIGN_LEFT, 1)
             btnsizer.Add(btns[4],  (0, 1), (1, 1), wx.ALIGN_LEFT, 1)
         else:
             NPERROW = 4
             icol, irow = 0, 0
             for nmca  in range(1, self.nmca+1):
-                btnsizer.Add(btns[nmca],  (irow, icol), (1, 1), wx.ALIGN_LEFT, 1)            
+                btnsizer.Add(btns[nmca],  (irow, icol), (1, 1), wx.ALIGN_LEFT, 1)
                 icol += 1
                 if icol > NPERROW-1:
                     icol = 0
@@ -435,12 +436,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         pack(btnpanel, btnsizer)
         return btnpanel
-        
+
     def createEpicsPanel(self):
         pane = wx.Panel(self, name='epics panel')
         style  = wx.ALIGN_LEFT
         rstyle = wx.ALIGN_RIGHT
-       
+
         det_btnpanel = self.create_detbuttons(pane)
 
         bkg_choices = ['None'] + ["%d" % (i+1) for i in range(self.nmca)]

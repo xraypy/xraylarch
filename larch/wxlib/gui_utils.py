@@ -13,6 +13,7 @@ import locale
 
 from ..larchlib import ensuremod
 from .larchfilling import Filling
+from ..utils import get_cwd
 
 DEF_CHOICES = [('All Files', '*.*')]
 
@@ -41,7 +42,7 @@ class LarchWxApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def createApp(self):
         return True
-    
+
     def InitLocale(self):
         """over-ride wxPython default initial locale"""
         if self.with_c_locale:
@@ -121,13 +122,13 @@ def gcd(wxparent=None, _larch=None, **kws):
         _larch.raise_exception(None, msg='wx not supported')
 
     dlg = wx.DirDialog(None, 'Choose Directory',
-                       defaultPath = os.getcwd(),
+                       defaultPath = get_cwd(),
                        style = wx.DD_DEFAULT_STYLE)
 
     if dlg.ShowModal() == wx.ID_OK:
         os.chdir(dlg.GetPath())
     dlg.Destroy()
-    return os.getcwd()
+    return get_cwd()
 
 
 class DataBrowserFrame(wx.Frame):
@@ -220,9 +221,9 @@ def fileprompt(mode='open', multi=True, message = None,
         _larch.raise_exception(None, msg='wx not supported')
     if hasattr(parent, 'GetTopWindow'):
         parent = parent.GetTopWindow()
-    timer = wxLarchTimer(parent, _larch)
+xfff    timer = wxLarchTimer(parent, _larch)
     dlg = wx.FileDialog(parent=timer, message=message,
-                        defaultDir=os.getcwd(),
+                        defaultDir=get_cwd(),
                         defaultFile=fname,
                         wildcard =wildcard,
                         style=style)
@@ -237,7 +238,7 @@ def fileprompt(mode='open', multi=True, message = None,
     return path
 
 
-class EditableListBox(wx.ListBox):
+class XEditableListBox(wx.ListBox):
     """
     A ListBox with pop-up menu to arrange order of
     items and remove items from list

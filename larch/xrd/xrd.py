@@ -20,6 +20,7 @@ from .xrd_pyFAI import integrate_xrd,calc_cake
 from .xrd_bgr import xrd_background
 from .xrd_fitting import peakfinder,peaklocater,peakfilter,peakfitter
 from larch.io import tifffile
+from larch.utils import get_cwd
 
 ##########################################################################
 # CLASSES
@@ -399,9 +400,9 @@ class XRD(larch.Group):
 
         if file is None:
             counter = 1
-            while os.path.exists('%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)):
+            while os.path.exists('%s/%s_%03d.xy' % (get_cwd(),self.title,counter)):
                 counter += 1
-            file = '%s/%s_%03d.xy' % (os.getcwd(),self.title,counter)
+            file = '%s/%s_%03d.xy' % (get_cwd(),self.title,counter)
 
         return file
 
@@ -410,9 +411,9 @@ class XRD(larch.Group):
 
         if file is None:
             counter = 1
-            while os.path.exists('%s/%s_%03d.tiff' % (os.getcwd(),self.title,counter)):
+            while os.path.exists('%s/%s_%03d.tiff' % (get_cwd(),self.title,counter)):
                 counter += 1
-            file = '%s/%s_%03d.tiff' % (os.getcwd(),self.title,counter)
+            file = '%s/%s_%03d.tiff' % (get_cwd(),self.title,counter)
 
         tifffile.imsave(file,self.data2D)
 
