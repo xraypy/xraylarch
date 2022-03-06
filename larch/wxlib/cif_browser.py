@@ -246,8 +246,7 @@ class CIFFrame(wx.Frame):
 
         pack(panel, sizer)
 
-        self.nb = flatnotebook(rightpanel, {}, drag_tabs=False,
-                               on_change=self.onNBChanged)
+        self.nb = flatnotebook(rightpanel, {}, on_change=self.onNBChanged)
 
         self.feffresults = FeffResultsPanel(rightpanel, _larch=self.larch)
 

@@ -177,8 +177,7 @@ class FitSpectraFrame(wx.Frame):
         self.panels['Fit Results']        = self.fitresult_page
         self.panels['Composition'] = self.composition_page
 
-        self.nb = flatnotebook(pan, self.panels, drag_tabs=False,
-                               on_change=self.onNBChanged)
+        self.nb = flatnotebook(pan, self.panels, on_change=self.onNBChanged)
         pan.Add((5, 5), newrow=True)
         pan.Add(self.nb, dcol=5, drow=10, newrow=True)
         pan.pack()
@@ -201,7 +200,7 @@ class FitSpectraFrame(wx.Frame):
                                          tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
 
-        dstep, dtail, dbeta, dgamma = 0.05, 0.10, 0.5, 0.05
+        dstep, dtail, dbeta, dgamma = 0.03, 0.10, 0.5, 0.05
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
                                       max_val=1.0, increment=0.01,
                                       tooltip=tooltips['step'])

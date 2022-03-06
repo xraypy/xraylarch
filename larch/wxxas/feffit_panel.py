@@ -707,8 +707,7 @@ class FeffitPanel(TaskPanel):
 
 
     def build_display(self):
-        self.paths_nb = flatnotebook(self, {}, drag_tabs=False,
-                                     on_change=self.onPathsNBChanged)
+        self.paths_nb = flatnotebook(self, {}, on_change=self.onPathsNBChanged)
         self.params_panel = FeffitParamsPanel(parent=self.paths_nb,
                                               feffit_panel=self)
 
