@@ -304,6 +304,8 @@ class TaskPanel(wx.Panel):
     def onPlotSel(self, evt=None, groups=None, **kws):
         pass
 
+    def onProcess(self, evt=None, **kws):
+        pass
                      
     def onPinTimer(self, event=None):
         if 'start' not in self.cursor_dat:
@@ -320,12 +322,14 @@ class TaskPanel(wx.Panel):
                 self.onPinTimerComplete(reason="new")                
         elif time.time() > 15.0 + self.cursor_dat['start']:
             self.onPinTimerComplete(reason="timeout")
-        msg = 'Select Point from Plot #%d' % (self.cursor_dat['win'])
-        if self.cursor_dat['xsel'] is not None:
-            msg = '%s, [current value=%.1f]' % (msg, self.cursor_dat['xsel'])
-        msg = '%s, expiring in %.0f sec' % (msg,
-                                15+self.cursor_dat['start']-time.time())
-        self.write_message(msg)
+
+        if 'win' in self.cursor_dat and 'xsel' in self.cursor_dat:
+            time_remaining = 15+self.cursor_dat['start']-time.time()
+            msg = 'Select Point from Plot #%d' % (self.cursor_dat['win'])
+            if self.cursor_dat['xsel'] is not None:
+                msg = '%s, [current value=%.1f]' % (msg, self.cursor_dat['xsel'])
+            msg = '%s, expiring in %.0f sec' % (msg, time_remaining)
+            self.write_message(msg)
             
     def onPinTimerComplete(self, reason=None, **kws):
         self.timers['pin'].Stop()
@@ -366,6 +370,8 @@ class TaskPanel(wx.Panel):
             win = 1
         display = _getDisplay(win=win, _larch=self.larch)
         display.Raise()
+        msg = 'Select Point from Plot #%d' % win
+        self.write_message(msg)
 
         now = time.time()
         curhist_name = 'plot%d_cursor_hist' % win
@@ -376,9 +382,12 @@ class TaskPanel(wx.Panel):
                                win=win, name=curhist_name,
                                nhist=len(cursor_hist))
 
+        if len(cursor_hist) > 2:  # purge old cursor history
+            setattr(self.larch.symtable._plotter, curhist_name, cursor_hist[:2])
+            
         if len(cursor_hist) > 0:
             x, y, t = cursor_hist[0]
-            if now < (t + 5.0): # last cursor position was 5 seconds ago
+            if now < (t + 30.0): # last cursor position was less than 30 seconds ago
                 self.cursor_dat['xsel'] = x
                 self.cursor_dat['ysel'] = y
         self.timers['pin'].Start(500)
