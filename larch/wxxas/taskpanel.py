@@ -16,7 +16,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
                          FileOpen, FONTSIZE)
 
-from larch.wxlib.plotter import last_cursor_pos
+from larch.wxlib.plotter import _getDisplay
 from larch.utils import group2dict
 
 LEFT = wx.ALIGN_LEFT
@@ -140,7 +140,9 @@ class TaskPanel(wx.Panel):
         if config is not None:
             self.set_defaultconfig(config)
         self.wids = {}
-        self.timers = {}
+        self.timers = {'pin': wx.Timer(self)}
+        self.Bind(wx.EVT_TIMER, self.onPinTimer, self.timers['pin'])
+        self.cursor_dat = {}
         self.subframes = {}
         self.command_hist = []
         self.SetFont(Font(FONTSIZE))
@@ -302,23 +304,81 @@ class TaskPanel(wx.Panel):
     def onPlotSel(self, evt=None, groups=None, **kws):
         pass
 
-    def onSelPoint(self, evt=None, opt='__', relative_e0=False, win=None):
+                     
+    def onPinTimer(self, event=None):
+        if 'start' not in self.cursor_dat:
+            self.cursor_dat['xsel'] = None
+            self.onPinTimerComplete(reason="bad")
+           
+        curhist_name = self.cursor_dat['name']
+        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
+        if len(cursor_hist) > self.cursor_dat['nhist']: # got new data!
+            self.cursor_dat['xsel'] = cursor_hist[0][0]
+            self.cursor_dat['ysel'] = cursor_hist[0][1]
+            if time.time() > 3.0 + self.cursor_dat['start']:
+                self.timers['pin'].Stop()
+                self.onPinTimerComplete(reason="new")                
+        elif time.time() > 15.0 + self.cursor_dat['start']:
+            self.onPinTimerComplete(reason="timeout")
+        msg = 'Select Point from Plot #%d' % (self.cursor_dat['win'])
+        if self.cursor_dat['xsel'] is not None:
+            msg = '%s, [current value=%.1f]' % (msg, self.cursor_dat['xsel'])
+        msg = '%s, expiring in %.0f sec' % (msg,
+                                15+self.cursor_dat['start']-time.time())
+        self.write_message(msg)
+            
+    def onPinTimerComplete(self, reason=None, **kws):
+        self.timers['pin'].Stop()
+        if reason != "bad":
+            msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']        
+            if reason == 'timeout':
+                msg = msg + '(timed-out)'
+            wx.CallAfter(self.write_message, msg)
+            
+            if self.cursor_dat['xsel'] is not None:
+                self.pin_callback(**self.cursor_dat)
+            time.sleep(0.05)
+        self.cursor_dat = {}
+        
+    def pin_callback(self, opt='__', xsel=None, relative_e0=False, **kws):
+        """
+        called to do reprocessing after a point is selected as from Pin / Plot
+        """
+        if xsel is None or opt not in self.wids:
+            return
+        if relative_e0 and 'e0' in self.wids:
+            xsel -= self.wids['e0'].GetValue()
+        self.wids[opt].SetValue(xsel)
+        time.sleep(0.01)
+        wx.CallAfter(self.onProcess)
+
+    def onSelPoint(self, evt=None, opt='__', relative_e0=True, win=None):    
         """
         get last selected point from a specified plot window
         and fill in the value for the widget defined by `opt`.
 
-        by default it finds the latest cursor position from the
-        cursor history of the first 20 plot windows.
+        start Pin Timer to get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
         """
         if opt not in self.wids:
             return None
+        if win is None:
+            win = 1
+        display = _getDisplay(win=win, _larch=self.larch)
+        display.Raise()
 
-        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
+        now = time.time()
+        curhist_name = 'plot%d_cursor_hist' % win
+        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
+       
+        self.cursor_dat = dict(relative_e0=relative_e0, opt=opt,
+                               start=now, xsel=None, ysel=None,
+                               win=win, name=curhist_name,
+                               nhist=len(cursor_hist))
 
-        if _x is not None:
-            if relative_e0 and 'e0' in self.wids and opt != 'e0':
-                _x -= self.wids['e0'].GetValue()
-            self.wids[opt].SetValue(_x)
-            cb = getattr(self, 'onProcess', None)
-            if callable(cb):
-                cb(event=None)
+        if len(cursor_hist) > 0:
+            x, y, t = cursor_hist[0]
+            if now < (t + 5.0): # last cursor position was 5 seconds ago
+                self.cursor_dat['xsel'] = x
+                self.cursor_dat['ysel'] = y
+        self.timers['pin'].Start(500)
