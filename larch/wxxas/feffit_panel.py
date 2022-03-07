@@ -687,7 +687,7 @@ class FeffitPanel(TaskPanel):
                            config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
-        self.timers = {'paths': wx.Timer(self)}
+        self.timers['paths'] = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onPathTimer, self.timers['paths'])
 
     def onPanelExposed(self, **kws):
@@ -1155,24 +1155,6 @@ class FeffitPanel(TaskPanel):
                         wids.vary.SetStringSelection(varstr)
 
         self.fill_form(result.user_options)
-
-
-    def onSelPoint(self, evt=None, opt='__', relative_e0=False, win=None):
-        """
-        get last selected point from a specified plot window
-        and fill in the value for the widget defined by `opt`.
-
-        by default it finds the latest cursor position from the
-        cursor history of the first 20 plot windows.
-        """
-        if opt not in self.wids:
-            return None
-
-        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
-        if _x is not None:
-            if relative_e0 and 'e0' in self.wids:
-                _x -= self.wids['e0'].GetValue()
-            self.wids[opt].SetValue(_x)
 
     def get_xranges(self, x):
         opts = self.read_form()

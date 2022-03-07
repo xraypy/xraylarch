@@ -627,7 +627,7 @@ class XASNormPanel(TaskPanel):
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
-    def onSelPoint(self, evt=None, opt='__', relative_e0=True, win=None):
+    def pin_callback(self, opt='__', xsel=None, relative_e0=True, **kws):
         """
         get last selected point from a specified plot window
         and fill in the value for the widget defined by `opt`.
@@ -635,18 +635,14 @@ class XASNormPanel(TaskPanel):
         by default it finds the latest cursor position from the
         cursor history of the first 20 plot windows.
         """
-        if opt not in self.wids:
-            return None
-
-        _x, _y = last_cursor_pos(win=win, _larch=self.larch)
-        if _x is None:
+        if xsel is None or opt not in self.wids:
             return
         e0 = self.wids['e0'].GetValue()
         if opt == 'e0':
-            self.wids['e0'].SetValue(_x)
+            self.wids['e0'].SetValue(xsel)
             self.wids['auto_e0'].SetValue(0)
         elif opt in ('pre1', 'pre2', 'norm1', 'norm2'):
-            self.wids[opt].SetValue(_x-e0)
+            self.wids[opt].SetValue(xsel-e0)
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
 
