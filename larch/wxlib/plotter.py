@@ -60,8 +60,8 @@ imshow           image display (false-color intensity image)
 xrf_plot         browsable display for XRF spectra
 '''
 
-MAX_WINDOWS = 20
-MAX_CURSHIST = 25
+MAX_WINDOWS = 25
+MAX_CURSHIST = 100
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None,
