@@ -48,7 +48,7 @@ def FloatSpin(parent, value=0, action=None, tooltip=None,
     return fs
 
 def FloatSpinWithPin(parent, value=0, pin_action=None,
-                     tooltip='use last point selected from plot', **kws):
+                     tooltip='select point from plot', **kws):
     """create a FloatSpin with Pin button with action"""
     fspin = FloatSpin(parent, value=value, **kws)
     bmbtn = wx.BitmapButton(parent, id=-1, bitmap=get_icon('pin'),
