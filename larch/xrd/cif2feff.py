@@ -130,7 +130,10 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
       5. if version8 is False, outputs will be written for Feff6l
 
     """
-    cstruct = read_cif_structure(ciftext)
+    try:
+        cstruct = read_cif_structure(ciftext)
+    except ValueError:
+        return '# invalid cif data'
 
     sgroup = SpacegroupAnalyzer(cstruct).get_symmetry_dataset()
     space_group = sgroup["international"]
