@@ -281,7 +281,7 @@ class MapPanel(GridPanel):
             for wid in self.lims:
                 wid.Disable()
 
-    def detSELECT(self,idet,event=None):
+    def detSELECT(self, idet, event=None):
         self.set_roi_choices(idet=idet)
 
     def roiSELECT(self,iroi,event=None):
@@ -1130,6 +1130,9 @@ class MapAreaPanel(scrolled.ScrolledPanel):
             highlight[np.where(area[()])] = 1
             imd.panel.add_highlight_area(highlight, label=label)
 
+    def onDone(self, event=None):
+        self.Destroy()
+        
     def onDelete(self, event=None):
         aname = self._getarea()
         erase = (wx.ID_YES == Popup(self.owner, self.delstr % aname,
@@ -1759,8 +1762,8 @@ class MapViewerFrame(wx.Frame):
                   'Quit program', self.onClose)
 
         rmenu = wx.Menu()
-        MenuItem(self, rmenu, 'Define new ROI',
-                 'Define new ROI',  self.defineROI)
+        MenuItem(self, rmenu, 'Add / Delete ROIs',
+                 'Define new ROIs, Remove ROIs',  self.manageROIs)
         MenuItem(self, rmenu, 'Load ROI File for 1DXRD',
                  'Load ROI File for 1DXRD',  self.add1DXRDFile)
         rmenu.AppendSeparator()
@@ -1841,6 +1844,7 @@ class MapViewerFrame(wx.Frame):
                 return
 
         save_workdir('gsemap.dat')
+
         for xrmfile in self.filemap.values():
             try:
                 xrmfile.close()
@@ -1988,25 +1992,22 @@ class MapViewerFrame(wx.Frame):
                     update_xrmmap(xrmfile=self.current_file)
 
 
-    def defineROI(self, event=None):
+    def manageROIs(self, event=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
             return
 
+        def set_roi_cb(self):
+            self.current_file.get_roi_list('mcasum', force=True)        
+            for page in self.nb.pagelist:
+                if hasattr(page, 'update_xrmmap'):
+                    page.update_xrmmap(xrmfile=self.current_file)
+                if hasattr(page, 'set_roi_choices'):
+                    page.set_roi_choices()                
+      
         if len(self.filemap) > 0:
-            myDlg = ROIPopUp(self)
-
-            path, read = None, False
-            if myDlg.ShowModal() == wx.ID_OK:
-                read = True
-            myDlg.Destroy()
-
-            if read:
-                update_xrmmap = getattr(self.nb.GetCurrentPage(),
-                                        'update_xrmmap', None)
-                if callable(update_xrmmap):
-                    update_xrmmap(xrmfile=self.current_file)
-
+            ROIDialog(self, callback=set_roi_cb).Show()
+                
     def add1DXRDFile(self, event=None):
         if len(self.filemap) > 0:
             read = False
@@ -2242,36 +2243,34 @@ class OpenPoniFile(wx.Dialog):
             self.checkOK()
 
 ##################
-class ROIPopUp(wx.Dialog):
+class ROIDialog(wx.Dialog):
     """"""
     #----------------------------------------------------------------------
-    def __init__(self, owner, **kws):
+    def __init__(self, owner, callback=None, **kws):
 
         """Constructor"""
-        dialog = wx.Dialog.__init__(self, None, title='ROI Tools', size=(450, 500))
+        dialog = wx.Dialog.__init__(self, None, title='Add and Delete ROIs',
+                                    size=(450, 350))
 
         panel = wx.Panel(self)
 
         ################################################################################
 
         self.owner = owner
-
-        self.cfile   = self.owner.current_file
-        self.xrmmap = self.cfile.xrmmap
-
+        self.callback = callback
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
+        
         self.gp = GridPanel(panel, nrows=8, ncols=4,
                             itemstyle=LEFT, gap=3, **kws)
 
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
-        self.roi_type = Choice(self, size=(150, -1))
-        self.roi_units = Choice(self, size=(150, -1))
-        fopts = dict(minval=-1, precision=3, size=(100, -1))
+        fopts = dict(minval=-1, precision=3, size=(120, -1))
+        self.roi_type = Choice(self, size=(120, -1))
         self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
-                         FloatCtrl(self, value=-1, **fopts),
-                         FloatCtrl(self, value=0,  **fopts),
                          FloatCtrl(self, value=-1, **fopts)]
+        self.roi_units = Choice(self, size=(120, -1))
 
-        self.gp.Add(SimpleText(self, ' Add new ROI: '), dcol=2, style=LEFT, newrow=True)
+        self.gp.Add(SimpleText(self, ' Add new ROI: '), dcol=2, style=LEFT)
 
         self.gp.Add(SimpleText(self, ' Name:'),  newrow=True)
         self.gp.Add(self.roi_name, dcol=2)
@@ -2281,45 +2280,42 @@ class ROIPopUp(wx.Dialog):
         self.gp.Add(SimpleText(self, ' Limits:'), newrow=True)
         self.gp.AddMany((self.roi_lims[0], self.roi_lims[1], self.roi_units),
                         dcol=1, style=LEFT)
-        self.gp.AddMany((SimpleText(self, ' '),self.roi_lims[2],self.roi_lims[3]),
-                        dcol=1, style=LEFT, newrow=True)
-        self.gp.AddMany((SimpleText(self, ' '),
-                         Button(self, 'Add ROI', size=(100, -1), action=self.onCreateROI)),
-                        dcol=1, style=LEFT, newrow=True)
+        self.gp.Add(SimpleText(self, ' '), newrow=True)
+        self.gp.Add(Button(self, 'Add ROI', size=(120, -1), action=self.onCreateROI),
+                    dcol=2)
 
         ###############################################################################
 
         self.rm_roi_name = Choice(self, size=(120, -1))
         self.rm_roi_det = Choice(self, size=(120, -1))
         fopts = dict(minval=-1, precision=3, size=(100, -1))
-
-        self.gp.Add(HLine(self, size=(250, 4)), dcol=4)
+        self.gp.Add(SimpleText(self, ''),newrow=True)
+        self.gp.Add(HLine(self, size=(350, 4)), dcol=4, newrow=True)
+        self.gp.Add(SimpleText(self, ''),newrow=True)
 
         self.gp.Add(SimpleText(self, 'Delete ROI: '), dcol=2, newrow=True)
 
         self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_det),  newrow=True)
         self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_name), newrow=True)
-        self.gp.AddMany((SimpleText(self, ''),
-                         Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)),
-                        newrow=True)
-        self.gp.Add(SimpleText(self, ''),newrow=True)
 
-        self.gp.AddMany((SimpleText(self, ''),SimpleText(self, ''),
-                         wx.Button(self, wx.ID_OK, label='Done')), newrow=True)
+        self.gp.Add(SimpleText(self, ''), newrow=True)
+        self.gp.Add(Button(self, 'Remove This ROI', size=(120, -1), action=self.onRemoveROI),
+                    dcol=2)
 
         self.roi_type.Bind(wx.EVT_CHOICE, self.roiUNITS)
         self.rm_roi_name.Bind(wx.EVT_CHOICE, self.roiSELECT)
 
         self.gp.pack()
-        self.cfile.reset_flags()
+        self.owner.current_file.reset_flags()
         self.roiTYPE()
 
     def roiTYPE(self, event=None):
         roitype = []
-        det_list = self.cfile.get_detector_list()
-        if self.cfile.has_xrf:
+        cfile = self.owner.current_file
+        det_list = cfile.get_detector_list()
+        if cfile.has_xrf:
             roitype += ['XRF']
-        if self.cfile.has_xrd1d:
+        if cfile.has_xrd1d:
             roitype += ['1DXRD']
         if len(roitype) < 1:
             roitype = ['']
@@ -2328,23 +2324,24 @@ class ROIPopUp(wx.Dialog):
         self.rm_roi_det.SetChoices(det_list)
         self.setROI()
 
-
     def onRemoveROI(self,event=None):
-
         detname = self.rm_roi_det.GetStringSelection()
         roiname = self.rm_roi_name.GetStringSelection()
-
+        cfile = self.owner.current_file
         if detname == 'xrd1d':
-            self.cfile.del_xrd1droi(roiname)
+            cfile.del_xrd1droi(roiname)
             self.setROI()
         else:
-            self.cfile.del_xrfroi(roiname)
-        self.roiRTYPE()
-
+            cfile.del_xrfroi(roiname)
+        if self.callback is not None:
+            self.callback()
+        self.roiTYPE()
+            
     def setROI(self):
         detname = self.rm_roi_det.GetStringSelection()
+        cfile = self.owner.current_file
         try:
-            detgrp = self.cfile.xrmmap['roimap'][detname]
+            detgrp = cfile.xrmmap['roimap'][detname]
         except:
             return
 
@@ -2358,26 +2355,21 @@ class ROIPopUp(wx.Dialog):
 
     def roiSELECT(self, event=None):
         detname = self.rm_roi_det.GetStringSelection()
-        roinames = self.cfile.get_roi_list(detname)
+        cfile = self.owner.current_file        
+        roinames = cfile.get_roi_list(detname)
         self.rm_roi_name.SetChoices(roinames)
-
 
     def roiUNITS(self,event=None):
         choice = self.roi_type.GetStringSelection()
         roiunit = ['']
         if choice == 'XRF':
-            roiunit = ['eV','keV','channels']
-            self.roi_lims[2].Disable()
-            self.roi_lims[3].Disable()
+            roiunit = ['keV', 'eV', 'channels']
         elif choice == '1DXRD':
             roiunit = [u'\u212B\u207B\u00B9 (q)',u'\u00B0 (2\u03B8)',u'\u212B (d)']
-            self.roi_lims[2].Disable()
-            self.roi_lims[3].Disable()
 
         self.roi_units.SetChoices(roiunit)
 
     def onCreateROI(self,event=None):
-
         xtyp  = self.roi_type.GetStringSelection()
         xunt  = self.roi_units.GetStringSelection()
         xname = self.roi_name.GetValue()
@@ -2386,15 +2378,23 @@ class ROIPopUp(wx.Dialog):
         if xtyp != '2DXRD': xrange = xrange[:2]
 
         self.owner.message('Building ROI data for: %s' % xname)
+        cfile = self.owner.current_file        
         if xtyp == 'XRF':
-            self.cfile.add_xrfroi(xname, xrange, unit=xunt)
+            cfile.add_xrfroi(xname, xrange, unit=xunt)
         elif xtyp == '1DXRD':
             xrd = ['q','2th','d']
             unt = xrd[self.roi_units.GetSelection()]
-            self.cfile.add_xrd1droi(xname, xrange, unit=unt)
-
+            cfile.add_xrd1droi(xname, xrange, unit=unt)
+        if self.callback is not None:
+            self.callback()
         self.owner.message('Added ROI:  %s' % xname)
-##################
+        self.roiTYPE()
+
+    def onClose(self, event=None):
+        self.Destroy()
+        
+##################a
+
 
 
 class OpenMapFolder(wx.Dialog):
