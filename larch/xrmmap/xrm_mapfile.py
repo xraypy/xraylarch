@@ -30,7 +30,7 @@ from ..xrd import (XRD, E_from_lambda, integrate_xrd_row, q_from_twth,
 from larch.math.tomography import tomo_reconstruction, reshape_sinogram, trim_sinogram
 
 DEFAULT_XRAY_ENERGY = 39987.0  # probably means x-ray energy was not found in meta data
-NINIT = 32
+NINIT = 64
 COMPRESSION_OPTS = 2
 COMPRESSION = 'gzip'
 #COMPRESSION = 'lzf'
@@ -1216,7 +1216,6 @@ class GSEXRM_MapFile(object):
         pos.create_dataset('pos', (NSTART, npts, npos), np.float32,
                            maxshape=(None, npts, npos), **self.compress_args)
 
-        ##
         # cfile = FastMapConfig()
         # print(" build_schema -> mapconfig")
         # self.add_map_config(cfile.config, nmca=nmca)
