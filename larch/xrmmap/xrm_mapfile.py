@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 import sys
 import uuid
@@ -1615,7 +1614,6 @@ class GSEXRM_MapFile(object):
 
         return dlist
 
-
     def get_roi_list(self, det_name, force=False):
         """
         get a list of rois from detector
@@ -2468,8 +2466,6 @@ class GSEXRM_MapFile(object):
         #   mapdat['counts'].shape, counts.shape, counts.dtype)
 
         if dtcorrect and 'dtfactor' in mapdat:
-            b = counts.sum()
-            c = mapdat['dtfactor'][sy, sx].mean()
             counts = counts*mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
         return counts
 
@@ -2838,10 +2834,10 @@ class GSEXRM_MapFile(object):
         print('\nReading 1D-XRD ROI file: %s' % filename)
         for iroi, label, xunit, xrange in roidat:
             print(' Adding ROI: %s' % label)
-            self.add_xrd1droi(xrange,label,unit=xunit)
+            self.add_xrd1droi(label, xrange, unit=xunit)
         print('Finished.\n')
 
-    def add_xrd1droi(self, xrange, roiname, unit='q', subtract_bkg=False):
+    def add_xrd1droi(self, roiname, xrange, unit='q', subtract_bkg=False):
         if not version_ge(self.version, '2.0.0'):
             print('Only compatible with newest hdf5 mapfile version.')
             return
@@ -2912,7 +2908,7 @@ class GSEXRM_MapFile(object):
             self.h5root.flush()
 
 
-    def save_roi(self,roiname,det, raw, cor, drange, dtype, units):
+    def save_roi(self, roiname, det, raw, cor, drange, dtype, units):
         ds = ensure_subgroup(roiname, self.xrmmap['roimap'][det])
         ds.create_dataset('raw',    data=raw   )
         ds.create_dataset('cor',    data=cor   )
@@ -2931,58 +2927,51 @@ class GSEXRM_MapFile(object):
                 det_list   += [det]
                 ds = ensure_subgroup(det, roigroup)
                 ds.attrs['type'] = 'mca detector'
-            if bytes2str(grp.attrs.get('type', '')).startswith('virtual mca'):
+            if (bytes2str(grp.attrs.get('type', '')).startswith('virtual mca')
+                and 'sum' in bytes2str(grp.attrs.get('desc', ''))):
                 sumdet = det
                 ds = ensure_subgroup(det,roigroup)
                 ds.attrs['type'] = 'virtual mca detector'
 
         return roigroup, det_list, sumdet
 
-    def add_xrfroi(self, Erange, roiname, unit='keV'):
-
+    def add_xrfroi(self, roiname, Erange, unit='keV'):
         if not self.has_xrf:
             return
 
-        if unit == 'eV': Erange[:] = [x/1000. for x in Erange] ## eV to keV
+        if unit == 'eV':
+            Erange[:] = [x/1000. for x in Erange] ## eV to keV
 
         roigroup, det_list, sumdet  = self.build_mca_roimap()
-        if sumdet is None: sumdet = 'mcasum'
+        if sumdet not in det_list:
+            det_list.append(sumdet)
 
-        if 'sum_name' in roigroup and roiname in roigroup['sum_name']:
-            raise ValueError("Name '%s' exists in 'roimap/sum_name' arrays." % roiname)
-        for det in det_list+[sumdet]:
-            if roiname in roigroup[det]:
-                raise ValueError("Name '%s' exists in 'roimap/%s' arrays." % (roiname,det))
-
-        roi_limits,dtfctrs,icounts = [],[],[]
         for det in det_list:
-            xrmdet = self.xrmmap[det]
+            if roiname in self.xrmmap['roimap'][det]:
+                print(f"ROI '{roiname:s}' exists for detector '{det:s}'.  Delete before adding")
+                continue
+            mapdat = self.xrmmap[det]
             if unit.startswith('chan'):
-                imin,imax = Erange
+                emin, emax = Erange
             else:
-                Eaxis = xrmdet['energy'][:]
-
-                imin = (np.abs(Eaxis-Erange[0])).argmin()
-                imax = (np.abs(Eaxis-Erange[1])).argmin()+1
-
-
-            roi_limits += [[int(imin), int(imax)]]
-            dtfctrs += [xrmdet['dtfactor']]
-            icounts += [np.array(xrmdet['counts'][:])]
-
-        detraw = [icnt[:,:,slice(*islc)].sum(axis=2)        for icnt,islc        in zip(icounts,roi_limits)]
-        detcor = [icnt[:,:,slice(*islc)].sum(axis=2)*dtfctr for icnt,islc,dtfctr in zip(icounts,roi_limits,dtfctrs)]
-        detraw = np.einsum('kij->ijk', detraw)
-        detcor = np.einsum('kij->ijk', detcor)
-
-        sumraw = detraw.sum(axis=2)
-        sumcor = detcor.sum(axis=2)
-        for i,det in enumerate(det_list):
-            self.save_roi(roiname,det,detraw[:,:,i],detcor[:,:,i],Erange,'energy',unit)
-        if sumdet is not None:
-            self.save_roi(roiname,sumdet,sumraw,sumcor,Erange,'energy',unit)
+                en  = mapdat['energy'][:]
+                emin = (np.abs(en-Erange[0])).argmin()
+                emax = (np.abs(en-Erange[1])).argmin()+1
+            raw = mapdat['counts'][:, :, emin:emax].sum(axis=2)
+            cor = raw * mapdat['dtfactor']
+            self.save_roi(roiname, det, raw, cor, Erange, 'energy', unit)
         self.get_roi_list('mcasum', force=True)
 
+    def del_xrfroi(self, roiname):
+        roigroup, det_list, sumdet  = self.build_mca_roimap()
+        if sumdet not in det_list:
+            det_list.append(sumdet)
+
+        for det in det_list:
+            if roiname in self.xrmmap['roimap'][det]:
+                del self.xrmmap['roimap'][det][roiname]
+        self.get_roi_list('mcasum', force=True)
+        self.h5root.flush()
 
 
     def check_roi(self, roiname, det=None, version=None):
@@ -2996,6 +2985,7 @@ class GSEXRM_MapFile(object):
             detname = det
 
         if roiname is not None: roiname = roiname.lower()
+        # print("Check ROI ", roiname, detname, version)
 
         if version_ge(version, '2.0.0'):
             for d in self.get_detector_list():
@@ -3100,6 +3090,7 @@ class GSEXRM_MapFile(object):
         if dtcorrect:
             ext = 'cor'
 
+
         # print("GetROIMAP roiname=%s|roi=%s|det=%s" % (roiname, roi, det))
         # print("detaddr=%s|ext=%s|version=%s" % (detaddr, ext, self.version))
         if version_ge(self.version, '2.0.0'):
@@ -3133,6 +3124,8 @@ class GSEXRM_MapFile(object):
                 _roi, _detaddr = self.check_roi(roiname, det, version='1.0.0')
                 detname = '%s%s' % (_detaddr, ext)
                 out = self.xrmmap[detname][:, :, _roi]
+                # print("from v1, got roi map ", _roi, detname, out.shape)
+
                 self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
                 self.xrmmap[detaddr][roiaddr][:, :] = out
 
@@ -3240,6 +3233,7 @@ class GSEXRM_MapFile(object):
         #   detsum/roi_name         for I = 1, N_detectors (xrmmap attribute)
         #   detsum/roi_limits       for I = 1, N_detectors (xrmmap attribute)
 
+        ''
         roi_names = [i.lower().strip() for i in self.xrmmap['config/rois/name']]
         if name.lower().strip() in roi_name:
             if overwrite:
