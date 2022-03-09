@@ -2263,8 +2263,8 @@ class ROIPopUp(wx.Dialog):
                             itemstyle=LEFT, gap=3, **kws)
 
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
-        self.roi_chc  = [Choice(self, size=(150, -1)),
-                         Choice(self, size=(150, -1))]
+        self.roi_type = Choice(self, size=(150, -1))
+        self.roi_units = Choice(self, size=(150, -1))
         fopts = dict(minval=-1, precision=3, size=(100, -1))
         self.roi_lims = [FloatCtrl(self, value=0,  **fopts),
                          FloatCtrl(self, value=-1, **fopts),
@@ -2276,10 +2276,10 @@ class ROIPopUp(wx.Dialog):
         self.gp.Add(SimpleText(self, ' Name:'),  newrow=True)
         self.gp.Add(self.roi_name, dcol=2)
         self.gp.Add(SimpleText(self, ' Type:'), newrow=True)
-        self.gp.Add(self.roi_chc[0], dcol=2)
+        self.gp.Add(self.roi_type, dcol=2)
 
         self.gp.Add(SimpleText(self, ' Limits:'), newrow=True)
-        self.gp.AddMany((self.roi_lims[0],self.roi_lims[1],self.roi_chc[1]),
+        self.gp.AddMany((self.roi_lims[0], self.roi_lims[1], self.roi_units),
                         dcol=1, style=LEFT)
         self.gp.AddMany((SimpleText(self, ' '),self.roi_lims[2],self.roi_lims[3]),
                         dcol=1, style=LEFT, newrow=True)
@@ -2289,63 +2289,60 @@ class ROIPopUp(wx.Dialog):
 
         ###############################################################################
 
-        self.rm_roi_ch = [Choice(self, size=(120, -1)),
-                          Choice(self, size=(120, -1))]
+        self.rm_roi_name = Choice(self, size=(120, -1))
+        self.rm_roi_det = Choice(self, size=(120, -1))
         fopts = dict(minval=-1, precision=3, size=(100, -1))
-        self.rm_roi_lims = SimpleText(self, '')
+
+        self.gp.Add(HLine(self, size=(250, 4)), dcol=4)
 
         self.gp.Add(SimpleText(self, 'Delete ROI: '), dcol=2, newrow=True)
 
-        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_ch[0]),  newrow=True)
-        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_ch[1]), newrow=True)
-        self.gp.Add(SimpleText(self, 'Limits:'), newrow=True)
-        self.gp.Add(self.rm_roi_lims, dcol=3)
-        self.gp.AddMany((SimpleText(self, ''),Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)), newrow=True)
+        self.gp.AddMany((SimpleText(self, 'Detector:'),self.rm_roi_det),  newrow=True)
+        self.gp.AddMany((SimpleText(self, 'ROI:'),self.rm_roi_name), newrow=True)
+        self.gp.AddMany((SimpleText(self, ''),
+                         Button(self, 'Remove ROI', size=(100, -1), action=self.onRemoveROI)),
+                        newrow=True)
         self.gp.Add(SimpleText(self, ''),newrow=True)
 
         self.gp.AddMany((SimpleText(self, ''),SimpleText(self, ''),
                          wx.Button(self, wx.ID_OK, label='Done')), newrow=True)
 
-        self.roi_chc[0].Bind(wx.EVT_CHOICE, self.roiUNITS)
-        self.roi_lims[2].Disable()
-        self.roi_lims[3].Disable()
-
-        self.rm_roi_ch[1].Bind(wx.EVT_CHOICE, self.roiSELECT)
+        self.roi_type.Bind(wx.EVT_CHOICE, self.roiUNITS)
+        self.rm_roi_name.Bind(wx.EVT_CHOICE, self.roiSELECT)
 
         self.gp.pack()
-
         self.cfile.reset_flags()
         self.roiTYPE()
 
-    def roiTYPE(self,event=None):
+    def roiTYPE(self, event=None):
         roitype = []
-        delroi = []
+        det_list = self.cfile.get_detector_list()
         if self.cfile.has_xrf:
             roitype += ['XRF']
         if self.cfile.has_xrd1d:
             roitype += ['1DXRD']
-            delroi  = ['xrd1d']
-        if self.cfile.has_xrd2d:
-            roitype += ['2DXRD']
         if len(roitype) < 1:
             roitype = ['']
-        self.roi_chc[0].SetChoices(roitype)
+        self.roi_type.SetChoices(roitype)
         self.roiUNITS()
-        if len(delroi) > 0:
-            self.rm_roi_ch[0].SetChoices(delroi)
-            self.setROI()
+        self.rm_roi_det.SetChoices(det_list)
+        self.setROI()
+
 
     def onRemoveROI(self,event=None):
 
-        detname = self.rm_roi_ch[0].GetStringSelection()
-        roiname = self.rm_roi_ch[1].GetStringSelection()
+        detname = self.rm_roi_det.GetStringSelection()
+        roiname = self.rm_roi_name.GetStringSelection()
 
         if detname == 'xrd1d':
             self.cfile.del_xrd1droi(roiname)
             self.setROI()
+        else:
+            self.cfile.del_xrfroi(roiname)
+        self.roiRTYPE()
 
     def setROI(self):
-        detname = self.rm_roi_ch[0].GetStringSelection()
+        detname = self.rm_roi_det.GetStringSelection()
         try:
             detgrp = self.cfile.xrmmap['roimap'][detname]
         except:
@@ -2356,34 +2353,17 @@ class ROIPopUp(wx.Dialog):
         for name in names:
             limits += [list(detgrp[name]['limits'][:])]
         if len(limits) > 0:
-            self.rm_roi_ch[1].SetChoices([x for (y,x) in sorted(zip(limits,names))])
+            self.rm_roi_name.SetChoices([x for (y,x) in sorted(zip(limits,names))])
         self.roiSELECT()
 
     def roiSELECT(self, event=None):
-        detname = self.rm_roi_ch[0].GetStringSelection()
-        roiname = self.rm_roi_ch[1].GetStringSelection()
-        roimap = self.cfile.xrmmap['roimap']
-        roi = None
-        if detname in roimap:
-            detroi = roimap[detname]
-            if roiname in detroi:
-                roi = detroi[roiname]
-        if roi is None:
-            return
-        limits = roi['limits'][:]
-        units = bytes2str(roi['limits'].attrs.get('units',''))
-
-        if units == '1/A':
-            roistr = '[%0.2f to %0.2f %s]' % (limits[0],limits[1],units)
-        else:
-            roistr = '[%0.1f to %0.1f %s]' % (limits[0],limits[1],units)
-
-        self.rm_roi_lims.SetLabel(roistr)
+        detname = self.rm_roi_det.GetStringSelection()
+        roinames = self.cfile.get_roi_list(detname)
+        self.rm_roi_name.SetChoices(roinames)
 
 
     def roiUNITS(self,event=None):
-
-        choice = self.roi_chc[0].GetStringSelection()
+        choice = self.roi_type.GetStringSelection()
         roiunit = ['']
         if choice == 'XRF':
             roiunit = ['eV','keV','channels']
@@ -2393,31 +2373,26 @@ class ROIPopUp(wx.Dialog):
             roiunit = [u'\u212B\u207B\u00B9 (q)',u'\u00B0 (2\u03B8)',u'\u212B (d)']
             self.roi_lims[2].Disable()
             self.roi_lims[3].Disable()
-        elif choice == '2DXRD':
-            roiunit = ['pixels']
-            self.roi_lims[2].Enable()
-            self.roi_lims[3].Enable()
-        self.roi_chc[1].SetChoices(roiunit)
+
+        self.roi_units.SetChoices(roiunit)
 
     def onCreateROI(self,event=None):
 
-        xtyp  = self.roi_chc[0].GetStringSelection()
-        xunt  = self.roi_chc[1].GetStringSelection()
+        xtyp  = self.roi_type.GetStringSelection()
+        xunt  = self.roi_units.GetStringSelection()
         xname = self.roi_name.GetValue()
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
-        # print("Create ROI ", xtyp, xunt, xname, xrange)
 
         if xtyp != '2DXRD': xrange = xrange[:2]
 
         self.owner.message('Building ROI data for: %s' % xname)
         if xtyp == 'XRF':
-            self.cfile.add_xrfroi(xrange,xname,unit=xunt)
+            self.cfile.add_xrfroi(xname, xrange, unit=xunt)
         elif xtyp == '1DXRD':
             xrd = ['q','2th','d']
-            unt = xrd[self.roi_chc[1].GetSelection()]
-            self.cfile.add_xrd1droi(xrange, xname, unit=unt)
-        elif xtyp == '2DXRD':
-            self.cfile.add_xrd2droi(xrange,xname,unit=xunt)
+            unt = xrd[self.roi_units.GetSelection()]
+            self.cfile.add_xrd1droi(xname, xrange, unit=unt)
+
         self.owner.message('Added ROI:  %s' % xname)
 ##################
 
