@@ -1991,22 +1991,21 @@ class MapViewerFrame(wx.Frame):
                 if callable(update_xrmmap):
                     update_xrmmap(xrmfile=self.current_file)
 
+    def setroi_cb(self):
+        self.current_file.get_roi_list('mcasum', force=True)        
+        for page in self.nb.pagelist:
+            if hasattr(page, 'update_xrmmap'):
+                page.update_xrmmap(xrmfile=self.current_file)
+            if hasattr(page, 'set_roi_choices'):
+                page.set_roi_choices()                
 
     def manageROIs(self, event=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
             return
-
-        def set_roi_cb(self):
-            self.current_file.get_roi_list('mcasum', force=True)        
-            for page in self.nb.pagelist:
-                if hasattr(page, 'update_xrmmap'):
-                    page.update_xrmmap(xrmfile=self.current_file)
-                if hasattr(page, 'set_roi_choices'):
-                    page.set_roi_choices()                
       
         if len(self.filemap) > 0:
-            ROIDialog(self, callback=set_roi_cb).Show()
+            ROIDialog(self, callback=self.setroi_cb).Show()
                 
     def add1DXRDFile(self, event=None):
         if len(self.filemap) > 0:
