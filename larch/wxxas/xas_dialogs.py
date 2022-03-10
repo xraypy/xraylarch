@@ -412,7 +412,10 @@ overwriting current arrays''')
     def on_apply_one(self, event=None):
         xdat, ydat = self.data
         dgroup = self.dgroup
-        dgroup.xdat = dgroup.energy = xdat
+        eshift = self.wids['eshift'].GetValue()
+        dgroup.energy_orig = dgroup.energy[:]
+        dgroup.energy_shift = eshift
+        dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -421,16 +424,20 @@ overwriting current arrays''')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
+            dgroup.energy_orig = dgroup.energy[:]
+            dgroup.energy_shift = eshift
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
             self.parent.process_normalization(dgroup)
 
     def on_saveas(self, event=None):
         wids = self.wids
         fname = wids['grouplist'].GetStringSelection()
+        eshift = wids['eshift'].GetValue()
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
-        eshift = self.wids['eshift'].GetValue()
+        ngroup.energy_orig = ngroup.energy[:]
+        ngroup.energy_shift = eshift
         ngroup.xdat = ngroup.energy = eshift + ngroup.energy[:]
         self.parent.onNewGroup(ngroup)
 
