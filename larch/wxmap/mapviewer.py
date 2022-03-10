@@ -189,6 +189,10 @@ class MapPanel(GridPanel):
                               action=partial(self.onROIMap, new=False))
         self.mapproc_btn =  Button(self, 'Add More Rows', size=(CWID, -1),
                                    action=self.onProcessMap)
+
+        map_showxrf = Button(self, 'Show Full XRF',      size=(CWID, -1),
+                               action=self.onShowXRF)
+
         self.mapproc_nrows = Choice(self, choices=PROCROWS_CHOICES, size=(CWID, -1))
         self.mapproc_nrows.SetStringSelection('100')
 
@@ -242,7 +246,8 @@ class MapPanel(GridPanel):
         self.Add(SimpleText(self, 'Y Range:'),  dcol=1, style=LEFT)
         self.Add(self.lims[2],                  dcol=1, style=LEFT)
         self.Add(self.lims[3],                  dcol=1, style=LEFT)
-
+        self.Add((5, 5),                        dcol=1, style=LEFT,  newrow=True)
+        self.Add(map_showxrf,                   dcol=1, style=LEFT)
         self.Add(HLine(self, size=(WWID, 5)),    dcol=8, style=LEFT, newrow=True)
         self.pack()
 
@@ -487,6 +492,38 @@ class MapPanel(GridPanel):
         if 'correlation' in self.plot_choice.GetStringSelection().lower():
             plotcmd = partial(self.ShowCorrel, new=new)
         plotcmd()
+
+    def onShowXRF(self, event=None):
+        owner = self.owner
+        det_list = owner.current_file.get_detector_list()
+        detname = self.det_choice[0].GetStringSelection()
+        ny, nx = owner.current_file.get_shape()
+
+        xmin, ymin = 0, 0
+        xmax, ymax = nx, ny
+        if self.limrange.IsChecked():
+            xmin = int(self.lims[0].GetValue())
+            xmax = int(self.lims[1].GetValue())
+            ymin = int(self.lims[2].GetValue())
+            ymax = int(self.lims[3].GetValue())
+            if xmax < 0:
+                xmax += nx
+            if ymax < 0:
+                ymax += ny
+        my, mx= (ymax - ymin), (xmax - xmin)
+
+        owner.show_XRFDisplay()
+        self._mca = owner.current_file.get_mca_rect(ymin, ymax, xmin, xmax, det=detname,
+                                                    dtcorrect=owner.dtcor)
+        pref, fname = os.path.split(self.owner.current_file.filename)
+        self._mca.filename = fname
+        self._mca.title =  "(%d x %d pixels)" % (mx, my)
+        self._mca.npixels = my*mx
+        self.owner.message("Plotting Full XRF Spectra (%d x %d) for '%s'" % (mx, my, fname))
+
+        self.owner.xrfdisplay.add_mca(self._mca, label=fname, plot=True)
+
+
 
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
