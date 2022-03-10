@@ -78,7 +78,7 @@ Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':
 defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
                 show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
                 norm_method='polynomial', edge='K', atsym='?',
-                nvict=0, nnorm=None, scale=1, energy_ref=None)
+                nvict=0, nnorm=None, scale=1, energy_ref=None, energy_shift=0)
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -146,7 +146,7 @@ class XASNormPanel(TaskPanel):
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], **opts)
         xas_norm2 = self.add_floatspin('norm2', value=defaults['norm2'], **opts)
 
-        opts = {'digits': 3, 'increment': 0.1, 'value': 0}
+        opts = {'digits': 3, 'increment': 0.05, 'value': 0}
         plot_voff = self.add_floatspin('plot_voff',  with_pin=False,
                                        size=(80, -1),
                                        action=self.onVoffset, **opts)
@@ -162,6 +162,9 @@ class XASNormPanel(TaskPanel):
         self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
+        self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
+                                              action=self.onSet_EnergyShift)
+
 
         self.wids['atsym']  = Choice(panel, choices=ATSYMS, size=(100, -1))
         self.wids['edge']   = Choice(panel, choices=EDGES, size=(100, -1))
@@ -217,6 +220,10 @@ class XASNormPanel(TaskPanel):
         add_text('Energy Reference Group: ')
         panel.Add(self.wids['energy_ref'], dcol=4)
         panel.Add(CopyBtn('energy_ref'), dcol=1, style=RIGHT)
+
+        add_text('Energy Shift from Original: ')
+        panel.Add(self.wids['energy_shift'], dcol=4)
+        panel.Add(CopyBtn('energy_shift'), dcol=1, style=RIGHT)
 
         add_text('E0 : ')
         panel.Add(xas_e0)
@@ -295,6 +302,7 @@ class XASNormPanel(TaskPanel):
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
         conf['energy_ref'] = getattr(dgroup,'energy_ref', conf['energy_ref'])
+        conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
 
         if conf['energy_ref'] in (None, 'None'):
             conf['energy_ref'] = dgroup.groupname
@@ -350,6 +358,7 @@ class XASNormPanel(TaskPanel):
 
             self.set_nnorm_widget(opts.get('nnorm'))
 
+            self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetSelection(opts['nvict'])
             self.wids['showe0'].SetValue(opts['show_e0'])
             self.wids['auto_e0'].SetValue(opts['auto_e0'])
@@ -404,6 +413,7 @@ class XASNormPanel(TaskPanel):
             if val == 0: val = None
             form_opts[attr] = val
 
+        form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
         form_opts['nnorm'] = Nnorm_names.get(self.wids['nnorm'].GetStringSelection(), None)
         form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
@@ -570,6 +580,8 @@ class XASNormPanel(TaskPanel):
             copy_attrs('e0', 'show_e0', 'auto_e0')
         elif name == 'xas_step':
             copy_attrs('edge_step', 'auto_step')
+        elif name == 'energy_shift':
+            copy_attrs('energy_shift')
         elif name == 'xas_pre':
             copy_attrs('pre1', 'pre2', 'nvict')
         elif name == 'atsym':
@@ -601,6 +613,11 @@ class XASNormPanel(TaskPanel):
                             'auto_e0':self.wids['auto_e0'].GetValue()})
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
+
+    def onSet_EnergyShift(self, evt=None, value=None):
+        time.sleep(0.01)
+        wx.CallAfter(self.onReprocess)
+
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
@@ -713,6 +730,15 @@ class XASNormPanel(TaskPanel):
                 dgroup.mono_dspace = res.dspace
                 dgroup.xdat = dgroup.energy = res.energy
         dgroup.energy_units = en_units
+
+        # test whether the energy shift is 0 or is different from the current energy shift:
+        eshift_current = getattr(dgroup, 'energy_shift', 0)
+        eshift = form.get('energy_shift', 0)
+        if abs(eshift-eshift_current) > 1.e-5:
+            if not hasattr(dgroup, 'energy_orig'):
+                self.larch_eval("{group:s}.energy_orig = {group:s}.energy[:]".format(group=dgroup.groupname))
+            self.larch_eval("{group:s}.energy_shift = {eshift:.4f}".format(group=dgroup.groupname, eshift=eshift))
+            self.larch_eval("{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift".format(group=dgroup.groupname))
 
         e0 = form['e0']
         edge_step = form['edge_step']
