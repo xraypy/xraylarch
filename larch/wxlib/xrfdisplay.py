@@ -80,7 +80,7 @@ class XRFDisplayFrame(wx.Frame):
     def __init__(self, _larch=None, parent=None, filename=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
-                 output_title='XRF', **kws):
+                 output_title='XRF', roi_callback=None, **kws):
 
         if size is None: size = (725, 450)
         wx.Frame.__init__(self, parent=parent,
@@ -89,6 +89,7 @@ class XRFDisplayFrame(wx.Frame):
         self.subframes = {}
         self.data = None
         self.title = title
+        self.roi_callback = roi_callback
         self.plotframe = None
         self.wids = {}
         self.larch = _larch
@@ -619,6 +620,9 @@ class XRFDisplayFrame(wx.Frame):
         self.onROI(label=roiname)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
+        if self.roi_callback is not None:
+            xrange = [self.mca.energy[left], self.mca.energy[right]]
+            self.roi_callback(roiname, xrange=xrange, action='add', units='keV', roitype='XRF')
         return True
 
     def onConfirmDelROI(self, event=None):
@@ -626,6 +630,8 @@ class XRFDisplayFrame(wx.Frame):
         msg = "Delete ROI {:s}?".format(roiname)
         if (wx.ID_YES == Popup(self, msg,   'Delete ROI?', style=wx.YES_NO)):
             self.onDelROI()
+            if self.roi_callback is not None:
+                self.roi_callback(roiname, action='delete', roitype='XRF')
 
     def onRenameROI(self, event=None):
         roiname = self.get_roiname()
