@@ -1132,7 +1132,7 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 
     def onDone(self, event=None):
         self.Destroy()
-        
+
     def onDelete(self, event=None):
         aname = self._getarea()
         erase = (wx.ID_YES == Popup(self.owner, self.delstr % aname,
@@ -1456,7 +1456,7 @@ class MapViewerFrame(wx.Frame):
             self.sel_mca.npixels = npix
             self.xrfdisplay.add_mca(self.sel_mca, label='%s:%s'% (fname, aname),
                                     plot=True)
-
+            self.xrfdisplay.roi_callback = self.UpdateROI
             update_xrmmap = getattr(self.nb.GetCurrentPage(), 'update_xrmmap', None)
             if callable(update_xrmmap):
                 update_xrmmap(xrmfile=self.current_file)
@@ -1472,12 +1472,14 @@ class MapViewerFrame(wx.Frame):
             xrmfile = self.current_file
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
-                                              _larch=self.larch)
+                                              _larch=self.larch,
+                                              roi_callback=self.UpdateROI)
         try:
             self.xrfdisplay.Show()
         except:
             self.xrfdisplay = XRFDisplayFrame(parent=self.larch_buffer,
-                                              _larch=self.larch)
+                                              _larch=self.larch,
+                                              roi_callback=self.UpdateROI)
             self.xrfdisplay.Show()
 
         if do_raise:
@@ -1991,22 +1993,35 @@ class MapViewerFrame(wx.Frame):
                 if callable(update_xrmmap):
                     update_xrmmap(xrmfile=self.current_file)
 
-    def setroi_cb(self):
-        self.current_file.get_roi_list('mcasum', force=True)        
+    def UpdateROI(self, name, xrange=None, action='add', units='keV', roitype='XRF'):
+        "add or remove an ROI with name, range"
+        cfile = self.current_file
+        if xrange is None: xrange = [1, 2]
+        if roitype == 'XRF':
+            if action.startswith('del'):
+                cfile.del_xrfroi(name)
+            else:
+                cfile.add_xrfroi(name, xrange, unit=units)
+
+        if roitype == '1DXRD':
+            if action.startswith('del'):
+                cfile.del_xrd1droi(name)
+            else:
+                cfile.add_xrd1droi(name, xrange, unit=units)
+
+        self.current_file.get_roi_list('mcasum', force=True)
         for page in self.nb.pagelist:
             if hasattr(page, 'update_xrmmap'):
                 page.update_xrmmap(xrmfile=self.current_file)
             if hasattr(page, 'set_roi_choices'):
-                page.set_roi_choices()                
+                page.set_roi_choices()
 
     def manageROIs(self, event=None):
         if not self.h5convert_done:
             print( 'cannot open file while processing a map folder')
-            return
-      
-        if len(self.filemap) > 0:
-            ROIDialog(self, callback=self.setroi_cb).Show()
-                
+        elif len(self.filemap) > 0:
+            ROIDialog(self, roi_callback=self.UpdateROI).Show()
+
     def add1DXRDFile(self, event=None):
         if len(self.filemap) > 0:
             read = False
@@ -2241,11 +2256,11 @@ class OpenPoniFile(wx.Dialog):
             self.PoniInfo[1].SetValue(str(path))
             self.checkOK()
 
-##################
+######
 class ROIDialog(wx.Dialog):
     """"""
     #----------------------------------------------------------------------
-    def __init__(self, owner, callback=None, **kws):
+    def __init__(self, owner, roi_callback=None, **kws):
 
         """Constructor"""
         dialog = wx.Dialog.__init__(self, None, title='Add and Delete ROIs',
@@ -2253,14 +2268,11 @@ class ROIDialog(wx.Dialog):
 
         panel = wx.Panel(self)
 
-        ################################################################################
-
         self.owner = owner
-        self.callback = callback
+        self.roi_callback = roi_callback
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-        
-        self.gp = GridPanel(panel, nrows=8, ncols=4,
-                            itemstyle=LEFT, gap=3, **kws)
+
+        self.gp = GridPanel(panel, nrows=8, ncols=4, itemstyle=LEFT, gap=3, **kws)
 
         self.roi_name =  wx.TextCtrl(self, -1, 'ROI_001',  size=(120, -1))
         fopts = dict(minval=-1, precision=3, size=(120, -1))
@@ -2326,16 +2338,12 @@ class ROIDialog(wx.Dialog):
     def onRemoveROI(self,event=None):
         detname = self.rm_roi_det.GetStringSelection()
         roiname = self.rm_roi_name.GetStringSelection()
-        cfile = self.owner.current_file
-        if detname == 'xrd1d':
-            cfile.del_xrd1droi(roiname)
-            self.setROI()
-        else:
-            cfile.del_xrfroi(roiname)
-        if self.callback is not None:
-            self.callback()
+
+        if self.roi_callback is not None:
+            self.roi_callback(roiname, action='del')
+        self.setROI()
         self.roiTYPE()
-            
+
     def setROI(self):
         detname = self.rm_roi_det.GetStringSelection()
         cfile = self.owner.current_file
@@ -2354,7 +2362,7 @@ class ROIDialog(wx.Dialog):
 
     def roiSELECT(self, event=None):
         detname = self.rm_roi_det.GetStringSelection()
-        cfile = self.owner.current_file        
+        cfile = self.owner.current_file
         roinames = cfile.get_roi_list(detname)
         self.rm_roi_name.SetChoices(roinames)
 
@@ -2369,29 +2377,24 @@ class ROIDialog(wx.Dialog):
         self.roi_units.SetChoices(roiunit)
 
     def onCreateROI(self,event=None):
-        xtyp  = self.roi_type.GetStringSelection()
-        xunt  = self.roi_units.GetStringSelection()
-        xname = self.roi_name.GetValue()
+        rtype  = self.roi_type.GetStringSelection()
+        name   = self.roi_name.GetValue()
         xrange = [float(lims.GetValue()) for lims in self.roi_lims]
 
-        if xtyp != '2DXRD': xrange = xrange[:2]
+        units  = self.roi_units.GetStringSelection()
+        if rtype == '1DXRD':
+            units = ['q', '2th', 'd'][self.roi_units.GetSelection()]
 
-        self.owner.message('Building ROI data for: %s' % xname)
-        cfile = self.owner.current_file        
-        if xtyp == 'XRF':
-            cfile.add_xrfroi(xname, xrange, unit=xunt)
-        elif xtyp == '1DXRD':
-            xrd = ['q','2th','d']
-            unt = xrd[self.roi_units.GetSelection()]
-            cfile.add_xrd1droi(xname, xrange, unit=unt)
-        if self.callback is not None:
-            self.callback()
-        self.owner.message('Added ROI:  %s' % xname)
+        self.owner.message(f'Building ROI data for: {name:s}')
+        if self.roi_callback is not None:
+            self.roi_callback(name, xrange=xrange, action='add', units=units, roitype=rtype)
+
+        self.owner.message(f'Added ROI: {name:s}')
         self.roiTYPE()
 
     def onClose(self, event=None):
         self.Destroy()
-        
+
 ##################a
 
 
