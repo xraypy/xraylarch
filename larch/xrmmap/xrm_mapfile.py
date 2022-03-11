@@ -11,7 +11,7 @@ from functools import partial
 
 import larch
 from larch.utils import debugtime, isotime
-from larch.utils.strutils import fix_filename, bytes2str, version_ge
+from larch.utils.strutils import fix_varname, fix_filename, bytes2str, version_ge
 
 from larch.io import (nativepath, new_filename, read_xrf_netcdf,
                       read_xsp3_hdf5, read_xrd_netcdf, read_xrd_hdf5)
@@ -1627,9 +1627,17 @@ class GSEXRM_MapFile(object):
         def sort_roi_limits(roidetgrp):
             roi_name, roi_limits = [],[]
             for name in roidetgrp.keys():
-                roi_name   += [name]
-                roi_limits += [list(roidetgrp[name]['limits'][:])]
-            return [x for (y,x) in sorted(zip(roi_limits,roi_name))]
+                roi_name.append(name)
+                roi_limits.append(roidetgrp[name]['limits'][0])
+            return [y for (x,y) in sorted(zip(roi_limits,roi_name))]
+
+        def sort_orderby(det, orderby):
+            roi_name, roi_order = [], []
+            for name in det.keys():
+                roi_name.append(name)
+                roi_order.append(det[name].attrs.get(orderby, 9999))
+            return [y for (x, y) in sorted(zip(roi_order, roi_name))]
+
         rois = []
         if version_ge(self.version, '2.0.0'):
             if detname in roigrp.keys():
@@ -1639,6 +1647,9 @@ class GSEXRM_MapFile(object):
                 if (detname in EXTRA_DETGROUPS or
                     'detector' in det.attrs.get('type')):
                     rois = list(det.keys())
+                    orderby = det.attrs.get('orderby', None)
+                    if orderby is not None:
+                        rois = sort_orderby(det, orderby)
         else:
             if detname in EXTRA_DETGROUPS:
                 rois = list(self.xrmmap[detname].keys())
@@ -1837,6 +1848,19 @@ class GSEXRM_MapFile(object):
         ds = workgroup.create_dataset(name, data=data)
         for key, val in kws.items():
             ds.attrs[key] = val
+        self.h5root.flush()
+
+    def add_work_arrays(self, arraydict, parent='work'):
+        workgroup = ensure_subgroup(parent, self.xrmmap)
+        workgroup.attrs['orderby'] = 'order'
+        count = 0
+        for key, data in arraydict.items():
+            count += 1
+            name = fix_varname(key)
+            if name in workgroup:
+                raise ValueError("array name '%s' exists in '%s" % (name, parent))
+            ds = workgroup.create_dataset(name, data=data)
+            ds.attrs['order'] =  count
         self.h5root.flush()
 
     def del_work_array(self, name, parent='work'):
