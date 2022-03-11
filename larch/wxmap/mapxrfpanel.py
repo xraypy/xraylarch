@@ -104,9 +104,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
 
         cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
         scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
-        for key, val in weights.items():
-             {groupname:s}.add_work_array(val, fix_varname(key), parent='{workname:s}')
-        #endfor
+{groupname:s}.add_work_arrays(weights, parent='{workname:s}')
         """
         cmd = cmd.format(cfit=cfit, groupname=xrmfile.groupname, ptime=xrmfile.pixeltime,
                          workname=workname, scale=scale, method=method)
@@ -141,36 +139,6 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             self.current_fit = 0
             self.update_xrmmap()
 
-    def onOtherSaveArray(self, evt=None):
-        name = self.name_in.GetValue()
-        expr = self.expr_in.GetValue()
-        xrmfile = self.owner.current_file
-        info = []
-        for varname in sorted(self.varfile.keys()):
-            fname   = self.varfile[varname].GetStringSelection()
-            roiname = self.varroi[varname].GetStringSelection()
-            dname   = self.vardet[varname].GetStringSelection()
-            dtcorr  = self.varcor[varname].IsChecked()
-            info.append((varname, (fname, roiname, dname, dtcorr)))
-
-        if self.map is None:
-            self.onShowMap()
-
-        if name in xrmfile.work_array_names():
-            if (wx.ID_YES == Popup(self.owner, """Overwrite Array '%s' for %s?
-    WARNING: This cannot be undone
-    """ % (name, xrmfile.filename),
-                                   'Overwrite Array?', style=wx.YES_NO)):
-                xrmfile.del_work_array(h5str(name))
-            else:
-                return
-        xrmfile.add_work_array(self.map, h5str(name),
-                               expression=h5str(expr),
-                               info=json.dumps(info))
-
-        for p in self.owner.nb.pagelist:
-            if hasattr(p, 'update_xrmmap'):
-                p.update_xrmmap(xrmfile=xrmfile, set_detectors=True)
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
         if xrmfile is None:
