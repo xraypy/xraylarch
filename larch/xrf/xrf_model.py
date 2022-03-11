@@ -1,4 +1,3 @@
-
 from collections import namedtuple
 import time
 import json
@@ -261,7 +260,7 @@ class XRF_Model:
         self.matrix_atten = 1.0
         self.filters = []
         self.fit_iter = 0
-        self.fit_toler = 1.e-5
+        self.fit_toler = 1.e-4
         self.fit_log = False
         self.bgr = None
         self.use_pileup = False
@@ -511,7 +510,7 @@ class XRF_Model:
         """
         ewin = ftwindow(energy, xmin=emin, xmax=emax, dx=ewid, window='hanning')
         self.fit_window = ewin
-        fit_wt = 0.5 + savitzky_golay(np.sqrt(counts+1.0), 25, 1)
+        fit_wt = 0.1 + savitzky_golay( (counts+1.0)**(2/3.0), 15, 1)
         self.fit_weight = 1.0/fit_wt
 
     def fit_spectrum(self, mca, energy_min=None, energy_max=None):
@@ -553,7 +552,7 @@ class XRF_Model:
 
         tol = self.fit_toler
         self.result = minimize(self.__resid, self.params, kws=userkws,
-                               method='leastsq', maxfev=10000, scale_covar=True,
+                               method='leastsq', maxfev=2000, scale_covar=True,
                                gtol=tol, ftol=tol, epsfcn=1.e-5)
 
         self.fit_report = fit_report(self.result, min_correl=0.5)
