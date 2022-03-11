@@ -262,9 +262,9 @@ class FitSpectraFrame(wx.Frame):
         p.Add((2, 2), newrow=True)
 
         #                name, escale, step, sigmax, beta, tail
-        scatter_peaks = (('Elastic',  0, 0.05, 1.0, 0.5, 0.10),
-                         ('Compton1', 1, 0.05, 1.5, 2.0, 0.25),
-                         ('Compton2', 2, 0.05, 2.0, 2.5, 0.25))
+        scatter_peaks = (('Elastic',  0, 0.03, 1.0, 0.5, 0.10),
+                         ('Compton1', 1, 0.03, 1.5, 2.0, 0.25),
+                         ('Compton2', 2, 0.03, 2.0, 2.5, 0.25))
         opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
         for name, escale, dstep, dsigma, dbeta, dtail in scatter_peaks:
             en = self.mca.incident_energy
@@ -337,8 +337,8 @@ class FitSpectraFrame(wx.Frame):
         cal_offset = getattr(mca, 'offset',  0)
         cal_slope = getattr(mca, 'slope',  0.010)
         det_noise = getattr(mca, 'det_noise',  0.035)
-        escape_amp = getattr(mca, 'escape_amp', 1.0)
-        pileup_amp = getattr(mca, 'pileup_amp', 0.1)
+        escape_amp = getattr(mca, 'escape_amp', 0.25)
+        pileup_amp = getattr(mca, 'pileup_amp', 0.25)
 
         wids = self.wids
         # main = wx.Panel(self)
@@ -635,6 +635,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        sview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('  Fit Label', width=90)
         sview.AppendTextColumn(' N_vary', width=65)
@@ -664,6 +665,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         pview = wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
+        pview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
         pview.AppendTextColumn('Refined Value',  width=100)
@@ -706,7 +708,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
         cview = wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-
+        cview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
         cview.AppendTextColumn('Correlation',    width=150)
@@ -1442,7 +1444,7 @@ class FitSpectraFrame(wx.Frame):
             if param.stderr is not None:
                 serr = gformat(param.stderr, 10)
                 try:
-                    perr = ' {:.2%}'.format(abs(param.stderr/param.value))
+                    perr = ' {:.2}'.format(abs(param.stderr/param.value))
                 except ZeroDivisionError:
                     perr = '?'
             extra = ' '
