@@ -290,18 +290,17 @@ overwriting current arrays''')
         add_text(' Energy Shift : ')
         panel.Add(wids['eshift'], dcol=2)
         add_text(' eV', newrow=False)
-
-        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
-        panel.Add((10, 10), newrow=True)
-        panel.Add(wids['sharedref_msg'], dcol=3)
-        panel.Add((10, 10), newrow=True)
-        panel.Add(select_sharedref, dcol=3)
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
         panel.Add(apply_one, newrow=True)
-        panel.Add(apply_sel, dcol=4)
 
         panel.Add(wids['save_as'], newrow=True)
         panel.Add(wids['save_as_name'], dcol=3)
+
+        panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
+        panel.Add(wids['sharedref_msg'], dcol=4, newrow=True)
+        panel.Add(select_sharedref, dcol=4, newrow=True)
+        panel.Add(apply_sel, dcol=4, newrow=True)
+
         panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onDone),
                   newrow=True)
         panel.pack()
@@ -414,6 +413,10 @@ overwriting current arrays''')
         dgroup = self.dgroup
         eshift = self.wids['eshift'].GetValue()
         dgroup.energy_orig = dgroup.energy[:]
+
+        idx, norm_page = self.parent.get_nbpage('norm')
+        norm_page.wids['energy_shift'].SetValue(eshift)
+
         dgroup.energy_shift = eshift
         dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
         self.parent.process_normalization(dgroup)
@@ -421,11 +424,14 @@ overwriting current arrays''')
 
     def on_apply_sel(self, event=None):
         eshift = self.wids['eshift'].GetValue()
+        idx, norm_page = self.parent.get_nbpage('norm')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
             dgroup.energy_orig = dgroup.energy[:]
             dgroup.energy_shift = eshift
+            norm_page.wids['energy_shift'].SetValue(eshift)
+
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
             self.parent.process_normalization(dgroup)
 

@@ -357,8 +357,8 @@ class XASFrame(wx.Frame):
         MenuItem(self, data_menu, "Deglitch Data",  "Deglitch Data",
                  self.onDeglitchData)
 
-        MenuItem(self, data_menu, "Recalibrate Energy",
-                 "Recalibrate Energy",
+        MenuItem(self, data_menu, "Calibrate Energy",
+                 "Calibrate Energy",
                  self.onEnergyCalibrateData)
 
         MenuItem(self, data_menu, "Smooth Data", "Smooth Data",
