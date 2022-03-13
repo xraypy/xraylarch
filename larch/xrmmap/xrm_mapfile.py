@@ -2492,8 +2492,6 @@ class GSEXRM_MapFile(object):
             counts = mapdat['counts'][sy, sx, :, :]
         else:
             counts = mapdat['counts'][sy, sx, :]
-        # print("get_counts_rect: ", det, dtcorrect, mapdat, 'dtfactor' in mapdat,
-        #   mapdat['counts'].shape, counts.shape, counts.dtype)
 
         if dtcorrect and 'dtfactor' in mapdat:
             counts = counts*mapdat['dtfactor'][sy, sx].reshape(ny, nx, 1)
@@ -2524,8 +2522,6 @@ class GSEXRM_MapFile(object):
             return None
 
         dgroup = self.get_detname(det)
-        if 'counts' not in dgroup:
-            dgroup = self.get_detgroup(None)
 
         # first get data for bounding rectangle
         _ay, _ax = np.where(area)
@@ -2562,6 +2558,9 @@ class GSEXRM_MapFile(object):
             dtcorrect = self.dtcorrect
         dgroup = self.get_detname(det)
         mapdat = self.get_detgroup(det)
+        if 'counts' not in mapdat:
+            mapdat = self.get_detgroup(None)
+            dgroup = self.get_detname(None)
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(y=[%i:%i], x==[%i:%i])' % (ymin, ymax, xmin, xmax)
