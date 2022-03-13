@@ -151,7 +151,7 @@ class FitSpectraFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.font_fixedwidth = wx.Font(12, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
+        self.font_fixedwidth = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
 
 
         self.wids = {}
@@ -205,7 +205,7 @@ class FitSpectraFrame(wx.Frame):
 
         dstep, dtail, dbeta, dgamma = 0.03, 0.10, 0.5, 0.05
         wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
-                                      max_val=1.0, increment=0.01,
+                                      max_val=1.0, increment=0.005,
                                       tooltip=tooltips['step'])
         wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
                                        max_val=10.0, increment=0.01,
@@ -287,13 +287,13 @@ class FitSpectraFrame(wx.Frame):
             wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=3, min_val=0,
                                            increment=0.01)
             wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
-                                          max_val=1.0, increment=0.01,
+                                          max_val=1.0, increment=0.005,
                                           tooltip=tooltips['step'])
             wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
                                           max_val=1.0, increment=0.05,
                                           tooltip=tooltips['tail'])
             wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
-                                          max_val=10.0, increment=0.10,
+                                          max_val=10.0, increment=0.01,
                                           tooltip=tooltips['beta'])
             wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
                                            max_val=10.0, increment=0.05,
@@ -341,10 +341,12 @@ class FitSpectraFrame(wx.Frame):
         cal_slope = getattr(mca, 'slope',  0.010)
         det_noise = getattr(mca, 'det_noise',  0.035)
         escape_amp = getattr(mca, 'escape_amp', 0.25)
-        pileup_amp = getattr(mca, 'pileup_amp', 0.25)
+
+        if not hasattr(self.mca, 'pileup_scale'):
+            self.mca.predict_pileup()
+        pileup_amp = max(0.001, getattr(mca, 'pileup_scale', 0.10))
 
         wids = self.wids
-        # main = wx.Panel(self)
         pdet = GridPanel(self, itemstyle=LEFT)
 
         def addLine(pan):
@@ -354,17 +356,18 @@ class FitSpectraFrame(wx.Frame):
         wids['escape_use'] = Check(pdet, label='Include Escape in Fit',
                                    default=True, action=self.onUsePileupEscape)
         wids['escape_amp'] = FloatSpin(pdet, value=escape_amp,
-                                         min_val=0, max_val=100, digits=2,
-                                         increment=0.02, size=(100, -1))
+                                         min_val=0, max_val=100, digits=3,
+                                         increment=0.01, size=(100, -1))
 
         wids['pileup_use'] = Check(pdet, label='Include Pileup in Fit',
-                                   default=True, action=self.onUsePileupEscape)
+                                   default=True,
+                                   action=self.onUsePileupEscape)
         wids['pileup_amp'] = FloatSpin(pdet, value=pileup_amp,
-                                         min_val=0, max_val=100, digits=2,
-                                         increment=0.02, size=(100, -1))
+                                         min_val=0, max_val=100, digits=3,
+                                         increment=0.01, size=(100, -1))
 
         wids['escape_amp_vary'] = VarChoice(pdet, default=True)
-        wids['pileup_amp_vary'] = VarChoice(pdet, default=True)
+        wids['pileup_amp_vary'] = VarChoice(pdet, default=(pileup_amp>0.002))
 
 
         wids['cal_slope'] = FloatSpin(pdet, value=cal_slope,
@@ -830,9 +833,9 @@ class FitSpectraFrame(wx.Frame):
         for elem, dat in conc_vals.items():
             zat = "%d" % atomic_number(elem)
             val, serr = dat
-            rval = "%15.3f" % val
-            sval = "%15.3f" % (val*scale)
-            uval = "%15.3f" % (serr*scale)
+            rval = "%15.4f" % val
+            sval = "%15.4f" % (val*scale)
+            uval = "%15.4f" % (serr*scale)
             try:
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
@@ -892,14 +895,14 @@ class FitSpectraFrame(wx.Frame):
             for l in result.fit_report.split('\n'):
                 buff.append("#    %s" % l)
             buff.append("###########")
-            buff.append("#Element  Concentration  Uncertainty  RawAmplitude")
+            buff.append("#Element  Concentration  Uncertainty  Raw_Amplitude")
             for elem, dat in result.concentration_results.items():
                 eout = (elem  + ' '*4)[:4]
                 val, serr = dat
-                rval = "%16.5f" % val
-                sval = "%16.5f" % (val/scale)
-                uval = "%16.5f" % (serr/scale)
-                buff.append("  ".join([elem, sval, uval, rval]))
+                rval = "%15.4f" % val
+                sval = "%15.4f" % (val*scale)
+                uval = "%15.4f" % (serr*scale)
+                buff.append("  ".join([eout, sval, uval, rval]))
             buff.append('')
             with open(sfile, 'w') as fh:
                 fh.write('\n'.join(buff))
