@@ -31,7 +31,7 @@ from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      get_icon, SetTip, Button, Check, MenuItem, Choice,
                      FileOpen, FileSave, fix_filename, HLine, GridPanel,
                      CEN, LEFT, RIGHT)
-
+from . import FONTSIZE
 from ..math import index_of
 from ..utils import bytes2str, debugtime, get_cwd
 from ..io import GSEMCA_File
@@ -300,6 +300,7 @@ class XRFDisplayFrame(wx.Frame):
                                     tooltip_msg='Select Element for KLM Lines',
                                     fontsize=10)
         self.wids['ptable'] = ptable
+        self.font_fixedwidth = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
         labstyle = wx.ALIGN_LEFT|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT
@@ -413,7 +414,6 @@ class XRFDisplayFrame(wx.Frame):
 
         dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
         xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
-        self.font_fixedwidth = wx.Font(12, wx.MODERN, wx.NORMAL, wx.NORMAL)
         xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
         xlines.AppendTextColumn(' Line ',         width=45)
