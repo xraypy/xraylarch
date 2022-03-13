@@ -413,11 +413,13 @@ class XRFDisplayFrame(wx.Frame):
 
         dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
         xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
+        self.font_fixedwidth = wx.Font(12, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
-        xlines.AppendTextColumn(' Line ',         width=60)
-        xlines.AppendTextColumn(' Energy(keV) ',  width=110)
-        xlines.AppendTextColumn(' Strength ',     width=85)
-        xlines.AppendTextColumn(' Levels ',       width=75)
+        xlines.AppendTextColumn(' Line ',         width=45)
+        xlines.AppendTextColumn(' Energy(keV) ',  width=90)
+        xlines.AppendTextColumn(' Strength ',     width=75)
+        xlines.AppendTextColumn(' Levels ',       width=100)
         for col in (0, 1, 2, 3):
             this = xlines.Columns[col]
             this.Sortable = True
@@ -500,7 +502,7 @@ class XRFDisplayFrame(wx.Frame):
                                                 filename=filename))
             if label is None:
                 label = filename
-        if label is None and mca.filename is not None:
+        if label is None and hasattr(mca, 'filename'):
             label = mca.filename
         if label is None:
             label = mcaname
