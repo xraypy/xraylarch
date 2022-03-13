@@ -637,18 +637,27 @@ class Interpreter:
         for tnode in node.targets:
             if tnode.ctx.__class__ != ast.Del:
                 break
-            children = []
-            while tnode.__class__ == ast.Attribute:
-                children.append(tnode.attr)
-                tnode = tnode.value
-
-            if tnode.__class__ == ast.Name:
-                children.append(tnode.id)
-                children.reverse()
-                self.symtable.del_symbol('.'.join(children))
-            else:
-                msg = "could not delete symbol"
-                self.raise_exception(node, msg=msg)
+            if tnode.__class__ == ast.Subscript:
+                try:
+                    parent = self.run(tnode.value)
+                    if hasattr(parent, '__delitem__') and tnode.slice.__class__ == ast.Constant:
+                        child = tnode.slice.value
+                        parent.__delitem__(child)
+                except:
+                    msg = "could not delete symbol"
+                    self.raise_exception(node, msg=msg)
+            elif tnode.__class__ == ast.Attribute:
+                children = []
+                while tnode.__class__ == ast.Attribute:
+                    children.append(tnode.attr)
+                    tnode = tnode.value
+                if tnode.__class__ == ast.Name:
+                    children.append(tnode.id)
+                    children.reverse()
+                    self.symtable.del_symbol('.'.join(children))
+                else:
+                    msg = "could not delete symbol"
+                    self.raise_exception(node, msg=msg)
 
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
