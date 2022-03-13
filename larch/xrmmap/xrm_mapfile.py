@@ -1851,6 +1851,10 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
 
     def add_work_arrays(self, arraydict, parent='work'):
+        if parent in self.xrmmap:
+            del self.xrmmap[parent]
+            self.h5root.flush()
+
         workgroup = ensure_subgroup(parent, self.xrmmap)
         workgroup.attrs['orderby'] = 'order'
         count = 0
@@ -1858,7 +1862,7 @@ class GSEXRM_MapFile(object):
             count += 1
             name = fix_varname(key)
             if name in workgroup:
-                raise ValueError("array name '%s' exists in '%s" % (name, parent))
+                del workgroup[name]
             ds = workgroup.create_dataset(name, data=data)
             ds.attrs['order'] =  count
         self.h5root.flush()
