@@ -274,8 +274,8 @@ class MapPanel(GridPanel):
             xrmfile = self.owner.current_file
         self.cfile  = xrmfile
         self.xrmmap = self.cfile.xrmmap
-        if set_detectors or (not self.detectors_set):
-            self.set_det_choices()
+        #if set_detectors or not self.detectors_set:
+        self.set_det_choices()
         self.plotSELECT()
 
     def onLimitRange(self, event=None):
@@ -524,7 +524,6 @@ class MapPanel(GridPanel):
         self.owner.xrfdisplay.add_mca(self._mca, label=fname, plot=True)
 
 
-
     def set_det_choices(self):
         det_list = self.cfile.get_detector_list()
         for det_ch in self.det_choice:
@@ -532,10 +531,9 @@ class MapPanel(GridPanel):
         if 'scalars' in det_list: ## should set 'denominator' to scalars as default
             self.det_choice[-1].SetStringSelection('scalars')
         self.set_roi_choices()
-        self.detectors_set = True
 
     def set_roi_choices(self, idet=None):
-        force_rois = not self.detectors_set
+        force_rois = True # not self.detectors_set
         if idet is None:
             for idet, det_ch in enumerate(self.det_choice):
                 detname = self.det_choice[idet].GetStringSelection()
@@ -555,7 +553,7 @@ class MapPanel(GridPanel):
             self.roiSELECT(idet)
 
     def update_roi(self, detname):
-        force = not self.detectors_set
+        force = True # not self.detectors_set
         return self.cfile.get_roi_list(detname, force=force)
 
 class MapInfoPanel(scrolled.ScrolledPanel):
