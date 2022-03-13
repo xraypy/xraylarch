@@ -45,7 +45,7 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         sizer = wx.GridBagSizer(3, 3)
         self.current_fit = 0
-        self.fit_choice = Choice(self, size=(375, -1), choices=[])
+        self.fit_choice = Choice(self, size=(400, -1), choices=[])
 
         self.use_nnls = Check(self, label='force non-negative (~5x slower)',
                               default=False)
@@ -57,7 +57,9 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
                           action=self.onLoadXRFModel)
 
         self.scale = FloatCtrl(self, value=1.0, minval=0, precision=5, size=(100, -1))
-        self.name  = wx.TextCtrl(self, value='abundance', size=(375, -1))
+        self.name  = wx.TextCtrl(self, value='abundance', size=(200, -1))
+        self.warn_overwrite = Check(self, label='warn about overwriting group?',
+                                    default=True)
 
         self.fit_status = SimpleText(self, label=NOFITS_MSG)
 
@@ -76,7 +78,8 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
 
         ir += 1
         sizer.Add(SimpleText(self, 'Save to Group:'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.name,                          (ir, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.name,                          (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.warn_overwrite,                (ir, 2), (1, 2), ALL_LEFT, 2)
         ir += 1
         sizer.Add(save_btn,                           (ir, 0), (1, 3), ALL_LEFT, 2)
 
@@ -101,6 +104,11 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
         method = 'nnls' if self.use_nnls.IsChecked() else 'lstsq'
         xrmfile = self.owner.current_file
         workname = fix_varname(self.name.GetValue())
+        if self.warn_overwrite.IsChecked() and workname in xrmfile.get_detector_list(use_cache=False) :
+            ret = Popup(self,
+                        f"A group named '{workname:s}' exists\n overwrite it with new arrays?",
+                        f"overwrite group '{workname:s}'?", style=wx.YES_NO)
+            if ret != wx.ID_YES: return
 
         cmd = """weights = _xrfresults[{cfit:d}].decompose_map({groupname:s}.xrmmap['mcasum/counts'],
         scale={scale:.6f}, pixel_time={ptime:.5f},method='{method:s}')
@@ -138,7 +146,6 @@ class XRFAnalysisPanel(scrolled.ScrolledPanel):
             _larch.eval("del tmp")
             self.current_fit = 0
             self.update_xrmmap()
-
 
     def update_xrmmap(self, xrmfile=None, set_detectors=None):
         if xrmfile is None:
