@@ -151,6 +151,9 @@ class FitSpectraFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
+        self.font_fixedwidth = wx.Font(12, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
+
+
         self.wids = {}
         self.owids = {}
 
@@ -635,7 +638,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         sview = wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        sview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
+        sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('  Fit Label', width=90)
         sview.AppendTextColumn(' N_vary', width=65)
@@ -665,12 +668,12 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(title, (irow, 0), (1, 1), LEFT)
 
         pview = wids['params'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        pview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
+        pview.SetFont(self.font_fixedwidth)
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
         pview.AppendTextColumn('Refined Value',  width=100)
         pview.AppendTextColumn('Standard Error', width=100)
-        pview.AppendTextColumn('% Uncertainty', width=100)
+        pview.AppendTextColumn('% Uncertainty',  width=100)
         pview.AppendTextColumn('Initial Value',  width=150)
 
         for col in range(4):
@@ -708,7 +711,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add(wids['all_correl'], (irow, 3), (1, 1), LEFT)
 
         cview = wids['correl'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        cview.SetFont(wx.Font(11, wx.MODERN, wx.NORMAL, wx.NORMAL))
+        cview.SetFont(self.font_fixedwidth)
         cview.AppendTextColumn('Parameter 1',    width=150)
         cview.AppendTextColumn('Parameter 2',    width=150)
         cview.AppendTextColumn('Correlation',    width=150)
@@ -739,11 +742,12 @@ class FitSpectraFrame(wx.Frame):
                                              colour=self.colors.title, style=LEFT)
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-        cview.AppendTextColumn(' Z ', width=50)
-        cview.AppendTextColumn(' Element ', width=100)
-        cview.AppendTextColumn(' Amplitude', width=150)
-        cview.AppendTextColumn(' Concentration',  width=150)
-        cview.AppendTextColumn(' Uncertainty',  width=150)
+        cview.SetFont(self.font_fixedwidth)
+        cview.AppendTextColumn(' Z ', width=40)
+        cview.AppendTextColumn(' Element ', width=90)
+        cview.AppendTextColumn(' Amplitude', width=120)
+        cview.AppendTextColumn(' Concentration',  width=120)
+        cview.AppendTextColumn(' Uncertainty',  width=180)
 
         for col in range(5):
             this = cview.Columns[col]
@@ -826,9 +830,9 @@ class FitSpectraFrame(wx.Frame):
         for elem, dat in conc_vals.items():
             zat = "%d" % atomic_number(elem)
             val, serr = dat
-            rval = "%15.4f" % val
-            sval = "%15.4f" % (val*scale)
-            uval = "%15.4f" % (serr*scale)
+            rval = "%15.3f" % val
+            sval = "%15.3f" % (val*scale)
+            uval = "%15.3f" % (serr*scale)
             try:
                 uval = uval + ' ({:.2%})'.format(abs(serr/val))
             except ZeroDivisionError:
@@ -1439,12 +1443,11 @@ class FitSpectraFrame(wx.Frame):
                 val = gformat(param.value, 10)
             except (TypeError, ValueError):
                 val = ' ??? '
-
             serr, perr = ' N/A ', ' N/A '
             if param.stderr is not None:
                 serr = gformat(param.stderr, 10)
                 try:
-                    perr = ' {:.2}'.format(abs(param.stderr/param.value))
+                    perr = '{:.3f}'.format(100.0*abs(param.stderr/param.value))
                 except ZeroDivisionError:
                     perr = '?'
             extra = ' '
