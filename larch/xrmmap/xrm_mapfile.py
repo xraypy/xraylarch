@@ -1663,7 +1663,7 @@ class GSEXRM_MapFile(object):
         self.roi_names[detname] = [h5str(a) for a in rois]
         return self.roi_names[detname]
 
-    def get_detector_list(self, use_cache=True):
+    def get_detector_list(self, use_cache=False):
         """get a list of detector groups,
         ['mcasum', 'mca1', ..., 'scalars', 'work', 'xrd1d', ...]
         """
@@ -2481,6 +2481,9 @@ class GSEXRM_MapFile(object):
         if mapdat is None:
             mapdat = self.get_detgroup(det)
 
+        if 'counts' not in mapdat:
+            mapdat = self.get_detgroup(None)
+
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
@@ -2521,6 +2524,8 @@ class GSEXRM_MapFile(object):
             return None
 
         dgroup = self.get_detname(det)
+        if 'counts' not in dgroup:
+            dgroup = self.get_detgroup(None)
 
         # first get data for bounding rectangle
         _ay, _ax = np.where(area)
