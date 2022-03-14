@@ -646,7 +646,7 @@ class Interpreter:
                 except:
                     msg = "could not delete symbol"
                     self.raise_exception(node, msg=msg)
-            elif tnode.__class__ == ast.Attribute:
+            else:
                 children = []
                 while tnode.__class__ == ast.Attribute:
                     children.append(tnode.attr)
