@@ -27,12 +27,15 @@ _larch_name = '_sys.wx'
 _larch_builtins = {}
 
 FONTSIZE = 9
+FONTSIZE_FW = 9
 if platform.system() == 'Windows':
     FONTSIZE = 10
+    FONTSIZE_FW = 9
     locale.setlocale(locale.LC_ALL, 'C')
 
 if platform.system() == 'Darwin':
     FONTSIZE = 12
+    FONTSIZE_FW = 12
 
 if HAS_WXPYTHON:
 

@@ -28,7 +28,7 @@ from wxutils import (SimpleText, FloatCtrl, FloatSpin, Choice, Font, pack,
                      SetTip, GridPanel, Popup, FloatSpinWithPin, get_icon,
                      fix_filename)
 
-from . import FONTSIZE
+from . import FONTSIZE, FONTSIZE_FW
 from xraydb import (material_mu, xray_edge, materials, add_material,
                     atomic_number, atomic_symbol, xray_line)
 from .notebooks import flatnotebook
@@ -138,7 +138,8 @@ class FitSpectraFrame(wx.Frame):
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
-
+        # print("Get MCA Groups: ",XRFGROUP, xrfgroup, mcagroup)
+        
         efactor = 1.0 if max(self.mca.energy) < 250. else 1000.0
 
         if self.mca.incident_energy is None:
@@ -151,7 +152,7 @@ class FitSpectraFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.font_fixedwidth = wx.Font(FONTSIZE, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)   # fixed width
 
 
         self.wids = {}
@@ -644,8 +645,8 @@ class FitSpectraFrame(wx.Frame):
         sview.SetFont(self.font_fixedwidth)
         sview.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectFit)
         sview.AppendTextColumn('  Fit Label', width=90)
-        sview.AppendTextColumn(' N_vary', width=65)
-        sview.AppendTextColumn(' N_eval', width=65)
+        sview.AppendTextColumn(' N_vary', width=70)
+        sview.AppendTextColumn(' N_eval', width=70)
         sview.AppendTextColumn(' \u03c7\u00B2', width=125)
         sview.AppendTextColumn(' \u03c7\u00B2_reduced', width=125)
         sview.AppendTextColumn(' Akaike Info', width=125)
@@ -654,7 +655,7 @@ class FitSpectraFrame(wx.Frame):
             this = sview.Columns[col]
             isort, align = True, wx.ALIGN_RIGHT
             if col == 0:
-                align = wx.ALIGN_CENTER
+                align = wx.ALIGN_LEFT
             this.Sortable = isort
             this.Alignment = this.Renderer.Alignment = align
         sview.SetMinSize((675, 150))
@@ -674,10 +675,10 @@ class FitSpectraFrame(wx.Frame):
         pview.SetFont(self.font_fixedwidth)
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
-        pview.AppendTextColumn('Refined Value',  width=100)
-        pview.AppendTextColumn('Standard Error', width=100)
-        pview.AppendTextColumn('% Uncertainty',  width=100)
-        pview.AppendTextColumn('Initial Value',  width=150)
+        pview.AppendTextColumn('Refined Value',  width=125)
+        pview.AppendTextColumn('Standard Error', width=125)
+        pview.AppendTextColumn('% Uncertainty',  width=125)
+        pview.AppendTextColumn('Initial Value',  width=125)
 
         for col in range(4):
             this = pview.Columns[col]
@@ -746,11 +747,11 @@ class FitSpectraFrame(wx.Frame):
 
         cview = wids['composition'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
         cview.SetFont(self.font_fixedwidth)
-        cview.AppendTextColumn(' Z ', width=40)
-        cview.AppendTextColumn(' Element ', width=90)
-        cview.AppendTextColumn(' Amplitude', width=120)
-        cview.AppendTextColumn(' Concentration',  width=120)
-        cview.AppendTextColumn(' Uncertainty',  width=180)
+        cview.AppendTextColumn(' Z ', width=50)
+        cview.AppendTextColumn(' Element ', width=100)
+        cview.AppendTextColumn(' Amplitude', width=125)
+        cview.AppendTextColumn(' Concentration',  width=125)
+        cview.AppendTextColumn(' Uncertainty',  width=170)
 
         for col in range(5):
             this = cview.Columns[col]
@@ -1245,7 +1246,9 @@ class FitSpectraFrame(wx.Frame):
         yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
         ppanel.set_viewlimits()
-        ppanel.conf.set_legend_location('upper right', True)
+        ppanel.conf.auto_margins = False
+        ppanel.conf.set_margins(0.12, 0.3, 0.20, 0.12)
+        ppanel.conf.set_legend_location('upper right', False)
         ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
