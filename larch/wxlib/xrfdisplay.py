@@ -171,7 +171,7 @@ class XRFDisplayFrame(wx.Frame):
             self.xmarker_left  = min(ix1, ix2)
             self.xmarker_right = max(ix1, ix2)
 
-        if side == 'left':
+        if side == 'left' and ix is not None:
             self.energy_for_zoom = self.mca.energy[ix]
         self.update_status()
         self.draw()
