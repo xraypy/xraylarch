@@ -1234,12 +1234,13 @@ class FitSpectraFrame(wx.Frame):
         if model_spectrum is None:
             model_spectrum = self.xrfmod.current_model if init else self.xrfmod.best_fit
         if label is None:
-            label = 'predicted model' if init else 'best fit'
+            label = 'model' if init else 'best fit'
 
         self.parent.oplot(self.mca.energy, model_spectrum,
                           label=label, color=conf.fit_color, **plotkws)
 
         if with_comps:
+            plotkws.update({'fill': True, 'alpha':0.35, 'show_legend': True})
             for label, arr in self.xrfmod.comps.items():
                 ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
 
@@ -1247,8 +1248,9 @@ class FitSpectraFrame(wx.Frame):
         ppanel.set_logscale(yscale=yscale)
         ppanel.set_viewlimits()
         ppanel.conf.auto_margins = False
-        ppanel.conf.set_margins(0.12, 0.3, 0.20, 0.12)
+        ppanel.conf.set_margins(0.1, 0.02, 0.20, 0.1)
         ppanel.conf.set_legend_location('upper right', False)
+        ppanel.conf.show_legend_frame = True
         ppanel.conf.draw_legend(show=True, delay_draw=False)
 
     def onShowModel(self, event=None):
