@@ -51,7 +51,7 @@ class MCA(Group):
 
     Attributes:
     -----------
-    * self.name        = 'mca'  # Name of the mca object
+    * self.label       = 'mca'  # label for the mca 
     * self.nchans      = 2048   # number of mca channels
     * self.counts      = None   # MCA data
     * self.pileup      = None   # predicted pileup
@@ -95,10 +95,15 @@ class MCA(Group):
     """
     ###############################################################################
     def __init__(self, counts=None, nchans=2048, start_time='',
-                 offset=0, slope=0, quad=0, name='mca', dt_factor=1,
-                 real_time=0, live_time=0, input_counts=0, tau=0, **kws):
+                 offset=0, slope=0, quad=0, dt_factor=1,
+                 real_time=0, live_time=0, input_counts=0, tau=0,
+                 label='mca', name=None, filename=None, **kws):
 
-        self.name    = name
+        self.label = name if name is not None else label
+        if filename is None: filename = ''
+        if len(filename) > 0:
+            self.label = f"{filename:s}: {self.label:s}"
+
         self.nchans  = nchans
         self.environ = []
         self.rois    = []
@@ -134,7 +139,7 @@ class MCA(Group):
 
     def __repr__(self):
         form = "<MCA %s, nchans=%d, counts=%d, realtime=%.1f>"
-        return form % (self.name, self.nchans, self.total_counts, self.real_time)
+        return form % (self.label, self.nchans, self.total_counts, self.real_time)
 
     def add_roi(self, name='', left=0, right=0, bgr_width=3,
                 counts=None, sort=True):
@@ -287,7 +292,7 @@ class MCA(Group):
     def save_columnfile(self, filename, headerlines=None):
         "write summed counts to simple ASCII column file for mca counts"
         f = open(filename, "w+")
-        f.write("#XRF counts for %s\n" % self.name)
+        f.write("#XRF counts for %s\n" % self.label)
         if headerlines is not None:
             for i in headerlines:
                 f.write("#%s\n" % i)
@@ -351,7 +356,7 @@ class MCA(Group):
             fh.write(self.dump_mcafile())
 
 def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
-               name='mca', start_time='', real_time=0, live_time=0,
+               label='mca', start_time='', real_time=0, live_time=0,
                dt_factor=1, input_counts=0, tau=0, **kws):
 
     """create an MCA object, containing an XRF (or similar) spectrum
@@ -366,7 +371,7 @@ def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
       an MCA object
 
     """
-    return MCA(counts=counts, nchans=nchans, name=name,
+    return MCA(counts=counts, nchans=nchans, label=label,
                start_time=start_time, offset=offset, slope=slope,
                quad=quad, dt_factor=dt_factor, real_time=real_time,
                live_time=live_time, input_counts=input_counts,
