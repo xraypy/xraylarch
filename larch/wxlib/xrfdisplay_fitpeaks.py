@@ -2,6 +2,7 @@
 """
 fitting GUI for XRF display
 """
+import os
 import time
 import copy
 from functools import partial
@@ -38,9 +39,10 @@ from .periodictable import PeriodicTablePanel
 from larch import Group
 
 from ..xrf import xrf_background, MCA, FanoFactors
+from ..utils import json_dump, json_load
 from ..utils.jsonutils import encode4js, decode4js
 from ..utils.physical_constants import E_MASS
-
+from ..site_config import user_larchdir
 from .xrfdisplay_utils import (XRFGROUP, mcaname, XRFRESULTS_GROUP,
                                MAKE_XRFRESULTS_GROUP)
 
@@ -122,6 +124,50 @@ Filter_Lengths = ['microns', 'mm', 'cm']
 Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'kapton',
                     'beryllium', 'aluminum', 'mylar', 'pmma']
 
+
+DEF_CONFIG = { "mca_name": "", "escape_use": True, "escape_amp": 0.25,
+               "pileup_use": True, "pileup_amp": 0.1, "escape_amp_vary":
+               True, "pileup_amp_vary": True, "cal_slope": 0.01,
+               "cal_offset": 0, "cal_vary": True, "det_mat": "Si", "det_thk":
+               0.4, "det_noise_vary": True,
+               
+               "en_xray": 30, "en_min": 2.5, "en_max": 30,
+               "flux_in": 1e9, "det_noise": 0.035, "angle_in": 45.0,
+               "angle_out": 45.0, "det_dist": 50.0, "det_area": 50.0,
+               
+               "elements": [17, 18, 20, 23, 25, 27, 29],
+               
+               
+               "filter1_mat": "beryllium", "filter1_thk": 0.025, "filter1_var": False,
+               "filter2_mat": "air", "filter2_thk": 50.0, "filter2_var": False,
+               "filter3_mat": "kapton", "filter3_thk": 0.0, "filter3_var": False,
+               "filter4_mat": "aluminum", "filter4_thk": 0.0, "filter4_var": False,
+               
+               "matrix_mat": "", "matrix_thk": 0.0, "matrix_den": 1.0,
+               
+               "peak_step": 0.025, "peak_gamma": 0.05, "peak_tail": 0.1,
+               "peak_beta": 0.5,  "peak_step_vary": False, "peak_tail_vary": False,
+               "peak_gamma_vary": False, "peak_beta_vary": False,
+               
+               "elastic_use": True, "elastic_cen_vary": False, "elastic_step_vary": False,
+               "elastic_beta_vary": False, "elastic_tail_vary": False,
+               "elastic_sigma_vary": False, "elastic_cen": 30,
+               "elastic_step": 0.025, "elastic_tail": 0.1,
+               "elastic_beta": 0.5, "elastic_sigma": 1.0,
+               
+               "compton1_use": True, "compton1_cen_vary": True,
+               "compton1_step_vary": True, "compton1_beta_vary": False,
+               "compton1_tail_vary": False, "compton1_sigma_vary": False,
+               "compton1_cen": 12.1875, "compton1_step": 0.025, "compton1_tail": 0.25,
+               "compton1_beta": 2.0, "compton1_sigma": 1.5,
+               
+               "compton2_use": True, "compton2_cen_vary": True, "compton2_step_vary": False,
+               "compton2_beta_vary": False, "compton2_tail_vary": False,
+               "compton2_sigma_vary": False, "compton2_cen": 11.875,
+               "compton2_step": 0.025, "compton2_tail": 0.25, "compton2_beta": 2.5,
+               "compton2_sigma": 2.0, "count_time": 120.0,
+              }
+
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
@@ -138,8 +184,18 @@ class FitSpectraFrame(wx.Frame):
         mcagroup = getattr(xrfgroup, '_mca')
         self.mca = getattr(xrfgroup, mcagroup)
         self.mcagroup = '%s.%s' % (XRFGROUP, mcagroup)
-        # print("Get MCA Groups: ",XRFGROUP, xrfgroup, mcagroup)
+        print("Get MCA Groups: ",XRFGROUP, xrfgroup, mcagroup)
+
+        self.config = DEF_CONFIG
         
+        opts = getattr(xrfgroup, 'fitconfig', None)
+        if opts is None:
+            xrf_conffile = os.path.join(user_larchdir, 'xrf_fitconfig.json')
+            if os.path.exists(xrf_conffile):
+                opts = json_load(xrf_conffile)
+        if opts is not None:
+            self.config.update(opts)
+        # print("SELF CONFIG ", self.config)
         efactor = 1.0 if max(self.mca.energy) < 250. else 1000.0
 
         if self.mca.incident_energy is None:
@@ -159,11 +215,8 @@ class FitSpectraFrame(wx.Frame):
         self.owids = {}
 
         pan = GridPanel(self)
-        mca_label = getattr(self.mca, 'label', None)
-        if mca_label is None:
-            mca_label = getattr(self.mca, 'filename', 'mca')
-        self.mca_label = mca_label
-        self.wids['mca_name'] = SimpleText(pan, mca_label, size=(300, -1), style=LEFT)
+        self.mca_label = self.mca.label
+        self.wids['mca_name'] = SimpleText(pan, self.mca_label, size=(300, -1), style=LEFT)
         self.wids['btn_calc'] = Button(pan, 'Calculate Model', size=(150, -1),
                                        action=self.onShowModel)
         self.wids['btn_fit'] = Button(pan, 'Fit Model', size=(150, -1),
@@ -1174,7 +1227,14 @@ class FitSpectraFrame(wx.Frame):
         for elem in self.ptable.selected:
             elemz.append( 1 + self.ptable.syms.index(elem))
         elemz.sort()
-        syms = ["'%s'" % self.ptable.syms[iz-1] for iz in sorted(elemz)]
+        opts['elements'] = elemz
+
+        xrfgroup = self._larch.symtable.get_group(XRFGROUP)
+        setattr(xrfgroup, 'fitconfig', opts)
+        json_dump(opts, os.path.join(user_larchdir, 'xrf_fitconfig.json'))
+
+        
+        syms = ["'%s'" % self.ptable.syms[iz-1] for iz in elemz]
         syms = '[%s]' % (', '.join(syms))
         script.append(xrfmod_elems.format(elemlist=syms))
         script.append("{group:s}.xrf_init = _xrfmodel.calc_spectrum({group:s}.energy)")
@@ -1184,6 +1244,7 @@ class FitSpectraFrame(wx.Frame):
         self._larch.eval(self.model_script)
 
         cmds = []
+        self._larch.symtable.get_symbol('_xrfmodel')
         self.xrfmod = self._larch.symtable.get_symbol('_xrfmodel')
         floor = 1.e-12*max(self.mca.counts)
         if match_amplitudes:
