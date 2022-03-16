@@ -158,6 +158,9 @@ class CIFFrame(wx.Frame):
         wids['run_feff'] = Button(panel, ' Run Feff ',
                                   action=self.onRunFeff)
         wids['run_feff'].Disable()
+        wids['without_h'] = Check(panel, default=True, label='Remove H atoms',
+                                  action=self.onGetFeff)
+
 
         wids['central_atom'] = Choice(panel, choices=['<empty>'], size=(80, -1),
                                       action=self.onCentralAtom)
@@ -235,11 +238,12 @@ class CIFFrame(wx.Frame):
         sizer.Add(wids['cluster_size'], (ir, 1), (1, 1), LEFT, 3)
         sizer.Add(fverslab,             (ir, 2), (1, 1), LEFT, 3)
         sizer.Add(wids['feffvers'],     (ir, 3), (1, 1), LEFT, 3)
-        sizer.Add(wids['run_feff'],     (ir, 5), (1, 1), LEFT, 3)
+        sizer.Add(wids['without_h'],    (ir, 4), (1, 2), LEFT, 3)
 
         ir += 1
         sizer.Add(folderlab,             (ir, 0), (1, 1), LEFT, 3)
         sizer.Add(wids['run_folder'],    (ir, 1), (1, 4), LEFT, 3)
+        sizer.Add(wids['run_feff'],      (ir, 5), (1, 1), LEFT, 3)
 
         ir += 1
         sizer.Add(HLine(panel, size=(550, 2)), (ir, 0), (1, 6), LEFT, 3)
@@ -425,12 +429,14 @@ class CIFFrame(wx.Frame):
         catom = self.wids['central_atom'].GetStringSelection()
         asite = int(self.wids['site'].GetStringSelection())
         csize = self.wids['cluster_size'].GetValue()
+        with_h = not self.wids['without_h'].IsChecked()
         mineral = cif.get_mineralname()
         folder = f'{catom:s}{asite:d}_{edge:s}_{mineral}_cif{cif.ams_id:d}'
         folder = unique_name(fix_filename(folder), self.runs_list)
 
         fefftext = cif.get_feffinp(catom, edge=edge, cluster_size=csize,
-                                    absorber_site=asite, version8=version8)
+                                   absorber_site=asite, version8=version8,
+                                   with_h=with_h)
 
         self.wids['run_folder'].SetValue(folder)
         self.wids['feff_text'].SetValue(fefftext)

@@ -239,7 +239,8 @@ class CifStructure():
                                          energy=energy, qmin=qmin,
                                          qmax=qmax)
 
-    def get_feffinp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1, version8=True):
+    def get_feffinp(self, absorber, edge=None, cluster_size=8.0, absorber_site=1,
+                    with_h=False, version8=True):
         pub = self.publication
         journal = f"{pub.journalname} {pub.volume}, pp. {pub.page_first}-{pub.page_last} ({pub.year:d})"
         authors = ', '.join(pub.authors)
@@ -255,7 +256,7 @@ class CifStructure():
                 titles.append(f'Title{i+1:d}: {line}')
 
         return cif2feffinp(self.ciftext, absorber, edge=edge,
-                           cluster_size=cluster_size,
+                           cluster_size=cluster_size, with_h=with_h,
                            absorber_site=absorber_site,
                            extra_titles=titles, version8=version8)
 

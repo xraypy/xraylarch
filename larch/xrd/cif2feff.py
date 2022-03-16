@@ -96,7 +96,7 @@ def cif_sites(ciftext, absorber=None):
 
 
 def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
-                site_index=None, extra_titles=None, version8=True):
+                site_index=None, extra_titles=None, with_h=False, version8=True):
     """convert CIF text to Feff8 or Feff6l input file
 
     Arguments
@@ -108,6 +108,8 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
       cluster_size (float):     size of cluster, in Angstroms         [8.0]
       absorber_site (int):      index of site for absorber (see Note 3) [1]
       site_index (int or None): index of site for absorber (see Note 4) [None]
+      extra_titles (list of str or None): extra title lines to include [None]
+      with_h (bool):            whether to include H atoms [False]
       version8 (bool):          whether to write Feff8l input (see Note 5)[True]
     Returns
     -------
@@ -239,14 +241,18 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     ipot, z = 0, absorber_z
     out_text.append(f'   {ipot:4d}  {z:4d}   {absorber:s}')
     for tag in atoms_map.keys():
-        ipot += 1
         z = atomic_number(tag)
+        if z == 1 and not with_h:
+            continue
+        ipot += 1
         out_text.append(f'   {ipot:4d}  {z:4d}   {tag:s}')
 
 
     at_lines = [(0, cluster[0].x, cluster[0].y, cluster[0].z, 0, absorber, tags[0])]
 
     for i, site in enumerate(cluster[1:]):
+        if site.z == 1 and not with_h:
+            continue
         sym = site.species_string
         ipot = atoms_map[site.species_string]
         dist = cluster.get_distance(0, i+1)
