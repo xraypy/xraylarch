@@ -130,38 +130,29 @@ DEF_CONFIG = { "mca_name": "", "escape_use": True, "escape_amp": 0.25,
                True, "pileup_amp_vary": True, "cal_slope": 0.01,
                "cal_offset": 0, "cal_vary": True, "det_mat": "Si", "det_thk":
                0.4, "det_noise_vary": True,
-               
                "en_xray": 30, "en_min": 2.5, "en_max": 30,
                "flux_in": 1e9, "det_noise": 0.035, "angle_in": 45.0,
                "angle_out": 45.0, "det_dist": 50.0, "det_area": 50.0,
-               
-               "elements": [17, 18, 20, 23, 25, 27, 29],
-               
-               
+               "elements": [16, 17, 18, 20, 22, 24, 25, 26, 28, 29, 30],
                "filter1_mat": "beryllium", "filter1_thk": 0.025, "filter1_var": False,
                "filter2_mat": "air", "filter2_thk": 50.0, "filter2_var": False,
                "filter3_mat": "kapton", "filter3_thk": 0.0, "filter3_var": False,
                "filter4_mat": "aluminum", "filter4_thk": 0.0, "filter4_var": False,
-               
                "matrix_mat": "", "matrix_thk": 0.0, "matrix_den": 1.0,
-               
                "peak_step": 0.025, "peak_gamma": 0.05, "peak_tail": 0.1,
                "peak_beta": 0.5,  "peak_step_vary": False, "peak_tail_vary": False,
                "peak_gamma_vary": False, "peak_beta_vary": False,
-               
                "elastic_use": True, "elastic_cen_vary": False, "elastic_step_vary": False,
                "elastic_beta_vary": False, "elastic_tail_vary": False,
                "elastic_sigma_vary": False, "elastic_cen": 30,
                "elastic_step": 0.025, "elastic_tail": 0.1,
                "elastic_beta": 0.5, "elastic_sigma": 1.0,
-               
                "compton1_use": True, "compton1_cen_vary": True,
                "compton1_step_vary": True, "compton1_beta_vary": False,
                "compton1_tail_vary": False, "compton1_sigma_vary": False,
                "compton1_cen": 12.1875, "compton1_step": 0.025, "compton1_tail": 0.25,
                "compton1_beta": 2.0, "compton1_sigma": 1.5,
-               
-               "compton2_use": True, "compton2_cen_vary": True, "compton2_step_vary": False,
+q               "compton2_use": True, "compton2_cen_vary": True, "compton2_step_vary": False,
                "compton2_beta_vary": False, "compton2_tail_vary": False,
                "compton2_sigma_vary": False, "compton2_cen": 11.875,
                "compton2_step": 0.025, "compton2_tail": 0.25, "compton2_beta": 2.5,
@@ -187,7 +178,7 @@ class FitSpectraFrame(wx.Frame):
         print("Get MCA Groups: ",XRFGROUP, xrfgroup, mcagroup)
 
         self.config = DEF_CONFIG
-        
+
         opts = getattr(xrfgroup, 'fitconfig', None)
         if opts is None:
             xrf_conffile = os.path.join(user_larchdir, 'xrf_fitconfig.json')
@@ -1233,7 +1224,7 @@ class FitSpectraFrame(wx.Frame):
         setattr(xrfgroup, 'fitconfig', opts)
         json_dump(opts, os.path.join(user_larchdir, 'xrf_fitconfig.json'))
 
-        
+
         syms = ["'%s'" % self.ptable.syms[iz-1] for iz in elemz]
         syms = '[%s]' % (', '.join(syms))
         script.append(xrfmod_elems.format(elemlist=syms))
@@ -1300,10 +1291,12 @@ class FitSpectraFrame(wx.Frame):
         self.parent.oplot(self.mca.energy, model_spectrum,
                           label=label, color=conf.fit_color, **plotkws)
 
-        if with_comps:
-            plotkws.update({'fill': True, 'alpha':0.35, 'show_legend': True})
-            for label, arr in self.xrfmod.comps.items():
-                ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
+        comp_traces = []
+        plotkws.update({'fill': True, 'alpha':0.35, 'show_legend': True})
+        for label, arr in self.xrfmod.comps.items():
+            ppanel.oplot(self.mca.energy, arr, label=label, **plotkws)
+            comp_traces.append(ppanel.conf.ntrace - 1)
+
 
         yscale = {False:'linear', True:'log'}[self.parent.ylog_scale]
         ppanel.set_logscale(yscale=yscale)
@@ -1313,6 +1306,16 @@ class FitSpectraFrame(wx.Frame):
         ppanel.conf.set_legend_location('upper right', False)
         ppanel.conf.show_legend_frame = True
         ppanel.conf.draw_legend(show=True, delay_draw=False)
+
+        if not with_comps:
+            for obj, data in ppanel.conf.legend_map.items():
+                line, trace, legline, legtext = data
+                if trace in comp_traces:
+                    legline.set_alpha(0.50)
+                    legtext.set_alpha(0.50)
+                    line.set_visible(False)
+                    ppanel.conf.fills[trace].set_visible(False)
+        ppanel.draw()
 
     def onShowModel(self, event=None):
         self.build_model()
