@@ -292,7 +292,7 @@ class XRFDisplayFrame(wx.Frame):
 
         ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines',
-                                    fontsize=10)
+                                    fontsize=11, size=(360, 180))
         self.wids['ptable'] = ptable
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
@@ -410,13 +410,13 @@ class XRFDisplayFrame(wx.Frame):
         xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
         xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
-        xlines.AppendTextColumn(' Line ',         width=60)
-        xlines.AppendTextColumn(' Energy(keV) ',  width=110)
-        xlines.AppendTextColumn(' Strength ',     width=90)
+        xlines.AppendTextColumn(' Line ',         width=50)
+        xlines.AppendTextColumn(' Energy(keV) ',  width=95)
+        xlines.AppendTextColumn(' Strength ',     width=75)
         xlines.AppendTextColumn(' Levels ',       width=90)
         for col in (0, 1, 2, 3):
             this = xlines.Columns[col]
-            this.Sortable = True
+            this.Sortable = False
             align = RIGHT
             if col in (0, 3):
                 align = wx.ALIGN_LEFT
@@ -505,7 +505,7 @@ class XRFDisplayFrame(wx.Frame):
         setattr(xrfgroup, '_mca2', getattr(xrfgroup, '_mca', ''))
         setattr(xrfgroup, '_mca', mcaname)
         setattr(xrfgroup, mcaname, mca)
-        # print("Add MCA ", xrfgroup, mcaname)        
+        # print("Add MCA ", xrfgroup, mcaname)
         if plot:
             self.plotmca(self.mca)
             if as_mca2:
@@ -755,8 +755,8 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, fmenu, "&Save ASCII Column File\tCtrl+A",
                  "Save Column File",  self.onSaveColumnFile)
 
-        # MenuItem(self, fmenu, "&Inspect \tCtrl+J",
-        #          " wx inspection tool ",  self.showInspectionTool)
+        MenuItem(self, fmenu, "&Inspect \tCtrl+J",
+                 " wx inspection tool ",  self.showInspectionTool)
         fmenu.AppendSeparator()
         # MenuItem(self, fmenu, "Save ROIs to File",
         #         "Save ROIs to File",  self.onSaveROIs)
@@ -1316,7 +1316,7 @@ class XRFDisplayFrame(wx.Frame):
         if outfile is not None:
             self.mca.save_mcafile(outfile)
 
-            
+
     def onSaveColumnFile(self, event=None, **kws):
         deffile = ''
         if getattr(self.mca, 'sourcefile', None) is not None:

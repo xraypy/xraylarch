@@ -57,6 +57,10 @@ def read_filterdata(flist, _larch):
     return out
 
 def VarChoice(p, default=0, size=(75, -1)):
+    if default in (False, 'False', 'Fix', 'No'):
+        default = 0
+    else:
+        default = 1
     return Choice(p, choices=['Fix', 'Vary'],
                   size=size, default=default)
 
@@ -64,11 +68,12 @@ NFILTERS = 4
 MIN_CORREL = 0.10
 
 tooltips = {'ptable': 'Select Elements to include in model',
+            'cen': 'centroid of peak',
             'step': 'size of step extending to low energy side of peak, fraction of peak height',
             'gamma': 'gamma (lorentzian-like weight) of Voigt function',
             'tail': 'intensity of tail function at low energy side of peak',
             'beta': 'width of tail function at low energy side of peak',
-            'sigmax': 'scale sigma from Energy/Noise by this amount',
+            'sigma': 'scale sigma from Energy/Noise by this amount',
         }
 
 CompositionUnits = ('ng/mm^2', 'wt %', 'ppm')
@@ -152,7 +157,7 @@ DEF_CONFIG = { "mca_name": "", "escape_use": True, "escape_amp": 0.25,
                "compton1_tail_vary": False, "compton1_sigma_vary": False,
                "compton1_cen": 12.1875, "compton1_step": 0.025, "compton1_tail": 0.25,
                "compton1_beta": 2.0, "compton1_sigma": 1.5,
-q               "compton2_use": True, "compton2_cen_vary": True, "compton2_step_vary": False,
+               "compton2_use": True, "compton2_cen_vary": True, "compton2_step_vary": False,
                "compton2_beta_vary": False, "compton2_tail_vary": False,
                "compton2_sigma_vary": False, "compton2_cen": 11.875,
                "compton2_step": 0.025, "compton2_tail": 0.25, "compton2_beta": 2.5,
@@ -186,7 +191,7 @@ class FitSpectraFrame(wx.Frame):
                 opts = json_load(xrf_conffile)
         if opts is not None:
             self.config.update(opts)
-        # print("SELF CONFIG ", self.config)
+
         efactor = 1.0 if max(self.mca.energy) < 250. else 1000.0
 
         if self.mca.incident_energy is None:
@@ -244,29 +249,21 @@ class FitSpectraFrame(wx.Frame):
         wids = self.wids
         p = GridPanel(self)
         self.selected_elems = []
-        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=10,
+        self.ptable = PeriodicTablePanel(p, multi_select=True, fontsize=11,
+                                         size=(360, 180),
                                          tooltip_msg=tooltips['ptable'],
                                          onselect=self.onElemSelect)
-
-        dstep, dtail, dbeta, dgamma = 0.03, 0.10, 0.5, 0.05
-        wids['peak_step'] = FloatSpin(p, value=dstep, digits=3, min_val=0,
-                                      max_val=1.0, increment=0.005,
-                                      tooltip=tooltips['step'])
-        wids['peak_gamma'] = FloatSpin(p, value=dgamma, digits=3, min_val=0,
-                                       max_val=10.0, increment=0.01,
-                                      tooltip=tooltips['gamma'])
-        wids['peak_tail'] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                      max_val=1.0, increment=0.05,
-                                      tooltip=tooltips['tail'])
-
-        wids['peak_beta'] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
-                                      max_val=10.0, increment=0.01,
-                                      tooltip=tooltips['beta'])
-        wids['peak_step_vary'] = VarChoice(p, default=0)
-        wids['peak_tail_vary'] = VarChoice(p, default=0)
-        wids['peak_gamma_vary'] = VarChoice(p, default=0)
-        wids['peak_beta_vary'] = VarChoice(p, default=0)
-
+        cnf = self.config
+        for name, xmax, xinc in (('step',   1, 0.005),
+                                 ('gamma', 10, 0.01),
+                                 ('beta',  10, 0.01),
+                                 ('tail', 1.0, 0.05)):
+            fname = 'peak_%s' % name
+            vname = 'peak_%s_vary' % name
+            wids[fname] = FloatSpin(p, value=cnf[fname], digits=3,
+                                    min_val=0, max_val=xmax,
+                                    increment=xinc, tooltip=tooltips[name])
+            wids[vname] = VarChoice(p, default=cnf[vname])
 
         btn_from_peaks = Button(p, 'Guess Peaks', size=(150, -1),
                                 action=self.onElems_GuessPeaks)
@@ -304,73 +301,40 @@ class FitSpectraFrame(wx.Frame):
         p.AddText('  Tail: ')
         p.Add(wids['peak_tail'])
         p.Add(wids['peak_tail_vary'])
-
         p.Add((2, 2), newrow=True)
         p.Add(HLine(p, size=(650, 3)), dcol=8)
         p.Add((2, 2), newrow=True)
 
-        #                name, escale, step, sigmax, beta, tail
-        scatter_peaks = (('Elastic',  0, 0.03, 1.0, 0.5, 0.10),
-                         ('Compton1', 1, 0.03, 1.5, 2.0, 0.25),
-                         ('Compton2', 2, 0.03, 2.0, 2.5, 0.25))
         opts = dict(size=(100, -1), min_val=0, digits=4, increment=0.010)
-        for name, escale, dstep, dsigma, dbeta, dtail in scatter_peaks:
+        for name, escale in (('elastic',  0), ('compton1', 1), ('compton2', 2)):
             en = self.mca.incident_energy
             for i in range(escale):
                 en = en * (1 - 1/(1 + (E_MASS*0.001)/en))    # Compton shift at 90 deg
 
-            t = name.lower()
-            vary_en = 1 if t.startswith('compton') else 0
-
-            wids['%s_use'%t] = Check(p, label='Include', default=True)
-            wids['%s_cen_vary'%t]   = VarChoice(p, default=vary_en)
-            wids['%s_step_vary'%t]  = VarChoice(p, default=0)
-            wids['%s_beta_vary'%t]  = VarChoice(p, default=0)
-            wids['%s_tail_vary'%t]  = VarChoice(p, default=0)
-            wids['%s_sigma_vary'%t] = VarChoice(p, default=0)
-
-            wids['%s_cen'%t]  = FloatSpin(p, value=en, digits=3, min_val=0,
-                                           increment=0.01)
-            wids['%s_step'%t] = FloatSpin(p, value=dstep, digits=3, min_val=0,
-                                          max_val=1.0, increment=0.005,
-                                          tooltip=tooltips['step'])
-            wids['%s_tail'%t] = FloatSpin(p, value=dtail, digits=3, min_val=0,
-                                          max_val=1.0, increment=0.05,
-                                          tooltip=tooltips['tail'])
-            wids['%s_beta'%t] = FloatSpin(p, value=dbeta, digits=3, min_val=0,
-                                          max_val=10.0, increment=0.01,
-                                          tooltip=tooltips['beta'])
-            wids['%s_sigma'%t] = FloatSpin(p, value=dsigma, digits=3, min_val=0,
-                                           max_val=10.0, increment=0.05,
-                                           tooltip=tooltips['sigmax'])
-
+            wids[f'{name:s}_use'] = Check(p, label='Include', default=cnf[f'{name:s}_use'])
             p.Add((2, 2), newrow=True)
-            p.AddText("  %s Peak:" % name,  colour='#880000')
-            p.Add(wids['%s_use' % t], dcol=2)
+            p.AddText("  %s Peak:" % name.title(),  colour='#880000')
+            p.Add(wids[f'{name:s}_use'], dcol=2)
 
-            p.AddText('  Energy (keV): ')
-            p.Add(wids['%s_cen'%t])
-            p.Add(wids['%s_cen_vary'%t])
+            for att, title, xmax, xinc, newrow in (('cen',   '  Energy (kev): ', 9e12, 0.01, True),
+                                                   ('step',  '  Step: ', 1, 0.005, False),
+                                                   ('sigma', '  Sigma Scale:',  10, 0.05, True),
+                                                   ('beta',  '  Beta: ', 10, 0.01, False),
+                                                   ('tail',  '  Tail: ', 10, 0.01, True)):
+                label = f'{name:s}_{att:s}'
+                val = en if att == 'cen' else cnf[label]
+                wids[f'{label:s}_vary'] = VarChoice(p, default=cnf[f'{label:s}_vary'])
 
-            p.Add((2, 2), newrow=True)
-            p.AddText('  Step: ')
-            p.Add(wids['%s_step'%t])
-            p.Add(wids['%s_step_vary'%t])
+                wids[label] = FloatSpin(p, value=val, digits=3, min_val=0,
+                                        max_val=xmax, increment=xinc,
+                                        tooltip=tooltips[att])
 
-            p.AddText('  Sigma Scale : ')
-            p.Add(wids['%s_sigma'%t])
-            p.Add(wids['%s_sigma_vary'%t])
+                p.AddText(title)
+                p.Add(wids[label])
+                p.Add(wids[f'{label:s}_vary'])
+                if newrow:
+                    p.Add((2, 2), newrow=True)
 
-            p.Add((2, 2), newrow=True)
-            p.AddText('  Beta : ')
-            p.Add(wids['%s_beta'%t])
-            p.Add(wids['%s_beta_vary'%t])
-
-            p.AddText('  Tail: ')
-            p.Add(wids['%s_tail'%t])
-            p.Add(wids['%s_tail_vary'%t])
-
-            p.Add((2, 2), newrow=True)
             p.Add(HLine(p, size=(650, 3)), dcol=7)
 
         p.pack()
