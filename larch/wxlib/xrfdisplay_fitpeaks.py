@@ -683,9 +683,9 @@ class FitSpectraFrame(wx.Frame):
         pview.SetFont(self.font_fixedwidth)
         wids['paramsdata'] = []
         pview.AppendTextColumn('Parameter',      width=150)
-        pview.AppendTextColumn('Refined Value',  width=125)
-        pview.AppendTextColumn('Standard Error', width=125)
-        pview.AppendTextColumn('% Uncertainty',  width=125)
+        pview.AppendTextColumn('Refined Value',  width=110)
+        pview.AppendTextColumn('Standard Error', width=110)
+        pview.AppendTextColumn('% Uncertainty',  width=110)
         pview.AppendTextColumn('Initial Value',  width=125)
 
         for col in range(4):
