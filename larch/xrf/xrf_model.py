@@ -105,24 +105,30 @@ class XRF_Material:
 
 
 class XRF_Element:
-    def __init__(self, symbol, xray_energy=None, energy_min=1.5,
-                 overlap_energy=None):
+    def __init__(self, symbol, xray_energy=10, energy_min=1.5):
+        """get Xray emission lines for an element"""
         self.symbol = symbol
+
+        # note: 'xray_energy' and 'energy_min' are in keV,
+        # most of this code works in eV!
+        if xray_energy is None:     xray_energy = 30.0
+        if energy_min is None:      energy_min = 1.5
         self.xray_energy = xray_energy
+        self.energy_min = energy_min
+
+        en_xray_ev = xray_energy * 1000.0
+        en_low_ev  = energy_min * 1000.0
         self.mu = 1.0
         self.edges = ['K']
         self.fyields = {}
-        if xray_energy is not None:
-            self.mu = mu_elam(symbol, 1000*xray_energy, kind='photo')
 
-            self.edges = []
-            for ename, xedge in xray_edges(self.symbol).items():
-                if ename.lower() in ('k', 'l1', 'l2', 'l3', 'm5'):
-                    edge_kev = 0.001*xedge.energy
-                    if (edge_kev < xray_energy and
-                        edge_kev > energy_min):
-                        self.edges.append(ename)
-                        self.fyields[ename] = xedge.fyield
+        self.mu = mu_elam(symbol, en_xray_ev, kind='photo')
+        self.edges = []
+        for ename, xedge in xray_edges(self.symbol).items():
+            if ename.lower() in ('k', 'l1', 'l2', 'l3', 'm5'):
+                if (xedge.energy < en_xray_ev and xedge.energy > en_low_ev):
+                    self.edges.append(ename)
+                    self.fyields[ename] = xedge.fyield
 
         # currently, we consider only one edge per element
         if 'K' in self.edges:
@@ -159,76 +165,54 @@ class XRF_Element:
             self.fyields['L1'] = fy1/nlines
 
         # look up X-ray lines, keep track of very close lines
-        # so that they can be consolidate
+        # so that they can be consolidated
         # slightly confusing (and working with XrayLine energies in ev)
         self.lines = {}
-        self.all_lines = {}
-        energy0 = None
+        all_lines = {}
+        en_max = 0
         for ename in self.edges:
             for key, xline in xray_lines(symbol, ename).items():
-                self.all_lines[key] = xline
-                if xline.intensity > 0.002:
-                    self.lines[key] = xline
-                    if energy0 is None:
-                        energy0 = xline.energy
+                all_lines[key] = xline
+                en_max = max(en_max, xline.energy)
 
-        if overlap_energy is None:
-            if xray_energy is None: xray_energy = 10.0
-            if energy0 is not None: xray_energy = energy0
-            # note: at this point xray_energy is in keV
-            overlap_energy = 5.0*(2+np.sqrt(5 + xray_energy))
+        if en_max < 100:
+            en_max = en_xray_ev
+        overlap_energy = en_max*0.001    # should be around 1 to 10 eV.
 
-        # collect lines from the same initial level that are close in energy
-        nlines = len(self.lines)
-        combos = [[] for k in range(nlines)]
-        comboe = [-1 for k in range(nlines)]
-        combol = [None for k in range(nlines)]
-        for key, xline in self.lines.items():
-            assigned = False
-            for i, en in enumerate(comboe):
-                if (abs(0.001*xline.energy - en) < overlap_energy and
-                    xline.initial_level == combol[i]):
-                    combos[i].append(key)
-                    assigned = True
-                    break
-            if not assigned:
-                for k in range(nlines):
-                    if comboe[k] < 0:
-                        break
-                combol[k] = xline.initial_level
-                comboe[k] = xline.energy
-                combos[k].append(key)
+        dups = {}
+        for i, key in enumerate(all_lines):
+            xline = all_lines[key]
+            dup_found = False
+            for okey, oline in self.lines.items():
+                if (okey != key and ((xline.energy-oline.energy) < overlap_energy) and
+                    xline.initial_level == oline.initial_level):
+                    dups[key] = okey
+            if key not in dups:
+                self.lines[key] = xline
 
-        # consolidate overlapping X-ray lines
-        for comps in combos:
-            if len(comps) > 0:
-                key = comps[0]
-                l0 = self.lines.pop(key)
-                ilevel = l0.initial_level
-                iweight = l0.intensity
-                flevel = [l0.final_level]
-                en = [l0.energy]
-                wt = [l0.intensity]
-                for other in comps[1:]:
-                    lx = self.lines.pop(other)
-                    if lx.intensity > iweight:
-                        iweight = lx.intensity
-                        ilevel  = lx.initial_level
-                    flevel.append(lx.final_level)
-                    en.append(lx.energy)
-                    wt.append(lx.intensity)
-                wt = np.array(wt)
-                en = np.array(en)
-                flevel = ', '.join(flevel)
-                if len(comps) > 1:
-                    newkey = key.replace('1', '').replace('2', '').replace('3', '')
-                    newkey = newkey.replace('4', '').replace('5', '').replace(',', '')
-                    if newkey not in self.lines:
-                        key = newkey
-                self.lines[key] = XrayLine(energy=(en*wt).sum()/wt.sum(),
-                                           intensity=wt.sum(),
-                                           initial_level=ilevel,
-                                           final_level=flevel)
+        for key, dest in dups.items():
+            if dest in self.lines:
+                w1, w2 = all_lines[key].intensity,   all_lines[dest].intensity
+                e1, e2 = all_lines[key].energy,      all_lines[dest].energy
+                f1, f2 = all_lines[key].final_level, all_lines[dest].final_level
+                wt = w1+w2
+                en = (e1*w1 + e2*w2)/(wt)
+
+                newkey = "%s,%s" % (key, dest)
+                if key[:2] == dest[:2]:
+                    newkey = "%s,%s" % (key, dest[2:])
+
+                flevel = "%s,%s" % (f1, f2)
+                if f1[0] == f2[0]:
+                    flevel = "%s,%s" % (f1, f2[1:])
+
+                self.lines.pop(dest)
+                self.lines[newkey] = XrayLine(energy=en, intensity=wt,
+                                              initial_level=all_lines[key].initial_level,
+                                              final_level=flevel)
+                for k, d in dups.items():
+                    if d == dest:
+                        dups[k] = newkey
 
 
 class XRF_Model:
@@ -249,6 +233,7 @@ class XRF_Model:
         self.energy_max = energy_max
         self.count_time = count_time
         self.iter_callback = None
+        self.fit_in_progress = False
         self.params = Parameters()
         self.elements = []
         self.scatter = []
@@ -259,6 +244,7 @@ class XRF_Model:
         self.matrix = None
         self.matrix_atten = 1.0
         self.filters = []
+        self.det_atten = self.filt_atten = self.escape_amp = 0.0
         self.fit_iter = 0
         self.fit_toler = 1.e-4
         self.fit_log = False
@@ -366,8 +352,8 @@ class XRF_Model:
         atten = 1.0
         if self.matrix is not None:
             ixray_en = index_of(energy, self.xray_energy)
-            print("MATRIX ", ixray_en, self.matrix)
-           # layer_trans = self.matrix.transmission(energy) # transmission through layer
+            # print("MATRIX ", ixray_en, self.matrix)
+            # layer_trans = self.matrix.transmission(energy) # transmission through layer
             # incid_trans = layer_trans[ixray_en] # incident beam trans to lower layers
             # ncid_absor = 1.0 - incid_trans     # incident beam absorption by layer
             # atten = layer_trans * incid_absor
@@ -412,24 +398,37 @@ class XRF_Model:
         beta = pars['peak_beta']
         gamma = pars['peak_gamma']
 
-        # detector attenuation
-        atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
+        # detector attenuation: calc only if needed
+        if (not self.fit_in_progress) or self.params['det_thickness'].vary:
+            self.det_atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
 
-        # filters
-        for f in self.filters:
-           thickness = pars.get('filterlen_%s' % f.material, None)
-           if thickness is not None and int(thickness*1e6) > 1:
-               atten *= f.transmission(energy, thickness=thickness)
-        self.atten = atten
+        # filter attenuation: calc only if needed
+        filt_pars = [self.params['filterlen_%s' % f.material] for f in self.filters]
+        if (not self.fit_in_progress) or any([f.vary for f in filt_pars]):
+            self.filt_atten =  np.ones(len(energy))
+            for f in self.filters:
+                thickness = pars.get('filterlen_%s' % f.material, None)
+                if thickness is not None and int(thickness*1e6) > 1:
+                    fx = f.transmission(energy, thickness=thickness)
+                    self.filt_atten *= fx
+
+        self.atten = self.det_atten * self.filt_atten
         # matrix
         # if self.matrix_atten is None:
         #     self.calc_matrix_attenuation(energy)
         # atten *= self.matrix_atten
-        if self.use_escape:
+
+        # escape: calc only if needed
+        if ((not self.fit_in_progress) or
+            self.params['det_thickness'].vary or
+            self.params['escape_amp'].vary):
             if self.escape_scale is None:
                 self.calc_escape_scale(energy, thickness=pars['det_thickness'])
-            escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
+            self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
+            if not self.use_escape:
+                self.escape_amp = 0
 
+        nlines = 0
         for elem in self.elements:
             comp = 0. * energy
             amp = pars.get('amp_%s' % elem.symbol.lower(), None)
@@ -437,17 +436,19 @@ class XRF_Model:
                 continue
             for key, line in elem.lines.items():
                 ecen = 0.001*line.energy
+                nlines += 1
+                # print("Line at e= ", ecen, elem.symbol)
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
                 sigma = self.det_sigma(ecen, det_noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
                                  sigma=sigma, step=step, tail=tail,
                                  beta=beta, gamma=gamma)
-            comp *= amp * atten * self.count_time
-            if self.use_escape:
-                comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
+            comp *= amp * self.atten * self.count_time
+            comp += self.escape_amp * interp(energy-self.escape_energy, comp, energy)
 
             self.comps[elem.symbol] = comp
             self.eigenvalues[elem.symbol] = amp
+
 
         # scatter peaks for Rayleigh and Compton
         for peak in self.scatter:
@@ -464,9 +465,8 @@ class XRF_Model:
             comp = hypermet(energy, amplitude=1.0, center=ecen,
                             sigma=sigma, step=step, tail=tail, beta=beta,
                             gamma=gamma)
-            comp *= amp * atten * self.count_time
-            if self.use_escape:
-                comp += escape_amp * interp(energy-self.escape_energy, comp, energy)
+            comp *= amp * self.atten * self.count_time
+            comp += self.escape_amp * interp(energy-self.escape_energy, comp, energy)
             self.comps[p] = comp
             self.eigenvalues[p] = amp
 
@@ -546,17 +546,20 @@ class XRF_Model:
         for f in self.filters:
             f.mu_total = None
 
+        self.fit_in_progress = False
         self.init_fit = self.calc_spectrum(work_energy, params=self.params)
         index = np.arange(len(work_counts))
         userkws = dict(data=work_counts, index=index)
 
         tol = self.fit_toler
+        self.fit_in_progress = True
         self.result = minimize(self.__resid, self.params, kws=userkws,
                                method='leastsq', maxfev=2000, scale_covar=True,
                                gtol=tol, ftol=tol, epsfcn=1.e-5)
 
         self.fit_report = fit_report(self.result, min_correl=0.5)
         pars = self.result.params
+        self.fit_in_progress = False
 
         self.best_en = (pars['cal_offset'] + pars['cal_slope'] * index +
                         pars['cal_quad'] * index**2)
@@ -593,8 +596,7 @@ class XRF_Model:
                      'scatter', 'script', 'transfer_matrix', 'xray_energy'):
             setattr(out, attr, getattr(self, attr, None))
 
-        elem_attrs = ('all_lines', 'edges', 'fyields', 'lines', 'mu',
-                      'symbol', 'xray_energy')
+        elem_attrs = ('edges', 'fyields', 'lines', 'mu', 'symbol', 'xray_energy')
         out.elements = []
         for el in self.elements:
             out.elements.append({attr: getattr(el, attr) for attr in elem_attrs})
