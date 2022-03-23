@@ -245,6 +245,8 @@ class XRF_Model:
         self.matrix_atten = 1.0
         self.filters = []
         self.det_atten = self.filt_atten = self.escape_amp = 0.0
+        self.mu_lines = {}
+        self.mu_energies = []
         self.fit_iter = 0
         self.fit_toler = 1.e-4
         self.fit_log = False
@@ -398,6 +400,16 @@ class XRF_Model:
         beta = pars['peak_beta']
         gamma = pars['peak_gamma']
 
+        # escape: calc only if needed
+        if ((not self.fit_in_progress) or
+            self.params['det_thickness'].vary or
+            self.params['escape_amp'].vary):
+            if self.escape_scale is None:
+                self.calc_escape_scale(energy, thickness=pars['det_thickness'])
+            self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
+            if not self.use_escape:
+                self.escape_amp = 0
+
         # detector attenuation: calc only if needed
         if (not self.fit_in_progress) or self.params['det_thickness'].vary:
             self.det_atten = self.detector.absorbance(energy, thickness=pars['det_thickness'])
@@ -413,20 +425,24 @@ class XRF_Model:
                     self.filt_atten *= fx
 
         self.atten = self.det_atten * self.filt_atten
+
+        # matrix corrections #1: get X-ray line energies, only if needed
+        if ((not self.fit_in_progress) or len(self.mu_energies)==0):
+            self.mu_lines = {}
+            self.mu_energies = []
+            for elem in self.elements:
+                for key, line in elem.lines.items():
+                    self.mu_lines[f'{elem.symbol:s}_{key:s}'] = line.energy
+                    self.mu_energies.append(line.energy)
+
+            self.mu_energies.append(1000*self.xray_energy)
+            self.mu_energies = np.array(self.mu_energies)
+
+        # print("Mu energies ", self.mu_energies, len(self.mu_energies))
         # matrix
         # if self.matrix_atten is None:
         #     self.calc_matrix_attenuation(energy)
         # atten *= self.matrix_atten
-
-        # escape: calc only if needed
-        if ((not self.fit_in_progress) or
-            self.params['det_thickness'].vary or
-            self.params['escape_amp'].vary):
-            if self.escape_scale is None:
-                self.calc_escape_scale(energy, thickness=pars['det_thickness'])
-            self.escape_amp = pars.get('escape_amp', 0.0) * self.escape_scale
-            if not self.use_escape:
-                self.escape_amp = 0
 
         nlines = 0
         for elem in self.elements:
@@ -437,7 +453,6 @@ class XRF_Model:
             for key, line in elem.lines.items():
                 ecen = 0.001*line.energy
                 nlines += 1
-                # print("Line at e= ", ecen, elem.symbol)
                 line_amp = line.intensity * elem.mu * elem.fyields[line.initial_level]
                 sigma = self.det_sigma(ecen, det_noise)
                 comp += hypermet(energy, amplitude=line_amp, center=ecen,
