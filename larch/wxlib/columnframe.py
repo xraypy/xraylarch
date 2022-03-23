@@ -639,6 +639,7 @@ class ColumnDataFileFrame(wx.Frame) :
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
         _larch = self._larch
+
         if (not isinstance(_larch, larch.Interpreter) and
             hasattr(_larch, '_larch')):
             _larch = _larch._larch
@@ -646,7 +647,16 @@ class ColumnDataFileFrame(wx.Frame) :
             _larch.eval(read_cmd, add_history=True)
         except:
             pass
-        if _larch.error:
+        if len(_larch.error) > 0 and reader in ('read_xdi', 'read_gsexdi'):
+            read_cmd = "%s = %s('%s')" % (tmpname, 'read_ascii', path)
+            try:
+                _larch.eval(read_cmd, add_history=True)
+            except:
+                pass
+            if len(_larch.error) == 0:
+                self.reader = 'read_ascii'
+
+        if len(_larch.error) > 0:
             msg = ["Error trying to read '%s':" % path, ""]
             for err in _larch.error:
                 exc_name, errmsg = err.get_error()
