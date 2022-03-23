@@ -135,7 +135,7 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     try:
         cstruct = read_cif_structure(ciftext)
     except ValueError:
-        return '# invalid cif data'
+        return '# could not read CIF file'
 
     sgroup = SpacegroupAnalyzer(cstruct).get_symmetry_dataset()
     space_group = sgroup["international"]
@@ -150,7 +150,16 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
     edge_energy = xray_edge(absorber, edge).energy
     edge_comment = f'{absorber:s} {edge:s} edge, around {edge_energy:.0f} eV'
 
-    atoms_map = get_atom_map(cstruct)
+    unique_pot_atoms = []
+    for site in cstruct:
+        for elem in site.species.elements:
+            if elem.symbol not in unique_pot_atoms:
+                unique_pot_atoms.append(elem.symbol)
+
+    atoms_map = {}
+    for i, atom in enumerate(unique_pot_atoms):
+        atoms_map[atom] = i + 1
+
     if absorber not in atoms_map:
         atlist = ', '.join(atoms_map.keys())
         raise ValueError(f'atomic symbol {absorber:s} not listed in CIF data: ({atlist})')
@@ -176,6 +185,8 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     if site_index is not None:
         absorber_index = site_index - 1
+
+    # print("Got sites ", len(cstruct.sites), len(site_atoms), len(site_tags))
 
     center = cstruct[absorber_index].coords
     sphere = cstruct.get_neighbors(cstruct[absorber_index], cluster_size)
@@ -235,28 +246,33 @@ def cif2feffinp(ciftext, absorber, edge=None, cluster_size=8.0, absorber_site=1,
 
     out_text.extend(['', 'EXCHANGE 0', '',
                      '*  POLARIZATION  0 0 0', '',
-                     'POTENTIALS',
-                     '*    IPOT  Z   Tag'])
+                     'POTENTIALS',  '*    IPOT  Z   Tag'])
+
+    # loop to find atoms actually in cluster, in case some atom
+    # (maybe fractional occupation) is not included
+
+    at_lines = [(0, cluster[0].x, cluster[0].y, cluster[0].z, 0, absorber, tags[0])]
+    ipot_map = {}
+    next_ipot = 0
+    for i, site in enumerate(cluster[1:]):
+        sym = site.species_string
+        if sym == 'H' and not with_h:
+            continue
+        if sym in ipot_map:
+            ipot = ipot_map[sym]
+        else:
+            next_ipot += 1
+            ipot_map[sym] = ipot = next_ipot
+
+        dist = cluster.get_distance(0, i+1)
+        at_lines.append((dist, site.x, site.y, site.z, ipot, sym, tags[i+1]))
+
 
     ipot, z = 0, absorber_z
     out_text.append(f'   {ipot:4d}  {z:4d}   {absorber:s}')
-    for tag in atoms_map.keys():
-        z = atomic_number(tag)
-        if z == 1 and not with_h:
-            continue
-        ipot += 1
-        out_text.append(f'   {ipot:4d}  {z:4d}   {tag:s}')
-
-
-    at_lines = [(0, cluster[0].x, cluster[0].y, cluster[0].z, 0, absorber, tags[0])]
-
-    for i, site in enumerate(cluster[1:]):
-        if site.z == 1 and not with_h:
-            continue
-        sym = site.species_string
-        ipot = atoms_map[site.species_string]
-        dist = cluster.get_distance(0, i+1)
-        at_lines.append((dist, site.x, site.y, site.z, ipot, sym, tags[i+1]))
+    for sym, ipot in ipot_map.items():
+        z = atomic_number(sym)
+        out_text.append(f'   {ipot:4d}  {z:4d}   {sym:s}')
 
     out_text.append('')
     out_text.append('ATOMS')
