@@ -445,10 +445,16 @@ class FeffResultsFrame(wx.Frame):
             if os.path.isdir(fullpath):
                 try:
                     self.larch.eval(f"_feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
-                    self.feffruns[path] = thisrun = self.larch.symtable._feffruns[path]
-                    if ((all_catoms or (thisrun.absorber == catom)) and
-                        (all_edges  or (thisrun.edge == edge))):
-                        self.fefflist.Append(path)
+                    thisrun = self.larch.symtable._feffruns[path]
+                    if ((len(thisrun.paths) < 1) or
+                        (len(thisrun.ipots) < 1) or thisrun.edge is None):
+
+                        self.larch.symtable._feffruns.pop(path)
+                    else:
+                        self.feffruns[path] = thisrun
+                        if ((all_catoms or (thisrun.absorber == catom)) and
+                            (all_edges  or (thisrun.edge == edge))):
+                            self.fefflist.Append(path)
                 except:
                     print(f"could not read Feff calculation from '{path}'")
 
