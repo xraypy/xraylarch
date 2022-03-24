@@ -16,15 +16,21 @@ class FeffCalcResults:
         self.datetime = datetime
         self.absorber = absorber
         self.edge = edge
-                          
+
 def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
     """
-    
+
     fdat = os.path.join(folder, 'files.dat')
     pdat = os.path.join(folder, 'paths.dat')
-    if not os.path.exists(fdat) or not os.path.exists(pdat):
-        raise ValueError(f'{folder:s} is not a complete Feff folder - run feff?')
+    f001 = os.path.join(folder, 'feff0001.dat')
+    finp = os.path.join(folder, 'feff.inp')
+    # check for valid, complete calculation
+    if (not os.path.exists(fdat) or not os.path.exists(pdat) or
+        not os.path.exists(f001) or not os.path.exists(finp)):
+        return FeffCalcResults(os.path.abspath(folder), absorber=None,
+                               edge=None, ipots=[], header='',
+                               paths=[], datetime=None)
 
     dtime = datetime.fromtimestamp(os.stat(fdat).st_mtime).isoformat()
     with open(fdat, 'r') as fh:
@@ -32,7 +38,7 @@ def get_feff_pathinfo(folder):
 
     with open(pdat, 'r') as fh:
         pathslines = fh.readlines()
-    
+
     paths = {}
     header = []
     waiting_for_dashes = True
@@ -95,7 +101,7 @@ def get_feff_pathinfo(folder):
             and 'Rnm=' in line and 'shell' in line):
             words= line.replace('shell', '').strip().split()
             edge = words[-1]
-        
+
     return FeffCalcResults(os.path.abspath(folder),
                            absorber=absorber,
                            edge=edge,
