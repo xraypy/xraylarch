@@ -887,10 +887,10 @@ class XASFrame(wx.Frame):
             rgroup = gid
             dgroup = self.larch.symtable.get_group(gid)
             apars = getattr(dgroup, 'athena_params', {})
-            refgroup = getattr(apars, 'reference', None)
-            if refgroup in groups_added:
-                rgroup = self.larch.symtable.get_group(refgroup)
-            dgroup.energy_ref = rgroup
+            refgroup = getattr(apars, 'reference', '')
+            if refgroup not in groups_added:
+                refgroup = dgroup
+            dgroup.energy_ref = refgroup.filename
 
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False

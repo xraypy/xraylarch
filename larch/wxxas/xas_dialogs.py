@@ -207,9 +207,11 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        self.data = [self.dgroup.energy[:], self.dgroup.norm[:]]
-        xmin = min(self.dgroup.energy)
-        xmax = max(self.dgroup.energy)
+        if not hasattr(self.dgroup, 'energy_orig'):
+            self.dgroup.energy_orig = self.dgroup.energy[:]
+        self.data = [self.dgroup.energy_orig[:], self.dgroup.norm[:]]
+        xmin = min(self.dgroup.energy_orig)
+        xmax = max(self.dgroup.energy_orig)
         e0val = getattr(self.dgroup, 'e0', xmin)
 
         wx.Dialog.__init__(self, parent, wx.ID_ANY, size=(550, 400),
@@ -363,13 +365,20 @@ overwriting current arrays''')
     def on_align(self, event=None, name=None, value=None):
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
         dat = self.dgroup
-        if not hasattr(ref, 'dmude'):
-            ref.dmude = np.gradient(ref.mu)/np.gradient(ref.energy)
-        if not hasattr(dat, 'dmude'):
-            dat.dmude = np.gradient(dat.mu)/np.gradient(dat.energy)
+        if not hasattr(dat, 'energy_orig'):
+            dat.energy_orig = dat.energy[:]
+        if not hasattr(ref, 'energy_orig'):
+            ref.energy_orig = ref.energy[:]
+        dat.xdat = dat.energy_orig[:]
+        ref.xdat = ref.energy_orig[:]
 
-        i1 = index_of(ref.energy, ref.e0-15)
-        i2 = index_of(ref.energy, ref.e0+35)
+        if not hasattr(ref, 'dmude'):
+            ref.dmude = np.gradient(ref.mu)/np.gradient(ref.energy_orig)
+        if not hasattr(dat, 'dmude'):
+            dat.dmude = np.gradient(dat.mu)/np.gradient(dat.energy_orig)
+
+        i1 = index_of(ref.energy_orig, ref.e0-15)
+        i2 = index_of(ref.energy_orig, ref.e0+35)
 
         def resid(pars, ref, dat, i1, i2):
             "fit residual"
@@ -387,7 +396,7 @@ overwriting current arrays''')
         self.wids['eshift'].SetValue(eshift)
         self.wids['e0_new'].SetValue(dat.e0 + eshift)
 
-        xnew = self.dgroup.energy + eshift
+        xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
@@ -404,7 +413,7 @@ overwriting current arrays''')
             e0_new = e0_old + eshift
             wids['e0_new'].SetValue(e0_new)
 
-        xnew = self.dgroup.energy + eshift
+        xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
 
@@ -412,13 +421,15 @@ overwriting current arrays''')
         xdat, ydat = self.data
         dgroup = self.dgroup
         eshift = self.wids['eshift'].GetValue()
-        dgroup.energy_orig = dgroup.energy[:]
+
+        if not hasattr(dgroup, 'energy_orig'):
+            dgroup.energy_orig = dgroup.energy[:]
 
         idx, norm_page = self.parent.get_nbpage('norm')
         norm_page.wids['energy_shift'].SetValue(eshift)
 
         dgroup.energy_shift = eshift
-        dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
+        dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -428,11 +439,13 @@ overwriting current arrays''')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
-            dgroup.energy_orig = dgroup.energy[:]
+            if not hasattr(dgroup, 'energy_orig'):
+                dgroup.energy_orig = dgroup.energy[:]
+
             dgroup.energy_shift = eshift
             norm_page.wids['energy_shift'].SetValue(eshift)
 
-            dgroup.xdat = dgroup.energy = eshift + dgroup.energy[:]
+            dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
             self.parent.process_normalization(dgroup)
 
     def on_saveas(self, event=None):
@@ -442,9 +455,11 @@ overwriting current arrays''')
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
-        ngroup.energy_orig = ngroup.energy[:]
+        if not hasattr(ngroup, 'energy_orig'):
+            ngroup.energy_orig = ngroup.energy[:]
+
         ngroup.energy_shift = eshift
-        ngroup.xdat = ngroup.energy = eshift + ngroup.energy[:]
+        ngroup.xdat = ngroup.energy = eshift + ngroup.energy_orig[:]
         self.parent.onNewGroup(ngroup)
 
     def plot_results(self, event=None):
@@ -479,7 +494,7 @@ overwriting current arrays''')
                     title='Energy Calibration:\n %s' % fname,
                     label='shifted', delay_draw=True, **opts)
 
-        xold, yold = self.dgroup.energy, self.dgroup.norm
+        xold, yold = self.dgroup.energy_orig, self.dgroup.norm
         if use_deriv:
             yold = np.gradient(yold)/np.gradient(xold)
 

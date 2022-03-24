@@ -301,11 +301,17 @@ class XASNormPanel(TaskPanel):
             conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
-        conf['energy_ref'] = getattr(dgroup,'energy_ref', conf['energy_ref'])
+
+        # xeref = getattr(dgroup, 'energy_ref', '?1')
+        # yeref = conf.get('energy_ref', '?2')
+        # print("GET CONFIG for ", dgroup.filename, ', energy_ref = (group) ', xeref, ' // (conf) ', yeref)
+
+        # conf['energy_ref'] = getattr(dgroup, 'energy_ref', conf['energy_ref'])
+
         conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
 
         if conf['energy_ref'] in (None, 'None'):
-            conf['energy_ref'] = dgroup.groupname
+            conf['energy_ref'] = dgroup.filename
 
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
             atsym, edge = guess_edge(dgroup.e0)
@@ -333,8 +339,8 @@ class XASNormPanel(TaskPanel):
 
             groupnames = list(self.controller.file_groups.keys())
             self.wids['energy_ref'].SetChoices(groupnames)
+            eref = opts.get('energy_ref', 'no_energy_ref')
 
-            eref = opts.get('energy_ref', dgroup.groupname)
             for key, val in self.controller.file_groups.items():
                 if eref in (val, key):
                     self.wids['energy_ref'].SetStringSelection(key)
@@ -463,8 +469,9 @@ class XASNormPanel(TaskPanel):
         dgroup = self.controller.get_group()
         eref = self.wids['energy_ref'].GetStringSelection()
         gname = self.controller.file_groups[eref]
-        dgroup.xasnorm_config['energy_ref'] = gname
-        self.update_config({'energy_ref': gname}, dgroup=dgroup)
+        dgroup.xasnorm_config['energy_ref'] = eref
+        dgroup.energy_ref = eref
+        self.update_config({'energy_ref': eref}, dgroup=dgroup)
 
     def onPlotEither(self, evt=None):
         if self.last_plot_type == 'multi':
@@ -595,6 +602,9 @@ class XASNormPanel(TaskPanel):
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
                 self.update_config(opts, dgroup=grp)
+                for key, val in opts.items():
+                    if hasattr(grp, key):
+                        setattr(grp, key, val)
                 self.fill_form(grp)
                 self.process(grp, force=True)
 
@@ -617,7 +627,6 @@ class XASNormPanel(TaskPanel):
     def onSet_EnergyShift(self, evt=None, value=None):
         time.sleep(0.01)
         wx.CallAfter(self.onReprocess)
-
 
     def onSet_XASStep(self, evt=None, value=None):
         "handle setting edge step"
@@ -700,10 +709,9 @@ class XASNormPanel(TaskPanel):
 
         groupnames = list(self.controller.file_groups.keys())
         self.wids['energy_ref'].SetChoices(groupnames)
-
-        eref = conf.get('energy_ref', dgroup.groupname)
+        eref_sel = self.wids['energy_ref'].GetStringSelection()
         for key, val in self.controller.file_groups.items():
-            if eref in (val, key):
+            if eref_sel in (val, key):
                 self.wids['energy_ref'].SetStringSelection(key)
 
         if not is_xasgroup(dgroup):
