@@ -38,6 +38,7 @@ DEFAULT_ROOTNAME = 'xrmmap'
 VALID_ROOTNAMES = ('xrmmap', 'xrfmap')
 EXTRA_DETGROUPS =  ('scalars', 'work', 'xrd1d', 'xrd2d')
 NOT_OWNER = "Not Owner of HDF5 file %s"
+READ_ONLY = "HDF5 file %s is open read-only"
 QSTEPS = 2048
 
 H5ATTRS = {'Type': 'XRM 2D Map',
@@ -253,6 +254,7 @@ class GSEXRM_MapFile(object):
         self.dtcorrect     = dtcorrect
         self.scandb        = scandb
         self.envvar        = None
+        self.write_access  = True
         self.status        = GSEXRM_FileStatus.err_notfound
         self.dimension     = None
         self.nmca          = None
@@ -342,9 +344,9 @@ class GSEXRM_MapFile(object):
                 "'%s' is not a readable HDF5 file" % self.filename)
 
         # file has no write permission
-        if self.status ==  GSEXRM_FileStatus.err_nowrite:
-            raise GSEXRM_Exception(
-                "'%s' does not have write access" % self.filename)
+        # if self.status ==  GSEXRM_FileStatus.err_nowrite:
+        #     raise GSEXRM_Exception(
+        #         "'%s' does not have write access" % self.filename)
 
         # create empty HDF5 if needed
         if self.status == GSEXRM_FileStatus.empty and os.path.exists(self.filename):
@@ -370,7 +372,7 @@ class GSEXRM_MapFile(object):
                 # cfile.Save(os.path.join(self.folder, self.ScanFile))
             print("Create HDF5 File  ")
             self.h5root = h5py.File(self.filename, 'w')
-
+            self.write_access = True
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 if nmaster < 1:
                     self.read_master()
@@ -396,6 +398,7 @@ class GSEXRM_MapFile(object):
               self.status == GSEXRM_FileStatus.err_notfound and create_empty):
             print("Create HDF5 File")
             self.h5root = h5py.File(self.filename, 'w')
+            self.write_access = True
             create_xrmmap(self.h5root, root=None, dimension=2, start_time=self.start_time)
             self.notes['h5_create_time'] = isotime()
             self.xrmmap = self.h5root[DEFAULT_ROOTNAME]
@@ -441,8 +444,7 @@ class GSEXRM_MapFile(object):
             return
 
         if not os.access(filename, os.W_OK):
-            self.status = GSEXRM_FileStatus.err_nowrite
-            return
+            self.write_access = False
 
         # see if file is an H5 file
         try:
@@ -506,7 +508,8 @@ class GSEXRM_MapFile(object):
                     "'%s' is not a valid GSEXRM HDF5 file" % self.filename)
         self.filename = filename
         if self.h5root is None:
-            self.h5root = h5py.File(self.filename, 'a')
+            mode = 'a' if self.write_access else 'r'
+            self.h5root = h5py.File(self.filename, mode)
         self.xrmmap = self.h5root[root]
         if self.folder is None:
             self.folder = bytes2str(self.xrmmap.attrs.get('Map_Folder',''))
@@ -525,7 +528,7 @@ class GSEXRM_MapFile(object):
             self.nmca = self.xrmmap.attrs.get('N_Detectors', 1)
 
     def close(self):
-        if self.check_hostid():
+        if self.check_hostid() and self.write_access:
             self.xrmmap.attrs['Process_Machine'] = ''
             self.xrmmap.attrs['Process_ID'] = 0
             self.xrmmap.attrs['Last_Row'] = self.last_row
@@ -581,6 +584,8 @@ class GSEXRM_MapFile(object):
         ''' creata an hdf5 dataset, replacing existing dataset if needed'''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         kws.update(self.compress_args)
         if name in group:
@@ -597,6 +602,8 @@ class GSEXRM_MapFile(object):
         '''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         group = self.xrmmap['config']
         for name, sect in (('scan', 'scan'),
@@ -698,6 +705,8 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         if (len(self.rowdata) < 1 or
             (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
@@ -751,6 +760,8 @@ class GSEXRM_MapFile(object):
 
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         self.reset_flags()
         if self.status == GSEXRM_FileStatus.created:
@@ -910,6 +921,8 @@ class GSEXRM_MapFile(object):
         dt = debugtime()
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         thisrow = self.last_row + 1
         if hasattr(callback, '__call__'):
@@ -1179,6 +1192,8 @@ class GSEXRM_MapFile(object):
         self.t0 = time.time()
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         xrmmap = self.xrmmap
         for xkey, xval in xrmmap.attrs.items():
@@ -1739,6 +1754,8 @@ class GSEXRM_MapFile(object):
         "resize all arrays for new nrow size"
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
         if version_ge(self.version, '2.0.0'):
 
             g = self.xrmmap['positions/pos']
@@ -1902,6 +1919,8 @@ class GSEXRM_MapFile(object):
         '''
         if not self.check_hostid():
             raise GSEXRM_Exception(NOT_OWNER % self.filename)
+        if not self.write_access:
+            raise GSEXRM_Exception(READ_ONLY % self.filename)
 
         area_grp = ensure_subgroup('areas', self.xrmmap, dtype='areas')
         if name is None:
@@ -2235,13 +2254,15 @@ class GSEXRM_MapFile(object):
 
     def take_ownership(self):
         "claim ownership of file"
-        if self.xrmmap is None:
+        if self.xrmmap is None or not self.write_access:
             return
         self.xrmmap.attrs['Process_Machine'] = get_machineid()
         self.xrmmap.attrs['Process_ID'] = os.getpid()
         self.h5root.flush()
 
     def release_ownership(self):
+        if not self.write_access:
+            return
         self.xrmmap.attrs['Process_Machine'] = ''
         self.xrmmap.attrs['Process_ID'] = 0
         self.xrmmap.attrs['Last_Row'] = self.last_row
@@ -2256,7 +2277,10 @@ class GSEXRM_MapFile(object):
         By default, this takes ownership if it can.
         '''
         if self.xrmmap is None:
-            return
+            return False
+        if not self.write_access:
+            return True
+
         attrs = self.xrmmap.attrs
         self.folder = attrs['Map_Folder']
         file_mach = attrs['Process_Machine']
@@ -3156,9 +3180,9 @@ class GSEXRM_MapFile(object):
                 detname = '%s%s' % (_detaddr, ext)
                 out = self.xrmmap[detname][:, :, _roi]
                 # print("from v1, got roi map ", _roi, detname, out.shape)
-
-                self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
-                self.xrmmap[detaddr][roiaddr][:, :] = out
+                if self.write_access:
+                    self.xrmmap[detaddr][roiaddr].resize((nrow, ncol))
+                    self.xrmmap[detaddr][roiaddr][:, :] = out
 
         else:  # version1
             if det in EXTRA_DETGROUPS:
