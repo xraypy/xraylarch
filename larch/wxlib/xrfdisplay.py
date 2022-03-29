@@ -289,8 +289,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
-        ptable_fontsize = 10 if platform=='linux' else 11
-        
+        ptable_fontsize = 11 if platform=='darwin' else 9
         ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines',
                                     fontsize=ptable_fontsize, size=(360, 180))
