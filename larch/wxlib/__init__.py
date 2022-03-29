@@ -13,7 +13,8 @@ fileprompt       launch file browser to select files.
 '''
 
 import locale
-import platform
+
+from pyshortcuts import platform
 import os
 
 HAS_WXPYTHON = False
@@ -28,12 +29,12 @@ _larch_builtins = {}
 
 FONTSIZE = 9
 FONTSIZE_FW = 9
-if platform.system() == 'Windows':
+if platform == 'win':
     FONTSIZE = 10
     FONTSIZE_FW = 9
     locale.setlocale(locale.LC_ALL, 'C')
 
-if platform.system() == 'Darwin':
+if platform == 'darwin':
     FONTSIZE = 12
     FONTSIZE_FW = 12
 
@@ -148,7 +149,7 @@ if HAS_WXPYTHON:
     #############################
     ## Hack System and Startfile on Windows totry to track down
     ## weird error of starting other applications, like Mail
-    if platform.system() == 'Windows':
+    if platform=='win':
         from os import system as os_system
         from os import startfile as os_startfile
         def my_system(command):
