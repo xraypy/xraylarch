@@ -505,6 +505,7 @@ class XASFrame(wx.Frame):
             return
         savegroups = [self.controller.get_group(gname) for gname in grouplist]
         if prompt:
+            _, filename = os.path.split(filename)
             wcards  = 'Project Files (*.prj)|*.prj|All files (*.*)|*.*'
             filename = FileSave(self, 'Save Groups to Project File',
                                 default_file=filename, wildcard=wcards)
