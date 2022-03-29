@@ -18,10 +18,10 @@ peakutils
 requests
 scikit-image
 scikit-learn
-asteval>=0.9.22
-lmfit>=1.0.2
+asteval>=0.9.26
+lmfit>=1.0.3
 uncertainties>=3.1
-pyshortcuts>=1.7.2
+pyshortcuts>=1.8.1
 xraydb>=4.4
 silx>=0.15.2
 hdf5plugin
