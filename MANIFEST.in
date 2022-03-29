@@ -3,11 +3,11 @@ exclude *.lar *.pyc core.* *~ *.pdf .deps
 recursive-include larch *
 recursive-include tests *
 recursive-include examples *
+recursive-include doc *
 recursive-exclude larch *.pyc
 recursive-exclude tests *.pyc
 recursive-exclude larch __pycache__
 recursive-exclude tests __pycache__
 recursive-exclude examples __pycache__
 recursive-exclude sandbox *
-recursive-exclude doc *
 recursive-exclude doc/_build *
