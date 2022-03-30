@@ -13,7 +13,6 @@ materials       dictionary of composition of common materials
 chemparse       parse a Chemical formula to compositiondictionary.
 atomic_mass     return atomic mass for an element
 f0              Thomson X-ray scattering factor
-f1f2_cl         Anomalous scattering factors from Cromer-Libermann
 mu_elam         X-ray attenuation coefficients from Elam etal
 mu_chantler     X-ray attenuation coefficients from Chantler
 xray_edges      X-ray absorption edges for an element
@@ -34,7 +33,7 @@ from xraydb.materials import (get_material, add_material, material_mu,
 material_add = add_material
 material_get = get_material
 
-from .cromer_liberman import f1f2 as f1f2_cl
+# from .cromer_liberman import f1f2 as f1f2_cl
 from .background import XrayBackground
 
 atomic_symbols = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
@@ -56,7 +55,7 @@ _larch_builtins = {'_xray': dict(chemparse=chemparse,
                                  add_material=material_add,
                                  material_mu=material_mu,
                                  material_mu_components=material_mu_components,
-                                 f1f2_cl=f1f2_cl,
+                                 # f1f2_cl=f1f2_cl,
                                  f0=f0,
                                  f0_ions=f0_ions,
                                  chantler_energies=chantler_energies,
