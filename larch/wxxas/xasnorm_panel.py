@@ -740,9 +740,13 @@ class XASNormPanel(TaskPanel):
         dgroup.energy_units = en_units
 
         # test whether the energy shift is 0 or is different from the current energy shift:
-        eshift_current = getattr(dgroup, 'energy_shift', 0)
-        eshift = form.get('energy_shift', 0)
-        if abs(eshift-eshift_current) > 1.e-5:
+        eshift_current = getattr(dgroup, 'energy_shift', -99999)
+        eshift = form.get('energy_shift', -99999)
+        e1 = getattr(dgroup, 'energy', -99999)
+        e2 = getattr(dgroup, 'energy_orig', e1)
+        ediff = (e1 - e2).min()
+
+        if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
             if not hasattr(dgroup, 'energy_orig'):
                 self.larch_eval("{group:s}.energy_orig = {group:s}.energy[:]".format(group=dgroup.groupname))
             self.larch_eval("{group:s}.energy_shift = {eshift:.4f}".format(group=dgroup.groupname, eshift=eshift))

@@ -20,11 +20,11 @@ import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 
 from wxmplot import PlotPanel
-
 from wxutils import (SimpleText, EditableListBox, Font, pack, Popup,
                      get_icon, SetTip, Button, Check, MenuItem, Choice,
                      FileOpen, FileSave, fix_filename, HLine, GridPanel,
                      CEN, LEFT, RIGHT)
+from pyshortcuts import platform
 from . import FONTSIZE, FONTSIZE_FW
 from ..math import index_of
 from ..utils import bytes2str, debugtime, get_cwd
@@ -289,10 +289,10 @@ class XRFDisplayFrame(wx.Frame):
 
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
-
+        ptable_fontsize = 11 if platform=='darwin' else 9
         ptable = PeriodicTablePanel(ctrlpanel, onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines',
-                                    fontsize=11, size=(360, 180))
+                                    fontsize=ptable_fontsize, size=(360, 180))
         self.wids['ptable'] = ptable
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
 
@@ -410,10 +410,14 @@ class XRFDisplayFrame(wx.Frame):
         xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
         xlines.SetFont(self.font_fixedwidth)
         self.wids['xray_lines'] = xlines
-        xlines.AppendTextColumn(' Line ',         width=50)
-        xlines.AppendTextColumn(' Energy(keV) ',  width=95)
-        xlines.AppendTextColumn(' Strength ',     width=75)
-        xlines.AppendTextColumn(' Levels ',       width=90)
+
+        xw = (60, 100, 80, 100)
+        if platform=='win':
+            xw = (65, 105, 85, 100)
+        xlines.AppendTextColumn(' Line ',         width=xw[0])
+        xlines.AppendTextColumn(' Energy(keV) ',  width=xw[1])
+        xlines.AppendTextColumn(' Strength ',     width=xw[2])
+        xlines.AppendTextColumn(' Levels ',       width=xw[3])
         for col in (0, 1, 2, 3):
             this = xlines.Columns[col]
             this.Sortable = False
