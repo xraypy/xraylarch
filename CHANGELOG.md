@@ -4,18 +4,56 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.9.59 - not relased yet]
+## [0.9.59 - 2022-04-01]
 
 [Release announcement]()
 
 ### Added
  - Reading files from [FDMNES](http://fdmnes.neel.cnrs.fr/).
+ - XAS Viewer allows reading in a reference spectrum from the same file as a spectrum.
+ - XAS_Viewer better supports each spectrum having an "energy reference spectrum". This
+	can be set on reading spectra, or afterwards.  Recalibratng energies can propogate
+	calibrations to spectra that share a reference.
+ - XAS Viewer better supports an "energy shift" for each spectrum -- this can be copied
+	to other spectra or "undone" to go back to the original  (as read-in) data.
+ - XAS Viewer: data can be deglitched while plotting in "k" space"
+ - XAS Viewer: "flattened" spectra can be used for linear analysis in more places.
+ - Example using Jupyter and Fe pre-edge peaks.
+
+### Changed
+ - XAS Viewer: the action of the "pin icon" for selecting points from a plot has now changed.
+	Previously hitting the pin icon meant "use most recently clicked point on plot".  Now,
+	hitting the pin icon starts a timer which will look for mouse clicks *after* hitting
+	the pin icon:
+	   a) if there are new mouse clicks on the plot, wait at least 3 seconds, and return
+		  the most recent position.
+	   b) if there are no mouse clicks after 15 seconds, return the most recent position
+		   (even before clicking on the pin)
+
 
 ### Fixed
- - Reading columns names from one line header.
+ - Reading columns names from one line header, and for files that announce as XDI but
+	break XDI specs (say, by having >128 columns).
+ - Better handling of CIFs with partial occupancy when generating feff.inp.
+ - NLEG is set to 6 by default when generating feff.inp.
+ - By default, hydrogen atoms are removed when generating feff.inp (XAS Viewer and cif2feff)
+ - Athena project files with very long journals are better supported.
+ - Some permission problems for installation of Applicatons on MacOS have been avoided.
+ - "get current working directory" is now tested uniformly for permission errors.
+ - MapViewer: more robust and flexible search for tomographic rotation axis.
+ - Fix for spec/HDF5 files with broken "scan" link.
+ - XRF Display spectral fiitting: faster, better guesss for parameter scales, and show
+	filled eigenvectors (wxmplot 0.9.49)
+ - MapViewer / XRF Display: much improved ADD ROIs, including pushing XRF ROIs added in
+	XRF Display back to the list in Mapviewer.
+ - MapViewer: The order of ROIs added is now preserved, including for work arrays and
+	Abundances from XRF analysis.
+
 
 ### Removed
-
+ - Plugins are now completely removed
+ - 32-bit  Windows is no longer supported: libraries and executables have been removed.
+ - Cromer-Libermann is more deprecated and hidden (but not completely gone, yet)
 
 ## [0.9.58 - 2022-01-16]
 
@@ -68,9 +106,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - Larch's GUI applications on non-US Windows 10 machines.
  - There was a serious bug (possibly since Larch 0.9.52) for using wxPython applications with Python>=3.8 and wxPython>=4.1.0.
  - Fixes for turning CIF structures into Feff inputs and running Feff:
-    - more external CIF files from Crystallography Open Database and Materials Project can be converted to Feff.inp.
-    - external Feff.inp files can be loaded and run.
-    - the name of the folder created for any Feff calculation can be renamed before running Feff.
+	- more external CIF files from Crystallography Open Database and Materials Project can be converted to Feff.inp.
+	- external Feff.inp files can be loaded and run.
+	- the name of the folder created for any Feff calculation can be renamed before running Feff.
  - Fixed a bug on the EXAFS / background subtraction panel on "copied groups" to ensure that processing parameters (kweight, rbkg, etc) are kept separate.
 
 ### Changed
@@ -109,7 +147,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - XAS viewer
   - Parameters saved in an Athena Project File are now correctly saved and read
-    into XAS Viewer (thanks Tyler Valentine!)
+	into XAS Viewer (thanks Tyler Valentine!)
 
 ### Added
 - XAS viewer
