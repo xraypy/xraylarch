@@ -8,9 +8,6 @@ wxutils>=0.2.4
 wxmplot>=0.9.48
 pyepics>=3.5.0
 epicsapps
-fabio
-pyfai
-pycifrw
 psycopg2-binary
 pytest
 sphinx

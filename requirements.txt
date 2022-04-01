@@ -28,4 +28,7 @@ hdf5plugin
 numdifftools
 psutil
 pymatgen
+fabio
+pyfai
+pycifrw
 importlib_metadata
