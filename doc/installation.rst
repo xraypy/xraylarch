@@ -29,10 +29,11 @@ Downloading and Installation
 .. _Larch Github Pages: https://github.com/xraypy/xraylarch
 .. _Larch Github Issues: https://github.com/xraypy/xraylarch/issues
 
-The latest release version of Larch is |release|.  Larch is in active and
-continuing development.  The goal is to release versions every six months,
-but we don't use a strict schedule, and typically release more often than
-that.
+The latest release version of Larch is |release|.
+
+Larch is in active and continuing development.  The goal is to release
+versions every six months, but we don't use a strict schedule, and
+typically release more often than that.
 
 There are three ways to install Larch. Which of these is right for you will
 depend on your operating system and your familiarity with the Python
@@ -184,10 +185,10 @@ Installing with the `GetLarch.sh` and `GetLarch.bat` scripts
 
 This method is recommended for those who are relatively comfortable using a
 command-line, and is helpful for debugging cases where the binary installer
-may not have worked.  The approach here is basically to run a script that
-follows the steps that the binary installer should follow, but is likely to
-give more useful error messages if something goes wrong.  On Linux and
-MacOS, there are also command-line options.
+has failed.  The approach here is basically to run a script that follows
+the steps that the binary installer should follow, but is likely to give
+more useful error messages if something goes wrong.  On Linux and MacOS,
+there are also command-line options.
 
 To install with this method, download and execute one of the following:
 
@@ -209,8 +210,8 @@ MacOS), and then type::
   sh GetLarch.sh
 
 
-If a script fails, report it to the `Larch Github Issues`_ (including the
-error trace and the `GetLarch.log` file).
+If this script fails, report it to the `Larch Github Issues`_ (including
+the error trace and the `GetLarch.log` file).
 
 The scripts will download and install `Miniforge Python` which uses Anaconda
 Python and the `conda-forge` channel as the basis of an installation that will
@@ -219,7 +220,7 @@ that is, the whole environment is stored in a folder called `xraylarch` in your
 home folder. In case of problems, simply remove this folder to clean the
 installation.
 
-.. note::
+.. note::2
 
    **Optional/expert** You may execute `GetLarch.sh --devel` to install the latest development version instead of the latest release.
 
@@ -251,8 +252,6 @@ Python`_ / `Conda`_ and have already installed it in their system.
 
    Most of Larch functionality can be used as a library without these
    packages installed.
-
-
 
 Within a shell:
 
@@ -289,35 +288,6 @@ Within a shell:
 5. if anything of the above fails, report it to the `Larch Github Issues`_
 
 
-Installing the development version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For the brave A nightly build of the latest development version can be downloaded and installed with
-
-.. code:: bash
-
-   python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
-
-
-
-How to make desktop shortcuts
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To make a `Larch` folder on your desktop with shortcuts (Windows or Linux) or
-Applications (MacOS) for the main Larch applications, you can then type::
-
-    larch -m
-
-If that complains that it does not find `larch`, you may have to explicitly
-give the path to Python and/or Larch::
-
-   $HOME/xraylarch/bin/larch -m
-
-from Linux or MacOSX or::
-
-   %APPDATA%\\Local\\xraylarch\Scripts\larch.exe -m
-
-from Windows.
 
 Notes on Anaconda
 ~~~~~~~~~~~~~~~~~~
@@ -346,6 +316,37 @@ Updating  with `conda` is no longer supported. The best i to use `pip` to
 update, even when using Anaconda Python::
 
     pip install --upgrade xraylarch
+
+
+Installing the development version
+=========================================
+
+For the brave, a nightly build of the latest development version can be downloaded and installed with
+
+.. code:: bash
+
+   python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
+
+
+Making Desktop shortcuts to Link to the Applications
+=======================================================
+
+To make a `Larch` folder on your desktop with shortcuts (Windows or Linux) or
+Applications (MacOS) for the main Larch applications, you can then type::
+
+    larch -m
+
+If that complains that it does not find `larch`, you may have to explicitly
+give the path to Python and/or Larch::
+
+   $HOME/xraylarch/bin/larch -m
+
+from Linux or MacOSX or::
+
+   %APPDATA%\\Local\\xraylarch\Scripts\larch.exe -m
+
+from Windows.
+
 
 
 Larch for developers (source installation)
