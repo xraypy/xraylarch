@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.58 documentation</title>
+    <title>10. Reading and Writing Data &#8212; xraylarch 0.9.59 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -70,8 +70,9 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">10. Reading and Writing Data</a><ul>
 <li><a class="reference internal" href="#simple-ascii-column-files">10.1. Simple ASCII Column Files</a></li>
 <li><a class="reference internal" href="#athena-project-files">10.2. Athena Project Files</a><ul>
@@ -87,17 +88,23 @@
 <li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">10.7. Reading Scan Data from APS Beamlines</a></li>
 <li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">10.8. Reading XAFS Data Interchange (XDI) Files</a></li>
 <li><a class="reference internal" href="#reading-spec-bliss-files-via-silx-io-open">10.9. Reading Spec/BLISS files via <cite>silx.io.open</cite></a></li>
-<li><a class="reference internal" href="#saving-and-restoring-larch-groups">10.10. Saving and Restoring Larch Groups</a></li>
+<li><a class="reference internal" href="#reading-fdmnes-output-files">10.10. Reading FDMNES output files</a></li>
+<li><a class="reference internal" href="#saving-and-restoring-larch-groups">10.11. Saving and Restoring Larch Groups</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="larchlang/notpython.html"
-                        title="previous chapter"><span class="section-number">9.9. </span>Differences between Larch and Python</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="plotting.html"
-                        title="next chapter"><span class="section-number">11. </span>Plotting and Displaying Data</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="larchlang/notpython.html"
+                          title="previous chapter"><span class="section-number">9.9. </span>Differences between Larch and Python</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="plotting.html"
+                          title="next chapter"><span class="section-number">11. </span>Plotting and Displaying Data</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -157,7 +164,7 @@ information.  For instance:</p>
 <a class="reference internal" href="#io.read_ascii" title="_io.read_ascii"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_ascii()</span></code></a> function.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="io.read_ascii">
-<span id="_io.read_ascii"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#;*%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<span id="_io.read_ascii"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commentchar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#;*%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>opens and read an plaintext data file, returning a new group containing
 the data.</p>
 <dl class="field-list simple">
@@ -589,8 +596,21 @@ the <cite>silx.io.open</cite> module (see <a class="reference external" href="ht
 </dd></dl>
 
 </section>
+<section id="reading-fdmnes-output-files">
+<h2><span class="section-number">10.10. </span>Reading FDMNES output files<a class="headerlink" href="#reading-fdmnes-output-files" title="Permalink to this headline">¶</a></h2>
+<p>ASCII files from the [FDMNES](<a class="reference external" href="http://fdmnes.neel.cnrs.fr/">http://fdmnes.neel.cnrs.fr/</a>) are read via</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="io.read_fdmnes">
+<span id="_io.read_fdmnes"></span><span class="sig-prename descclassname"><span class="pre">_io.</span></span><span class="sig-name descname"><span class="pre">read_fdmnes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#io.read_fdmnes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Larch group</p>
+</dd></dl>
+
+<p>This function is a simple wrapper on top of <cite>read_ascii</cite>, parsing the header in
+order to shift the energy scale to absolute values, according to the <cite>E_edge</cite>
+variable. The parsed variables are stored in the <cite>group.header_dict</cite> dictionary.</p>
+</section>
 <section id="saving-and-restoring-larch-groups">
-<h2><span class="section-number">10.10. </span>Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">10.11. </span>Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>WARNNG: these routines will often not save everything and use is
 deprecated.  Save data a scripts to reproduce analysis steps!</p>
 <p>It can be often useful to save groups of data and be able to open them again
@@ -650,7 +670,7 @@ the save file will be put inside that group, and will not be returned.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
     </div>
   </body>
 </html>

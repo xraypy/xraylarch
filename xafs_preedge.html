@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.58 documentation</title>
+    <title>13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment &#8212; xraylarch 0.9.59 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/larchdoc.css" />
     
@@ -72,8 +72,9 @@
 
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">13.2. XAFS: Pre-edge Subtraction, Normalization, and data treatment</a><ul>
 <li><a class="reference internal" href="#the-find-e0-function">13.2.1. The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_e0()</span></code> function</a></li>
 <li><a class="reference internal" href="#the-pre-edge-function">13.2.2. The <code class="xref py py-func docutils literal notranslate"><span class="pre">pre_edge()</span></code> function</a></li>
@@ -91,12 +92,17 @@
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="xafs_utilities.html"
-                        title="previous chapter"><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="xafs_xanes.html"
-                        title="next chapter"><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="xafs_utilities.html"
+                          title="previous chapter"><span class="section-number">13.1. </span>XAFS Functions: Overview and Naming Conventions</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="xafs_xanes.html"
+                          title="next chapter"><span class="section-number">13.3. </span>XANES Analysis:  Linear Combination Analysis,  Principal Component Analysis, Pre-edge Peak Fitting</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -146,9 +152,9 @@ some checks to avoid spurious glitches.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group</p></li>
-<li><p><strong>mu</strong> (<em>ndaarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – array of mu(E) values</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>mu</strong> (<em>ndaarray</em><em> or </em><em>None</em>) – array of mu(E) values</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -562,13 +568,13 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
-<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – array of normalized mu(E)</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>None</em>) – array of normalized mu(E)</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>elo</strong> – (float or None)       low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
 <li><p><strong>ehi</strong> – (float or None)       high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
 </dd>
 </dl>
@@ -612,13 +618,13 @@ and that the spectra has decent pre-edge subtraction and normalization.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>energy</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of x-ray energies, in eV, or group (see note 1)</p></li>
 <li><p><strong>norm</strong> (<em>ndarray</em><em> or </em><em>group</em>) – array of normalized mu(E)</p></li>
-<li><p><strong>group</strong> (<em>group</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – output group</p></li>
-<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
-<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
-<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
-<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
+<li><p><strong>group</strong> (<em>group</em><em> or </em><em>None</em>) – output group</p></li>
+<li><p><strong>elo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – low energy of pre-edge peak region to not fit baseline [e0-20]</p></li>
+<li><p><strong>ehi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – high energy of pre-edge peak region ot not fit baseline [e0-10]</p></li>
+<li><p><strong>emax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – max energy (eV) to use for baesline fit [e0-5]</p></li>
+<li><p><strong>emin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>None</em>) – min energy (eV) to use for baesline fit [e0-40]</p></li>
 <li><p><strong>form</strong> (<em>string</em>) – form used for baseline (see description)  [‘linear+lorentzian’]</p></li>
-<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – current larch session.</p></li>
+<li><p><strong>_larch</strong> (<em>larch instance</em><em> or </em><em>None</em>) – current larch session.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1022,7 +1028,7 @@ data and the spectrum deconvolved by the energy of its core level.</span></p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright Matthew Newville, The University of Chicago, 2020.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
     </div>
   </body>
 </html>
