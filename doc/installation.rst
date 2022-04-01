@@ -19,10 +19,10 @@ Downloading and Installation
 .. _GetLarch.bat:                  https://raw.githubusercontent.com/xraypy/xraylarch/master/installers/GetLarch.bat
 .. _Larch Binary Installers:       https://millenia.cars.aps.anl.gov/xraylarch/downloads
 .. _source code:                   https://github.com/xraypy/xraylarch/releases/latest
-.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-Windows-x86_64.exe
-.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-MacOSX-x86_64.pkg
-.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07-Linux-x86_64.sh
-.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2021-07_docs-examples.zip
+.. _Larch for Windows:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Windows-x86_64.exe
+.. _Larch for MacOSX:              https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-MacOSX-x86_64.pkg
+.. _Larch for Linux:               https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04-Linux-x86_64.sh
+.. _Docs and Examples:             https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-2022-04_docs-examples.zip
 
 .. _Ifeffit Mailing List: https://millenia.cars.aps.anl.gov/mailman/listinfo/ifeffit/
 .. _Demeter: https://bruceravel.github.io/demeter/
@@ -151,13 +151,13 @@ Linux Notes
 
 .. warning::
 
-   As of this writing (January, 2022), there are several reports of the
-   binary installation not working on Linux.  We're looking into this.
+   There have been reports of the binary installation not working well on
+   all Linux systems.  We recommend using GetLarch.sh on Linux
 
 For Linux, download the `Larch for Linux`_ shell installer file, then open a Terminal, use `cd` to
 move to the download folder (typically `$HOME/Downloads`) and run::
 
-    ~> bash ./xraylarch-2021-07-Linux-x86_64.sh
+    ~> bash ./xraylarch-2022-04-Linux-x86_64.sh
 
 Desktop shortcuts as ``.desktop`` files will be created on all Linux platforms, but whether these
 actually appear on your desktop depends on the Windowing system used:  they will appear on the
@@ -286,13 +286,19 @@ Within a shell:
 
    pip install xraylarch
 
-5. **(optional/expert)** install Larch (development version):
+5. if anything of the above fails, report it to the `Larch Github Issues`_
+
+
+Installing the development version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the brave A nightly build of the latest development version can be downloaded and installed with
 
 .. code:: bash
 
-   pip install git+https://github.com/xraypy/xraylarch.git
+   python -m pip install https://millenia.cars.aps.anl.gov/xraylarch/downloads/xraylarch-latest-py3-none-any.whl
 
-6. if anything of the above fails, report it to the `Larch Github Issues`_
+
 
 How to make desktop shortcuts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
