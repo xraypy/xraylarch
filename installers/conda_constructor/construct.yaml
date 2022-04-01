@@ -1,5 +1,5 @@
 name:  xraylarch
-version: 2021-07
+version: 2022-04
 
 channels:
     - https://conda.anaconda.org/conda-forge/
@@ -14,17 +14,16 @@ ignore_duplicate_files: True
 osxpkg_readme: readme.rtf # [osx]
 osxpkg_image: LarchInstaller.png # [osx]
 osxpkg_userhome_only: True # [osx]
-signing_identity_name: Matthew Newville # [osx]
 
 post_install: post_install_linux.sh [linux]
 post_install: post_install_macosx.sh [osx]
 post_install: post_install_windows.bat [win]
 
 specs:
-    - python==3.8.10
+    - python==3.9.12
     - conda
     - openssl
-    - setuptools
+    - setuptools>=61.0
     - pip
     - requests
     - numpy>=1.18
@@ -38,7 +37,6 @@ specs:
     - pillow
     - psutil
     - pandas
-    - nose
     - pytest
     - pyyaml
     - sphinx
@@ -57,5 +55,3 @@ specs:
     - pymatgen
     - pycifrw
     - numdifftools
-    - pyfai
-    
