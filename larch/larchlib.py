@@ -34,15 +34,6 @@ except ImportError:
     HAS_TERMCOLOR = False
 
 
-class LarchPluginException(Exception):
-    """Exception with Larch Plugin"""
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-
-    def __str__(self):
-        return "\n%s" % (self.msg)
-
 class Empty:
     def __nonzero__(self): return False
 
@@ -348,12 +339,7 @@ class Procedure(object):
         return retval
 
 def enable_plugins():
-    """add all available Larch plugin paths
-    """
-    # if 'larch_plugins' not in sys.modules:
-    #     import larch
-    #     sys.modules['larch_plugins'] = larch
-    #return sys.modules['larch_plugins']
+    """plugins no longer supported"""
     return False
 
 def add2path(envvar='PATH', dirname='.'):
@@ -592,32 +578,6 @@ def Make_CallArgs(skipped_args):
         return wrapper
     return wrap
 
-def ValidateLarchPlugin(fcn):
-    """function decorator to ensure that _larch is included in keywords,
-    and that it is a valid Interpeter in that it has:
-    1. a symtable attribute
-    2. a writer attribute
-    """
-    errmsg1 = "plugin function '%s' needs a '_larch' argument"
-    errmsg2 = "plugin function '%s' has an invalid '_larch'  '%s'"
-
-    def wrapper(*args, **keywords):
-        "ValidateLarchPlugin"
-        _larch = keywords.get('_larch', None)
-        if _larch is None:
-            raise LarchPluginException(errmsg1 % fcn.__name__)
-
-        symtab = getattr(_larch, 'symtable', None)
-        writer = getattr(_larch, 'writer', None)
-        if not (isgroup(symtab) and callable(getattr(writer, 'write', None))):
-            raise LarchPluginException(errmsg2 % (fcn.__name__, _larch))
-        return fcn(*args, **keywords)
-    wrapper.__doc__ = fcn.__doc__
-    wrapper.__name__ = fcn.__name__
-    wrapper._larchfunc_ = fcn
-    wrapper.__filename__ = fcn.__code__.co_filename
-    wrapper.__dict__.update(fcn.__dict__)
-    return wrapper
 
 
 def ensuremod(_larch, modname=None):

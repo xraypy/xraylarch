@@ -68,7 +68,6 @@ if hasattr(sys, 'frozen'):
         larchdir = pjoin(toplevel, 'Resources', 'larch')
 
 modules_path = []
-plugins_path = []
 _path = [user_larchdir]
 
 if 'LARCHPATH' in os.environ:
@@ -78,10 +77,6 @@ for pth in _path:
     mdir = pjoin(pth, 'modules')
     if exists(mdir) and mdir not in modules_path:
         modules_path.append(mdir)
-
-    pdir = pjoin(pth, 'plugins')
-    if exists(pdir) and pdir not in plugins_path:
-        plugins_path.append(pdir)
 
 # initialization larch files to be run on startup
 init_files = [pjoin(user_larchdir, 'init.lar')]

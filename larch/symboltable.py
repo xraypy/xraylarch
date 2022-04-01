@@ -141,7 +141,7 @@ class SymbolTable(Group):
                 'has_symbol', 'has_group', 'get_group',
                 'create_group', 'new_group', 'isgroup',
                 'get_symbol', 'set_symbol',  'del_symbol',
-                'get_parent', 'add_plugin', '_path', '__parents')
+                'get_parent', '_path', '__parents')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -192,7 +192,6 @@ class SymbolTable(Group):
                                  history_file= site_config.history_file,
                                  init_files  = site_config.init_files,
                                  modules_path= site_config.modules_path,
-                                 # plugins_path= site_config.plugins_path,
                                  user_larchdir= site_config.user_larchdir,
                                  larch_version= site_config.larch_version)
 
@@ -477,56 +476,7 @@ class SymbolTable(Group):
         return sym, child
 
     def add_plugin(self, plugin, on_error, **kws):
-        """Add a plugin: a module that includes a
-        registerLarchPlugin function that returns
-        larch_group_name, dict_of_symbol/functions
-
-        if not isinstance(plugin, types.ModuleType):
-            on_error("%s is not a valid larch plugin" % repr(plugin))
-
-        group_registrar = getattr(plugin, 'registerLarchGroups', None)
-        if callable(group_registrar):
-            savegroups = group_registrar()
-            for group in savegroups:
-                self._sys.saverestore_groups.append(group)
-
-        registrar = getattr(plugin, 'registerLarchPlugin', None)
-        if registrar is None:
-            return
-
-        groupname, syms = registrar()
-        if not isinstance(syms, dict):
-            raise ValueError('add_plugin requires dictionary of plugins')
-
-        if not self.has_group(groupname):
-            self.new_group(groupname)
-
-        if groupname not in self._sys.searchGroups:
-            self._sys.searchGroups.append(groupname)
-        self._fix_searchGroups(force=True)
-
-        for key, val in syms.items():
-            if hasattr(val, '__call__') and hasattr(val, '__code__'): # is a function
-                # test whether plugin func has a '_larch' kw arg
-                #    __code__.co_flags & 8 == 'uses **kws'
-                kws.update({'func': val, '_name':key})
-                try:
-                    nvars = val.__code__.co_argcount
-                    if ((val.__code__.co_flags &8 != 0) or
-                        '_larch' in val.__code__.co_varnames[:nvars]):
-                        kws.update({'_larch':  self._larch})
-                    val = Closure(**kws)
-                except AttributeError: # cannot make a closure
-                    pass
-            self.set_symbol("%s.%s" % (groupname, key), val)
-
-        plugin_init = getattr(plugin, 'initializeLarchPlugin', None)
-        if plugin_init is not None:
-            plugin_init(_larch=self._larch)
-        return (groupname, syms)
-        """
-        print("plugins not supported")
-        return (None, None)
+        raise ValueError("plugins not supported")
 
     def show_group(self, groupname):
         """display group members --- simple version for tests"""

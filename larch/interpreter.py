@@ -18,7 +18,7 @@ from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .inputText import InputText, BLANK_TEXT
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
-                       Procedure, StdWriter, enable_plugins)
+                       Procedure, StdWriter)
 from .closure import Closure
 from .utils import debugtime
 
@@ -98,7 +98,7 @@ class Interpreter:
                        'unaryop', 'while')
 
     def __init__(self, symtable=None, input=None, writer=None,
-                 with_plugins=False, historyfile=None, maxhistory=5000):
+                 historyfile=None, maxhistory=5000):
         self.symtable   = symtable or SymbolTable(larch=self)
 
         self.input      = input or InputText(_larch=self,
@@ -119,7 +119,6 @@ class Interpreter:
         setattr(mathgroup, 'np', numpy)
 
         # system-specific settings
-        # enable_plugins()
         site_config.system_settings()
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
@@ -177,21 +176,6 @@ class Interpreter:
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
 
-        if False and with_plugins: # add all plugins in standard plugins folder
-            plugins_dir = os.path.join(site_config.user_larchdir, 'plugins')
-            loaded_plugins = []
-            for pname in sorted(os.listdir(plugins_dir)):
-                if pname not in loaded_plugins:
-                    pdir = os.path.join(plugins_dir, pname)
-                    if os.path.isdir(pdir):
-                        builtins.add_plugin(pdir, _larch=self)
-                        loaded_plugins.append(pname)
-
-
-    def add_plugin(self, mod, **kws):
-        """add plugin components from plugin directory"""
-        print("error: cannot add plugin: " ,mod, kws)
-        # builtins.add_plugin(mod, _larch=self, **kws)
 
     def unimplemented(self, node):
         "unimplemented nodes"

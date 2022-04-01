@@ -32,7 +32,7 @@ except ImportError:
 class shell(cmd.Cmd):
     def __init__(self,  completekey='tab', debug=False, quiet=False,
                  stdin=None, stdout=None, banner_msg=None,
-                 maxhist=25000, with_wx=False, with_plugins=False):
+                 maxhist=25000, with_wx=False):
 
         self.debug  = debug
         cmd.Cmd.__init__(self,completekey='tab')
@@ -51,8 +51,7 @@ class shell(cmd.Cmd):
             except IOError:
                 print('could not read history from %s' % history_file)
 
-        self.larch = Interpreter(with_plugins=with_plugins,
-                                 historyfile=history_file,
+        self.larch = Interpreter(historyfile=history_file,
                                  maxhistory=maxhist)
         self.larch.writer = StdWriter(_larch=self.larch)
 
