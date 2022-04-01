@@ -11,7 +11,7 @@ from pyshortcuts import make_shortcut, ico_ext, get_desktop
 
 from .site_config import icondir, home_dir, uname
 from .site_config import (extras_wxgraph, extras_qtgraph,
-                          extras_epics, extras_xrd, extras_doc)
+                          extras_epics, extras_doc)
 from .shell import shell
 from .xmlrpc_server import larch_server_cli
 from .version import __date__, make_banner, check_larchversion
@@ -140,7 +140,6 @@ def run_gse_mapviewer():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    install_extras(extras_xrd)
     vinfo = check_larchversion()
     from larch.wxmap import MapViewer
     kwargs = make_cli(description="Larch's XRM Map Viewer and Analysis Program",
@@ -199,7 +198,6 @@ def run_xrd2d_viewer():
     use_mpl_wxagg()
     install_extras(extras_wxgraph)
     install_extras(extras_epics)
-    install_extras(extras_xrd)
     from larch.wxxrd import XRD2DViewer
     XRD2DViewer().MainLoop()
 
@@ -300,7 +298,6 @@ def run_larch():
         use_mpl_wxagg()
         install_extras(extras_wxgraph)
         install_extras(extras_epics)
-        install_extras(extras_xrd)
         from larch.wxlib.larchframe import LarchApp
         LarchApp().MainLoop()
 
@@ -311,7 +308,6 @@ def run_larch():
             use_mpl_wxagg()
             install_extras(extras_wxgraph)
         install_extras(extras_epics)
-        install_extras(extras_xrd)
         vinfo = check_larchversion()
         if vinfo.update_available:
             print(vinfo.message)
