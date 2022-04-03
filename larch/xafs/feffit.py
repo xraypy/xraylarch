@@ -631,7 +631,8 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
 
     out = Group(name='feffit results', datasets=datasets,
                 paramgroup=work_paramgroup,
-                fitter=fit, fit_details=result, chi_square=chi_square,
+                # fitter=fit,
+                fit_details=result, chi_square=chi_square,
                 n_independent=n_idp, chi2_reduced=chi2_reduced,
                 rfactor=rfactor, aic=aic, bic=bic, covar=covar)
 
