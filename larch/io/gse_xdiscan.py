@@ -26,7 +26,6 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
     group.__name__ ='GSE XDI Data file %s' % fname
     xdi = XDIFile(str(fname))
 
-    group._xdi = xdi
     group.path = fname
     path, suffix = os.path.split(fname)
     group.filename = suffix
@@ -41,6 +40,17 @@ def read_gsexdi(fname, _larch=None, nmca=128, bad=None, **kws):
             except:
                 pass
             setattr(group, "%s_%s" % (family, key), val)
+
+    group._xdi = Group()
+
+    for thing in ('array_addrs', 'array_labels', 'array_units', 'attrs',
+                  'comments', 'status', 'user_labels', 'xdi_libversion',
+                  'xdi_version', 'xdi_pyversion'):
+
+        val = copy.deepcopy(getattr(xdi, thing, None))
+        if isinstance(val, bytes):
+            val = val.decode('utf-8')
+        setattr(group._xdi, thing, val)
 
     scanparams = xdi.attrs.get('scanparameters', None)
     if scanparams is not None:
