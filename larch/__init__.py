@@ -51,7 +51,7 @@ from .site_config import show_site_config
 from . import builtins
 from .inputText import InputText
 from .interpreter import Interpreter
-from . import larchlib, utils, version, site_config
+from . import larchlib, utils, site_config
 
 from . import fitting, math, io
 from .fitting import Parameter, isParameter, param_value
