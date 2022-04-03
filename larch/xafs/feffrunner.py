@@ -133,10 +133,14 @@ class FeffRunner(Group):
             program = resolved_exe
 
         else:
+            getsym = self._larch.symtable.get_symbol
             try:
-                program = self._larch.symtable.get_symbol('_xafs._feff_executable')
+                program = getsym('_xafs._feff8_executable')
             except (NameError, AttributeError) as exc:
-                program = None
+                try:
+                    program = getsym('_xafs._feff_executable')
+                except (NameError, AttributeError) as exc:
+                    program = None
 
         if program is not None:
             if not os.access(program, os.X_OK):

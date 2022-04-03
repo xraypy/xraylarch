@@ -50,8 +50,8 @@ from .sigma2_models import sigma2_eins, sigma2_debye, sigma2_correldebye, gnxas
 def _larch_init(_larch):
     """initialize xafs"""
     # initialize _xafs._feff_executable
-    feff6_exe = find_exe('feff6l')
-    _larch.symtable.set_symbol('_xafs._feff_executable', feff6_exe)
+    _larch.symtable.set_symbol('_xafs._feff_executable', find_exe('feff6l'))
+    _larch.symtable.set_symbol('_xafs._feff8_executable', find_exe('feff8l'))
 
 
 _larch_groups = (diffKKGroup, FeffRunner, FeffDatFile, FeffPathGroup,
