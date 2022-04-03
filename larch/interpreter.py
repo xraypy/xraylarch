@@ -164,9 +164,6 @@ class Interpreter:
             if callable(fcn):
                 fcn(_larch=self)
 
-        for grp in builtins.init_groups:
-            self.symtable._sys.saverestore_groups.append(grp)
-
         for groupname, docstring in builtins.init_moddocs.items():
             group = self.symtable.get_group(groupname)
             group.__doc__ = docstring

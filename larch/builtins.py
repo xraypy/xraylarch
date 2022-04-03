@@ -352,9 +352,7 @@ init_builtins = dict(_builtin=_main_builtins)
 init_funcs = [init_display_group]
 
 # group/classes to register for save-restore
-init_groups = []
 init_moddocs = {}
-
 
 for mod in __core_modules:
     if mod is None:
@@ -368,8 +366,6 @@ for mod in __core_modules:
         init_moddocs[modname] = doc
     builtins = getattr(mod, '_larch_builtins', {})
     init_fcn = getattr(mod, '_larch_init', None)
-    init_grp = getattr(mod, '_larch_groups', None)
-    # print("Add builtins ", modname, mod, init_fcn, init_grp)
 
     for key, val in builtins.items():
         if key not in init_builtins:
@@ -379,8 +375,6 @@ for mod in __core_modules:
 
     if init_fcn is not None:
         init_funcs.append(init_fcn)
-    if init_grp is not None:
-        init_groups.append(init_grp)
 
 # list of supported valid commands -- don't need parentheses for these
 valid_commands = ['run', 'help', 'show', 'which', 'more', 'cd']
