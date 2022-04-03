@@ -1,78 +1,99 @@
-
 import json
 import time
 import numpy as np
+import uuid, socket, platform
+
+from gzip import GzipFile
 
 from collections import OrderedDict
 
-from larch import Group
+from larch import Group, __date__, __version__, __release_version__
 from ..fitting import Parameter, isParameter
 from ..utils.jsonutils import encode4js, decode4js
-from . import fix_varname
+from ..utils.strutils import bytes2str, str2bytes, fix_varname
 
+def get_machineid():
+    "machine id / MAC address, independent of hostname"
+    return hex(uuid.getnode())[2:]
 
-def save(fname,  *args, _larch=None, **kws):
-    """save groups and data into a portable json file
+def save_session(fname=None, _larch=None):
+    """save all groups and data into a Larch Save File (.larix)
+    A portable json file, that can be loaded with
 
-    save(fname, arg1, arg2, ....)
+    load_session(fname)
 
     Parameters
     ----------
-       fname   name of output save file.
-       args    list of groups, data items to be saved.
+    fname   name of output save file.
 
-    See Also:  restore()
+    See Also:  restore_session()
     """
-    isgroup =  _larch.symtable.isgroup
+    if fname is None:
+        fname = time.strftime('%Y_%m_%d_%H%M')
+    if not fname.endswith('.larix'):
+        fname = fname + '.larix'
 
-    expr = getattr(_larch, 'this_expr', 'save(foo)')
-    expr = expr.replace('\n', ' ').replace('\r', ' ')
+    if _larch is None:
+        raise ValueError('_larch not defined')
+    symtab = _larch.symtable
+    buff = ["##LARIX: 1.0      Larch Session File",
+            "##Date Saved: %s"   % time.strftime('%Y-%m-%d %H:%M:%S'),
+            "##Larch Release Version: %s" % __release_version__,
+            "##Larch Release Date: %s" % __date__,
+            "##Larch Working Version: %s" % __version__,
+            "##Python Version: %s" % platform.python_version(),
+            "##Python Compiler: %s" % platform.python_compiler(),
+            "##Python Implementation: %s" % platform.python_implementation(),
+            "##Machine Platform: %s" % platform.system(),
+            "##Machine Name: %s" % socket.gethostname(),
+            "##Machine MACID: %s" % get_machineid(),
+            "##Machine Version: %s"   % platform.version(),
+            "##Machine Processor: %s" % platform.machine(),
+            "##Machine Architecture: %s" % ':'.join(platform.architecture()),
+            ]
 
-    grouplist = _larch.symtable._sys.saverestore_groups[:]
+    core_groups = symtab._sys.core_groups
+    buff.append('##Config.core_groups: %s' % (repr(core_groups)))
 
-    buff = ["#Larch Save File: 1.0",
-            "#save.date: %s" % time.strftime('%Y-%m-%d %H:%M:%S'),
-            "#save.command: %s" % expr,
-            "#save.nitems:  %i" % len(args)]
+    config = symtab._sys.config
+    for attr in dir(config):
+        buff.append('##Config.%s: %s' % (attr, repr(getattr(config, attr, None))))
+    buff.append("##----------")
+    syms = []
+    for attr in dir(symtab):
+        if attr in core_groups:
+            continue
+        syms.append(attr)
 
-    names = []
-    if expr.startswith('save('):
-        names = [a.strip() for a in expr[5:-1].split(',')]
-    try:
-        names.pop(0)
-    except:
-        pass
-    if len(names) < len(args):
-        names.extend(["_unknown_"]*(len(args) - len(names)))
+    buff.append("##Symbols.Save_Count: %d " % len(syms))
+    buff.append("##----------")
 
-    for name, arg in zip(names, args):
-        buff.append("#=> %s" % name)
-        buff.append(json.dumps(encode4js(arg, grouplist=grouplist)))
+    for attr in dir(symtab):
+        if attr in core_groups:
+            continue
+        buff.append('<<::%s::>>' % attr)
+        buff.append('%s' % encode4js(getattr(symtab, attr)))
+
+    buff.append("##----------")
     buff.append("")
-    with open(fname, "w") as fh:
-        fh.write("\n".join(buff))
+    print("Save fname ", fname)
+    fh = GzipFile(fname, "w")
+    fh.write(str2bytes("\n".join(buff)))
+    fh.close()
 
 
-
-def restore(fname, top_level=True, _larch=None):
-    """restore data from a json Larch save file
+def load_session(fname, _larch=None):
+    """load all data from a Larch Save File
 
     Arguments
     ---------
-    top_level  bool  whether to restore to _main [True]
-
+    fname    name of save file
 
     Returns
     -------
-    None   with `top_level=True` or group with `top_level=False`
+    None
 
-    Notes
-    -----
-    1.  With top_level=False, a new group containing the
-        recovered data will be returned.
     """
-
-    grouplist = _larch.symtable._sys.saverestore_groups
 
     datalines = open(fname, 'r').readlines()
     line1 = datalines.pop(0)

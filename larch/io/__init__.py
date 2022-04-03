@@ -26,7 +26,7 @@ from .xdi import read_xdi
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
 from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
 from .gse_mcafile import gsemca_group, GSEMCA_File
-from .save_restore import save, restore
+from .save_restore import save_session, load_session
 from .tifffile import TIFFfile
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
                              extract_athenagroup, make_hashkey)
@@ -80,8 +80,8 @@ __exports__ = dict(increment_filename=increment_filename,
                    read_stepscan=read_stepscan,
                    read_tiff=read_tiff,
                    merge_groups=merge_groups,
-                   save=save,
-                   restore=restore,
+                   save_session=save_session,
+                   load_session=load_session,
                    read_xrd_hdf5=read_xrd_hdf5,
                    read_xrd_netcdf=read_xrd_netcdf,
                    read_xrf_netcdf=read_xrf_netcdf,
