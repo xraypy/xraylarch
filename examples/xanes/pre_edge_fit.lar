@@ -1,4 +1,4 @@
-import os
+from lmfit.models import GaussianModel, StepModel
 
 fname = '../xafsdata/fe2o3_rt1.xmu'
 dat = read_ascii(fname, labels='energy xmu i0')
@@ -9,63 +9,34 @@ i1, i2 = index_of(dat.energy, 7105), index_of(dat.energy, 7125)
 dat.e = dat.energy[i1:i2+1]
 dat.y = dat.norm[i1:i2+1]
 
-def make_model(pars, data, components=False):
-    """make model of spectra: 3 gaussians, 1 erf function, offset"""
-    g1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
-    g2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
-    g3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)
-    e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
-    sum = g1 + g2 + g3 + e1
-    if components:
-        return sum, g1, g2, g3, e1
-    endif
-    return sum
-enddef
+model = (GaussianModel(prefix='p1_') + GaussianModel(prefix='p2_') +
+         GaussianModel(prefix='p3_') + StepModel(prefix='erf_', form='erf') +
+         ConstantModel())
 
-def resid(pars, data):
-    "fit residual"
-    return make_model(pars, data) - data.y
-enddef
+# create Parameters
 
-# create group for parameters
-params = group(
-    wid1 = param(1.0, vary=True),
-    cen1 = param(7113.25, vary=True),
-    amp1 = param(0.2, vary=True),
+params = model.make_params(p1_center=7113.2, p1_amplitude=0.2, p1_sigma=1.0,
+                           p2_center=7116.0, p2_amplitude=0.2, p2_sigma=1.0,
+                           p3_center=7123.5, p3_amplitude=0.2, p3_sigma=1.0,
+                           erf_amplitude=0.5, erf_center=7123.5, erf_sigma=0.5,
+                           c=0.5)
 
-    wid2 = param(1.0, vary=True),
-    cen2 = param(7116.0, vary=True),
-    amp2 = param(0.2, vary=True),
-
-    wid3 = param(1.0, vary=True),
-    cen3 = param(7122.25, vary=True),
-    amp3 = param(0.1, vary=True),
-
-    off  = param(0.50, vary=True),
-
-    erf_amp  = param(0.50, vary=True),
-    erf_wid = param(0.50, vary=True),
-    erf_cen  = param(7123.25, vary=True),
-    )
-
-init = make_model(params, dat)
-
+init = model.eval(params, x=dat.e)
 plot(dat.e, dat.y, new=True)
-plot(dat.e, init+dat.y)
+plot(dat.e, init)
 
-m = minimize(resid, params, args=(dat,))
-
-final, g1, g2, g3, e1 = make_model(params, dat, components=True)
+out = model.fit(dat.y, params, x=dat.e)
+comps = out.eval_components()
 
 plot(dat.e, dat.y,  label='data', show_legend=True, new=True)
-plot(dat.e, final,  label='fit')
-plot(dat.e, (final-dat.y)*10, label='resid(10x)')
+plot(dat.e, out.best_fit,  label='fit')
+plot(dat.e, (out.best_fit-dat.y)*10, label='resid(10x)')
 
 plot(dat.e, dat.y, label='data', show_legend=True, win=2, new=True)
-plot(dat.e, g1, label='gauss1', win=2)
-plot(dat.e, g2, label='gauss2', win=2)
-plot(dat.e, g3, label='gauss3', win=2)
-plot(dat.e, e1, label='erf +offset', win=2)
+plot(dat.e, comps['p1_'], label='gauss1', win=2)
+plot(dat.e, comps['p2_'], label='gauss2', win=2)
+plot(dat.e, comps['p3_'], label='gauss3', win=2)
+plot(dat.e, comps['erf_'], label='erf +offset', win=2)
 
-print( fit_report(params, show_correl=False))
+print( out.fit_report())
 #
