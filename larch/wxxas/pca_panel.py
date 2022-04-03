@@ -35,9 +35,16 @@ chik   = '\u03c7(k)'
 noplot = '<no plot>'
 noname = '<none>'
 
+
+
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-FitSpace_Choices = [norm, flatmu, dmude, chik]
+
+FITSPACES = {norm:'norm', flatmu:'flat', dmude:'dmude', chik:'chik',
+             rawmu:'mu'}
+
+FitSpace_Choices = list(FITSPACES.keys())
+
 Plot_Choices = ['PCA Components', 'Component Weights', 'Data + Fit',
                 'Data + Fit + Components']
 
@@ -335,15 +342,9 @@ class PCAPanel(TaskPanel):
                 self.xasmain.process_normalization(grp)
 
         groups = ', '.join(groups)
-        opts = dict(groups=groups, arr=arrayname, xmin=form['xmin'], xmax=form['xmax'])
-        if form['fitspace'] == dmude:
-            opts['arr'] = 'dmude'
-        elif form['fitspace'] == rawmu:
-            opts['arr'] = 'mu'
-        elif form['fitspace'] == chik:
-            opt['arre'] = 'chi'
-        elif form['fitspace'] == flat:
-            opts['arr'] = 'flat'
+        opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
+
+        opts['arr'] = FITSPACES.get(form['fitspace'], 'norm')
 
         cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
 
