@@ -70,14 +70,14 @@ def save_session(fname=None, _larch=None):
     if histbuff is not None:
         buff.append("##<Session Commands>")
         buff.extend(["%s" % l for l in histbuff])
-        buff.append("##</Session Commands>"
+        buff.append("##</Session Commands>")
 
     syms = []
     for attr in dir(symtab):
         if attr in core_groups:
             continue
         syms.append(attr)
-    buff.append("##<Symbols:  count=%d>"  % len(syms)))
+    buff.append("##<Symbols:  count=%d>"  % len(syms))
 
     for attr in dir(symtab):
         if attr in core_groups:
