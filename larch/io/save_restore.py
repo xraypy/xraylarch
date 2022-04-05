@@ -29,54 +29,67 @@ def save_session(fname=None, _larch=None):
     See Also:  restore_session()
     """
     if fname is None:
-        fname = time.strftime('%Y_%m_%d_%H%M')
+        fname = time.strftime('%Y%b%d_%H%M')
     if not fname.endswith('.larix'):
         fname = fname + '.larix'
 
     if _larch is None:
         raise ValueError('_larch not defined')
     symtab = _larch.symtable
+
+
     buff = ["##LARIX: 1.0      Larch Session File",
             "##Date Saved: %s"   % time.strftime('%Y-%m-%d %H:%M:%S'),
-            "##Larch Release Version: %s" % __release_version__,
-            "##Larch Release Date: %s" % __date__,
-            "##Larch Working Version: %s" % __version__,
-            "##Python Version: %s" % platform.python_version(),
-            "##Python Compiler: %s" % platform.python_compiler(),
-            "##Python Implementation: %s" % platform.python_implementation(),
+            "##<CONFIG>",
             "##Machine Platform: %s" % platform.system(),
             "##Machine Name: %s" % socket.gethostname(),
             "##Machine MACID: %s" % get_machineid(),
             "##Machine Version: %s"   % platform.version(),
             "##Machine Processor: %s" % platform.machine(),
             "##Machine Architecture: %s" % ':'.join(platform.architecture()),
+            "##Python Version: %s" % platform.python_version(),
+            "##Python Compiler: %s" % platform.python_compiler(),
+            "##Python Implementation: %s" % platform.python_implementation(),
+            "##Larch Release Version: %s" % __release_version__,
+            "##Larch Release Date: %s" % __date__,
+            "##Larch Working Version: %s" % __version__,
             ]
 
     core_groups = symtab._sys.core_groups
-    buff.append('##Config.core_groups: %s' % (repr(core_groups)))
+    buff.append('##Larch Core Groups: %s' % (repr(core_groups)))
 
     config = symtab._sys.config
     for attr in dir(config):
-        buff.append('##Config.%s: %s' % (attr, repr(getattr(config, attr, None))))
-    buff.append("##----------")
+        buff.append('##Larch %s: %s' % (attr, repr(getattr(config, attr, None))))
+    buff.append("##</CONFIG>")
+
+    try:
+        histbuff = _larch.input.history.get(session_only=True)
+    except:
+        histbuff = None
+    if histbuff is not None:
+        buff.append("##<Session Commands>")
+        buff.extend(["%s" % l for l in histbuff])
+        buff.append("##</Session Commands>"
+
     syms = []
     for attr in dir(symtab):
         if attr in core_groups:
             continue
         syms.append(attr)
-
-    buff.append("##Symbols.Save_Count: %d " % len(syms))
-    buff.append("##----------")
+    buff.append("##<Symbols:  count=%d>"  % len(syms)))
 
     for attr in dir(symtab):
         if attr in core_groups:
             continue
-        buff.append('<<::%s::>>' % attr)
+        buff.append('<:%s:>' % attr)
         buff.append('%s' % encode4js(getattr(symtab, attr)))
 
-    buff.append("##----------")
+    buff.append("##</Symbols>")
     buff.append("")
-    print("Save fname ", fname)
+
+
+    print("Saved session to ", fname)
     fh = GzipFile(fname, "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
