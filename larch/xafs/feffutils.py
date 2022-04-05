@@ -17,6 +17,17 @@ class FeffCalcResults:
         self.absorber = absorber
         self.edge = edge
 
+    def __getstate__(self):
+        """Get state for pickle."""
+        return (self.folder, self.absorber, self.edge, self.header,
+                self.ipots, self.paths, self.datetime)
+
+    def __setstate__(self, state):
+        """Set state from pickle."""
+        (self.folder, self.absorber, self.edge, self.header,
+         self.ipots, self.paths, self.datetime) = state
+
+
 def get_feff_pathinfo(folder):
     """get list of Feff path info for a Feff folder
     """
