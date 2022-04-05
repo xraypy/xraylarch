@@ -372,16 +372,13 @@ class EXAFSPanel(TaskPanel):
             wids[attr].SetValue(val)
 
         for attr in ('bkg_clamplo', 'bkg_clamphi'):
-            val = getattr(dgroup, attr, None)
-            if val is None:
-                val = opts.get(attr, -1)
-                if val is None:
-                    val = '0'
+            val = getattr(dgroup, attr, opts.get(attr, None))
+            if val in (None, 'None'): val = '0'
+            if val in ('strong', 'Strong'): val = '500'
             try:
-                wids[attr].SetStringSelection("%d" % float(opts.get(attr, 0)))
+                wids[attr].SetStringSelection("%d" % int(val))
             except:
                 print(f"could not set '{attr:s}' to {val}")
-
 
         for attr in ('fft_kwindow', 'plotone_op', 'plotsel_op', 'plotalt_op'):
             if attr in opts:
