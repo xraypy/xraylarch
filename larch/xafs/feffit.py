@@ -243,16 +243,23 @@ class FeffitDataSet(Group):
         else:
             self.paths = {}
 
-        self.data = data
+        # make datagroup from passed in data: copy of k, chi, delta_chi, epsilon_k
+        self.data = Group(__name__='Feffit DatasSet from %s' % repr(data),
+                          groupname=getattr(data, 'groupname', repr(data)),
+                          filename=getattr(data, 'filename', repr(data)),
+                          k=data.k[:], chi=data.chi[:])
+        self.data.delta_chi = getattr(data, 'delta_chi', 1.0)
+        self.data.epsilon_k = getattr(data, 'epsilon_k', epsilon_k)
+        if epsilon_k is not None:
+            self.data.epsilon_k = epsilon_k
+
         if transform is None:
             transform = TransformGroup()
         else:
             trasform = copy(transform)
         self.transform = transform
-        if epsilon_k is not None:
-            self.data.epsilon_k = epsilon_k
 
-        self.model = Group()
+        self.model = Group(__name__='Feffit Model for %s' % repr(data))
         self.model.k = None
         self.__chi = None
         self.__prepared = False
@@ -629,8 +636,9 @@ def feffit(paramgroup, datasets, rmax_out=10, path_outputs=True, _larch=None, **
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
-    out = Group(name='feffit results', datasets=datasets,
+    out = Group(name='feffit results',
                 paramgroup=work_paramgroup,
+                datasets=datasets,
                 # fitter=fit,
                 fit_details=result, chi_square=chi_square,
                 n_independent=n_idp, chi2_reduced=chi2_reduced,
