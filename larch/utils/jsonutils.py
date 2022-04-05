@@ -48,9 +48,11 @@ def encode4js(obj):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isinstance(obj, io.IOBase):
         return {'__class__':  'IOBasee', 'class': obj.__class__.__name__,
-                'name': obj.name, 'closed': obj.closed, 'readable': obj.readable()}
+                'name': obj.name, 'closed': obj.closed,
+                'readable': obj.readable()}
     elif isinstance(obj, h5py.File):
-        return {'__class__': 'HDF5File', 'value': (obj.name, obj.filename, obj.mode, obj.libver),
+        return {'__class__': 'HDF5File',
+                'value': (obj.name, obj.filename, obj.mode, obj.libver),
                 'keys': list(obj.keys())}
     elif isinstance(obj, h5py.Group):
         return {'__class__': 'HDF5Group', 'value': (obj.name, obj.file.filename),
@@ -80,12 +82,12 @@ def encode4js(obj):
     elif isinstance(obj, Parameters):
         out = {'__class__': 'Parameters'}
         o_ast = obj._asteval
-        out['params'] = [p.__getstate__() for p in obj.values()]
         out['unique_symbols'] = {key: encode4js(o_ast.symtable[key])
                                  for key in o_ast.user_defined_symbols()}
+        out['params'] = [(p.name, p.__getstate__()) for p in obj.values()]
         return out
     elif isinstance(obj, Parameter):
-        return {'__class__': 'Parameter', 'value': obj.__getstate__()}
+        return {'__class__': 'Parameter', 'name': obj.name, 'state': obj.__getstate__()}
     elif hasattr(obj, '__getstate__'):
         return {'__class__': 'StatefulObject', 'value': obj.__getstate__()}
     elif hasattr(obj, 'dumps'):
@@ -156,19 +158,22 @@ def decode4js(obj):
             out[key] = decode4js(val)
     elif classname == 'Parameters':
         out = Parameters()
-        out.loads(json.dumps(obj))
+        out.clear()
+        unique_symbols = {key: decode4js(obj['unique_symbols'][key]) for key
+                          in obj['unique_symbols']}
+
+        state = {'unique_symbols': unique_symbols, 'params': []}
+        for name, parstate in obj['params']:
+            par = Parameter(decode4js(name))
+            par.__setstate__(decode4js(parstate))
+            state['params'].append(par)
+        out__setstate__(state)
 
     elif classname in ('Parameter', 'parameter'):
-        out = {}
-        extras = {}
-        for key, val in obj.items():
-            if key in ('name', 'value', 'vary', 'min', 'max', 'expr'):
-                out[key] = decode4js(val)
-            else:
-                extras[key] = decode4js(val)
-        out = Parameter(**out)
-        for key, val in extras.items():
-            setattr(out, key, val)
+        name = decode4js(obj['name'])
+        state = decode4js(obj['state'])
+        out = Parameter(name)
+        out.__setstate__(state)
 
     elif classname in ('Group', 'group'):
         out = {}
