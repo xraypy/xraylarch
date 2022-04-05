@@ -152,9 +152,11 @@ class EncodeDecode4Json_Test(unittest.TestCase):
         assert(isinstance(out, dict))
         assert(out['__class__'] == 'Parameter')
         assert(out['name'] == 'a')
-        assert(out['vary'] == True)
-        assert_allclose(out['value'], 2.0)
-        assert_allclose(out['min'], 0.0)
+        state = out['state']
+        assert(len(state) > 8)
+        assert(state[2] == True)
+        assert_allclose(state[1], 2.0)
+        assert_allclose(state[4], 0.0)
 
     def test_eval_param1(self):
         out = deval(self.param1)
@@ -169,8 +171,10 @@ class EncodeDecode4Json_Test(unittest.TestCase):
         assert(isinstance(out, dict))
         assert(out['__class__'] == 'Parameter')
         assert(out['name'] == 'b')
-        assert(out['vary'] == False)
-        assert(len(out['expr']) > 2)
+        state = out['state']
+        assert(len(state) > 8)
+        assert(state[2] == False)
+        assert(len(state[3]) > 2)
 
     def test_eval_param2(self):
         out = deval(self.param2)
@@ -204,20 +208,24 @@ class EncodeDecode4Json_Test(unittest.TestCase):
         assert(isinstance(out, dict))
         assert(out['__class__'] == 'Group')
         assert(isinstance(out['par1'], dict))
-        assert(out['par1']['__class__'] == 'Parameter')
-        assert(out['par1']['name'] == 'p1')
-        assert(out['par1']['value'] == 3.0)
-        assert(out['par1']['vary'] == False)
-        assert(out['par1']['min'] == 0.0)
-        assert(out['par2']['__class__'] == 'Parameter')
-        assert(out['par2']['name'] == 'p2')
-        assert(out['par2']['vary'] == True)
-        assert(out['par2']['value'] == 1.0)
         assert(out['sub']['__class__'] == 'Group')
         assert(out['sub']['label'] == 'a label')
         assert(out['sub']['x']['__class__'] == 'Array')
         assert(out['sub']['x']['__class__'] == 'Array')
         assert_allclose(out['sub']['x']['value'][:3], [0, 0.5, 1.0], rtol=1.e-4)
+
+        assert(out['par1']['__class__'] == 'Parameter')
+        assert(out['par1']['name'] == 'p1')
+        assert(out['par2']['__class__'] == 'Parameter')
+        assert(out['par2']['name'] == 'p2')
+        state1 = out['par1']['state']
+        state2 = out['par2']['state']
+        assert(state1[2] == False)
+        assert_allclose(state1[1], 3.0)
+        assert_allclose(state1[4], 0.0)
+        assert(state2[2] == True)
+        assert_allclose(state2[1], 1.0)
+
 
     def test_eval_group2(self):
         out = deval(self.group2)
