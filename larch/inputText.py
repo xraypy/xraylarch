@@ -157,10 +157,7 @@ class HistoryBuffer(object):
                     self.add(text=hline[:-1])
             self.session_start = len(self.buffer)
 
-    def save(self, filename=None, session_only=False,
-             trim_last=False, maxlines=None):
-        if filename is None:
-            filename = self.filename
+    def get(self, session_only=False, trim_last=False, maxlines=None):
         if maxlines is None:
             maxlines = self.maxlines
         start_ = -maxlines
@@ -176,6 +173,16 @@ class HistoryBuffer(object):
             if not (bline.startswith(comment) or len(bline) < 0):
                 out.append(str(bline))
         out.append('')
+        return out
+
+    def save(self, filename=None, session_only=False,
+             trim_last=False, maxlines=None):
+        if filename is None:
+            filename = self.filename
+        out = self.get(session_only=session_only,
+                       trim_last=trim_last,
+                       maxlines=maxlines)
+
         with open(filename, 'w') as fh:
             fh.write('\n'.join(out))
 
