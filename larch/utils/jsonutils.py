@@ -23,7 +23,7 @@ def encode4js(obj):
     """
     if obj is None:
         return None
-    elif isinstance(obj, np.ndarray):
+    if isinstance(obj, np.ndarray):
         out = {'__class__': 'Array', '__shape__': obj.shape,
                '__dtype__': obj.dtype.name}
         out['value'] = obj.flatten().tolist()
@@ -89,7 +89,7 @@ def encode4js(obj):
     elif hasattr(obj, '__getstate__'):
         return {'__class__': 'StatefulObject', 'value': obj.__getstate__()}
     elif hasattr(obj, 'dumps'):
-        print("Dumpable ", obj, obj.dumps)
+        print("Encode Warning: using dumps for ", obj)
         return {'__class__': 'DumpableObject', 'value': obj.dumps()}
     elif isinstance(obj, (tuple, list)):
         ctype = 'List'
