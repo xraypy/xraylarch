@@ -342,7 +342,7 @@ class FeffResultsFrame(wx.Frame):
         if _larch is None:
             self.larch = larch.Interpreter()
         self.larch.eval("# started Feff results browser\n")
-        self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
+        self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
         self.parent = parent
         path_importer = None
         if parent is not None:
@@ -444,12 +444,12 @@ class FeffResultsFrame(wx.Frame):
             fullpath = unixpath(os.path.join(self.feff_folder, path))
             if os.path.isdir(fullpath):
                 try:
-                    self.larch.eval(f"_feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
-                    thisrun = self.larch.symtable._feffruns[path]
+                    self.larch.eval(f"_sys._feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
+                    thisrun = self.larch.symtable._sys._feffruns[path]
                     if ((len(thisrun.paths) < 1) or
                         (len(thisrun.ipots) < 1) or thisrun.edge is None):
 
-                        self.larch.symtable._feffruns.pop(path)
+                        self.larch.symtable._sys._feffruns.pop(path)
                     else:
                         self.feffruns[path] = thisrun
                         if ((all_catoms or (thisrun.absorber == catom)) and

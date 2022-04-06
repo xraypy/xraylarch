@@ -60,7 +60,7 @@ class CIFFrame(wx.Frame):
         if _larch is None:
             self.larch = larch.Interpreter()
         self.larch.eval("# started CIF browser\n")
-        self.larch.eval("if not hasattr('_main', '_feffruns'): _feffruns = {}")
+        self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
 
         self.cifdb = get_amscifdb()
         self.all_minerals = self.cifdb.all_minerals()
@@ -493,8 +493,8 @@ class CIFFrame(wx.Frame):
 
         prog(folder=folder, message_writer=self.feff_output)
         self.larch.eval("## gathering results:\n")
-        self.larch.eval(f"_feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
-        this_feffrun = self.larch.symtable._feffruns[f'{dname:s}']
+        self.larch.eval(f"_sys._feffruns['{dname:s}'] = get_feff_pathinfo('{folder:s}')")
+        this_feffrun = self.larch.symtable._sys._feffruns[f'{dname:s}']
         self.feffresults.set_feffresult(this_feffrun)
         ix, p = self.get_nbpage('Feff Results')
         self.nb.SetSelection(ix)
