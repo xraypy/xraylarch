@@ -302,16 +302,17 @@ class XASNormPanel(TaskPanel):
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
-        # xeref = getattr(dgroup, 'energy_ref', '?1')
-        # yeref = conf.get('energy_ref', '?2')
-        # print("GET CONFIG for ", dgroup.filename, ', energy_ref = (group) ', xeref, ' // (conf) ', yeref)
+        xeref = getattr(dgroup, 'energy_ref', '')
+        conf['energy_ref'] = getattr(dgroup, 'energy_ref', dgroup.filename)
+
+        if conf['energy_ref'] in (None, 'None'):
+            conf['energy_ref'] = dgroup.filename
+
 
         # conf['energy_ref'] = getattr(dgroup, 'energy_ref', conf['energy_ref'])
 
         conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
 
-        if conf['energy_ref'] in (None, 'None'):
-            conf['energy_ref'] = dgroup.filename
 
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
             atsym, edge = guess_edge(dgroup.e0)

@@ -884,14 +884,28 @@ class XASFrame(wx.Frame):
             dgroup = self.install_group(gid, label, process=True, plot=False,
                                         extra_sums=extra_sums)
             groups_added.append(gid)
+
+        # print("GROUPS ADDED ", groups_added)
+        # print("File Groups ", self.controller.file_groups)
+
         for gid in groups_added:
             rgroup = gid
             dgroup = self.larch.symtable.get_group(gid)
             apars = getattr(dgroup, 'athena_params', {})
             refgroup = getattr(apars, 'reference', '')
-            if refgroup not in groups_added:
-                refgroup = dgroup
-            dgroup.energy_ref = refgroup.filename
+            # print("# looking for refgroup for ", gid, dgroup.filename)
+            if refgroup in groups_added:
+                newname = None
+                for key, val in self.controller.file_groups.items():
+                    if refgroup in (key, val):
+                        newname = key
+
+                if newname is not None:
+                    refgroup = newname
+            else:
+                refgroup = dgroup.filename
+            # print("# final eref to ", refgroup)
+            dgroup.energy_ref = refgroup
 
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
@@ -916,7 +930,8 @@ class XASFrame(wx.Frame):
         if filename is None:
             filename = real_filename
         if not overwrite and hasattr(self.larch.symtable, groupname):
-            groupname = file2groupname(real_filename, symtable=self.larch.symtable)
+            groupname = file2groupname(real_filename,
+                                       symtable=self.larch.symtable)
 
         if abort_read:
             return
@@ -995,14 +1010,17 @@ class XASFrame(wx.Frame):
                 i += 1
 
 
-        cmds = ["%s.groupname = '%s'" % (groupname, groupname),
-               "%s.filename = '%s'" % (groupname, filename)]
+        cmds = ["{gname:s}.groupname = '{gname:s}'",
+                "{gname:s}.filename = '{fname:s}'"]
+        if datatype == 'xas':
+            cmds.append("{gname:s}.energy_orig = {gname:s}.energy[:]")
+
+        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename)
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
             # print("## need to handle extra_sums " , self.extra_sums)
-
-        self.larch.eval('\n'.join(cmds))
+        self.larch.eval(cmds)
 
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
