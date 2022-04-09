@@ -105,7 +105,7 @@ class XRFDisplay(XRFDisplayFrame):
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
         PlotFrame.__init__(self, parent=None, size=size,
-                           output_title='plot2d',
+                           output_title='larchplot',
                            exit_callback=self.onExit, **kws)
 
         self.Show()
@@ -250,7 +250,7 @@ class ImageDisplay(ImageFrame):
         if val is not None: set('%s_val' % self.symname, val)
 
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
-                wintitle=None, xrf=False, image=False, stacked=False):
+                wintitle=None, xrf=False, image=False, stacked=False, theme=None):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if  hasattr(_larch, 'symtable'):
@@ -283,6 +283,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
     def _get_disp(symname, creator, win, ddict, wxparent, size, _larch):
         display = None
+        s = 'not'
         if win in ddict:
             display = ddict[win]
             try:
@@ -290,6 +291,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             except RuntimeError:  # window has been deleted
                 ddict.pop(win)
                 display = None
+
 
         if display is None and hasattr(_larch, 'symtable'):
             display = _larch.symtable.get_symbol(symname, create=True)
@@ -307,6 +309,9 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
     display = _get_disp(symname, creator, win, display_dict, wxparent,
                         size, _larch)
+    if creator == PlotDisplay and theme is not None:
+        display.panel.conf.set_theme(theme=theme)
+
     try:
         display.SetTitle(title)
     except:
