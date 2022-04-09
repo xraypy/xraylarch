@@ -38,6 +38,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog,
                          CIFFrame, FeffResultsFrame, LarchWxApp)
+from larch.wxlib.plotter import _getDisplay
 
 from larch.fitting import fit_report
 from larch.site_config import icondir
@@ -132,6 +133,10 @@ class XASFrame(wx.Frame):
         iconfile = os.path.join(icondir, ICON_FILE)
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
+        self.timers = {'pin': wx.Timer(self)}
+        self.Bind(wx.EVT_TIMER, self.onPinTimer, self.timers['pin'])
+        self.cursor_dat = {}
+
         self.subframes = {}
         self.plotframe = None
         self.SetTitle(title)
@@ -155,7 +160,6 @@ class XASFrame(wx.Frame):
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
         plotframe.SetPosition((xpos+xsiz+5, ypos))
-        plotframe.SetSize((600, 650))
 
         self.Raise()
         self.statusbar.SetStatusText('ready', 1)
@@ -728,15 +732,16 @@ class XASFrame(wx.Frame):
 
         for i in range(self.nb.GetPageCount()):
             nbpage = self.nb.GetPage(i)
-            timers = getattr(nbpage, 'timers')
-            for t in timers.values():
-                t.Stop()
+            timers = getattr(nbpage, 'timers', None)
+            if timers is not None:
+                for t in timers.values():
+                    t.Stop()
 
             if hasattr(nbpage, 'subframes'):
                 for name, wid in nbpage.subframes.items():
                     destroy(wid)
-
-
+        for t in self.timers.values():
+            t.Stop()
 
         time.sleep(0.05)
         self.Destroy()
@@ -1031,6 +1036,105 @@ class XASFrame(wx.Frame):
         self.controller.filelist.SetStringSelection(filename.strip())
         return thisgroup
 
+    ##
+    ## float-spin / pin timer events
+    def onPinTimer(self, event=None):
+        if 'start' not in self.cursor_dat:
+            self.cursor_dat['xsel'] = None
+            self.onPinTimerComplete(reason="bad")
+        pin_config = self.controller.get_config('pin_config',
+                                                {'style': 'pin_first',
+                                                 'timeout':15.0,
+                                                 'min_time': 2.0})
+        min_time  = float(pin_config['min_time'])
+        timeout = float(pin_config['timeout'])
+
+        curhist_name = self.cursor_dat['name']
+        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
+        if len(cursor_hist) > self.cursor_dat['nhist']: # got new data!
+            self.cursor_dat['xsel'] = cursor_hist[0][0]
+            self.cursor_dat['ysel'] = cursor_hist[0][1]
+            if time.time() > min_time + self.cursor_dat['start']:
+                self.timers['pin'].Stop()
+                self.onPinTimerComplete(reason="new")
+        elif time.time() > timeout + self.cursor_dat['start']:
+            self.onPinTimerComplete(reason="timeout")
+
+        if 'win' in self.cursor_dat and 'xsel' in self.cursor_dat:
+            time_remaining = timeout + self.cursor_dat['start'] - time.time()
+            msg = 'Select Point from Plot #%d' % (self.cursor_dat['win'])
+            if self.cursor_dat['xsel'] is not None:
+                msg = '%s, [current value=%.1f]' % (msg, self.cursor_dat['xsel'])
+            msg = '%s, expiring in %.0f sec' % (msg, time_remaining)
+            self.write_message(msg)
+
+    def onPinTimerComplete(self, reason=None, **kws):
+        self.timers['pin'].Stop()
+        if reason != "bad":
+            msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']
+            if reason == 'timeout':
+                msg = msg + '(timed-out)'
+            self.write_message(msg)
+            if (self.cursor_dat['xsel'] is not None and
+                callable(self.cursor_dat['callback'])):
+                self.cursor_dat['callback'](**self.cursor_dat)
+                time.sleep(0.05)
+        else:
+            self.write_message('Select Point Error')
+        self.cursor_dat = {}
+
+
+    def onSelPoint(self, evt=None, opt='__', relative_e0=True, callback=None,
+                   win=None):
+        """
+        get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
+
+        start Pin Timer to get last selected point from a specified plot window
+        and fill in the value for the widget defined by `opt`.
+        """
+        if win is None:
+            win = 1
+        display = _getDisplay(win=win, _larch=self.larch)
+        display.Raise()
+        msg = 'Select Point from Plot #%d' % win
+        self.write_message(msg)
+
+        now = time.time()
+        curhist_name = 'plot%d_cursor_hist' % win
+        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
+
+        self.cursor_dat = dict(relative_e0=relative_e0, opt=opt,
+                               callback=callback,
+                               start=now, xsel=None, ysel=None,
+                               win=win, name=curhist_name,
+                               nhist=len(cursor_hist))
+
+        pin_config = self.controller.get_config('pin_config',
+                                                {'style': 'pin_first',
+                                                 'timeout':15.0,
+                                                 'min_time': 2.0})
+        if pin_config['style'] == 'plot_first':
+            if len(cursor_hist) > 0:
+                x, y, t = cursor_hist[0]
+                if now < (t + 60.0):
+                    self.cursor_dat['xsel'] = x
+                    self.cursor_dat['ysel'] = y
+                    msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']
+                    self.cursor_dat['callback'](**self.cursor_dat)
+            else:
+                self.write_message('No Points selected from plot window!')
+        else: # "pin first" mode
+            if len(cursor_hist) > 2:  # purge old cursor history
+                setattr(self.larch.symtable._plotter, curhist_name, cursor_hist[:2])
+
+            if len(cursor_hist) > 0:
+                x, y, t = cursor_hist[0]
+                if now < (t + 30.0):
+                    self.cursor_dat['xsel'] = x
+                    self.cursor_dat['ysel'] = y
+            self.timers['pin'].Start(250)
+
 
 class XASViewer(LarchWxApp):
     def __init__(self, filename=None, **kws):
@@ -1042,6 +1146,7 @@ class XASViewer(LarchWxApp):
                          version_info=self.version_info)
         self.SetTopWindow(frame)
         return True
+
 
 def xas_viewer(**kws):
     XASViewer(**kws)
