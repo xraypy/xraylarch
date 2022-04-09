@@ -533,7 +533,7 @@ class FeffPathPanel(wx.Panel):
         self.title = title
         self.user_label = user_label
         self.feffit_panel = feffit_panel
-        self.losefocus_active = False
+        self.editing_enabled = False
         wx.Panel.__init__(self, parent, -1, size=(550, 450))
         panel = GridPanel(self, ncols=4, nrows=4, pad=2, itemstyle=LEFT)
 
@@ -588,12 +588,12 @@ class FeffPathPanel(wx.Panel):
         sizer.Add(panel, 1, LEFT|wx.GROW|wx.ALL, 2)
         pack(self, sizer)
 
-    def enable_losefocus(self):
-        # print("enable losefocus")
+    def enable_editing(self):
+        print("enable path param edits for ", self.reff, self.user_label)
         for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             self.wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
             self.wids[name].Bind(wx.EVT_KILL_FOCUS, partial(self.onExpression, name=name))
-        self.losefocus_active = True
+        self.editing_enabled = True
         self.wids['label'].SetValue(self.user_label)
 
     def set_userlabel(self, label):
@@ -687,8 +687,6 @@ class FeffitPanel(TaskPanel):
                            config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
-        self.timers['paths'] = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onPathTimer, self.timers['paths'])
 
     def onPanelExposed(self, **kws):
         # called when notebook is selected
@@ -814,21 +812,6 @@ class FeffitPanel(TaskPanel):
         updater = getattr(self.paths_nb.GetCurrentPage(), 'update_values', None)
         if callable(updater):
             updater()
-
-    def onPathTimer(self, event=None):
-        for i in range(self.paths_nb.GetPageCount()):
-            text = self.paths_nb.GetPageText(i).strip().lower()
-            page = self.paths_nb.GetPage(i)
-            if not text.lower().startswith('param'):
-                losefocus_active = getattr(page, 'losefocus_active', True)
-                losefocus_method = getattr(page, 'enable_losefocus', None)
-                if not losefocus_active and callable(losefocus_method):
-                    losefocus_method()
-                wids = getattr(page, 'wids', {})
-                if 'label' in wids:
-                    wids['label'].SetValue(page.user_label)
-        self.timers['paths'].Stop()
-
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
@@ -1063,6 +1046,8 @@ class FeffitPanel(TaskPanel):
         for pname  in ('amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             pathpanel.onExpression(name=pname)
 
+        pathpanel.enable_editing()
+
         pdat = {'title': title, 'fullpath': feffdat_file, 'use':True}
         pdat.update(pathpanel.get_expressions())
         self.larch_eval(COMMANDS['add_path'].format(**pdat))
@@ -1073,7 +1058,6 @@ class FeffitPanel(TaskPanel):
         ipage, pagepanel = self.xasmain.get_nbpage('feffit')
         self.xasmain.nb.SetSelection(ipage)
         self.xasmain.Raise()
-        self.timers['paths'].Start(1000)
 
     def get_pathkeys(self):
         _paths = getattr(self.larch.symtable, '_paths', {})
