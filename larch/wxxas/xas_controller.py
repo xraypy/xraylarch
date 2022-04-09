@@ -7,7 +7,13 @@ from larch.larchlib import read_config, save_config
 from larch.utils import group2dict, unique_name, fix_varname, get_cwd
 from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
-PLOTWIN_SIZE = (550, 550)
+from larch.site_config import home_dir
+
+XASCONFIG = {'chdir_on_fileopen': True,
+             'workdir': home_dir,
+             'pin_config': {'style': 'pin_first', 'timeout':15.0, 'min_time': 2.0},
+             'plot_config': {'width': 550, 'height': 525, 'theme': 'light'}
+             }
 
 class XASController():
     """
@@ -32,7 +38,9 @@ class XASController():
         _larch = self.larch
         old_config = read_config(self.config_file)
 
-        config = self.make_default_config()
+        config = {}
+        config.update(XASCONFIG)
+        config['workdir'] = get_cwd()
         for sname in config:
             if old_config is not None and sname in old_config:
                 val = old_config[sname]
@@ -47,12 +55,6 @@ class XASController():
             os.chdir(config['workdir'])
         except:
             pass
-
-    def make_default_config(self):
-        """ default config, probably called on first run of program"""
-        config = {'chdir_on_fileopen': True,
-                  'workdir': get_cwd()}
-        return config
 
     def get_config(self, key, default=None):
         "get configuration setting"
@@ -81,14 +83,18 @@ class XASController():
         # if stacked:
         #     win = 2
         #    wintitle='Larch XAS Plot Window'
+        conf = self.get_config('plot_config')
+
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
-                    size=PLOTWIN_SIZE)
+                    size=(conf['width'], conf['height']), theme=conf['theme'])
         out = self.symtable._plotter.get_display(**opts)
         if win > 1:
             p1 = getattr(self.symtable._plotter, 'plot1', None)
             if p1 is not None:
+                p1.SetSize((conf['width'], conf['height']))
                 try:
                     siz = p1.GetSize()
+                    print
                     pos = p1.GetPosition()
                     pos[0] += int(siz[0]/4)
                     pos[1] += int(siz[1]/4)
