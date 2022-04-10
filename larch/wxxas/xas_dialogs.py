@@ -41,6 +41,31 @@ DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'mu',
                   '\u03c7(E)*(E-E_0)': 'chiew'}
 
 
+def ensure_en_orig(dgroup):
+    if not hasattr(dgroup, 'energy_orig'):
+        dgroup.energy_orig = dgroup.energy[:]
+
+def ensure_dmude(dgroup):
+    ensure_en_orig(dgroup)
+    if not hasattr(dgroup, 'dmude'):
+        dgroup.dmude = np.gradient(dgroup.mu)/np.gradient(dgroup.energy)
+
+
+def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
+                  callback=None, relative_e0=False, **kws):
+    """create FloatSpin with Pin button for onSelPoint"""
+    if with_pin and xasmain is not None:
+        pin_action = partial(xasmain.onSelPoint, opt=name,
+                             relative_e0=relative_e0,
+                             callback=callback)
+        fspin, pinb = FloatSpinWithPin(panel, value=value,
+                                       pin_action=pin_action, **kws)
+    else:
+        fspin = FloatSpin(panel, value=value, **kws)
+        pinb = None
+    return fspin, pinb
+
+
 class OverAbsorptionDialog(wx.Dialog):
     """dialog for correcting over-absorption"""
     def __init__(self, parent, controller, **kws):
@@ -207,8 +232,8 @@ class EnergyCalibrateDialog(wx.Dialog):
         self.dgroup = self.controller.get_group()
         groupnames = list(self.controller.file_groups.keys())
 
-        if not hasattr(self.dgroup, 'energy_orig'):
-            self.dgroup.energy_orig = self.dgroup.energy[:]
+        ensure_en_orig(self.dgroup)
+
         self.data = [self.dgroup.energy_orig[:], self.dgroup.norm[:]]
         xmin = min(self.dgroup.energy_orig)
         xmax = max(self.dgroup.energy_orig)
@@ -233,13 +258,15 @@ class EnergyCalibrateDialog(wx.Dialog):
         opts  = dict(size=(90, -1), digits=3, increment=0.1)
         for wname in ('e0_old', 'e0_new'):
             opts['action'] = partial(self.on_calib, name=wname)
-            opts['pin_action'] = partial(self.on_select, name=wname)
-            fspin, bmbtn = FloatSpinWithPin(panel, value=e0val, **opts)
+            pin_callback = partial(self.on_pinvalue, opt=wname)
+
+            fspin, pinbtn = add_floatspin(wname, e0val, panel,
+                                          with_pin=True, xasmain=self.parent,
+                                          callback=pin_callback, **opts)
             wids[wname] = fspin
-            wids[wname+'btn'] = bmbtn
+            wids[wname+'_pin'] = pinbtn
 
         opts['action'] = partial(self.on_calib, name='eshift')
-        opts.pop('pin_action')
         wids['eshift'] = FloatSpin(panel, value=0, **opts)
 
         self.plottype = Choice(panel, choices=list(Plot_Choices.keys()),
@@ -281,16 +308,16 @@ overwriting current arrays''')
 
         add_text(' Energy Reference (E0): ')
         panel.Add(wids['e0_old'])
-        panel.Add(wids['e0_oldbtn'])
+        panel.Add(wids['e0_old_pin'])
         add_text(' eV', newrow=False)
 
         add_text(' Calibrate to: ')
         panel.Add(wids['e0_new'])
-        panel.Add(wids['e0_newbtn'])
+        panel.Add(wids['e0_new_pin'])
         add_text(' eV', newrow=False)
 
         add_text(' Energy Shift : ')
-        panel.Add(wids['eshift'], dcol=2)
+        panel.Add(wids['eshift'])
         add_text(' eV', newrow=False)
         panel.Add(HLine(panel, size=(500, 3)), dcol=4, newrow=True)
         panel.Add(apply_one, newrow=True)
@@ -311,6 +338,10 @@ overwriting current arrays''')
 
     def onDone(self, event=None):
         self.Destroy()
+
+    def on_pinvalue(self, opt='__', xsel=None, relative_e0=False, **kws):
+        if xsel is not None and opt in self.wids:
+            self.wids[opt].SetValue(xsel)
 
     def on_select(self, event=None, opt=None):
         _x, _y = self.controller.get_cursor()
@@ -365,17 +396,13 @@ overwriting current arrays''')
     def on_align(self, event=None, name=None, value=None):
         ref = self.controller.get_group(self.wids['reflist'].GetStringSelection())
         dat = self.dgroup
-        if not hasattr(dat, 'energy_orig'):
-            dat.energy_orig = dat.energy[:]
-        if not hasattr(ref, 'energy_orig'):
-            ref.energy_orig = ref.energy[:]
+        ensure_en_orig(dat)
+        ensure_en_orig(ref)
+        ensure_dmude(dat)
+        ensure_dmude(ref)
+
         dat.xdat = dat.energy_orig[:]
         ref.xdat = ref.energy_orig[:]
-
-        if not hasattr(ref, 'dmude'):
-            ref.dmude = np.gradient(ref.mu)/np.gradient(ref.energy_orig)
-        if not hasattr(dat, 'dmude'):
-            dat.dmude = np.gradient(dat.mu)/np.gradient(dat.energy_orig)
 
         i1 = index_of(ref.energy_orig, ref.e0-15)
         i2 = index_of(ref.energy_orig, ref.e0+35)
@@ -396,6 +423,7 @@ overwriting current arrays''')
         self.wids['eshift'].SetValue(eshift)
         self.wids['e0_new'].SetValue(dat.e0 + eshift)
 
+        ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
@@ -413,6 +441,7 @@ overwriting current arrays''')
             e0_new = e0_old + eshift
             wids['e0_new'].SetValue(e0_new)
 
+        ensure_en_orig(self.dgroup)
         xnew = self.dgroup.energy_orig + eshift
         self.data = xnew, self.dgroup.norm[:]
         self.plot_results()
@@ -422,8 +451,7 @@ overwriting current arrays''')
         dgroup = self.dgroup
         eshift = self.wids['eshift'].GetValue()
 
-        if not hasattr(dgroup, 'energy_orig'):
-            dgroup.energy_orig = dgroup.energy[:]
+        ensure_en_orig(dgroup)
 
         idx, norm_page = self.parent.get_nbpage('norm')
         norm_page.wids['energy_shift'].SetValue(eshift)
@@ -439,9 +467,7 @@ overwriting current arrays''')
         for checked in self.controller.filelist.GetCheckedStrings():
             fname  = self.controller.file_groups[str(checked)]
             dgroup = self.controller.get_group(fname)
-            if not hasattr(dgroup, 'energy_orig'):
-                dgroup.energy_orig = dgroup.energy[:]
-
+            ensure_en_orig(dgroup)
             dgroup.energy_shift = eshift
             norm_page.wids['energy_shift'].SetValue(eshift)
 
@@ -455,8 +481,7 @@ overwriting current arrays''')
         new_fname = wids['save_as_name'].GetValue()
         ngroup = self.controller.copy_group(fname, new_filename=new_fname)
 
-        if not hasattr(ngroup, 'energy_orig'):
-            ngroup.energy_orig = ngroup.energy[:]
+        ensure_en_orig(ngroup)
 
         ngroup.energy_shift = eshift
         ngroup.xdat = ngroup.energy = eshift + ngroup.energy_orig[:]
@@ -560,8 +585,8 @@ class RebinDataDialog(wx.Dialog):
         wids['exafs1'] = FloatCtrl(panel, value=etok(15),  **opts)
         wids['exafs2'] = FloatCtrl(panel, value=etok(xmax-e0val), **opts)
 
-        wids['pre_step'] = FloatCtrl(panel, value=5.0,  **opts)
-        wids['xanes_step'] = FloatCtrl(panel, value=0.25,  **opts)
+        wids['pre_step'] = FloatCtrl(panel, value=2.0,  **opts)
+        wids['xanes_step'] = FloatCtrl(panel, value=0.1,  **opts)
         wids['exafs_step'] = FloatCtrl(panel, value=0.05,  **opts)
 
         for wname, wid in wids.items():
@@ -1058,17 +1083,6 @@ class DeglitchDialog(wx.Dialog):
         wids['grouplist'].SetStringSelection(self.dgroup.filename)
         SetTip(wids['grouplist'], 'select a new group, clear undo history')
 
-        bb_xlast = BitmapButton(panel, get_icon('pin'),
-                                action=partial(self.on_select, opt='x'),
-                                tooltip='use last point selected from plot')
-
-        bb_range1 = BitmapButton(panel, get_icon('pin'),
-                                action=partial(self.on_select, opt='range1'),
-                                tooltip='use last point selected from plot')
-        bb_range2 = BitmapButton(panel, get_icon('pin'),
-                                action=partial(self.on_select, opt='range2'),
-                                tooltip='use last point selected from plot')
-
         br_xlast = Button(panel, 'Remove point', size=(125, -1),
                           action=partial(self.on_remove, opt='x'))
 
@@ -1091,11 +1105,15 @@ clear undo history''')
 
         self.history_message = SimpleText(panel, '')
 
-        floatopts = dict(precision=2, minval=xmin, maxval=xmax, size=(125, -1))
-
-        wids['xlast'] = FloatCtrl(panel, value=lastx, **floatopts)
-        wids['range1'] = FloatCtrl(panel, value=lastx, **floatopts)
-        wids['range2'] = FloatCtrl(panel, value=lastx+1, **floatopts)
+        opts  = dict(size=(125, -1), digits=2, increment=0.1, action=None)
+        for wname in ('xlast', 'range1', 'range2'):
+            if wname == 'range2': lastx += 1
+            pin_callback = partial(self.on_pinvalue, opt=wname)
+            fspin, pinbtn = add_floatspin(wname, lastx, panel,
+                                          with_pin=True, xasmain=self.parent,
+                                          callback=pin_callback, **opts)
+            wids[wname] = fspin
+            wids[wname+'_pin'] = pinbtn
 
         self.choice_range = Choice(panel, choices=('above', 'below', 'between'),
                                     size=(90, -1), action=self.on_rangechoice)
@@ -1112,7 +1130,7 @@ clear undo history''')
 
         add_text('Single Energy : ', dcol=2)
         panel.Add(wids['xlast'])
-        panel.Add(bb_xlast)
+        panel.Add(wids['xlast_pin'])
         panel.Add(br_xlast)
 
         add_text('Plot Data as:  ', dcol=2)
@@ -1121,12 +1139,12 @@ clear undo history''')
         add_text('Energy Range : ')
         panel.Add(self.choice_range)
         panel.Add(wids['range1'])
-        panel.Add(bb_range1)
+        panel.Add(wids['range1_pin'])
         panel.Add(br_range)
 
         panel.Add((10, 10), dcol=2, newrow=True)
         panel.Add(wids['range2'])
-        panel.Add(bb_range2)
+        panel.Add(wids['range2_pin'])
 
         panel.Add(wids['apply'], dcol=2, newrow=True)
         panel.Add(self.history_message, dcol=2)
@@ -1150,6 +1168,7 @@ clear undo history''')
         xmask = self.xmasks[-1]
         ngroup.energy = ngroup.xdat = xdat[xmask]
         ngroup.mu     = ngroup.ydat = ydat[xmask]
+        ngroup.energy_orig = 1.0*ngroup.energy
         self.parent.onNewGroup(ngroup)
         self.parent.process_normalization(ngroup, force=True)
         self.parent.process_exafs(ngroup, force=True)
@@ -1198,14 +1217,9 @@ clear undo history''')
         self.data = self.get_xydata(datatype=plottype)
         self.plot_results()
 
-    def on_select(self, event=None, opt=None):
-        _x, _y = self.controller.get_cursor()
-        if opt == 'x':
-            self.wids['xlast'].SetValue(_x)
-        elif opt == 'range1':
-            self.wids['range1'].SetValue(_x)
-        elif opt == 'range2':
-            self.wids['range2'].SetValue(_x)
+    def on_pinvalue(self, opt='__', xsel=None, **kws):
+        if xsel is not None and opt in self.wids:
+            self.wids[opt].SetValue(xsel)
 
     def on_remove(self, event=None, opt=None):
         xwork, ywork = self.data

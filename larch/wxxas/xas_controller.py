@@ -7,7 +7,60 @@ from larch.larchlib import read_config, save_config
 from larch.utils import group2dict, unique_name, fix_varname, get_cwd
 from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
-PLOTWIN_SIZE = (550, 550)
+from larch.site_config import home_dir
+
+
+XASCONF = {'chdir_on_fileopen': True,
+
+
+           'exafs_config': {'bkg_clamphi': 1, 'bkg_clamplo': 0,
+                            'bkg_kmax': None, 'bkg_kmin': 0,
+                            'bkg_kweight': 2, 'e0': -1.0, 'fft_dk': 4,
+                            'fft_dr': 0.25, 'fft_kmax': None,
+                            'fft_kmin': 2.5, 'fft_kweight': 2,
+                            'fft_kwindow': 'Kaiser-Bessel', 'fft_rmax': 6,
+                            'fft_rmin': 1, 'fft_rwindow': 'Hanning',
+                            'rbkg': 1},
+
+           'feffit_config': {'dk': 4, 'fitspace': 'r', 'kmax': None,
+                             'kmin': 2, 'kwindow': 'Kaiser-Bessel',
+                             'kwstring': '2', 'rmax': 4, 'rmin': 1},
+
+           'lincombo_config': {'all_combos': True, 'ehi': 99999,
+                               'ehi_rel': 110, 'elo': -99999,
+                               'elo_rel': -40,
+                               'fitspace': 'Normalized μ(E)',
+                               'show_e0': False, 'show_fitrange': True,
+                               'sum_to_one': True, 'vary_e0': False},
+
+           'pca_config': {'fitspace': 'Normalized μ(E)',
+                          'max_components': 50, 'weight_auto': True,
+                          'weight_min': 0.002, 'xmax': 99999, 'xmin': -99999},
+
+           'pin_config': {'min_time': 2.0, 'style': 'pin_first', 'timeout': 15.0},
+
+           'plot_config': {'height': 550, 'theme': 'light', 'width': 600},
+
+           'prepeaks_config': {'e': None, 'ehi': -5, 'elo': -10, 'emax': 0,
+                               'emin': -40, 'yarray': 'norm'},
+
+           'regression_config': {'alpha': 0.01, 'cv_folds': None,
+                                 'cv_repeats': 3, 'fit_intercept': True,
+                                 'fitspace': 'Normalized μ(E)', 'scale': True,
+                                 'use_lars': True, 'varname': 'valence',
+                                 'xmax': 99999, 'xmin': -99999},
+
+           'workdir': '/Users/Newville/Codes/xraylarch',
+
+           'xasnorm_config': {'atsym': '?', 'auto_e0': True, 'auto_step': True,
+                              'e0': 0, 'edge': 'K', 'edge_step': None,
+                              'energy_ref': None, 'energy_shift': 0,
+                              'nnorm': None, 'norm1': None, 'norm2': None,
+                              'norm_method': 'polynomial', 'nvict': 0,
+                              'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True}
+
+           }
+
 
 class XASController():
     """
@@ -27,46 +80,41 @@ class XASController():
         self.groupname = None
         self.plot_erange = None
         self.report_frame = None
+        self.conf_group = self.larch.symtable._sys.xas_viewer
 
-    def init_larch(self):
-        _larch = self.larch
-        old_config = read_config(self.config_file)
-
-        config = self.make_default_config()
-        for sname in config:
-            if old_config is not None and sname in old_config:
-                val = old_config[sname]
-                if isinstance(val, dict):
-                    config[sname].update(val)
-                else:
-                    config[sname] = val
+        config = {}
+        config.update(XASCONF)
+        user_config = read_config(self.config_file)
+        if user_config is not None:
+            for sname in config:
+                if sname in user_config:
+                    val = user_config[sname]
+                    if isinstance(val, dict):
+                        config[sname].update(val)
+                    else:
+                        config[sname] = val
 
         for key, value in config.items():
-            setattr(self.larch.symtable._sys.xas_viewer, key, value)
+            setattr(self.conf_group, key, value)
         try:
             os.chdir(config['workdir'])
         except:
             pass
+        self.set_workdir()
 
-    def make_default_config(self):
-        """ default config, probably called on first run of program"""
-        config = {'chdir_on_fileopen': True,
-                  'workdir': get_cwd()}
-        return config
 
     def get_config(self, key, default=None):
         "get configuration setting"
-        confgroup = self.larch.symtable._sys.xas_viewer
-        return getattr(confgroup, key, default)
+        return getattr(self.conf_group, key, default)
 
     def save_config(self):
         """save configuration"""
-        conf = group2dict(self.larch.symtable._sys.xas_viewer)
+        conf = group2dict(self.conf_group)
         conf.pop('__name__')
         save_config(self.config_file, conf)
 
     def set_workdir(self):
-        self.larch.symtable._sys.xas_viewer.workdir=get_cwd()
+        self.conf_group.workdir = get_cwd()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
@@ -78,15 +126,15 @@ class XASController():
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
-        # if stacked:
-        #     win = 2
-        #    wintitle='Larch XAS Plot Window'
+
+        conf = self.get_config('plot_config')
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
-                    size=PLOTWIN_SIZE)
+                    size=(conf['width'], conf['height']), theme=conf['theme'])
         out = self.symtable._plotter.get_display(**opts)
         if win > 1:
             p1 = getattr(self.symtable._plotter, 'plot1', None)
             if p1 is not None:
+                p1.SetSize((conf['width'], conf['height']))
                 try:
                     siz = p1.GetSize()
                     pos = p1.GetPosition()

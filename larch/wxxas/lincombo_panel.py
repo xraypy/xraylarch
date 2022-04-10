@@ -43,9 +43,6 @@ Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-defaults = dict(elo=-5.e5, ehi=5.e5, elo_rel=-40, ehi_rel=110,
-                fitspace=norm, all_combos=True, sum_to_one=True,
-                vary_e0=False, show_e0=False, show_fitrange=True)
 
 MAX_COMPONENTS = 20
 
@@ -598,7 +595,7 @@ class LinearComboPanel(TaskPanel):
         TaskPanel.__init__(self, parent, controller,
                            configname='lincombo_config',
                            title='Linear Combination Analysis',
-                           config=defaults, **kws)
+                           **kws)
 
     def process(self, dgroup, **kws):
         """ handle linear combo processing"""
@@ -618,6 +615,7 @@ class LinearComboPanel(TaskPanel):
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0, relative_e0=False) # True)
+        defaults = self.get_defaultconfig()
 
         elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
         ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)

@@ -16,7 +16,6 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
                          FileOpen, FONTSIZE)
 
-from larch.wxlib.plotter import _getDisplay
 from larch.utils import group2dict
 
 LEFT = wx.ALIGN_LEFT
@@ -129,7 +128,7 @@ class TaskPanel(wx.Panel):
     meant to be subclassed
     """
     def __init__(self, parent, controller, xasmain=None, title='Generic Panel',
-                 configname='task_config', config=None, **kws):
+                 configname=None,  **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.xasmain = xasmain or parent
@@ -137,12 +136,8 @@ class TaskPanel(wx.Panel):
         self.larch = controller.larch
         self.title = title
         self.configname = configname
-        if config is not None:
-            self.set_defaultconfig(config)
+
         self.wids = {}
-        self.timers = {'pin': wx.Timer(self)}
-        self.Bind(wx.EVT_TIMER, self.onPinTimer, self.timers['pin'])
-        self.cursor_dat = {}
         self.subframes = {}
         self.command_hist = []
         self.SetFont(Font(FONTSIZE))
@@ -213,14 +208,14 @@ class TaskPanel(wx.Panel):
 
     def set_defaultconfig(self, config):
         """set the default configuration for this session"""
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        setattr(conf, self.configname, {key:val for key, val in config.items()})
+        if self.configname not in self.controller.conf_group:
+            self.controller.conf_group[self.configname] = {}
+        self.controller.conf_group[self.configname].update(config)
+
 
     def get_defaultconfig(self):
         """get the default configuration for this session"""
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        defconf = getattr(conf, self.configname, {})
-        return {key:val for key, val in defconf.items()}
+        return self.controller.get_config(self.configname)
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
@@ -277,23 +272,35 @@ class TaskPanel(wx.Panel):
         self.panel.Add(SimpleText(self.panel, text),
                        dcol=dcol, newrow=newrow)
 
-    def add_floatspin(self, name, value, with_pin=True, relative_e0=False,
-                      **kws):
+
+    def add_floatspin(self, name, value, with_pin=True,
+                      relative_e0=False, **kws):
         """create FloatSpin with Pin button for onSelPoint"""
         if with_pin:
-            pin_action = partial(self.onSelPoint, opt=name,
-                                 relative_e0=relative_e0)
-            fspin, bb = FloatSpinWithPin(self.panel, value=value,
-                                         pin_action=pin_action, **kws)
+            pin_action = partial(self.xasmain.onSelPoint, opt=name,
+                                 relative_e0=relative_e0,
+                                 callback=self.pin_callback)
+            fspin, pinb = FloatSpinWithPin(self.panel, value=value,
+                                           pin_action=pin_action, **kws)
         else:
             fspin = FloatSpin(self.panel, value=value, **kws)
-            bb = (1, 1)
+            pinb = None
 
         self.wids[name] = fspin
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(fspin)
-        sizer.Add(bb)
+        if pinb is not None:
+            sizer.Add(pinb)
         return sizer
+
+    def pin_callback(self, opt='__', xsel=None, relative_e0=False, **kws):
+        """called to do reprocessing after a point is selected as from Pin/Plot"""
+        if xsel is not None and opt in self.wids:
+            if relative_e0 and 'e0' in self.wids:
+                xsel -= self.wids['e0'].GetValue()
+            self.wids[opt].SetValue(xsel)
+            wx.CallAfter(self.onProcess)
 
     def onPlot(self, evt=None):
         pass
@@ -306,88 +313,3 @@ class TaskPanel(wx.Panel):
 
     def onProcess(self, evt=None, **kws):
         pass
-                     
-    def onPinTimer(self, event=None):
-        if 'start' not in self.cursor_dat:
-            self.cursor_dat['xsel'] = None
-            self.onPinTimerComplete(reason="bad")
-           
-        curhist_name = self.cursor_dat['name']
-        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
-        if len(cursor_hist) > self.cursor_dat['nhist']: # got new data!
-            self.cursor_dat['xsel'] = cursor_hist[0][0]
-            self.cursor_dat['ysel'] = cursor_hist[0][1]
-            if time.time() > 3.0 + self.cursor_dat['start']:
-                self.timers['pin'].Stop()
-                self.onPinTimerComplete(reason="new")                
-        elif time.time() > 15.0 + self.cursor_dat['start']:
-            self.onPinTimerComplete(reason="timeout")
-
-        if 'win' in self.cursor_dat and 'xsel' in self.cursor_dat:
-            time_remaining = 15+self.cursor_dat['start']-time.time()
-            msg = 'Select Point from Plot #%d' % (self.cursor_dat['win'])
-            if self.cursor_dat['xsel'] is not None:
-                msg = '%s, [current value=%.1f]' % (msg, self.cursor_dat['xsel'])
-            msg = '%s, expiring in %.0f sec' % (msg, time_remaining)
-            self.write_message(msg)
-            
-    def onPinTimerComplete(self, reason=None, **kws):
-        self.timers['pin'].Stop()
-        if reason != "bad":
-            msg = 'Selected Point at %.1f' % self.cursor_dat['xsel']        
-            if reason == 'timeout':
-                msg = msg + '(timed-out)'
-            wx.CallAfter(self.write_message, msg)
-            
-            if self.cursor_dat['xsel'] is not None:
-                self.pin_callback(**self.cursor_dat)
-            time.sleep(0.05)
-        self.cursor_dat = {}
-        
-    def pin_callback(self, opt='__', xsel=None, relative_e0=False, **kws):
-        """
-        called to do reprocessing after a point is selected as from Pin / Plot
-        """
-        if xsel is None or opt not in self.wids:
-            return
-        if relative_e0 and 'e0' in self.wids:
-            xsel -= self.wids['e0'].GetValue()
-        self.wids[opt].SetValue(xsel)
-        time.sleep(0.01)
-        wx.CallAfter(self.onProcess)
-
-    def onSelPoint(self, evt=None, opt='__', relative_e0=True, win=None):    
-        """
-        get last selected point from a specified plot window
-        and fill in the value for the widget defined by `opt`.
-
-        start Pin Timer to get last selected point from a specified plot window
-        and fill in the value for the widget defined by `opt`.
-        """
-        if opt not in self.wids:
-            return None
-        if win is None:
-            win = 1
-        display = _getDisplay(win=win, _larch=self.larch)
-        display.Raise()
-        msg = 'Select Point from Plot #%d' % win
-        self.write_message(msg)
-
-        now = time.time()
-        curhist_name = 'plot%d_cursor_hist' % win
-        cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
-       
-        self.cursor_dat = dict(relative_e0=relative_e0, opt=opt,
-                               start=now, xsel=None, ysel=None,
-                               win=win, name=curhist_name,
-                               nhist=len(cursor_hist))
-
-        if len(cursor_hist) > 2:  # purge old cursor history
-            setattr(self.larch.symtable._plotter, curhist_name, cursor_hist[:2])
-            
-        if len(cursor_hist) > 0:
-            x, y, t = cursor_hist[0]
-            if now < (t + 30.0): # last cursor position was less than 30 seconds ago
-                self.cursor_dat['xsel'] = x
-                self.cursor_dat['ysel'] = y
-        self.timers['pin'].Start(500)

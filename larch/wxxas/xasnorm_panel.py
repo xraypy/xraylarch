@@ -75,10 +75,6 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
 Nnorm_choices = {None:'auto',  0:'constant', 1:'linear', 2:'quadratic', 3:'cubic'}
 Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
 
-defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
-                show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
-                norm_method='polynomial', edge='K', atsym='?',
-                nvict=0, nnorm=None, scale=1, energy_ref=None, energy_shift=0)
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -88,8 +84,7 @@ class XASNormPanel(TaskPanel):
     def __init__(self, parent, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='xasnorm_config',
-                           title='XAS Normalization',
-                           config=defaults, **kws)
+                           title='XAS Normalization', **kws)
 
     def build_display(self):
         panel = self.panel
@@ -141,6 +136,7 @@ class XASNormPanel(TaskPanel):
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges}
 
+        defaults = self.get_defaultconfig()
         xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], **opts)
         xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], **opts)
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], **opts)
@@ -302,16 +298,14 @@ class XASNormPanel(TaskPanel):
         conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
-        # xeref = getattr(dgroup, 'energy_ref', '?1')
-        # yeref = conf.get('energy_ref', '?2')
-        # print("GET CONFIG for ", dgroup.filename, ', energy_ref = (group) ', xeref, ' // (conf) ', yeref)
-
-        # conf['energy_ref'] = getattr(dgroup, 'energy_ref', conf['energy_ref'])
-
-        conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
+        xeref = getattr(dgroup, 'energy_ref', '')
+        conf['energy_ref'] = getattr(dgroup, 'energy_ref', dgroup.filename)
 
         if conf['energy_ref'] in (None, 'None'):
             conf['energy_ref'] = dgroup.filename
+
+
+        conf['energy_shift'] = getattr(dgroup,'energy_shift', conf['energy_shift'])
 
         if hasattr(dgroup, 'e0') and conf['atsym'] == '?':
             atsym, edge = guess_edge(dgroup.e0)
@@ -739,18 +733,29 @@ class XASNormPanel(TaskPanel):
                 dgroup.xdat = dgroup.energy = res.energy
         dgroup.energy_units = en_units
 
+        cmds = []
         # test whether the energy shift is 0 or is different from the current energy shift:
-        eshift_current = getattr(dgroup, 'energy_shift', -99999)
-        eshift = form.get('energy_shift', -99999)
-        e1 = getattr(dgroup, 'energy', -99999)
-        e2 = getattr(dgroup, 'energy_orig', e1)
-        ediff = (e1 - e2).min()
+        eshift_current = getattr(dgroup, 'energy_shift', 9e30)
+        eshift = form.get('energy_shift', 9e31)
+        e1 = getattr(dgroup, 'energy', [9e32])
+        e2 = getattr(dgroup, 'energy_orig', None)
+
+        if (not isinstance(e2, np.ndarray) or (len(e1) != len(e2))):
+            cmds.append("{group:s}.energy_orig = {group:s}.energy[:]")
+
+        ediff = 9e33
+        if (isinstance(e1, np.ndarray) and isinstance(e2, np.ndarray) and
+            len(e1) == len(e2)):
+            ediff = (e1-e2).min()
+
 
         if abs(eshift-ediff) > 1.e-5 or abs(eshift-eshift_current) > 1.e-5:
-            if not hasattr(dgroup, 'energy_orig'):
-                self.larch_eval("{group:s}.energy_orig = {group:s}.energy[:]".format(group=dgroup.groupname))
-            self.larch_eval("{group:s}.energy_shift = {eshift:.4f}".format(group=dgroup.groupname, eshift=eshift))
-            self.larch_eval("{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift".format(group=dgroup.groupname))
+            if abs(eshift) > 1e15: eshift = 0.0
+            cmds.extend(["{group:s}.energy_shift = {eshift:.4f}",
+                         "{group:s}.energy = {group:s}.xdat = {group:s}.energy_orig + {group:s}.energy_shift"])
+
+        if len(cmds) > 0:
+            self.larch_eval(('\n'.join(cmds)).format(group=dgroup.groupname, eshift=eshift))
 
         e0 = form['e0']
         edge_step = form['edge_step']
