@@ -80,11 +80,8 @@ class XASController():
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
-        # if stacked:
-        #     win = 2
-        #    wintitle='Larch XAS Plot Window'
-        conf = self.get_config('plot_config')
 
+        conf = self.get_config('plot_config')
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
                     size=(conf['width'], conf['height']), theme=conf['theme'])
         out = self.symtable._plotter.get_display(**opts)
@@ -94,7 +91,6 @@ class XASController():
                 p1.SetSize((conf['width'], conf['height']))
                 try:
                     siz = p1.GetSize()
-                    print
                     pos = p1.GetPosition()
                     pos[0] += int(siz[0]/4)
                     pos[1] += int(siz[1]/4)
