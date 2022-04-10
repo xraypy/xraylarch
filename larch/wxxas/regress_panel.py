@@ -26,6 +26,7 @@ from .taskpanel import TaskPanel, DataTableGrid
 
 # plot options:
 norm   = 'Normalized \u03bC(E)'
+flatmu = 'Flattened \u03bC(E)'
 dmude  = 'd\u03bC(E)/dE'
 chik   = '\u03c7(k)'
 noplot = '<no plot>'
@@ -34,7 +35,7 @@ noname = '<none>'
 CSV_WILDCARDS = "CSV Files(*.csv,*.dat)|*.csv*;*.dat|All files (*.*)|*.*"
 MODEL_WILDCARDS = "Regression Model Files(*.regmod,*.dat)|*.regmod*;*.dat|All files (*.*)|*.*"
 
-FitSpace_Choices = [norm, dmude, chik]
+FitSpace_Choices = [norm, dmude, flatmu, chik]
 Plot_Choices = ['Mean Spectrum + Active Energies',
                 'Spectra Stack',
                 'Predicted External Varliable']
@@ -287,6 +288,8 @@ class RegressionPanel(TaskPanel):
         arrname = 'norm'
         if opts['fitspace'] == dmude:
             arrname = 'dmude'
+        elif opts['fitspace'] == flat:
+            arrname = 'flato'
         elif opts['fitspace'] == chik:
             arrname = 'chi'
         copts.append("arrayname='%s'" % arrname)
