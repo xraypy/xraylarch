@@ -155,7 +155,6 @@ class XASFrame(wx.Frame):
             if version_info.update_available:
                 self.onCheckforUpdates()
 
-        self.controller.init_larch()
         plotframe = self.controller.get_display(stacked=False)
         xpos, ypos = self.GetPosition()
         xsiz, ysiz = self.GetSize()
@@ -245,9 +244,6 @@ class XASFrame(wx.Frame):
 
     def onSelNone(self, event=None):
         self.controller.filelist.select_none()
-
-    def init_larch(self, filename=None):
-        self.controller.init_larch()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""

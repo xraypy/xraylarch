@@ -75,10 +75,6 @@ PlotSel_Choices_nonxas = {'Raw Data': 'mu',
 Nnorm_choices = {None:'auto',  0:'constant', 1:'linear', 2:'quadratic', 3:'cubic'}
 Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
 
-defaults = dict(e0=0, edge_step=None, auto_step=True, auto_e0=True,
-                show_e0=True, pre1=None, pre2=None, norm1=None, norm2=None,
-                norm_method='polynomial', edge='K', atsym='?',
-                nvict=0, nnorm=None, scale=1, energy_ref=None, energy_shift=0)
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -88,8 +84,7 @@ class XASNormPanel(TaskPanel):
     def __init__(self, parent, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='xasnorm_config',
-                           title='XAS Normalization',
-                           config=defaults, **kws)
+                           title='XAS Normalization', **kws)
 
     def build_display(self):
         panel = self.panel
@@ -141,6 +136,7 @@ class XASNormPanel(TaskPanel):
         opts = {'size': (100, -1), 'digits': 2, 'increment': 5.0,
                 'action': self.onSet_Ranges}
 
+        defaults = self.get_defaultconfig()
         xas_pre1 = self.add_floatspin('pre1', value=defaults['pre1'], **opts)
         xas_pre2 = self.add_floatspin('pre2', value=defaults['pre2'], **opts)
         xas_norm1 = self.add_floatspin('norm1', value=defaults['norm1'], **opts)

@@ -41,10 +41,6 @@ Plot_Choices = ['Mean Spectrum + Active Energies',
 
 Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
-defaults = dict(fitspace=norm, varname='valence', xmin=-5.e5, xmax=5.e5,
-                scale=True, cv_folds=None, cv_repeats=3, fit_intercept=True,
-                use_lars=True, alpha=0.01)
-
 MAX_ROWS = 1000
 
 def make_steps(max=1, decades=8):
@@ -57,7 +53,7 @@ class RegressionPanel(TaskPanel):
     """Regression Panel"""
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
-                           configname='regression_config', config=defaults,
+                           configname='regression_config',
                            title='Regression and Feature Selection', **kws)
         self.result = None
         self.save_csvfile   = 'RegressionData.csv'
@@ -86,6 +82,7 @@ class RegressionPanel(TaskPanel):
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0)
+        defaults = self.get_defaultconfig()
 
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)

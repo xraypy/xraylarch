@@ -148,9 +148,6 @@ for label, path in {paths_name:s}.items():
 """
 
 
-
-default_config = dict(fitspace='r', kwstring='2', kmin=2, kmax=None, dk=4, kwindow=FTWINDOWS[0], rmin=1, rmax=4)
-
 class ParametersModel(dv.DataViewIndexListModel):
     def __init__(self, paramgroup, selected=None, pathkeys=None):
         dv.DataViewIndexListModel.__init__(self, 0)
@@ -684,7 +681,6 @@ class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='feffit_config',
-                           config=default_config,
                            title='Feff Fitting of EXAFS Paths', **kws)
         self.paths_data = {}
 

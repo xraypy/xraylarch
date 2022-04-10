@@ -72,20 +72,13 @@ xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
       dr={fft_dr: .3f}, window='{fft_rwindow:s}')"""
 
 
-defaults = dict(e0=-1.0, rbkg=1, bkg_kmin=0, bkg_kmax=None, bkg_clamplo=0,
-                bkg_clamphi=1, bkg_kweight=2, fft_kmin=2.5, fft_kmax=None,
-                fft_dk=4, fft_kweight=2, fft_kwindow='Kaiser-Bessel',
-                fft_rmin=1, fft_rmax=6, fft_dr=0.25,
-                fft_rwindow='Hanning')
-
-
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='exafs_config',
                            title='EXAFS Background Subtraction and Fourier Transforms',
-                           config=defaults, **kws)
+                           **kws)
         self.skip_process = False
         self.last_plot = 'one'
         self.last_process_bkg = {}

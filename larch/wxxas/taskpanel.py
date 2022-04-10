@@ -128,7 +128,7 @@ class TaskPanel(wx.Panel):
     meant to be subclassed
     """
     def __init__(self, parent, controller, xasmain=None, title='Generic Panel',
-                 configname='task_config', config=None, **kws):
+                 configname=None,  **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.xasmain = xasmain or parent
@@ -136,8 +136,7 @@ class TaskPanel(wx.Panel):
         self.larch = controller.larch
         self.title = title
         self.configname = configname
-        if config is not None:
-            self.set_defaultconfig(config)
+
         self.wids = {}
         self.subframes = {}
         self.command_hist = []
@@ -209,14 +208,14 @@ class TaskPanel(wx.Panel):
 
     def set_defaultconfig(self, config):
         """set the default configuration for this session"""
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        setattr(conf, self.configname, {key:val for key, val in config.items()})
+        if self.configname not in self.controller.conf_group:
+            self.controller.conf_group[self.configname] = {}
+        self.controller.conf_group[self.configname].update(config)
+
 
     def get_defaultconfig(self):
         """get the default configuration for this session"""
-        conf = self.controller.larch.symtable._sys.xas_viewer
-        defconf = getattr(conf, self.configname, {})
-        return {key:val for key, val in defconf.items()}
+        return self.controller.get_config(self.configname)
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""

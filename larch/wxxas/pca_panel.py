@@ -36,7 +36,6 @@ noplot = '<no plot>'
 noname = '<none>'
 
 
-
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 
@@ -48,9 +47,6 @@ FitSpace_Choices = list(FITSPACES.keys())
 Plot_Choices = ['PCA Components', 'Component Weights', 'Data + Fit',
                 'Data + Fit + Components']
 
-defaults = dict(xmin=-5.e5, xmax=5.e5, fitspace=norm, weight_min=0.002,
-                weight_auto=True, max_components=50)
-
 # max number of *reported* PCA weights after fit
 MAX_ROWS = 50
 
@@ -60,7 +56,6 @@ class PCAPanel(TaskPanel):
     def __init__(self, parent, controller, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='pca_config',
-                           config=defaults,
                            title='Principal Component Analysis',
                            **kws)
         self.result = None
@@ -85,7 +80,7 @@ class PCAPanel(TaskPanel):
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0)
-
+        defaults = self.get_defaultconfig()
         w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
         w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
 

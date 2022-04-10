@@ -138,8 +138,6 @@ peakresult.user_options = {user_opts:s}
 peakresult.label = 'Fit %i' % (1+len({group}.prepeaks.fit_history))
 {group}.prepeaks.fit_history.insert(0, peakresult)"""
 
-defaults = dict(e=None, elo=-10, ehi=-5, emin=-40, emax=0, yarray='norm')
-
 def get_xlims(x, xmin, xmax):
     xeps = min(np.diff(x))/ 5.
     i1 = index_of(x, xmin + xeps)
@@ -621,8 +619,7 @@ class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
         TaskPanel.__init__(self, parent, controller,
                            configname='prepeaks_config',
-                           title='Pre-edge Peak Analysis',
-                           config=defaults, **kws)
+                           title='Pre-edge Peak Analysis',**kws)
 
         self.fit_components = {}
         self.user_added_params = None
@@ -775,7 +772,7 @@ class PrePeakPanel(TaskPanel):
 
         conf = getattr(dgroup, 'prepeak_config', {})
         if 'e0' not in conf:
-            conf = defaults
+            conf = self.controller.get_defaultcfonfig()
             conf['e0'] = getattr(dgroup, 'e0', -1)
 
         dgroup.prepeak_config = conf
