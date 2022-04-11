@@ -6,10 +6,26 @@ import json
 import io
 import numpy as np
 import h5py
-from .. import isgroup, Group
+
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
+from lmfit.parameter import SCIPY_FUNCTIONS
+
+from larch import Group, isgroup
+from larch.fitting import  isParameter, ParameterGroup
+from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
+from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+
+
+LarchGroupTypes = {'Group': Group,
+                   'ParameterGroup': ParameterGroup,
+                   'FeffitDataSet': FeffitDataSet,
+                   'FeffDatFile':  FeffDatFile,
+                   'FeffPathGroup': FeffPathGroup,
+                   'TransformGroup': TransformGroup,
+                   'MinimizerResult': MinimizerResult
+                   }
 
 def encode4js(obj):
     """return an object ready for json encoding.
@@ -127,6 +143,9 @@ def decode4js(obj):
     """
     if not isinstance(obj, dict):
         return obj
+
+
+
     out = obj
     classname = obj.pop('__class__', None)
     if classname is None:
@@ -175,7 +194,7 @@ def decode4js(obj):
         out = Parameter(name)
         out.__setstate__(state)
 
-    elif classname in ('Group', 'group'):
+    elif classname in LarchGroupTypes:
         out = {}
         for key, val in obj.items():
             if (isinstance(val, dict) and
@@ -184,9 +203,12 @@ def decode4js(obj):
                 pass  # ignore class methods for subclassed Groups
             else:
                 out[key] = decode4js(val)
-        out = Group(**out)
+        out = LarchGroupTypes[classname](**out)
+    elif classname == 'Method':
+        mname = obj.get('__name__', '')
+        if 'ufunc' in mname:
+            mname = mname.replace('<ufunc', '').replace('>', '').replace("'","").strip()
+        out = SCIPY_FUNCTIONS.get(mname, None)
     else:
-        print("May not decode ", classname)
-
-
+        print("cannot decode ", classname)
     return out
