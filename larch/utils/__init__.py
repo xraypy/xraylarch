@@ -9,13 +9,12 @@ import json
 from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
 from .debugtime import debugtime, debugtimer
 
-from .strutils import (fixName, isValidName, isNumber, bytes2str,
+from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
                        fix_varname, isLiteralStr, strip_comments,
                        find_delims, version_ge, unique_name)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
-
 
 def group2dict(group, _larch=None):
     "return dictionary of group members"
