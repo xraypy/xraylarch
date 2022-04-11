@@ -341,8 +341,10 @@ class FeffResultsFrame(wx.Frame):
         self.larch = _larch
         if _larch is None:
             self.larch = larch.Interpreter()
-        self.larch.eval("# started Feff results browser\n")
-        self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
+        # self.larch.eval("# started Feff results browser\n")
+        # self.larch.eval("if not hasattr('_sys', '_feffruns'): _sys._feffruns = {}")
+        if not hasattr(self.larch.symtable._sys, '_feffruns'):
+            self.larch.symtable._sys._feffruns = {}
         self.parent = parent
         path_importer = None
         if parent is not None:
@@ -439,13 +441,14 @@ class FeffResultsFrame(wx.Frame):
         self.larch.eval("## gathering results:\n")
         flist = os.listdir(self.feff_folder)
         flist = sorted(flist, key=lambda t: -os.stat(unixpath(os.path.join(self.feff_folder, t))).st_mtime)
-
+        _feffruns = self.larch.symtable._sys._feffruns
         for path in flist:
             fullpath = unixpath(os.path.join(self.feff_folder, path))
             if os.path.isdir(fullpath):
                 try:
-                    self.larch.eval(f"_sys._feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
-                    thisrun = self.larch.symtable._sys._feffruns[path]
+                    _feffruns[path] = thisrun = get_feff_pathinfo(fullpath)
+                    # self.larch.eval(f"_sys._feffruns['{path:s}'] = get_feff_pathinfo('{fullpath:s}')")
+                    # thisrun = self.larch.symtable._sys._feffruns[path]
                     if ((len(thisrun.paths) < 1) or
                         (len(thisrun.ipots) < 1) or thisrun.edge is None):
 
