@@ -7,10 +7,21 @@ from gzip import GzipFile
 
 from collections import OrderedDict
 
-from larch import Group, __date__, __version__, __release_version__
-from ..fitting import Parameter, isParameter
+from lmfit import Parameter, Parameters
+from lmfit.model import Model, ModelResult
+from lmfit.minimizer import Minimizer, MinimizerResult
+
+from larch import Group, isgroup
+from ..fitting import isParameter
 from ..utils.jsonutils import encode4js, decode4js
 from ..utils.strutils import bytes2str, str2bytes, fix_varname
+
+def is_gzip(filename):
+    "is a file gzipped?"
+    with open(filename, 'rb') as fh:
+        return fh.read(3) == b'\x1f\x8b\x08'
+    return False
+
 
 def get_machineid():
     "machine id / MAC address, independent of hostname"
@@ -77,23 +88,20 @@ def save_session(fname=None, _larch=None):
         if attr in core_groups:
             continue
         syms.append(attr)
-    buff.append("##<Symbols:  count=%d>"  % len(syms))
+    buff.append("##<Symbols: count=%d>"  % len(syms))
 
     for attr in dir(symtab):
         if attr in core_groups:
             continue
         buff.append('<:%s:>' % attr)
-        buff.append('%s' % encode4js(getattr(symtab, attr)))
+        buff.append('%s' % json.dumps(encode4js(getattr(symtab, attr))))
 
     buff.append("##</Symbols>")
     buff.append("")
 
-
-    print("Saved session to ", fname)
     fh = GzipFile(fname, "w")
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
-
 
 def load_session(fname, _larch=None):
     """load all data from a Larch Save File
@@ -108,39 +116,58 @@ def load_session(fname, _larch=None):
 
     """
 
-    datalines = open(fname, 'r').readlines()
-    line1 = datalines.pop(0)
-    if not line1.startswith("#Larch Save File:"):
-        raise ValueError("%s is not a valid Larch save file" % fname)
-    version_string = line1.split(':')[1].strip()
-    version_info = [s for s in version_string.split('.')]
+    fopen = GzipFile if is_gzip(fname) else open
+    with fopen(fname, 'rb') as fh:
+        text = fh.read().decode('utf-8')
 
-    ivar = 0
-    header = {'version': version_info}
-    varnames = []
-    gname = fix_varname('restore_%s' % fname)
-    out = Group(name=gname)
-    for line in datalines:
-        line = line[:-1]
-        if line.startswith('#save.'):
-            key, value = line[6:].split(':', 1)
-            value = value.strip()
-            if key == 'nitems': value = int(value)
-            header[key] = value
-        elif line.startswith('#=>'):
-            name = fix_varname(line[4:].strip())
-            ivar += 1
-            if name in (None, 'None', '__unknown__') or name in varnames:
-                name = 'var_%5.5i' % (ivar)
-            varnames.append(name)
-        else:
-            val = decode4js(json.loads(line), grouplist)
-            setattr(out, varnames[-1], val)
-    setattr(out, '_restore_metadata_', header)
+    lines = text.split('\n')
+    if not lines[0].startswith('##LARIX:'):
+        raise ValueError(f"Invalid Larch session file: '{fname:s}'")
 
-    if top_level:
-        _main = _larch.symtable
-        for objname in dir(out):
-            setattr(_main, objname, getattr(out, objname))
-        return
-    return out
+    version = lines[0].split()[1]
+
+    data = {'unknown':{}}
+    section = 'unknown'
+    cmd_history = []
+    nsyms = nsym_expected = 0
+    symname = '_unknown_'
+
+    for line in lines:
+        if line.startswith("##<"):
+            section = line.replace('##<','').replace('>', '').strip().lower()
+            options = ''
+            if ':' in section:
+                section, options = section.split(':', 1)
+                section = section.strip()
+                options = options.strip()
+            if section.startswith('/'):
+                section = 'unknown'
+            else:
+                if section == 'session commands' and len(options) > 0:
+                    nsyms_expected = int(options.replace('count=', ''))
+                if section not in data:
+                    data[section] = {}
+        elif section == 'config':
+            if line.startswith('##'): line = line[2:]
+            key, val = line.split(':', 1)
+            data[section][key] = val
+        elif section == 'session commands':
+            cmd_history.append(line)
+
+        elif section == 'symbols':
+            if line.startswith('<:') and line.endswith(':>'):
+                symname = line.replace('<:', '').replace(':>', '')
+            else:
+                data[section][symname] = decode4js(json.loads(line))
+
+    data['session commands'] = cmd_history
+
+    x = data.pop('unknown')
+    if len(x) > 0:
+        print("Warning: unknown data in Larch Session file")
+        print(x)
+
+    if _larch is not None:
+        for sym, val in data['symbols'].items():
+            setattr(_larch.symtable, key, val)
+    return data
