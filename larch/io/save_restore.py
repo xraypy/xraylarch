@@ -12,8 +12,8 @@ from lmfit import Parameter, Parameters
 # from lmfit.minimizer import Minimizer, MinimizerResult
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
+from ..utils import isotime, bytes2str, str2bytes, fix_varname
 from ..utils.jsonutils import encode4js, decode4js
-from ..utils.strutils import bytes2str, str2bytes, fix_varname
 
 def is_gzip(filename):
     "is a file gzipped?"
@@ -65,11 +65,11 @@ def save_session(fname=None, _larch=None):
             ]
 
     core_groups = symtab._sys.core_groups
-    buff.append('##Larch Core Groups: %s' % (repr(core_groups)))
+    buff.append('##Larch Core Groups: %s' % (json.dumps(core_groups)))
 
     config = symtab._sys.config
     for attr in dir(config):
-        buff.append('##Larch %s: %s' % (attr, repr(getattr(config, attr, None))))
+        buff.append('##Larch %s: %s' % (attr, json.dumps(getattr(config, attr, None))))
     buff.append("##</CONFIG>")
 
     try:
@@ -113,42 +113,33 @@ def load_session(fname, _larch=None):
     None
 
     """
+    if _larch is None:
+        raise ValueError('load session needs a larch session')
 
     fopen = GzipFile if is_gzip(fname) else open
     with fopen(fname, 'rb') as fh:
         text = fh.read().decode('utf-8')
 
     lines = text.split('\n')
-    if not lines[0].startswith('##LARIX:'):
+    line0 = lines.pop(0)
+    if not line0.startswith('##LARIX:'):
         raise ValueError(f"Invalid Larch session file: '{fname:s}'")
 
-    version = lines[0].split()[1]
+    version = line0.split()[1]
 
-    data = {'unknown':{}}
-    section = 'unknown'
+    symbols = {}
+    config = {'Larix Version': version}
     cmd_history = []
     nsyms = nsym_expected = 0
-    symname = '_unknown_'
+    section = symname = '_unknown_'
 
     for line in lines:
         if line.startswith("##<"):
             section = line.replace('##<','').replace('>', '').strip().lower()
-            options = ''
             if ':' in section:
                 section, options = section.split(':', 1)
-                section = section.strip()
-                options = options.strip()
             if section.startswith('/'):
-                section = 'unknown'
-            else:
-                if section == 'session commands' and len(options) > 0:
-                    nsyms_expected = int(options.replace('count=', ''))
-                if section not in data:
-                    data[section] = {}
-        elif section == 'config':
-            if line.startswith('##'): line = line[2:]
-            key, val = line.split(':', 1)
-            data[section][key] = val
+                section = '_unknown_'
         elif section == 'session commands':
             cmd_history.append(line)
 
@@ -156,16 +147,31 @@ def load_session(fname, _larch=None):
             if line.startswith('<:') and line.endswith(':>'):
                 symname = line.replace('<:', '').replace(':>', '')
             else:
-                data[section][symname] = decode4js(json.loads(line))
+                symbols[symname] = decode4js(json.loads(line))
+        else:
+            if line.startswith('##') and ':' in line:
+                line = line[2:]
+                key, val = line.split(':', 1)
+                key = key.strip()
+                val = val.strip()
+                if '[' in val or '{' in val:
+                    try:
+                        val = decode4js(json.loads(val))
+                    except:
+                        pass
+                config[key] = val
 
-    data['session commands'] = cmd_history
+    symtab = _larch.symtable
+    if not hasattr(symtab._sys, 'restored_sessions'):
+        symtab._sys.restored_sessions = {}
+    this = symtab._sys.restored_sessions[fname] = {}
+    this['date'] = isotime()
+    this['config'] = config
+    this['command_history'] = cmd_history
 
-    x = data.pop('unknown')
-    if len(x) > 0:
-        print("Warning: unknown data in Larch Session file")
-        print(x)
+    for sym, val in symbols.items():
+        if hasattr(symtab, sym):
+            print(f"Warning: overwriting '{sym:s}'")
+        setattr(symtab, sym, val)
 
-    if _larch is not None:
-        for sym, val in data['symbols'].items():
-            setattr(_larch.symtable, key, val)
-    return data
+    # return symbols, config, cmd_history
