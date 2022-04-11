@@ -8,11 +8,10 @@ from gzip import GzipFile
 from collections import OrderedDict
 
 from lmfit import Parameter, Parameters
-from lmfit.model import Model, ModelResult
-from lmfit.minimizer import Minimizer, MinimizerResult
+# from lmfit.model import Model, ModelResult
+# from lmfit.minimizer import Minimizer, MinimizerResult
 
-from larch import Group, isgroup
-from ..fitting import isParameter
+from larch import Group, isgroup, __date__, __version__, __release_version__
 from ..utils.jsonutils import encode4js, decode4js
 from ..utils.strutils import bytes2str, str2bytes, fix_varname
 
@@ -21,7 +20,6 @@ def is_gzip(filename):
     with open(filename, 'rb') as fh:
         return fh.read(3) == b'\x1f\x8b\x08'
     return False
-
 
 def get_machineid():
     "machine id / MAC address, independent of hostname"
