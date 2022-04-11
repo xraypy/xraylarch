@@ -186,7 +186,7 @@ def decode4js(obj):
             par = Parameter(decode4js(name))
             par.__setstate__(decode4js(parstate))
             state['params'].append(par)
-        out__setstate__(state)
+        out.__setstate__(state)
 
     elif classname in ('Parameter', 'parameter'):
         name = decode4js(obj['name'])
