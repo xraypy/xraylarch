@@ -586,7 +586,6 @@ class FeffPathPanel(wx.Panel):
         pack(self, sizer)
 
     def enable_editing(self):
-        print("enable path param edits for ", self.reff, self.user_label)
         for name in ('label', 'amp', 'e0', 'delr', 'sigma2', 'third', 'ei'):
             self.wids[name].Bind(wx.EVT_TEXT_ENTER, partial(self.onExpression, name=name))
             self.wids[name].Bind(wx.EVT_KILL_FOCUS, partial(self.onExpression, name=name))
