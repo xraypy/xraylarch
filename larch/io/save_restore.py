@@ -101,8 +101,8 @@ def save_session(fname=None, _larch=None):
     fh.write(str2bytes("\n".join(buff)))
     fh.close()
 
-def load_session(fname, _larch=None):
-    """load all data from a Larch Save File
+def read_session(fname):
+    """read Larch Save File, returning data
 
     Arguments
     ---------
@@ -110,12 +110,9 @@ def load_session(fname, _larch=None):
 
     Returns
     -------
-    None
+    symbols (dict), configuration (dict), command history (list)
 
     """
-    if _larch is None:
-        raise ValueError('load session needs a larch session')
-
     fopen = GzipFile if is_gzip(fname) else open
     with fopen(fname, 'rb') as fh:
         text = fh.read().decode('utf-8')
@@ -161,6 +158,29 @@ def load_session(fname, _larch=None):
                         pass
                 config[key] = val
 
+    return symbols, config, cmd_history
+
+
+def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
+                 subgroup=None):
+    """load all data from a Larch Save File into current larch session
+
+    Arguments
+    ---------
+    fname  (str)     name of save file
+    overwrite (bool) whether to overwrite existing symbols [True]
+
+    Returns
+    -------
+    None, puts data into current session
+
+    """
+
+    if _larch is None:
+        raise ValueError('load session needs a larch session')
+
+    symbols, config, cmd_history = read_session(fname)
+
     symtab = _larch.symtable
     if not hasattr(symtab._sys, 'restored_sessions'):
         symtab._sys.restored_sessions = {}
@@ -169,9 +189,13 @@ def load_session(fname, _larch=None):
     this['config'] = config
     this['command_history'] = cmd_history
 
-    for sym, val in symbols.items():
-        if hasattr(symtab, sym):
-            print(f"Warning: overwriting '{sym:s}'")
-        setattr(symtab, sym, val)
+    if subgroup is not None:
+        print("use subgroup ", subgroup)
 
-    # return symbols, config, cmd_history
+    for sym, val in symbols.items():
+        cur = getattr(symtab, sym, None)
+        if isinstance(cur, dict) and merge_dicts:
+            cur.update(val)
+            setattr(symtab, sym, cur)
+        elif overwrite or cur is None:
+            setattr(symtab, sym, val)

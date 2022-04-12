@@ -104,6 +104,10 @@ def encode4js(obj):
         return out
     elif isinstance(obj, Parameter):
         return {'__class__': 'Parameter', 'name': obj.name, 'state': obj.__getstate__()}
+    elif isinstance(obj, Model):
+        return {'__class__': 'Model', 'value': obj.dumps()}
+    elif isinstance(obj, ModelResult):
+        return {'__class__': 'ModelResult', 'value': obj.dumps()}
     elif hasattr(obj, '__getstate__'):
         return {'__class__': 'StatefulObject', 'value': obj.__getstate__()}
     elif hasattr(obj, 'dumps'):
@@ -187,12 +191,20 @@ def decode4js(obj):
             par.__setstate__(decode4js(parstate))
             state['params'].append(par)
         out.__setstate__(state)
-
     elif classname in ('Parameter', 'parameter'):
         name = decode4js(obj['name'])
         state = decode4js(obj['state'])
         out = Parameter(name)
         out.__setstate__(state)
+
+    elif classname == 'Model':
+        mod = Model(lambda x: x)
+        out = mod.loads(decode4js(obj['value']))
+
+    elif classname == 'ModelResult':
+        params = Parameters()
+        res = ModelResult(Model(lambda x: x, None), params)
+        out = res.loads(decode4js(obj['value']))
 
     elif classname in LarchGroupTypes:
         out = {}
