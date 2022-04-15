@@ -849,7 +849,7 @@ class XASFrame(wx.Frame):
                 gname = tname
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
-            displayname = "%s_scan%s" % (fname, scan)
+            displayname = "%s_scan%s_%s" % (fname, scan, self.last_array_sel_spec['yarr1'])
             if first_group is None:
                 first_group = gname
             self.larch.eval(script.format(group=gname, path=path,
