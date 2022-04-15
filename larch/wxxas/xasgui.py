@@ -528,20 +528,20 @@ class XASFrame(wx.Frame):
     def onConfigDataProcessing(self, event=None):
         pass
 
-    def onNewGroup(self, datagroup):
+    def onNewGroup(self, datagroup, source=None):
         """
         install and display a new group, as from 'copy / modify'
         Note: this is a group object, not the groupname or filename
         """
         dgroup = datagroup
-        self.install_group(dgroup.groupname, dgroup.filename, overwrite=False)
+        self.install_group(dgroup.groupname, dgroup.filename, source=source, overwrite=False)
         self.ShowFile(groupname=dgroup.groupname)
 
     def onCopyGroup(self, event=None):
         fname = self.current_filename
         if fname is None:
             fname = self.controller.filelist.GetStringSelection()
-        ngroup = self.controller.copy_group(fname)
+        ngroup = self.controller.copy_group(fname, source=f"copied from '{fname:s}'")
         self.onNewGroup(ngroup)
 
     def onRenameGroup(self, event=None):
@@ -633,7 +633,9 @@ class XASFrame(wx.Frame):
                                          master=master,
                                          yarray=yname,
                                          outgroup=gname)
-            self.install_group(gname, fname, overwrite=False)
+            self.install_group(gname, fname, overwrite=False,
+                               source="merge of %n groups" % len(groups),
+                               journal={'merged_groups': repr(list(groups.values()))})
             self.controller.filelist.SetStringSelection(fname)
 
     def onDeglitchData(self, event=None):
@@ -853,7 +855,8 @@ class XASFrame(wx.Frame):
             self.larch.eval(script.format(group=gname, path=path,
                                           scan=scan))
             dgroup = self.install_group(gname, displayname,
-                                        process=True, plot=False, extra_sums=extra_sums)
+                                        process=True, plot=False, extra_sums=extra_sums,
+                                        source=displayname)
         cur_panel.skip_plotting = False
 
         if first_group is not None:
@@ -919,13 +922,16 @@ class XASFrame(wx.Frame):
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   ref_groupname=None, ref_filename=None,
-                  array_sel=None, overwrite=False, extra_sums=None):
+                  array_sel=None, overwrite=False, extra_sums=None, array_desc=None):
         """ called when column data has been selected and is ready to be used
         overwrite: whether to overwrite the current datagroup, as when
         editing a datagroup
         """
         if groupname is None:
             return
+        if array_desc is None:
+            array_desc = {}
+
         abort_read = False
         filedir, real_filename = os.path.split(path)
         if filename is None:
@@ -941,13 +947,29 @@ class XASFrame(wx.Frame):
                                       refgroup=ref_groupname))
         if array_sel is not None:
             self.last_array_sel_col = array_sel
+
+        journal = {}
+        refjournal = {}
+        if 'xdat' in array_desc:
+            journal['xdat'] = array_desc['xdat'].format(group=groupname)
+        if 'ydat' in array_desc:
+            journal['ydat'] = array_desc['ydat'].format(group=groupname)
+        if 'yerr' in array_desc:
+            journal['yerr'] = array_desc['yerr'].format(group=groupname)
+
         self.install_group(groupname, filename, overwrite=overwrite,
-                           extra_sums=extra_sums)
+                           extra_sums=extra_sums, source=path, journal=journal)
 
         if ref_groupname is not None:
+            if 'xdat' in array_desc:
+                refjournal['xdat'] = array_desc['xdat'].format(group=groupname)
+            if 'yref' in array_desc:
+                refjournal['ydat'] = array_desc['yref'].format(group=groupname)
+
             self.install_group(ref_groupname, ref_filename,
                                overwrite=overwrite,
-                               extra_sums=extra_sums)
+                               extra_sums=extra_sums,
+                               source=path, journal=journal)
 
         # check if rebin is needed
         thisgroup = getattr(self.larch.symtable, groupname)
@@ -984,9 +1006,23 @@ class XASFrame(wx.Frame):
                 ref_fname = real_filename + '_ref'
             self.larch.eval(script.format(group=gname, refgroup=ref_gname,
                                           path=path))
-            self.install_group(gname, real_filename, overwrite=overwrite)
+            if 'xdat' in array_desc:
+                journal['xdat'] = array_desc['xdat'].format(group=gname)
+            if 'ydat' in array_desc:
+                journal['ydat'] = array_desc['ydat'].format(group=gname)
+            if 'yerr' in array_desc:
+                journal['yerr'] = array_desc['yerr'].format(group=gname)
+
+            self.install_group(gname, real_filename, overwrite=overwrite,
+                               source=path, journal=journal)
             if ref_gname is not None:
-                self.install_group(ref_gname, ref_fname, overwrite=overwrite)
+                if 'xdat' in array_desc:
+                    refjournal['xdat'] = array_desc['xdat'].format(group=ref_gname)
+                if 'yref' in array_desc:
+                    refjournal['ydat'] = array_desc['yref'].format(group=ref_gname)
+                self.install_group(ref_gname, ref_fname, overwrite=overwrite,
+                               source=path, journal=ref_journal)
+
 
         self.write_message("read %s" % (real_filename))
 
@@ -994,7 +1030,8 @@ class XASFrame(wx.Frame):
             RebinDataDialog(self, self.controller).Show()
 
     def install_group(self, groupname, filename, overwrite=False,
-                      process=True, rebin=False, plot=True, extra_sums=None):
+                      process=True, rebin=False, plot=True, extra_sums=None,
+                      source=None, journal=None):
         """add groupname / filename to list of available data groups"""
 
         try:
@@ -1010,18 +1047,29 @@ class XASFrame(wx.Frame):
                 filename = "%s_%d" % (fbase, i)
                 i += 1
 
+        if source is None:
+            source = filename
+        _journal = {'source': source}
+        if journal is not None:
+            _journal.update(journal)
+
 
         cmds = ["{gname:s}.groupname = '{gname:s}'",
-                "{gname:s}.filename = '{fname:s}'"]
+                "{gname:s}.filename = '{fname:s}'",
+                "{gname:s}.journal = {journal:s}"]
         if datatype == 'xas':
             cmds.append("{gname:s}.energy_orig = {gname:s}.energy[:]")
 
-        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename)
+
+        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename,
+                                        journal=repr(_journal))
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
             # print("## need to handle extra_sums " , self.extra_sums)
+
         self.larch.eval(cmds)
+
 
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname

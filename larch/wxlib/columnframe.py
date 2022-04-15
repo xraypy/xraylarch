@@ -749,6 +749,7 @@ class ColumnDataFileFrame(wx.Frame) :
             yerr_expr = 'sqrt(%s.ydat)'
         self.expressions['yerr'] = yerr_expr
 
+
         # generate script to pass back to calling program:
         read_cmd = "%s('{path}', labels='%s')" % (self.reader,
                                                   ', '.join(self.orig_labels))
@@ -768,7 +769,8 @@ class ColumnDataFileFrame(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        expr = self.expressions['xdat'].replace('%s', '{group:s}')
+        array_desc = {}
+        expr = array_desc['xdat'] = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
             buff.append(f"monod = {monod:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({expr:s})))")
@@ -777,8 +779,9 @@ class ColumnDataFileFrame(wx.Frame) :
         else:
             buff.append(f"{{group}}.xdat = {expr:s}")
 
+
         for aname in ('ydat', 'yerr'):
-            expr = self.expressions[aname].replace('%s', '{group:s}')
+            expr = array_desc[aname] = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             if self.reader == 'read_gsescan':
@@ -812,7 +815,7 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{refgroup}.xdat =1.0*{group}.xdat")
             buff.append("{refgroup}.energy = {refgroup}.xdat")
 
-            refexpr = self.expressions['yref'].replace('%s', '{group:s}')
+            refexpr = array_desc['yref'] = self.expressions['yref'].replace('%s', '{group:s}')
             buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.ydat =  %s" % refexpr)
@@ -840,6 +843,7 @@ class ColumnDataFileFrame(wx.Frame) :
                             filename=user_filename,
                             ref_groupname=ref_groupname,
                             ref_filename=ref_filename,
+                            array_desc=array_desc,
                             extra_sums=self.extra_sums,
                             array_sel=self.array_sel)
 
