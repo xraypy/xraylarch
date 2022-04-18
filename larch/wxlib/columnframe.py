@@ -438,8 +438,6 @@ class ColumnDataFileFrame(wx.Frame) :
         self.yrpop = Choice(panel, choices=YPRE_OPS, action=self.onUpdate, size=(100, -1))
         self.yrop =  Choice(panel, choices=ARR_OPS, action=self.onUpdate, size=(100, -1))
 
-
-
         self.ysuf = SimpleText(panel, '')
         self.message = subtitle(' ', colour=wx.Colour(0, 0, 0))
 
@@ -769,8 +767,8 @@ class ColumnDataFileFrame(wx.Frame) :
             val = getattr(self.workgroup, attr)
             buff.append("{group}.%s = '%s'" % (attr, val))
 
-        array_desc = {}
-        expr = array_desc['xdat'] = self.expressions['xdat'].replace('%s', '{group:s}')
+
+        expr = self.expressions['xdat'].replace('%s', '{group:s}')
         if en_units.startswith('deg'):
             buff.append(f"monod = {monod:.9f}")
             buff.append(f"{{group}}.xdat = PLANCK_HC/(2*monod*sin(DEG2RAD*({expr:s})))")
@@ -779,10 +777,10 @@ class ColumnDataFileFrame(wx.Frame) :
         else:
             buff.append(f"{{group}}.xdat = {expr:s}")
 
-
         for aname in ('ydat', 'yerr'):
-            expr = array_desc[aname] = self.expressions[aname].replace('%s', '{group:s}')
+            expr = self.expressions[aname].replace('%s', '{group:s}')
             buff.append("{group}.%s = %s" % (aname, expr))
+
         if getattr(self.workgroup, 'datatype', 'raw') == 'xas':
             if self.reader == 'read_gsescan':
                 buff.append("{group}.xdat = {group}.x")
@@ -791,6 +789,12 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("sort_xafs({group}, overwrite=True, fix_repeats=True)")
         else:
             buff.append("{group}.scale = 1./({group}.ydat.ptp()+1.e-16)")
+
+        array_desc = {}
+        array_desc['xdat'] = self.workgroup.plot_xlabel
+        array_desc['ydat'] = self.workgroup.plot_ylabel
+        array_desc['yerr'] = self.expressions['yerr'].replace('%s', '{group:s}')
+
 
         ref_filename = None
         ref_groupname = None
@@ -815,7 +819,8 @@ class ColumnDataFileFrame(wx.Frame) :
             buff.append("{refgroup}.xdat =1.0*{group}.xdat")
             buff.append("{refgroup}.energy = {refgroup}.xdat")
 
-            refexpr = array_desc['yref'] = self.expressions['yref'].replace('%s', '{group:s}')
+            refexpr = self.expressions['yref'].replace('%s', '{group:s}')
+            array_desc['yref'] = refexpr
             buff.append("{group}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.energy_ref = '%s'" % (ref_groupname))
             buff.append("{refgroup}.ydat =  %s" % refexpr)
