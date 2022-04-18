@@ -11,7 +11,11 @@ def flatnotebook(parent, paneldict, panelkws={},
     nb.SetActiveTabColour(wx.Colour(254, 254, 195))
     nb.SetNonActiveTabTextColour(wx.Colour(10, 10, 128))
     nb.SetActiveTabTextColour(wx.Colour(128, 0, 0))
-    nb.SetPadding(wx.Size(4, -1))
+    nb.SetPadding(wx.Size(5, 5))
+
+    nb.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
+
+    nb.SetMinSize(wx.Size(700, 35))
     nb.DeleteAllPages()
     nb.pagelist = []
     grandparent = parent.GetParent()
@@ -24,6 +28,7 @@ def flatnotebook(parent, paneldict, panelkws={},
 
     if callable(on_change):
         nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, on_change)
+
 
     nb.SetSelection(selection)
     return nb
