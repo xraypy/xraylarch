@@ -677,6 +677,7 @@ class LinearComboPanel(TaskPanel):
         coltypes = ['str', 'float:12,4', 'float:12,4', 'float:12,4']
         coldefs  = ['', 1.0/MAX_COMPONENTS, 0.0, 1.0]
 
+
         wids['table'] = DataTableGrid(panel, nrows=MAX_COMPONENTS,
                                       collabels=collabels,
                                       datatypes=coltypes, defaults=coldefs,
@@ -725,6 +726,8 @@ class LinearComboPanel(TaskPanel):
         if not hasattr(dgroup, 'norm'):
             self.xasmain.process_normalization(dgroup)
         self.dgroup = dgroup
+        defaults = self.get_defaultconfig()
+
         if isinstance(dgroup, Group):
             d_emin = min(dgroup.energy)
             d_emax = max(dgroup.energy)
