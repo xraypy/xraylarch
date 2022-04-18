@@ -20,7 +20,7 @@ from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
 
-WX_DEBUG = False
+WX_DEBUG = True
 
 import larch
 from larch import Group
@@ -50,7 +50,7 @@ from .pca_panel import PCAPanel
 from .exafs_panel import EXAFSPanel
 from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
-from .xas_controller import XASController
+from .xas_controller import XASController, Journal
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -133,6 +133,8 @@ class XASFrame(wx.Frame):
         iconfile = os.path.join(icondir, ICON_FILE)
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
+        self.larch.symtable._sys.xas_viewer.mainframe = self
+
         self.timers = {'pin': wx.Timer(self)}
         self.Bind(wx.EVT_TIMER, self.onPinTimer, self.timers['pin'])
         self.cursor_dat = {}
@@ -206,15 +208,17 @@ class XASFrame(wx.Frame):
         panel = wx.Panel(splitter)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.title = SimpleText(panel, ' ', size=(300, -1))
-        self.title.SetFont(Font(FONTSIZE+2))
+        self.title = SimpleText(panel, ' ', size=(500, 25),
+                                font=Font(FONTSIZE+3), style=LEFT,
+                                colour=wx.Colour(10, 10, 180))
 
         ir = 0
-        sizer.Add(self.title, 0, LEFT|wx.GROW|wx.ALL, 1)
+        sizer.Add(self.title, 0, CEN, 3)
         self.nb = flatnotebook(panel, NB_PANELS,
                                panelkws=dict(xasmain=self,
                                              controller=self.controller),
                                on_change=self.onNBChanged)
+
         sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
         pack(panel, sizer)
         splitter.SplitVertically(leftpanel, panel, 1)
@@ -272,15 +276,21 @@ class XASFrame(wx.Frame):
 
         if filename is None:
             filename = dgroup.filename
-        self.title.SetLabel(filename)
         self.current_filename = filename
+        journal = getattr(dgroup, 'journal', Journal({'source_desc': filename}))
+        sdesc = journal['source_desc']
+        if isinstance(sdesc, tuple) and len(sdesc) == 2:
+            sdesc = sdesc[0]
+        if not isinstance(sdesc, str):
+            sdesc = repr(sdesc)
+        self.title.SetLabel(sdesc)
 
         self.controller.group = dgroup
         self.controller.groupname = groupname
         cur_panel = self.nb.GetCurrentPage()
         if process:
             cur_panel.fill_form(dgroup)
-            cur_panel.skip_process = True
+            cur_panel.skip_process = False
             cur_panel.process(dgroup=dgroup)
             if plot and hasattr(cur_panel, 'plot'):
                 cur_panel.plot(dgroup=dgroup)
@@ -337,9 +347,14 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "Rename This Group",
                  "Rename This Group", self.onRenameGroup)
 
+        MenuItem(self, group_menu, "Show Group Journal",
+                 "Show Processing Journal for This Group", self.onGroupJournal)
+
+
+        group_menu.AppendSeparator()
+
         MenuItem(self, group_menu, "Remove Selected Groups",
                  "Remove Selected Group", self.onRemoveGroups)
-
 
         group_menu.AppendSeparator()
 
@@ -544,6 +559,13 @@ class XASFrame(wx.Frame):
         ngroup = self.controller.copy_group(fname, source=f"copied from '{fname:s}'")
         self.onNewGroup(ngroup)
 
+    def onGroupJournal(self, event=None):
+        dgroup = self.controller.get_group()
+        print("show journal for group ", dgroup)
+        #if dgroup is not None:
+        #  self.show_subframe('group_journal', JournalFrame, dgroup, _larch=self.larch)
+
+
     def onRenameGroup(self, event=None):
         fname = self.current_filename = self.controller.filelist.GetStringSelection()
         if fname is None:
@@ -633,9 +655,10 @@ class XASFrame(wx.Frame):
                                          master=master,
                                          yarray=yname,
                                          outgroup=gname)
+            jrnl = Journal({'merged_groups': repr(list(groups.values()))})
             self.install_group(gname, fname, overwrite=False,
                                source="merge of %n groups" % len(groups),
-                               journal={'merged_groups': repr(list(groups.values()))})
+                               journal=jrnl)
             self.controller.filelist.SetStringSelection(fname)
 
     def onDeglitchData(self, event=None):
@@ -871,6 +894,7 @@ class XASFrame(wx.Frame):
         script = "{group:s} = extract_athenagroup(_prj.{prjgroup:s})"
         cur_panel = self.nb.GetCurrentPage()
         cur_panel.skip_plotting = True
+        parent, spath = os.path.split(path)
         labels = []
         groups_added = []
         for gname in namelist:
@@ -884,13 +908,13 @@ class XASFrame(wx.Frame):
                     count += 1
             label = getattr(this, 'label', gname).strip()
             labels.append(label)
+
+            jrnl = Journal({'source_desc': f'{spath:s}: {gname:s}'})
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, label, process=True, plot=False,
+                                        source=path, journal=jrnl,
                                         extra_sums=extra_sums)
             groups_added.append(gid)
-
-        # print("GROUPS ADDED ", groups_added)
-        # print("File Groups ", self.controller.file_groups)
 
         for gid in groups_added:
             rgroup = gid
@@ -914,9 +938,11 @@ class XASFrame(wx.Frame):
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
 
+        plot_first = True
         if len(labels) > 0:
             gname = self.controller.file_groups[labels[0]]
-            self.ShowFile(groupname=gname, process=True, plot=True)
+            self.ShowFile(groupname=gname, process=True, plot=plot_first)
+            plot_first = False
         self.write_message("read %d datasets from %s" % (len(namelist), path))
         self.last_project_file = path
 
@@ -933,12 +959,11 @@ class XASFrame(wx.Frame):
             array_desc = {}
 
         abort_read = False
-        filedir, real_filename = os.path.split(path)
+        filedir, spath = os.path.split(path)
         if filename is None:
-            filename = real_filename
+            filename = spath
         if not overwrite and hasattr(self.larch.symtable, groupname):
-            groupname = file2groupname(real_filename,
-                                       symtable=self.larch.symtable)
+            groupname = file2groupname(spath, symtable=self.larch.symtable)
 
         if abort_read:
             return
@@ -948,12 +973,14 @@ class XASFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel_col = array_sel
 
-        journal = {}
-        refjournal = {}
+        journal = Journal({'source': path})
+        refjournal = Journal()
+
         if 'xdat' in array_desc:
             journal['xdat'] = array_desc['xdat'].format(group=groupname)
         if 'ydat' in array_desc:
-            journal['ydat'] = array_desc['ydat'].format(group=groupname)
+            journal['ydat'] = ydx = array_desc['ydat'].format(group=groupname)
+            journal['source_desc'] = f'{spath:s}: {ydx:s}'
         if 'yerr' in array_desc:
             journal['yerr'] = array_desc['yerr'].format(group=groupname)
 
@@ -964,8 +991,8 @@ class XASFrame(wx.Frame):
             if 'xdat' in array_desc:
                 refjournal['xdat'] = array_desc['xdat'].format(group=groupname)
             if 'yref' in array_desc:
-                refjournal['ydat'] = array_desc['yref'].format(group=groupname)
-
+                refjournal['ydat'] = ydx = array_desc['yref'].format(group=groupname)
+                refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
             self.install_group(ref_groupname, ref_filename,
                                overwrite=overwrite,
                                extra_sums=extra_sums,
@@ -998,33 +1025,35 @@ class XASFrame(wx.Frame):
 
         for path in self.paths2read:
             path = path.replace('\\', '/')
-            filedir, real_filename = os.path.split(path)
-            gname = file2groupname(real_filename, symtable=self.larch.symtable)
+            filedir, spath = os.path.split(path)
+            gname = file2groupname(spath, symtable=self.larch.symtable)
             ref_gname = ref_fname = None
             if ref_groupname is not None:
                 ref_gname = gname + '_ref'
-                ref_fname = real_filename + '_ref'
+                ref_fname = spath + '_ref'
             self.larch.eval(script.format(group=gname, refgroup=ref_gname,
                                           path=path))
             if 'xdat' in array_desc:
                 journal['xdat'] = array_desc['xdat'].format(group=gname)
             if 'ydat' in array_desc:
-                journal['ydat'] = array_desc['ydat'].format(group=gname)
+                journal['ydat'] = ydx = array_desc['ydat'].format(group=gname)
+                journal['source_desc'] = f'{spath:s}: {ydx:s}'
             if 'yerr' in array_desc:
                 journal['yerr'] = array_desc['yerr'].format(group=gname)
 
-            self.install_group(gname, real_filename, overwrite=overwrite,
+            self.install_group(gname, spath, overwrite=overwrite,
                                source=path, journal=journal)
             if ref_gname is not None:
                 if 'xdat' in array_desc:
                     refjournal['xdat'] = array_desc['xdat'].format(group=ref_gname)
                 if 'yref' in array_desc:
-                    refjournal['ydat'] = array_desc['yref'].format(group=ref_gname)
+                    refjournal['ydat'] = ydx = array_desc['yref'].format(group=ref_gname)
+                    refjournal['source_desc'] = f'{spath:s}: {ydx:s}'
                 self.install_group(ref_gname, ref_fname, overwrite=overwrite,
                                source=path, journal=ref_journal)
 
 
-        self.write_message("read %s" % (real_filename))
+        self.write_message("read %s" % (spath))
 
         if do_rebin:
             RebinDataDialog(self, self.controller).Show()
@@ -1049,20 +1078,18 @@ class XASFrame(wx.Frame):
 
         if source is None:
             source = filename
-        _journal = {'source': source}
+        _journal = Journal({'source': source})
         if journal is not None:
             _journal.update(journal)
 
 
         cmds = ["{gname:s}.groupname = '{gname:s}'",
-                "{gname:s}.filename = '{fname:s}'",
-                "{gname:s}.journal = {journal:s}"]
+                "{gname:s}.filename = '{fname:s}'"]
         if datatype == 'xas':
             cmds.append("{gname:s}.energy_orig = {gname:s}.energy[:]")
 
 
-        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename,
-                                        journal=repr(_journal))
+        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename)
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
@@ -1070,6 +1097,7 @@ class XASFrame(wx.Frame):
 
         self.larch.eval(cmds)
 
+        thisgroup.journal = _journal
 
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
@@ -1078,6 +1106,7 @@ class XASFrame(wx.Frame):
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
         self.controller.filelist.SetStringSelection(filename.strip())
+        # self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
         return thisgroup
 
     ##
