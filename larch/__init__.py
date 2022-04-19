@@ -43,18 +43,19 @@ except:
 import matplotlib
 import lmfit
 
+## be careful here: it is easy to have cicrular imports!
+
 from .version import __date__, __version__, __release_version__
 from .symboltable import Group, isgroup
-from .larchlib import (Make_CallArgs, parse_group_args, isNamedClass)
+from .larchlib import Make_CallArgs, parse_group_args, isNamedClass, Journal
+from .fitting import Parameter, isParameter, param_value, ParameterGroup
 
 from .site_config import show_site_config
 from . import builtins
 from .inputText import InputText
 from .interpreter import Interpreter
 from . import larchlib, utils, site_config
-
 from . import fitting, math, io
-from .fitting import Parameter, isParameter, param_value
 
 try:
     from . import apps

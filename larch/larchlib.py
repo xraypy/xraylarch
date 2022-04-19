@@ -4,12 +4,13 @@ Helper classes for larch interpreter
 """
 from __future__ import division
 import sys, os, time
+from datetime import datetime
 import ast
 import numpy as np
 import traceback
 import yaml
 import inspect
-from collections import OrderedDict
+from collections import namedtuple
 import ctypes
 import ctypes.util
 
@@ -538,7 +539,7 @@ def Make_CallArgs(skipped_args):
             argspec = inspect.getfullargspec(fcn)
 
             offset = len(argspec.args) - len(argspec.defaults)
-            call_args = OrderedDict()
+            call_args = {}
 
             for k in argspec.args[:offset]:
                 call_args[k] = None
@@ -587,3 +588,70 @@ def ensuremod(_larch, modname=None):
         if modname is not None and not symtable.has_group(modname):
             symtable.newgroup(modname)
         return symtable
+
+Entry = namedtuple('Entry', ('datetime', 'key', 'value', 'notes'))
+
+class Journal:
+    """list of journal entries"""
+    def __init__(self):
+        self.data = []
+
+    def add(self, key, value, dtime=None, notes=None):
+        """add journal entry:
+        key, value pair with optional datetime and notes values
+
+        """
+        if dtime is None:
+            dtime = datetime.now()
+        elif isinstance(dtime, (int, float)):
+            dtime = datetime.fromtimestamp(dtime)
+        if notes is None:
+            notes=''
+        self.data.append(Entry(dtime, key, value, notes))
+
+    def get(self, key, latest=True):
+        """get journal entries by key
+
+        Arguments
+        ----------
+        latest [bool]   whether to return latest matching entry only [True]
+
+        Notes:
+        -------
+        if latest is True, one value will be returned,
+        otherwise a list of entries (possibly length 1) will be returned.
+
+        """
+        matches = [x for x in self.data if x.key==key]
+        if latest:
+            tlatest = 0
+            latest = None
+            for m in matches:
+                if m.datetime.timestamp() >  tlatest:
+                    latest = m
+            return latest
+        return matches
+
+    def get_latest(self, key):
+        return self.get(key, latest=True)
+
+    def get_matches(self, key):
+        return self.get(key, latest=False)
+
+    def sorted(self, sortby='time'):
+        "return all entries, sorted by time or alphabetically by key"
+        if 'time' in sortby.lower():
+            return sorted(self.data, key=lambda x: x.datetime.timestamp())
+        else:
+            return sorted(self.data, key=lambda x: x.key)
+
+    def __getstate__(self):
+        "get state for pickle / json encoding"
+        return [(x.datetime.isoformat(), x.key, x.value, x.notes) for x in self.data]
+
+    def __setstate__(self, state):
+        "set state from pickle / json encoding"
+        self.data = []
+        for ts, key, value, notes in state:
+            dt = datetime.fromisoformat(ts)
+            self.data.append(Entry(dt, key, value, notes))
