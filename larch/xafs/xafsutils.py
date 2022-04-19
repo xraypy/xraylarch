@@ -2,7 +2,7 @@
 Utility functions used for xafs analysis
 """
 import numpy as np
-from larch import Group
+from larch import Group, Journal
 
 import scipy.constants as consts
 KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
@@ -59,6 +59,9 @@ def set_xafsGroup(group, _larch=None):
             group = Group()
         else:
             group = getattr(_larch.symtable._sys, 'xafsGroup', Group())
+    if not hasattr(group, 'journal'):
+        group.journal = Journal()
+
     if _larch is not None:
         _larch.symtable._sys.xafsGroup = group
     return group
