@@ -6,17 +6,17 @@ import json
 import io
 import numpy as np
 import h5py
+from datetime import datetime
 
 from lmfit import Parameter, Parameters
 from lmfit.model import Model, ModelResult
 from lmfit.minimizer import Minimizer, MinimizerResult
 from lmfit.parameter import SCIPY_FUNCTIONS
 
-from larch import Group, isgroup
-from larch.fitting import  isParameter, ParameterGroup
+from larch import Group, isgroup, Journal, ParameterGroup
+
 from larch.xafs import FeffitDataSet, FeffDatFile, FeffPathGroup, TransformGroup
 from larch.utils.strutils import bytes2str, str2bytes, fix_varname
-
 
 LarchGroupTypes = {'Group': Group,
                    'ParameterGroup': ParameterGroup,
@@ -57,9 +57,8 @@ def encode4js(obj):
         return str(obj)
     elif isinstance(obj, bytes):
         return obj.decode('utf-8')
-    elif isinstance(obj, type):
-        return {'__class__': 'Type',  'value': repr(obj),
-                'module': getattr(obj, '__module__', None)}
+    elif isinstance(obj, datetime):
+        return {'__class__': 'Datetime', 'isotime': obj.isoformat()}
     elif isinstance(obj,(complex, np.complex128)):
         return {'__class__': 'Complex', 'value': (obj.real, obj.imag)}
     elif isinstance(obj, io.IOBase):
@@ -94,6 +93,10 @@ def encode4js(obj):
                      'success', 'var_names'):
             out[attr] = encode4js(getattr(obj, attr, None))
         return out
+    elif isinstance(obj, Journal):
+        out = {'__class__': 'Journal'}
+        out['state'] = obj.__getstate__()
+        return out
 
     elif isinstance(obj, Parameters):
         out = {'__class__': 'Parameters'}
@@ -109,7 +112,9 @@ def encode4js(obj):
     elif isinstance(obj, ModelResult):
         return {'__class__': 'ModelResult', 'value': obj.dumps()}
     elif hasattr(obj, '__getstate__'):
-        return {'__class__': 'StatefulObject', 'value': obj.__getstate__()}
+        return {'__class__': 'StatefulObject',
+                '__type__': obj.__class__.__name__,
+                'value': obj.__getstate__()}
     elif hasattr(obj, 'dumps'):
         print("Encode Warning: using dumps for ", obj)
         return {'__class__': 'DumpableObject', 'value': obj.dumps()}
@@ -124,6 +129,9 @@ def encode4js(obj):
         for key, val in obj.items():
             out[encode4js(key)] = encode4js(val)
         return out
+    elif isinstance(obj, type):
+        return {'__class__': 'Type',  'value': repr(obj),
+                'module': getattr(obj, '__module__', None)}
     elif callable(obj):
         return {'__class__': 'Method', '__name__': repr(obj)}
     else:
@@ -147,9 +155,6 @@ def decode4js(obj):
     """
     if not isinstance(obj, dict):
         return obj
-
-
-
     out = obj
     classname = obj.pop('__class__', None)
     if classname is None:
@@ -179,6 +184,8 @@ def decode4js(obj):
         out = {}
         for key, val in obj.items():
             out[key] = decode4js(val)
+    elif classname == 'Datetime':
+        obj = datetime.fromisoformat(obj['isotime'])
     elif classname == 'Parameters':
         out = Parameters()
         out.clear()
@@ -205,6 +212,10 @@ def decode4js(obj):
         params = Parameters()
         res = ModelResult(Model(lambda x: x, None), params)
         out = res.loads(decode4js(obj['value']))
+
+    elif classname == 'Journal':
+        out = Journal()
+        out.__setstate(decode4js(obj['state']))
 
     elif classname in LarchGroupTypes:
         out = {}
