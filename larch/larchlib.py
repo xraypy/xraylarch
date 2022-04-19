@@ -609,7 +609,7 @@ class Journal:
     def __iter__(self):
         return iter(self.data)
 
-    def add(self, key, value, dtime=None, notes=None):
+    def add(self, key, value, notes=None, dtime=None):
         """add journal entry:
         key, value pair with optional datetime and notes values
 
@@ -683,5 +683,5 @@ class Journal:
     def __setstate__(self, state):
         "set state from pickle / json encoding"
         self.data = []
-        for ts, key, value, notes in state:
+        for key, value, notes, ts in state:
             self.data.append(Entry(key, value, notes, datetime.fromisoformat(ts)))
