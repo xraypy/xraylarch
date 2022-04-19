@@ -780,8 +780,7 @@ class XASNormPanel(TaskPanel):
         norm_method = form['norm_method'].lower()
         form['normmeth'] = 'poly'
 
-        dgroup.journal['pre_edge_options'] = ', '.join(copts)
-        dgroup.journal['normalization_method'] = norm_method
+        dgroup.journal.add_ifnew('normalization_method', norm_method)
 
         if force_mback or norm_method.startswith('mback'):
             form['normmeth'] = 'mback'
@@ -795,7 +794,6 @@ class XASNormPanel(TaskPanel):
                     copts.append("%s=%.2f" % (attr, form[attr]))
 
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
-            dgroup.journal['mback_options'] = ', '.join(copts)
 
             if form['auto_step']:
                 norm_expr = """{group:s}.norm = 1.0*{group:s}.norm_{normmeth:s}

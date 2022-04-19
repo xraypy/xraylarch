@@ -622,6 +622,24 @@ class Journal:
             notes = ''
         self.data.append(Entry(key, value, notes, dtime))
 
+    def add_ifnew(self, key, value, dtime=None, notes=None):
+        """add journal entry unless it already matches latest
+        value (and notes and dtime if supplied)
+        """
+        needs__add = True
+        latest = self.get(key, latest=True)
+        if latest is not None:
+            needs_add = (latest.value != value)
+            if not needs_add and notes is not None:
+                needs_add = needs_add or (latest.notes != notes)
+            if not needs_add and dtime is not None:
+                if isinstance(dtime, (int, float)):
+                    dtime = datetime.fromtimestamp(dtime)
+                needs_add = needs_add or (latest.dtime != dtime)
+
+        if needs_add:
+            self.add(key, value, dtime=dtime, notes=notes)
+
     def get(self, key, latest=True):
         """get journal entries by key
 
