@@ -63,57 +63,6 @@ XASCONF = {'chdir_on_fileopen': True,
            }
 
 
-class Journal(dict):
-    """
-    a dictionary that keeps timestamp for entry time and add 'udpate_order=True'
-    option to `items` method to return key, values ordered by insert/update time.
-
-    This makes a convenient journal of added and updated entries
-    """
-    def __init__(self, dict=None):
-        super().__init__(self)
-        if dict is not None:
-            for k, v in dict.items():
-                self.__setitem__(k, v)
-
-    def __setitem__(self, key, value):
-        dict.__setitem__(self, key, (value, time.time()))
-
-    def __getitem__(self, key):
-        return dict.__getitem__(self, key)[0]
-
-    def get(self, key, default=None):
-        if key not in self:
-            return default
-        else:
-            return dict.__getitem__(self, key)
-
-    def update(self, d):
-        if isinstance(d, Journal):
-            for k in d.keys():
-                dict.__setitem__(self, k, d.get(k))
-        else:
-            for k, v in d.items():
-                self.__setitem__(k, v)
-
-    def items(self, update_order=True):
-        if update_order:
-            return [(k, v[0]) for k, v in sorted(dict.items(self), key=lambda v: v[1][1])]
-        else:
-            return [(k, v[0]) for k, v in dict.items(self)]
-
-    def keys(self, update_order=True):
-        if update_order:
-            return [k for k, v in sorted(dict.items(self), key=lambda v: v[1][1])]
-        else:
-            return dict.keys(self)
-
-    def values(self, update_order=True):
-        if update_order:
-            return [v for k, v in sorted(dict.items(self), key=lambda v: v[1][1])]
-        else:
-            return dict.values(self)
-
 class XASController():
     """
     class holding the Larch session and doing the processing work for XAS GUI
