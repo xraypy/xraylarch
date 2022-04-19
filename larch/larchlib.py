@@ -570,6 +570,12 @@ def Make_CallArgs(skipped_args):
                     setattr(groupx, details_name, Group())
                 setattr(getattr(groupx, details_name),
                         'call_args', call_args)
+                if not hasattr(groupx, 'journal'):
+                    groupx.journal = Journal()
+                call_opts = [f"{k}={v}" for k, v in call_args.items()]
+                groupx.journal.add(fcn.__name__+'_call_args', ', '.join(call_opts))
+
+
             return result
         wrapper.__doc__ = fcn.__doc__
         wrapper.__name__ = fcn.__name__
@@ -580,7 +586,6 @@ def Make_CallArgs(skipped_args):
     return wrap
 
 
-
 def ensuremod(_larch, modname=None):
     "ensure that a group exists"
     if _larch is not None:
@@ -589,12 +594,20 @@ def ensuremod(_larch, modname=None):
             symtable.newgroup(modname)
         return symtable
 
-Entry = namedtuple('Entry', ('datetime', 'key', 'value', 'notes'))
+Entry = namedtuple('Entry', ('key', 'value', 'notes', 'datetime'))
 
 class Journal:
     """list of journal entries"""
-    def __init__(self):
+    def __init__(self, **kws):
         self.data = []
+        for k, v in kws.items():
+            self.add(k, v)
+
+    def __repr__(self):
+        return repr([(x.key, x.value, x.notes, x.datetime.isoformat()) for x in self.data])
+
+    def __iter__(self):
+        return iter(self.data)
 
     def add(self, key, value, dtime=None, notes=None):
         """add journal entry:
@@ -606,8 +619,8 @@ class Journal:
         elif isinstance(dtime, (int, float)):
             dtime = datetime.fromtimestamp(dtime)
         if notes is None:
-            notes=''
-        self.data.append(Entry(dtime, key, value, notes))
+            notes = ''
+        self.data.append(Entry(key, value, notes, dtime))
 
     def get(self, key, latest=True):
         """get journal entries by key
@@ -647,11 +660,10 @@ class Journal:
 
     def __getstate__(self):
         "get state for pickle / json encoding"
-        return [(x.datetime.isoformat(), x.key, x.value, x.notes) for x in self.data]
+        return [(x.key, x.value, x.notes, x.datetime.isoformat()) for x in self.data]
 
     def __setstate__(self, state):
         "set state from pickle / json encoding"
         self.data = []
         for ts, key, value, notes in state:
-            dt = datetime.fromisoformat(ts)
-            self.data.append(Entry(dt, key, value, notes))
+            self.data.append(Entry(key, value, notes, datetime.fromisoformat(ts)))

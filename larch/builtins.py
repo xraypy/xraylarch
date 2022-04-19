@@ -15,7 +15,7 @@ from . import site_config
 from . import utils
 from .utils.show import _larch_builtins as show_builtins
 
-from .larchlib import parse_group_args, LarchExceptionHolder
+from .larchlib import parse_group_args, LarchExceptionHolder, Journal
 from .symboltable import isgroup as sym_isgroup
 
 from . import math
@@ -217,9 +217,8 @@ def _help(*args, _larch=None):
     else:
         return helper.getbuffer()
 
-def add_plugin(plugin, _larch=None, verbose=False, **kws):
-    """add plugin components from plugin directory"""
-    raise ValueError("plugins no longer supported")
+def _journal(**kws):
+    return Journal(**kws)
 
 def _dir(obj=None, _larch=None):
     "return directory of an object -- thin wrapper about python builtin"
@@ -338,7 +337,7 @@ _main_builtins = dict(group=_group, dir=_dir, which=_which, exists=_exists,
                       parse_group_args=parse_group_args, pause=_pause,
                       sleep=_sleep, systime=_time, clock=_time,
                       strftime=_strftime, reload=_reload, run=_run,
-                      eval=_eval, help=_help, add_plugin=add_plugin,
+                      eval=_eval, help=_help, journal=_journal,
                       save_history=save_history, show_history=show_history)
 
 _main_builtins.update(utils._larch_builtins)
