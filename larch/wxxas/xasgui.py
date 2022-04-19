@@ -23,7 +23,7 @@ from wx.richtext import RichTextCtrl
 WX_DEBUG = True
 
 import larch
-from larch import Group
+from larch import Group, Journal
 from larch.math import index_of
 from larch.utils import isotime, get_cwd
 from larch.utils.strutils import (file2groupname, unique_name,
@@ -50,7 +50,7 @@ from .pca_panel import PCAPanel
 from .exafs_panel import EXAFSPanel
 from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
-from .xas_controller import XASController, Journal
+from .xas_controller import XASController
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -277,8 +277,8 @@ class XASFrame(wx.Frame):
         if filename is None:
             filename = dgroup.filename
         self.current_filename = filename
-        journal = getattr(dgroup, 'journal', Journal({'source_desc': filename}))
-        sdesc = journal['source_desc']
+        journal = getattr(dgroup, 'journal', Journal(source_desc=filename))
+        sdesc = journal.get('source_desc', latest=True).value
         if isinstance(sdesc, tuple) and len(sdesc) == 2:
             sdesc = sdesc[0]
         if not isinstance(sdesc, str):
@@ -655,10 +655,9 @@ class XASFrame(wx.Frame):
                                          master=master,
                                          yarray=yname,
                                          outgroup=gname)
-            jrnl = Journal({'merged_groups': repr(list(groups.values()))})
             self.install_group(gname, fname, overwrite=False,
                                source="merge of %n groups" % len(groups),
-                               journal=jrnl)
+                               journal={'merged_groups': repr(list(groups.values()))})
             self.controller.filelist.SetStringSelection(fname)
 
     def onDeglitchData(self, event=None):
@@ -872,14 +871,17 @@ class XASFrame(wx.Frame):
                 gname = tname
 
             cur_panel.skip_plotting = (scan == scanlist[-1])
-            displayname = "%s_scan%s_%s" % (fname, scan, self.last_array_sel_spec['yarr1'])
+            yname = self.last_array_sel_spec['yarr1']
             if first_group is None:
                 first_group = gname
-            self.larch.eval(script.format(group=gname, path=path,
-                                          scan=scan))
+            self.larch.eval(script.format(group=gname, path=path, scan=scan))
+            print("SPEC FILE ", yname)
+            displayname = f"{fname:s} scan{scan:s} {yname:s}"
+            jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname,
                                         process=True, plot=False, extra_sums=extra_sums,
-                                        source=displayname)
+                                        source=displayname,
+                                        journal=jrnl)
         cur_panel.skip_plotting = False
 
         if first_group is not None:
@@ -909,7 +911,7 @@ class XASFrame(wx.Frame):
             label = getattr(this, 'label', gname).strip()
             labels.append(label)
 
-            jrnl = Journal({'source_desc': f'{spath:s}: {gname:s}'})
+            jrnl = {'source_desc': f'{spath:s}: {gname:s}'}
             self.larch.eval(script.format(group=gid, prjgroup=gname))
             dgroup = self.install_group(gid, label, process=True, plot=False,
                                         source=path, journal=jrnl,
@@ -973,8 +975,8 @@ class XASFrame(wx.Frame):
         if array_sel is not None:
             self.last_array_sel_col = array_sel
 
-        journal = Journal({'source': path})
-        refjournal = Journal()
+        journal = {'source': path}
+        refjournal = {}
 
         if 'xdat' in array_desc:
             journal['xdat'] = array_desc['xdat'].format(group=groupname)
@@ -1078,26 +1080,24 @@ class XASFrame(wx.Frame):
 
         if source is None:
             source = filename
-        _journal = Journal({'source': source})
+        jopts = [f"source='{source:s}'"]
         if journal is not None:
-            _journal.update(journal)
+            for k, v in journal.items():
+                jopts.append(f"{k:s}='{v:s}'")
+        jopts = ', '.join(jopts)
 
-
-        cmds = ["{gname:s}.groupname = '{gname:s}'",
-                "{gname:s}.filename = '{fname:s}'"]
+        cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
+                f"{groupname:s}.filename = '{filename:s}'",
+                f"{groupname:s}.journal = journal({jopts:s})"]
         if datatype == 'xas':
-            cmds.append("{gname:s}.energy_orig = {gname:s}.energy[:]")
-
-
-        cmds = ('\n'.join(cmds)).format(gname=groupname, fname=filename)
+            cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
+        cmds = ('\n'.join(cmds))
 
         if extra_sums is not None:
             self.extra_sums = extra_sums
             # print("## need to handle extra_sums " , self.extra_sums)
 
         self.larch.eval(cmds)
-
-        thisgroup.journal = _journal
 
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
