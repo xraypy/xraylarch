@@ -47,7 +47,7 @@ import lmfit
 
 from .version import __date__, __version__, __release_version__
 from .symboltable import Group, isgroup
-from .larchlib import Make_CallArgs, parse_group_args, isNamedClass, Journal
+from .larchlib import Make_CallArgs, parse_group_args, isNamedClass, Journal, Entry
 from .fitting import Parameter, isParameter, param_value, ParameterGroup
 
 from .site_config import show_site_config

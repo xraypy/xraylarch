@@ -626,7 +626,7 @@ class Journal:
         """add journal entry unless it already matches latest
         value (and notes and dtime if supplied)
         """
-        needs__add = True
+        needs_add = True
         latest = self.get(key, latest=True)
         if latest is not None:
             needs_add = (latest.value != value)

@@ -23,7 +23,7 @@ from wx.richtext import RichTextCtrl
 WX_DEBUG = True
 
 import larch
-from larch import Group, Journal
+from larch import Group, Journal, Entry
 from larch.math import index_of
 from larch.utils import isotime, get_cwd
 from larch.utils.strutils import (file2groupname, unique_name,
@@ -278,9 +278,10 @@ class XASFrame(wx.Frame):
             filename = dgroup.filename
         self.current_filename = filename
         journal = getattr(dgroup, 'journal', Journal(source_desc=filename))
-        sdesc = journal.get('source_desc', latest=True).value
-        if isinstance(sdesc, tuple) and len(sdesc) == 2:
-            sdesc = sdesc[0]
+        print("JOURNAL ", dgroup, journal)
+        sdesc = journal.get('source_desc', latest=True)
+        if isinstance(sdesc, Entry):
+            sdesc = sdesc.value
         if not isinstance(sdesc, str):
             sdesc = repr(sdesc)
         self.title.SetLabel(sdesc)
@@ -1080,11 +1081,10 @@ class XASFrame(wx.Frame):
 
         if source is None:
             source = filename
-        jopts = [f"source='{source:s}'"]
-        if journal is not None:
-            for k, v in journal.items():
-                jopts.append(f"{k:s}='{v:s}'")
-        jopts = ', '.join(jopts)
+
+        _j =  {'source': f"{source}"}
+        _j.update(journal)
+        jopts = ', '.join([f"{k}='{v}'" for k, v in _j.items()])
 
         cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
                 f"{groupname:s}.filename = '{filename:s}'",
