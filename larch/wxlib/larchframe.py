@@ -65,6 +65,7 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.wxapp', output)
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
+        self.symtable.set_symbol('_sys.last_eval_time', 0.0)
 
         if self.output is not None:
             style = self.output.GetDefaultStyle()
@@ -103,7 +104,7 @@ class LarchWxShell(object):
         if self.output is None:
             return
 
-        display_colors = self._larch.symtable._sys.display.colors
+        display_colors = self.symtable._sys.display.colors
         textattrs = display_colors.get(mode, {'color':'black'})
         color = textattrs['color']
         style = self.output.GetDefaultStyle()
@@ -172,6 +173,7 @@ class LarchWxShell(object):
                 self.objtree.onRefresh()
             except ValueError:
                 pass
+            self.symtable._sys.last_eval = time.time()
             self.SetPrompt(self._larch.input.complete)
             return ret
 
