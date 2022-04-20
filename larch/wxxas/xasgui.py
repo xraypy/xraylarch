@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import copy
+import shutil
 import platform
 import numpy as np
 np.seterr(all='ignore')
@@ -24,6 +25,7 @@ WX_DEBUG = True
 
 import larch
 from larch import Group, Journal, Entry
+from larch.io import save_session, read_session
 from larch.math import index_of
 from larch.utils import isotime, get_cwd
 from larch.utils.strutils import (file2groupname, unique_name,
@@ -41,7 +43,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
 from larch.wxlib.plotter import _getDisplay
 
 from larch.fitting import fit_report
-from larch.site_config import icondir
+from larch.site_config import icondir, home_dir, user_larchdir
 
 from .prepeak_panel import PrePeakPanel
 from .xasnorm_panel import XASNormPanel
@@ -134,9 +136,12 @@ class XASFrame(wx.Frame):
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
         self.larch.symtable._sys.xas_viewer.mainframe = self
+        self.last_autosave = time.time()
 
-        self.timers = {'pin': wx.Timer(self)}
+        self.timers = {'pin': wx.Timer(self),
+                       'autosave': wx.Timer(self)}
         self.Bind(wx.EVT_TIMER, self.onPinTimer, self.timers['pin'])
+        self.Bind(wx.EVT_TIMER, self.onAutoSaveTimer, self.timers['autosave'])
         self.cursor_dat = {}
 
         self.subframes = {}
@@ -164,6 +169,7 @@ class XASFrame(wx.Frame):
 
         self.Raise()
         self.statusbar.SetStatusText('ready', 1)
+        self.timers['autosave'].Start(30_000)
         if self.current_filename is not None:
             wx.CallAfter(self.onRead, self.current_filename)
 
@@ -278,7 +284,6 @@ class XASFrame(wx.Frame):
             filename = dgroup.filename
         self.current_filename = filename
         journal = getattr(dgroup, 'journal', Journal(source_desc=filename))
-        print("JOURNAL ", dgroup, journal)
         sdesc = journal.get('source_desc', latest=True)
         if isinstance(sdesc, Entry):
             sdesc = sdesc.value
@@ -1110,6 +1115,27 @@ class XASFrame(wx.Frame):
         return thisgroup
 
     ##
+    def onAutoSaveTimer(self, event=None):
+        autosave_config = self.controller.get_config('autosave_config',
+                                                      {'savetime': 300,
+                                                       'nhistory': 3})
+        if time.time() > self.last_autosave + autosave_config['savetime']:
+            savefile = os.path.join(user_larchdir, 'xas_viewer_autosave.larix')
+            for i in reversed(range(1, 3, 1)):
+                curf = savefile.replace('.larix', f'{i:d}.larix' )
+                newf = savefile.replace('.larix', f'{i+1:d}.larix' )
+                if os.path.exists(curf):
+                    shutil.move(curf, newf)
+            if os.path.exists(savefile):
+                curf = savefile.replace('.larix', f'1.larix' )
+                shutil.move(savefile, curf)
+
+
+            self.last_autosave = time.time()
+            save_session(savefile, _larch=self.larch)
+            self.write_message('autosaved session at %s' % (time.ctime()), panel=1)
+
+
     ## float-spin / pin timer events
     def onPinTimer(self, event=None):
         if 'start' not in self.cursor_dat:
@@ -1119,7 +1145,7 @@ class XASFrame(wx.Frame):
                                                 {'style': 'pin_first',
                                                  'timeout':15.0,
                                                  'min_time': 2.0})
-        min_time  = float(pin_config['min_time'])
+        min_time = float(pin_config['min_time'])
         timeout = float(pin_config['timeout'])
 
         curhist_name = self.cursor_dat['name']
