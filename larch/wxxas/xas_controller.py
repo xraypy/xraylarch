@@ -13,7 +13,6 @@ from larch.site_config import home_dir
 
 XASCONF = {'chdir_on_fileopen': True,
 
-
            'exafs_config': {'bkg_clamphi': 1, 'bkg_clamplo': 0,
                             'bkg_kmax': None, 'bkg_kmin': 0,
                             'bkg_kweight': 2, 'e0': -1.0, 'fft_dk': 4,
@@ -58,8 +57,8 @@ XASCONF = {'chdir_on_fileopen': True,
                               'energy_ref': None, 'energy_shift': 0,
                               'nnorm': None, 'norm1': None, 'norm2': None,
                               'norm_method': 'polynomial', 'nvict': 0,
-                              'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True}
-
+                              'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True},
+           'autosave_config': {'savetime': 120, 'nhistory': 3},
            }
 
 
