@@ -1135,8 +1135,9 @@ class XASFrame(wx.Frame):
                 shutil.move(savefile, curf)
 
             self.last_autosave = time.time()
-            save_session(savefile, _larch=self.larch)
-            self.write_message('autosaved session at %s' % (time.ctime()), panel=1)
+            self.larch.eval(f"save_session('{savefile:s}')")
+            stime = time.strftime("%H:%M")
+            self.write_message(f"session auto-saved at {stime}", panel=1)
 
     ## float-spin / pin timer events
     def onPinTimer(self, event=None):
