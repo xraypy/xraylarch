@@ -1135,7 +1135,7 @@ class XASFrame(wx.Frame):
                 shutil.move(savefile, curf)
 
             self.last_autosave = time.time()
-            self.larch.eval(f"save_session('{savefile:s}')")
+            save_session(savefile)
             stime = time.strftime("%H:%M")
             self.write_message(f"session auto-saved at {stime}", panel=1)
 
