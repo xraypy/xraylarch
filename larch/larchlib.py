@@ -532,6 +532,8 @@ def Make_CallArgs(skipped_args):
     """
     decorator to create a 'call_args' dictionary
     containing function arguments
+    If a Group is included in the call arguments,
+    these call_args will be added to the group's journal
     """
     def wrap(fcn):
         def wrapper(*args, **kwargs):
@@ -565,16 +567,13 @@ def Make_CallArgs(skipped_args):
                     call_args.pop(k)
 
             if groupx is not None:
-                details_name = '%s_details' % fcn.__name__
-                if not hasattr(groupx, details_name):
-                    setattr(groupx, details_name, Group())
-                setattr(getattr(groupx, details_name),
-                        'call_args', call_args)
+                fname = fcn.__name__
+                details_group = getattr(groupx, f'{fname}_details', None)
+                if details_group  is not None:
+                    setattr(details_group, 'call_args', call_args)
                 if not hasattr(groupx, 'journal'):
                     groupx.journal = Journal()
-                call_opts = [f"{k}={v}" for k, v in call_args.items()]
-                groupx.journal.add(fcn.__name__+'_call_args', ', '.join(call_opts))
-
+                groupx.journal.add(f'{fname}_call_args',  call_args)
 
             return result
         wrapper.__doc__ = fcn.__doc__
