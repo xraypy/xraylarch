@@ -663,6 +663,17 @@ class Journal:
             return latest
         return matches
 
+
+    def keys(self):
+        return [x.key for x in self.data]
+
+    def values(self):
+        return [x.values for x in self.data]
+
+    def items(self):
+        return [(x.key, x.value) for x in self.data]
+
+
     def get_latest(self, key):
         return self.get(key, latest=True)
 
