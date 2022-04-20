@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import os
+import time
 from functools import partial
 import wx
 import numpy
@@ -173,7 +174,7 @@ class LarchWxShell(object):
                 self.objtree.onRefresh()
             except ValueError:
                 pass
-            self.symtable._sys.last_eval = time.time()
+            self.symtable._sys.last_eval_time = time.time()
             self.SetPrompt(self._larch.input.complete)
             return ret
 
