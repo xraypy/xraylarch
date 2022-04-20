@@ -1111,30 +1111,32 @@ class XASFrame(wx.Frame):
         self.ShowFile(groupname=groupname, filename=filename,
                       process=process, plot=plot)
         self.controller.filelist.SetStringSelection(filename.strip())
-        # self.get_nbpage('xasnorm')[1].process(dgroup, force=force)
         return thisgroup
 
     ##
     def onAutoSaveTimer(self, event=None):
-        autosave_config = self.controller.get_config('autosave_config',
-                                                      {'savetime': 300,
-                                                       'nhistory': 3})
-        if time.time() > self.last_autosave + autosave_config['savetime']:
-            savefile = os.path.join(user_larchdir, 'xas_viewer_autosave.larix')
-            for i in reversed(range(1, 3, 1)):
-                curf = savefile.replace('.larix', f'{i:d}.larix' )
-                newf = savefile.replace('.larix', f'{i+1:d}.larix' )
+        """autosave session periodically, using autosave_config settings
+        and avoiding saving sessions while program is inactive.
+        """
+        conf = self.controller.get_config('autosave_config',
+                                          {'savetime': 900,
+                                           'fileroot': 'xas_viewer_save',
+                                           'nhistory': 3})
+        if (time.time() > self.last_autosave + conf['savetime'] and
+            self.larch.symtable._sys.last_eval_time > self.last_autosave):
+            savefile = os.path.join(user_larchdir, conf['fileroot']+'.larix')
+            for i in reversed(range(1, int(conf['nhistory']))):
+                curf = savefile.replace('.larix', f'_{i:d}.larix' )
                 if os.path.exists(curf):
+                    newf = savefile.replace('.larix', f'_{i+1:d}.larix' )
                     shutil.move(curf, newf)
             if os.path.exists(savefile):
-                curf = savefile.replace('.larix', f'1.larix' )
+                curf = savefile.replace('.larix', f'_1.larix' )
                 shutil.move(savefile, curf)
-
 
             self.last_autosave = time.time()
             save_session(savefile, _larch=self.larch)
             self.write_message('autosaved session at %s' % (time.ctime()), panel=1)
-
 
     ## float-spin / pin timer events
     def onPinTimer(self, event=None):
