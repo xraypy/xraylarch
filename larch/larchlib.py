@@ -593,51 +593,69 @@ def ensuremod(_larch, modname=None):
             symtable.newgroup(modname)
         return symtable
 
-Entry = namedtuple('Entry', ('key', 'value', 'notes', 'datetime'))
+Entry = namedtuple('Entry', ('key', 'value', 'datetime'))
+
+def _get_dtime(dtime=None):
+    """get datetime from input
+    dtime can be:
+       datetime :  used as is
+       str :    assumed to be isoformat
+       float :  assumed to unix timestamp
+       None :   means now
+    """
+    if isinstance(dtime, datetime):
+        return dtime
+    if isinstance(dtime, (int, float)):
+        return datetime.fromtimestamp(dtime)
+    elif isinstance(dtime, str):
+        return datetime.fromisoformat(dtime)
+    return datetime.now()
 
 class Journal:
     """list of journal entries"""
-    def __init__(self, **kws):
+    def __init__(self, *args, **kws):
         self.data = []
+        for arg in args:
+            if isinstance(arg, Journal):
+                for entry in arg.data:
+                    self.add(entry.key, entry.value, dtime=entry.datetime)
+            elif isinstance(arg, (list, tuple)):
+                for entry in arg:
+                    self.add(entry[0], entry[1], dtime=entry[2])
+
         for k, v in kws.items():
             self.add(k, v)
 
+    def tolist(self):
+        return [(x.key, x.value, x.datetime.isoformat()) for x in self.data]
+
     def __repr__(self):
-        return repr([(x.key, x.value, x.notes, x.datetime.isoformat()) for x in self.data])
+        return repr(self.tolist())
 
     def __iter__(self):
         return iter(self.data)
 
-    def add(self, key, value, notes=None, dtime=None):
+
+    def add(self, key, value, dtime=None):
         """add journal entry:
-        key, value pair with optional datetime and notes values
-
+        key, value pair with optional datetime
         """
-        if dtime is None:
-            dtime = datetime.now()
-        elif isinstance(dtime, (int, float)):
-            dtime = datetime.fromtimestamp(dtime)
-        if notes is None:
-            notes = ''
-        self.data.append(Entry(key, value, notes, dtime))
+        self.data.append(Entry(key, value, _get_dtime(dtime)))
 
-    def add_ifnew(self, key, value, dtime=None, notes=None):
+    def add_ifnew(self, key, value, dtime=None):
         """add journal entry unless it already matches latest
-        value (and notes and dtime if supplied)
+        value (and dtime if supplied)
         """
         needs_add = True
         latest = self.get(key, latest=True)
         if latest is not None:
             needs_add = (latest.value != value)
-            if not needs_add and notes is not None:
-                needs_add = needs_add or (latest.notes != notes)
             if not needs_add and dtime is not None:
-                if isinstance(dtime, (int, float)):
-                    dtime = datetime.fromtimestamp(dtime)
+                dtime = _get_dtime(dtime)
                 needs_add = needs_add or (latest.dtime != dtime)
 
         if needs_add:
-            self.add(key, value, dtime=dtime, notes=notes)
+            self.add(key, value, dtime=dtime)
 
     def get(self, key, latest=True):
         """get journal entries by key
@@ -662,7 +680,6 @@ class Journal:
             return latest
         return matches
 
-
     def keys(self):
         return [x.key for x in self.data]
 
@@ -671,7 +688,6 @@ class Journal:
 
     def items(self):
         return [(x.key, x.value) for x in self.data]
-
 
     def get_latest(self, key):
         return self.get(key, latest=True)
@@ -688,10 +704,10 @@ class Journal:
 
     def __getstate__(self):
         "get state for pickle / json encoding"
-        return [(x.key, x.value, x.notes, x.datetime.isoformat()) for x in self.data]
+        return [(x.key, x.value, x.datetime.isoformat()) for x in self.data]
 
     def __setstate__(self, state):
         "set state from pickle / json encoding"
         self.data = []
-        for key, value, notes, ts in state:
-            self.data.append(Entry(key, value, notes, datetime.fromisoformat(ts)))
+        for key, value, dt in state:
+            self.data.append(Entry(key, value, datetime.fromisoformat(dt)))
