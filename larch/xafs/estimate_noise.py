@@ -4,12 +4,13 @@
 """
 from numpy import pi, sqrt, where
 
-from larch import parse_group_args, Group, isgroup
+from larch import parse_group_args, Group, isgroup, Make_CallArgs
 
 from larch.math import index_of, realimag
 from .xafsutils import set_xafsGroup
 from .xafsft import xftf, xftr
 
+@Make_CallArgs(["k","chi"])
 def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
                    kweight=1, kmin=0, kmax=20, dk=4, dk2=None, kstep=0.05,
                    kwindow='kaiser', nfft=2048, _larch=None, **kws):
@@ -58,8 +59,6 @@ def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
     k, chi, group = parse_group_args(k, members=('k', 'chi'),
                                      defaults=(chi,), group=group,
                                      fcn_name='esitmate_noise')
-
-
 
     # save _sys.xafsGroup -- we want to NOT write to it here!
     savgroup = set_xafsGroup(None, _larch=_larch)

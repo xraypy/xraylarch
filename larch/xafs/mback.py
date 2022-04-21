@@ -10,7 +10,7 @@ from xraydb import (xray_edge, xray_line, xray_lines,
                     atomic_number, atomic_symbol)
 from lmfit import Parameter, Parameters, minimize
 
-from larch import Group, isgroup, parse_group_args
+from larch import Group, isgroup, parse_group_args, Make_CallArgs
 
 from larch.math import index_of, index_nearest, remove_dups, remove_nans2
 
@@ -65,15 +65,15 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
       energy:     array of x-ray energies, in eV.
       mu:         array of mu(E).
       group:      output group.
-	  z:          atomic number of the absorber.
-	  edge:       x-ray absorption edge (default 'K')
+          z:          atomic number of the absorber.
+          edge:       x-ray absorption edge (default 'K')
       e0:         edge energy, in eV.  If None, it will be determined here.
       pre1:       low E range (relative to e0) for pre-edge region.
       pre2:       high E range (relative to e0) for pre-edge region.
       norm1:      low E range (relative to e0) for post-edge region.
       norm2:      high E range (relative to e0) for post-edge region.
       order:      order of the legendre polynomial for normalization.
-	              (default=3, min=0, max=5).
+                      (default=3, min=0, max=5).
       leexiang:   boolean (default False)  to use the Lee & Xiang extension.
       tables:     tabulated scattering factors: 'chantler' [deprecated]
       fit_erfc:   boolean (default False) to fit parameters of error function.
@@ -88,8 +88,8 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
       group.f2:            tabulated f2(E).
       group.f1:            tabulated f1(E) (if 'return_f1' is True).
       group.fpp:           mback atched spectrum.
-	  group.edge_step:     edge step of spectrum.
-	  group.norm:          normalized spectrum.
+          group.edge_step:     edge step of spectrum.
+          group.norm:          normalized spectrum.
       group.mback_params:  group of parameters for the minimization.
 
     Notes:
@@ -145,7 +145,7 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
         p2 = min(len(energy), p1 + 2)
 
     ## theta is a boolean array indicating the
-	## energy values considered for the fit.
+        ## energy values considered for the fit.
     ## theta=1 for included values, theta=0 for excluded values.
     theta            = np.zeros_like(energy, dtype='int')
     theta[p1:(p2+1)] = 1
@@ -195,7 +195,7 @@ def mback(energy, mu=None, group=None, z=None, edge='K', e0=None, pre1=None, pre
     group.fpp = opars['s']*mu - norm_function
     # calculate edge step and normalization from f2 + norm_function
     pre_f2 = preedge(energy, group.f2+norm_function, e0=e0, pre1=pre1,
-	         pre2=pre2, norm1=norm1, norm2=norm2, nnorm=2, nvict=0)
+                 pre2=pre2, norm1=norm1, norm2=norm2, nnorm=2, nvict=0)
     group.edge_step = pre_f2['edge_step'] / opars['s']
     group.norm = (opars['s']*mu -  pre_f2['pre_edge']) / pre_f2['edge_step']
     group.mback_details = Group(params=opars, pre_f2=pre_f2,
@@ -213,7 +213,7 @@ def f2norm(params, en=1, mu=1, f2=1, weights=1):
     model = (p['offset'] + p['slope']*en + f2) * p['scale']
     return weights * (model - mu)
 
-
+@Make_CallArgs(["energy","mu"])
 def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
                pre1=None, pre2=None, norm1=None, norm2=None, nnorm=None, nvict=1,
                _larch=None):

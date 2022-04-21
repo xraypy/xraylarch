@@ -1,10 +1,11 @@
 import numpy as np
 
 from xraydb import xray_line, xray_edge, material_mu
-from larch import  parse_group_args
+from larch import  parse_group_args, Make_CallArgs
 from .xafsutils import set_xafsGroup
 from .pre_edge import preedge
 
+@Make_CallArgs(["energy","mu"])
 def fluo_corr(energy, mu, formula, elem, group=None, edge='K', line='Ka', anginp=45,
               angout=45, _larch=None, **pre_kws):
     """correct over-absorption (self-absorption) for fluorescene XAFS
