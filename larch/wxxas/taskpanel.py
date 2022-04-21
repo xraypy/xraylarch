@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 import platform
 from functools import partial
 
@@ -8,6 +9,7 @@ np.seterr(all='ignore')
 
 import wx
 import wx.grid as wxgrid
+import wx.lib.scrolledpanel as scrolled
 
 from larch import Group
 from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
@@ -17,6 +19,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FileOpen, FONTSIZE)
 
 from larch.utils import group2dict
+from larch.utils.strutils import break_longstring
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
@@ -121,6 +124,127 @@ class DataTableGrid(wxgrid.Grid):
     def OnLeftDClick(self, evt):
         if self.CanEnableCellControl():
             self.EnableCellEditControl()
+
+
+class GroupJournalFrame(wx.Frame):
+    """ edit parameters"""
+    def __init__(self, parent, dgroup=None, xasmain=None, **kws):
+        self.xasmain = xasmain
+        self.dgroup = dgroup
+        wx.Frame.__init__(self, None, -1,  'Group Journal',
+                          style=FRAMESTYLE, size=(950, 500))
+
+        panel = GridPanel(self, ncols=3, nrows=10, pad=2, itemstyle=LEFT)
+
+        self.label = SimpleText(panel, 'Group Journal', size=(750, 30))
+
+        update_btn = Button(panel, 'Refresh', size=(125, -1),
+                            action=self.update)
+
+        export_btn = Button(panel, 'Export to CSV', size=(125, -1),
+                            action=self.export)
+
+
+        collabels = [' Label ', ' Value ', 'Date/Time']
+
+        colsizes = [150, 550, 150]
+        coltypes = ['string', 'string', 'string']
+        coldefs  = [' ', ' ', ' ']
+
+        self.datagrid = DataTableGrid(panel, nrows=50,
+                                      collabels=collabels,
+                                      datatypes=coltypes,
+                                      defaults=coldefs,
+                                      colsizes=colsizes,
+                                      rowlabelsize=80)
+
+        self.datagrid.SetMinSize((1000, 600))
+        self.datagrid.EnableEditing(False)
+
+        panel.Add(self.label, dcol=2)
+        panel.Add(HLine(panel, size=(850, 2)), dcol=2, newrow=True)
+
+        panel.Add(update_btn, newrow=True)
+        panel.Add(export_btn)
+        panel.Add(self.datagrid, dcol=3, drow=4, newrow=True)
+        panel.pack()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 3)
+        pack(self, sizer)
+
+        self.Show()
+        self.Raise()
+
+        if dgroup is not None:
+            wx.CallAfter(self.set_group, dgroup=dgroup)
+
+    def export(self, event=None):
+        wildcard = 'CSV file (*.csv)|*.csv|All files (*.*)|*.*'
+        fname = FileSave(self, message='Save Tab-Separated-Value Data File',
+                         wildcard=wildcard,
+                         default_file= f"{self.dgroup.filename}_journal.csv")
+        if fname is None:
+            return
+
+        buff = ['Label\tValue\tDateTime']
+        for entry in self.dgroup.journal:
+            k, v, dt = entry.key, entry.value, entry.datetime.isoformat()
+            k = k.replace('\t', '_')
+            if not isinstance(v, str): v = repr(v)
+            v = v.replace('\t', '   ')
+            buff.append(f"{k}\t{v}\t{dt}")
+
+        buff.append('')
+        with open(fname, 'w') as fh:
+            fh.write('\n'.join(buff))
+
+        msg = f"Exported journal for {self.dgroup.filename} to '{fname}'"
+        writer = getattr(self.xasmain, 'write_message', sys.stdout)
+        writer(msg)
+
+
+    def update(self, event=None):
+        self.set_group()
+
+    def set_group(self, dgroup=None):
+        if dgroup is None:
+            dgroup = self.dgroup
+
+        if dgroup is None:
+            return
+        self.dgroup = dgroup
+        self.SetTitle(f'Group Journal for {dgroup.filename:s}')
+
+        label = f'Journal for {dgroup.filename}'
+        desc = dgroup.journal.get('source_desc')
+        if desc is not None:
+            label = f'Journal for {desc.value}'
+        self.label.SetLabel(label)
+
+        grid_data = []
+        rowsize = []
+        for entry in dgroup.journal:
+            val = entry.value
+            if not isinstance(val, str):
+                val = repr(val)
+            xval = break_longstring(val)
+            val = '\n'.join(xval)
+            rowsize.append(len(xval))
+
+            xtime = entry.datetime.strftime("%Y/%m/%d %H:%M:%S")
+            grid_data.append([entry.key, val, xtime])
+
+        self.datagrid.table.Clear()
+        nrows = self.datagrid.table.GetRowsCount()
+        if len(grid_data) > nrows:
+            self.datagrid.table.AppendRows(len(grid_data)+8 - nrows)
+
+        self.datagrid.table.data = grid_data
+        for i, rsize in enumerate(rowsize):
+            self.datagrid.SetRowSize(i, rsize*20)
+
+        self.datagrid.table.View.Refresh()
 
 
 class TaskPanel(wx.Panel):
