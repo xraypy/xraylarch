@@ -4,7 +4,7 @@
 
 import numpy as np
 from scipy.signal import deconvolve
-from larch import parse_group_args
+from larch import parse_group_args, Make_CallArgs
 
 from larch.math import (gaussian, lorentzian, interp,
                         index_of, index_nearest, remove_dups,
@@ -12,6 +12,7 @@ from larch.math import (gaussian, lorentzian, interp,
 
 from .xafsutils import set_xafsGroup
 
+@Make_CallArgs(["energy","norm"])
 def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, smooth=True,
                    sgwindow=None, sgorder=3, _larch=None):
@@ -94,6 +95,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='lorentzian',
     group.deconv = out
 
 
+@Make_CallArgs(["energy","noem"])
 def xas_convolve(energy, norm=None, group=None, form='lorentzian',
                    esigma=1.0, eshift=0.0, _larch=None):
     """
