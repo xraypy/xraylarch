@@ -130,18 +130,6 @@ class PCAPanel(TaskPanel):
 
         wids['table'].SetMinSize((625, 175))
         wids['table'].EnableEditing(False)
-#
-#         sview = self.wids['stats'] = dv.DataViewListCtrl(panel, style=DVSTYLE)
-#         sview.AppendTextColumn(' Component',    width=75)
-#         sview.AppendTextColumn(' Weight',       width=100)
-#         sview.AppendTextColumn(' Significant?', width=75)
-#
-#         for col in range(sview.ColumnCount):
-#             this = sview.Columns[col]
-#             align = wx.ALIGN_LEFT if col == 0 else wx.ALIGN_RIGHT
-#             this.Sortable = False
-#             this.Alignment = this.Renderer.Alignment = align
-#         sview.SetMinSize((275, 250))
 
         wids['status'] = SimpleText(panel, ' ')
         rfont = self.GetFont()
