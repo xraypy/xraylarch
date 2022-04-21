@@ -275,3 +275,34 @@ def file2groupname(filename, slen=5, symtable=None):
             if scount > 1000:
                 raise ValueError("exhausted unique group names")
     return gname
+
+
+def break_longstring(s, maxlen=90, n1=20):
+    """breaks a long string into a list of smaller strings,
+    broken at commas, space, tab, period, or slash
+
+    returns a list of strings, even if length 1"""
+
+    minlen = maxlen-n1
+
+    if len(s) < maxlen:
+        return [s]
+    out = []
+    while len(s) > maxlen:
+        icomma = s[minlen:].find(',')
+        ispace = s[minlen:].find(' ')
+        itab   = s[minlen:].find('\t')
+        idot   = s[minlen:].find('.')
+        islash = s[minlen:].find('/')
+        ibreak =  -1
+        if icomma > 0:    ibreak = icomma
+        elif ispace > 0:  ibreak = ispace
+        elif itab > 0:    ibreak = itab
+        elif idot > 0:    ibreak = idot
+        elif islash > 0:  ibreak = islash
+        if ibreak < 0:
+            ibreak = maxlen
+        out.append(s[:ibreak+minlen+1])
+        s = s[ibreak+minlen+1:]
+    out.append(s)
+    return out
