@@ -11,7 +11,7 @@ from larch.io import fix_varname
 from larch.site_config import home_dir
 
 
-XASCONF = { # default configuration
+XASCONF = { # default configurations
     'autosave_config': {'savetime': 900, 'nhistory': 3,
                         'fileroot': 'xas_viewer_save'},
 
@@ -62,12 +62,12 @@ XASCONF = { # default configuration
                        'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True},
     }
 
+CONF_FILE = 'xas_viewer.conf'
 
 class XASController():
     """
     class holding the Larch session and doing the processing work for XAS GUI
     """
-    config_file = 'xas_viewer.conf'
     def __init__(self, wxparent=None, _larch=None):
         self.wxparent = wxparent
         self.larch = _larch
@@ -85,6 +85,7 @@ class XASController():
 
         config = {}
         config.update(XASCONF)
+        self.config_file = os.path.join('xas_viewer', CONF_FILE)
         user_config = read_config(self.config_file)
         if user_config is not None:
             for sname in config:
