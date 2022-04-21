@@ -217,8 +217,8 @@ def _help(*args, _larch=None):
     else:
         return helper.getbuffer()
 
-def _journal(**kws):
-    return Journal(**kws)
+def _journal(*args, **kws):
+    return Journal(*args, **kws)
 
 def _dir(obj=None, _larch=None):
     "return directory of an object -- thin wrapper about python builtin"
