@@ -159,15 +159,6 @@ class OverAbsorptionDialog(wx.Dialog):
         self.set_default_elem_edge(self.dgroup)
         self.wids['save_as_name'].SetValue(self.dgroup.filename + '_abscorr')
 
-    def on_saveas(self, event=None):
-        wids = self.wids
-        fname = self.wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetValue()
-        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        if hasattr(self.dgroup, 'norm_corr' ):
-            ngroup.mu = ngroup.norm_corr*1.0
-            del ngroup.norm_corr
-        self.parent.onNewGroup(ngroup)
 
     def on_correct(self, event=None):
         wids = self.wids
@@ -184,7 +175,7 @@ class OverAbsorptionDialog(wx.Dialog):
      anginp=%.1f, angout=%.1f)""" % (dgroup.groupname, dgroup.groupname,
                                      formula, elem, edge, dgroup.groupname,
                                      anginp, angout)
-
+        self.cmd = cmd
         self.controller.larch.eval(cmd)
         self.plot_results()
 
@@ -193,7 +184,24 @@ class OverAbsorptionDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.xdat = dgroup.energy = xdat
         self.parent.process_normalization(dgroup)
+        dgroup.journal.add('fluor_corr_command', self.cmd)
         self.plot_results()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = self.wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+
+        if hasattr(self.dgroup, 'norm_corr' ):
+            ngroup.mu = ngroup.norm_corr*1.0
+            del ngroup.norm_corr
+
+        ogroup = self.controller.get_group(fname)
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        olddesc = ogroup.journal.get('source_desc').value
+        ngroup.journal.add('source_desc', f"fluo_corrected({olddesc})")
+        ngroup.journal.add('fluor_correction_command', self.cmd)
 
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -458,6 +466,7 @@ overwriting current arrays''')
 
         dgroup.energy_shift = eshift
         dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
+        dgroup.journal.add('energy_shift ', eshift)
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -472,6 +481,7 @@ overwriting current arrays''')
             norm_page.wids['energy_shift'].SetValue(eshift)
 
             dgroup.xdat = dgroup.energy = eshift + dgroup.energy_orig[:]
+            dgroup.journal.add('energy_shift ', eshift)
             self.parent.process_normalization(dgroup)
 
     def on_saveas(self, event=None):
@@ -485,7 +495,12 @@ overwriting current arrays''')
 
         ngroup.energy_shift = eshift
         ngroup.xdat = ngroup.energy = eshift + ngroup.energy_orig[:]
-        self.parent.onNewGroup(ngroup)
+
+        ogroup = self.controller.get_group(fname)
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        olddesc = ogroup.journal.get('source_desc').value
+        ngroup.journal.add('source_desc', f"energy_shifted({olddesc})")
+        ngroup.journal.add('energy_shift ', eshift)
 
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -650,18 +665,6 @@ class RebinDataDialog(wx.Dialog):
     def onDone(self, event=None):
         self.Destroy()
 
-    def on_saveas(self, event=None):
-        wids = self.wids
-        fname = wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetValue()
-        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat, yerr, de0 = self.data
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
-
-        ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
-        self.parent.process_normalization(ngroup)
-        self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -697,20 +700,43 @@ class RebinDataDialog(wx.Dialog):
         cmd = """rebin_xafs({group}, e0={e0:f}, pre1={pre1:f}, pre2={pre2:f},
         pre_step={pre_step:f}, xanes_step={xanes_step:f}, exafs1={exafs1:f},
         exafs2={exafs2:f}, exafs_kstep={exafs_kstep:f})""".format(**args)
+        self.cmd = cmd
         self.controller.larch.eval(cmd)
-        xnew = self.dgroup.rebinned.energy
-        ynew = self.dgroup.rebinned.mu
-        yerr = self.dgroup.rebinned.delta_mu
-        self.data = xnew, ynew, yerr, e0
-        self.plot_results()
+
+        if hasattr(self.dgroup, 'rebinned'):
+            xnew = self.dgroup.rebinned.energy
+            ynew = self.dgroup.rebinned.mu
+            yerr = self.dgroup.rebinned.delta_mu
+            self.data = xnew, ynew, yerr, e0
+            self.plot_results()
 
     def on_apply(self, event=None):
         xdat, ydat, yerr, e0 = self.data
         dgroup = self.dgroup
         dgroup.energy = dgroup.xdat = xdat
         dgroup.mu     = dgroup.ydat = ydat
+        dgroup.journal.add('rebin_command ', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat, yerr, de0 = self.data
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+
+        ngroup.delta_mu = getattr(ngroup, 'yerr', 1.0)
+        self.parent.process_normalization(ngroup)
+        self.parent.onNewGroup(ngroup)
+
+        ogroup = self.controller.get_group(fname)
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        olddesc = ogroup.journal.get('source_desc').value
+        ngroup.journal.add('source_desc', f"rebinned({olddesc})")
+        ngroup.journal.add('rebin_command ', self.cmd)
 
     def on_done(self, event=None):
         self.Destroy()
@@ -831,16 +857,6 @@ class SmoothDataDialog(wx.Dialog):
     def onDone(self, event=None):
         self.Destroy()
 
-    def on_saveas(self, event=None):
-        wids = self.wids
-        fname = wids['grouplist'].GetStringSelection()
-        new_fname = wids['save_as_name'].GetValue()
-        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.data
-        ngroup.energy = ngroup.xdat = xdat
-        ngroup.mu     = ngroup.ydat = ydat
-        self.parent.process_normalization(ngroup)
-        self.parent.onNewGroup(ngroup)
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -879,10 +895,10 @@ class SmoothDataDialog(wx.Dialog):
         elif smoothop.startswith('conv'):
             cmd = "smooth({group:s}.energy, {group:s}.mu, sigma={sigma:f}, form='{convop:s}')"
 
-        cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
-                         sigma=sigma, par_n=par_n, par_o=par_o)
+        self.cmd = cmd.format(group=self.dgroup.groupname, convop=convop,
+                              sigma=sigma, par_n=par_n, par_o=par_o)
 
-        self.controller.larch.eval("_tmpy = %s" % cmd)
+        self.controller.larch.eval("_tmpy = %s" % self.cmd)
         self.data = self.dgroup.energy[:], self.controller.symtable._tmpy
         self.plot_results()
 
@@ -891,8 +907,27 @@ class SmoothDataDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
+        ngroup.journal.add('smooth_command', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
+
+    def on_saveas(self, event=None):
+        wids = self.wids
+        fname = wids['grouplist'].GetStringSelection()
+        new_fname = wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+
+        xdat, ydat = self.data
+        ngroup.energy = ngroup.xdat = xdat
+        ngroup.mu     = ngroup.ydat = ydat
+
+        ogroup = self.controller.get_group(fname)
+        olddesc = ogroup.journal.get('source_desc').value
+
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        ngroup.journal.add('source_desc', f"smoothed({olddesc})")
+        ngroup.journal.add('smooth_command', self.cmd)
+        self.parent.process_normalization(ngroup)
 
     def on_done(self, event=None):
         self.Destroy()
@@ -997,8 +1032,15 @@ class DeconvolutionDialog(wx.Dialog):
         xdat, ydat = self.data
         ngroup.energy = ngroup.xdat = xdat
         ngroup.mu     = ngroup.ydat = ydat
+
+        ogroup = self.controller.get_group(fname)
+        olddesc = ogroup.journal.get('source_desc').value
+
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        ngroup.journal.add('source_desc', f"deconvolved({olddesc})")
+        ngroup.journal.add('deconvolve_command', self.cmd)
         self.parent.process_normalization(ngroup)
-        self.parent.onNewGroup(ngroup)
+
 
     def on_groupchoice(self, event=None):
         self.dgroup = self.controller.get_group(self.wids['grouplist'].GetStringSelection())
@@ -1013,7 +1055,8 @@ class DeconvolutionDialog(wx.Dialog):
         dopts = [self.dgroup.groupname,
                  "form='%s'" % (deconv_form),
                  "esigma=%.4f" % (esigma)]
-        self.controller.larch.eval("xas_deconvolve(%s)" % (', '.join(dopts)))
+        self.cmd = "xas_deconvolve(%s)" % (', '.join(dopts))
+        self.controller.larch.eval(self.cmd)
 
         self.data = self.dgroup.energy[:], self.dgroup.deconv[:]
         self.plot_results()
@@ -1023,6 +1066,7 @@ class DeconvolutionDialog(wx.Dialog):
         dgroup = self.dgroup
         dgroup.energy = xdat
         dgroup.mu     = ydat
+        dgroup.journal.add('deconvolve_command ', self.cmd)
         self.parent.process_normalization(dgroup)
         self.plot_results()
 
@@ -1160,19 +1204,6 @@ clear undo history''')
     def onDone(self, event=None):
         self.Destroy()
 
-    def on_saveas(self, event=None):
-        fname = self.wids['grouplist'].GetStringSelection()
-        new_fname = self.wids['save_as_name'].GetValue()
-        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
-        xdat, ydat = self.get_xydata(datatype='mu')
-        xmask = self.xmasks[-1]
-        ngroup.energy = ngroup.xdat = xdat[xmask]
-        ngroup.mu     = ngroup.ydat = ydat[xmask]
-        ngroup.energy_orig = 1.0*ngroup.energy
-        self.parent.onNewGroup(ngroup)
-        self.parent.process_normalization(ngroup, force=True)
-        self.parent.process_exafs(ngroup, force=True)
-
     def reset_data_history(self):
         plottype = 'mu'
         if 'plotopts' in self.wids:
@@ -1252,11 +1283,35 @@ clear undo history''')
         xdat, ydat = self.get_xydata(datatype='raw')
         mask = self.xmasks[-1]
         dgroup = self.dgroup
+        energies_removed  = xdat[np.where(~mask)].tolist()
         dgroup.energy = dgroup.xdat = xdat[mask]
         dgroup.mu     = dgroup.ydat = ydat[mask]
         self.reset_data_history()
+        dgroup.journal.add('deglitch_removed_energies', energies_removed)
         self.parent.process_normalization(dgroup)
         self.plot_results()
+
+    def on_saveas(self, event=None):
+        fname = self.wids['grouplist'].GetStringSelection()
+        new_fname = self.wids['save_as_name'].GetValue()
+        ngroup = self.controller.copy_group(fname, new_filename=new_fname)
+        xdat, ydat = self.get_xydata(datatype='mu')
+        mask = self.xmasks[-1]
+        energies_removed  = xdat[np.where(~mask)].tolist()
+
+        ngroup.energy = ngroup.xdat = xdat[mask]
+        ngroup.mu     = ngroup.ydat = ydat[mask]
+        ngroup.energy_orig = 1.0*ngroup.energy
+
+        ogroup = self.controller.get_group(fname)
+        olddesc = ogroup.journal.get('source_desc').value
+
+        self.parent.onNewGroup(ngroup, journal=ogroup.journal)
+        ngroup.journal.add('source_desc', f"deglitched({olddesc})")
+        ngroup.journal.add('deglitch_removed_energies', energies_removed)
+
+        self.parent.process_normalization(ngroup)
+
 
     def plot_results(self):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -1326,11 +1381,11 @@ SPECCALC_PLOT = """plot(_x, ({expr:s}), label='{expr:s}', new=True,
 
 SPECCALC_SAVE = """{new:s} = copy_xafs_group({group:s})
 {new:s}.groupname = '{new:s}'
-{new:s}.filename = '{fname:s}'
-{new:s}.calc_groups = {group_map:s}
-{new:s}.calc_arrayname = '{yname:s}'
-{new:s}.calc_expr = '{expr:s}'
 {new:s}.mu = ({expr:s})
+{new:s}.filename = '{fname:s}'
+{new:s}.journal.add('calc_groups', {group_map:s})
+{new:s}.journal.add('calc_arrayname', '{yname:s}')
+{new:s}.journal.add('calc_expression', '{expr:s}')
 del _x, a, b, c, d, e, f, g"""
 
 
