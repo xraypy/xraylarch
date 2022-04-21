@@ -53,6 +53,7 @@ from .exafs_panel import EXAFSPanel
 from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
 from .xas_controller import XASController
+from .taskpanel import GroupJournalFrame
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -549,27 +550,30 @@ class XASFrame(wx.Frame):
     def onConfigDataProcessing(self, event=None):
         pass
 
-    def onNewGroup(self, datagroup, source=None):
+    def onNewGroup(self, datagroup, source=None, journal=None):
         """
         install and display a new group, as from 'copy / modify'
         Note: this is a group object, not the groupname or filename
         """
         dgroup = datagroup
-        self.install_group(dgroup.groupname, dgroup.filename, source=source, overwrite=False)
+        self.install_group(dgroup.groupname, dgroup.filename, source=source,
+                           overwrite=False, journal=journal)
         self.ShowFile(groupname=dgroup.groupname)
 
-    def onCopyGroup(self, event=None):
+    def onCopyGroup(self, event=None, journal=None):
         fname = self.current_filename
         if fname is None:
             fname = self.controller.filelist.GetStringSelection()
-        ngroup = self.controller.copy_group(fname, source=f"copied from '{fname:s}'")
-        self.onNewGroup(ngroup)
+        ogroup = self.controller.get_group(fname)
+        ngroup = self.controller.copy_group(fname)
+        self.onNewGroup(ngroup, journal=ogroup.journal)
+        ngroup.journal.add('source_dest', f"copied from '{fname:s}'")
 
     def onGroupJournal(self, event=None):
         dgroup = self.controller.get_group()
-        print("show journal for group ", dgroup)
-        #if dgroup is not None:
-        #  self.show_subframe('group_journal', JournalFrame, dgroup, _larch=self.larch)
+        if dgroup is not None:
+            self.show_subframe('group_journal', GroupJournalFrame, xasmain=self)
+            self.subframes['group_journal'].set_group(dgroup)
 
 
     def onRenameGroup(self, event=None):
@@ -1087,13 +1091,18 @@ class XASFrame(wx.Frame):
         if source is None:
             source = filename
 
-        _j =  {'source': f"{source}"}
-        _j.update(journal)
-        jopts = ', '.join([f"{k}='{v}'" for k, v in _j.items()])
-
         cmds = [f"{groupname:s}.groupname = '{groupname:s}'",
-                f"{groupname:s}.filename = '{filename:s}'",
-                f"{groupname:s}.journal = journal({jopts:s})"]
+                f"{groupname:s}.filename = '{filename:s}'"]
+
+        jopts = f"source='{source}'"
+        if isinstance(journal, dict):
+            jnl =  {'source': f"{source}"}
+            jnl.update(journal)
+            jopts = ', '.join([f"{k}='{v}'" for k, v in jnl.items()])
+        elif isinstance(journal, (list, Journal)):
+            jopts = repr(journal)
+
+        cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
         if datatype == 'xas':
             cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
         cmds = ('\n'.join(cmds))
@@ -1135,7 +1144,7 @@ class XASFrame(wx.Frame):
                 shutil.move(savefile, curf)
 
             self.last_autosave = time.time()
-            save_session(savefile)
+            save_session(savefile, _larch=self.larch)
             stime = time.strftime("%H:%M")
             self.write_message(f"session auto-saved at {stime}", panel=1)
 
