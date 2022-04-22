@@ -1129,11 +1129,12 @@ class XASFrame(wx.Frame):
         """
         conf = self.controller.get_config('autosave_config',
                                           {'savetime': 900,
-                                           'fileroot': 'xas_viewer_save',
+                                           'fileroot': 'session_autosave',
                                            'nhistory': 3})
         if (time.time() > self.last_autosave + conf['savetime'] and
             self.larch.symtable._sys.last_eval_time > self.last_autosave):
-            savefile = os.path.join(user_larchdir, conf['fileroot']+'.larix')
+            savefile = os.path.join(user_larchdir, 'xas_viewer',
+                                    conf['fileroot']+'.larix')
             for i in reversed(range(1, int(conf['nhistory']))):
                 curf = savefile.replace('.larix', f'_{i:d}.larix' )
                 if os.path.exists(curf):
