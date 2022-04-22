@@ -132,7 +132,7 @@ class GroupJournalFrame(wx.Frame):
         self.xasmain = xasmain
         self.dgroup = dgroup
         wx.Frame.__init__(self, None, -1,  'Group Journal',
-                          style=FRAMESTYLE, size=(950, 500))
+                          style=FRAMESTYLE, size=(1050, 700))
 
         panel = GridPanel(self, ncols=3, nrows=10, pad=2, itemstyle=LEFT)
 
@@ -151,14 +151,14 @@ class GroupJournalFrame(wx.Frame):
         coltypes = ['string', 'string', 'string']
         coldefs  = [' ', ' ', ' ']
 
-        self.datagrid = DataTableGrid(panel, nrows=50,
+        self.datagrid = DataTableGrid(panel, nrows=80,
                                       collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
                                       colsizes=colsizes,
-                                      rowlabelsize=80)
+                                      rowlabelsize=40)
 
-        self.datagrid.SetMinSize((1000, 600))
+        self.datagrid.SetMinSize((1000, 650))
         self.datagrid.EnableEditing(False)
 
         panel.Add(self.label, dcol=2)
