@@ -352,7 +352,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     return
 
 
-@Make_CallArgs(["energy", "norm"])
 def prepeaks_setup(energy, norm=None, group=None, emin=None, emax=None,
                    elo=None, ehi=None, _larch=None):
     """set up pre edge peak group.

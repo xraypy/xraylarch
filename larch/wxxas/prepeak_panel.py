@@ -946,6 +946,11 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         opts['group'] = opts['gname']
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
+        ppeaks_opts = dict(array=opts['array_name'], elo=opts['elo'],
+                           ehi=opts['ehi'], emin=opts['emin'],
+                           emax=opts['emax'])
+        dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
+
         cmd = "plot_prepeaks_fit"
         args = ['{gname}']
         if baseline_only:
@@ -1264,6 +1269,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         dgroup = self.controller.get_group(groupname)
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
 
+        ppeaks_opts = dict(array=opts['array_name'], elo=opts['elo'],
+                           ehi=opts['ehi'], emin=opts['emin'],
+                           emax=opts['emax'])
+        dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
+
+
         for comp in self.fit_components.values():
             _cen, _amp = None, None
             if comp.usebox is not None and comp.usebox.IsChecked():
@@ -1322,6 +1333,12 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
             self.build_fitmodel(gname)
             opts['group'] = opts['gname']
             self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+
+            ppeaks_opts = dict(array=opts['array_name'], elo=opts['elo'],
+                               ehi=opts['ehi'], emin=opts['emin'],
+                               emax=opts['emax'])
+            dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
+
             ppeaks = dgroup.prepeaks
 
             # add bkg_component to saved user options
@@ -1353,7 +1370,14 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                        imin=imin, imax=imax,
                                        user_opts=repr(opts)))
 
-            self.autosave_modelresult(self.larch_get("peakresult"))
+            result = self.larch_get("peakresult")
+            jnl = {'label': result.label, 'var_names': result.var_names,
+                   'model': repr(result.model)}
+            jnl.update(result.user_options)
+            dgroup.journal.add('peakfit', jnl)
+            if igroup == 0:
+                self.autosave_modelresult(result)
+
             self.subframes['prepeak_result'].add_results(dgroup, form=opts,
                                                          larch_eval=self.larch_eval,
                                                          show=igroup==ngroups-1)
@@ -1369,6 +1393,11 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
         dgroup = self.controller.get_group()
         opts['group'] = opts['gname']
         self.larch_eval(COMMANDS['prepeaks_setup'].format(**opts))
+
+        ppeaks_opts = dict(array=opts['array_name'], elo=opts['elo'],
+                           ehi=opts['ehi'], emin=opts['emin'],
+                           emax=opts['emax'])
+        dgroup.journal.add_ifnew('prepeaks_setup', ppeaks_opts)
 
         ppeaks = dgroup.prepeaks
 
@@ -1405,7 +1434,14 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                    imin=imin, imax=imax,
                                    user_opts=repr(opts)))
 
-        self.autosave_modelresult(self.larch_get("peakresult"))
+        # journal about peakresult
+        result = self.larch_get("peakresult")
+        jnl = {'label': result.label, 'var_names': result.var_names,
+               'model': repr(result.model)}
+        jnl.update(result.user_options)
+        dgroup.journal.add('peakfit', jnl)
+
+        self.autosave_modelresult(result)
 
         self.onPlot()
         self.show_subframe('prepeak_result', PrePeakFitResultFrame,
