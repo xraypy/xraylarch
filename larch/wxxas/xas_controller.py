@@ -13,7 +13,7 @@ from larch.site_config import home_dir
 
 XASCONF = { # default configurations
     'autosave_config': {'savetime': 900, 'nhistory': 3,
-                        'fileroot': 'xas_viewer_save'},
+                        'fileroot': 'session_autosave'},
 
     'chdir_on_fileopen': True,
 
