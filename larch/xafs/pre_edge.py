@@ -197,7 +197,7 @@ def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
     edge_step = step
     if edge_step is None:
         edge_step = post_edge[ie0] - pre_edge[ie0]
-    edge_step = abs(edge_step)
+    edge_step = abs(float(edge_step))
 
     norm = (mu - pre_edge)/edge_step
     return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
@@ -476,7 +476,7 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
     [elo:ehi].  The baseline function is specified with the `form` keyword
     argument, which can be one or a combination of 'lorentzian', 'gaussian', or 'voigt',
     plus one of 'constant', 'linear', 'quadratic', for example, 'linear+lorentzian',
-    'constant+voigt', 'quadratic', 'gaussian'. 
+    'constant+voigt', 'quadratic', 'gaussian'.
 
     A group named 'prepeaks' will be used or created in the output group, containing
 
