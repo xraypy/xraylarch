@@ -570,10 +570,10 @@ def Make_CallArgs(skipped_args):
                 fname = fcn.__name__
                 details_group = getattr(groupx, f'{fname}_details', None)
                 if details_group  is not None:
-                    setattr(details_group, 'call_args', call_args)
+                    setattr(details_group, 'callargs', call_args)
                 if not hasattr(groupx, 'journal'):
                     groupx.journal = Journal()
-                groupx.journal.add(f'{fname}_call_args',  call_args)
+                groupx.journal.add(f'{fname}_callargs',  call_args)
 
             return result
         wrapper.__doc__ = fcn.__doc__
