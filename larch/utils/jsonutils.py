@@ -215,7 +215,7 @@ def decode4js(obj):
 
     elif classname == 'Journal':
         out = Journal()
-        out.__setstate(decode4js(obj['state']))
+        out.__setstate__(decode4js(obj['state']))
 
     elif classname in LarchGroupTypes:
         out = {}
