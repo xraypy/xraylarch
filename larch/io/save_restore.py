@@ -2,6 +2,7 @@ import json
 import time
 import numpy as np
 import uuid, socket, platform
+from collections import namedtuple
 
 from gzip import GzipFile
 
@@ -12,18 +13,16 @@ from lmfit import Parameter, Parameters
 # from lmfit.minimizer import Minimizer, MinimizerResult
 
 from larch import Group, isgroup, __date__, __version__, __release_version__
-from ..utils import isotime, bytes2str, str2bytes, fix_varname
+from ..utils import isotime, bytes2str, str2bytes, fix_varname, is_gzip
 from ..utils.jsonutils import encode4js, decode4js
 
-def is_gzip(filename):
-    "is a file gzipped?"
-    with open(filename, 'rb') as fh:
-        return fh.read(3) == b'\x1f\x8b\x08'
-    return False
+SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
+
 
 def get_machineid():
     "machine id / MAC address, independent of hostname"
     return hex(uuid.getnode())[2:]
+
 
 def save_session(fname=None, _larch=None):
     """save all groups and data into a Larch Save File (.larix)
@@ -158,7 +157,7 @@ def read_session(fname):
                         pass
                 config[key] = val
 
-    return symbols, config, cmd_history
+    return SessionStore(config, cmd_history, symbols)
 
 
 def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
@@ -179,20 +178,20 @@ def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
     if _larch is None:
         raise ValueError('load session needs a larch session')
 
-    symbols, config, cmd_history = read_session(fname)
+    session = read_session(fname)
 
     symtab = _larch.symtable
     if not hasattr(symtab._sys, 'restored_sessions'):
         symtab._sys.restored_sessions = {}
     this = symtab._sys.restored_sessions[fname] = {}
     this['date'] = isotime()
-    this['config'] = config
-    this['command_history'] = cmd_history
+    this['config'] = session.config
+    this['command_history'] = session.cmd_history
 
     if subgroup is not None:
         print("use subgroup ", subgroup)
 
-    for sym, val in symbols.items():
+    for sym, val in session.symbols.items():
         cur = getattr(symtab, sym, None)
         if isinstance(cur, dict) and merge_dicts:
             cur.update(val)
