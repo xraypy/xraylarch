@@ -36,8 +36,8 @@ XASCONF = { # default configurations
                         'vary_e0': False},
 
     'pca_config': {'fitspace': 'Normalized μ(E)',
-                   'max_components': 50, 'weight_auto': True,
-                   'weight_min': 0.002, 'xmax': 99999, 'xmin': -99999},
+                   'max_components': 20, 'weight_auto': True,
+                   'weight_min': 0.001, 'xmax': 99999, 'xmin': -99999},
 
     'pin_config': {'min_time': 2.0, 'style': 'pin_first', 'timeout': 15.0},
 
