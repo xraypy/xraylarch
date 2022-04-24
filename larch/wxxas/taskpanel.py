@@ -131,6 +131,7 @@ class GroupJournalFrame(wx.Frame):
     def __init__(self, parent, dgroup=None, xasmain=None, **kws):
         self.xasmain = xasmain
         self.dgroup = dgroup
+        self.n_entries = 0
         wx.Frame.__init__(self, None, -1,  'Group Journal',
                           style=FRAMESTYLE, size=(1050, 700))
 
@@ -138,10 +139,7 @@ class GroupJournalFrame(wx.Frame):
 
         self.label = SimpleText(panel, 'Group Journal', size=(750, 30))
 
-        update_btn = Button(panel, 'Refresh', size=(125, -1),
-                            action=self.update)
-
-        export_btn = Button(panel, 'Export to CSV', size=(125, -1),
+        export_btn = Button(panel, 'Save to Tab-Separated File', size=(225, -1),
                             action=self.export)
 
 
@@ -164,8 +162,8 @@ class GroupJournalFrame(wx.Frame):
         panel.Add(self.label, dcol=2)
         panel.Add(HLine(panel, size=(850, 2)), dcol=2, newrow=True)
 
-        panel.Add(update_btn, newrow=True)
-        panel.Add(export_btn)
+        # panel.Add(update_btn, newrow=True)
+        panel.Add(export_btn, newrow=True)
         panel.Add(self.datagrid, dcol=3, drow=4, newrow=True)
         panel.pack()
 
@@ -173,11 +171,29 @@ class GroupJournalFrame(wx.Frame):
         sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
 
+        self.xasmain.timers['journal_updater'] = wx.Timer(self.xasmain)
+        self.xasmain.Bind(wx.EVT_TIMER, self.onRefresh,
+                          self.xasmain.timers['journal_updater'])
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
+
         self.Show()
         self.Raise()
+        self.xasmain.timers['journal_updater'].Start(1000)
 
         if dgroup is not None:
             wx.CallAfter(self.set_group, dgroup=dgroup)
+
+    def onClose(self, event=None):
+        self.xasmain.timers['journal_updater'].Stop()
+        self.Destroy()
+
+    def onRefresh(self, event=None):
+        if self.dgroup is None:
+            return
+        if self.n_entries == len(self.dgroup.journal.data):
+            return
+        self.set_group(self.dgroup)
+
 
     def export(self, event=None):
         wildcard = 'CSV file (*.csv)|*.csv|All files (*.*)|*.*'
@@ -204,9 +220,6 @@ class GroupJournalFrame(wx.Frame):
         writer(msg)
 
 
-    def update(self, event=None):
-        self.set_group()
-
     def set_group(self, dgroup=None):
         if dgroup is None:
             dgroup = self.dgroup
@@ -224,6 +237,8 @@ class GroupJournalFrame(wx.Frame):
 
         grid_data = []
         rowsize = []
+        self.n_entries = len(dgroup.journal.data)
+
         for entry in dgroup.journal:
             val = entry.value
             if not isinstance(val, str):
