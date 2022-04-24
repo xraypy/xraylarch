@@ -16,6 +16,12 @@ from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
 from .shellutils import (_copy, _deepcopy, _more, _parent,
                          _ls, _cd, _cwd, _mkdir)
 
+def is_gzip(filename):
+    "is a file gzipped?"
+    with open(filename, 'rb') as fh:
+        return fh.read(3) == b'\x1f\x8b\x08'
+    return False
+
 def group2dict(group, _larch=None):
     "return dictionary of group members"
     return group.__dict__
