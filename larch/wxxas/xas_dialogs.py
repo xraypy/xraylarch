@@ -10,15 +10,16 @@ import wx
 
 from xraydb import guess_edge
 from larch.math import index_of, index_nearest, interp
-from larch.utils.strutils import file2groupname
+from larch.utils.strutils import file2groupname, unique_name
 
 from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          FloatSpinWithPin, get_icon, SimpleText, Choice,
                          SetTip, Check, Button, HLine, OkCancel, LEFT,
-                         plotlabels)
+                         plotlabels, ReportFrame)
 
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
+from .taskpanel import DictFrame
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
 
@@ -1739,3 +1740,118 @@ class RemoveDialog(wx.Dialog):
             ngroups = len(self.grouplist)
             ok = True
         return response(ok, ngroups)
+
+
+class LoadSessionDialog(wx.Dialog):
+    """Read, show data from saved larch session"""
+    def __init__(self, parent, session, filename, controller, **kws):
+        self.parent = parent
+        self.session = session
+        self.filename = filename
+        self.controller = controller
+        title = f"Read Larch Session from '{filename}'"
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+
+        x0, y0 = parent.GetPosition()
+        self.SetPosition((x0+120, y0+390))
+
+        panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
+        self.wids = wids = {}
+
+        conflict_label = SimpleText(panel, 'Policy for Conflicting Groups:')
+
+        over_choices = ('Import with new name',
+                        'Overwrite group',
+                        'Skip Import')
+
+        wids['policy'] = wx.RadioBox(panel, -1, "", wx.DefaultPosition,
+                                     wx.DefaultSize, over_choices, 1,
+                                     wx.RA_SPECIFY_COLS)
+
+        self.conflicts = {}
+        x_message = 'Larch Session File: No XAFS Groups'
+        _xasgroups = controller.symtable._xasgroups
+        if _xasgroups is not None and '_xasgroups' in session.symbols:
+            xgroups = session.symbols['_xasgroups']
+            x_message = f'Larch Session File: {len(xgroups)} XAFS Groups'
+            for fname, gname in xgroups.items():
+                if fname in _xasgroups:
+                    self.conflicts[gname] = fname
+
+        conflict_message = 'No Conflicting Groups'
+        if len(self.conflicts) == 0:
+            wids['policy'].Disable()
+        else:
+            conflict_message = f'{len(self.conflicts):d} Conflicting Groups'
+
+
+        wids['view_conf'] = Button(panel, 'Show Session Configuration',
+                                     size=(250, 30), action=self.onShowConfig)
+        wids['view_cmds'] = Button(panel, 'Show Session Commands',
+                                     size=(250, 30), action=self.onShowCommands)
+
+        panel.Add(conflict_label)
+        panel.Add(SimpleText(panel, conflict_message), newrow=False)
+        panel.Add(wids['policy'], dcol=3, newrow=True)
+        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add(wids['view_conf'], dcol=1, newrow=True)
+        panel.Add(wids['view_cmds'], dcol=1, newrow=True)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add((5, 5), newrow=True)
+        panel.Add(SimpleText(panel, x_message), dcol=2, newrow=True)
+
+        panel.Add(Button(panel, 'Import', size=(150, -1), action=self.onImport),
+                  dcol=1, newrow=True)
+        panel.Add(Button(panel, 'Done', size=(150, -1), action=self.onClose))
+
+        panel.pack()
+        self.SetSize((500, 325))
+        self.Raise()
+
+    def onShowConfig(self, event=None):
+        DictFrame(parent=self.parent,
+                  data=self.session.config,
+                  title=f"Session Configuration for '{self.filename}'")
+
+    def onShowCommands(self, event=None):
+        oname = self.filename.replace('.larix', '.lar')
+        wildcard='Larch Command Files (*.lar)|*.lar'
+        text = '\n'.join(self.session.command_history)
+        ReportFrame(parent=self.parent,
+                    text=text,
+                    title=f"Session Commands from '{self.filename}'",
+                    default_filename=oname,
+                    wildcard=wildcard)
+
+    def onClose(self, event=None):
+        self.Destroy()
+
+    def onImport(self, event=None):
+        policy = self.wids['policy'].GetStringSelection().lower()
+        conflicts = self.conflicts
+        symtab = self.controller.symtable
+        fgroups = self.controller.file_groups
+        _xasgroups = self.session.symbols.get('_xasgroups', {})
+
+        for sym, dat in self.session.symbols.items():
+            install = True
+            is_xas_group = sym in _xasgroups.values()
+            if sym in conflicts:
+                if policy.startswith('skip'):
+                    install = False
+                elif policy.startswith('import'):
+                    newsym = unique_name(sym, fgroups.values(), max=1000)
+                    _xasgroups[newsym] = _xasgroups.pop(sym)
+                    sym = newsym
+            if install:
+                setattr(symtab, sym, dat)
+                if is_xas_group:
+                    fname = _xasgroups[sym]
+                    if fname in fgroups:
+                        newfname = unique_name(fname, fgroups.keys(), max=1000)
+                        fname = newfname
+                    fgroups[fname] = sym
+                    dat.filename = fname
+                    dat.groupname = sym
+                    self.controller.filelist.Append(sym.strip())
