@@ -1081,10 +1081,10 @@ def _pca_ncomps(result, min_weight=0, ncomps=None):
             ncomps = where(result.variances < min_weight)[0][0]
         else:
             ncomps = argmin(result.ind)
-    return ncomps - 1
+    return ncomps
 
 
-def plot_pca_components(result, min_weight=0, ncomps=None, win=1, _larch=None, **kws):
+def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, win=1, _larch=None, **kws):
     """Plot components from PCA result
 
     result must be output of `pca_train`
@@ -1097,12 +1097,13 @@ def plot_pca_components(result, min_weight=0, ncomps=None, win=1, _larch=None, *
                  win=win, _larch=_larch)
 
     popts.update(kws)
-    ncomps = _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
+    ncomps = result.nsig # _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
 
     _plot(result.x, result.mean, label='Mean', **popts)
-    for i, comp in enumerate(result.components[:ncomps+1]):
-        label = 'Comp# %d (%.4f)' % (i+1, result.variances[i])
-        _oplot(result.x, comp, label=label, **popts)
+    for i, comp in enumerate(result.components):
+        if result.variances[i] > min_variance:
+            label = 'Comp# %d (%.4f)' % (i+1, result.variances[i])
+            _oplot(result.x, comp, label=label, **popts)
 
     redraw(win=win, show_legend=True, _larch=_larch)
 
@@ -1122,8 +1123,7 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
 
     popts.update(kws)
 
-    ncomps = _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
-
+    ncomps = result.nsig
     x = 1 + arange(ncomps)
     y = result.variances[:ncomps]
     _plot(x, y, label='significant', **popts)
@@ -1132,7 +1132,7 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
     ye = result.variances[ncomps-1:ncomps+max_comps]
 
     popts.update(dict(new=False, zorder=5, style='short dashed',
-                      color='#B34050', ymin=2.e-3*result.variances[ncomps]))
+                      color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
     _plot(xe, ye, label='not significant', **popts)
 
     xi = 1 + arange(len(result.ind)-2)
