@@ -130,8 +130,3 @@ class AthenaImporter(wx.Frame) :
         if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
             self.plotpanel.plot(grp.energy, grp.mu,
                                 xlabel='Energy', ylabel='mu',title=label)
-
-        glist = list(self.grouplist.GetCheckedStrings())
-        if label not in glist:
-            glist.append(label)
-        self.grouplist.SetCheckedStrings(glist)
