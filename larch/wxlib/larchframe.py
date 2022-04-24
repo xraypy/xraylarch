@@ -6,6 +6,8 @@ import os
 import time
 from functools import partial
 import wx
+import wx.lib.mixins.inspection
+
 import numpy
 import scipy
 
@@ -34,6 +36,10 @@ def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
     p.SetBackgroundColour(color)
     return p
+
+
+def wx_inspect():
+    wx.GetApp().ShowInspectionTool()
 
 class LarchWxShell(object):
     ps1 = 'Larch>'
@@ -64,7 +70,8 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
         self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
         self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-        self.symtable.set_symbol('_sys.wx.wxapp', output)
+        self.symtable.set_symbol('_sys.wx.wx_inspect', wx_inspect)
+        self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
         self.symtable.set_symbol('_sys.last_eval_time', 0.0)
 
@@ -73,12 +80,7 @@ class LarchWxShell(object):
             bgcol = style.GetBackgroundColour()
             sfont = style.GetFont()
             self.textstyle = wx.TextAttr('black', bgcol, sfont)
-
         self.SetPrompt(True)
-        # self.flush_timer = wx.Timer(wxparent)
-        # self.needs_flush = True
-        # wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
-        # wx.CallAfter(self.flush_timer.Start, 500)
 
     def onUpdate(self, event=None):
         symtable = self.symtable
