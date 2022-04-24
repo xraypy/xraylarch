@@ -16,7 +16,7 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, hypermet,
 from .fitpeak import fit_peak
 from .convolution1D import glinbroad
 from .lincombo_fitting import lincombo_fit, lincombo_fitall, groups2matrix
-from .pca import pca_train, pca_fit, nmf_train
+from .pca import pca_train, pca_fit, nmf_train, save_pca_model, read_pca_model
 from .learn_regress import pls_train, pls_predict, lasso_train, lasso_predict
 from .gridxyz import gridxyz
 from .spline import spline_rep, spline_eval
@@ -36,7 +36,10 @@ _larch_builtins = {'_math': dict(linregress=linregress, polyfit=np.polyfit,
                                  savitzky_golay=savitzky_golay,
                                  smooth=smooth, boxcar=boxcar,
                                  glinbroad=glinbroad, gridxyz=gridxyz,
-                                 pca_train=pca_train, pca_fit=pca_fit,
+                                 pca_train=pca_train,
+                                 pca_fit=pca_fit,
+                                 save_pca_model=save_pca_model,
+                                 read_pca_model=read_pca_model,
                                  nmf_train=nmf_train,
                                  pls_train=pls_train,
                                  pls_predict=pls_predict,

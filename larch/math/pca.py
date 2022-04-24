@@ -5,7 +5,8 @@ linear combination fitting
 import os
 import sys
 import time
-
+import json
+from gzip import GzipFile
 from itertools import combinations
 from collections import OrderedDict
 
@@ -18,11 +19,12 @@ try:
 except ImportError:
     HAS_SKLEARN = False
 
+from lmfit import minimize, Parameters
 
 from .. import Group
 from .utils import interp, index_of
-
-from lmfit import minimize, Parameters
+from larch.utils import is_gzip, str2bytes, bytes2str
+from larch.utils.jsonutils import encode4js, decode4js
 
 from .lincombo_fitting import get_arrays, get_label, groups2matrix
 
@@ -159,10 +161,32 @@ def pca_train(groups, arrayname='norm', xmin=-np.inf, xmax=np.inf):
         ind.append(indval)
     ind = np.array(ind)
 
-    nsig = np.argmin(ind)
+    nsig = int(np.argmin(ind))
     return Group(x=xdat, arrayname=arrayname, labels=labels, ydat=ydat,
                  xmin=xmin, xmax=xmax, mean=ymean, components=eigvec,
                  eigenvalues=eigval, variances=variances, ind=ind, nsig=nsig)
+
+
+def save_pca_model(pca_model, filename):
+    """save a PCA model to a file"""
+    buff = ['##Larch PCA Model: 1.0 : %s' % time.strftime('%Y-%m-%d %H:%M:%S')]
+    buff.append('%s' % json.dumps(encode4js(pca_model)))
+
+    fh = GzipFile(filename, "w")
+    fh.write(str2bytes("\n".join(buff)))
+    fh.close()
+
+def read_pca_model(filename):
+    """read a PCA model from a file"""
+    fopen = GzipFile if is_gzip(filename) else open
+    with fopen(filename, 'rb') as fh:
+        text = fh.read().decode('utf-8')
+
+    lines = text.split('\n')
+    if not lines[0].startswith('##Larch PCA Model'):
+        raise ValueError(f"Invalid Larch PCA Model: '{fname:s}'")
+    return decode4js(json.loads(lines[1]))
+
 
 def pca_statistics(pca_model):
     """return PCA arrays of statistics IND and F
