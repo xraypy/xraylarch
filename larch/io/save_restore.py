@@ -45,7 +45,6 @@ def save_session(fname=None, _larch=None):
         raise ValueError('_larch not defined')
     symtab = _larch.symtable
 
-
     buff = ["##LARIX: 1.0      Larch Session File",
             "##Date Saved: %s"   % time.strftime('%Y-%m-%d %H:%M:%S'),
             "##<CONFIG>",
@@ -75,6 +74,7 @@ def save_session(fname=None, _larch=None):
         histbuff = _larch.input.history.get(session_only=True)
     except:
         histbuff = None
+
     if histbuff is not None:
         buff.append("##<Session Commands>")
         buff.extend(["%s" % l for l in histbuff])
@@ -186,7 +186,7 @@ def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
     this = symtab._sys.restored_sessions[fname] = {}
     this['date'] = isotime()
     this['config'] = session.config
-    this['command_history'] = session.cmd_history
+    this['command_history'] = session.command_history
 
     if subgroup is not None:
         print("use subgroup ", subgroup)
