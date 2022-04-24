@@ -16,7 +16,6 @@ from functools import partial
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-import wx.lib.mixins.inspection
 from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.richtext import RichTextCtrl
@@ -36,7 +35,7 @@ from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SpecfileImporter, FileCheckList, FloatCtrl,
                          SetTip, get_icon, SimpleText, pack, Button, Popup,
-                         HLine, FileSave, Choice, Check, MenuItem,
+                         HLine, FileSave, FileOpen, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog,
                          CIFFrame, FeffResultsFrame, LarchWxApp)
@@ -59,7 +58,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
                           EnergyCalibrateDialog, SmoothDataDialog,
                           OverAbsorptionDialog, DeconvolutionDialog,
-                          SpectraCalcDialog,  QuitDialog)
+                          SpectraCalcDialog,  QuitDialog, LoadSessionDialog)
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       fix_varname, groups2csv, is_athena_project,
@@ -119,7 +118,8 @@ class XASFrame(wx.Frame):
 
         self.last_array_sel_col = {}
         self.last_array_sel_spec = {}
-        self.last_project_file = None
+        self.last_session_file = None
+        self.last_athena_file = None
         self.paths2read = []
         self.current_filename = filename
         self.extra_sums = None
@@ -136,7 +136,7 @@ class XASFrame(wx.Frame):
         iconfile = os.path.join(icondir, ICON_FILE)
         self.SetIcon(wx.Icon(iconfile, wx.BITMAP_TYPE_ICO))
 
-        self.larch.symtable._sys.xas_viewer.mainframe = self
+        # self.larch.symtable._sys.wx.inspect = wx_inspect
         self.last_autosave = time.time()
 
         self.timers = {'pin': wx.Timer(self),
@@ -317,19 +317,26 @@ class XASFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Open Data File",  self.onReadDialog)
 
-        MenuItem(self, fmenu, "&Save Project\tCtrl+S",
-                 "Save Session to Project File",  self.onSaveProject)
+        MenuItem(self, fmenu, "&Read Larch Session\tCtrl+R",
+                 "Read Previously Saved Session",  self.onLoadSession)
 
-        MenuItem(self, fmenu, "&Save Project As...",
-                 "Save Session to a new Project File",  self.onSaveAsProject)
+        MenuItem(self, fmenu, "&Save Larch Session\tCtrl+S",
+                 "Save Session to a File",  self.onSaveSession)
 
-        MenuItem(self, fmenu, "Export Selected Groups to Project File",
-                 "Export Selected Groups to Project File",
-                 self.onExportProject)
 
-        MenuItem(self, fmenu, "Export Selected Groups to CSV",
-                 "Export Selected Groups to CSV",
+        fmenu.AppendSeparator()
+
+        MenuItem(self, fmenu, "Save Selected Groups to Athena Project File",
+                 "Save Selected Groups to an Athena Project File",
+                 self.onExportAthenaProject)
+
+        MenuItem(self, fmenu, "Save Selected Groups to CSV File",
+                 "Save Selected Groups to a CSV File",
                  self.onExportCSV)
+
+        MenuItem(self, fmenu, 'Save Larch History as Script\tCtrl+H',
+                 'Save Session History as Larch Script',
+                 self.onSaveLarchHistory)
 
         fmenu.AppendSeparator()
 
@@ -337,13 +344,8 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, 'Save Larch Script of History\tCtrl+H',
-                 'Save Session History as Larch Script',
-                 self.onSaveLarchHistory)
-
-        if WX_DEBUG:
-            MenuItem(self, fmenu, "&Inspect \tCtrl+J",
-                     " wx inspection tool ",  self.showInspectionTool)
+        MenuItem(self, fmenu, 'Edit Preferences', 'Customize Preferences',
+                 self.onPreferences)
 
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
@@ -354,7 +356,7 @@ class XASFrame(wx.Frame):
         MenuItem(self, group_menu, "Rename This Group",
                  "Rename This Group", self.onRenameGroup)
 
-        MenuItem(self, group_menu, "Show Group Journal",
+        MenuItem(self, group_menu, "Show Journal for This Group",
                  "Show Processing Journal for This Group", self.onGroupJournal)
 
 
@@ -481,7 +483,8 @@ class XASFrame(wx.Frame):
                    delim=res.delim, _larch=self.larch)
         self.write_message(f"Exported CSV file {outfile:s}")
 
-    def onExportProject(self, evt=None):
+    # Athena
+    def onExportAthenaProject(self, evt=None):
         groups = []
         for checked in self.controller.filelist.GetCheckedStrings():
             groups.append(self.controller.file_groups[str(checked)])
@@ -490,11 +493,11 @@ class XASFrame(wx.Frame):
              Popup(self, "No files selected to export to Project",
                    "No files selected")
              return
-        prompt, prjfile = self.get_projectfile()
+        prompt, prjfile = self.get_athena_project()
         self.save_athena_project(prjfile, groups)
 
-    def get_projectfile(self):
-        prjfile = self.last_project_file
+    def get_athena_project(self):
+        prjfile = self.last_athena_file
         prompt = False
         if prjfile is None:
             tstamp = isotime(filename=True)[:15]
@@ -502,23 +505,23 @@ class XASFrame(wx.Frame):
             prompt = True
         return prompt, prjfile
 
-    def onSaveProject(self, evt=None):
+    def onSaveAthenaProject(self, evt=None):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
             Popup(self, "No files to export to Project", "No files to export")
             return
 
-        prompt, prjfile = self.get_projectfile()
+        prompt, prjfile = self.get_athenaproject()
         self.save_athena_project(prjfile, groups, prompt=prompt,
                                  warn_overwrite=False)
 
-    def onSaveAsProject(self, evt=None):
+    def onSaveAsAthenaProject(self, evt=None):
         groups = self.controller.filelist.GetItems()
         if len(groups) < 1:
             Popup(self, "No files to export to Project", "No files to export")
             return
 
-        prompt, prjfile = self.get_projectfile()
+        prompt, prjfile = self.get_athena_project()
         self.save_athena_project(prjfile, groups)
 
     def save_athena_project(self, filename, grouplist, prompt=True,
@@ -545,7 +548,53 @@ class XASFrame(wx.Frame):
             aprj.add_group(grp)
         aprj.save(use_gzip=True)
         self.write_message("Saved project file %s" % (filename))
-        self.last_project_file = filename
+        self.last_athena_file = filename
+
+
+    def onPreferences(self, evt=None):
+        print(" Larch Preferences ")
+
+    def onLoadSession(self, evt=None):
+        wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
+        path = FileOpen(self, message="Load Larch Session",
+                        wildcard=wildcard, default_file='larch.larix')
+        if path is None:
+            return
+
+        try:
+            _session  = read_session(path)
+        except:
+            Popup(self, f"{filename} is not a valid Larch Session File",
+                   f"{filename} is not a valid Larch Session File")
+            return
+
+        LoadSessionDialog(self, _session, path, self.controller).Show()
+
+
+    def onSaveSession(self, evt=None):
+        groups = self.controller.filelist.GetItems()
+        if len(groups) < 1:
+            return
+
+        fname = self.last_session_file
+        if fname is None:
+            fname = time.strftime('%Y%b%d_%H%M') + '.larix'
+
+        _, fname = os.path.split(fname)
+        wcards  = 'Larch Project Files (*.larix)|*.larixj|All files (*.*)|*.*'
+        fname = FileSave(self, 'Save Larch Session File',
+                            default_file=fname, wildcard=wcards)
+        if fname is None:
+            return
+
+        if os.path.exists(fname):
+            if wx.ID_YES != Popup(self,
+                                  "Overwrite existing Project File?",
+                                  "Overwrite existing file?", style=wx.YES_NO):
+                return
+
+        save_session(fname=fname, _larch=self.larch._larch)
+        self.write_message(f"Saved session to '{fname}'")
 
     def onConfigDataProcessing(self, event=None):
         pass
@@ -699,10 +748,6 @@ class XASFrame(wx.Frame):
     def onConfigDataFitting(self, event=None):
         pass
 
-    def showInspectionTool(self, event=None):
-        app = wx.GetApp()
-        app.ShowInspectionTool()
-
     def onAbout(self, event=None):
         info = AboutDialogInfo()
         info.SetName('XAS Viewer')
@@ -733,9 +778,7 @@ class XASFrame(wx.Frame):
                 return
 
             if res.save:
-                groups = [gname for gname in self.controller.file_groups]
-                if len(groups) > 0:
-                    self.save_athena_project(groups[0], groups, prompt=True)
+                self.onSaveSession()
 
         self.controller.save_config()
         try:
@@ -956,7 +999,7 @@ class XASFrame(wx.Frame):
             self.ShowFile(groupname=gname, process=True, plot=plot_first)
             plot_first = False
         self.write_message("read %d datasets from %s" % (len(namelist), path))
-        self.last_project_file = path
+        self.last_athena_file = path
 
     def onRead_OK(self, script, path, groupname=None, filename=None,
                   ref_groupname=None, ref_filename=None,
@@ -1145,7 +1188,7 @@ class XASFrame(wx.Frame):
                 shutil.move(savefile, curf)
 
             self.last_autosave = time.time()
-            save_session(savefile, _larch=self.larch)
+            save_session(savefile, _larch=self.larch._larch)
             stime = time.strftime("%H:%M")
             self.write_message(f"session auto-saved at {stime}", panel=1)
 
