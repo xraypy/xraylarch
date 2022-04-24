@@ -126,6 +126,106 @@ class DataTableGrid(wxgrid.Grid):
             self.EnableCellEditControl()
 
 
+class DictFrame(wx.Frame):
+    """ simple display of dict"""
+    def __init__(self, parent, data=None, title='Dictionary', **kws):
+        self.parent = parent
+        if data is None: data = {}
+        self.data = data
+
+        wx.Frame.__init__(self, None, -1,  title, style=FRAMESTYLE, **kws)
+
+        panel = GridPanel(self, ncols=3, nrows=10, pad=2, itemstyle=LEFT)
+
+        export_btn = Button(panel, 'Save to Tab-Separated File', size=(225, -1),
+                            action=self.export)
+
+        collabels = [' Label ', ' Value ']
+
+        colsizes = [200, 550]
+        coltypes = ['string', 'string']
+        coldefs  = [' ', ' ']
+
+        self.datagrid = DataTableGrid(panel,
+                                      nrows=min(25, len(self.data)+2),
+                                      collabels=collabels,
+                                      datatypes=coltypes,
+                                      defaults=coldefs,
+                                      colsizes=colsizes,
+                                      rowlabelsize=40)
+
+        self.datagrid.SetMinSize((800, 500))
+        self.datagrid.EnableEditing(False)
+
+        panel.Add(export_btn, newrow=True)
+        panel.Add(HLine(panel, size=(850, 2)), dcol=2, newrow=True)
+        panel.Add(self.datagrid, dcol=3, drow=4, newrow=True)
+        panel.pack()
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, LEFT, 3)
+        pack(self, sizer)
+
+        self.Show()
+        self.Raise()
+        self.SetSize((875, 600))
+        wx.CallAfter(self.set_data)
+
+    def export(self, event=None):
+        wildcard = 'CSV file (*.csv)|*.csv|All files (*.*)|*.*'
+        fname = FileSave(self, message='Save Tab-Separated-Value Data File',
+                         wildcard=wildcard,
+                         default_file= "config.csv")
+        if fname is None:
+            return
+
+        buff = ['Label\tValue']
+        for k, v in self.data.items():
+            k = k.replace('\t', '_')
+            if not isinstance(v, str): v = repr(v)
+            v = v.replace('\t', '   ')
+            buff.append(f"{k}\t{v}")
+
+        buff.append('')
+        with open(fname, 'w') as fh:
+            fh.write('\n'.join(buff))
+
+        msg = f"Exported data '{fname}'"
+        writer = getattr(self.parent, 'write_message', sys.stdout)
+        writer(msg)
+
+
+    def set_data(self, data=None):
+        if data is None:
+            data = self.data
+
+        if data is None:
+            return
+
+        grid_data = []
+        rowsize = []
+        n_entries = len(data)
+
+        for key, val in data.items():
+            if not isinstance(val, str):
+                val = repr(val)
+            xval = break_longstring(val)
+            val = '\n'.join(xval)
+            rowsize.append(len(xval))
+            grid_data.append([key, val])
+
+        self.datagrid.table.Clear()
+        nrows = self.datagrid.table.GetRowsCount()
+        if len(grid_data) > nrows:
+            self.datagrid.table.AppendRows(len(grid_data)+8 - nrows)
+
+        self.datagrid.table.data = grid_data
+        for i, rsize in enumerate(rowsize):
+            self.datagrid.SetRowSize(i, rsize*20)
+
+        self.datagrid.table.View.Refresh()
+
+
 class GroupJournalFrame(wx.Frame):
     """ edit parameters"""
     def __init__(self, parent, dgroup=None, xasmain=None, **kws):
