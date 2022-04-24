@@ -1135,9 +1135,9 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
                       color='#B34050', ymin=2e-3*result.variances[ncomps-1]))
     _plot(xe, ye, label='not significant', **popts)
 
-    xi = 1 + arange(len(result.ind)-2)
+    xi = 1 + arange(len(result.ind)-1)
 
-    _plot(xi, result.ind[1:len(xi)+1], zorder=15, y2label='Indicator Value',
+    _plot(xi, result.ind[1:], zorder=15, y2label='Indicator Value',
           label='IND', style='solid', win=win, show_legend=True,
           linewidth=1, marker='o', side='right', _larch=_larch)
 
