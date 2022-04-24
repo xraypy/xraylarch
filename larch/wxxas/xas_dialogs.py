@@ -499,8 +499,8 @@ overwriting current arrays''')
         ogroup = self.controller.get_group(fname)
         self.parent.onNewGroup(ngroup, journal=ogroup.journal)
         olddesc = ogroup.journal.get('source_desc').value
-        ngroup.journal.add('source_desc', f"energy_shifted({olddesc})")
-        ngroup.journal.add('energy_shift ', eshift)
+        ngroup.journal.add('source_desc', f"energy_shifted({olddesc}, {eshift:.4f})")
+        ngroup.journal.add('energy_shift ', 0.0)
 
     def plot_results(self, event=None):
         ppanel = self.controller.get_display(stacked=False).panel
@@ -1673,7 +1673,7 @@ class QuitDialog(wx.Dialog):
         panel = GridPanel(self, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
 
         self.save = Check(panel, default=False,
-                          label='Save Project before Quitting?')
+                          label='Save Larch Session before Quitting?')
 
         panel.Add((5, 5), newrow=True)
         panel.Add(self.save)
