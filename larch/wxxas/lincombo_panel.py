@@ -625,19 +625,21 @@ class LinearComboPanel(TaskPanel):
         wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(175, -1),
                                       action=self.onFitAll)
 
-        wids['add_selected'] = Button(panel, 'Use Selected Groups as Components',
-                                      size=(300, -1),
-                                      action=self.onUseSelected)
+        wids['fit_group'].Disable()
+        wids['fit_selected'].Disable()
 
-        wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(225, -1),
-                                  action=self.onSaveConfigBtn)
+        wids['add_selected'] = Button(panel, 'Use Selected Groups as Components',
+                                      size=(300, -1), action=self.onUseSelected)
+
+        # wids['saveconf'] = Button(panel, 'Save as Default Settings', size=(225, -1),
+        #                           action=self.onSaveConfigBtn)
 
         opts = dict(default=True, size=(75, -1), action=self.onPlotOne)
 
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
         wids['vary_e0'] = Check(panel, label='Allow data to shift energy in fit?', default=False)
-        wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=True)
+        wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=False)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
         max_ncomps = self.add_floatspin('max_ncomps', value=10, digits=0, increment=1,
                                         min_val=0, max_val=20, size=(60, -1),
@@ -655,21 +657,10 @@ class LinearComboPanel(TaskPanel):
         panel.Add(ehi_wids)
         panel.Add(wids['show_fitrange'])
 
-        panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
-        add_text('Run Fit: ')
-        panel.Add(wids['fit_group'], dcol=2)
-        panel.Add(wids['fit_selected'], dcol=3)
-        add_text('Fit Options: ')
-        panel.Add(wids['vary_e0'], dcol=2)
-        panel.Add(wids['sum_to_one'], dcol=2)
-        panel.Add((10, 10), dcol=1, newrow=True)
-        panel.Add(wids['all_combos'], dcol=2)
-        add_text('Max # Components: ', newrow=False)
-        panel.Add(max_ncomps, dcol=2)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
 
-        add_text('Components: ')
+        add_text('Build Model : ')
         panel.Add(wids['add_selected'], dcol=4)
 
         collabels = [' File /Group Name   ', 'weight', 'min', 'max']
@@ -687,7 +678,19 @@ class LinearComboPanel(TaskPanel):
         panel.Add(wids['table'], newrow=True, dcol=6)
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
-        panel.Add(wids['saveconf'], dcol=4, newrow=True)
+        add_text('Fit with this Model: ')
+        panel.Add(wids['fit_group'], dcol=2)
+        panel.Add(wids['fit_selected'], dcol=3)
+        add_text('Fit Options: ')
+        panel.Add(wids['vary_e0'], dcol=2)
+        panel.Add(wids['sum_to_one'], dcol=2)
+        panel.Add((10, 10), dcol=1, newrow=True)
+        panel.Add(wids['all_combos'], dcol=2)
+        add_text('Max # Components: ', newrow=False)
+        panel.Add(max_ncomps, dcol=2)
+
+        panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
+        # panel.Add(wids['saveconf'], dcol=4, newrow=True)
         panel.pack()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -839,10 +842,14 @@ class LinearComboPanel(TaskPanel):
         for grp in selected_groups:
             grid_data.append([grp, weight, 0, 1])
 
+
+        self.wids['fit_group'].Enable()
+        self.wids['fit_selected'].Enable()
+
+
         self.wids['table'].table.data = grid_data
         self.wids['table'].table.View.Refresh()
         self.skip_process = False
-
 
     def do_fit(self, groupname, form):
         """run lincombo fit for a group"""
