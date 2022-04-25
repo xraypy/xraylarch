@@ -32,7 +32,7 @@ XASCONF = { # default configurations
     'lincombo_config': {'all_combos': True, 'ehi': 99999, 'ehi_rel': 110,
                         'elo': -99999, 'elo_rel': -40,
                         'fitspace': 'Normalized μ(E)', 'show_e0': False,
-                        'show_fitrange': True, 'sum_to_one': True,
+                        'show_fitrange': True, 'sum_to_one': False,
                         'vary_e0': False},
 
     'pca_config': {'fitspace': 'Normalized μ(E)',
