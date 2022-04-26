@@ -281,6 +281,8 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         if dgroup is None:
             return self.get_defaultconfig()
+        self.read_form()
+
         if hasattr(dgroup, self.configname):
             conf = getattr(dgroup, self.configname)
         else:
@@ -295,7 +297,9 @@ class XASNormPanel(TaskPanel):
 
         if conf['edge_step'] is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
-        conf['atsym'] = getattr(dgroup, 'atsym', conf['atsym'])
+
+        conf['atsym'] = getattr(dgroup, 'atsym', '?')
+
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
         xeref = getattr(dgroup, 'energy_ref', '')
@@ -357,6 +361,7 @@ class XASNormPanel(TaskPanel):
                     self.wids[attr].SetValue(val)
 
             self.set_nnorm_widget(opts.get('nnorm'))
+
 
             self.wids['energy_shift'].SetValue(opts['energy_shift'])
             self.wids['nvict'].SetSelection(opts['nvict'])
@@ -792,7 +797,6 @@ class XASNormPanel(TaskPanel):
                     copts.append("%s=None" % attr)
                 else:
                     copts.append("%s=%.2f" % (attr, form[attr]))
-
             self.larch_eval("mback_norm(%s)" % (', '.join(copts)))
 
             if form['auto_step']:
