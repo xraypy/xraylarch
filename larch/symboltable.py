@@ -28,7 +28,7 @@ class Group(object):
             setattr(self, key, val)
 
     def __len__(self):
-        return max(1, len(dir(self))-1)
+        return len(dir(self))
 
     def __repr__(self):
         if self.__name__ is not None:
@@ -191,7 +191,6 @@ class SymbolTable(Group):
         self._sys.config = Group(home_dir    = site_config.home_dir,
                                  history_file= site_config.history_file,
                                  init_files  = site_config.init_files,
-                                 modules_path= site_config.modules_path,
                                  user_larchdir= site_config.user_larchdir,
                                  larch_version= site_config.larch_version)
 
