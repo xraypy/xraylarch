@@ -26,7 +26,7 @@ import larch
 from larch import Group, Journal, Entry
 from larch.io import save_session, read_session
 from larch.math import index_of
-from larch.utils import isotime, get_cwd
+from larch.utils import isotime, get_cwd, is_gzip
 from larch.utils.strutils import (file2groupname, unique_name,
                                   common_startstring)
 
@@ -62,6 +62,7 @@ from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
 
 from larch.io import (read_ascii, read_xdi, read_gsexdi, gsescan_group,
                       fix_varname, groups2csv, is_athena_project,
+                      is_larch_session_file,
                       AthenaProject, make_hashkey, is_specfile, open_specfile)
 
 from larch.xafs import pre_edge, pre_edge_baseline
@@ -561,10 +562,11 @@ class XASFrame(wx.Frame):
         print(" Larch Preferences ")
         # self.show_subframe('preferences', PreferencesFrame, controller=self.controller)
 
-    def onLoadSession(self, evt=None):
-        wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
-        path = FileOpen(self, message="Load Larch Session",
-                        wildcard=wildcard, default_file='larch.larix')
+    def onLoadSession(self, evt=None, path=None):
+        if path is None:
+            wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
+            path = FileOpen(self, message="Load Larch Session",
+                            wildcard=wildcard, default_file='larch.larix')
         if path is None:
             return
 
@@ -918,6 +920,9 @@ class XASFrame(wx.Frame):
                                _larch=self.larch_buffer.larchshell,
                                last_array_sel=self.last_array_sel_spec,
                                read_ok_cb=self.onReadSpecfile_OK)
+        # check for Larch Session File
+        elif is_larch_session_file(path):
+            self.onLoadSession(path=path)
         # default to Column File
         else:
             self.show_subframe('readfile', ColumnDataFileFrame,
