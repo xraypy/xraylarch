@@ -197,7 +197,13 @@ class XASFrame(wx.Frame):
         sel_none = Btn('Select None',   120, self.onSelNone)
         sel_all  = Btn('Select All',    120, self.onSelAll)
 
-        self.controller.filelist = FileCheckList(leftpanel,
+        file_actions = [('Show Group Journal', self.onGroupJournal),
+                        ('Copy Group', self.onCopyGroup),
+                        ('Rename Group', self.onRenameGroup),
+                        ('Remove Group', self.onRemoveGroup)]
+
+        self.controller.filelist = FileCheckList(leftpanel, main=self,
+                                                 pre_actions=file_actions,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -652,6 +658,21 @@ class XASFrame(wx.Frame):
 
             self.controller.filelist.SetCheckedStrings(selected)
             self.controller.filelist.SetStringSelection(res.newname)
+
+    def onRemoveGroup(self, event=None):
+        n = int(self.controller.filelist.GetSelection())
+        all_names = self.controller.filelist.GetItems()
+        fname = all_names[n]
+
+        do_remove = (wx.ID_YES == Popup(self,
+                                        f"Remove Group '{fname}'?",
+                                        'Remove Group? Cannot be undone!',
+                                        style=wx.YES_NO))
+        if do_remove:
+            fname = all_names.pop(n)
+            self.controller.filelist.refresh(all_names)
+            self.RemoveFile(fname)
+
 
     def onRemoveGroups(self, event=None):
         groups = []
