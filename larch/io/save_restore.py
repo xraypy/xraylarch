@@ -59,7 +59,6 @@ def save_session(fname=None, _larch=None):
             "##Python Implementation: %s" % platform.python_implementation(),
             "##Larch Release Version: %s" % __release_version__,
             "##Larch Release Date: %s" % __date__,
-            "##Larch Working Version: %s" % __version__,
             ]
 
     core_groups = symtab._sys.core_groups
@@ -81,7 +80,7 @@ def save_session(fname=None, _larch=None):
         buff.append("##</Session Commands>")
 
     syms = []
-    for attr in dir(symtab):
+    for attr in symtab.__dir__(): # insert order, not alphabetical order
         if attr in core_groups:
             continue
         syms.append(attr)
