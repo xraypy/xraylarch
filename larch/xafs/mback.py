@@ -283,9 +283,8 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
 
     if norm2 is None:
         norm2 = max(energy) - e0
-
     if norm2 < 0:
-        norm2 = max(energy) - e0  - norm2
+        norm2 = (max(energy) - e0)  - norm2
 
     # avoid l2 and higher edges
     if edge.lower().startswith('l'):
@@ -293,12 +292,13 @@ def mback_norm(energy, mu=None, group=None, z=None, edge='K', e0=None,
             e_l2 = xray_edge(z, 'L2').energy
             norm2 = min(norm2,  e_l2-e0)
         elif edge.lower() == 'l2':
-            e_l2 = xray_edge(z, 'L1').energy
+            e_l1 = xray_edge(z, 'L1').energy
             norm2 = min(norm2,  e_l1-e0)
 
     ipre2 = index_of(energy, e0+pre2)
     inor1 = index_of(energy, e0+norm1)
     inor2 = index_of(energy, e0+norm2) + 1
+
 
 
     weights[ipre2:] = 0.0
