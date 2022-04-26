@@ -232,6 +232,18 @@ class PCAPanel(TaskPanel):
 
         self.skip_process = False
 
+    def onPanelExposed(self, **kws):
+        if hasattr(self.larch.symtable, 'pca_result'):
+            self.use_model()
+
+        fname = self.controller.filelist.GetStringSelection()
+        if fname in self.controller.file_groups:
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            self.fill_form(dgroup)
+            self.process(dgroup=dgroup)
+
+
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
         conf.update(self.read_form())
