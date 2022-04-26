@@ -299,7 +299,7 @@ class TaskPanel(wx.Panel):
     def read_form(self):
         "read for, returning dict of values"
         dgroup = self.controller.get_group()
-        form_opts = {'groupname': dgroup.groupname}
+        form_opts = {'groupname': getattr(dgroup, 'groupname', 'No Group')}
         for name, wid in self.wids.items():
             val = None
             for method in ('GetValue', 'GetStringSelection', 'IsChecked',
