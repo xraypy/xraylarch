@@ -26,7 +26,7 @@ from .xdi import read_xdi
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
 from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
 from .gse_mcafile import gsemca_group, GSEMCA_File
-from .save_restore import save_session, load_session, read_session
+from .save_restore import save_session, load_session, read_session, is_larch_session_file
 from .tifffile import TIFFfile
 from .athena_project import (is_athena_project, read_athena, AthenaProject, create_athena,
                              extract_athenagroup, make_hashkey)
