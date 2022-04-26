@@ -4,12 +4,13 @@ from collections import OrderedDict
 class FileDropTarget(wx.FileDropTarget):
     def __init__(self, main):
         wx.FileDropTarget.__init__(self)
-        self.main = main
+        self.reader = getattr(main, 'onRead', None)
 
     def OnDropFiles(self, x, y, filenames):
-        for file in filenames:
-            if hasattr(self.main, 'onRead'):
-                self.main.onRead(file)
+        if self.reader is not None:
+            for file in filenames:
+                self.reader(file)
+        return (self.reader is not None)
 
 class FileCheckList(wx.CheckListBox):
     """
@@ -31,7 +32,7 @@ class FileCheckList(wx.CheckListBox):
         self.remove_action = remove_action
         self.rclick_actions = OrderedDict()
 
-        main_actions = [("Select All",        self.select_all),
+        core_actions = [("Select All",        self.select_all),
                         ("Select All above",  self.select_allabove),
                         ("Select All below",  self.select_allbelow),
                         ("Select None",       self.select_none),
@@ -48,7 +49,7 @@ class FileCheckList(wx.CheckListBox):
         if pre_actions is not None:
             click_actions.extend(pre_actions)
             click_actions.append(("--sep--", None))
-        click_actions.extend(main_actions)
+        click_actions.extend(core_actions)
         if post_actions is not None:
             click_actions.append(("--sep--", None))
             click_actions.extend(post_actions)
