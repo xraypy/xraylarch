@@ -22,9 +22,9 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button, HLine,
                          Choice, Check, CEN, LEFT, Font, FONTSIZE,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
-                         EditableListBox)
+                         EditableListBox, DataTableGrid)
 
-from .taskpanel import TaskPanel, DataTableGrid
+from .taskpanel import TaskPanel
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')

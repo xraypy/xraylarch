@@ -17,12 +17,14 @@ from larch import Group
 from larch.math import index_of
 from larch.wxlib import (BitmapButton, TextCtrl, FloatCtrl, get_icon,
                          SimpleText, pack, Button, HLine, Choice, Check,
-                         NumericCombo, CEN, LEFT, Font, FileSave, FileOpen)
+                         NumericCombo, CEN, LEFT, Font, FileSave, FileOpen,
+                         DataTableGrid)
+
 from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
 
-from .taskpanel import TaskPanel, DataTableGrid
+from .taskpanel import TaskPanel
 
 # plot options:
 norm   = 'Normalized \u03bC(E)'

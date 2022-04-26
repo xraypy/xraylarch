@@ -20,9 +20,9 @@ from larch.math import index_of
 from larch.utils import get_cwd
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
-                         LEFT, Font, FileSave, FileOpen)
+                         LEFT, Font, FileSave, FileOpen, DataTableGrid)
 
-from .taskpanel import TaskPanel, autoset_fs_increment, DataTableGrid
+from .taskpanel import TaskPanel, autoset_fs_increment
 from larch.math.lincombo_fitting import get_arrays
 
 np.seterr(all='ignore')
