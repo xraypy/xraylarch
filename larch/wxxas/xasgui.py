@@ -52,7 +52,7 @@ from .exafs_panel import EXAFSPanel
 from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
 from .xas_controller import XASController
-from .taskpanel import GroupJournalFrame
+from .taskpanel import GroupJournalFrame# , PreferencesFrame
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -553,6 +553,7 @@ class XASFrame(wx.Frame):
 
     def onPreferences(self, evt=None):
         print(" Larch Preferences ")
+        # self.show_subframe('preferences', PreferencesFrame, controller=self.controller)
 
     def onLoadSession(self, evt=None):
         wildcard = 'Larch Session File (*.larix)|*.larix|All files (*.*)|*.*'
@@ -569,7 +570,9 @@ class XASFrame(wx.Frame):
             return
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
-
+        fdir, fname = os.path.split(path)
+        os.chdir(fdir)
+        self.controller.set_workdir()
 
     def onSaveSession(self, evt=None):
         groups = self.controller.filelist.GetItems()
