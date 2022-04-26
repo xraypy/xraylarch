@@ -18,11 +18,16 @@ from ..utils.jsonutils import encode4js, decode4js
 
 SessionStore = namedtuple('SessionStore', ('config', 'command_history', 'symbols'))
 
-
 def get_machineid():
     "machine id / MAC address, independent of hostname"
     return hex(uuid.getnode())[2:]
 
+def is_larch_session_file(fname):
+    fopen = GzipFile if is_gzip(fname) else open
+    text = 'No'
+    with fopen(fname, 'rb') as fh:
+        text = fh.read(64).decode('utf-8')
+    return text.startswith('##LARIX:')
 
 def save_session(fname=None, _larch=None):
     """save all groups and data into a Larch Save File (.larix)
