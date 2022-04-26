@@ -1097,7 +1097,7 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
                  win=win, _larch=_larch)
 
     popts.update(kws)
-    ncomps = result.nsig # _pca_ncomps(result, min_weight=min_weight, ncomps=ncomps)
+    ncomps = int(result.nsig)
 
     _plot(result.x, result.mean, label='Mean', **popts)
     for i, comp in enumerate(result.components):
@@ -1123,7 +1123,7 @@ def plot_pca_weights(result, min_weight=0, ncomps=None, win=1, _larch=None, **kw
 
     popts.update(kws)
 
-    ncomps = result.nsig
+    ncomps = int(result.nsig)
     x = 1 + arange(ncomps)
     y = result.variances[:ncomps]
     _plot(x, y, label='significant', **popts)
