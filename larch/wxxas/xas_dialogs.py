@@ -8,7 +8,7 @@ from lmfit import Parameters, minimize
 from matplotlib.ticker import FuncFormatter
 
 import wx
-
+from wxmplot import PlotPanel
 from xraydb import guess_edge
 from larch import Group, isgroup
 from larch.math import index_of, index_nearest, interp
@@ -1788,7 +1788,6 @@ class LoadSessionDialog(wx.Dialog):
         panel = GridPanel(rightpanel, ncols=3, nrows=4, pad=2, itemstyle=LEFT)
         self.wids = wids = {}
 
-
         over_choices = ('Import with new name', 'Overwrite existing group')
 
         wids['policy'] = wx.RadioBox(panel, -1, "", wx.DefaultPosition,
@@ -1800,11 +1799,9 @@ class LoadSessionDialog(wx.Dialog):
         symtable = controller.symtable
         _xasgroups = getattr(controller.symtable, '_xasgroups', None)
         self.allgroups = session.symbols.get('_xasgroups', {})
-        print("_XASGROUPS ", self.allgroups.keys())
-        print( session.symbols.keys())
+
         checked = []
         if _xasgroups is not None and len(self.allgroups) > 0:
-            top_message = f'Larch Session File: {len(self.allgroups)} XAFS Groups'
             for fname, gname in self.allgroups.items():
                 self.grouplist.Append(fname)
                 if fname in _xasgroups:
@@ -1828,39 +1825,45 @@ class LoadSessionDialog(wx.Dialog):
                 if needs_warning:
                     warnings.append(key)
 
-        print(warnings)
-        conflict_message = 'No Conflicting Groups (unselected)'
-        if len(self.conflicts) == 0:
-            wids['policy'].Disable()
-        else:
-            conflict_message = f'{len(self.conflicts):d} Conflicting Groups (unselected)'
+        nall = len(self.allgroups)
+        ncon = len(self.conflicts)
 
+        top_message = f'Larch Session File: {nall} XAFS Groups: {ncon} conflicting (unselected)'
+
+        wids['policy'].Enable(ncon>0)
 
         wids['view_conf'] = Button(panel, 'Show Session Configuration',
-                                     size=(250, 30), action=self.onShowConfig)
+                                     size=(200, 30), action=self.onShowConfig)
         wids['view_cmds'] = Button(panel, 'Show Session Commands',
-                                     size=(250, 30), action=self.onShowCommands)
+                                     size=(200, 30), action=self.onShowCommands)
 
-        panel.Add(SimpleText(panel, top_message), dcol=2)
-        panel.Add(SimpleText(panel, conflict_message), dcol=2, newrow=True)
-        panel.Add(SimpleText(panel, 'Policy for Conflicting Groups:'), newrow=True)
-        panel.Add(wids['policy'], dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, top_message), dcol=3)
+
+        panel.Add(SimpleText(panel, 'Policy for Importing conflicting Groups:'), newrow=True)
+        panel.Add(wids['policy'], dcol=3, newrow=False)
         panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
         panel.Add(wids['view_conf'], dcol=1, newrow=True)
-        panel.Add(wids['view_cmds'], dcol=1, newrow=True)
+        panel.Add(wids['view_cmds'], dcol=1, newrow=False)
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
-        if len(warnings) > 0:
-            panel.Add(SimpleText(panel, 'Other Working Data Groups that will be overwritten'),
-                      dcol=2, newrow=True)
-            for w in warnings:
-                panel.Add(SimpleText(panel, w),  dcol=1, newrow=True)
+        panel.Add(SimpleText(panel, 'Other Working Data Groups (will overwrite existing groups):'),
+                  dcol=2, newrow=True)
+        i = 0
+        for g in self.session.symbols:
+            if g not in group_names:
+                panel.Add(SimpleText(panel, g),  dcol=1, newrow=(i%2==0))
+                i += 1
+
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
         panel.pack()
 
+        self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(panel, 1, LEFT, 2)
+        sizer.Add(panel, 0, LEFT, 2)
+        sizer.Add(self.plotpanel, 1, LEFT, 2)
+
         pack(rightpanel, sizer)
 
 
@@ -1868,9 +1871,12 @@ class LoadSessionDialog(wx.Dialog):
 
         self.SetSize((750, 525))
         self.SetSize(self.GetBestSize())
-        print(self.GetBestSize())
         self.Show()
         self.Raise()
+
+    def plot_messages(self, msg, panel=1):
+        pass
+
 
     def onSelAll(self, event=None):
         self.grouplist.SetCheckedStrings(list(self.allgroups.keys()))
@@ -1881,8 +1887,12 @@ class LoadSessionDialog(wx.Dialog):
     def onShowGroup(self, event=None):
         """column selections changed calc xdat and ydat"""
         label = event.GetString()
-        dgroup = self.allgroups.get(label, None)
-        print(dgroup)
+        gname= self.allgroups.get(label, None)
+        if gname in self.session.symbols:
+            grp = self.session.symbols[gname]
+            if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
+                self.plotpanel.plot(grp.energy, grp.mu,
+                                    xlabel='Energy', ylabel='mu',title=label)
 
 
     def onShowConfig(self, event=None):
@@ -1911,8 +1921,11 @@ class LoadSessionDialog(wx.Dialog):
         _xasgroups = self.session.symbols.get('_xasgroups', {})
 
         selected = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
-        print("SELECTED ", selected)
-        for sym in reversed(self.session.symbols.keys()):
+
+        for i in self.session.symbols.keys():
+            if i not in self.allgroups:
+                selected.append(i)
+        for sym in selected:
             install = True
             if sym in _xasgroups.values():
                 install = sym in selected
@@ -1931,5 +1944,5 @@ class LoadSessionDialog(wx.Dialog):
                     fgroups[fname] = sym
                     dat.filename = fname
                     dat.groupname = sym
-                    print("ADD SYM ", sym)
                     self.controller.filelist.Append(sym.strip())
+        self.Destroy()
