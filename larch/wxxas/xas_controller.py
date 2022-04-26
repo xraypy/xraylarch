@@ -54,7 +54,7 @@ XASCONF = { # default configurations
 
     'workdir': '/Users/Newville/Codes/xraylarch',
 
-    'xasnorm_config': {'atsym': '?', 'auto_e0': True, 'auto_step': True,
+    'xasnorm_config': {'auto_e0': True, 'auto_step': True,
                        'e0': 0, 'edge': 'K', 'edge_step': None,
                        'energy_ref': None, 'energy_shift': 0,
                        'nnorm': None, 'norm1': None, 'norm2': None,
