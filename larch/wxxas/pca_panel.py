@@ -233,9 +233,7 @@ class PCAPanel(TaskPanel):
         self.skip_process = False
 
     def onPanelExposed(self, **kws):
-        if hasattr(self.larch.symtable, 'pca_result'):
-            self.use_model()
-
+        # called when notebook is selected
         fname = self.controller.filelist.GetStringSelection()
         if fname in self.controller.file_groups:
             gname = self.controller.file_groups[fname]
@@ -243,6 +241,8 @@ class PCAPanel(TaskPanel):
             self.fill_form(dgroup)
             self.process(dgroup=dgroup)
 
+        if hasattr(self.larch.symtable, 'pca_result'):
+            wx.CallAfter(self.use_model)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
