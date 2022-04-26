@@ -39,11 +39,9 @@ if platform == 'darwin':
     FONTSIZE_FW = 12
 
 if HAS_WXPYTHON:
-
     from . import larchframe
     from . import larchfilling
     from . import readlinetextctrl
-
 
     from wxutils import (set_sizer, pack, SetTip, Font, HLine, Check,
                          MenuItem, Popup, RIGHT, LEFT, CEN , LTEXT,
@@ -52,9 +50,11 @@ if HAS_WXPYTHON:
                          SimpleText, LabeledTextCtrl, HyperText,
                          get_icon, GUIColors, OkCancel,
                          FileOpen, FileSave, SelectWorkdir, fix_filename,
-                         SavedParameterDialog, FileCheckList,
-                         FileDropTarget, GridPanel, RowPanel, make_steps,
+                         SavedParameterDialog,
+                         GridPanel, RowPanel, make_steps,
                          set_float, FloatCtrl, EditableListBox)
+
+    from .filechecklist import FileCheckList, FileDropTarget
 
     from .floats import NumericCombo, FloatSpin, FloatSpinWithPin
 
