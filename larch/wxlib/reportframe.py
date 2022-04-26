@@ -80,9 +80,8 @@ class DictFrame(wx.Frame):
 
         wx.Frame.__init__(self, None, -1,  title, style=FRAMESTYLE, **kws)
 
-        panel = GridPanel(self, ncols=3, nrows=10, pad=2, itemstyle=LEFT)
 
-        export_btn = Button(panel, 'Save to Tab-Separated File', size=(225, -1),
+        export_btn = Button(self, 'Save to Tab-Separated File', size=(225, -1),
                             action=self.export)
 
         collabels = [' Label ', ' Value ']
@@ -90,7 +89,7 @@ class DictFrame(wx.Frame):
         coltypes = ['string', 'string']
         coldefs  = [' ', ' ']
 
-        self.datagrid = DataTableGrid(panel,
+        self.datagrid = DataTableGrid(self,
                                       nrows=min(25, len(self.data)+2),
                                       collabels=collabels,
                                       datatypes=coltypes,
@@ -98,16 +97,14 @@ class DictFrame(wx.Frame):
                                       colsizes=colsizes,
                                       rowlabelsize=40)
 
-        self.datagrid.SetMinSize((800, 500))
+        self.datagrid.SetMinSize((850, 500))
         self.datagrid.EnableEditing(False)
 
-        panel.Add(export_btn, newrow=True)
-        panel.Add(HLine(panel, size=(850, 2)), dcol=2, newrow=True)
-        panel.Add(self.datagrid, dcol=3, drow=4, newrow=True)
-        panel.pack()
-
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(panel, 1, LEFT, 3)
+        sizer.Add(export_btn, 0, LEFT, 2)
+        sizer.Add((5, 5), 0, LEFT, 2)
+        sizer.Add(self.datagrid, 1, LEFT, 2)
+
         pack(self, sizer)
 
         self.Show()
