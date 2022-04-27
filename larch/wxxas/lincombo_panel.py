@@ -855,7 +855,7 @@ class LinearComboPanel(TaskPanel):
         """run lincombo fit for a group"""
         form['gname'] = groupname
         script = """# do LCF for {gname:s}
-result = {func:s}({gname:s}, [{comps:s}],
+lcf_result = {func:s}({gname:s}, [{comps:s}],
             xmin={elo:.4f}, xmax={ehi:.4f},
             arrayname='{arrayname:s}',
             sum_to_one={sum_to_one}, vary_e0={vary_e0},
@@ -865,9 +865,9 @@ result = {func:s}({gname:s}, [{comps:s}],
             max_ncomps={max_ncomps:.0f})
 """
         if form['all_combos']:
-            script = "%s\n{gname:s}.lcf_result = result\n" % script
+            script = "%s\n{gname:s}.lcf_result = lcf_result\n" % script
         else:
-            script = "%s\n{gname:s}.lcf_result = [result]\n" % script
+            script = "%s\n{gname:s}.lcf_result = [lcf_result]\n" % script
 
         self.larch_eval(script.format(**form))
 
