@@ -19,10 +19,12 @@ from larch.wxlib import (GridPanel, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, Check, Button, HLine, OkCancel, LEFT, pack,
                          plotlabels, ReportFrame, DictFrame, FileCheckList)
 
+from larch.wxlib.xafsplots import plotlabels
 from larch.xafs.xafsutils  import etok, ktoe
 from larch.utils.physical_constants import PI, DEG2RAD, PLANCK_HC
 
 Plot_Choices = {'Normalized': 'norm', 'Derivative': 'dmude'}
+
 
 ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
@@ -41,6 +43,10 @@ DEGLITCH_PLOTS = {'Raw \u03BC(E)': 'mu',
                   'Normalized \u03BC(E)': 'norm',
                   '\u03c7(E)': 'chie',
                   '\u03c7(E)*(E-E_0)': 'chiew'}
+
+SESSION_PLOTS = {'Normalized \u03BC(E)': 'norm',
+                 'Raw \u03BC(E)': 'mu',
+                 'k^2\u03c7(k)': 'chikw'}
 
 
 def ensure_en_orig(dgroup):
@@ -1829,7 +1835,7 @@ class LoadSessionDialog(wx.Frame):
         nall = len(self.allgroups)
         ncon = len(self.conflicts)
 
-        top_message = f'Larch Session File: {nall} XAFS Groups: {ncon} conflicting (unselected)'
+        xafs_message = f'{nall} XAFS Groups: {ncon} conflicting (unselected)'
 
         wids['policy'].Enable(ncon>0)
 
@@ -1838,13 +1844,16 @@ class LoadSessionDialog(wx.Frame):
         wids['view_cmds'] = Button(panel, 'Show Session Commands',
                                      size=(200, 30), action=self.onShowCommands)
 
-        panel.Add(SimpleText(panel, top_message), dcol=3)
+        wids['plotopt'] = Choice(panel, choices=list(SESSION_PLOTS.keys()),
+                                 action=self.onPlotChoice, size=(175, -1))
 
-        panel.Add(SimpleText(panel, 'Policy for Importing conflicting Groups:'), newrow=True)
-        panel.Add(wids['policy'], dcol=3, newrow=False)
-        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
         panel.Add(wids['view_conf'], dcol=1, newrow=True)
         panel.Add(wids['view_cmds'], dcol=1, newrow=False)
+        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+
+        panel.Add(SimpleText(panel, xafs_message), dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, 'Policy for conflicts:'), newrow=True)
+        panel.Add(wids['policy'], dcol=3, newrow=False)
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
         panel.Add(SimpleText(panel, 'Other Working Data Groups (will overwrite existing groups):'),
@@ -1857,6 +1866,8 @@ class LoadSessionDialog(wx.Frame):
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add(SimpleText(panel, 'Plot Type:'), newrow=True)
+        panel.Add(wids['plotopt'], dcol=2, newrow=False)
         panel.pack()
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
@@ -1878,7 +1889,6 @@ class LoadSessionDialog(wx.Frame):
     def plot_messages(self, msg, panel=1):
         pass
 
-
     def onSelAll(self, event=None):
         self.grouplist.SetCheckedStrings(list(self.allgroups.keys()))
 
@@ -1887,13 +1897,35 @@ class LoadSessionDialog(wx.Frame):
 
     def onShowGroup(self, event=None):
         """column selections changed calc xdat and ydat"""
-        label = event.GetString()
-        gname= self.allgroups.get(label, None)
+        fname = event.GetString()
+        gname = self.allgroups.get(fname, None)
         if gname in self.session.symbols:
-            grp = self.session.symbols[gname]
-            if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
-                self.plotpanel.plot(grp.energy, grp.mu,
-                                    xlabel='Energy', ylabel='mu',title=label)
+            self.plot_group(gname, fname)
+
+    def onPlotChoice(self, event=None):
+        fname = self.grouplist.GetStringSelection()
+        gname = self.allgroups.get(fname, None)
+        self.plot_group(gname, fname)
+
+    def plot_group(self, gname, fname):
+        grp = self.session.symbols[gname]
+        plottype = SESSION_PLOTS.get(self.wids['plotopt'].GetStringSelection(), 'norm')
+        xdef = np.zeros(1)
+        xdat = getattr(grp, 'energy', xdef)
+        ydat = getattr(grp, 'mu', xdef)
+        xlabel = plotlabels.energy
+        ylabel = plotlabels.mu
+        if plottype == 'norm' and hasattr(grp, 'norm'):
+            ydat = getattr(grp, 'norm', xdef)
+            ylabel = plotlabels.norm
+        elif plottype == 'chikw' and hasattr(grp, 'chi'):
+            xdat = getattr(grp, 'k', xdef)
+            ydat = getattr(grp, 'chi', xdef)
+            ydat = ydat*xdat*xdat
+            xlabel = plotlabels.chikw.format(2)
+        if len(ydat) > 1:
+            self.plotpanel.plot(xdat, ydat, xlabel=xlabel,
+                                ylabel=ylabel, title=fname)
 
 
     def onShowConfig(self, event=None):
