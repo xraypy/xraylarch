@@ -1743,7 +1743,7 @@ class RemoveDialog(wx.Dialog):
         return response(ok, ngroups)
 
 
-class LoadSessionDialog(wx.Dialog):
+class LoadSessionDialog(wx.Frame):
     """Read, show data from saved larch session"""
     def __init__(self, parent, session, filename, controller, **kws):
         self.parent = parent
@@ -1751,7 +1751,7 @@ class LoadSessionDialog(wx.Dialog):
         self.filename = filename
         self.controller = controller
         title = f"Read Larch Session from '{filename}'"
-        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+        wx.Frame.__init__(self, parent, wx.ID_ANY, title=title)
 
         x0, y0 = parent.GetPosition()
         self.SetPosition((x0+120, y0+390))
@@ -1798,6 +1798,7 @@ class LoadSessionDialog(wx.Dialog):
         top_message = 'Larch Session File: No XAFS Groups'
         symtable = controller.symtable
         _xasgroups = getattr(controller.symtable, '_xasgroups', None)
+
         self.allgroups = session.symbols.get('_xasgroups', {})
 
         checked = []
@@ -1810,7 +1811,7 @@ class LoadSessionDialog(wx.Dialog):
                     checked.append(fname)
         self.grouplist.SetCheckedStrings(checked)
 
-        group_names = list(self.allgroups.keys()) + ['_xasgroups']
+        group_names = list(self.allgroups.values()) + ['_xasgroups']
         warnings = []
         for key, dat in session.symbols.items():
             if key not in group_names:
@@ -1920,11 +1921,15 @@ class LoadSessionDialog(wx.Dialog):
         fgroups = self.controller.file_groups
         _xasgroups = self.session.symbols.get('_xasgroups', {})
 
-        selected = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
+        _xasfiles = {}
+        for fname, sym in _xasgroups.items():
+            _xasfiles[sym] = fname
 
+        selected = [self.allgroups[n] for n in self.grouplist.GetCheckedStrings()]
         for i in self.session.symbols.keys():
-            if i not in self.allgroups:
+            if i not in _xasgroups and i not in selected:
                 selected.append(i)
+
         for sym in selected:
             install = True
             if sym in _xasgroups.values():
@@ -1936,13 +1941,13 @@ class LoadSessionDialog(wx.Dialog):
             if install:
                 dat = self.session.symbols[sym]
                 setattr(symtab, sym, dat)
-                if sym in _xasgroups:
-                    fname = _xasgroups[sym]
+                if sym in _xasgroups.values():
+                    fname = _xasfiles[sym]
                     if fname in fgroups:
                         newfname = unique_name(fname, fgroups.keys(), max=1000)
                         fname = newfname
                     fgroups[fname] = sym
                     dat.filename = fname
                     dat.groupname = sym
-                    self.controller.filelist.Append(sym.strip())
-        self.Destroy()
+                    self.controller.filelist.Append(fname.strip())
+        wx.CallAfter(self.Destroy)
