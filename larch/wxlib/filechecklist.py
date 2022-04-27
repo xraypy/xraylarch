@@ -25,10 +25,9 @@ class FileCheckList(wx.CheckListBox):
         wx.CheckListBox.__init__(self, parent, **kws)
         self.SetDropTarget(FileDropTarget(main))
 
-        self.SetBackgroundColour((250, 250, 250, 255))
-        self.SetForegroundColour((5, 5, 85, 255))
         if select_action is not None:
             self.Bind(wx.EVT_LISTBOX,  select_action)
+        self.Bind(wx.EVT_CHECKLISTBOX, self.check_event)
         self.remove_action = remove_action
         self.rclick_actions = OrderedDict()
 
@@ -52,6 +51,7 @@ class FileCheckList(wx.CheckListBox):
         click_actions.extend(core_actions)
         if post_actions is not None:
             click_actions.append(("--sep--", None))
+
             click_actions.extend(post_actions)
         click_actions.append(("--sep--", None))
         if right_click:
@@ -59,6 +59,12 @@ class FileCheckList(wx.CheckListBox):
             for title, action in click_actions:
                 self.rclick_actions[title] = action
                 self.Bind(wx.EVT_MENU, self.onRightEvent)
+
+    def check_event(self, evt=None):
+        index = evt.GetSelection()
+        label = self.GetString(index)
+        self.SetSelection(index)
+
 
     def onRightClick(self, evt=None):
         menu = wx.Menu()
