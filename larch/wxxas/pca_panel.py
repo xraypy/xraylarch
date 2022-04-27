@@ -242,7 +242,7 @@ class PCAPanel(TaskPanel):
             self.process(dgroup=dgroup)
 
         if hasattr(self.larch.symtable, 'pca_result'):
-            wx.CallAfter(self.use_model)
+            self.use_model(plot=False)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
@@ -368,7 +368,7 @@ class PCAPanel(TaskPanel):
         self.larch_eval(cmd.format(**opts))
         self.use_model('pca_result')
 
-    def use_model(self, modelname='pca_result'):
+    def use_model(self, modelname='pca_result', plot=True):
         form = self.read_form()
         r = self.result = self.larch_get(modelname)
         ncomps = len(r.components)
@@ -401,9 +401,9 @@ class PCAPanel(TaskPanel):
         self.wids['fit_table'].table.data = []
         self.wids['fit_table'].table.Clear()
         self.wids['fit_table'].table.View.Refresh()
-
-        self.plot_pca_components()
-        self.plot_pca_weights()
+        if plot:
+            self.plot_pca_components()
+            self.plot_pca_weights()
 
     def onPlotPCAModel(self, event=None):
         self.plot_pca_components()
