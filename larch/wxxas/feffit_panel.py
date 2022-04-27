@@ -110,14 +110,14 @@ _feffit_trans = feffit_transform(kmin={kmin:.3f}, kmax={kmax:.3f}, dk={dk:.4f}, 
 
 COMMANDS['paths_init'] = """# make sure a dictionary for Feff Paths exists
 try:
-    npaths = len(_paths.keys())
+    npaths = len(_feffpaths.keys())
 except:
-    _paths = {}
+    _feffpaths = {}
 #endtry
 """
 
 COMMANDS['add_path'] = """
-_paths['{title:s}'] = feffpath('{fullpath:s}',
+_feffpaths['{title:s}'] = feffpath('{fullpath:s}',
                   label='{label:s}', degen=1,
                   s02='{amp:s}',     e0='{e0:s}',
                   deltar='{delr:s}', sigma2='{sigma2:s}',
@@ -647,7 +647,7 @@ class FeffPathPanel(wx.Panel):
 
 
     def onPlotFeffDat(self, event=None):
-        cmd = f"plot_feffdat(_paths['{self.title}'], title='Feff data for path {self.title}')"
+        cmd = f"plot_feffdat(_feffpaths['{self.title}'], title='Feff data for path {self.title}')"
         self.feffit_panel.larch_eval(cmd)
 
     def onRemovePath(self, event=None):
@@ -1055,15 +1055,15 @@ class FeffitPanel(TaskPanel):
         self.xasmain.Raise()
 
     def get_pathkeys(self):
-        _paths = getattr(self.larch.symtable, '_paths', {})
-        return [p.hashkey for p in _paths.values()]
+        _feffpaths = getattr(self.larch.symtable, '_feffpaths', {})
+        return [p.hashkey for p in _feffpaths.values()]
 
     def get_paramgroup(self):
         pgroup = getattr(self.larch.symtable, '_feffit_params', None)
         if pgroup is None:
             self.larch_eval(COMMANDS['feffit_params_init'])
             pgroup = getattr(self.larch.symtable, '_feffit_params')
-        if not hasattr(self.larch.symtable, '_paths'):
+        if not hasattr(self.larch.symtable, '_feffpaths'):
             self.larch_eval(COMMANDS['paths_init'])
         return pgroup
 
@@ -1177,7 +1177,7 @@ class FeffitPanel(TaskPanel):
             pdat.update(path_pages[title].get_expressions())
             if pdat['use']:
                 cmds.append(COMMANDS['add_path'].format(**pdat))
-                paths_list.append(f"'{title:s}': _paths['{title:s}']")
+                paths_list.append(f"'{title:s}': _feffpaths['{title:s}']")
 
         paths_string = '{%s}' % (', '.join(paths_list))
         cmds.append(COMMANDS['ff2chi'].format(paths=paths_string, params='_feffit_params'))
