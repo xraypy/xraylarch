@@ -8,7 +8,7 @@ from larch.larchlib import read_config, save_config
 from larch.utils import group2dict, unique_name, fix_varname, get_cwd
 from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
-from larch.site_config import home_dir
+from larch.site_config import home_dir, user_larchdir
 
 
 XASCONF = { # default configurations
@@ -85,7 +85,17 @@ class XASController():
 
         config = {}
         config.update(XASCONF)
-        self.config_file = os.path.join('xas_viewer', CONF_FILE)
+        xasv_folder = os.path.join(user_larchdir, 'xas_viewer')
+        if not os.path.exists(xasv_folder):
+            try:
+                os.mkdir(xasv_folder)
+            except:
+                print("cannot create directory ", xasv_folder)
+
+        self.config_file = CONF_FILE
+        if os.path.exists(xasv_folder):
+            self.config_file = os.path.join('xas_viewer', CONF_FILE)
+
         user_config = read_config(self.config_file)
         if user_config is not None:
             for sname in config:
