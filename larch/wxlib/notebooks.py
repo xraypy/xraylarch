@@ -15,7 +15,6 @@ def flatnotebook(parent, paneldict, panelkws={},
 
     nb.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
 
-    nb.SetMinSize(wx.Size(700, 35))
     nb.DeleteAllPages()
     nb.pagelist = []
     grandparent = parent.GetParent()
