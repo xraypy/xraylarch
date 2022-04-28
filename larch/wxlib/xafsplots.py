@@ -157,7 +157,7 @@ def redraw(win=1, xmin=None, xmax=None, ymin=None, ymax=None,
 #enddef
 
 
-def plot_mu(dgroup, show_norm=False, show_deriv=False,
+def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
             show_pre=False, show_post=False, show_e0=False, with_deriv=False,
             emin=None, emax=None, label='mu', new=True, delay_draw=False,
             offset=0, title=None, win=1, _larch=None):
@@ -172,6 +172,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
     ----------
      dgroup     group of XAFS data after pre_edge() results (see Note 1)
      show_norm  bool whether to show normalized data [False]
+     show_flat  bool whether to show flattened, normalized data [False]
      show_deriv bool whether to show derivative of XAFS data [False]
      show_pre   bool whether to show pre-edge curve [False]
      show_post  bool whether to show post-edge curve [False]
@@ -202,7 +203,7 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
     #endif
     ylabel = plotlabels.mu
     if label is None:
-        label = 'mu'
+        label = getattr(dgroup, 'filename', 'mu')
     #endif
     if show_deriv:
         mu = gradient(mu)/gradient(dgroup.energy)
@@ -212,6 +213,11 @@ def plot_mu(dgroup, show_norm=False, show_deriv=False,
         mu = dgroup.norm
         ylabel = "%s (norm)" % ylabel
         dlabel = "%s (norm)" % label
+    #endif
+    elif show_flat:
+        mu = dgroup.flat
+        ylabel = "%s (flat)" % ylabel
+        dlabel = "%s (flat)" % label
     #endif
     emin, emax = _get_erange(dgroup, emin, emax)
 
