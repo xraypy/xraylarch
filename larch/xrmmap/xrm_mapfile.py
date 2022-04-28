@@ -2448,24 +2448,25 @@ class GSEXRM_MapFile(object):
         ny, nx, npos = self.xrmmap['positions/pos'].shape
         return ny, nx
 
-    def get_envvar(self, name):
+    def get_envvar(self, name=None):
         """get environment value by name"""
         if self.envvar is None:
             self.envvar = {}
             env_names = [h5str(a) for a in self.xrmmap['config/environ/name']]
             env_vals  = [h5str(a) for a in self.xrmmap['config/environ/value']]
             for name, val in zip(env_names, env_vals):
-                name = h5str(name).lower()
+                name = h5str(name)
                 val = h5str(val)
                 try:
                     fval = float(val)
                 except:
                     fval = val
-
                 self.envvar[name] = fval
-        name = name.lower()
-        if name in self.envvar:
-            return self.envvar[name]
+        if name is not None:
+            if name in self.envvar:
+                return self.envvar[name]
+            elif name.lower() in self.envvar:
+                return self.envvar[name.lower()]
 
     def get_incident_energy(self):
         """ special case of get_envvar"""
