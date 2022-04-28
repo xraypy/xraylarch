@@ -344,9 +344,7 @@ class XASNormPanel(TaskPanel):
                     self.wids['energy_ref'].SetStringSelection(key)
 
             self.wids['e0'].SetValue(opts['e0'])
-            edge_step = opts.get('edge_step', None)
-            if edge_step is None:
-                edge_step = 1.0
+            edge_step = opts.get('edge_step', 1.0)
 
             if hasattr(dgroup, 'e0') and opts['atsym'] == '?':
                 atsym, edge = guess_edge(dgroup.e0)
