@@ -34,11 +34,17 @@ norm   = 'Normalized \u03bC(E)'
 flatmu  = 'Flattened \u03bC(E)'
 rawmu  = 'Raw \u03bC(E)'
 dmude  = 'd\u03bC(E)/dE'
-chik   = '\u03c7(k)'
+chi0   = '\u03c7(k)'
+chi1   = 'k \u03c7(k)'
+chi2   = 'k^2 \u03c7(k)'
 noplot = '<no plot>'
 noname = '<none>'
 
-FitSpace_Choices = [norm, rawmu, flatmu, dmude, chik]
+FitSpace_Choices = {norm: 'norm', rawmu: 'mu', flatmu: 'flat',
+                    dmude: 'dmude', chi0: 'chi',
+                    chi1: 'chi1', chi2: 'chi2'}
+
+
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -50,7 +56,7 @@ def make_lcfplot(dgroup, form, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
     form['group'] = dgroup.groupname
     form['filename'] = dgroup.filename
-
+    print("make_lcfplot ", form['group'], form['fitspace'], form['comps'], form['arrayname'])
     form['nfit'] = nfit
     form['label'] = label = 'Fit #%2.2d' % (nfit+1)
     form['plotopt'] = 'show_norm=True'
@@ -385,8 +391,9 @@ class LinComboResultFrame(wx.Frame):
     def onPlotOne(self, evt=None):
         if self.form is None or self.larch_eval is None:
             return
-
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
+        print(make_lcfplot(self.datagroup,
+                           self.form, nfit=self.current_fit))
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
@@ -601,20 +608,27 @@ class LinearComboPanel(TaskPanel):
         """ handle linear combo processing"""
         if self.skip_process:
             return
-        return self.read_form()
+        form = self.read_form()
+        conf = self.get_config(dgroup)
+        for key in ('elo', 'ehi', 'max_ncomps', 'fitspace', 'all_combos',
+                     'vary_e0', 'sum_to_one', 'show_fitrange'):
+            conf[key]  = form[key]
+        self.update_config(conf, dgroup=dgroup)
+
 
     def build_display(self):
         panel = self.panel
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=FitSpace_Choices,
-                                  size=(175, -1))
-        wids['fitspace'].SetStringSelection(norm)
+        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()),
+                                 action=self.onFitSpace, size=(200, -1))
+        # wids['fitspace'].SetStringSelection(norm)
 
         add_text = self.add_text
 
-        opts = dict(digits=2, increment=1.0, relative_e0=False) # True)
+        opts = dict(digits=2, increment=1.0, relative_e0=False
+                    ) # True)
         defaults = self.get_defaultconfig()
 
         elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
@@ -699,6 +713,10 @@ class LinearComboPanel(TaskPanel):
         pack(self, sizer)
         self.skip_process = False
 
+    def onFitSpace(self, evt=None):
+        fitspace = self.wids['fitspace'].GetStringSelection()
+        self.update_config(dict(fitspace=fitspace))
+
     def onComponent(self, evt=None, comp=None):
         if comp is None or evt is None:
             return
@@ -731,20 +749,20 @@ class LinearComboPanel(TaskPanel):
         self.dgroup = dgroup
         defaults = self.get_defaultconfig()
 
-        if isinstance(dgroup, Group):
-            d_emin = min(dgroup.energy)
-            d_emax = max(dgroup.energy)
-            if opts['elo'] < d_emin:
-                opts['elo'] = defaults['elo_rel'] + int(dgroup.e0/10.0)*10
-            if opts['ehi'] > d_emax:
-                opts['ehi'] =  defaults['ehi_rel'] + int(dgroup.e0/10.0)*10
+#         if isinstance(dgroup, Group):
+#             d_emin = min(dgroup.energy)
+#             d_emax = max(dgroup.energy)
+#             if opts['elo'] < d_emin:
+#                 opts['elo'] = defaults['elo_rel'] + int(dgroup.e0/10.0)*10
+#             if opts['ehi'] > d_emax:
+#                 opts['ehi'] =  defaults['ehi_rel'] + int(dgroup.e0/10.0)*10
 
         self.skip_process = True
         wids = self.wids
-        for attr in ('elo', 'ehi'):
-            val = opts.get(attr, None)
-            if val is not None:
-                wids[attr].SetValue(val)
+#         for attr in ('elo', 'ehi'):
+#             val = opts.get(attr, None)
+#             if val is not None:
+#                 wids[attr].SetValue(val)
 
         for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
             wids[attr].SetValue(opts.get(attr, True))
@@ -753,23 +771,11 @@ class LinearComboPanel(TaskPanel):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 
-#         groupnames = [noname] + list(self.controller.file_groups.keys())
-#         for wname, wid in wids.items():
-#             if wname.startswith('compchoice'):
-#                 cur = wid.GetStringSelection()
-#                 wid.Clear()
-#                 wid.AppendItems(groupnames)
-#                 if cur in groupnames:
-#                     wid.SetStringSelection(cur)
-#                 else:
-#                     wid.SetSelection(0)
-#             elif wname.startswith('comp'):
-#                 wid.SetValue(opts.get(wname, wid.GetValue()))
         self.skip_process = False
 
     def read_form(self, dgroup=None):
         "read form, return dict of values"
-        self.skip_process = True
+        self.skiap_process = True
         if dgroup is None:
             dgroup = self.controller.get_group()
         self.dgroup = dgroup
@@ -778,8 +784,8 @@ class LinearComboPanel(TaskPanel):
         for attr in ('elo', 'ehi', 'max_ncomps'):
             opts[attr] = wids[attr].GetValue()
 
-        for attr in ('fitspace', ): # 'plotchoice'):
-            opts[attr] = wids[attr].GetStringSelection()
+        opts['fitspace'] = wids['fitspace'].GetStringSelection()
+
         for attr in ('all_combos', 'vary_e0', 'sum_to_one', 'show_fitrange'):
             opts[attr] = wids[attr].GetValue()
 
@@ -810,16 +816,7 @@ class LinearComboPanel(TaskPanel):
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
 
-        opts['arrayname'] = 'norm'
-        if opts['fitspace'] == dmude:
-            opts['arrayname'] = 'dmude'
-        elif opts['fitspace'] == rawmu:
-            opts['arrayname'] = 'mu'
-        elif opts['fitspace'] == chik:
-            opts['arrayname'] = 'chi'
-        elif opts['fitspace'] == flatmu:
-            opts['arrayname'] = 'flat'
-
+        opts['arrayname'] = FitSpace_Choices[opts['fitspace']]
         self.skip_process = False
         return opts
 
@@ -900,15 +897,17 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
         self.skip_process = False
 
     def plot(self, dgroup=None):
-        if self.skip_plotting:
-            return
         self.onPlot(dgroup=dgroup)
 
     def onPlot(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
+
         if dgroup is None:
             dgroup = self.controller.get_group()
+
         form = self.read_form(dgroup=dgroup)
+        # print(" Form " , form['arrayname'])
+
         script = make_lcfplot(dgroup, form, nfit=0)
         self.larch_eval(script)
