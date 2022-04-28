@@ -19,6 +19,7 @@ import lmfit
 
 from .. import Group
 from .utils import interp, index_of
+from ..xafs import etok
 
 def get_arrays(group, arrayname, xname='energy'):
     y = None
@@ -61,23 +62,48 @@ def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.in
     xdat, ydat  where xdat has shape (nx,) and ydat has shape (nx, ngroups)
     """
     # get arrays from first group
+    kweight = 0
+    if yname.startswith('chi'):
+        xname = 'k'
+        if len(yname) > 3:
+            kweight = int(yname[4:])
+        yname = 'chi'
+        e0 = getattr(groups[0], 'e0', -1.)
+        if e0 < 0:
+            raise ValueError("cannot get chi data")
+
     xdat, ydat = get_arrays(groups[0], yname, xname=xname)
     if xdat is None or ydat is None:
         raise ValueError("cannot get arrays for arrayname='%s'" % yname)
 
     imin, imax = None, None
     if xmin is not None:
+        if xname == 'k':
+            if xmin > e0:
+                xmin = etok(xmin-e0)
+            else:
+                xmin = 0.0
+
         imin = index_of(xdat, xmin)
     if xmax is not None:
+        if xname == 'k':
+            if xmax > e0:
+                xmax = etok(xmax-e0)
+            else:
+                xmax = max(xdat)
         imax = index_of(xdat, xmax) + 1
 
     xsel = slice(imin, imax)
     xdat = xdat[xsel]
     ydat = ydat[xsel]
-
+    if xname == 'k' and kweight > 0:
+        ydat = ydat * xdat**kweight
     ydat = [ydat]
     for g in groups[1:]:
         x, y = get_arrays(g, yname, xname=xname)
+        if xname == 'k' and kweight > 0:
+            y = y * y**kweight
+
         ydat.append(interp(x, y, xdat, kind=interp_kind))
     return xdat, np.array(ydat)
 
