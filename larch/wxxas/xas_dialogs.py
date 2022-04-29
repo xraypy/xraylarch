@@ -1982,4 +1982,11 @@ class LoadSessionDialog(wx.Frame):
                     dat.filename = fname
                     dat.groupname = sym
                     self.controller.filelist.Append(fname.strip())
+        cmds = ["##########", "# Loaded Larch Session with",
+                f"# load_session('{self.filename}')"]
+        cmds.append("# _xasgroups = %s" % repr(symtab._xasgroups))
+        cmds.append("##########")
+        self.controller.larch.eval('\n'.join(cmds))
+
+
         wx.CallAfter(self.Destroy)
