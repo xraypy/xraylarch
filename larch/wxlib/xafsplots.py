@@ -173,11 +173,11 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
      dgroup     group of XAFS data after pre_edge() results (see Note 1)
      show_norm  bool whether to show normalized data [False]
      show_flat  bool whether to show flattened, normalized data [False]
-     show_deriv bool whether to show derivative of XAFS data [False]
+     show_deriv bool whether to show derivative of normalized data [False]
      show_pre   bool whether to show pre-edge curve [False]
      show_post  bool whether to show post-edge curve [False]
      show_e0    bool whether to show E0 [False]
-     with_deriv bool whether to show deriv together with mu [False]
+     with_deriv bool whether to show deriv (dnorm/de) together with mu [False]
      emin       min energy to show, absolute or relative to E0 [None, start of data]
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
@@ -206,9 +206,9 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
         label = getattr(dgroup, 'filename', 'mu')
     #endif
     if show_deriv:
-        mu = gradient(mu)/gradient(dgroup.energy)
+        mu = gradient(dgroup.norm)/gradient(dgroup.energy)
         ylabel = plotlabels.dmude
-        dlabel = '%s (deriv)' % label
+        dlabel = '%s (norm, deriv)' % label
     elif show_norm:
         mu = dgroup.norm
         ylabel = "%s (norm)" % ylabel
@@ -231,7 +231,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
           label=label, zorder=20, new=new, **opts)
 
     if with_deriv:
-        dmu = gradient(mu)/gradient(dgroup.energy)
+        dmu = gradient(dgroup.norm)/gradient(dgroup.energy)
         _plot(dgroup.energy, dmu+offset, ylabel=plotlabels.dmude,
               label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
@@ -348,7 +348,7 @@ def plot_chie(dgroup, emin=-5, emax=None, label=None, title=None,
      label       string for label [``None``: 'mu']
      title       string for plot title [None, may use filename if available]
      new         bool whether to start a new plot [True]
-     eweight     energy weightingn for energies>e0  [0]
+     eweight     energy weightingn for energisdef es>e0  [0]
      show_k      bool whether to show k values   [True]
      delay_draw  bool whether to delay draw until more traces are added [False]
      offset      vertical offset to use for y-array [0]
