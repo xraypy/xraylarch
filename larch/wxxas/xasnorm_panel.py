@@ -38,23 +38,21 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
 
 PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
                    'Normalized \u03BC(E)': 'norm',
-                   '\u03BC(E) + Pre-/Post-edge': 'prelines',
                    'Flattened \u03BC(E)': 'flat',
+                   '\u03BC(E) + Pre-/Post-edge': 'prelines',
                    '\u03BC(E) + MBACK  \u03BC(E)': 'mback_norm',
                    'MBACK + Poly Normalized': 'mback_poly',
-                   'd\u03BC(E)/dE': 'dmude',
-                   'Raw \u03BC(E) + d\u03BC(E)/dE': 'mu+dmude',
+                   'd\u03BC(E)/dE (normalized)': 'dnormde',
                    'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde',
-                   'd^2\u03BC(E)/dE^2': 'd2mude',
+                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde',
                    'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2': 'norm+d2normde',
                    }
 
 PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
                    'Normalized \u03BC(E)': 'norm',
                    'Flattened \u03BC(E)': 'flat',
-                   'd\u03BC(E)/dE (raw)': 'dmude',
                    'd\u03BC(E)/dE (normalized)': 'dnormde',
-                   'd^2\u03BC(E)/dE^2': 'd2normde'}
+                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde'}
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -20:+80eV':  (-20, 80),
@@ -685,8 +683,10 @@ class XASNormPanel(TaskPanel):
 
     def make_dnormde(self, dgroup):
         form = dict(group=dgroup.groupname)
-        self.larch_eval("{group:s}.dnormde={group:s}.dmude/{group:s}.edge_step".format(**form))
-        self.larch_eval("{group:s}.d2normde={group:s}.d2mude/{group:s}.edge_step".format(**form))
+        s = """{g}.dnormde=gradient({g}.norm)/gradient({g}.energy)
+{g}.d2normde=gradient({g}.dnormde)/gradient({g}.energy)""".format(g=form['group'])
+        self.larch.eval(s)
+
 
     def process(self, dgroup=None, force_mback=False, force=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
@@ -879,10 +879,10 @@ class XASNormPanel(TaskPanel):
                                        ('d2normde', PLOTOPTS_D, 'd2y/dx')]
             return
 
-        req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
+        req_attrs = ['e0', 'norm', 'dnormde', 'd2normde', 'pre_edge']
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
-        if pchoice in ('mu', 'norm', 'flat', 'dmude', 'd2mude'):
+        if pchoice in ('mu', 'norm', 'flat', 'dnormde', 'd2normde'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
@@ -981,8 +981,8 @@ class XASNormPanel(TaskPanel):
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None or
              getattr(dgroup, 'e0', None) is None or
-             getattr(dgroup, 'dmude', None) is None or
-             getattr(dgroup, 'd2mude', None) is None or
+             getattr(dgroup, 'dnormde', None) is None or
+             getattr(dgroup, 'd2normde', None) is None or
              getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
         self.get_plot_arrays(dgroup)
