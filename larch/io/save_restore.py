@@ -164,8 +164,7 @@ def read_session(fname):
     return SessionStore(config, cmd_history, symbols)
 
 
-def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
-                 subgroup=None):
+def load_session(fname, overwrite=True, merge_dicts=True, _larch=None):
     """load all data from a Larch Save File into current larch session
 
     Arguments
@@ -178,7 +177,6 @@ def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
     None, puts data into current session
 
     """
-
     if _larch is None:
         raise ValueError('load session needs a larch session')
 
@@ -192,8 +190,6 @@ def load_session(fname, _larch=None, overwrite=True, merge_dicts=True,
     this['config'] = session.config
     this['command_history'] = session.command_history
 
-    if subgroup is not None:
-        print("use subgroup ", subgroup)
 
     for sym, val in session.symbols.items():
         cur = getattr(symtab, sym, None)
