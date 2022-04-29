@@ -17,7 +17,7 @@ from lmfit.printfuncs import gformat, fit_report
 
 from larch import Group
 from larch.math import index_of
-
+from larch.xafs import etok, ktoe
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          GridPanel, get_icon, SimpleText, pack, Button, HLine,
                          Choice, Check, CEN, LEFT, Font, FONTSIZE,
@@ -44,7 +44,6 @@ FitSpace_Choices = {norm: 'norm', rawmu: 'mu', flatmu: 'flat',
                     dmude: 'dmude', chi0: 'chi',
                     chi1: 'chi1', chi2: 'chi2'}
 
-
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -52,26 +51,40 @@ DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 MAX_COMPONENTS = 20
 
-def make_lcfplot(dgroup, form, nfit=0):
+def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
     """make larch plot commands to plot LCF fit from form"""
     form['group'] = dgroup.groupname
     form['filename'] = dgroup.filename
     print("make_lcfplot ", form['group'], form['fitspace'], form['comps'], form['arrayname'])
     form['nfit'] = nfit
     form['label'] = label = 'Fit #%2.2d' % (nfit+1)
-    form['plotopt'] = 'show_norm=True'
-    if form['arrayname'] == 'dmude':
-        form['plotopt'] = 'show_deriv=True'
+    kspace = form['arrayname'].startswith('chi')
+    if kspace:
+        kw = 0
+        if len(form['arrayname']) > 3:
+            kw = int(form['arrayname'][3:])
+        form['plotopt'] = 'kweight=%d' % kw
 
-    erange = form['ehi'] - form['elo']
-    form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
-    form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
+        cmds = ["""plot_chik({group:s}, {plotopt:s}, delay_draw=False, label='data',
+         show_window=False, title='{filename:s}, {label:s}')"""]
 
+    else:
+        form['plotopt'] = 'show_norm=False'
+        if form['arrayname'] == 'norm':
+            form['plotopt'] = 'show_norm=True'
+        elif form['arrayname'] == 'flat':
+            form['plotopt'] = 'show_flat=True'
+        elif form['arrayname'] == 'dmude':
+            form['plotopt'] = 'show_deriv=True'
 
-    cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
-    emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}')"""]
+        erange = form['ehi'] - form['elo']
+        form['pemin'] = 10*int( (form['elo'] - 5 - erange/4.0) / 10.0)
+        form['pemax'] = 10*int( (form['ehi'] + 5 + erange/4.0) / 10.0)
 
-    if hasattr(dgroup, 'lcf_result'):
+        cmds = ["""plot_mu({group:s}, {plotopt:s}, delay_draw=True, label='data',
+        emin={pemin:.1f}, emax={pemax:.1f}, title='{filename:s}, {label:s}')"""]
+
+    if with_fit and hasattr(dgroup, 'lcf_result'):
         with_comps = True # "Components" in form['plotchoice']
         delay = 'delay_draw=True' if with_comps else 'delay_draw=False'
         xarr = "{group:s}.lcf_result[{nfit:d}].xdata"
@@ -87,6 +100,11 @@ def make_lcfplot(dgroup, form, nfit=0):
     # if form['show_e0']:
     #     cmds.append("plot_axvline({e0:1f}, color='#DDDDCC', zorder=-10)")
     if form['show_fitrange']:
+        if kspace:
+            form['ehi'] = etok(form['ehi'] - dgroup.e0)
+            form['elo'] = 0
+            if form['elo'] > dgroup.e0:
+                form['elo'] = etok(form['elo'] - dgroup.e0)
         cmds.append("plot_axvline({elo:1f}, color='#EECCCC', zorder=-10)")
         cmds.append("plot_axvline({ehi:1f}, color='#EECCCC', zorder=-10)")
 
@@ -716,6 +734,7 @@ class LinearComboPanel(TaskPanel):
     def onFitSpace(self, evt=None):
         fitspace = self.wids['fitspace'].GetStringSelection()
         self.update_config(dict(fitspace=fitspace))
+        self.plot()
 
     def onComponent(self, evt=None, comp=None):
         if comp is None or evt is None:
@@ -897,9 +916,6 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
         self.skip_process = False
 
     def plot(self, dgroup=None):
-        self.onPlot(dgroup=dgroup)
-
-    def onPlot(self, evt=None, dgroup=None):
         if self.skip_plotting:
             return
 
@@ -907,7 +923,7 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
             dgroup = self.controller.get_group()
 
         form = self.read_form(dgroup=dgroup)
-        # print(" Form " , form['arrayname'])
+        print(" Form " , form['arrayname'])
 
-        script = make_lcfplot(dgroup, form, nfit=0)
+        script = make_lcfplot(dgroup, form, with_fit=False, nfit=0)
         self.larch_eval(script)
