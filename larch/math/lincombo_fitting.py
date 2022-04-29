@@ -66,7 +66,7 @@ def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.in
     if yname.startswith('chi'):
         xname = 'k'
         if len(yname) > 3:
-            kweight = int(yname[4:])
+            kweight = int(yname[3:])
         yname = 'chi'
         e0 = getattr(groups[0], 'e0', -1.)
         if e0 < 0:
@@ -102,8 +102,7 @@ def groups2matrix(groups, yname='norm', xname='energy', xmin=-np.inf, xmax=np.in
     for g in groups[1:]:
         x, y = get_arrays(g, yname, xname=xname)
         if xname == 'k' and kweight > 0:
-            y = y * y**kweight
-
+            y = y * x**kweight
         ydat.append(interp(x, y, xdat, kind=interp_kind))
     return xdat, np.array(ydat)
 
@@ -147,6 +146,7 @@ def lincombo_fit(group, components, weights=None, minvals=None,
     allgroups.extend(components)
     xdat, yall = groups2matrix(allgroups, yname=arrayname,
                                xname='energy', xmin=xmin, xmax=xmax)
+
     ydat   = yall[0, :]
     ycomps = yall[1:, :].transpose()
 
