@@ -24,26 +24,14 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox, DataTableGrid)
 
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, make_array_choice
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
 
 # plot options:
-norm   = 'Normalized \u03bC(E)'
-flatmu  = 'Flattened \u03bC(E)'
-rawmu  = 'Raw \u03bC(E)'
-dmude  = 'd\u03bC(E)/dE'
-chi0   = '\u03c7(k)'
-chi1   = 'k \u03c7(k)'
-chi2   = 'k^2 \u03c7(k)'
-noplot = '<no plot>'
-noname = '<none>'
-
-FitSpace_Choices = {norm: 'norm', rawmu: 'mu', flatmu: 'flat',
-                    dmude: 'dmude', chi0: 'chi',
-                    chi1: 'chi1', chi2: 'chi2'}
-
+FitSpace_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv',
+                                      'chi0', 'chi1', 'chi2'])
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -640,8 +628,8 @@ class LinearComboPanel(TaskPanel):
         self.skip_process = True
 
         wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()),
-                                 action=self.onFitSpace, size=(200, -1))
-        # wids['fitspace'].SetStringSelection(norm)
+                                 action=self.onFitSpace, size=(175, -1))
+        wids['fitspace'].SetSelection(0)
 
         add_text = self.add_text
 
@@ -652,7 +640,7 @@ class LinearComboPanel(TaskPanel):
         elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
         ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)
 
-        wids['fit_group'] = Button(panel, 'Fit this Group', size=(175, -1),
+        wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
                                    action=self.onFitOne)
         wids['fit_selected'] = Button(panel, 'Fit Selected Groups', size=(175, -1),
                                       action=self.onFitAll)
@@ -670,7 +658,7 @@ class LinearComboPanel(TaskPanel):
 
         wids['show_fitrange'] = Check(panel, label='show?', **opts)
 
-        wids['vary_e0'] = Check(panel, label='Allow data to shift energy in fit?', default=False)
+        wids['vary_e0'] = Check(panel, label='Allow energy shift in fit?', default=False)
         wids['sum_to_one'] = Check(panel, label='Weights Must Sum to 1?', default=False)
         wids['all_combos'] = Check(panel, label='Fit All Combinations?', default=True)
         max_ncomps = self.add_floatspin('max_ncomps', value=10, digits=0, increment=1,
@@ -835,7 +823,7 @@ class LinearComboPanel(TaskPanel):
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
 
-        opts['arrayname'] = FitSpace_Choices[opts['fitspace']]
+        opts['arrayname'] = FitSpace_Choices.get(opts['fitspace'], 'norm')
         self.skip_process = False
         return opts
 
@@ -893,6 +881,9 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
         self.subframes['lcf_result'].add_results(dgroup, form=form,
                                                  larch_eval=self.larch_eval)
         self.plot(dgroup=dgroup)
+
+    def onShowResults(self, event=None):
+        self.show_subframe('lcf_result',  LinComboResultFrame)
 
     def onFitOne(self, event=None):
         """ handle process events"""

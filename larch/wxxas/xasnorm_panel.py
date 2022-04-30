@@ -21,7 +21,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
 
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, autoset_fs_increment
+from .taskpanel import TaskPanel, autoset_fs_increment, make_array_choice
 
 from larch.xray import atomic_symbols
 
@@ -36,23 +36,11 @@ PLOTOPTS_2 = dict(style='short dashed', linewidth=2, zorder=3,
 PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
-PlotOne_Choices = {'Raw \u03BC(E)': 'mu',
-                   'Normalized \u03BC(E)': 'norm',
-                   'Flattened \u03BC(E)': 'flat',
-                   '\u03BC(E) + Pre-/Post-edge': 'prelines',
-                   '\u03BC(E) + MBACK  \u03BC(E)': 'mback_norm',
-                   'MBACK + Poly Normalized': 'mback_poly',
-                   'd\u03BC(E)/dE (normalized)': 'dnormde',
-                   'Normalized \u03BC(E) + d\u03BC(E)/dE': 'norm+dnormde',
-                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde',
-                   'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2': 'norm+d2normde',
-                   }
+PlotOne_Choices = make_array_choice(['mu','norm', 'flat', 'prelines',
+                                     'mback_norm', 'mback_poly', 'dnormde',
+                                     'norm+dnormde', 'd2normde',  'norm+d2normde'])
 
-PlotSel_Choices = {'Raw \u03BC(E)': 'mu',
-                   'Normalized \u03BC(E)': 'norm',
-                   'Flattened \u03BC(E)': 'flat',
-                   'd\u03BC(E)/dE (normalized)': 'dnormde',
-                   'd^2\u03BC(E)/dE^2 (normalized)': 'd2normde'}
+PlotSel_Choices = make_array_choice(['mu', 'norm', 'flat', 'dnormde', 'd2normde'])
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -20:+80eV':  (-20, 80),

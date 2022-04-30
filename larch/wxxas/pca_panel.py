@@ -22,32 +22,16 @@ from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
                          LEFT, Font, FileSave, FileOpen, DataTableGrid)
 
-from .taskpanel import TaskPanel, autoset_fs_increment
+from .taskpanel import TaskPanel, autoset_fs_increment, make_array_choice
 from larch.math.lincombo_fitting import get_arrays
 
 np.seterr(all='ignore')
 
-# plot options:
-norm   = 'Normalized \u03bC(E)'
-flatmu = 'Flattened \u03bC(E)'
-rawmu  = 'Raw \u03bC(E)'
-dmude  = 'd\u03bC(E)/dE'
-chik   = '\u03c7(k)'
-noplot = '<no plot>'
-noname = '<none>'
-
-
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
+# plot options:
+FitSpace_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv', 'chi0', 'chi1', 'chi2'])
 
-FITSPACES = {norm:'norm', flatmu:'flat', dmude:'dmude', chik:'chik',
-             rawmu:'mu'}
-
-FitSpace_Choices = list(FITSPACES.keys())
-
-Plot_Choices = ['PCA Components',
-                'Data + Fit',
-                'Data + Fit + Components']
 
 # max number of *reported* PCA weights after fit
 MAX_COMPS = 30
@@ -73,8 +57,8 @@ class PCAPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=FitSpace_Choices, size=(175, -1))
-        wids['fitspace'].SetStringSelection(norm)
+        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()), size=(175, -1))
+        wids['fitspace'].SetSelection(0)
 
 
         add_text = self.add_text
@@ -362,7 +346,7 @@ class PCAPanel(TaskPanel):
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
 
-        opts['arr'] = FITSPACES.get(form['fitspace'], 'norm')
+        opts['arr'] = FitSpace_Choices.get(form['fitspace'], 'norm')
         cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
 
         self.larch_eval(cmd.format(**opts))

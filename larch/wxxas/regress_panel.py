@@ -24,20 +24,14 @@ from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
 
-from .taskpanel import TaskPanel
-
-# plot options:
-norm   = 'Normalized \u03bC(E)'
-flatmu = 'Flattened \u03bC(E)'
-dmude  = 'd\u03bC(E)/dE'
-chik   = '\u03c7(k)'
-noplot = '<no plot>'
-noname = '<none>'
+from .taskpanel import TaskPanel, make_array_choice
 
 CSV_WILDCARDS = "CSV Files(*.csv,*.dat)|*.csv*;*.dat|All files (*.*)|*.*"
 MODEL_WILDCARDS = "Regression Model Files(*.regmod,*.dat)|*.regmod*;*.dat|All files (*.*)|*.*"
 
-FitSpace_Choices = [norm, dmude, flatmu, chik]
+FitSpace_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv',
+                                      'chi0', 'chi1', 'chi2'])
+
 Plot_Choices = ['Mean Spectrum + Active Energies',
                 'Spectra Stack',
                 'Predicted External Varliable']
@@ -74,8 +68,8 @@ class RegressionPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=FitSpace_Choices, size=(250, -1))
-        wids['fitspace'].SetStringSelection(norm)
+        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()), size=(175, -1))
+        wids['fitspace'].SetSelection(0)
         # wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
         #                           size=(250, -1), action=self.onPlot)
 
@@ -287,13 +281,7 @@ class RegressionPanel(TaskPanel):
                  "xmin=%.4f" % opts['xmin'],
                  "xmax=%.4f" % opts['xmax']]
 
-        arrname = 'norm'
-        if opts['fitspace'] == dmude:
-            arrname = 'dmude'
-        elif opts['fitspace'] == flat:
-            arrname = 'flato'
-        elif opts['fitspace'] == chik:
-            arrname = 'chi'
+        arrname = FitSpace_Choices.get(opts['fitspace'], 'norm')
         copts.append("arrayname='%s'" % arrname)
 
         self.method = 'pls'
@@ -526,7 +514,7 @@ class RegressionPanel(TaskPanel):
                     markersize=8, win=2, new=True, title=title)
 
         ppanel.oplot(model.ypred[sx], indices, label='predicted',
-                    labelfontsize=7, markersize=6, marker='o',
+                    labelxsxfontsize=7, markersize=6, marker='o',
                     linewidth=0, show_legend=True, new=False)
 
         ppanel.axes.barh(indices, diff[sx], 0.5, color='#9f9f9f88')
