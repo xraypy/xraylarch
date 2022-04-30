@@ -25,6 +25,32 @@ from larch.utils.strutils import break_longstring
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
+ARRAYS = {'mu':      'Raw \u03BC(E)',
+          'norm':    'Normalized \u03BC(E)',
+          'flat':    'Flattened \u03BC(E)',
+          'prelines':   '\u03BC(E) + Pre-/Post-edge',
+          'mback_norm': '\u03BC(E) + MBACK  \u03BC(E)',
+          'mback_poly': 'MBACK + Poly Normalized',
+          'dnormde':    'd\u03BC(E)/dE (normalized)',
+          'norm+dnormde': 'Normalized \u03BC(E) + d\u03BC(E)/dE',
+          'd2normde':     'd^2\u03BC(E)/dE^2 (normalized)',
+          'norm+d2normde': 'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2',
+          'deconv': 'Deconvolved \u03BC(E)',
+          'chi':  '\u03c7(k)',
+          'chi0':  '\u03c7(k)',
+          'chi1': 'k \u03c7(k)',
+          'chi2': 'k^2 \u03c7(k)'}
+
+def make_array_choice(opts):
+    """
+    make (ordered) dict of {Array Description: varname}
+    """
+    out = {}
+    for n in opts:
+        if n in ARRAYS:
+            out[ARRAYS[n]] = n
+    return out
+
 def autoset_fs_increment(wid, value):
     """set increment for floatspin to be
     1, 2, or 5 x 10^(integer) and ~0.02 X current value
