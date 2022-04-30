@@ -1246,8 +1246,10 @@ class XASFrame(wx.Frame):
                                           {'savetime': 900,
                                            'fileroot': 'session_autosave',
                                            'nhistory': 3})
+        symtab = self.larch.symtable
         if (time.time() > self.last_autosave + conf['savetime'] and
-            self.larch.symtable._sys.last_eval_time > self.last_autosave):
+            symtab._sys.last_eval_time > self.last_autosave
+            and len(symtab._xasgroups) > 0):
             self.autosave_session()
 
     def autosave_session(self, event=None):
