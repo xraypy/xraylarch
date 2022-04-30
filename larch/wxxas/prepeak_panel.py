@@ -32,7 +32,7 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
-from .taskpanel import TaskPanel
+from .taskpanel import TaskPanel, make_array_choice
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -80,11 +80,8 @@ BaselineFuncs = ['No Baseline',
                  'Quadratic', 'Linear']
 
 
-Array_Choices = {'Raw \u03BC(E)': 'mu',
-                 'Normalized \u03BC(E)': 'norm',
-                 'Flattened \u03BC(E)': 'flat',
-                 'Deconvolved \u03BC(E)': 'deconv',
-                 'Derivative \u03BC(E)': 'dmude'}
+Array_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv'])
+
 
 PLOT_BASELINE = 'Data+Baseline'
 PLOT_FIT      = 'Data+Fit'
@@ -675,7 +672,7 @@ class PrePeakPanel(TaskPanel):
 
         self.array_choice = Choice(pan, size=(175, -1),
                                    choices=list(Array_Choices.keys()))
-        self.array_choice.SetSelection(1)
+        self.array_choice.SetSelection(0)
 
         self.bline_choice = Choice(pan, size=(175, -1),
                                    choices=BaselineFuncs)
