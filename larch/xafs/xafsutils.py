@@ -10,7 +10,8 @@ ETOK = 1.0/KTOE
 
 def etok(energy):
     """convert photo-electron energy to wavenumber"""
-    return np.sqrt(energy/KTOE)
+    if energy < 0: return 0
+    return np.sqrt(energy*ETOK)
 
 def ktoe(k):
     """convert photo-electron wavenumber to energy"""
