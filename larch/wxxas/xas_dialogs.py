@@ -53,11 +53,6 @@ def ensure_en_orig(dgroup):
     if not hasattr(dgroup, 'energy_orig'):
         dgroup.energy_orig = dgroup.energy[:]
 
-def ensure_dmude(dgroup):
-    ensure_en_orig(dgroup)
-    if not hasattr(dgroup, 'dmude'):
-        dgroup.dmude = np.gradient(dgroup.mu)/np.gradient(dgroup.energy)
-
 
 def add_floatspin(name, value, panel, with_pin=True, xasmain=None,
                   callback=None, relative_e0=False, **kws):
@@ -414,8 +409,6 @@ overwriting current arrays''')
         dat = self.dgroup
         ensure_en_orig(dat)
         ensure_en_orig(ref)
-        ensure_dmude(dat)
-        ensure_dmude(ref)
 
         dat.xdat = dat.energy_orig[:]
         ref.xdat = ref.energy_orig[:]
@@ -1760,7 +1753,7 @@ class LoadSessionDialog(wx.Frame):
         wx.Frame.__init__(self, parent, wx.ID_ANY, title=title)
 
         x0, y0 = parent.GetPosition()
-        self.SetPosition((x0+120, y0+390))
+        self.SetPosition((x0+450, y0+75))
 
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(250)
@@ -1847,15 +1840,15 @@ class LoadSessionDialog(wx.Frame):
         wids['plotopt'] = Choice(panel, choices=list(SESSION_PLOTS.keys()),
                                  action=self.onPlotChoice, size=(175, -1))
 
-        panel.Add(wids['view_conf'], dcol=1, newrow=True)
+        panel.Add(wids['view_conf'], dcol=1)
         panel.Add(wids['view_cmds'], dcol=1, newrow=False)
-        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
 
         panel.Add(SimpleText(panel, xafs_message), dcol=3, newrow=True)
         panel.Add(SimpleText(panel, 'Policy for conflicts:'), newrow=True)
         panel.Add(wids['policy'], dcol=3, newrow=False)
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
         panel.Add(SimpleText(panel, 'Other Working Data Groups (will overwrite existing groups):'),
                   dcol=2, newrow=True)
         i = 0
@@ -1865,12 +1858,13 @@ class LoadSessionDialog(wx.Frame):
                 i += 1
 
         panel.Add((5, 5), newrow=True)
-        panel.Add(HLine(panel, size=(400, 2)), dcol=3, newrow=True)
+        panel.Add(HLine(panel, size=(450, 2)), dcol=3, newrow=True)
         panel.Add(SimpleText(panel, 'Plot Type:'), newrow=True)
         panel.Add(wids['plotopt'], dcol=2, newrow=False)
         panel.pack()
 
         self.plotpanel = PlotPanel(rightpanel, messenger=self.plot_messages)
+        self.plotpanel.SetSize((475, 450))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, LEFT, 2)
@@ -1878,11 +1872,8 @@ class LoadSessionDialog(wx.Frame):
 
         pack(rightpanel, sizer)
 
-
         splitter.SplitVertically(leftpanel, rightpanel, 1)
-
-        self.SetSize((750, 525))
-        self.SetSize(self.GetBestSize())
+        self.SetSize((750, 725))
         self.Show()
         self.Raise()
 
