@@ -16,9 +16,9 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
                          FloatSpin, FloatSpinWithPin, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
                          GUIColors, CEN, LEFT, FRAMESTYLE, Font, FileSave,
-                         FileOpen, FONTSIZE, DataTableGrid)
+                         FileOpen, FONTSIZE, FONTSIZE_FW, DataTableGrid)
 
-
+from larch.xafs import etok, ktoe
 from larch.utils import group2dict
 from larch.utils.strutils import break_longstring
 
@@ -31,13 +31,13 @@ ARRAYS = {'mu':      'Raw \u03BC(E)',
           'prelines':   '\u03BC(E) + Pre-/Post-edge',
           'mback_norm': '\u03BC(E) + MBACK  \u03BC(E)',
           'mback_poly': 'MBACK + Poly Normalized',
-          'dnormde':    'd\u03BC(E)/dE (normalized)',
-          'norm+dnormde': 'Normalized \u03BC(E) + d\u03BC(E)/dE',
-          'd2normde':     'd^2\u03BC(E)/dE^2 (normalized)',
-          'norm+d2normde': 'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2',
+          'dmude':     'd\u03BC(E)/dE ',
+          'norm+dmude': 'Normalized \u03BC(E) + d\u03BC(E)/dE',
+          'd2mude':     'd^2\u03BC(E)/dE^2',
+          'norm+d2mude': 'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2',
           'deconv': 'Deconvolved \u03BC(E)',
           'chi':  '\u03c7(k)',
-          'chi0':  '\u03c7(k)',
+          'chi0': '\u03c7(k)',
           'chi1': 'k \u03c7(k)',
           'chi2': 'k^2 \u03c7(k)'}
 
@@ -223,6 +223,8 @@ class TaskPanel(wx.Panel):
         self.titleopts = dict(font=Font(FONTSIZE+2),
                               colour='#AA0000', style=LEFT)
 
+        self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.NORMAL)
+
         self.panel = GridPanel(self, ncols=7, nrows=10, pad=2, itemstyle=LEFT)
         self.panel.sizer.SetVGap(5)
         self.panel.sizer.SetHGap(5)
@@ -230,6 +232,53 @@ class TaskPanel(wx.Panel):
         self.skip_plotting = False
         self.build_display()
         self.skip_process = False
+        self.fit_xspace = 'e'
+        self.fit_last_erange = None
+
+    def make_fit_xspace_widgets(self, elo=-1, ehi=1):
+        self.wids['fitspace_label'] = SimpleText(self.panel, 'Fit Range (eV):')
+        opts = dict(digits=2, increment=1.0, relative_e0=False)
+        self.elo_wids = self.add_floatspin('elo', value=elo, **opts)
+        self.ehi_wids = self.add_floatspin('ehi', value=ehi, **opts)
+
+    def update_fit_xspace(self, arrayname):
+        fit_xspace = 'e'
+        if arrayname.startswith('chi'):
+            fit_xspace = 'r' if 'r' in arrayname else 'k'
+
+        if fit_xspace == self.fit_xspace:
+            return
+
+        if self.fit_xspace == 'e' and fit_xspace == 'k': # e to k
+            dgroup = self.controller.get_group()
+            e0 = getattr(dgroup, 'e0', None)
+            k  = getattr(dgroup, 'k', None)
+            if e0 is None or k is None:
+                return
+            elo = self.wids['elo'].GetValue()
+            ehi = self.wids['ehi'].GetValue()
+            self.fit_last_erange = (elo, ehi)
+            print(elo, ehi, e0)
+            self.wids['elo'].SetValue(etok(elo-e0))
+            self.wids['ehi'].SetValue(etok(ehi-e0))
+            self.fit_xspace = 'k'
+            self.wids['fitspace_label'].SetLabel('Fit Range (1/\u212B):')
+        elif self.fit_xspace == 'k' and fit_xspace == 'e': # k to e
+            if self.fit_last_erange is not None:
+                elo, ehi = self.fit_last_erange
+            else:
+                dgroup = self.controller.get_group()
+                e0 = getattr(dgroup, 'e0', None)
+                k  = getattr(dgroup, 'k', None)
+                if e0 is None or k is None:
+                    return
+                ehi = ktoe(self.wids['elo'].GetValue()) + e0
+                elo = ktoe(self.wids['ehi'].GetValue()) + e0
+            self.wids['elo'].SetValue(elo)
+            self.wids['ehi'].SetValue(ehi)
+            self.fit_xspace = 'e'
+            self.wids['fitspace_label'].SetLabel('Fit Range (eV):')
+
 
     def show_subframe(self, name, frameclass, **opts):
         shown = False
