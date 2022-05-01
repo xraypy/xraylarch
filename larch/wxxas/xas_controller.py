@@ -168,6 +168,10 @@ class XASController():
         if dgroup is None and groupname in self.file_groups:
             groupname = self.file_groups[groupname]
             dgroup = getattr(self.symtable, groupname, None)
+
+        if dgroup is None and len(self.file_groups) > 0:
+            gname = list(self.file_groups.keys())[0]
+            dgroup = getattr(self.symtable, gname, None)
         return dgroup
 
     def filename2group(self, filename):
