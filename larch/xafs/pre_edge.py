@@ -246,8 +246,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
         flat        flattened, normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
-        dmude       derivative of mu(E)
-        d2mude      second derivative of mu(E)
+        dmude       derivative of normalized mu(E)
+        d2mude      second derivative of normalized mu(E)
 
     (if the output group is None, _sys.xafsGroup will be written to)
 
@@ -321,7 +321,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
     group.norm = norm
     group.norm_poly = 1.0*norm
     group.flat = flat
-    group.dmude = np.gradient(mu)/np.gradient(energy)
+    group.dmude = np.gradient(norm)/np.gradient(energy)
     group.d2mude = np.gradient(group.dmude)/np.gradient(energy)
     group.edge_step  = pre_dat['edge_step']
     group.edge_step_poly = pre_dat['edge_step']
