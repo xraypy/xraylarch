@@ -248,10 +248,12 @@ def pca_fit(group, pca_model, ncomps=None, rescale=True):
 
     """
     # get first nerate arrays and interpolate components onto the unknown x array
-    xdat, ydat = get_arrays(group, pca_model.arrayname)
+    xdat, ydat = groups2matrix([group], pca_model.arrayname, xmin=pca_model.xmin, xmax=pca_model.xmax)
+
     if xdat is None or ydat is None:
         raise ValueError("cannot get arrays for arrayname='%s'" % arrayname)
 
+    xdat, ydat = xdat[0], ydat[0]
     ydat = interp(xdat, ydat, pca_model.x, kind='cubic')
 
     params = Parameters()
