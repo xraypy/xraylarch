@@ -75,13 +75,17 @@ plotlabels = Group(k       = r'$k \rm\,(\AA^{-1})$',
                    norm    = r'normalized $\mu(E)$',
                    flat    = r'flattened $\mu(E)$',
                    deconv  = r'deconvolved $\mu(E)$',
-                   dmude   = r'$d\mu(E)/dE$',
-                   dnormde = r'$d\mu_{\rm norm}(E)/dE$',
-                   d2mude  = r'$d^2\mu(E)/dE^2$',
-                   d2normde= r'$d^2\mu_{\rm norm}(E)/dE^2$',
+                   dmude   = r'$d\mu_{\rm norm}(E)/dE$',
+                   d2mude  = r'$d^2\mu_{\rm norm}(E)/dE^2$',
                    chie    = r'$\chi(E)$',
+                   chie0   = r'$\chi(E)$',
+                   chie1   = r'$E\chi(E) \rm\, (eV)$',
                    chiew   = r'$E^{{{0:g}}}\chi(E) \rm\,(eV^{{{0:g}}})$',
                    chikw   = r'$k^{{{0:g}}}\chi(k) \rm\,(\AA^{{-{0:g}}})$',
+                   chi0    = r'$\chi(k)$',
+                   chi1    = r'$k\chi(k) \rm\,(\AA^{-1})$',
+                   chi2    = r'$k^2\chi(k) \rm\,(\AA^{-2})$',
+                   chi3    = r'$k^3\chi(k) \rm\,(\AA^{-3})$',
                    chir    = r'$\chi(R) \rm\,(\AA^{{-{0:g}}})$',
                    chirmag = r'$|\chi(R)| \rm\,(\AA^{{-{0:g}}})$',
                    chirre  = r'${{\rm Re}}[\chi(R)] \rm\,(\AA^{{-{0:g}}})$',
@@ -177,7 +181,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
      show_pre   bool whether to show pre-edge curve [False]
      show_post  bool whether to show post-edge curve [False]
      show_e0    bool whether to show E0 [False]
-     with_deriv bool whether to show deriv (dnorm/de) together with mu [False]
+     with_deriv bool whether to show deriv (dmu/de) together with mu [False]
      emin       min energy to show, absolute or relative to E0 [None, start of data]
      emax       max energy to show, absolute or relative to E0 [None, end of data]
      label      string for label [None:  'mu', `dmu/dE', or 'mu norm']
@@ -206,21 +210,20 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
         label = getattr(dgroup, 'filename', 'mu')
     #endif
     if show_deriv:
-        mu = gradient(dgroup.norm)/gradient(dgroup.energy)
-        ylabel = plotlabels.dmude
-        dlabel = '%s (norm, deriv)' % label
+        mu = dgroup.dmude
+        ylabel = "%s (deriv)" % ylabel
+        dlabel = plotlabels.dmude
     elif show_norm:
         mu = dgroup.norm
         ylabel = "%s (norm)" % ylabel
-        dlabel = "%s (norm)" % label
+        dlabel = plotlabels.norm
     #endif
     elif show_flat:
         mu = dgroup.flat
         ylabel = "%s (flat)" % ylabel
-        dlabel = "%s (flat)" % label
+        dlabel = plotlabels.flat
     #endif
     emin, emax = _get_erange(dgroup, emin, emax)
-
     title = _get_title(dgroup, title=title)
 
     opts = dict(win=win, show_legend=True, linewidth=3,
@@ -231,7 +234,7 @@ def plot_mu(dgroup, show_norm=False, show_flat=False, show_deriv=False,
           label=label, zorder=20, new=new, **opts)
 
     if with_deriv:
-        dmu = gradient(dgroup.norm)/gradient(dgroup.energy)
+        dmu = dgroup.dmude
         _plot(dgroup.energy, dmu+offset, ylabel=plotlabels.dmude,
               label='%s (deriv)' % label, zorder=18, side='right', **opts)
     #endif
@@ -1096,6 +1099,7 @@ def plot_pca_components(result, min_weight=0, ncomps=None, min_variance=1.e-5, w
     result must be output of `pca_train`
     """
     title = "PCA components"
+    print(' plot pca comps ', result.arrayname, dir(result))
     popts = dict(xmin=result.xmin, xmax=result.xmax, title=title,
                  xlabel=plotlabels.energy, ylabel=plotlabels.norm,
                  delay_draw=True, show_legend=True, style='solid',
