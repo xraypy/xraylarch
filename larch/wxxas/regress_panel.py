@@ -29,8 +29,7 @@ from .taskpanel import TaskPanel, make_array_choice
 CSV_WILDCARDS = "CSV Files(*.csv,*.dat)|*.csv*;*.dat|All files (*.*)|*.*"
 MODEL_WILDCARDS = "Regression Model Files(*.regmod,*.dat)|*.regmod*;*.dat|All files (*.*)|*.*"
 
-FitSpace_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv',
-                                      'chi0', 'chi1', 'chi2'])
+FitSpace_Choices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 
 Plot_Choices = ['Mean Spectrum + Active Energies',
                 'Spectra Stack',
