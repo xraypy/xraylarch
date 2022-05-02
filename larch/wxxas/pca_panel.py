@@ -18,6 +18,7 @@ from lmfit.printfuncs import gformat
 from larch import Group
 from larch.math import index_of
 from larch.utils import get_cwd
+from larch.xafs import etok, ktoe
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
                          LEFT, Font, FileSave, FileOpen, DataTableGrid)
@@ -30,8 +31,7 @@ np.seterr(all='ignore')
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
 # plot options:
-FitSpace_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv', 'chi0', 'chi1', 'chi2'])
-
+FitSpace_Choices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 
 # max number of *reported* PCA weights after fit
 MAX_COMPS = 30
@@ -347,6 +347,7 @@ class PCAPanel(TaskPanel):
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
 
         opts['arr'] = FitSpace_Choices.get(form['fitspace'], 'norm')
+
         cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
 
         self.larch_eval(cmd.format(**opts))
