@@ -37,10 +37,10 @@ PLOTOPTS_D = dict(style='solid', linewidth=2, zorder=2,
                   side='right', marker='None', markersize=4)
 
 PlotOne_Choices = make_array_choice(['mu','norm', 'flat', 'prelines',
-                                     'mback_norm', 'mback_poly', 'dnormde',
-                                     'norm+dnormde', 'd2normde',  'norm+d2normde'])
+                                     'mback_norm', 'mback_poly', 'dmude',
+                                     'norm+dmude', 'd2mude',  'norm+d2mude'])
 
-PlotSel_Choices = make_array_choice(['mu', 'norm', 'flat', 'dnormde', 'd2normde'])
+PlotSel_Choices = make_array_choice(['mu', 'norm', 'flat', 'dmude', 'd2mude'])
 
 Plot_EnergyRanges = {'full E range': None,
                      'E0 -20:+80eV':  (-20, 80),
@@ -669,13 +669,6 @@ class XASNormPanel(TaskPanel):
         self.process(dgroup=dgroup)
         self.onPlotEither()
 
-    def make_dnormde(self, dgroup):
-        form = dict(group=dgroup.groupname)
-        s = """{g}.dnormde=gradient({g}.norm)/gradient({g}.energy)
-{g}.d2normde=gradient({g}.dnormde)/gradient({g}.energy)""".format(g=form['group'])
-        self.larch.eval(s)
-
-
     def process(self, dgroup=None, force_mback=False, force=False, **kws):
         """ handle process (pre-edge/normalize) of XAS data from XAS form
         """
@@ -801,7 +794,6 @@ class XASNormPanel(TaskPanel):
 {group:s}.edge_step = 1.0*{group:s}.edge_step_{normmeth:s}"""
             self.larch_eval(expr.format(**form))
 
-        self.make_dnormde(dgroup)
 
         if form['auto_e0']:
             self.wids['e0'].SetValue(dgroup.e0)
@@ -855,11 +847,11 @@ class XASNormPanel(TaskPanel):
             elif pchoice == 'norm':
                 dgroup.plot_ylabel = 'scaled y'
                 dgroup.plot_yarrays = [('norm', PLOTOPTS_1, 'y/scale')]
-            elif pchoice == 'norm+dnormde':
+            elif pchoice == 'norm+dmude':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'dy/dx'
                 dgroup.plot_yarrays = [('ydat', PLOTOPTS_1, 'y'),
-                                       ('dnormde', PLOTOPTS_D, 'dy/dx')]
+                                       ('dmude', PLOTOPTS_D, 'dy/dx')]
             elif pchoice == 'norm+d2normde':
                 lab = plotlabels.norm
                 dgroup.plot_y2label = 'd2y/dx2'
@@ -867,10 +859,10 @@ class XASNormPanel(TaskPanel):
                                        ('d2normde', PLOTOPTS_D, 'd2y/dx')]
             return
 
-        req_attrs = ['e0', 'norm', 'dnormde', 'd2normde', 'pre_edge']
+        req_attrs = ['e0', 'norm', 'dmude', 'd2mude', 'pre_edge']
 
         pchoice = PlotOne_Choices[self.plotone_op.GetStringSelection()]
-        if pchoice in ('mu', 'norm', 'flat', 'dnormde', 'd2normde'):
+        if pchoice in ('mu', 'norm', 'flat', 'dmude', 'd2mude'):
             lab = getattr(plotlabels, pchoice)
             dgroup.plot_yarrays = [(pchoice, PLOTOPTS_1, lab)]
 
@@ -896,11 +888,11 @@ class XASNormPanel(TaskPanel):
                                    ('d2mude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
 
-        elif pchoice == 'norm+dnormde':
+        elif pchoice == 'norm+dmude':
             lab = plotlabels.norm
             lab2 = plotlabels.dmude + ' (normalized)'
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('dnormde', PLOTOPTS_D, lab2)]
+                                   ('dnmude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
         elif pchoice == 'norm+d2normde':
             lab = plotlabels.norm
@@ -969,8 +961,8 @@ class XASNormPanel(TaskPanel):
              getattr(dgroup, 'energy', None) is None or
              getattr(dgroup, 'mu', None) is None or
              getattr(dgroup, 'e0', None) is None or
-             getattr(dgroup, 'dnormde', None) is None or
-             getattr(dgroup, 'd2normde', None) is None or
+             getattr(dgroup, 'dmude', None) is None or
+             getattr(dgroup, 'd2mude', None) is None or
              getattr(dgroup, 'norm', None) is None)):
             self.process(dgroup=dgroup)
         self.get_plot_arrays(dgroup)
@@ -1036,8 +1028,6 @@ class XASNormPanel(TaskPanel):
                 popts['label'] = yalabel
 
             popts['delay_draw'] = delay_draw or (i != narr)
-            if yaname in ('dnormde', 'd2normde') and not hasattr(dgroup, yaname):
-                self.make_dnormde(dgroup)
             if yaname == 'norm_mback' and not hasattr(dgroup, yaname):
                 self.process(dgroup=dgroup, force=True, force_mback=True)
 
