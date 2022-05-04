@@ -253,7 +253,11 @@ def pca_fit(group, pca_model, ncomps=None, rescale=True):
     if xdat is None or ydat is None:
         raise ValueError("cannot get arrays for arrayname='%s'" % arrayname)
 
-    xdat, ydat = xdat[0], ydat[0]
+    xshape = xdat.shape
+    if len(xshape) == 2:
+        xdat = xdat[0]
+    
+    ydat = ydat[0]
     ydat = interp(xdat, ydat, pca_model.x, kind='cubic')
 
     params = Parameters()
