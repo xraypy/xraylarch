@@ -635,7 +635,7 @@ class XASFrame(wx.Frame):
             fname = time.strftime('%Y%b%d_%H%M') + '.larix'
 
         _, fname = os.path.split(fname)
-        wcards  = 'Larch Project Files (*.larix)|*.larixj|All files (*.*)|*.*'
+        wcards  = 'Larch Project Files (*.larix)|*.larix|All files (*.*)|*.*'
         fname = FileSave(self, 'Save Larch Session File',
                             default_file=fname, wildcard=wcards)
         if fname is None:
