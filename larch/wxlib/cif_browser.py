@@ -448,6 +448,14 @@ class CIFFrame(wx.Frame):
         fefftext = self.wids['feff_text'].GetValue()
         if len(fefftext) < 100 or 'ATOMS' not in fefftext:
             return
+
+        ciftext = self.wids['cif_text'].GetValue()
+        cif  = self.current_cif
+        cif_fname = None
+        if cif is not None and len(ciftext) > 100:
+            mineral = cif.get_mineralname()
+            cif_fname = f'{{mineral}_cif{cif.ams_id:d}.cif'
+
         # cc = self.current_cif
         # edge  = self.wids['edge'].GetStringSelection()
         # catom = self.wids['central_atom'].GetStringSelection()
@@ -479,6 +487,11 @@ class CIFFrame(wx.Frame):
         fname = unixpath(os.path.join(folder, 'feff.inp'))
         with open(fname, 'w') as fh:
             fh.write(strict_ascii(fefftext))
+
+        if cif_fname is not None:
+            cname = unixpath(os.path.join(folder, cif_fname))
+            with open(cname, 'w') as fh:
+                fh.write(strict_ascii(ciftext))
 
         wx.CallAfter(self.run_feff, folder, version8=version8)
         # feffexe, folder=dirname, message_writer=self.feff_output)
