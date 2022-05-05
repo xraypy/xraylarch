@@ -114,7 +114,7 @@ def encode4js(obj):
     elif hasattr(obj, '__getstate__'):
         return {'__class__': 'StatefulObject',
                 '__type__': obj.__class__.__name__,
-                'value': obj.__getstate__()}
+                'value': encode4js(obj.__getstate__())}
     elif hasattr(obj, 'dumps'):
         print("Encode Warning: using dumps for ", obj)
         return {'__class__': 'DumpableObject', 'value': obj.dumps()}
