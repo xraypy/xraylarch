@@ -454,7 +454,7 @@ class CIFFrame(wx.Frame):
         cif_fname = None
         if cif is not None and len(ciftext) > 100:
             mineral = cif.get_mineralname()
-            cif_fname = f'{{mineral}_cif{cif.ams_id:d}.cif'
+            cif_fname = f'{mineral}_cif{cif.ams_id:d}.cif'
 
         # cc = self.current_cif
         # edge  = self.wids['edge'].GetStringSelection()
