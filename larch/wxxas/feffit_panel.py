@@ -113,6 +113,7 @@ try:
     npaths = len(_feffpaths.keys())
 except:
     _feffpaths = {}
+    _feff_inputfiles = {}
 #endtry
 """
 
@@ -1003,7 +1004,20 @@ class FeffitPanel(TaskPanel):
     def add_path(self, feffdat_file,  feffresult):
         pathinfo = None
         folder, fp_file = os.path.split(feffdat_file)
+        feffinp = os.path.join(folder, 'feff.inp')
         folder, dirname = os.path.split(folder)
+
+        finps = getattr(self.larch.symtable, '_feff_inputfiles', None)
+        if finps is None:
+            self.larch_eval(COMMANDS['paths_init'])
+            finps = self.larch.symtable._feff_inputfiles
+
+        if dirname not in finps:
+            try:
+                finps[dirname] = open(feffinp, 'r').read()
+            except:
+                pass
+        
         for path in feffresult.paths:
             if path.filename == fp_file:
                 pathinfo = path
