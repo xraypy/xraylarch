@@ -12,11 +12,9 @@ from scipy.special import i0 as bessel_i0
 from larch import (Group, Make_CallArgs, parse_group_args)
 
 from larch.math import complex_phase
-from .xafsutils import set_xafsGroup
-
+from .xafsutils import set_xafsGroup, FT_WINDOWS_SHORT
 
 MODNAME = '_xafs'
-VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
 sqrtpi = sqrt(pi)
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
@@ -49,9 +47,9 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 
     """
     if window is None:
-        window = VALID_WINDOWS[0]
+        window = FT_WINDOWS_SHORT[0]
     nam = window.strip().lower()[:3]
-    if nam not in VALID_WINDOWS:
+    if nam not in FT_WINDOWS_SHORT:
         raise RuntimeError("invalid window name %s" % window)
 
     dx1 = dx
