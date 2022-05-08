@@ -24,18 +24,15 @@ from larch.io import read_csv
 from larch.utils.strutils import fix_varname
 from larch.utils import get_cwd
 
-from .taskpanel import TaskPanel, make_array_choice
+from .taskpanel import TaskPanel
+from .config import Linear_ArrayChoices, Regress_Choices
 
 CSV_WILDCARDS = "CSV Files(*.csv,*.dat)|*.csv*;*.dat|All files (*.*)|*.*"
 MODEL_WILDCARDS = "Regression Model Files(*.regmod,*.dat)|*.regmod*;*.dat|All files (*.*)|*.*"
 
-FitSpace_Choices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
-
 Plot_Choices = ['Mean Spectrum + Active Energies',
                 'Spectra Stack',
                 'Predicted External Varliable']
-
-Regress_Choices = ['Partial Least Squares', 'LassoLars']
 
 MAX_ROWS = 1000
 
@@ -67,7 +64,7 @@ class RegressionPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()), size=(175, -1))
+        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()), size=(175, -1))
         wids['fitspace'].SetSelection(0)
         # wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
         #                           size=(250, -1), action=self.onPlot)
@@ -280,7 +277,7 @@ class RegressionPanel(TaskPanel):
                  "xmin=%.4f" % opts['xmin'],
                  "xmax=%.4f" % opts['xmax']]
 
-        arrname = FitSpace_Choices.get(opts['fitspace'], 'norm')
+        arrname = Linear_ArrayChoices.get(opts['fitspace'], 'norm')
         copts.append("arrayname='%s'" % arrname)
 
         self.method = 'pls'

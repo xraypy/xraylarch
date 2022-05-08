@@ -15,8 +15,7 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          get_icon, SimpleText, pack, Button, HLine, Choice,
                          plotlabels, Check, CEN, RIGHT, LEFT)
 
-from larch.xafs.xafsutils import etok, ktoe
-
+from larch.xafs.xafsutils import etok, ktoe, FT_WINDOWS
 
 from .xas_dialogs import EnergyUnitsDialog
 from .taskpanel import TaskPanel
@@ -56,7 +55,6 @@ PlotCmds = {mu_bkg:  "plot_bkg({group:s}",
             chikq:   "plot_chiq({group:s}, show_chik=True",
             noplot: None}
 
-FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
 
 CLAMPLIST = ('0', '1', '2', '5', '10', '20', '50', '100', '200', '500', '1000',
              '2000', '5000', '10000')
@@ -160,11 +158,11 @@ class EXAFSPanel(TaskPanel):
         wids['bkg_clamplo'] = Choice(panel, **opts)
         wids['bkg_clamphi'] = Choice(panel, **opts)
 
-        wids['fft_kwindow'] = Choice(panel, choices=list(FTWINDOWS),
+        wids['fft_kwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
 
 
-        wids['fft_rwindow'] = Choice(panel, choices=list(FTWINDOWS),
+        wids['fft_rwindow'] = Choice(panel, choices=list(FT_WINDOWS),
                                      action=self.onProcess, size=(125, -1))
         wids['fft_rwindow'].SetStringSelection('Hanning')
 
@@ -304,7 +302,8 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None:
             return self.get_defaultconfig()
 
-        conf = getattr(dgroup, self.configname, None)
+        conf = getatt
+        r(dgroup, self.configname, None)
         if conf is None:
             # initial reading: start with default then take Athena Project values
             conf = self.get_defaultconfig()

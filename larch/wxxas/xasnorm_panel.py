@@ -21,12 +21,8 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, get_icon,
 
 from larch.wxlib.plotter import last_cursor_pos
 from .xas_dialogs import EnergyUnitsDialog
-from .taskpanel import TaskPanel, autoset_fs_increment, make_array_choice
-
-from larch.xray import atomic_symbols
-
-ATSYMS = ['?'] + atomic_symbols
-EDGES  = ['K', 'L3', 'L2', 'L1', 'M5']
+from .taskpanel import TaskPanel, autoset_fs_increment
+from .config import make_array_choice, EDGES, ATSYMS, NNORM_CHOICES, NORM_METHODS
 
 np.seterr(all='ignore')
 
@@ -57,10 +53,6 @@ PlotOne_Choices_nonxas = {'Raw Data': 'mu',
 PlotSel_Choices_nonxas = {'Raw Data': 'mu',
                           'Scaled Data': 'norm',
                           'Derivative': 'dmude'}
-
-Nnorm_choices = {None:'auto',  0:'constant', 1:'linear', 2:'quadratic', 3:'cubic'}
-Nnorm_names   = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
-
 
 def is_xasgroup(dgroup):
     return getattr(dgroup, 'datatype', 'raw').startswith('xa')
@@ -115,7 +107,7 @@ class XASNormPanel(TaskPanel):
                                     size=(100, -1), action=self.onNormMethod,
                                     default=0)
 
-        self.wids['nnorm'] = Choice(panel, choices=list(Nnorm_choices.values()),
+        self.wids['nnorm'] = Choice(panel, choices=list(NNORM_CHOICES.keys()),
                                     size=(100, -1), action=self.onNormMethod,
                                     default=0)
 
@@ -141,7 +133,7 @@ class XASNormPanel(TaskPanel):
         opts['value'] = 1.0
         scale = self.add_floatspin('scale', action=self.onSet_Scale, **opts)
 
-        self.wids['norm_method'] = Choice(panel, choices=('polynomial', 'mback'), # , 'area'),
+        self.wids['norm_method'] = Choice(panel, choices=NORM_METHODS,
                                           size=(120, -1), action=self.onNormMethod)
         self.wids['norm_method'].SetSelection(0)
         self.wids['energy_shift'] = FloatSpin(panel, value=0, digits=3, increment=0.05,
@@ -258,7 +250,6 @@ class XASNormPanel(TaskPanel):
         sizer.Add((5, 5), 0, LEFT, 3)
         sizer.Add(panel, 0, LEFT, 3)
         sizer.Add((5, 5), 0, LEFT, 3)
-
         pack(self, sizer)
 
     def get_config(self, dgroup=None):
@@ -379,14 +370,16 @@ class XASNormPanel(TaskPanel):
         wx.CallAfter(self.unset_skip_process)
 
     def set_nnorm_widget(self, nnorm=None):
-        if nnorm is None:
-            nnorm_str = 'auto'
-        else:
+        nnorm_str = 'auto'
+        if nnorm is not None:
             try:
                 nnorm = int(nnorm)
             except ValueError:
                 nnorm = None
-            nnorm_str = Nnorm_choices.get(nnorm, 'auto')
+
+            for k, v in NNORM_CHOICES.items():
+                if v == nnorm:
+                    nnorm_str = k
         self.wids['nnorm'].SetStringSelection(nnorm_str)
 
     def unset_skip_process(self):
@@ -404,7 +397,7 @@ class XASNormPanel(TaskPanel):
 
         form_opts['energy_shift'] = self.wids['energy_shift'].GetValue()
 
-        form_opts['nnorm'] = Nnorm_names.get(self.wids['nnorm'].GetStringSelection(), None)
+        form_opts['nnorm'] = NNORM_CHOICES.get(self.wids['nnorm'].GetStringSelection(), None)
         form_opts['nvict'] = int(self.wids['nvict'].GetSelection())
         form_opts['plotone_op'] = self.plotone_op.GetStringSelection()
         form_opts['plotsel_op'] = self.plotsel_op.GetStringSelection()
@@ -559,6 +552,7 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
         conf.update(form)
         dgroup = self.controller.get_group()
+        print('onCopyParam ', dgroup)
         self.update_config(conf)
         self.fill_form(dgroup)
         opts = {}
@@ -584,7 +578,7 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
-                self.update_config(opts, dgroup=grp)
+                self.update_config(_opts, dgroup=grp)
                 for key, val in opts.items():
                     if hasattr(grp, key):
                         setattr(grp, key, val)
@@ -815,6 +809,7 @@ class XASNormPanel(TaskPanel):
         if hasattr(dgroup, 'mback_params'): # from mback
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
             conf['edge'] = getattr(dgroup.mback_params, 'edge')
+        print("PROCESS ", dgroup, conf)
         self.update_config(conf, dgroup=dgroup)
         wx.CallAfter(self.unset_skip_process)
 

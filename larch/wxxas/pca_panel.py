@@ -17,21 +17,19 @@ from lmfit.printfuncs import gformat
 
 from larch import Group
 from larch.math import index_of
+from larch.math.lincombo_fitting import get_arrays
 from larch.utils import get_cwd
 from larch.xafs import etok, ktoe
 from larch.wxlib import (BitmapButton, FloatCtrl, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, CEN, RIGHT,
                          LEFT, Font, FileSave, FileOpen, DataTableGrid)
 
-from .taskpanel import TaskPanel, autoset_fs_increment, make_array_choice
-from larch.math.lincombo_fitting import get_arrays
+from .taskpanel import TaskPanel, autoset_fs_increment
+from .config import Linear_ArrayChoices
 
 np.seterr(all='ignore')
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-
-# plot options:
-FitSpace_Choices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 
 # max number of *reported* PCA weights after fit
 MAX_COMPS = 30
@@ -57,7 +55,7 @@ class PCAPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()), size=(175, -1))
+        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()), size=(175, -1))
         wids['fitspace'].SetSelection(0)
 
 
@@ -346,7 +344,7 @@ class PCAPanel(TaskPanel):
         groups = ', '.join(groups)
         opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
 
-        opts['arr'] = FitSpace_Choices.get(form['fitspace'], 'norm')
+        opts['arr'] = Linear_ArrayChoices.get(form['fitspace'], 'norm')
 
         cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
 

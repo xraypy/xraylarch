@@ -29,6 +29,9 @@ from larch.utils.jsonutils import encode4js, decode4js
 from larch.utils.strutils import fix_varname, fix_filename
 from larch.io.export_modelresult import export_modelresult
 from larch.xafs import feffit_report
+
+from larch.xafs.xafsutils import FT_WINDOWS
+
 from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
                          SetTip, GridPanel, get_icon, SimpleText,
                          pack, Button, HLine, Choice, Check, MenuItem,
@@ -40,27 +43,18 @@ from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
 from .taskpanel import TaskPanel
 
+from .config import (Feffit_KWChoices, Feffit_SpaceChoices,
+                     Feffit_PlotChoices, make_array_choice)
+
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
-KWeight_Choices = {'1': '1', '2': '2', '3': '3',
-                   '2 and 3': '[2, 3]',
-                   '1, 2, and 3':  '[2, 1, 3]'}
-FitSpace_Choices = {'R space': 'r', 'k space':'k', 'wavelet': 'w'}
-FitPlot_Choices = {'K and R space': 'k+r', 'R space only': 'r'}
+# PlotOne_Choices = [chik, chirmag, chirre, chirmr]
 
+PlotOne_Choices = make_array_choice(['chi','chir_mag', 'chir_re', 'chir_mag+chir_re'])
+PlotAlt_Choices = make_array_choice(['noplot', 'chi','chir_mag', 'chir_re', 'chir_mag+chir_re'])
 
-chik    = '\u03c7(k)'
-chirmag = '|\u03c7(R)|'
-chirre  = 'Re[\u03c7(R)]'
-chirmr  = '|\u03c7(R)| + Re[\u03c7(R)]'
-# wavelet = 'EXAFS wavelet'
-noplot  = '<no plot>'
-
-PlotOne_Choices = [chik, chirmag, chirre, chirmr]
-PlotAlt_Choices = [noplot] + PlotOne_Choices
-
-FTWINDOWS = ('Kaiser-Bessel', 'Hanning', 'Gaussian', 'Sine', 'Parzen', 'Welch')
+# PlotAlt_Choices = [noplot] + PlotOne_Choices
 
 ScriptWcards = "Fit Models(*.lar)|*.lar|All files (*.*)|*.*"
 PLOTOPTS_1 = dict(style='solid', linewidth=3, marker='None', markersize=4)
@@ -720,22 +714,22 @@ class FeffitPanel(TaskPanel):
         ffit_rmax = self.add_floatspin('ffit_rmax',  value=5, **fsopts)
 
         wids['ffit_kweight'] = Choice(pan, size=(125, -1),
-                                     choices=list(KWeight_Choices.keys()))
+                                     choices=list(Feffit_KWChoices.keys()))
         wids['ffit_kweight'].SetSelection(1)
 
-        wids['ffit_kwindow'] = Choice(pan, choices=list(FTWINDOWS), size=(125, -1))
+        wids['ffit_kwindow'] = Choice(pan, choices=list(FT_WINDOWS), size=(125, -1))
 
-        wids['ffit_fitspace'] = Choice(pan, choices=list(FitSpace_Choices.keys()),
+        wids['ffit_fitspace'] = Choice(pan, choices=list(Feffit_SpaceChoices.keys()),
                                        size=(125, -1))
 
         wids['plot_paths'] = Check(pan, default=False, label='Plot Each Path'
                                    , size=(125, -1), action=self.onPlot)
         wids['plot_ftwindows'] = Check(pan, default=False, label='Plot FT Windows'
                                    , size=(125, -1), action=self.onPlot)
-        wids['plotone_op'] = Choice(pan, choices=PlotOne_Choices,
+        wids['plotone_op'] = Choice(pan, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
         wids['plotone_op'].SetSelection(1)
-        wids['plotalt_op'] = Choice(pan, choices=PlotAlt_Choices,
+        wids['plotalt_op'] = Choice(pan, choices=list(PlotAlt_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
 
         wids['plot_voffset'] = FloatSpin(pan, value=0, digits=2, increment=0.25,
@@ -863,11 +857,11 @@ class FeffitPanel(TaskPanel):
         self.wids['ffit_dk'].SetValue(conf['dk'])
         self.wids['ffit_kwindow'].SetStringSelection(conf['kwindow'])
 
-        for key, val in FitSpace_Choices.items():
+        for key, val in Feffit_SpaceChoices.items():
             if conf['fitspace'] == val:
                 self.wids['ffit_fitspace'].SetStringSelection(key)
 
-        for key, val in KWeight_Choices.items():
+        for key, val in Feffit_KWChoices.items():
             if conf['kwstring'] == val:
                 self.wids['ffit_kweight'].SetStringSelection(key)
 
@@ -892,14 +886,14 @@ class FeffitPanel(TaskPanel):
         form_opts['dk']   = wids['ffit_dk'].GetValue()
         form_opts['rmin'] = wids['ffit_rmin'].GetValue()
         form_opts['rmax'] = wids['ffit_rmax'].GetValue()
-        form_opts['kwstring'] = KWeight_Choices[wids['ffit_kweight'].GetStringSelection()]
-        form_opts['fitspace'] = FitSpace_Choices[wids['ffit_fitspace'].GetStringSelection()]
+        form_opts['kwstring'] = Feffit_KWChoices[wids['ffit_kweight'].GetStringSelection()]
+        form_opts['fitspace'] = Feffii_tSpaceChoices[wids['ffit_fitspace'].GetStringSelection()]
 
         form_opts['kwindow']    = wids['ffit_kwindow'].GetStringSelection()
         form_opts['plot_ftwindows'] = wids['plot_ftwindows'].IsChecked()
         form_opts['plot_paths'] = wids['plot_paths'].IsChecked()
-        form_opts['plotone_op'] = wids['plotone_op'].GetStringSelection()
-        form_opts['plotalt_op'] = wids['plotalt_op'].GetStringSelection()
+        form_opts['plotone_op'] = PlotOne_Choices[wids['plotone_op'].GetStringSelection()]
+        form_opts['plotalt_op'] = PlotAlt_Choices[wids['plotalt_op'].GetStringSelection()]
         form_opts['plot_voffset'] = wids['plot_voffset'].GetValue()
         return form_opts
 
@@ -974,14 +968,14 @@ class FeffitPanel(TaskPanel):
         for i, plot in enumerate((plot1, plot2)):
             pcmd = 'plot_chir'
             pextra = f', win={i+1:d}'
-            if plot == chik:
+            if plot == 'chi':
                 pcmd = 'plot_chik'
                 pextra += f', kweight={kw:d}'
-            elif plot == chirre:
+            elif plot == 'chir_re':
                 pextra += ', show_mag=False, show_real=True'
-            elif plot == chirmr:
+            elif plot == 'chir_mag+chir_re':
                 pextra += ', show_mag=True, show_real=True'
-            if plot == noplot:
+            if plot == 'noplot':
                 continue
             newplot = f', show_window={with_win}, new=True'
             overplot = f', show_window=False, new=False'
@@ -1017,7 +1011,7 @@ class FeffitPanel(TaskPanel):
                 finps[dirname] = open(feffinp, 'r').read()
             except:
                 pass
-        
+
         for path in feffresult.paths:
             if path.filename == fp_file:
                 pathinfo = path
@@ -1364,10 +1358,10 @@ class FeffitResultFrame(wx.Frame):
                                    , size=(125, -1), action=self.onPlot)
         wids['plot_ftwindows'] = Check(panel, default=False, label='Plot FT Windows'
                                    , size=(125, -1), action=self.onPlot)
-        wids['plotone_op'] = Choice(panel, choices=PlotOne_Choices,
+        wids['plotone_op'] = Choice(panel, choices=list(PlotOne_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
         wids['plotone_op'].SetSelection(1)
-        wids['plotalt_op'] = Choice(panel, choices=PlotAlt_Choices,
+        wids['plotalt_op'] = Choice(panel, choices=list(PlotAlt_Choices.keys()),
                                     action=self.onPlot, size=(125, -1))
 
         wids['plot_voffset'] = FloatSpin(panel, value=0, digits=2, increment=0.25,

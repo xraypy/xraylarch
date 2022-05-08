@@ -25,32 +25,6 @@ from larch.utils.strutils import break_longstring
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
 
-ARRAYS = {'mu':      'Raw \u03BC(E)',
-          'norm':    'Normalized \u03BC(E)',
-          'flat':    'Flattened \u03BC(E)',
-          'prelines':   '\u03BC(E) + Pre-/Post-edge',
-          'mback_norm': '\u03BC(E) + MBACK  \u03BC(E)',
-          'mback_poly': 'MBACK + Poly Normalized',
-          'dmude':     'd\u03BC(E)/dE ',
-          'norm+dmude': 'Normalized \u03BC(E) + d\u03BC(E)/dE',
-          'd2mude':     'd^2\u03BC(E)/dE^2',
-          'norm+d2mude': 'Normalized \u03BC(E) + d^2\u03BC(E)/dE^2',
-          'deconv': 'Deconvolved \u03BC(E)',
-          'chi':  '\u03c7(k)',
-          'chi0': '\u03c7(k)',
-          'chi1': 'k \u03c7(k)',
-          'chi2': 'k^2 \u03c7(k)'}
-
-def make_array_choice(opts):
-    """
-    make (ordered) dict of {Array Description: varname}
-    """
-    out = {}
-    for n in opts:
-        if n in ARRAYS:
-            out[ARRAYS[n]] = n
-    return out
-
 def autoset_fs_increment(wid, value):
     """set increment for floatspin to be
     1, 2, or 5 x 10^(integer) and ~0.02 X current value
@@ -340,16 +314,17 @@ class TaskPanel(wx.Panel):
             self.controller.conf_group[self.configname] = {}
         self.controller.conf_group[self.configname].update(config)
 
-
     def get_defaultconfig(self):
         """get the default configuration for this session"""
-        return self.controller.get_config(self.configname)
+        return {k:v for k, v in self.controller.get_config(self.configname).items()}
 
     def get_config(self, dgroup=None):
         """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        conf = getattr(dgroup, self.configname, None)
+        if conf is None:
+            conf = self.get_defaultconfig()
         if dgroup is not None:
             setattr(dgroup, self.configname, conf)
         return conf
@@ -358,7 +333,9 @@ class TaskPanel(wx.Panel):
         """set/update processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        conf = getattr(dgroup, self.configname, self.get_defaultconfig())
+        conf = getattr(dgroup, self.configname, None)
+        if conf is None:
+            conf = self.get_defaultconfig()
         conf.update(config)
         if dgroup is not None:
             setattr(dgroup, self.configname, conf)

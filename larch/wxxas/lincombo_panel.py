@@ -24,17 +24,16 @@ from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
                          MenuItem, FRAMESTYLE, GUIColors, FileSave,
                          EditableListBox, DataTableGrid)
 
-from .taskpanel import TaskPanel, make_array_choice, ARRAYS
+from .taskpanel import TaskPanel
+from .config import ARRAYS, Linear_ArrayChoices
 from larch.io.columnfile import write_ascii
 
 np.seterr(all='ignore')
 
 # plot options:
-FitSpace_Choices = make_array_choice(['norm', 'flat', 'dmude', 'chi0', 'chi1', 'chi2'])
 Plot_Choices = ['Data + Sum', 'Data + Sum + Components']
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
-
 
 MAX_COMPONENTS = 20
 
@@ -628,7 +627,7 @@ class LinearComboPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=list(FitSpace_Choices.keys()),
+        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()),
                                  action=self.onFitSpace, size=(175, -1))
         wids['fitspace'].SetSelection(0)
 
@@ -722,7 +721,7 @@ class LinearComboPanel(TaskPanel):
         fitspace = self.wids['fitspace'].GetStringSelection()
         self.update_config(dict(fitspace=fitspace))
 
-        arrname = FitSpace_Choices.get(fitspace, 'norm')
+        arrname = Linear_ArrayChoices.get(fitspace, 'norm')
         self.update_fit_xspace(arrname)
         self.plot()
 
@@ -770,7 +769,7 @@ class LinearComboPanel(TaskPanel):
 
         fitspace = self.wids['fitspace'].GetStringSelection()
         self.update_config(dict(fitspace=fitspace))
-        arrname = FitSpace_Choices.get(fitspace, 'norm')
+        arrname = Linear_ArrayChoices.get(fitspace, 'norm')
         self.update_fit_xspace(arrname)
 
         self.skip_process = False
@@ -822,7 +821,7 @@ class LinearComboPanel(TaskPanel):
         if opts['all_combos']:
             opts['func'] = 'lincombo_fitall'
 
-        opts['arrayname'] = FitSpace_Choices.get(opts['fitspace'], 'norm')
+        opts['arrayname'] = Linear_ArrayChoices.get(opts['fitspace'], 'norm')
         self.skip_process = False
         return opts
 

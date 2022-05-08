@@ -32,7 +32,8 @@ from larch.wxlib import (ReportFrame, BitmapButton, FloatCtrl, FloatSpin,
 
 from larch.wxlib.parameter import ParameterWidgets
 from larch.wxlib.plotter import last_cursor_pos
-from .taskpanel import TaskPanel, make_array_choice
+from .taskpanel import TaskPanel
+from .config import PrePeak_ArrayChoices
 
 DVSTYLE = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
 
@@ -78,9 +79,6 @@ BaselineFuncs = ['No Baseline',
                  'Constant+Voigt',
                  'Linear+Voigt',
                  'Quadratic', 'Linear']
-
-
-Array_Choices = make_array_choice(['norm', 'mu', 'flat', 'dnormde', 'deconv'])
 
 
 PLOT_BASELINE = 'Data+Baseline'
@@ -671,7 +669,7 @@ class PrePeakPanel(TaskPanel):
         self.fitmodel_btn.Disable()
 
         self.array_choice = Choice(pan, size=(175, -1),
-                                   choices=list(Array_Choices.keys()))
+                                   choices=list(PrePeak_ArrayChoices.keys()))
         self.array_choice.SetSelection(0)
 
         self.bline_choice = Choice(pan, size=(175, -1),
@@ -809,7 +807,7 @@ class PrePeakPanel(TaskPanel):
         form_opts = {'gname': dgroup.groupname,
                      'filename': dgroup.filename,
                      'array_desc': array_desc.lower(),
-                     'array_name': Array_Choices[array_desc],
+                     'array_name': PrePeak_ArrayChoices[array_desc],
                      'baseline_form': bline_form.lower(),
                      'bkg_components': []}
 
