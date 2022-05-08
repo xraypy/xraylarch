@@ -139,7 +139,7 @@ def show_site_config():
   users startup files:  %s
   modules search path:  %s
 ========================
-""" % (larch_release, larch_version, sys.executable,
+""" % (release_version, larch_version, sys.executable,
        repr(getattr(sys, 'frozen', False)),
        user_larchdir,
        history_file, init_files,
