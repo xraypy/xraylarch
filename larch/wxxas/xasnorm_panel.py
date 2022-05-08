@@ -241,8 +241,6 @@ class XASNormPanel(TaskPanel):
         panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
-
-
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.pack()
 
@@ -809,7 +807,6 @@ class XASNormPanel(TaskPanel):
         if hasattr(dgroup, 'mback_params'): # from mback
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym')
             conf['edge'] = getattr(dgroup.mback_params, 'edge')
-        print("PROCESS ", dgroup, conf)
         self.update_config(conf, dgroup=dgroup)
         wx.CallAfter(self.unset_skip_process)
 
