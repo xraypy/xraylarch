@@ -8,6 +8,9 @@ import scipy.constants as consts
 KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
 ETOK = 1.0/KTOE
 
+FT_WINDOWS = ('Kaiser-Bessel', 'Hanning', 'Parzen', 'Welch', 'Gaussian', 'Sine')
+FT_WINDOWS_SHORT = tuple([a[:3].lower() for a in FT_WINDOWS])
+
 def etok(energy):
     """convert photo-electron energy to wavenumber"""
     if energy < 0: return 0
