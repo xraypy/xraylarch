@@ -10,59 +10,7 @@ from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
 from larch.site_config import home_dir, user_larchdir
 
-
-XASCONF = { # default configurations
-    'autosave_config': {'savetime': 900, 'nhistory': 3,
-                        'fileroot': 'session_autosave'},
-
-    'chdir_on_fileopen': True,
-
-    'exafs_config': {'bkg_clamphi': 1, 'bkg_clamplo': 0, 'bkg_kmax': None,
-                     'bkg_kmin': 0, 'bkg_kweight': 2, 'e0': -1.0,
-                     'fft_dk': 4, 'fft_dr': 0.25, 'fft_kmax': None,
-                     'fft_kmin': 2.5, 'fft_kweight': 2,
-                     'fft_kwindow': 'Kaiser-Bessel',
-                     'fft_rmax': 6, 'fft_rmin': 1, 'fft_rwindow':
-                     'Hanning', 'rbkg': 1},
-
-    'feffit_config': {'dk': 4, 'fitspace': 'r', 'kmax': None, 'kmin': 2,
-                      'kwindow': 'Kaiser-Bessel', 'kwstring': '2',
-                      'rmax': 4, 'rmin': 1},
-
-    'lincombo_config': {'all_combos': True, 'ehi': 99999, 'ehi_rel': 110,
-                        'elo': -99999, 'elo_rel': -40,
-                        'fitspace': 'Normalized μ(E)', 'show_e0': False,
-                        'show_fitrange': True, 'sum_to_one': False,
-                        'vary_e0': False},
-
-    'pca_config': {'fitspace': 'Normalized μ(E)',
-                   'max_components': 20, 'weight_auto': True,
-                   'weight_min': 0.001, 'xmax': 99999, 'xmin': -99999},
-
-    'pin_config': {'min_time': 2.0, 'style': 'pin_first', 'timeout': 15.0},
-
-    'plot_config': {'height': 550, 'theme': 'light', 'width': 600},
-
-    'prepeaks_config': {'e': None, 'ehi': -5, 'elo': -10, 'emax': 0,
-                        'emin': -40, 'yarray': 'norm'},
-
-    'regression_config': {'alpha': 0.01, 'cv_folds': None,
-                          'cv_repeats': 3, 'fit_intercept': True,
-                          'fitspace': 'Normalized μ(E)', 'scale': True,
-                          'use_lars': True, 'varname': 'valence',
-                          'xmax': 99999, 'xmin': -99999},
-
-    'workdir': '/Users/Newville/Codes/xraylarch',
-
-    'xasnorm_config': {'auto_e0': True, 'auto_step': True,
-                       'e0': 0, 'edge': 'K', 'edge_step': None,
-                       'energy_ref': None, 'energy_shift': 0,
-                       'nnorm': None, 'norm1': None, 'norm2': None,
-                       'norm_method': 'polynomial', 'nvict': 0,
-                       'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True},
-    }
-
-CONF_FILE = 'xas_viewer.conf'
+from .config import XASCONF, CONF_FILE
 
 class XASController():
     """
@@ -114,10 +62,11 @@ class XASController():
             pass
         self.set_workdir()
 
-
     def get_config(self, key, default=None):
         "get configuration setting"
-        return getattr(self.conf_group, key, default)
+        val = getattr(self.conf_group, key, default)
+        # print("Controller get_config ", key, val)
+        return val
 
     def save_config(self):
         """save configuration"""
@@ -138,7 +87,6 @@ class XASController():
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
-
         conf = self.get_config('plot_config')
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
                     size=(conf['width'], conf['height']), theme=conf['theme'])
