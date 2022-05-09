@@ -47,14 +47,31 @@ class GroupJournalFrame(wx.Frame):
         self.dgroup = dgroup
         self.n_entries = 0
         wx.Frame.__init__(self, None, -1,  'Group Journal',
-                          style=FRAMESTYLE, size=(1050, 700))
+                          style=FRAMESTYLE, size=(950, 700))
 
         panel = GridPanel(self, ncols=3, nrows=10, pad=2, itemstyle=LEFT)
 
         self.label = SimpleText(panel, 'Group Journal', size=(750, 30))
 
-        export_btn = Button(panel, 'Save to Tab-Separated File', size=(225, -1),
+        export_btn = Button(panel, 'Export to Tab-Separated File', size=(225, -1),
                             action=self.export)
+
+        add_btn = Button(panel, 'Add Entry', size=(200, -1), action=self.add_entry)
+        self.label_wid = wx.TextCtrl(panel, -1, value='user comment', size=(200, -1))
+        self.value_wid = wx.TextCtrl(panel, -1, value='',             size=(600, -1))
+
+        panel.Add(self.label, dcol=3, style=LEFT)
+
+        panel.Add(SimpleText(panel, 'Add a Journal Entry:'), dcol=1, style=LEFT, newrow=True)
+        panel.Add(add_btn, dcol=1)
+        panel.Add(export_btn, dcol=1, newrow=False)
+
+        panel.Add(SimpleText(panel, 'Label:'), style=LEFT, newrow=True)
+        panel.Add(self.label_wid, dcol=1, style=LEFT)
+
+        panel.Add(SimpleText(panel, 'Value:'), style=LEFT, newrow=True)
+        panel.Add(self.value_wid, dcol=2, style=LEFT)
+        panel.pack()
 
 
         collabels = [' Label ', ' Value ', 'Date/Time']
@@ -63,39 +80,40 @@ class GroupJournalFrame(wx.Frame):
         coltypes = ['string', 'string', 'string']
         coldefs  = [' ', ' ', ' ']
 
-        self.datagrid = DataTableGrid(panel, nrows=80,
+        self.datagrid = DataTableGrid(self, nrows=80,
                                       collabels=collabels,
                                       datatypes=coltypes,
                                       defaults=coldefs,
                                       colsizes=colsizes,
                                       rowlabelsize=40)
 
-        self.datagrid.SetMinSize((1000, 650))
+        self.datagrid.SetMinSize((925, 650))
         self.datagrid.EnableEditing(False)
 
-        panel.Add(self.label, dcol=2)
-        panel.Add(HLine(panel, size=(850, 2)), dcol=2, newrow=True)
-
-        # panel.Add(update_btn, newrow=True)
-        panel.Add(export_btn, newrow=True)
-        panel.Add(self.datagrid, dcol=3, drow=4, newrow=True)
-        panel.pack()
-
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(panel, 1, LEFT, 3)
+        sizer.Add(panel, 0, LEFT, 3)
+        sizer.Add(self.datagrid, 1, LEFT|wx.ALL, 3)
         pack(self, sizer)
 
         self.xasmain.timers['journal_updater'] = wx.Timer(self.xasmain)
         self.xasmain.Bind(wx.EVT_TIMER, self.onRefresh,
                           self.xasmain.timers['journal_updater'])
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-
+        self.SetSize((950, 725))
         self.Show()
         self.Raise()
         self.xasmain.timers['journal_updater'].Start(1000)
 
         if dgroup is not None:
             wx.CallAfter(self.set_group, dgroup=dgroup)
+
+    def add_entry(self, evt=None):
+        if self.dgroup is not None:
+            label = self.label_wid.GetValue()
+            value = self.value_wid.GetValue()
+            if len(label)>0 and len(value)>1:
+                self.dgroup.journal.add(label, value)
+
 
     def onClose(self, event=None):
         self.xasmain.timers['journal_updater'].Stop()
@@ -137,7 +155,6 @@ class GroupJournalFrame(wx.Frame):
     def set_group(self, dgroup=None):
         if dgroup is None:
             dgroup = self.dgroup
-
         if dgroup is None:
             return
         self.dgroup = dgroup
