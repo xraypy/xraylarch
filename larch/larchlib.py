@@ -8,7 +8,7 @@ from datetime import datetime
 import ast
 import numpy as np
 import traceback
-import yaml
+import toml
 import inspect
 from collections import namedtuple
 import ctypes
@@ -426,7 +426,7 @@ def save_workdir(conffile):
 
 
 def read_config(conffile):
-    """read yaml config file from users larch dir
+    """read toml config file from users larch dir
     compare save_config(conffile) which will save such a config
 
     returns dictionary / configuration
@@ -434,16 +434,12 @@ def read_config(conffile):
     cfile = os.path.join(user_larchdir, conffile)
     out = None
     if os.path.exists(cfile):
-        with open(cfile, 'r') as fh:
-            out = fh.read()
-    if out is not None:
+        with open(cfile, 'rb') as fh:
+            data = fh.read().decode('utf-8')
         try:
-            out = yaml.safe_load(out)
+            out = toml.loads(data)
         except:
-            try:
-                out = yaml.load(out, Loader=yaml.Loader)
-            except:
-                pass
+            pass
     return out
 
 def save_config(conffile, config):
@@ -451,13 +447,13 @@ def save_config(conffile, config):
     compare read_confif(conffile) which will read this value
 
     """
+    print("SAVE CONF ", conffile, config)
     cfile = os.path.join(user_larchdir, conffile)
-    try:
-        out = yaml.dump(config, default_flow_style=None)
-        with open(cfile, 'w') as fh:
-            fh.write(out)
-    except:
-        print(f"Could not save configuration file '{conffile:s}'")
+    dat = toml.dumps(config).encode('utf-8')
+    with open(cfile, 'wb') as fh:
+        fh.write(dat)
+    #except:
+    #    print(f"Could not save configuration file '{conffile:s}'")
 
 def parse_group_args(arg0, members=None, group=None, defaults=None,
                      fcn_name=None, check_outputs=True):

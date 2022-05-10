@@ -5,6 +5,7 @@
 packaging
 pip
 pyyaml
+toml
 pytest
 termcolor
 scipy>=1.5

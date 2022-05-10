@@ -39,6 +39,7 @@ specs:
     - pandas
     - pytest
     - pyyaml
+    - toml
     - sphinx
     - dill
     - psycopg2
