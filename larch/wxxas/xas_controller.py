@@ -29,7 +29,6 @@ class XASController():
         self.groupname = None
         self.plot_erange = None
         self.report_frame = None
-        self.conf_group = self.larch.symtable._sys.xas_viewer
 
         config = {}
         config.update(XASCONF)
@@ -54,28 +53,29 @@ class XASController():
                     else:
                         config[sname] = val
 
-        for key, value in config.items():
-            setattr(self.conf_group, key, value)
+        self.config = self.larch.symtable._sys.larix_config = config
+
         try:
-            os.chdir(config['workdir'])
+            os.chdir(config['main']['workdir'])
         except:
             pass
         self.set_workdir()
 
     def get_config(self, key, default=None):
         "get configuration setting"
-        val = getattr(self.conf_group, key, default)
-        # print("Controller get_config ", key, val)
-        return val
+        if key not in self.config:
+            return default
+        return self.config[key]
 
     def save_config(self):
         """save configuration"""
-        conf = group2dict(self.conf_group)
-        conf.pop('__name__')
-        save_config(self.config_file, conf)
+        save_config(self.config_file, self.config)
+
+    def chdir_on_fileopen(self):
+        return self.config['main']['chdir_on_fileopen']
 
     def set_workdir(self):
-        self.conf_group.workdir = get_cwd()
+        self.config['main']['workdir'] = get_cwd()
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
@@ -87,7 +87,7 @@ class XASController():
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
-        conf = self.get_config('plot_config')
+        conf = self.get_config('plot')
         opts = dict(wintitle=wintitle, stacked=stacked, win=win,
                     size=(conf['width'], conf['height']), theme=conf['theme'])
         out = self.symtable._plotter.get_display(**opts)
