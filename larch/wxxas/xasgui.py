@@ -52,7 +52,8 @@ from .exafs_panel import EXAFSPanel
 from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
 from .xas_controller import XASController
-from .taskpanel import GroupJournalFrame# , PreferencesFrame
+from .taskpanel import GroupJournalFrame
+from .config import FULLCONF, CVar
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -108,6 +109,40 @@ def assign_gsescan_groups(group):
     group.array_labels = labels
 
 
+class PreferencesFrame(wx.Frame):
+    """ edit preferences"""
+    def __init__(self, parent, controller, **kws):
+        self.controller = controller
+        wx.Frame.__init__(self, None, -1,  'XAS_Viewer Preferences',
+                          style=FRAMESTYLE, size=(950, 700))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.title = SimpleText(self, 'Edit Preference and Defaults',
+                                size=(500, 25),
+                                font=Font(FONTSIZE+1), style=LEFT,
+                                colour=wx.Colour(10, 10, 180))
+
+        sizer.Add(self.title, 0, CEN, 3)
+
+        ## main panel
+        panel = wx.Panel(self)
+
+        for name, data in FULLCONF.keys():
+            panel = wx.Panel(self)
+            nb_panels[name] = panel
+            print("PREF ", name, data)
+
+        self.nb = flatnotebook(self, nb_panels,
+                               panelkws=dict(controller=self.controller))
+
+        sizer.Add(self.nb, 1, LEFT|wx.EXPAND, 2)
+        pack(self, sizer)
+
+    def build_panel(self):
+        pass
+
+
 class XASFrame(wx.Frame):
     _about = """Larch XAS GUI: XAS Visualization and Analysis
 
@@ -131,7 +166,6 @@ class XASFrame(wx.Frame):
             self.larch_buffer = LarchFrame(_larch=_larch, is_standalone=False, with_raise=False)
 
         self.larch = self.larch_buffer.larchshell
-        self.larch.symtable._sys.xas_viewer = Group()
 
         self.controller = XASController(wxparent=self, _larch=self.larch)
         iconfile = os.path.join(icondir, ICON_FILE)
@@ -333,7 +367,7 @@ class XASFrame(wx.Frame):
                  "Save Session to a File",  self.onSaveSession)
 
         # autosaved session
-        conf = self.controller.get_config('autosave_config',
+        conf = self.controller.get_config('autosave',
                                           {'fileroot': 'session_autosave'})
         froot= conf['fileroot']
         last_fname = os.path.join(user_larchdir, 'xas_viewer', f"{froot}.larix")
@@ -579,12 +613,12 @@ class XASFrame(wx.Frame):
 
 
     def onPreferences(self, evt=None):
-        print(" Larch Preferences ")
-        # self.show_subframe('preferences', PreferencesFrame, controller=self.controller)
+        self.show_subframe('preferences', PreferencesFrame,
+                           controller=self.controller)
 
     def onLoadLastSession(self, event=None):
 
-        conf = self.controller.get_config('autosave_config',
+        conf = self.controller.get_config('autosave',
                                           {'fileroot': 'session_autosave'})
         froot = conf['fileroot']
         path = os.path.join(user_larchdir, 'xas_viewer', f"{froot}.larix")
@@ -599,7 +633,7 @@ class XASFrame(wx.Frame):
 
             LoadSessionDialog(self, _session, path, self.controller).Show()
             fdir, fname = os.path.split(path)
-            if self.controller.get_config('chdir_on_fileopen'):
+            if self.controller.chdir_on_fileopen():
                 os.chdir(fdir)
                 self.controller.set_workdir()
 
@@ -621,7 +655,7 @@ class XASFrame(wx.Frame):
 
         LoadSessionDialog(self, _session, path, self.controller).Show()
         fdir, fname = os.path.split(path)
-        if self.controller.get_config('chdir_on_fileopen'):
+        if self.controller.chdir_on_fileopen():
             os.chdir(fdir)
             self.controller.set_workdir()
 
@@ -947,7 +981,7 @@ class XASFrame(wx.Frame):
 
     def onRead(self, path):
         filedir, filename = os.path.split(os.path.abspath(path))
-        if self.controller.get_config('chdir_on_fileopen'):
+        if self.controller.chdir_on_fileopen():
             os.chdir(filedir)
             self.controller.set_workdir()
 
@@ -1242,7 +1276,7 @@ class XASFrame(wx.Frame):
         """autosave session periodically, using autosave_config settings
         and avoiding saving sessions while program is inactive.
         """
-        conf = self.controller.get_config('autosave_config',
+        conf = self.controller.get_config('autosave',
                                           {'savetime': 900,
                                            'fileroot': 'session_autosave',
                                            'nhistory': 3})
@@ -1254,7 +1288,7 @@ class XASFrame(wx.Frame):
 
     def autosave_session(self, event=None):
         """autosave session now"""
-        conf = self.controller.get_config('autosave_config',
+        conf = self.controller.get_config('autosave',
                                           {'savetime': 900,
                                            'fileroot': 'session_autosave',
                                            'nhistory': 3})
@@ -1281,12 +1315,12 @@ class XASFrame(wx.Frame):
         if 'start' not in self.cursor_dat:
             self.cursor_dat['xsel'] = None
             self.onPinTimerComplete(reason="bad")
-        pin_config = self.controller.get_config('pin_config',
+        pin_config = self.controller.get_config('pin',
                                                 {'style': 'pin_first',
-                                                 'timeout':15.0,
+                                                 'max_time':15.0,
                                                  'min_time': 2.0})
         min_time = float(pin_config['min_time'])
-        timeout = float(pin_config['timeout'])
+        timeout = float(pin_config['max_time'])
 
         curhist_name = self.cursor_dat['name']
         cursor_hist = getattr(self.larch.symtable._plotter, curhist_name, [])
@@ -1349,9 +1383,9 @@ class XASFrame(wx.Frame):
                                win=win, name=curhist_name,
                                nhist=len(cursor_hist))
 
-        pin_config = self.controller.get_config('pin_config',
+        pin_config = self.controller.get_config('pin',
                                                 {'style': 'pin_first',
-                                                 'timeout':15.0,
+                                                 'max_time':15.0,
                                                  'min_time': 2.0})
         if pin_config['style'] == 'plot_first':
             if len(cursor_hist) > 0:
