@@ -38,10 +38,7 @@ class PCAPanel(TaskPanel):
     """PCA Panel"""
 
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='pca_config',
-                           title='Principal Component Analysis',
-                           **kws)
+        TaskPanel.__init__(self, parent, controller, panel='pca', **kws)
         self.result = None
 
     def process(self, dgroup, **kws):
@@ -55,16 +52,15 @@ class PCAPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()), size=(175, -1))
+        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()),
+                                  action=self.onFitSpace, size=(175, -1))
         wids['fitspace'].SetSelection(0)
-
 
         add_text = self.add_text
 
         opts = dict(digits=2, increment=1.0)
         defaults = self.get_defaultconfig()
-        w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
-        w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
+        self.make_fit_xspace_widgets(elo=defaults['elo_rel'], ehi=defaults['ehi_rel'])
 
         w_wmin = self.add_floatspin('weight_min', digits=4,
                                     value=defaults['weight_min'],
@@ -141,10 +137,10 @@ class PCAPanel(TaskPanel):
 
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=2)
-        add_text('Energy Range: ', newrow=True)
-        panel.Add(w_xmin)
+        panel.Add(wids['fitspace_label'], newrow=True)
+        panel.Add(self.elo_wids)
         add_text(' : ', newrow=False)
-        panel.Add(w_xmax)
+        panel.Add(self.ehi_wids)
         # panel.Add(wids['show_fitrange'])
 
         panel.Add(wids['load_model'], dcol=1, newrow=True)
@@ -190,20 +186,12 @@ class PCAPanel(TaskPanel):
         # autoset_fs_increment(self.wids['weight_min'], wmin)
 
     def fill_form(self, dgroup):
-        opts = self.get_config(dgroup)
+        opts = self.get_config(dgroup, with_erange=True)
         self.dgroup = dgroup
-        if isinstance(dgroup, Group):
-            d_emin = min(dgroup.energy)
-            d_emax = max(dgroup.energy)
-            xmin, xmax = opts['xmin'], opts['xmax']
-            if xmin < d_emin or xmin > d_emax or abs(xmin-dgroup.e0) > 500:
-                opts['xmin'] = -40 + int(dgroup.e0/10.0)*10
-            if xmax < d_emin or xmax > d_emax or abs(xmax-dgroup.e0) > 500:
-                opts['xmax'] =  110 + int(dgroup.e0/10.0)*10
 
         self.skip_process = True
         wids = self.wids
-        for attr in ('xmin', 'xmax', 'weight_min'):
+        for attr in ('elo', 'ehi', 'weight_min'):
             val = opts.get(attr, None)
             if val is not None:
                 wids[attr].SetValue(val)
@@ -229,7 +217,7 @@ class PCAPanel(TaskPanel):
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
         conf.update(self.read_form())
-        attrs =  ('xmin', 'xmax', 'weight_min',
+        attrs =  ('elo', 'ehi', 'weight_min',
                   'max_components', 'fitspace')
 
         out = {a: conf[a] for a in attrs}
@@ -268,6 +256,13 @@ class PCAPanel(TaskPanel):
         else:
             self.plot_pca_fit()
 
+    def onFitSpace(self, evt=None):
+        fitspace = self.wids['fitspace'].GetStringSelection()
+        self.update_config(dict(fitspace=fitspace))
+        arrname = Linear_ArrayChoices.get(fitspace, 'norm')
+        self.update_fit_xspace(arrname)
+        self.plot()
+
     def onFitSelected(self, event=None):
         form = self.read_form()
         if self.result is None:
@@ -299,9 +294,7 @@ class PCAPanel(TaskPanel):
 
         self.wids['fit_table'].table.data = grid_data
         self.wids['fit_table'].table.View.Refresh()
-
         self.plot_pca_fit()
-
 
     def onFitGroup(self, event=None):
         form = self.read_form()
@@ -342,11 +335,11 @@ class PCAPanel(TaskPanel):
                 self.xasmain.process_normalization(grp)
 
         groups = ', '.join(groups)
-        opts = dict(groups=groups, arr='norm', xmin=form['xmin'], xmax=form['xmax'])
+        opts = dict(groups=groups, arr='norm', elo=form['elo'], ehi=form['ehi'])
 
         opts['arr'] = Linear_ArrayChoices.get(form['fitspace'], 'norm')
 
-        cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={xmin:.2f}, xmax={xmax:.2f})"
+        cmd = "pca_result = pca_train([{groups}], arrayname='{arr}', xmin={elo:.2f}, xmax={ehi:.2f})"
 
         self.larch_eval(cmd.format(**opts))
         self.use_model('pca_result')

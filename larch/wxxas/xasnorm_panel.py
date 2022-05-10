@@ -60,9 +60,7 @@ def is_xasgroup(dgroup):
 class XASNormPanel(TaskPanel):
     """XAS normalization Panel"""
     def __init__(self, parent, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='xasnorm_config',
-                           title='XAS Normalization', **kws)
+        TaskPanel.__init__(self, parent, controller, panel='xasnorm', **kws)
 
     def build_display(self):
         panel = self.panel
@@ -576,7 +574,7 @@ class XASNormPanel(TaskPanel):
             groupname = self.controller.file_groups[str(checked)]
             grp = self.controller.get_group(groupname)
             if grp != self.controller.group and not grp.is_frozen:
-                self.update_config(_opts, dgroup=grp)
+                self.update_config(opts, dgroup=grp)
                 for key, val in opts.items():
                     if hasattr(grp, key):
                         setattr(grp, key, val)
@@ -884,7 +882,7 @@ class XASNormPanel(TaskPanel):
             lab = plotlabels.norm
             lab2 = plotlabels.dmude + ' (normalized)'
             dgroup.plot_yarrays = [('norm', PLOTOPTS_1, lab),
-                                   ('dnmude', PLOTOPTS_D, lab2)]
+                                   ('dmude', PLOTOPTS_D, lab2)]
             dgroup.plot_y2label = lab2
         elif pchoice == 'norm+d2normde':
             lab = plotlabels.norm

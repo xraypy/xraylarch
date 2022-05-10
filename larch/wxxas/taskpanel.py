@@ -21,6 +21,7 @@ from larch.wxlib import (BitmapButton, SetTip, GridPanel, FloatCtrl,
 from larch.xafs import etok, ktoe
 from larch.utils import group2dict
 from larch.utils.strutils import break_longstring
+from .config import PANELS
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
@@ -39,6 +40,7 @@ def autoset_fs_increment(wid, value):
         inc *= scale
         c += 1
     wid.SetIncrement(inc)
+
 
 class GroupJournalFrame(wx.Frame):
     """ edit parameters"""
@@ -194,18 +196,19 @@ class GroupJournalFrame(wx.Frame):
 
 
 class TaskPanel(wx.Panel):
-    """generic panel for main tasks.
-    meant to be subclassed
+    """generic panel for main tasks.   meant to be subclassed
     """
-    def __init__(self, parent, controller, xasmain=None, title='Generic Panel',
-                 configname=None,  **kws):
+    def __init__(self, parent, controller, xasmain=None, panel=None, **kws):
         wx.Panel.__init__(self, parent, -1, size=(550, 625), **kws)
         self.parent = parent
         self.xasmain = xasmain or parent
         self.controller = controller
         self.larch = controller.larch
-        self.title = title
-        self.configname = configname
+        self.title = 'Generic Panel'
+        self.configname = None
+        if panel in PANELS:
+            self.configname = panel
+            self.title = PANELS[panel]
 
         self.wids = {}
         self.subframes = {}
@@ -228,7 +231,7 @@ class TaskPanel(wx.Panel):
 
     def make_fit_xspace_widgets(self, elo=-1, ehi=1):
         self.wids['fitspace_label'] = SimpleText(self.panel, 'Fit Range (eV):')
-        opts = dict(digits=2, increment=1.0, relative_e0=False)
+        opts = dict(digits=2, increment=1.0, relative_e0=True)
         self.elo_wids = self.add_floatspin('elo', value=elo, **opts)
         self.ehi_wids = self.add_floatspin('ehi', value=ehi, **opts)
 
@@ -249,9 +252,8 @@ class TaskPanel(wx.Panel):
             elo = self.wids['elo'].GetValue()
             ehi = self.wids['ehi'].GetValue()
             self.fit_last_erange = (elo, ehi)
-            print(elo, ehi, e0)
             self.wids['elo'].SetValue(etok(elo-e0))
-            self.wids['ehi'].SetValue(etok(ehi-e0))
+            self.wids['ehi'].SetValue(etok(ehi+e0))
             self.fit_xspace = 'k'
             self.wids['fitspace_label'].SetLabel('Fit Range (1/\u212B):')
         elif self.fit_xspace == 'k' and fit_xspace == 'e': # k to e
@@ -335,7 +337,7 @@ class TaskPanel(wx.Panel):
         """get the default configuration for this session"""
         return {k:v for k, v in self.controller.get_config(self.configname).items()}
 
-    def get_config(self, dgroup=None):
+    def get_config(self, dgroup=None, with_erange=True):
         """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
@@ -344,6 +346,12 @@ class TaskPanel(wx.Panel):
             conf = self.get_defaultconfig()
         if dgroup is not None:
             setattr(dgroup, self.configname, conf)
+            if with_erange:
+                _emin = min(dgroup.energy)
+                _emax = max(dgroup.energy)
+                e0 = 5*int(dgroup.e0/5.0)
+                conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
+                conf['ehi'] = min(_emax, max(_emin, conf['ehi_rel'] + e0))
         return conf
 
     def update_config(self, config, dgroup=None):
@@ -364,6 +372,10 @@ class TaskPanel(wx.Panel):
         for name, wid in self.wids.items():
             if isinstance(wid, FloatCtrl) and name in dat:
                 wid.SetValue(dat[name])
+
+    def get_energy_ranges(self, dgroup):
+        pass
+
 
     def read_form(self):
         "read for, returning dict of values"

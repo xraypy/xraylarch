@@ -673,9 +673,7 @@ class FeffPathPanel(wx.Panel):
 
 class FeffitPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='feffit_config',
-                           title='Feff Fitting of EXAFS Paths', **kws)
+        TaskPanel.__init__(self, parent, controller, panel='feffit', **kws)
         self.paths_data = {}
 
     def onPanelExposed(self, **kws):

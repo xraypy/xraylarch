@@ -605,10 +605,7 @@ class LinComboResultFrame(wx.Frame):
 class LinearComboPanel(TaskPanel):
     """Liear Combination Panel"""
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='lincombo_config',
-                           title='Linear Combination Analysis',
-                           **kws)
+        TaskPanel.__init__(self, parent, controller, panel='lincombo', **kws)
 
     def process(self, dgroup, **kws):
         """ handle linear combo processing"""
@@ -636,10 +633,7 @@ class LinearComboPanel(TaskPanel):
         opts = dict(digits=2, increment=1.0, relative_e0=False)
         defaults = self.get_defaultconfig()
 
-        self.make_fit_xspace_widgets(elo=defaults['elo'], ehi=defaults['ehi'])
-
-        # elo_wids = self.add_floatspin('elo', value=defaults['elo'], **opts)
-        # ehi_wids = self.add_floatspin('ehi', value=defaults['ehi'], **opts)
+        self.make_fit_xspace_widgets(elo=defaults['elo_rel'], ehi=defaults['ehi_rel'])
 
         wids['fit_group'] = Button(panel, 'Fit this Group', size=(150, -1),
                                    action=self.onFitOne)
@@ -751,7 +745,7 @@ class LinearComboPanel(TaskPanel):
 
     def fill_form(self, dgroup):
         """fill in form from a data group"""
-        opts = self.get_config(dgroup)
+        opts = self.get_config(dgroup, with_erange=True)
         if not hasattr(dgroup, 'norm'):
             self.xasmain.process_normalization(dgroup)
         self.dgroup = dgroup
@@ -763,7 +757,12 @@ class LinearComboPanel(TaskPanel):
         for attr in ('all_combos', 'sum_to_one', 'show_fitrange'):
             wids[attr].SetValue(opts.get(attr, True))
 
-        for attr in ('fitspace',):
+        for attr in ('elo', 'ehi', ):
+            val = opts.get(attr, None)
+            if val is not None:
+                wids[attr].SetValue(val)
+
+        for attr in ('fitspace', ):
             if attr in opts:
                 wids[attr].SetStringSelection(opts[attr])
 

@@ -612,10 +612,7 @@ class PrePeakFitResultFrame(wx.Frame):
 
 class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='prepeaks_config',
-                           title='Pre-edge Peak Analysis',**kws)
-
+        TaskPanel.__init__(self, parent, controller, panel='prepeaks', **kws)
         self.fit_components = {}
         self.user_added_params = None
 

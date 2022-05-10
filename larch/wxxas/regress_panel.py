@@ -45,9 +45,7 @@ def make_steps(max=1, decades=8):
 class RegressionPanel(TaskPanel):
     """Regression Panel"""
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='regression_config',
-                           title='Regression and Feature Selection', **kws)
+        TaskPanel.__init__(self, parent, controller, panel='regression', **kws)
         self.result = None
         self.save_csvfile   = 'RegressionData.csv'
         self.save_modelfile = 'Model.regmod'
@@ -64,7 +62,8 @@ class RegressionPanel(TaskPanel):
         wids = self.wids
         self.skip_process = True
 
-        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()), size=(175, -1))
+        wids['fitspace'] = Choice(panel, choices=list(Linear_ArrayChoices.keys()),
+                                  action=self.onFitSpace, size=(175, -1))
         wids['fitspace'].SetSelection(0)
         # wids['plotchoice'] = Choice(panel, choices=Plot_Choices,
         #                           size=(250, -1), action=self.onPlot)
@@ -77,8 +76,8 @@ class RegressionPanel(TaskPanel):
         opts = dict(digits=2, increment=1.0)
         defaults = self.get_defaultconfig()
 
-        w_xmin = self.add_floatspin('xmin', value=defaults['xmin'], **opts)
-        w_xmax = self.add_floatspin('xmax', value=defaults['xmax'], **opts)
+        self.make_fit_xspace_widgets(elo=defaults['elo_rel'], ehi=defaults['ehi_rel'])
+
         wids['alpha'] =  NumericCombo(panel, make_steps(), fmt='%.6g',
                                       default_val=0.01, width=100)
 
@@ -145,12 +144,10 @@ class RegressionPanel(TaskPanel):
         add_text('Array to Use: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=4)
 
-        # add_text('Plot : ', newrow=True)
-        # panel.Add(wids['plotchoice'], dcol=3)
-        add_text('Fit Energy Range: ')
-        panel.Add(w_xmin)
+        panel.Add(wids['fitspace_label'], newrow=True)
+        panel.Add(self.elo_wids)
         add_text(' : ', newrow=False)
-        panel.Add(w_xmax, dcol=3)
+        panel.Add(self.ehi_wids, dcol=3)
         add_text('Regression Method:')
         panel.Add(wids['method'], dcol=4)
         add_text('PLS # components: ')
@@ -213,23 +210,20 @@ class RegressionPanel(TaskPanel):
         self.wids['auto_scale_pls'].Enable(not use_lasso)
         self.wids['ncomps'].Enable(not use_lasso)
 
+    def onFitSpace(self, evt=None):
+        fitspace = self.wids['fitspace'].GetStringSelection()
+        self.update_config(dict(fitspace=fitspace))
+        arrname = Linear_ArrayChoices.get(fitspace, 'norm')
+        self.update_fit_xspace(arrname)
+        self.plot()
+       
 
     def fill_form(self, dgroup):
-        opts = self.get_config(dgroup)
+        opts = self.get_config(dgroup, with_erange=True)
         self.dgroup = dgroup
-        if isinstance(dgroup, Group):
-            if not hasattr(dgroup, 'norm'):
-                self.xasmain.process_normalization(dgroup)
-            d_emin = min(dgroup.energy)
-            d_emax = max(dgroup.energy)
-            if opts['xmin'] < d_emin:
-                opts['xmin'] = -40 + int(dgroup.e0/10.0)*10
-            if opts['xmax'] > d_emax:
-                opts['xmax'] =  110 + int(dgroup.e0/10.0)*10
-
         self.skip_process = True
         wids = self.wids
-        for attr in ('xmin', 'xmax', 'alpha'):
+        for attr in ('elo', 'ehi', 'alpha'):
             val = opts.get(attr, None)
             if val is not None:
                 if attr == 'alpha':
@@ -273,9 +267,8 @@ class RegressionPanel(TaskPanel):
         cmds = ['# train linear regression model',
                'training_groups = [%s]' % ', '.join(groups)]
 
-        copts = ["varname='%s'" % varname,
-                 "xmin=%.4f" % opts['xmin'],
-                 "xmax=%.4f" % opts['xmax']]
+        copts = ["varname='%s'" % varname, "xmin=%.4f" % opts['elo'],
+                 "xmax=%.4f" % opts['ehi']]
 
         arrname = Linear_ArrayChoices.get(opts['fitspace'], 'norm')
         copts.append("arrayname='%s'" % arrname)

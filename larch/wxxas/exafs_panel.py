@@ -73,10 +73,8 @@ xftr_cmd = """xftr({group:s}, rmin={fft_rmin: .3f}, rmax={fft_rmax: .3f},
 class EXAFSPanel(TaskPanel):
     """EXAFS Panel"""
     def __init__(self, parent, controller, **kws):
-        TaskPanel.__init__(self, parent, controller,
-                           configname='exafs_config',
-                           title='EXAFS Background Subtraction and Fourier Transforms',
-                           **kws)
+        TaskPanel.__init__(self, parent, controller, panel='exafs', **kws)
+
         self.skip_process = False
         self.last_plot = 'one'
         self.last_process_bkg = {}
@@ -302,8 +300,7 @@ class EXAFSPanel(TaskPanel):
         if dgroup is None:
             return self.get_defaultconfig()
 
-        conf = getatt
-        r(dgroup, self.configname, None)
+        conf = getattr(dgroup, self.configname, None)
         if conf is None:
             # initial reading: start with default then take Athena Project values
             conf = self.get_defaultconfig()
