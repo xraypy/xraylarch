@@ -108,8 +108,8 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
         out[i, :] = np.fft.ifft(tmp, 2*nfft)[:nkout]
 
     group = set_xafsGroup(group, _larch=_larch)
-    group.r  =  r
-    group.wcauchy =  out
+    group.wcauchy_r  =  r
+    group.wcauchy    =  out
     group.wcauchy_mag =  np.sqrt(out.real**2 + out.imag**2)
     group.wcauchy_re =  out.real
     group.wcauchy_im =  out.imag
