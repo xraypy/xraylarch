@@ -2,10 +2,11 @@ import os
 import copy
 import time
 import numpy as np
+from copy import deepcopy
 
 import larch
 from larch.larchlib import read_config, save_config
-from larch.utils import group2dict, unique_name, fix_varname, get_cwd
+from larch.utils import group2dict, unique_name, fix_varname, get_cwd, asfloat
 from larch.wxlib.plotter import last_cursor_pos
 from larch.io import fix_varname
 from larch.site_config import home_dir, user_larchdir
@@ -41,19 +42,20 @@ class XASController():
 
         self.config_file = CONF_FILE
         if os.path.exists(xasv_folder):
-            self.config_file = os.path.join('xas_viewer', CONF_FILE)
+            self.config_file = os.path.join(xasv_folder, CONF_FILE)
 
-        user_config = read_config(self.config_file)
-        if user_config is not None:
-            for sname in config:
-                if sname in user_config:
-                    val = user_config[sname]
-                    if isinstance(val, dict):
-                        config[sname].update(val)
-                    else:
-                        config[sname] = val
+        if os.path.exists(self.config_file):
+            user_config = read_config(self.config_file)
+            if user_config is not None:
+                for sname in config:
+                    if sname in user_config:
+                        val = user_config[sname]
+                        if isinstance(val, dict):
+                            config[sname].update({k: asfloat(v) for k, v in val.items()})
+                        else:
+                            config[sname] = val
 
-        self.config = self.larch.symtable._sys.larix_config = config
+        self.config = self.larch.symtable._sys.xasviewer_config = config
 
         try:
             os.chdir(config['main']['workdir'])
@@ -62,10 +64,18 @@ class XASController():
         self.set_workdir()
 
     def get_config(self, key, default=None):
-        "get configuration setting"
+        "get top-level, program-wide configuration setting"
         if key not in self.config:
             return default
-        return self.config[key]
+        return deepcopy(self.config[key])
+
+    def init_group_config(self, dgroup):
+        """set up 'config' group with values from self.config"""
+        if not hasattr(dgroup, 'config'):
+            dgroup.config = Group(__name__='xas_viewer config')
+
+        for section, conf in self.config.items():
+            setattr(dgroup.config, section, deepcopy(conf))
 
     def save_config(self):
         """save configuration"""
@@ -87,24 +97,27 @@ class XASController():
 
     def get_display(self, win=1, stacked=False):
         wintitle='Larch XAS Plot Window %i' % win
+
         conf = self.get_config('plot')
-        opts = dict(wintitle=wintitle, stacked=stacked, win=win,
-                    size=(conf['width'], conf['height']), theme=conf['theme'])
-        out = self.symtable._plotter.get_display(**opts)
-        if win > 1:
+        opts = dict(wintitle=wintitle, stacked=stacked, win=win)
+        opts.update(conf)
+        out = getattr(self.symtable._plotter, f'plot{win:d}', None)
+        pos = None
+        if win > 1 and out is None and not stacked:
+            pos = self.wxparent.GetPosition()
+            siz = (conf['width'], conf['height'])
             p1 = getattr(self.symtable._plotter, 'plot1', None)
             if p1 is not None:
-                p1.SetSize((conf['width'], conf['height']))
                 try:
-                    siz = p1.GetSize()
                     pos = p1.GetPosition()
-                    pos[0] += int(siz[0]/4)
-                    pos[1] += int(siz[1]/4)
-                    out.SetSize(pos)
-                    if not stacked:
-                        out.SetSize(siz)
-                except Exception:
+                except:
                     pass
+
+        out = self.symtable._plotter.get_display(**opts)
+        if pos is not None:
+            pos = (pos[0] + int(siz[0]*0.02), pos[1] + int(1.02*siz[1]))
+            out.SetPosition(pos)
+
         return out
 
     def get_group(self, groupname=None):
@@ -248,8 +261,6 @@ class XASController():
             plot_extras = getattr(dgroup, 'plot_extras', None)
 
         popts['title'] = title
-        if hasattr(dgroup, 'custom_plotopts'):
-            popts.update(dgroup.custom_plotopts)
 
         narr = len(plot_yarrays) - 1
         for i, pydat in enumerate(plot_yarrays):
