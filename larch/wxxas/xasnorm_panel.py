@@ -260,8 +260,8 @@ class XASNormPanel(TaskPanel):
         if conf is None:
             conf = self.get_defaultconfig()
 
-        if conf['edge_step'] is None:
-            conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
+        if conf.get('edge_step', None) is None:
+            conf['edge_step'] = getattr(dgroup, 'edge_step', 1)
 
         conf['atsym'] = getattr(dgroup, 'atsym', '?')
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
@@ -307,7 +307,7 @@ class XASNormPanel(TaskPanel):
                 if eref in (val, key):
                     self.wids['energy_ref'].SetStringSelection(key)
 
-            self.wids['e0'].SetValue(opts['e0'])
+            self.wids['e0'].SetValue(opts.get('e0', -1))
             edge_step = opts.get('edge_step', 1.0)
 
             if hasattr(dgroup, 'e0') and opts['atsym'] == '?':
