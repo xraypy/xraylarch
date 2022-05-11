@@ -3,6 +3,7 @@ import os
 import sys
 import platform
 from functools import partial
+from copy import deepcopy
 
 import numpy as np
 np.seterr(all='ignore')
@@ -335,35 +336,37 @@ class TaskPanel(wx.Panel):
 
     def get_defaultconfig(self):
         """get the default configuration for this session"""
-        return {k:v for k, v in self.controller.get_config(self.configname).items()}
+        return deepcopy(self.controller.get_config(self.configname))
 
     def get_config(self, dgroup=None, with_erange=True):
         """get and set processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        conf = getattr(dgroup, self.configname, None)
+        if not hasattr(dgroup, 'config'):
+            dgroup.config = Group(__name__='xas_viewer config')
+        conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
             conf = self.get_defaultconfig()
-        if dgroup is not None:
-            setattr(dgroup, self.configname, conf)
-            if with_erange:
-                _emin = min(dgroup.energy)
-                _emax = max(dgroup.energy)
-                e0 = 5*int(dgroup.e0/5.0)
-                conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
-                conf['ehi'] = min(_emax, max(_emin, conf['ehi_rel'] + e0))
+            setattr(dgroup.config, self.configname, conf)
+        if dgroup is not None and with_erange:
+            _emin = min(dgroup.energy)
+            _emax = max(dgroup.energy)
+            e0 = 5*int(dgroup.e0/5.0)
+            conf['elo'] = min(_emax, max(_emin, conf['elo_rel'] + e0))
+            conf['ehi'] = min(_emax, max(_emin, conf['ehi_rel'] + e0))
         return conf
 
     def update_config(self, config, dgroup=None):
         """set/update processing configuration for a group"""
         if dgroup is None:
             dgroup = self.controller.get_group()
-        conf = getattr(dgroup, self.configname, None)
+        conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
             conf = self.get_defaultconfig()
+
         conf.update(config)
         if dgroup is not None:
-            setattr(dgroup, self.configname, conf)
+            setattr(dgroup.config, self.configname, conf)
 
     def fill_form(self, dat):
         if isinstance(dat, Group):
@@ -375,7 +378,6 @@ class TaskPanel(wx.Panel):
 
     def get_energy_ranges(self, dgroup):
         pass
-
 
     def read_form(self):
         "read for, returning dict of values"
@@ -393,7 +395,7 @@ class TaskPanel(wx.Panel):
                         pass
                 if val is not None:
                     break
-            form_opts[name] = val
+            formb_opts[name] = val
         return form_opts
 
     def process(self, dgroup=None, **kws):
