@@ -77,7 +77,7 @@ PANELS = {'exafs': 'EXAFS Background Subtraction and Fourier Transforms',
           'pca': 'Principal Component Analysis',
           'prepeaks': 'Pre-edge Peak Analysis',
           'regression': 'Regression and Feature Selection',
-          'xasnorm': 'XAS Normalization'
+          'xasnorm': 'XAS Normalization',
           }
 
 class CVar:
@@ -105,6 +105,13 @@ class CVar:
 ##
 ## sections
 ##
+CONF_SECTIONS = {k:v for k, v in PANELS.items()}
+CONF_SECTIONS.update({'main': 'Main program configuration',
+                      'pin': 'Pin icon to select points from plots',
+                      'plot': 'General Plotting',
+                      'autosave': 'Automatic saving of Project files',
+                      })
+
 main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change directory when opening a file'),
          CVar('workdir', get_homedir(), 'path', desc='staring working directory')]
 
@@ -123,7 +130,7 @@ plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys
             desc='plotting theme for colors and "look and feel"'),
         CVar('height', 550, 'int', min=100, desc='height of main plot window (in pixels)'),
         CVar('width', 600, 'int', min=100, desc='width of main plot window (in pixels)'),
-        CVar('linewidth', 2.5, 'float', min=0, step=0.5, desc='width of main plot window (in pixels)'),
+        CVar('linewidth', 2.5, 'float', min=0, step=0.5, desc='line width for each trace (in pixels)'),
         CVar('show_grid', True, 'bool', desc='whether to show grid lines'),
         CVar('show_fullbox', True, 'bool', desc='whether to show a full box around plot, or only left and bottom axes'),
         ]
@@ -202,10 +209,8 @@ regression = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relativ
 
 xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'),
            CVar('auto_step',  True, 'bool', desc='whether to automatically set edge step'),
-           CVar('e0',         0., 'float', desc='value of E0 (energy origin)'),
            CVar('show_e0',  True, 'bool', desc='whether to show E0'),
            CVar('energy_shift',  0., 'float', desc='value of Energy shift from original data'),
-           CVar('edge_step',  0., 'float', desc='value of edge step'),
            CVar('edge',      'K', 'choice',  choices=EDGES, desc='symbol of absorption edge'),
            CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
                 desc='type of polynomial for normalization'),
@@ -232,57 +237,3 @@ for section in ('main', 'autosave', 'pin', 'plot', 'xasnorm', 'exafs',
     for v in _locals[section]:
         XASCONF[sname][v.name] = v.value
         FULLCONF[sname][v.name] = v
-
-##
-##         XASCONF[section][v.name] = v.value
-
-# OLDXASCONF = { # default configurations
-#     'autosave_config': {'savetime': 900, 'nhistory': 3,
-#                         'fileroot': 'session_autosave'},
-#
-#     'chdir_on_fileopen': True,
-#
-#     'exafs_config': {'bkg_clamphi': 1, 'bkg_clamplo': 0, 'bkg_kmax': None,
-#                      'bkg_kmin': 0, 'bkg_kweight': 2, 'e0': -1.0,
-#                      'fft_dk': 4, 'fft_dr': 0.25, 'fft_kmax': None,
-#                      'fft_kmin': 2.5, 'fft_kweight': 2,
-#                      'fft_kwindow': 'Kaiser-Bessel',
-#                      'fft_rmax': 6, 'fft_rmin': 1, 'fft_rwindow':
-#                      'Hanning', 'rbkg': 1},
-#
-#     'feffit_config': {'dk': 4, 'fitspace': 'r', 'kmax': None, 'kmin': 2,
-#                       'kwindow': 'Kaiser-Bessel', 'kwstring': '2',
-#                       'rmax': 4, 'rmin': 1},
-#
-#     'lincombo_config': {'all_combos': True, 'ehi': 99999, 'ehi_rel': 110,
-#                         'elo': -99999, 'elo_rel': -40,
-#                         'fitspace': 'Normalized μ(E)', 'show_e0': False,
-#                         'show_fitrange': True, 'sum_to_one': False,
-#                         'vary_e0': False},
-#
-#     'pca_config': {'fitspace': 'Normalized μ(E)',
-#                    'max_components': 20, 'weight_auto': True,
-#                    'weight_min': 0.001, 'xmax': 99999, 'xmin': -99999},
-#
-#     'pin_config': {'min_time': 2.0, 'style': 'pin_first', 'timeout': 15.0},
-#
-#     'plot_config': {'height': 550, 'theme': 'light', 'width': 600},
-#
-#     'prepeaks_config': {'e': None, 'ehi': -5, 'elo': -10, 'emax': 0,
-#                         'emin': -40, 'yarray': 'norm'},
-#
-#     'regression_config': {'alpha': 0.01, 'cv_folds': None,
-#                           'cv_repeats': 3, 'fit_intercept': True,
-#                           'fitspace': 'Normalized μ(E)', 'scale': True,
-#                           'use_lars': True, 'varname': 'valence',
-#                           'xmax': 99999, 'xmin': -99999},
-#
-#     'workdir': '/Users/Newville/Codes/xraylarch',
-#
-#     'xasnorm_config': {'auto_e0': True, 'auto_step': True,
-#                        'e0': 0, 'edge': 'K', 'edge_step': None,
-#                        'energy_ref': None, 'energy_shift': 0,
-#                        'nnorm': None, 'norm1': None, 'norm2': None,
-#                        'norm_method': 'polynomial', 'nvict': 0,
-#                        'pre1': None, 'pre2': None, 'scale': 1, 'show_e0': True},
-#     }
