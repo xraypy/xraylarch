@@ -198,7 +198,7 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
 
 
 @Make_CallArgs(["k", "chi"])
-def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
+def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=None,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
          nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -211,7 +211,7 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
       chi:      1-d array of chi
       group:    output Group
       rmax_out: highest R for output data (10 Ang)
-      kweight:  exponent for weighting spectra by k**kweight
+      kweight:  exponent for weighting spectra by k**kweight [2]
       kmin:     starting k for FT Window
       kmax:     ending k for FT Window
       dk:       tapering parameter for FT Window
@@ -240,9 +240,11 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
     Supports First Argument Group convention (with group member names 'k' and 'chi')
     """
     # allow kweight keyword == kw
-    if 'kw' in kws:
-        kweight = kws['kw']
-
+    if kweight is None:
+        if 'kw' in kws:
+            kweight = kws['kw']
+        else:
+            kweight = 2
     k, chi, group = parse_group_args(k, members=('k', 'chi'),
                                      defaults=(chi,), group=group,
                                      fcn_name='xftf')
@@ -280,6 +282,7 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     and used in xftf_fast.
     """
     if dk2 is None: dk2 = dk
+    kweight = int(kweight)
     npts = int(1.01 + max(k)/kstep)
     k_max = max(max(k), kmax+dk2)
     k_   = kstep * np.arange(int(1.01+k_max/kstep), dtype='float64')
