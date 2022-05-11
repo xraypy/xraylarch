@@ -144,8 +144,8 @@ class XASNormPanel(TaskPanel):
         self.wids['is_frozen'] = Check(panel, default=False, label='Freeze Group',
                                        action=self.onFreezeGroup)
 
-        saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
-                          action=self.onSaveConfigBtn)
+        # saveconf = Button(panel, 'Save as Default Settings', size=(200, -1),
+        #                   action=self.onSaveConfigBtn)
 
         use_auto = Button(panel, 'Use Default Settings',
                           size=(200, -1),
@@ -236,7 +236,7 @@ class XASNormPanel(TaskPanel):
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
         panel.Add((5, 5), newrow=True)
         panel.Add(self.wids['is_frozen'], newrow=True)
-        panel.Add(saveconf, dcol=5)
+        # panel.Add(saveconf, dcol=5)
 
         panel.Add((5, 5), newrow=True)
         panel.Add(HLine(panel, size=(HLINEWID, 3)), dcol=6, newrow=True)
@@ -256,23 +256,14 @@ class XASNormPanel(TaskPanel):
             return self.get_defaultconfig()
         self.read_form()
 
-        if hasattr(dgroup, self.configname):
-            conf = getattr(dgroup, self.configname)
-        else:
+        conf = getattr(dgroup.config, self.configname, None)
+        if conf is None:
             conf = self.get_defaultconfig()
-            if hasattr(dgroup, 'bkg_params'): # from Athena
-                for attr in ('e0', 'pre1', 'pre2', 'nnorm'):
-                    conf[attr]   = getattr(dgroup.bkg_params, attr, conf[attr])
-                for attr, aattr in (('norm1', 'nor1'), ('norm2', 'nor2')):
-                    conf[attr]   = getattr(dgroup.bkg_params, aattr, conf[attr])
-                conf['auto_step'] = (float(getattr(dgroup.bkg_params, 'fixstep', 0.0))< 0.5)
-                conf['edge_step'] = getattr(dgroup.bkg_params, 'step', conf['edge_step'])
 
         if conf['edge_step'] is None:
             conf['edge_step'] = getattr(dgroup, 'edge_step', conf['edge_step'])
 
         conf['atsym'] = getattr(dgroup, 'atsym', '?')
-
         conf['edge'] = getattr(dgroup,'edge', conf['edge'])
 
         xeref = getattr(dgroup, 'energy_ref', '')
@@ -293,7 +284,7 @@ class XASNormPanel(TaskPanel):
             conf['atsym'] = getattr(dgroup.mback_params, 'atsym', conf['atsym'])
             conf['edge'] = getattr(dgroup.mback_params, 'edge', conf['edge'])
 
-        setattr(dgroup, self.configname, conf)
+        setattr(dgroup.config, self.configname, conf)
         return conf
 
     def fill_form(self, dgroup):
@@ -541,7 +532,7 @@ class XASNormPanel(TaskPanel):
     def onSaveConfigBtn(self, evt=None):
         conf = self.get_config()
         conf.update(self.read_form())
-        self.set_defaultconfig(conf)
+        # self.set_defaultconfig(conf)
 
     def onCopyParam(self, name=None, evt=None):
         conf = self.get_config()
@@ -653,7 +644,7 @@ class XASNormPanel(TaskPanel):
             dgroup = self.controller.get_group()
         except TypeError:
             return
-        if not hasattr(dgroup, self.configname):
+        if not hasattr(dgroup.config, self.configname):
             return
         form = self.read_form()
         self.process(dgroup=dgroup)
@@ -670,7 +661,6 @@ class XASNormPanel(TaskPanel):
             return
         self.skip_process = True
         conf = self.get_config(dgroup)
-        dgroup.custom_plotopts = {}
 
         form = self.read_form()
         form['group'] = dgroup.groupname
@@ -1005,8 +995,6 @@ class XASNormPanel(TaskPanel):
 
         popts['title'] = title
         popts['delay_draw'] = delay_draw
-        if hasattr(dgroup, 'custom_plotopts'):
-            popts.update(dgroup.custom_plotopts)
 
         popts['show_legend'] = len(plot_yarrays) > 1
         narr = len(plot_yarrays) - 1
