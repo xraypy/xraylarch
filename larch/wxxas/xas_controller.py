@@ -51,7 +51,8 @@ class XASController():
                     if sname in user_config:
                         val = user_config[sname]
                         if isinstance(val, dict):
-                            config[sname].update({k: asfloat(v) for k, v in val.items()})
+                            for k, v in val.items():
+                                config[sname][k] = v
                         else:
                             config[sname] = val
 
