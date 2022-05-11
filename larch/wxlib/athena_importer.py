@@ -83,13 +83,14 @@ class AthenaImporter(wx.Frame) :
         self.a_project = read_athena(self.filename, do_bkg=False, do_fft=False,
                                      _larch=_larch)
         self.allgroups = {}
-        for sname, item in self.a_project._athena_groups.items():
-            label = getattr(item, 'label', sname)
-            try:
-                self.allgroups[label] = sname
-                self.grouplist.Append(label)
-            except:
-                print(' ? ', sname, label, item)
+        for sname, grp in self.a_project._athena_groups.items():
+            if hasattr(grp, 'energy') and hasattr(grp, 'mu'):
+                label = getattr(grp, 'label', sname)
+                try:
+                    self.allgroups[label] = sname
+                    self.grouplist.Append(label)
+                except:
+                    print(' ? ', sname, label, item)
         self.Show()
         self.Raise()
 
