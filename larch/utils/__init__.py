@@ -10,7 +10,7 @@ from .paths import uname, bindir, nativepath, unixpath, get_homedir, get_cwd
 from .debugtime import debugtime, debugtimer
 
 from .strutils import (fixName, isValidName, isNumber, bytes2str, str2bytes,
-                       fix_varname, isLiteralStr, strip_comments,
+                       fix_varname, isLiteralStr, strip_comments, asfloat,
                        find_delims, version_ge, unique_name)
 
 from .shellutils import (_copy, _deepcopy, _more, _parent,

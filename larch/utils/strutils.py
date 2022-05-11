@@ -184,10 +184,16 @@ def unique_name(name, nlist, max=1000):
 def isNumber(num):
     "input is a number"
     try:
-        cnum = complex(num)
+        x = float(num)
         return True
-    except ValueError:
+    except (TypeError, ValueError):
         return False
+
+def asfloat(x):
+    """try to convert value to float, or fail gracefully"""
+    return float(x) if isNumber(x) else x
+
+
 
 def isLiteralStr(inp):
     "is a literal string"
