@@ -173,7 +173,6 @@ def decode4js(obj):
             re = np.asarray(obj['value'][0], dtype='double')
             im = np.asarray(obj['value'][1], dtype='double')
             out = re + 1j*im
-            print(out.shape)
         elif obj['__dtype__'].startswith('object'):
             val = [decode4js(v) for v in obj['value']]
             out = np.array(val,  dtype=obj['__dtype__'])
