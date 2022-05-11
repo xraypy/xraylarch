@@ -57,6 +57,10 @@ Regress_Choices = ['Partial Least Squares', 'Lasso', 'LassoLars']
 NNORM_CHOICES = {'auto':None,  'constant':0, 'linear':1, 'quadratic':2, 'cubic':3}
 NORM_METHODS = ('polynomial', 'mback')
 
+ATHENA_CLAMPNAMES = {'none': 0, 'slight': 1, 'weak': 5, 'medium': 20,
+                     'strong': 100, 'rigid': 500}
+
+
 Feffit_KWChoices = {'1': '1', '2': '2', '3': '3',
                     '2 and 3': '[2, 3]',
                     '1, 2, and 3': '[2, 1, 3]'}
@@ -130,7 +134,7 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('bkg_kmax', -1, 'float', min=-1, step=0.1, desc='k max for background subtraction (use -1 for "auto")'),
          CVar('bkg_kweight', 1, 'float', min=0, step=1, max=10, desc='k weight for background subtraction'),
          CVar('bkg_clamplo', 1, 'float', min=0, step=5, desc='low-k clamp for background subtraction'),
-         CVar('bkg_clamphi', 1, 'float', min=0, step=5, desc='high-k clamp for background subtraction'),
+         CVar('bkg_clamphi', 20, 'float', min=0, step=5, desc='high-k clamp for background subtraction'),
          CVar('fft_kmin',  2.0, 'float', min=0, step=0.1, max=50, desc='k min for EXAFS Fourier transform'),
          CVar('fft_kmax',  -1, 'float', min=-1, step=0.1, desc='k max for EXAFS Fourier transform (use -1 for "auto")'),
          CVar('fft_kweight', 2, 'float', min=0, step=1, max=10, desc='k weight for EXAFS Fourier transform'),
@@ -140,8 +144,8 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('fft_rmax',  5.0, 'float', min=0, step=0.1, desc='k max for EXAFS Back Fourier transform'),
          CVar('fft_dr',    0.25, 'float', min=0, step=0.05, desc='window parameter for EXAFS Back Fourier transform'),
          CVar('fft_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS, desc='window type for EXAFS Back Fourier transform'),
-         CVar('fft_rmaxout',  12.0, 'float', min=0, step=0.1, desc='maximum output R value for EXAFS Fourier transform'),
-         CVar('plot_rmax',     7.0, 'float', min=0, step=0.1, desc='maximum R value for EXAFS chi(R) plots')]
+         CVar('fft_rmaxout',  12.0, 'float', min=0, step=0.5, desc='maximum output R value for EXAFS Fourier transform'),
+         CVar('plot_rmax',     8.0, 'float', min=0, step=0.5, desc='maximum R value for EXAFS chi(R) plots')]
 
 
 feffit  = [CVar('kwstring', '2', 'choice', choices=list(Feffit_KWChoices.keys()),
