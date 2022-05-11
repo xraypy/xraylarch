@@ -564,11 +564,9 @@ def Make_CallArgs(skipped_args):
 
             if groupx is not None:
                 fname = fcn.__name__
-                details_group = getattr(groupx, f'{fname}_details', None)
-                if details_group  is not None:
-                    setattr(details_group, 'callargs', call_args)
-                if not hasattr(groupx, 'journal'):
-                    groupx.journal = Journal()
+                if not hasattr(groupx, 'journal'):  groupx.journal = Journal()
+                if not hasattr(groupx, 'callargs'): groupx.callargs = Group()
+                setattr(groupx.callargs, fname, call_args)
                 groupx.journal.add(f'{fname}_callargs',  call_args)
 
             return result
