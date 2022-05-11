@@ -447,7 +447,6 @@ def save_config(conffile, config):
     compare read_confif(conffile) which will read this value
 
     """
-    print("SAVE CONF ", conffile, config)
     cfile = os.path.join(user_larchdir, conffile)
     dat = toml.dumps(config).encode('utf-8')
     with open(cfile, 'wb') as fh:
