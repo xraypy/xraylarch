@@ -250,7 +250,9 @@ class ImageDisplay(ImageFrame):
         if val is not None: set('%s_val' % self.symname, val)
 
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
-                wintitle=None, xrf=False, image=False, stacked=False, theme=None):
+                wintitle=None, xrf=False, image=False, stacked=False,
+                theme=None, linewidth=None, show_grid=None, show_fullbox=None,
+                height=None, width=None):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if  hasattr(_larch, 'symtable'):
@@ -302,6 +304,8 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                     display = None
 
         if display is None:
+            if size is None and (height is not None and width is not None):
+                size = (int(width), int(height))
             display = creator(window=win, wxparent=wxparent,
                               size=size, _larch=_larch)
         ddict[win] = display
@@ -309,8 +313,18 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
 
     display = _get_disp(symname, creator, win, display_dict, wxparent,
                         size, _larch)
-    if creator == PlotDisplay and theme is not None:
-        display.panel.conf.set_theme(theme=theme)
+    if creator == PlotDisplay:
+        conf = display.panel.conf
+        if theme is not None:
+            conf.set_theme(theme=theme)
+        if show_grid is not None:
+            conf.enable_grid(show_grid)
+        if show_fullbox is not None:
+            boxstyle = 'box' if show_fullbox else 'open'
+            conf.set_axes_style(style=boxstyle)
+        if linewidth is not None:
+            for i in range(16):
+                conf.set_trace_linewidth(linewidth, trace=i)
 
     try:
         display.SetTitle(title)
