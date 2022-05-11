@@ -112,8 +112,10 @@ CONF_SECTIONS.update({'main': 'Main program configuration',
                       'autosave': 'Automatic saving of Project files',
                       })
 
-main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change directory when opening a file'),
-         CVar('workdir', get_homedir(), 'path', desc='staring working directory')]
+main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change working directory when opening a file'),
+        CVar('workdir', get_homedir(), 'path', desc='starting working directory'),
+        CVar('use_last_workdir', True, 'bool',  desc='whehter to use the working directory of the last session or always start in workdir'),
+        ]
 
 autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) between auto-saving Project files'),
             CVar('nhistory', 3, 'int', min=0, desc='number of auto-saved Project files to keep'),

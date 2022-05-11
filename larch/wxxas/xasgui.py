@@ -951,6 +951,7 @@ class XASFrame(wx.Frame):
             if res.save:
                 self.onSaveSession()
 
+        self.controller.save_workdir()
         try:
             self.controller.close_all_displays()
         except Exception:

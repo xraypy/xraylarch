@@ -58,11 +58,7 @@ class XASController():
 
         self.config = self.larch.symtable._sys.xasviewer_config = config
 
-        try:
-            os.chdir(config['main']['workdir'])
-        except:
-            pass
-        self.set_workdir()
+        self.init_workdir()
 
     def get_config(self, key, default=None):
         "get top-level, program-wide configuration setting"
@@ -87,6 +83,33 @@ class XASController():
 
     def set_workdir(self):
         self.config['main']['workdir'] = get_cwd()
+
+    def save_workdir(self):
+        """save last workdir"""
+        xasv_folder = os.path.join(user_larchdir, 'xas_viewer')
+        if os.path.exists(xasv_folder):
+            try:
+                with open(os.path.join(xasv_folder, 'workdir.txt'), 'w') as fh:
+                    fh.write("%s\n" % get_cwd())
+            except:
+                pass
+
+    def init_workdir(self):
+        """set initial working folder"""
+        if self.config['main'].get('use_last_workdir', False):
+            wfile = os.path.join(user_larchdir, 'xas_viewer', 'workdir.txt')
+            if os.path.exists(wfile):
+                try:
+                    with open(wfile, 'r') as fh:
+                        workdir = fh.readlines()[0][:-1]
+                        self.config['main']['workdir'] = workdir
+                except:
+                    pass
+        try:
+            os.chdir(self.config['main']['workdir'])
+        except:
+            pass
+
 
     def write_message(self, msg, panel=0):
         """write a message to the Status Bar"""
