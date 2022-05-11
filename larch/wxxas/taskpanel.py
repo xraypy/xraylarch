@@ -395,7 +395,7 @@ class TaskPanel(wx.Panel):
                         pass
                 if val is not None:
                     break
-            formb_opts[name] = val
+            form_opts[name] = val
         return form_opts
 
     def process(self, dgroup=None, **kws):
