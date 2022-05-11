@@ -472,7 +472,7 @@ class XASFrame(wx.Frame):
                  'Show Larch Programming Buffer',
                  self.onShowLarchBuffer)
 
-        MenuItem(self, fmenu, 'Edit Preferences', 'Customize Preferences\tCtrl+E',
+        MenuItem(self, fmenu, 'Edit Preferences\tCtrl+E', 'Customize Preferences',
                  self.onPreferences)
 
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
