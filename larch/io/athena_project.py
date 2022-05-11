@@ -19,7 +19,8 @@ from numpy.random import randint
 
 from larch import Group
 from larch import __version__ as larch_version
-from larch.utils.strutils import bytes2str, str2bytes, fix_varname
+from larch.utils.strutils import bytes2str, str2bytes, fix_varname, asfloat
+
 from xraydb import guess_edge
 import asteval
 
@@ -37,13 +38,6 @@ def parse_arglist(text):
         txt = txt[:-1]
     return json.loads(txt.translate(alist2json))
 
-
-def asfloat(x):
-    """try to convert value to float, or fail gracefully"""
-    try:
-        return float(x)
-    except (ValueError, TypeError):
-        return x
 
 
 ERR_MSG = "Error reading Athena Project File"
@@ -368,10 +362,9 @@ def parse_perlathena(text, filename):
     out.header = '\n'.join(header)
     for dat in athenagroups:
         label = dat.get('name', 'unknown')
-        this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
-                     bkg_params=Group(),
-                     fft_params=Group(),
-                     athena_params=Group())
+        this = Group(energy=dat['x'], mu=dat['y'],
+                     athena_params=Group(id=label, bkg=Group(), fft=Group()))
+
         if 'i0' in dat:
             this.i0 = dat['i0']
         if 'signal' in dat:
@@ -383,15 +376,14 @@ def parse_perlathena(text, filename):
                 key = dat['args'][2*i]
                 val = dat['args'][2*i+1]
                 if key.startswith('bkg_'):
-                    setattr(this.bkg_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.bkg, key[4:], asfloat(val))
                 elif key.startswith('fft_'):
-                    setattr(this.fft_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.fft, key[4:], asfloat(val))
                 elif key == 'label':
                     label = this.label = val
-                elif key in ('valence', 'lasso_yvalue',
-                             'epsk', 'epsr', 'importance'):
+                elif key in ('valence', 'lasso_yvalue', 'epsk', 'epsr'):
                     setattr(this, key, asfloat(val))
-                elif key in ('atsym', 'edge', 'provenance'):
+                elif key in ('atsym', 'edge'):
                     setattr(this, key, val)
                 else:
                     setattr(this.athena_params, key, asfloat(val))
@@ -464,10 +456,9 @@ def parse_perlathena_old(text, filename):
     out.header = '\n'.join(header)
     for dat in athenagroups:
         label = dat.get('name', 'unknown')
-        this = Group(athena_id=label, energy=dat['x'], mu=dat['y'],
-                     bkg_params=Group(),
-                     fft_params=Group(),
-                     athena_params=Group())
+        this = Group(energy=dat['x'], mu=dat['y'],
+                     athena_params=Group(id=label, bkg=Group(), fft=Group()))
+
         if 'i0' in dat:
             this.i0 = dat['i0']
         if 'signal' in dat:
@@ -479,15 +470,14 @@ def parse_perlathena_old(text, filename):
                 key = dat['args'][2*i]
                 val = dat['args'][2*i+1]
                 if key.startswith('bkg_'):
-                    setattr(this.bkg_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.bkg, key[4:], asfloat(val))
                 elif key.startswith('fft_'):
-                    setattr(this.fft_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.fft, key[4:], asfloat(val))
                 elif key == 'label':
                     label = this.label = val
-                elif key in ('valence', 'lasso_yvalue',
-                             'epsk', 'epsr', 'importance'):
+                elif key in ('valence', 'lasso_yvalue', 'epsk', 'epsr'):
                     setattr(this, key, asfloat(val))
-                elif key in ('atsym', 'edge', 'provenance'):
+                elif key in ('atsym', 'edge'):
                     setattr(this, key, val)
                 else:
                     setattr(this.athena_params, key, asfloat(val))
@@ -526,10 +516,9 @@ def parse_jsonathena(text, filename):
         dat = jsdict[name]
         x = np.array(dat['x'], dtype='float64')
         y = np.array(dat['y'], dtype='float64')
-        this = Group(athena_id=name, energy=x, mu=y,
-                     bkg_params=Group(),
-                     fft_params=Group(),
-                     athena_params=Group())
+        this = Group(energy=x, mu=y,
+                     athena_params=Group(id=name, bkg=Group(), fft=Group()))
+
         if 'i0' in dat:
             this.i0 = np.array(dat['i0'], dtype='float64')
         if 'signal' in dat:
@@ -539,11 +528,15 @@ def parse_jsonathena(text, filename):
         if 'args' in dat:
             for key, val in dat['args'].items():
                 if key.startswith('bkg_'):
-                    setattr(this.bkg_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.bkg, key[4:], asfloat(val))
                 elif key.startswith('fft_'):
-                    setattr(this.fft_params, key[4:], asfloat(val))
+                    setattr(this.athena_params.fft, key[4:], asfloat(val))
                 elif key == 'label':
                     label = this.label = val
+                elif key in ('valence', 'lasso_yvalue', 'epsk', 'epsr'):
+                    setattr(this, key, asfloat(val))
+                elif key in ('atsym', 'edge'):
+                    setattr(this, key, val)
                 else:
                     setattr(this.athena_params, key, asfloat(val))
         this.__doc__ = """Athena Group Name %s (key='%s')""" % (label, name)
@@ -655,7 +648,8 @@ class AthenaProject(object):
             if sname is not None:
                 signal = athena_array(group, sname)
 
-        hashkey = getattr(group, 'athena_id', None)
+        apars = getattr(group, 'athena_params', None)
+        hashkey = getattr(group, 'id', None)
         if hashkey is None or hashkey in self.groups:
             hashkey = make_hashkey()
             while hashkey in self.groups:
@@ -799,7 +793,7 @@ class AthenaProject(object):
             this = getattr(data, gname)
 
             if use_hashkey:
-                oname = this.athena_id
+                oname = this.athena_params.id
             is_xmu = bool(int(getattr(this.athena_params, 'is_xmu', 1.0)))
             is_chi = bool(int(getattr(this.athena_params, 'is_chi', 0.0)))
             is_xmu = is_xmu and not is_chi
@@ -809,7 +803,7 @@ class AthenaProject(object):
                 is_xmu = is_xmu and not val
 
             if is_xmu and (do_preedge or do_bkg) and (self._larch is not None):
-                pars = clean_bkg_params(this.bkg_params)
+                pars = clean_bkg_params(this.athena_params.bkg)
                 pre_edge(this,  e0=float(pars.e0),
                          pre1=float(pars.pre1), pre2=float(pars.pre2),
                          norm1=float(pars.nor1), norm2=float(pars.nor2),
@@ -822,7 +816,7 @@ class AthenaProject(object):
                            dk=float(pars.dk), clamp_lo=float(pars.clamp1),
                            clamp_hi=float(pars.clamp2))
                     if do_fft:
-                        pars = clean_fft_params(this.fft_params)
+                        pars = clean_fft_params(this.athena_params.fft)
                         kweight=2
                         if hasattr(pars, 'kw'):
                             kweight = float(pars.kw)
