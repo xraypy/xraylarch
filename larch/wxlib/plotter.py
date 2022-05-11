@@ -321,10 +321,10 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
             conf.enable_grid(show_grid)
         if show_fullbox is not None:
             boxstyle = 'box' if show_fullbox else 'open'
-            conf.set_axes_style(style=boxstyle)
+            conf.set_axes = boxstyle
         if linewidth is not None:
             for i in range(16):
-                conf.set_trace_linewidth(linewidth, trace=i)
+                conf.traces[i].linewidth = linewidth
 
     try:
         display.SetTitle(title)
