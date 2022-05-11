@@ -124,6 +124,15 @@ def _get_title(dgroup, title=None):
     return repr(dgroup)
 #enddef
 
+
+def _get_kweight(dgroup, kweight=None):
+    if kweight is not None:
+        return kweight
+    callargs = getattr(dgroup, 'callargs', None)
+    ftargs = getattr(callargs, 'xftf', {'kweight':0})
+    return ftargs['kweight']
+
+
 def _get_erange(dgroup, emin=None, emax=None):
     """get absolute emin/emax for data range, allowing using
     values relative to e0.
@@ -438,13 +447,7 @@ def plot_chik(dgroup, kweight=None, kmax=None, show_window=True,
      1. The input data group must have the following attributes:
          k, chi, kwin, filename
     """
-    if kweight is None:
-        kweight = 0
-        xft = getattr(dgroup, 'xftf_details', None)
-        if xft is not None:
-            kweight = xft.call_args.get('kweight', 0)
-        #endif
-    #endif
+    kweight = _get_kweight(dgroup, kweight)
 
     chi = dgroup.chi * dgroup.k ** kweight
     opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3,
@@ -496,11 +499,7 @@ def plot_chir(dgroup, show_mag=True, show_real=False, show_imag=False,
      1. The input data group must have the following attributes:
          r, chir_mag, chir_im, chir_re, kweight, filename
     """
-
-    try:
-        kweight = dgroup.xftf_details.call_args['kweight']
-    except:
-        kweight = 0
+    kweight = _get_kweight(dgroup, None)
 
     if new:
         title = _get_title(dgroup, title=title)
@@ -565,13 +564,7 @@ def plot_chiq(dgroup, kweight=None, kmax=None, show_chik=False, label=None,
      1. The input data group must have the following attributes:
          k, chi, kwin, filename
     """
-    if kweight is None:
-        kweight = 0
-        xft = getattr(dgroup, 'xftf_details', None)
-        if xft is not None:
-            kweight = xft.call_args.get('kweight', 0)
-        #endif
-    #endif
+    kweight = _get_kweight(dgroup, kweight)
     nk = len(dgroup.k)
     chiq = dgroup.chiq_re[:nk]
     opts = dict(win=win, show_legend=True, delay_draw=True, linewidth=3, _larch=_larch)
@@ -617,16 +610,13 @@ def plot_wavelet(dgroup, show_mag=True, show_real=False, show_imag=False,
     -----
      The wavelet will be performed
     """
-    if kweight is None:
-        kweight = dgroup.xftf_details.call_args['kweight']
-
+    kweight = _get_kweight(dgroup, kweight)
+    cauchy_wavelet(dgroup, kweight=kweight, rmax_out=rmax)
     title = _get_title(dgroup, title=title)
 
-    opts = dict(win=win, title=title, x=dgroup.k, y=dgroup.r, xmax=kmax,
+    opts = dict(win=win, title=title, x=dgroup.k, y=dgroup.wcauchy_r, xmax=kmax,
                 ymax=rmax, xlabel=plotlabels.k, ylabel=plotlabels.r,
                 show_axis=True, _larch=_larch)
-
-    cauchy_wavelet(dgroup, kweight=kweight)
     if show_mag:
         _imshow(dgroup.wcauchy_mag, **opts)
     elif show_real:
