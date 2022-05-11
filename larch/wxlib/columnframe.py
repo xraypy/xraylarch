@@ -4,6 +4,8 @@
 """
 import os
 import re
+from copy import deepcopy
+
 import numpy as np
 np.seterr(all='ignore')
 
@@ -633,7 +635,7 @@ class ColumnDataFileFrame(wx.Frame) :
                 'has infs' in nan_result.message):
                 reader = 'read_ascii'
 
-        tmpname = '_tmp_file_'
+        tmpname = '_tmpfile_'
         read_cmd = "%s = %s('%s')" % (tmpname, reader, path)
         self.reader = reader
         _larch = self._larch
@@ -663,8 +665,8 @@ class ColumnDataFileFrame(wx.Frame) :
             title = "Cannot read %s" % path
             r = Popup(self.parent, "\n".join(msg), title)
             return None
-        group = _larch.symtable.get_symbol(tmpname)
-        # _larch.symtable.del_symbol(tmpname)
+        group = deepcopy(_larch.symtable.get_symbol(tmpname))
+        _larch.symtable.del_symbol(tmpname)
 
         group.text = text
         group.path = path
