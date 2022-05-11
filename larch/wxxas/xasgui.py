@@ -28,7 +28,7 @@ from larch.io import save_session, read_session
 from larch.math import index_of
 from larch.utils import isotime, get_cwd, is_gzip
 from larch.utils.strutils import (file2groupname, unique_name,
-                                  common_startstring)
+                                  common_startstring, asfloat)
 
 from larch.larchlib import read_workdir, save_workdir, read_config, save_config
 
@@ -53,7 +53,7 @@ from .feffit_panel import FeffitPanel
 from .regress_panel import RegressionPanel
 from .xas_controller import XASController
 from .taskpanel import GroupJournalFrame
-from .config import FULLCONF, CVar
+from .config import FULLCONF, CVar, ATHENA_CLAMPNAMES
 
 from .xas_dialogs import (MergeDialog, RenameDialog, RemoveDialog,
                           DeglitchDialog, ExportCSVDialog, RebinDataDialog,
@@ -1035,7 +1035,7 @@ class XASFrame(wx.Frame):
             if first_group is None:
                 first_group = gname
             self.larch.eval(script.format(group=gname, path=path, scan=scan))
-            print("SPEC FILE ", yname)
+
             displayname = f"{fname:s} scan{scan:s} {yname:s}"
             jrnl = {'source_desc': f"{fname:s}: scan{scan:s} {yname:s}"}
             dgroup = self.install_group(gname, displayname,
@@ -1059,6 +1059,7 @@ class XASFrame(wx.Frame):
         parent, spath = os.path.split(path)
         labels = []
         groups_added = []
+
         for gname in namelist:
             cur_panel.skip_plotting = (gname == namelist[-1])
             this = getattr(self.larch.symtable._prj, gname)
@@ -1081,9 +1082,55 @@ class XASFrame(wx.Frame):
         for gid in groups_added:
             rgroup = gid
             dgroup = self.larch.symtable.get_group(gid)
+
+            conf_xasnorm = dgroup.config.xasnorm
+            conf_exafs= dgroup.config.exafs
+
             apars = getattr(dgroup, 'athena_params', {})
+            abkg = getattr(apars, 'bkg', {})
+            afft = getattr(apars, 'fft', {})
+
+            # norm
+            for attr in ('e0', 'pre1', 'pre2', 'nnorm'):
+                if hasattr(abkg, attr):
+                    conf_xasnorm[attr] = float(getattr(abkg, attr))
+
+            for attr, alt in (('norm1', 'nor1'), ('norm2', 'nor2'),
+                              ('edge_step', 'step')):
+                if hasattr(abkg, alt):
+                    conf_xasnorm[attr]  = float(getattr(abkg, alt))
+            if hasattr(abkg, 'fixstep'):
+                a = float(getattr(abkg, 'fixstep', 0.0))
+                conf_xasnorm['auto_step'] = (a < 0.5)
+
+
+            # bkg
+            for attr in ('e0', 'rbkg'):
+                if hasattr(abkg, attr):
+                    conf_exafs[attr] = float(getattr(abkg, attr))
+
+            for attr, alt in (('bkg_kmin', 'spl1'), ('bkg_kmax', 'spl2'),
+                              ('bkg_kweight', 'kw'), ('bkg_clamplo', 'clamp1'),
+                              ('bkg_clamphi', 'clamp2')):
+                if hasattr(abkg, alt):
+                    val = getattr(abkg, alt)
+                    try:
+                        val = float(getattr(abkg, alt))
+                    except:
+                        if alt.startswith('clamp') and isinstance(val, str):
+                            val = ATHENA_CLAMPNAMES.get(val.lower(), 0)
+                    conf_exafs[attr] = val
+
+
+            # fft
+            for attr in ('kmin', 'kmax', 'dk', 'kwindow', 'kw'):
+                if hasattr(afft, attr):
+                    n = f'fft_{attr}'
+                    if attr == 'kw': n = 'fft_kweight'
+                    conf_exafs[n] = float(getattr(afft, attr))
+
+            # reference
             refgroup = getattr(apars, 'reference', '')
-            # print("# looking for refgroup for ", gid, dgroup.filename)
             if refgroup in groups_added:
                 newname = None
                 for key, val in self.controller.file_groups.items():
@@ -1094,8 +1141,8 @@ class XASFrame(wx.Frame):
                     refgroup = newname
             else:
                 refgroup = dgroup.filename
-            # print("# final eref to ", refgroup)
             dgroup.energy_ref = refgroup
+
 
         self.larch.eval("del _prj")
         cur_panel.skip_plotting = False
@@ -1251,6 +1298,7 @@ class XASFrame(wx.Frame):
         elif isinstance(journal, (list, Journal)):
             jopts = repr(journal)
 
+        cmds.append(f"{groupname:s}.config = group(__name__='xas_viewer config')")
         cmds.append(f"{groupname:s}.journal = journal({jopts:s})")
         if datatype == 'xas':
             cmds.append(f"{groupname:s}.energy_orig = {groupname:s}.energy[:]")
@@ -1262,6 +1310,7 @@ class XASFrame(wx.Frame):
 
         self.larch.eval(cmds)
 
+        self.controller.init_group_config(thisgroup)
         self.controller.filelist.Append(filename.strip())
         self.controller.file_groups[filename] = groupname
 
