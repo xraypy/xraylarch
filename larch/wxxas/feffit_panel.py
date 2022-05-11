@@ -809,18 +809,12 @@ class FeffitPanel(TaskPanel):
              return self.get_defaultconfig()
         if not hasattr(dgroup, 'chi'):
              self.xasmain.process_exafs(dgroup)
-        conf = getattr(dgroup, self.configname, None)
+        conf = getattr(dgroup.config, self.configname, None)
         if conf is None:
             # initial reading: start with default then take Athena Project values
             conf = self.get_defaultconfig()
-            if hasattr(dgroup, 'fft_params'):
-                afft_pars = getattr(dgroup, 'fft_params')
-                if hasattr(afft_pars, 'kw'):
-                    conf['kwstring'] = str(getattr(afft_pars, 'kw'))
-                if hasattr(afft_pars, 'kweight'):
-                    conf['kwstring'] = str(getattr(afft_pars, 'kweight'))
 
-            econf = getattr(dgroup, 'exafs_config', {})
+            econf = getattr(dgroup.config, 'exafs_config', {})
             for key in ('fft_kmin', 'fft_kmax', 'fft_dk', 'fft_kwindow',
                         'fft_rmin', 'fft_rmax','fft_kweight'):
                 val = econf.get(key, None)
@@ -831,7 +825,7 @@ class FeffitPanel(TaskPanel):
                 if val is not None and tkey in conf:
                     conf[tkey] = val
 
-            setattr(dgroup, self.configname, conf)
+            setattr(dgroup.config, self.configname, conf)
         return conf
 
 
@@ -1290,7 +1284,6 @@ class FeffitPanel(TaskPanel):
 ###############
 
 class FeffitResultFrame(wx.Frame):
-    configname='feffit_config'
     def __init__(self, parent=None, feffit_panel=None, datagroup=None,
                   **kws):
         wx.Frame.__init__(self, None, -1, title='Feffit Results',
