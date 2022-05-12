@@ -354,6 +354,8 @@ class XASFrame(wx.Frame):
         return out
 
     def onNBChanged(self, event=None):
+        print("nb change ", self.nb.GetCurrentPage())
+
         callback = getattr(self.nb.GetCurrentPage(), 'onPanelExposed', None)
         if callable(callback):
             callback()
