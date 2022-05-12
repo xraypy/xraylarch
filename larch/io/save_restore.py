@@ -29,6 +29,45 @@ def is_larch_session_file(fname):
         text = fh.read(64).decode('utf-8')
     return text.startswith('##LARIX:')
 
+def save_groups(fname, grouplist, _larch:None):
+    """save a list of groups (and other supported datatypes) to file
+
+    This is a simplified and minimal version of save_session()
+
+    Use 'read_groups()' to read data saved from this function
+    """
+    buff = ["##LARCH GROUPLIST"]
+    for dat in grouplist:
+        buff.append(json.dumps(encode4js(dat)))
+
+    buff.append("")
+
+    fh = GzipFile(fname, "w")
+    fh.write(str2bytes("\n".join(buff)))
+    fh.close()
+
+def read_groups(fname, _larch=None):
+    """read a list of groups (and other supported datatypes)
+    from a file saved with 'save_groups()'
+
+    Returns a list of objects
+    """
+    fopen = GzipFile if is_gzip(fname) else open
+    with fopen(fname, 'rb') as fh:
+        text = fh.read().decode('utf-8')
+
+    lines = text.split('\n')
+    line0 = lines.pop(0)
+    if not line0.startswith('##LARCH GROUPLIST'):
+        raise ValueError(f"Invalid Larch group file: '{fname:s}'")
+
+    out = []
+    for line in lines:
+        if len(line) > 1:
+            out.append(decode4js(json.loads(line)))
+    return out
+
+
 def save_session(fname=None, _larch=None):
     """save all groups and data into a Larch Save File (.larix)
     A portable json file, that can be loaded with
