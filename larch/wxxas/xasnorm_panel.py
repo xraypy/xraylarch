@@ -539,7 +539,6 @@ class XASNormPanel(TaskPanel):
         form = self.read_form()
         conf.update(form)
         dgroup = self.controller.get_group()
-        print('onCopyParam ', dgroup)
         self.update_config(conf)
         self.fill_form(dgroup)
         opts = {}
