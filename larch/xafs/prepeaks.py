@@ -127,7 +127,7 @@ def prepeaks_setup(energy, norm=None, arrayname=None, group=None, emin=None, ema
                                elo=elo, ehi=ehi)
     else:
         group.prepeaks.energy = edat
-        group.prepeaks.norm = norm
+        group.prepeaks.norm = ydat
         group.prepeaks.emin = emin
         group.prepeaks.emax = emax
         group.prepeaks.elo = elo
@@ -301,9 +301,11 @@ def pre_edge_baseline(energy, norm=None, group=None, form='linear+lorentzian',
     return
 
 
+def prepeaks_fit(group, peakmodel, params, user_options=None, _larch=None):
+    """do pre-edge peak fitting - must be done after setting up the fit
+    returns a group with Peakfit data, including `result`, the lmfit ModelResult
 
-def prepeaks_fit(group, peakmodel, params, _larch=None):
-    """do pre-edge peak fitting - must be done after setting up the fit"""
+    """
     prepeaks = getattr(group, 'prepeaks', None)
     if prepeaks is None:
         raise ValueError("must run prepeask_setup() for a group before doing fit")
@@ -317,20 +319,28 @@ def prepeaks_fit(group, peakmodel, params, _larch=None):
     if not hasattr(prepeaks, 'fit_history'):
         prepeaks.fit_history = []
 
-    peak_result = Group(energy=prepeaks.energy[:],
-                        norm=prepeaks.norm[:], norm_std=prepeaks.norm_std[:],
-                        user_options=deepcopy(prepeaks.user_options))
+    pkfit = Group()
 
-    peak_result.init_fit    = peakmodel.eval(params, x=prepeaks.energy)
-    peak_result.init_ycomps = peakmodel.eval_components(params=params, x=prepeaks.energy)
+    for k in ('energy', 'norm', 'norm_std', 'user_options'):
+        if hasattr(prepeaks, k):
+            setattr(pkfit, k, deepcopy(getattr(prepeaks, k)))
+
+    if user_options is not None:
+        pkfit.user_options = user_options
+
+    pkfit.init_fit     = peakmodel.eval(params, x=prepeaks.energy)
+    pkfit.init_ycomps  = peakmodel.eval_components(params=params, x=prepeaks.energy)
 
     norm_std = getattr(prepeaks, 'norm_std', 1.0)
     if isinstance(norm_std, np.ndarray):
+        norm_std[np.where(norm_std<1.e-13)] = 1.e-13
+    elif norm_std < 0:
+        norm_std = 1.0
 
+    pkfit.result = peakmodel.fit(prepeaks.norm, params=params, x=prepeaks.energy,
+                                 weights=1.0/norm_std)
 
-    peak_result.result = peakmodel.fit(prepeaks.norm, params=params, x=prepeaks.energy,
-                                       weights=1.0/prepeaks.norm_std)
-
-    peak_result.label = 'Fit %i' % (1+len(prepeaks.fit_history))
-    prepeaks.fit_history.insert(0, peak_result)
-    return peak_result
+    pkfit.ycomps = peakmodel.eval_components(params=pkfit.result.params, x=prepeaks.energy)
+    pkfit.label = 'Fit %i' % (1+len(prepeaks.fit_history))
+    prepeaks.fit_history.insert(0, pkfit)
+    return pkfit
