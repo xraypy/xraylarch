@@ -1029,5 +1029,4 @@ class XASNormPanel(TaskPanel):
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
         if not popts['delay_draw']:
-            print("plot drawing canvas ! ")
             ppanel.canvas.draw()

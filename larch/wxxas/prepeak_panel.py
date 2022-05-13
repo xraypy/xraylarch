@@ -151,7 +151,6 @@ class PrePeakFitResultFrame(wx.Frame):
 
         if datagroup is None:
             symtab = self.peakframe.larch.symtable
-
             xasgroups = getattr(symtab, '_xasgroups', None)
             if xasgroups is not None:
                 for dname, dgroup in xasgroups.items():
@@ -628,7 +627,6 @@ class PrePeakFitResultFrame(wx.Frame):
             wids['params'].AppendItem((pname, val, serr, extra))
             wids['paramsdata'].append(pname)
         self.Refresh()
-
 
 class PrePeakPanel(TaskPanel):
     def __init__(self, parent=None, controller=None, **kws):
