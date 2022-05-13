@@ -3,6 +3,8 @@
   XAFS pre-edge subtraction, normalization algorithms
 """
 import numpy as np
+
+from lmfit import Parameters, Minimizer
 from xraydb import guess_edge
 from larch import Group, Make_CallArgs, parse_group_args
 
