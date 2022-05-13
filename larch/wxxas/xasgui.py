@@ -36,7 +36,7 @@ from larch.wxlib import (LarchFrame, ColumnDataFileFrame, AthenaImporter,
                          SpecfileImporter, FileCheckList, FloatCtrl,
                          FloatSpin, SetTip, get_icon, SimpleText, TextCtrl,
                          pack, Button, Popup, HLine, FileSave, FileOpen,
-                         Choice, Check, MenuItem, HyperText, GUIColors,
+                         Choice, Check, MenuItem, HyperText, set_color, COLORS,
                          CEN, LEFT, FRAMESTYLE, Font, FONTSIZE,
                          flatnotebook, LarchUpdaterDialog, GridPanel,
                          CIFFrame, FeffResultsFrame, LarchWxApp)
@@ -72,7 +72,7 @@ from larch.xafs import pre_edge, pre_edge_baseline
 
 LEFT = wx.ALIGN_LEFT
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Data Files(*.0*,*.dat,*.xdi,*.prj,*.spc,*.hdf5)|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5|All files (*.*)|*.*"
+FILE_WILDCARDS = "Data Files|*.0*;*.dat;*.DAT;*.xdi;*.prj;*.sp*c;*.h*5;*.larix|All files (*.*)|*.*"
 
 ICON_FILE = 'onecone.ico'
 XASVIEW_SIZE = (990, 750)
@@ -123,13 +123,12 @@ class PreferencesFrame(wx.Frame):
         self.title = SimpleText(self, 'Edit Preference and Defaults',
                                 size=(500, 25),
                                 font=Font(FONTSIZE+1), style=LEFT,
-                                colour=wx.Colour(10, 10, 180))
+                                colour=COLORS['nb_text'])
 
         self.save_btn = Button(self, 'Save for Future sessions',
                                size=(200, -1), action=self.onSave)
 
         self.nb = flatnotebook(self, {})
-        self.colors = GUIColors()
         self.wids = {}
         conf = self.controller.config
 
@@ -140,10 +139,11 @@ class PreferencesFrame(wx.Frame):
             self.wids[name] = {}
 
             panel = GridPanel(self.nb, ncols=3, nrows=8, pad=3, itemstyle=LEFT)
+            panel.SetFont(Font(FONTSIZE))
             title = CONF_SECTIONS.get(name, name)
             title = SimpleText(panel, f"  {title}",
                                size=(550, -1), font=Font(FONTSIZE+2),
-                               colour=self.colors.title, style=LEFT)
+                               colour=COLORS['title'], style=LEFT)
 
             self.wids[name]['_key_'] = SimpleText(panel, " <name> ",
                                                   size=(150, -1), style=LEFT)
@@ -270,7 +270,6 @@ class XASFrame(wx.Frame):
         self.plotframe = None
         self.SetTitle(title)
         self.SetSize(XASVIEW_SIZE)
-
         self.SetFont(Font(FONTSIZE))
         self.createMainPanel()
         self.createMenus()
@@ -327,6 +326,8 @@ class XASFrame(wx.Frame):
                                                  pre_actions=file_actions,
                                                  select_action=self.ShowFile,
                                                  remove_action=self.RemoveFile)
+        set_color(self.controller.filelist, 'list_fg', bg='list_bg')
+
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
         tsizer.Add(sel_all, 1, LEFT|wx.GROW, 1)
         tsizer.Add(sel_none, 1, LEFT|wx.GROW, 1)
@@ -344,7 +345,7 @@ class XASFrame(wx.Frame):
 
         self.title = SimpleText(panel, ' ', size=(500, 25),
                                 font=Font(FONTSIZE+3), style=LEFT,
-                                colour=wx.Colour(10, 10, 180))
+                                colour=COLORS['nb_text'])
 
         ir = 0
         sizer.Add(self.title, 0, CEN, 3)
@@ -1074,8 +1075,7 @@ class XASFrame(wx.Frame):
         # check for athena projects
         if is_athena_project(path):
             self.show_subframe('athena_import', AthenaImporter,
-                               filename=path,
-                               _larch=self.controller.larch,
+                               controller=self.controller, filename=path,
                                read_ok_cb=self.onReadAthenaProject_OK)
         # check for Spec File
         elif is_specfile(path):

@@ -478,6 +478,7 @@ class XASNormPanel(TaskPanel):
                 yarray_name = 'norm_area'
                 ylabel = "%s (Area)" % ylabel
         voff = self.wids['plot_voff'].GetValue()
+        t0 = time.time()
         for ix, checked in enumerate(group_ids):
             yoff = ix * voff
             groupname = self.controller.file_groups[str(checked)]
@@ -1028,4 +1029,5 @@ class XASNormPanel(TaskPanel):
                     xpopts.update(opts)
                     axes.axvline(x, **xpopts)
         if not popts['delay_draw']:
+            print("plot drawing canvas ! ")
             ppanel.canvas.draw()
