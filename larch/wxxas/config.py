@@ -114,7 +114,7 @@ CONF_SECTIONS.update({'main': 'Main program configuration',
 
 main = [CVar('chdir_on_fileopen', True, 'bool', desc='whether to change working directory when opening a file'),
         CVar('workdir', get_homedir(), 'path', desc='starting working directory'),
-        CVar('use_last_workdir', True, 'bool',  desc='whehter to use the working directory of the last session or always start in workdir'),
+        CVar('use_last_workdir', True, 'bool',  desc='whehter to use the working directory of the last session\nor always start in workdir'),
         ]
 
 autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) between auto-saving Project files'),
@@ -124,9 +124,9 @@ autosave = [CVar('savetime', 900, 'int', min=1, step=30, desc='time (in sec) bet
 pin = [CVar('style', 'pin first', 'choice', choices=['pin first', 'plot first'],
            desc='whether to click on pin first, then plot or plot first, then pin'),
        CVar('min_time', 2.0, 'float', min=0, max=60,
-           desc='minimum time (seconds) between clicking on the pin and reporting a value, allowing multiple clicks on the plot in that time'),
+           desc='minimum time (seconds) between clicking on the pin and reporting a value,\nallowing multiple clicks on the plot in that time'),
        CVar('max_time', 15.0, 'float', min=1, max=300,
-           desc='maximum time (seconds) after clicking on the pin to click on plot - will report last saved value')]
+           desc='maximum time (seconds) after clicking on the pin to click on plot.\nWill report last saved value')]
 
 plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys()),
             desc='plotting theme for colors and "look and feel"'),
@@ -134,7 +134,7 @@ plot = [CVar('theme', 'light', 'choice', choices=list(wxmplot.config.Themes.keys
         CVar('width', 600, 'int', min=100, desc='width of main plot window (in pixels)'),
         CVar('linewidth', 2.5, 'float', min=0, step=0.5, desc='line width for each trace (in pixels)'),
         CVar('show_grid', True, 'bool', desc='whether to show grid lines'),
-        CVar('show_fullbox', True, 'bool', desc='whether to show a full box around plot, or only left and bottom axes'),
+        CVar('show_fullbox', True, 'bool', desc='whether to show a full box around plot,\nor only left and bottom axes'),
         ]
 
 
@@ -149,7 +149,7 @@ exafs = [CVar('rbkg', 1.0, 'float', min=0, step=0.1, max=10, desc='R value separ
          CVar('fft_kweight', 2, 'float', min=0, step=1, max=10, desc='k weight for EXAFS Fourier transform'),
          CVar('fft_dk',      4, 'float', min=0, step=0.1, desc='window parameter for k->R EXAFS Fourier transform'),
          CVar('fft_kwindow', 'Kaiser-Bessel', 'choice', choices=FT_WINDOWS, desc='window type for k->R EXAFS Fourier transform'),
-         CVar('fft_rmin',  -1, 'float', min=-1, step=0.1, max=50, desc='R min for EXAFS Back Fourier transform (use -1 for "auto")'),
+         CVar('fft_rmin',  -1, 'float', min=-1, step=0.1, max=50, desc='R min for EXAFS Back Fourier transform\n(use -1 for "auto")'),
          CVar('fft_rmax',  5.0, 'float', min=0, step=0.1, desc='k max for EXAFS Back Fourier transform'),
          CVar('fft_dr',    0.25, 'float', min=0, step=0.05, desc='window parameter for EXAFS Back Fourier transform'),
          CVar('fft_rwindow', 'Hanning', 'choice', choices=FT_WINDOWS, desc='window type for EXAFS Back Fourier transform'),
@@ -180,7 +180,7 @@ pca = [CVar('elo_rel', -40, 'float',  desc='low-energy fit range, relative to E0
        CVar('ehi_rel', 100, 'float',  desc='high-energy fit range, relative to E0'),
        CVar('fitspace', 'Normalized μ(E)', 'choice', choices=list(Linear_ArrayChoices.keys()),
             desc='Array to use for Linear Combinations'),
-       CVar('weight_min',  -1, 'float', min=-1, step=0.0001, desc='minimum component weight to use (use -1 for "auto")'),
+       CVar('weight_min',  -1, 'float', min=-1, step=0.0001, desc='minimum component weight to use \n(use -1 for "auto")'),
        CVar('max_components',  20, 'int', min=0, desc='maximum number of components use')
        ]
 
@@ -217,11 +217,11 @@ xasnorm = [CVar('auto_e0',  True, 'bool', desc='whether to automatically set E0'
            CVar('nnorm',     'auto', 'choice', choices=list(NNORM_CHOICES.keys()),
                 desc='type of polynomial for normalization'),
            CVar('norm_method',  'polynomial', 'choice', choices=NORM_METHODS,  desc='normalization method'),
-           CVar('pre1', -200, 'float',  step=5, desc='low-energy fit range for pre-edge line, relative to E0'),
-           CVar('pre2',  -30, 'float',  step=5, desc='high-energy fit range for pre-edge line, relative to E0'),
-           CVar('norm1', 200, 'float',  step=5, desc='low-energy fit range for normalization curve, relative to E0'),
-           CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve, relative to E0 (set to -1 for "auto")'),
-           CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting (Energy^(-nvict))'),
+           CVar('pre1', -200, 'float',  step=5, desc='low-energy fit range for pre-edge line,\nrelative to E0'),
+           CVar('pre2',  -30, 'float',  step=5, desc='high-energy fit range for pre-edge line,\nrelative to E0'),
+           CVar('norm1', 200, 'float',  step=5, desc='low-energy fit range for normalization curve,\nrelative to E0'),
+           CVar('norm2',  -1, 'float',  step=5, desc='high-energy fit range for normalization curve,\nelative to E0 (set to -1 for "auto")'),
+           CVar('nvict',   0, 'int',     min=0, max=3,  desc='Victoreen order for pre-edge fitting\n(Energy^(-nvict))'),
            CVar('scale',  1.0, 'float', step=0.1, desc='scale to use to "normalize" non-XAS data'),
            ]
 
