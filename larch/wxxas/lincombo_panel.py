@@ -18,11 +18,13 @@ from lmfit.printfuncs import gformat, fit_report
 from larch import Group
 from larch.math import index_of
 from larch.xafs import etok, ktoe
+
 from larch.wxlib import (BitmapButton, FloatCtrl, FloatSpin, ToggleButton,
-                         GridPanel, get_icon, SimpleText, pack, Button, HLine,
-                         Choice, Check, CEN, LEFT, Font, FONTSIZE, FONTSIZE_FW,
-                         MenuItem, FRAMESTYLE, GUIColors, FileSave,
-                         EditableListBox, DataTableGrid)
+                         GridPanel, get_icon, SimpleText, pack, Button,
+                         HLine, Choice, Check, CEN, LEFT, Font, FONTSIZE,
+                         FONTSIZE_FW, MenuItem, FRAMESTYLE, COLORS,
+                         set_color, FileSave, EditableListBox,
+                         DataTableGrid)
 
 from .taskpanel import TaskPanel
 from .config import ARRAYS, Linear_ArrayChoices
@@ -92,17 +94,28 @@ def make_lcfplot(dgroup, form, with_fit=True, nfit=0):
     return script.format(**form)
 
 class LinComboResultFrame(wx.Frame):
-    def __init__(self, parent=None,  **kws):
+    def __init__(self, parent=None,  datagroup=None, mainpanel=None, **kws):
         wx.Frame.__init__(self, None, -1, title='Linear Combination Results',
-                          style=FRAMESTYLE, size=(825, 675), **kws)
+                          style=FRAMESTYLE, size=(925, 675), **kws)
         self.parent = parent
+        self.mainpanel = mainpanel
+        self.datagroup = datagroup
         self.datasets = {}
-        self.datagroup = None
-        self.form = None
-        self.larch_eval = None
+        self.form = self.mainpanel.read_form()
+        self.larch_eval = self.mainpanel.larch_eval
         self.current_fit = 0
         self.createMenus()
         self.build()
+
+        if self.mainpanel is not None:
+            symtab = self.mainpanel.larch.symtable
+            xasgroups = getattr(symtab, '_xasgroups', None)
+            if xasgroups is not None:
+                for dname, dgroup in xasgroups.items():
+                    dgroup = getattr(symtab, dgroup, None)
+                    hist  = getattr(dgroup, 'lcf_result', None)
+                    if hist is not None:
+                        self.add_results(dgroup, show=False)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -135,18 +148,15 @@ class LinComboResultFrame(wx.Frame):
 
         dl = self.datalistbox = EditableListBox(splitter, self.ShowDataSet,
                                            size=(250, -1))
+        set_color(self.datalistbox, 'list_fg', bg='list_bg')
 
-        dl.SetOwnBackgroundColour(wx.Colour(235, 235, 200))
-        dl.SetBackgroundColour(wx.Colour(235, 235, 200))
-        dl.SetForegroundColour(wx.Colour(5, 5, 50))
-        dl.SetOwnForegroundColour(wx.Colour(5, 5, 50))
+
         panel = scrolled.ScrolledPanel(splitter)
 
         self.SetMinSize((650, 600))
-        self.colors = GUIColors()
+
         self.font_fixedwidth = wx.Font(FONTSIZE_FW, wx.MODERN, wx.NORMAL, wx.BOLD)
 
-        #
         self.wids = wids = {}
         wids['plot_one'] = Button(panel, 'Plot This Fit', size=(125, -1),
                                   action=self.onPlotOne)
@@ -162,7 +172,7 @@ class LinComboResultFrame(wx.Frame):
         wids['data_title'] = SimpleText(panel, 'Linear Combination Result: <> ',
                                         font=Font(FONTSIZE+2),
                                         size=(400, -1),
-                                        colour=self.colors.title, style=LEFT)
+                                        colour=COLORS['title'], style=LEFT)
         wids['nfits_title'] = SimpleText(panel, 'showing 5 best fits')
         wids['fitspace_title'] = SimpleText(panel, 'Array Fit: ')
 
@@ -181,7 +191,7 @@ class LinComboResultFrame(wx.Frame):
         irow += 1
         self.wids['paramstitle'] = SimpleText(panel, '[[Parameters]]',
                                               font=Font(FONTSIZE+2),
-                                              colour=self.colors.title, style=LEFT)
+                                              colour=COLORS['title'], style=LEFT)
         sizer.Add(self.wids['paramstitle'], (irow, 0), (1, 3), LEFT)
 
 
@@ -235,7 +245,7 @@ class LinComboResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Fit Statistics]]', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
 
         irow += 1
@@ -246,7 +256,7 @@ class LinComboResultFrame(wx.Frame):
 
         irow += 1
         title = SimpleText(panel, '[[Weights]]', font=Font(FONTSIZE+2),
-                           colour=self.colors.title, style=LEFT)
+                           colour=COLORS['title'], style=LEFT)
         sizer.Add(title, (irow, 0), (1, 4), LEFT)
         self.wids['weightspanel'] = ppan = wx.Panel(panel)
 
@@ -298,8 +308,9 @@ class LinComboResultFrame(wx.Frame):
             self.larch_eval = larch_eval
 
         form = self.form
+        if form is None:
+            form = self.mainpanel.read_form()
         datagroup = self.datagroup
-        lcf_history = getattr(self.datagroup, 'lcf_history', [])
 
         wids = self.wids
         wids['data_title'].SetLabel('Linear Combination Result: %s ' %  self.datagroup.filename)
@@ -312,6 +323,7 @@ class LinComboResultFrame(wx.Frame):
         wids['fitspace_title'].SetLabel('Array Fit: %s' % ARRAYS.get(results[0].arrayname, 'unknown'))
 
         for i, res in enumerate(results):
+            res.result.rfactor = getattr(res, 'rfactor', 0)
             args = ['%2.2d' % (i+1)]
             for attr in ('nvarys', 'nfev', 'chisqr', 'redchi', 'rfactor', 'aic'):
                 val = getattr(res.result, attr)
@@ -358,7 +370,7 @@ class LinComboResultFrame(wx.Frame):
         os.Add(wview, 1, wx.GROW|wx.ALL)
         pack(wpan, os)
 
-        wview.SetMinSize((675, 200))
+        wview.SetMinSize((875, 500))
         s1, s2 = self.GetSize()
         if s2 % 2 == 0:
             s2 = s2 + 1
@@ -397,11 +409,12 @@ class LinComboResultFrame(wx.Frame):
             self.wids['params'].AppendItem(tuple(args))
 
     def onPlotOne(self, evt=None):
-        if self.form is None or self.larch_eval is None:
-            return
+        self.form = self.mainpanel.read_form()
+
+
         self.form['show_fitrange'] = self.wids['show_fitrange'].GetValue()
-        print(make_lcfplot(self.datagroup,
-                           self.form, nfit=self.current_fit))
+        # print(make_lcfplot(self.datagroup,
+        #                   self.form, nfit=self.current_fit))
         self.larch_eval(make_lcfplot(self.datagroup,
                                      self.form, nfit=self.current_fit))
 
@@ -643,6 +656,10 @@ class LinearComboPanel(TaskPanel):
         wids['fit_group'].Disable()
         wids['fit_selected'].Disable()
 
+        wids['show_results'] = Button(panel, 'Show Fit Results',
+                                      action=self.onShowResults, size=(150, -1))
+        wids['show_results'].Disable()
+
         wids['add_selected'] = Button(panel, 'Use Selected Groups as Components',
                                       size=(300, -1), action=self.onUseSelected)
 
@@ -662,13 +679,13 @@ class LinearComboPanel(TaskPanel):
 
         add_text('Array to Fit: ', newrow=True)
         panel.Add(wids['fitspace'], dcol=3)
+        panel.Add(wids['show_results'])
 
         panel.Add(wids['fitspace_label'], newrow=True)
         panel.Add(self.elo_wids)
         add_text(' : ', newrow=False)
         panel.Add(self.ehi_wids)
         panel.Add(wids['show_fitrange'])
-
 
         panel.Add(HLine(panel, size=(625, 3)), dcol=5, newrow=True)
 
@@ -710,6 +727,44 @@ class LinearComboPanel(TaskPanel):
         sizer.Add(panel, 1, LEFT, 3)
         pack(self, sizer)
         self.skip_process = False
+
+    def onPanelExposed(self, **kws):
+        # called when notebook is selected
+        try:
+            fname = self.controller.filelist.GetStringSelection()
+            gname = self.controller.file_groups[fname]
+            dgroup = self.controller.get_group(gname)
+            if not hasattr(dgroup, 'norm'):
+                self.xasmain.process_normalization(dgroup)
+            self.fill_form(dgroup)
+        except:
+            pass # print(" Cannot Fill prepeak panel from group ")
+
+        lcf_result = getattr(self.larch.symtable, 'lcf_result', None)
+        if lcf_result is  None:
+            return
+        self.wids['show_results'].Enable()
+        self.skip_process = True
+        selected_groups = []
+        for r in lcf_result[:100]:
+            for gname in r.weights:
+                if gname not in selected_groups:
+                    selected_groups.append(gname)
+
+        if len(selected_groups) > 0:
+            if len(selected_groups) >= MAX_COMPONENTS:
+                selected_groups = selected_groups[:MAX_COMPONENTS]
+            weight = 1.0/len(selected_groups)
+            grid_data = []
+            for grp in selected_groups:
+                grid_data.append([grp, weight, 0, 1])
+
+            self.wids['fit_group'].Enable()
+            self.wids['fit_selected'].Enable()
+            self.wids['table'].table.data = grid_data
+            self.wids['table'].table.View.Refresh()
+        self.skip_process = False
+
 
     def onFitSpace(self, evt=None):
         fitspace = self.wids['fitspace'].GetStringSelection()
@@ -843,16 +898,13 @@ class LinearComboPanel(TaskPanel):
         for grp in selected_groups:
             grid_data.append([grp, weight, 0, 1])
 
-
         self.wids['fit_group'].Enable()
         self.wids['fit_selected'].Enable()
-
-
         self.wids['table'].table.data = grid_data
         self.wids['table'].table.View.Refresh()
         self.skip_process = False
 
-    def do_fit(self, groupname, form):
+    def do_fit(self, groupname, form, plot=True):
         """run lincombo fit for a group"""
         form['gname'] = groupname
         if len(groupname) == 0:
@@ -877,14 +929,16 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
         self.larch_eval(script.format(**form))
 
         dgroup = self.controller.get_group(groupname)
-        self.show_subframe('lcf_result',  LinComboResultFrame)
+        self.show_subframe('lcf_result',  LinComboResultFrame,
+                           datagroup=dgroup, mainpanel=self)
 
         self.subframes['lcf_result'].add_results(dgroup, form=form,
-                                                 larch_eval=self.larch_eval)
-        self.plot(dgroup=dgroup, with_fit=True)
+                                                 larch_eval=self.larch_eval, show=plot)
+        if plot:
+            self.plot(dgroup=dgroup, with_fit=True)
 
     def onShowResults(self, event=None):
-        self.show_subframe('lcf_result',  LinComboResultFrame)
+        self.show_subframe('lcf_result',  LinComboResultFrame, mainpanel=self)
 
     def onFitOne(self, event=None):
         """ handle process events"""
@@ -902,9 +956,10 @@ lcf_result = {func:s}({gname:s}, [{comps:s}],
             return
         self.skip_process = True
         form = self.read_form()
-        for sel in self.controller.filelist.GetCheckedStrings():
+        groups = self.controller.filelist.GetCheckedStrings()
+        for i, sel in enumerate(groups):
             gname = self.controller.file_groups[sel]
-            self.do_fit(gname, form)
+            self.do_fit(gname, form, plot=(i==len(groups)-1))
         self.skip_process = False
 
     def plot(self, dgroup=None, with_fit=False):
