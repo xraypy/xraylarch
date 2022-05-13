@@ -208,8 +208,11 @@ class PrePeakFitResultFrame(wx.Frame):
         opts = dict(default=False, size=(200, -1), action=self.onPlot)
         wids['plot_bline'] = Check(panel, label='Plot baseline-subtracted?', **opts)
         wids['plot_resid'] = Check(panel, label='Plot with residual?', **opts)
-        self.plot_choice = Button(panel, 'Plot This Fit',
-                                  size=(125, -1), action=self.onPlot)
+        wids['load_model'] = Button(panel, 'Load this Model',
+                                    size=(200, -1), action=self.onLoadModel)
+
+        wids['plot_choice'] = Button(panel, 'Plot This Fit',
+                                     size=(125, -1), action=self.onPlot)
 
         wids['fit_label'] = wx.TextCtrl(panel, -1, ' ', size=(225, -1))
         wids['set_label'] = Button(panel, 'Update Label', size=(175, -1),
@@ -225,8 +228,11 @@ class PrePeakFitResultFrame(wx.Frame):
         sizer.Add(wids['model_desc'],  (irow, 0), (1, 6), LEFT)
 
         irow += 1
+        sizer.Add(wids['load_model'],(irow, 0), (1, 2), LEFT)
+
+        irow += 1
         # sizer.Add(SimpleText(panel, 'Plot: '), (irow, 0), (1, 1), LEFT)
-        sizer.Add(self.plot_choice,   (irow, 0), (1, 1), LEFT)
+        sizer.Add(wids['plot_choice'],(irow, 0), (1, 1), LEFT)
         sizer.Add(wids['plot_bline'], (irow, 1), (1, 2), LEFT)
         sizer.Add(wids['plot_resid'], (irow, 3), (1, 1), LEFT)
 
@@ -354,7 +360,6 @@ class PrePeakFitResultFrame(wx.Frame):
         item = self.wids['stats'].GetSelectedRow()
         result.label = self.wids['fit_label'].GetValue()
         self.show_results()
-
 
     def onSaveAllStats(self, evt=None):
         "Save Parameters and Statistics to CSV"
@@ -524,6 +529,9 @@ class PrePeakFitResultFrame(wx.Frame):
         for namepair, corval in sort_correl:
             name1, name2 = namepair.split('$$')
             self.wids['correl'].AppendItem((name1, name2, "% .4f" % corval))
+
+    def onLoadModel(self, event=None):
+        self.peakframe.use_modelresult(self.get_fitresult())
 
     def onCopyParams(self, evt=None):
         result = self.get_fitresult()
@@ -905,7 +913,6 @@ elo={elo:.3f}, ehi={ehi:.3f}, emin={emin:.3f}, emax={emax:.3f})"""
         i1, i2 = self.get_xranges(dgroup.energy)
         dgroup.yfit = dgroup.xfit = 0.0*dgroup.energy[i1:i2]
 
-        # self.plot_choice.SetStringSelection(PLOT_BASELINE)
         self.onPlot(baseline_only=True)
         # self.savebline_btn.Enable()
 
@@ -1480,7 +1487,7 @@ write_ascii('{savefile:s}', {gname:s}.energy, {gname:s}.norm, {gname:s}.prepeaks
                                                      larch_eval=self.larch_eval)
 
     def onShowResults(self, event=None):
-        self.show_subframe('prepeak_resulat',
+        self.show_subframe('prepeak_result',
                            PrePeakFitResultFrame, peakframe=self)
 
 
